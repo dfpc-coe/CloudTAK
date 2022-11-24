@@ -1,0 +1,12 @@
+{
+    "GET /schema": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "POST /record": {
+        "body": true,
+        "query": false,
+        "res": true
+    }
+}

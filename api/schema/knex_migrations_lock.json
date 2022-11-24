@@ -1,0 +1,16 @@
+{
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+        "index": {
+            "$ref": "./knex_migrations_lock/index.json"
+        },
+        "is_locked": {
+            "$ref": "./knex_migrations_lock/is_locked.json"
+        }
+    },
+    "required": [
+        "index",
+        "is_locked"
+    ]
+}

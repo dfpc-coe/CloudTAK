@@ -1,0 +1,16 @@
+{
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+        "dt": {
+            "$ref": "./total/dt.json"
+        },
+        "count": {
+            "$ref": "./total/count.json"
+        }
+    },
+    "required": [
+        "dt",
+        "count"
+    ]
+}
