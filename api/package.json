@@ -1,0 +1,52 @@
+{
+    "name": "@tak-ps/etl.api",
+    "type": "module",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+        "test": "tape test/**.test.js",
+        "lint": "eslint index.js routes/**.js lib/**.js test/**.js",
+        "doc": "apidoc -i ./doc",
+        "prod": "node index.js",
+        "dev": "StackName=test nodemon -i schema/ -i web/ -i doc/ index.js"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/tak-ps/etl.git"
+    },
+    "author": "Nick Ingalls <nick@ingalls.ca>",
+    "license": "ISC",
+    "dependencies": {
+        "@openaddresses/batch-error": "^1.1.0",
+        "@openaddresses/batch-generic": "^13.0.1",
+        "@openaddresses/batch-schema": "^7.3.0",
+        "ajv": "^8.11.2",
+        "ajv-formats": "^2.1.1",
+        "connect-history-api-fallback": "^2.0.0",
+        "cors": "^2.8.5",
+        "csv-stringify": "^6.2.1",
+        "express": "^4.18.2",
+        "express-minify": "^1.0.0",
+        "knex": "^2.3.0",
+        "minimist": "^1.2.7",
+        "moment": "^2.29.4",
+        "pg": "^8.8.0",
+        "slonik": "^32.0.0",
+        "tilebase": "^4.0.0"
+    },
+    "devDependencies": {
+        "apidoc": "^0.53.1",
+        "apidoc-plugin-schema2": "^0.1.8",
+        "eslint": "^8.27.0",
+        "eslint-plugin-node": "^11.1.0",
+        "nodemon": "^2.0.20",
+        "path-to-regexp": "^6.2.1",
+        "tape": "^5.6.1"
+    },
+    "apidoc": {
+        "name": "TAK PS ETL API",
+        "title": "TAK PS ETL API",
+        "version": "1.0.0"
+    }
+}

@@ -1,0 +1,24 @@
+{
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+        "id": {
+            "$ref": "./knex_migrations/id.json"
+        },
+        "name": {
+            "$ref": "./knex_migrations/name.json"
+        },
+        "batch": {
+            "$ref": "./knex_migrations/batch.json"
+        },
+        "migration_time": {
+            "$ref": "./knex_migrations/migration_time.json"
+        }
+    },
+    "required": [
+        "id",
+        "name",
+        "batch",
+        "migration_time"
+    ]
+}
