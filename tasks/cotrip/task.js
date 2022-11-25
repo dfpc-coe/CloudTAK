@@ -14,13 +14,23 @@ export default class Task {
     }
 
     async plows() {
-        const url = new URL('/api/v1/snowPlows', this.api);
-        url.searchParams.append('apiKey', this.token);
-        const res = await fetch(url);
-        const plows = await res.json();
+        const plows = [];
+        let batch = -1;
+        let res;
+        do {
+            console.error(`ok - fetching ${++batch} of plows`);
+            const url = new URL('/api/v1/snowPlows', this.api);
+            url.searchParams.append('apiKey', this.token);
+            if (res) url.searchParams.append('offset', res.headers.get('next-offset'));
 
-        for (const plow of plows.features) {
-            console.error(plow);
+            res = await fetch(url);
+
+            plows.push(...(await res.json()).features);
+        } while (res.headers.has('next-offset') && res.headers.get('next-offset') !== 'None')
+        console.log(`ok - fetched ${plows.length} plows`);
+
+        for (const plow of plows) {
+            //console.error(plow);
         }
     }
 }
