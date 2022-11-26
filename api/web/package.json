@@ -1,0 +1,56 @@
+{
+    "name": "@tak-ps/etl.web",
+    "version": "0.1.0",
+    "private": true,
+    "scripts": {
+        "serve": "vue-cli-service serve",
+        "prod": "vue-cli-service build",
+        "dev": "vue-cli-service build --watch --mode development",
+        "lint": "vue-cli-service lint"
+    },
+    "dependencies": {
+        "@tabler/core": "^1.0.0-beta16",
+        "@tak-ps/vue-tabler": "^1.0.1",
+        "core-js": "^3.6.4",
+        "floating-vue": "^2.0.0-beta.17",
+        "mapbox-gl": "^2.11.0",
+        "moment": "^2.29.3",
+        "sass": "^1.49.7",
+        "sass-loader": "^13.0.0",
+        "semver-sort": "^1.0.0",
+        "vue": "^3.2.31",
+        "vue-router": "^4.0.14",
+        "vue-tabler-icons": "^2.16.0",
+        "vue3-apexcharts": "^1.4.1"
+    },
+    "devDependencies": {
+        "@babel/eslint-parser": "^7.17.0",
+        "@vue/cli-plugin-babel": "^5.0.3",
+        "@vue/cli-plugin-eslint": "^5.0.3",
+        "@vue/cli-service": "^5.0.3",
+        "eslint": "^8.11.0",
+        "eslint-plugin-vue": "^9.0.0",
+        "vue-template-compiler": "^2.6.11"
+    },
+    "eslintConfig": {
+        "root": true,
+        "globals": {},
+        "env": {
+            "node": true
+        },
+        "extends": [
+            "plugin:vue/essential",
+            "eslint:recommended"
+        ],
+        "parserOptions": {
+            "parser": "@babel/eslint-parser"
+        },
+        "rules": {
+            "vue/multi-word-component-names": 1
+        }
+    },
+    "browserslist": [
+        "> 1%",
+        "last 2 versions"
+    ]
+}
