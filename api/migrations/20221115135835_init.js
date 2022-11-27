@@ -1,7 +1,7 @@
 function up(knex) {
     return knex.schema.raw(`
         CREATE TABLE layers (
-            id                  BIGINT serial PRIMARY KEY,
+            id                  BIGSERIAL PRIMARY KEY,
             name                TEXT NOT NULL,
             description         TEXT NOT NULL DEFAULT '',
             cron                TEXT NOT NULL,
