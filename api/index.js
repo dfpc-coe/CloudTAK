@@ -115,6 +115,27 @@ export default async function server(config) {
 
     fs.writeFileSync(new URL('./doc/api.js', import.meta.url), schema.docs.join('\n'));
 
+    app.use(history({
+        rewrites: [{
+            from: /.*\/js\/.*$/,
+            to: function(context) {
+                return context.parsedUrl.pathname.replace(/.*\/js\//, '/js/');
+            }
+        },{
+            from: /.*$/,
+            to: function(context) {
+                const parse = path.parse(context.parsedUrl.path);
+                if (parse.ext) {
+                    return context.parsedUrl.pathname;
+                } else {
+                    return '/';
+                }
+            }
+        }]
+    }));
+
+    app.use(express.static('web/dist'));
+
     return new Promise((resolve, reject) => {
         const srv = app.listen(4999, (err) => {
             if (err) return reject(err);
