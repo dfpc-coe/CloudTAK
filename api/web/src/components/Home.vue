@@ -28,8 +28,7 @@
                         <div class="card-header">
                             <h3 class="card-title" v-text='layer.name'></h3>
                         </div>
-                        <div class="card-body">
-                            This is a wider card with supporting text below as a natural lead-in to additional content. This card has even longer content than the first to show that equal height action.
+                        <div class="card-body" v-text='layer.description'>
                         </div>
                         <div class="card-footer">
                             Last updated 3 mins ago
@@ -54,6 +53,18 @@ export default {
             err: false,
             list: {
                 layers: []
+            }
+        }
+    },
+    mounted: function() {
+        this.fetchList();
+    },
+    methods: {
+        fetchList: async function() {
+            try {
+                this.list = await window.std('/api/layer');
+            } catch (err) {
+                this.err = err;
             }
         }
     },

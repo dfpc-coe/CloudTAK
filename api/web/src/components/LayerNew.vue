@@ -101,7 +101,7 @@ export default {
             name: '',
             description: '',
             enabled: true,
-            cron: '',
+            cron: '0/15 * * * ? *',
             task: ''
         }
     },
