@@ -14,6 +14,7 @@ const router = new VueRouter.createRouter({
     routes: [
         { path: '/', name: 'home', component: () => import('./components/Home.vue') },
 
+        { path: '/layer', name: 'layers', component: () => import('./components/Home.vue') },
         { path: '/layer/new', name: 'layer-new', component: () => import('./components/LayerNew.vue') },
     ]
 });
