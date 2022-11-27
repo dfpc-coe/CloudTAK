@@ -1,0 +1,11 @@
+{
+    "type": "string",
+    "enum": [
+        "Pending",
+        "Running",
+        "Success",
+        "Fail",
+        "Warn"
+    ],
+    "description": "The current status of a given task"
+}

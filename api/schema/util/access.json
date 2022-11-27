@@ -1,0 +1,10 @@
+{
+    "type": "string",
+    "enum": [
+        "user",
+        "read",
+        "disabled",
+        "admin"
+    ],
+    "description": "The access level of a given user"
+}

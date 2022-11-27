@@ -1,0 +1,18 @@
+{
+    "type": "object",
+    "required": [
+        "status",
+        "message"
+    ],
+    "additionalProperties": false,
+    "properties": {
+        "status": {
+            "type": "integer",
+            "description": "The HTTP Status Code of the response"
+        },
+        "message": {
+            "type": "string",
+            "description": "A human readable status message"
+        }
+    }
+}

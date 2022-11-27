@@ -1,0 +1,28 @@
+{
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+        "id": {
+            "$ref": "./layers/id.json"
+        },
+        "name": {
+            "$ref": "./layers/name.json"
+        },
+        "description": {
+            "$ref": "./layers/description.json"
+        },
+        "cron": {
+            "$ref": "./layers/cron.json"
+        },
+        "enabled": {
+            "$ref": "./layers/enabled.json"
+        }
+    },
+    "required": [
+        "id",
+        "name",
+        "description",
+        "cron",
+        "enabled"
+    ]
+}
