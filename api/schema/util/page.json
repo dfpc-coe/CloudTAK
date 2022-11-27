@@ -1,0 +1,6 @@
+{
+    "type": "integer",
+    "default": 0,
+    "minimum": 0,
+    "description": "The page, based on the limit, to return"
+}

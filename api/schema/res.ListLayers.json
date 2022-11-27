@@ -1,0 +1,19 @@
+{
+    "type": "object",
+    "required": [
+        "total",
+        "layers"
+    ],
+    "additionalProperties": false,
+    "properties": {
+        "count": {
+            "type": "integer"
+        },
+        "layers": {
+            "type": "array",
+            "items":  {
+                "$ref": "./layers.json"
+            }
+        }
+    }
+}

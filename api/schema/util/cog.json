@@ -1,0 +1,15 @@
+{
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+        "blocksize": {
+            "type": "integer"
+        },
+        "compression": {
+            "type": "string"
+        },
+        "overview": {
+            "type": "integer"
+        }
+    }
+}

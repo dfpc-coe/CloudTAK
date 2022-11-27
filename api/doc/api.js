@@ -18,24 +18,6 @@
 
 
 /**
-* @api {post} /layer/cot Post COT
-* @apiVersion 1.0.0
-* @apiName POST-/layer/cot
-* @apiGroup Layer
-* @apiPermission admin
-*
-* @apidescription
-*   Post CoT data to a given layer
-*
-* @apiParam {string} layer param
-*
-*
-*
-*
-*/
-
-
-/**
 * @api {get} /layer List Layers
 * @apiVersion 1.0.0
 * @apiName GET-/layer
@@ -45,11 +27,11 @@
 * @apidescription
 *   List layers
 *
-* @apiParam {string} layer param
+
 *
+* @apiSchema (Query) {jsonschema=../schema/req.query.ListLayers.json} apiParam
 *
-*
-*
+* @apiSchema {jsonschema=../schema/res.ListLayers.json} apiSuccess
 */
 
 
@@ -63,27 +45,63 @@
 * @apidescription
 *   Register a new layer
 *
-* @apiParam {string} layer param
+
 *
 *
-*
-*
+* @apiSchema (Body) {jsonschema=../schema/req.body.CreateLayer.json} apiParam
+* @apiSchema {jsonschema=../schema/layers.json} apiSuccess
 */
 
 
 /**
-* @api {get} /layer/:layer Create Layer
+* @api {patch} /layer/:layerid Update Layer
 * @apiVersion 1.0.0
-* @apiName GET-/layer/:layer
+* @apiName PATCH-/layer/:layerid
+* @apiGroup Layer
+* @apiPermission admin
+*
+* @apidescription
+*   Update a layer
+*
+* @apiParam {string} layerid param
+*
+*
+* @apiSchema (Body) {jsonschema=../schema/req.body.PatchLayer.json} apiParam
+* @apiSchema {jsonschema=../schema/layers.json} apiSuccess
+*/
+
+
+/**
+* @api {get} /layer/:layerid Create Layer
+* @apiVersion 1.0.0
+* @apiName GET-/layer/:layerid
 * @apiGroup Layer
 * @apiPermission admin
 *
 * @apidescription
 *   Register a new layer
 *
-* @apiParam {string} layer param
+* @apiParam {string} layerid param
 *
 *
 *
+* @apiSchema {jsonschema=../schema/layers.json} apiSuccess
+*/
+
+
+/**
+* @api {post} /layer/:layerid/cot Post COT
+* @apiVersion 1.0.0
+* @apiName POST-/layer/:layerid/cot
+* @apiGroup Layer
+* @apiPermission admin
 *
+* @apidescription
+*   Post CoT data to a given layer
+*
+* @apiParam {string} layerid param
+*
+*
+*
+* @apiSchema {jsonschema=../schema/res.Standard.json} apiSuccess
 */
