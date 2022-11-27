@@ -13,6 +13,8 @@ const router = new VueRouter.createRouter({
     history: VueRouter.createWebHistory(),
     routes: [
         { path: '/', name: 'home', component: () => import('./components/Home.vue') },
+
+        { path: '/layer/new', name: 'layer-new', component: () => import('./components/LayerNew.vue') },
     ]
 });
 
