@@ -37,7 +37,7 @@
                                         </span>
                                         <span class="col-auto">
                                             <label class="form-check form-check-single form-switch">
-                                                <input class="form-check-input" type="checkbox">
+                                                <input v-model='enabled' class="form-check-input" type="checkbox">
                                             </label>
                                         </span>
                                     </label>
@@ -48,10 +48,10 @@
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label">Layer Task</label>
-                                    <input v-model='name' type="text" :class='{
-                                        "is-invalid": errors.name
-                                    }' class="form-control" placeholder="Layer Name">
-                                    <div v-if='errors.name' v-text='errors.name' class="invalid-feedback"></div>
+                                    <input v-model='task' type="text" :class='{
+                                        "is-invalid": errors.task
+                                    }' class="form-control" placeholder="Layer Task">
+                                    <div v-if='errors.task' v-text='errors.task' class="invalid-feedback"></div>
                                 </div>
                                 <div class="col-md-12">
                                     <label class="form-label">Layer Description</label>
@@ -88,21 +88,26 @@ import PageFooter from './PageFooter.vue';
 import { Err } from '@tak-ps/vue-tabler';
 
 export default {
-    name: 'IssuesNew',
+    name: 'LayerNew',
     data: function() {
         return {
             err: false,
             errors: {
                 name: false,
-                body: false
+                description: false,
+                cron: false,
+                task: false
             },
             name: '',
-            body: ''
+            description: '',
+            enabled: true,
+            cron: '',
+            task: ''
         }
     },
     methods: {
         create: async function() {
-            for (const field of ['name', 'description']) {
+            for (const field of ['name', 'description', 'cron', 'task']) {
                 if (!this[field]) this.errors[field] = 'Cannot be empty';
                 else this.errors[field] = false;
             }
@@ -112,15 +117,18 @@ export default {
             }
 
             try {
-                const create = await window.std('/api/issue', {
+                const create = await window.std('/api/layer', {
                     method: 'POST',
                     body: {
                         name: this.name,
-                        description: this.description
+                        description: this.description,
+                        enabled: this.enabled,
+                        cron: this.cron,
+                        task: this.task
                     }
                 });
 
-                this.$router.push(`/issue/${create.id}`);
+                this.$router.push(`/layer/${create.id}`);
             } catch (err) {
                 this.err = err;
             }
