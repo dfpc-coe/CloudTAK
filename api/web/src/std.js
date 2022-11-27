@@ -7,7 +7,7 @@ function std() {
         }
 
         // Allow serving through Vue for hotloading
-        if (url.hostname === 'localhost') url.port = '4999'
+        if (url.hostname === 'localhost') url.port = '5001'
 
         return url;
     }

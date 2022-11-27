@@ -137,10 +137,10 @@ export default async function server(config) {
     app.use(express.static('web/dist'));
 
     return new Promise((resolve, reject) => {
-        const srv = app.listen(4999, (err) => {
+        const srv = app.listen(5001, (err) => {
             if (err) return reject(err);
 
-            if (!config.silent) console.log('ok - http://localhost:4999');
+            if (!config.silent) console.log('ok - http://localhost:5001');
             return resolve(srv);
         });
     });
