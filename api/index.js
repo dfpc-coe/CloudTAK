@@ -53,7 +53,13 @@ export default async function server(config) {
     const tak = await TAK.connect(new URL(process.env.TAK_SERVER))
     tak.on('msg', (msg) => {
         console.error(msg);
+    }).on('error', (err) => {
+        console.error('TAK ERROR', err);
+    }).on('end', () => {
+        console.error('TAK Connection Closed');
     });
+
+    tak.write(TAK.ping());
 
     const app = express();
 

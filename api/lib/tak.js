@@ -77,7 +77,7 @@ export default class TAK extends EventEmitter {
                         const message = XML.xml2js(result.event);
 
                         if (message.event._attributes.type === 't-x-c-t-r') {
-                            tak.client.write(TAK.cotPing())
+                            tak.client.write(TAK.ping())
                             break
                         } else {
                             tak.emit('msg', {
@@ -100,36 +100,33 @@ export default class TAK extends EventEmitter {
                 }
             });
 
-            tak.client.on('error', (err) => {
-                console.error('TAK ERROR:', err);
-                tak.emit('error', err);
-            })
-
+            tak.client.on('error', (err) => { tak.emit('error', err); })
             tak.client.on('end', () => { tak.emit('end'); })
 
             return resolve(tak);
         });
     }
 
-    write() {
-
+    write(message) {
+        if (typeof message == 'object') {
+            this.client.write(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n${XML.js2xml(message)}`)
+        } else {
+            this.client.write(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n${message}`)
+        }
     }
 
-    processMsg(input) {
-    }
-
-    static cotPing() {
+    static ping() {
         const date = Date.now()
-        return cot.js2xml({
+        return XML.js2xml({
             "event": {
                 "_attributes": {
                     "version": "2.0",
                     "uid": "multitakPong",
                     "type": "t-x-c-t",
                     "how": "h-g-i-g-o",
-                    "time": cot.jsDate2cot(date),
-                    "start": cot.jsDate2cot(date),
-                    "stale": cot.jsDate2cot(date + 20 * 1000), // 20 sec.
+                    "time": XML.jsDate2cot(date),
+                    "start": XML.jsDate2cot(date),
+                    "stale": XML.jsDate2cot(date + 20 * 1000), // 20 sec.
                 },
                 "point": {
                     "_attributes": {
