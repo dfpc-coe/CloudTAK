@@ -9,12 +9,6 @@ export default class TAK extends EventEmitter {
 
         this.type = type;
         this.opts = opts;
-
-        if (type === 'ssl') {
-
-        } else {
-            throw new Error('Unknown Connection Type');
-        }
     }
 
     static async connect(url) {
@@ -27,8 +21,16 @@ export default class TAK extends EventEmitter {
             if (process.env.TAK_P12 && process.env.TAK_P12_PASSWORD) {
                 const certs = p12.getPemFromP12(new URL(path.resolve(process.env.TAK_P12), import.meta.url), process.env.TAK_P12_PASSWORD)
 
-                cert = certs.pemCertificate;
-                key = certs.pemKey;
+                cert = certs.pemCertificate
+                    .split('-----BEGIN CERTIFICATE-----')
+                    .join('-----BEGIN CERTIFICATE-----\n')
+                    .split('-----END CERTIFICATE-----')
+                    .join('\n-----END CERTIFICATE-----');
+                key = certs.pemKey
+                    .split('-----BEGIN RSA PRIVATE KEY-----')
+                    .join('-----BEGIN RSA PRIVATE KEY-----\n')
+                    .split('-----END RSA PRIVATE KEY-----')
+                    .join('\n-----END RSA PRIVATE KEY-----');
             }
 
             await this.connect_ssl(url, cert, key);
