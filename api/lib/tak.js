@@ -77,7 +77,7 @@ export default class TAK extends EventEmitter {
                         const message = XML.xml2js(result.event);
 
                         if (message.event._attributes.type === 't-x-c-t-r') {
-                            tak.client.write(TAK.ping())
+                            tak.write(TAK.ping())
                             break
                         } else {
                             tak.emit('msg', {
@@ -107,17 +107,14 @@ export default class TAK extends EventEmitter {
         });
     }
 
-    write(message) {
-        if (typeof message == 'object') {
-            this.client.write(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n${XML.js2xml(message)}`)
-        } else {
-            this.client.write(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n${message}`)
-        }
+    write(msg) {
+        console.error(`writing:${msg.event._attributes.type}`);
+        this.client.write(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n${XML.js2xml(msg)}`)
     }
 
     static ping() {
         const date = Date.now()
-        return XML.js2xml({
+        return {
             "event": {
                 "_attributes": {
                     "version": "2.0",
@@ -138,7 +135,7 @@ export default class TAK extends EventEmitter {
                     }
                 }
             }
-        })
+        };
     }
 
     static findCoT(str) { // https://github.com/vidterra/multitak/blob/main/app/lib/helper.js#L4
