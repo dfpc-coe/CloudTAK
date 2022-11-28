@@ -51,6 +51,9 @@ export default async function server(config) {
     });
 
     const tak = await TAK.connect(new URL(process.env.TAK_SERVER))
+    tak.on('msg', (msg) => {
+        console.error(msg);
+    });
 
     const app = express();
 
