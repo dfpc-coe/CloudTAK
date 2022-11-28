@@ -13,6 +13,16 @@ export default class TAK extends EventEmitter {
         }
     }
 
+    static async connect(url) {
+        if (!(url instanceof URL)) throw new Error('TAK Server URL not provided');
+
+        if (url.protocol === 'ssl:') {
+            await this.connect_ssl(url);
+        } else {
+            throw new Error('Unknown TAK Server Protocol');
+        }
+    }
+
     static connect_ssl(url, cert, key) {
         if (!(url instanceof URL)) throw new Error('SSL url must be URL instance');
         if (typeof cert !== 'string') throw new Error('Cert must be a String');
