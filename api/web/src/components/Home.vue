@@ -26,7 +26,21 @@
                 <div :key='layer.id' v-for='layer in list.layers' class="col-lg-12">
                     <div class="card">
                         <div class="card-header">
+                            <span class="status-indicator status-green status-indicator-animated">
+                                  <span class="status-indicator-circle"></span>
+                                  <span class="status-indicator-circle"></span>
+                                  <span class="status-indicator-circle"></span>
+                            </span>
+
                             <h3 class="card-title" v-text='layer.name'></h3>
+
+                            <div class='ms-auto'>
+                                <div class='btn-list'>
+                                    <span v-text='cronstr(layer.cron)'/>
+
+                                    <SettingsIcon class='cursor-pointer' @click='$router.push(`/layer/${layer.id}/edit`)'/>
+                                </div>
+                            </div>
                         </div>
                         <div class="card-body" v-text='layer.description'>
                         </div>
@@ -45,6 +59,10 @@
 
 <script>
 import PageFooter from './PageFooter.vue';
+import cronstrue from 'cronstrue';
+import {
+    SettingsIcon
+} from 'vue-tabler-icons'
 
 export default {
     name: 'Home',
@@ -60,6 +78,9 @@ export default {
         this.fetchList();
     },
     methods: {
+        cronstr: function(cron) {
+            return cronstrue.toString(cron);
+        },
         fetchList: async function() {
             try {
                 this.list = await window.std('/api/layer');
@@ -69,6 +90,7 @@ export default {
         }
     },
     components: {
+        SettingsIcon,
         PageFooter,
     }
 }
