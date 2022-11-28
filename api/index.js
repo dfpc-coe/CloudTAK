@@ -7,6 +7,7 @@ import history from 'connect-history-api-fallback';
 import Schema from '@openaddresses/batch-schema';
 import { Pool } from '@openaddresses/batch-generic';
 import minimist from 'minimist';
+import TAK from './lib/tak.js';
 
 import Config from './lib/config.js';
 
@@ -16,6 +17,17 @@ const args = minimist(process.argv, {
     boolean: ['help', 'silent'],
     string: ['postgres']
 });
+
+try {
+    const dotfile = new URL('.env', import.meta.url);
+
+    fs.accessSync(dotfile);
+
+    Object.assign(process.env, JSON.parse(fs.readFileSync(dotfile)));
+    console.log('ok - .env file loaded');
+} catch (err) {
+    console.log('ok - no .env file loaded');
+}
 
 if (import.meta.url === `file://${process.argv[1]}`) {
     const config = Config.env(args);
@@ -37,6 +49,8 @@ export default async function server(config) {
             dir: new URL('./schema', import.meta.url)
         }
     });
+
+    const tak = await TAK.connect(new URL(process.env.TAK_SERVER))
 
     const app = express();
 

@@ -1,6 +1,15 @@
 import fs from 'fs';
 
-Object.assign(process.env, JSON.parse(fs.readFileSync(new URL('.env', import.meta.url))));
+try {
+    const dotfile = new URL('.env', import.meta.url);
+
+    fs.accessSync(dotfile);
+
+    Object.assign(process.env, JSON.parse(fs.readFileSync(dotfile)));
+    console.log('ok - .env file loaded');
+} catch (err) {
+    console.log('ok - no .env file loaded');
+}
 
 export default class Task {
     constructor() {
