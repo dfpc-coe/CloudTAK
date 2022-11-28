@@ -32,7 +32,7 @@
                                   <span class="status-indicator-circle"></span>
                             </span>
 
-                            <h3 class="card-title" v-text='layer.name'></h3>
+                            <a @click='$router.push(`/layer/${layer.id}`)' class="card-title cursor-pointer" v-text='layer.name'></a>
 
                             <div class='ms-auto'>
                                 <div class='btn-list'>
