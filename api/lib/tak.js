@@ -1,8 +1,12 @@
 import EventEmitter from 'events';
+import * as p12 from 'p12-pem';
+import path from 'path';
 import tls from 'tls';
 
 export default class TAK extends EventEmitter {
     constructor(type, opts) {
+        super();
+
         this.type = type;
         this.opts = opts;
 
@@ -17,7 +21,17 @@ export default class TAK extends EventEmitter {
         if (!(url instanceof URL)) throw new Error('TAK Server URL not provided');
 
         if (url.protocol === 'ssl:') {
-            await this.connect_ssl(url);
+            let cert = null;
+            let key = null;
+
+            if (process.env.TAK_P12 && process.env.TAK_P12_PASSWORD) {
+                const certs = p12.getPemFromP12(new URL(path.resolve(process.env.TAK_P12), import.meta.url), process.env.TAK_P12_PASSWORD)
+
+                cert = certs.pemCertificate;
+                key = certs.pemKey;
+            }
+
+            await this.connect_ssl(url, cert, key);
         } else {
             throw new Error('Unknown TAK Server Protocol');
         }
