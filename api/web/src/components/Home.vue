@@ -10,9 +10,15 @@
                         </ol>
 
                         <div class='ms-auto'>
-                            <a @click='$router.push("/layer/new")' class="cursor-pointer btn btn-primary">
-                                New Layer
-                            </a>
+                            <div class='btn-list'>
+                                <a @click='query.shown = !query.shown' class="cursor-pointer btn btn-secondary">
+                                    <SearchIcon/>
+                                </a>
+
+                                <a @click='$router.push("/layer/new")' class="cursor-pointer btn btn-primary">
+                                    New Layer
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -23,6 +29,20 @@
     <div class='page-body'>
         <div class='container-xl'>
             <div class='row row-deck row-cards'>
+                <div v-if='query.shown' class="col-lg-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <label class="form-label">Layer Search</label>
+                            <div class="input-icon mb-3">
+                                <input v-text='query.search' type="text" value="" class="form-control" placeholder="Search…">
+                                <span class="input-icon-addon">
+                                    <SearchIcon/>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div :key='layer.id' v-for='layer in list.layers' class="col-lg-12">
                     <div class="card">
                         <div class="card-header">
@@ -61,7 +81,8 @@
 import PageFooter from './PageFooter.vue';
 import cronstrue from 'cronstrue';
 import {
-    SettingsIcon
+    SettingsIcon,
+    SearchIcon
 } from 'vue-tabler-icons'
 
 export default {
@@ -69,6 +90,10 @@ export default {
     data: function() {
         return {
             err: false,
+            query: {
+                shown: false,
+                search: ''
+            },
             list: {
                 layers: []
             }
@@ -91,6 +116,7 @@ export default {
     },
     components: {
         SettingsIcon,
+        SearchIcon,
         PageFooter,
     }
 }
