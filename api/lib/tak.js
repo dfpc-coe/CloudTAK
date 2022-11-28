@@ -49,7 +49,7 @@ export default class TAK extends EventEmitter {
         return new Promise((resolve, reject) => {
             tak.client = tls.connect({
                 rejectUnauthorized: false,
-                host: url.host,
+                host: url.hostname,
                 port: url.port,
                 cert,
                 key
