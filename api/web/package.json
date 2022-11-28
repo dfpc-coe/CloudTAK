@@ -12,6 +12,7 @@
         "@tabler/core": "^1.0.0-beta16",
         "@tak-ps/vue-tabler": "^1.0.1",
         "core-js": "^3.6.4",
+        "cronstrue": "^2.19.0",
         "floating-vue": "^2.0.0-beta.17",
         "mapbox-gl": "^2.11.0",
         "moment": "^2.29.3",
