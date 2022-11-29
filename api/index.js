@@ -51,14 +51,17 @@ export default async function server(config) {
         }
     });
 
-    const tak = await TAK.connect(new URL(process.env.TAK_SERVER))
-    tak.on('cot', (cot) => {
-        console.error('on:msg:', cot.raw.event._attributes.type);
+    config.tak = await TAK.connect(new URL(process.env.TAK_SERVER))
+    config.tak.on('cot', (cot) => {
+        const json = cot.to_geojson();
+        console.error('on:msg:', json.properties.type, `(${json.properties.callsign}) [${json.geometry.coordinates.join(',')}]`);
 
-        tak.write(COT.from_geojson({
+        /*
+        config.tak.write(COT.from_geojson({
             id: 'KC3DNF',
             type: 'Feature',
             properties: {
+                callsign: 'KC3DNF',
                 type: 'a-f-G',
                 how: 'm-g'
             },
@@ -67,6 +70,7 @@ export default async function server(config) {
                 coordinates: [ -108.6043183759879, 39.07042003514718 ]
             }
         }));
+        */
     }).on('error', (err) => {
         console.error('on:error:', err);
     }).on('end', () => {
