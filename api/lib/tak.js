@@ -1,5 +1,5 @@
 import EventEmitter from 'events';
-import { XML } from '@tak-ps/node-cot'
+import { XML as COT } from '@tak-ps/node-cot'
 import * as p12 from 'p12-pem';
 import path from 'path';
 import tls from 'tls';
@@ -73,22 +73,14 @@ export default class TAK extends EventEmitter {
 
                 let result = TAK.findCoT(buff)
                 while (result && result.event) {
-                    try {
-                        const message = XML.xml2js(result.event);
+                    const cot = new COT(result.event);
 
-                        if (message.event._attributes.type === 't-x-c-t-r') {
-                            tak.write(TAK.ping())
+                    try {
+                        if (cot.raw.event._attributes.type === 't-x-c-t-r') {
+                            tak.write(COT.ping())
                             break
                         } else {
-                            tak.emit('msg', {
-                                date: Date.now(),
-                                source: {
-                                    type: 'sslclient',
-                                    ip: url
-                                },
-                                raw: result.event,
-                                message
-                            });
+                            tak.emit('cot', cot)
                         }
                     } catch(e) {
                         console.error('Error parsing', e, data.toString())
@@ -107,35 +99,12 @@ export default class TAK extends EventEmitter {
         });
     }
 
-    write(msg) {
-        console.error(`writing:${msg.event._attributes.type}`);
-        this.client.write(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n${XML.js2xml(msg)}`)
-    }
-
-    static ping() {
-        const date = Date.now()
-        return {
-            "event": {
-                "_attributes": {
-                    "version": "2.0",
-                    "uid": "multitakPong",
-                    "type": "t-x-c-t",
-                    "how": "h-g-i-g-o",
-                    "time": XML.jsDate2cot(date),
-                    "start": XML.jsDate2cot(date),
-                    "stale": XML.jsDate2cot(date + 20 * 1000), // 20 sec.
-                },
-                "point": {
-                    "_attributes": {
-                        "lat": "0.000000",
-                        "lon": "0.000000",
-                        "hae": "0.0",
-                        "ce": "9999999.0",
-                        "le": "9999999.0"
-                    }
-                }
-            }
-        };
+    /**
+     * Write a COT to the TAK Connection
+     */
+    write(cot) {
+        console.error(`writing:${cot.raw.event._attributes.type}`);
+        this.client.write(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n${cot.to_xml()}`)
     }
 
     static findCoT(str) { // https://github.com/vidterra/multitak/blob/main/app/lib/helper.js#L4
