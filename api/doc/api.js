@@ -72,9 +72,9 @@
 
 
 /**
-* @api {get} /layer/:layerid Create Layer
+* @api {post} /layer/:layerid Create Layer
 * @apiVersion 1.0.0
-* @apiName GET-/layer/:layerid
+* @apiName POST-/layer/:layerid
 * @apiGroup Layer
 * @apiPermission admin
 *

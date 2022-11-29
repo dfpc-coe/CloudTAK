@@ -10,6 +10,8 @@ export default class TAK extends EventEmitter {
 
         this.type = type;
         this.opts = opts;
+
+        this.version; // Server Version
     }
 
     static async connect(url) {
@@ -79,6 +81,8 @@ export default class TAK extends EventEmitter {
                         if (cot.raw.event._attributes.type === 't-x-c-t-r') {
                             tak.write(COT.ping())
                             break
+                        } else if (cot.raw.event._attributes.type === 't-x-takp-v') {
+                            this.version = cot.raw.event.detail.TakControl.TakServerVersionInfo._attributes.serverVersion;
                         } else {
                             tak.emit('cot', cot)
                         }
@@ -104,6 +108,7 @@ export default class TAK extends EventEmitter {
      */
     write(cot) {
         console.error(`writing:${cot.raw.event._attributes.type}`);
+        console.error(cot.to_xml());
         this.client.write(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n${cot.to_xml()}`)
     }
 

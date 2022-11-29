@@ -1,5 +1,6 @@
 import Err from '@openaddresses/batch-error';
 import Layer from '../lib/types/layer.js';
+import { XML as COT } from '@tak-ps/node-cot';
 
 export default async function router(schema, config) {
     await schema.get('/layer', {
@@ -48,7 +49,7 @@ export default async function router(schema, config) {
         }
     });
 
-    await schema.get('/layer/:layerid', {
+    await schema.post('/layer/:layerid', {
         name: 'Create Layer',
         group: 'Layer',
         auth: 'admin',
@@ -72,6 +73,11 @@ export default async function router(schema, config) {
         res: 'res.Standard.json'
     }, async (req, res) => {
         try {
+            console.error(`OBTAINED FEATURE`, req.body.features.length);
+            for (const feature of req.body.features) {
+                config.tak.write(COT.from_geojson(feature));
+            }
+
             res.json({
                 status: 200,
                 message: 'Submitted'
