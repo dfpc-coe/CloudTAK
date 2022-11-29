@@ -8,7 +8,7 @@ import Schema from '@openaddresses/batch-schema';
 import { Pool } from '@openaddresses/batch-generic';
 import minimist from 'minimist';
 import TAK from './lib/tak.js';
-import { XML } from '@tak-ps/node-cot';
+import { XML as COT } from '@tak-ps/node-cot';
 
 import Config from './lib/config.js';
 
@@ -52,34 +52,21 @@ export default async function server(config) {
     });
 
     const tak = await TAK.connect(new URL(process.env.TAK_SERVER))
-    tak.on('msg', (msg) => {
-        console.error('on:msg:', msg.message.event._attributes.type);
+    tak.on('cot', (cot) => {
+        console.error('on:msg:', cot.raw.event._attributes.type);
 
-        console.error(JSON.stringify(msg.message));
-        const date = Date.now();
-        tak.write({
-            "event":{
-                "_attributes":{
-                    "version":"2.0",
-                    "uid":"KC3DNF",
-                    "type":"a-f-G",
-                    "how":"m-g",
-                    "time": XML.jsDate2cot(date),
-                    "start": XML.jsDate2cot(date),
-                    "stale": XML.jsDate2cot(date + 20 * 1000), // 20 sec.
-                },
-                "point":{
-                    "_attributes":{
-                        "lat": "39.07042003514718",
-                        "lon": "-108.6043183759879",
-                        "hae": "1421.8650895161554",
-                        "ce": "9999999.0",
-                        "le": "9999999.0"
-                    }
-                },
-                "detail":{"contact":{"_attributes":{"callsign":"TESTING","phone":"","endpoint":"*:-1:stcp"}}}
+        tak.write(COT.from_geojson({
+            id: 'KC3DNF',
+            type: 'Feature',
+            properties: {
+                type: 'a-f-G',
+                how: 'm-g'
+            },
+            geometry: {
+                type: 'Point',
+                coordinates: [ -108.6043183759879, 39.07042003514718 ]
             }
-        });
+        }));
     }).on('error', (err) => {
         console.error('on:error:', err);
     }).on('end', () => {
