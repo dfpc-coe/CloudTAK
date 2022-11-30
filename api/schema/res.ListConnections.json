@@ -1,0 +1,19 @@
+{
+    "type": "object",
+    "required": [
+        "total",
+        "connections"
+    ],
+    "additionalProperties": false,
+    "properties": {
+        "count": {
+            "type": "integer"
+        },
+        "connections": {
+            "type": "array",
+            "items":  {
+                "$ref": "./connections.json"
+            }
+        }
+    }
+}

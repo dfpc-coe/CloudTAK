@@ -49,11 +49,11 @@ export default async function router(schema, config) {
         }
     });
 
-    await schema.post('/layer/:layerid', {
-        name: 'Create Layer',
+    await schema.get('/layer/:layerid', {
+        name: 'Get Layer',
         group: 'Layer',
-        auth: 'admin',
-        description: 'Register a new layer',
+        auth: 'user',
+        description: 'Get a layer',
         ':layerid': 'string',
         res: 'layers.json'
     }, async (req, res) => {

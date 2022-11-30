@@ -18,6 +18,78 @@
 
 
 /**
+* @api {get} /connection List Connections
+* @apiVersion 1.0.0
+* @apiName GET-/connection
+* @apiGroup Connection
+* @apiPermission user
+*
+* @apidescription
+*   List Connections
+*
+
+*
+* @apiSchema (Query) {jsonschema=../schema/req.query.ListConnections.json} apiParam
+*
+* @apiSchema {jsonschema=../schema/res.ListConnections.json} apiSuccess
+*/
+
+
+/**
+* @api {post} /connection Create Connection
+* @apiVersion 1.0.0
+* @apiName POST-/connection
+* @apiGroup Connection
+* @apiPermission admin
+*
+* @apidescription
+*   Register a new connection
+*
+
+*
+*
+* @apiSchema (Body) {jsonschema=../schema/req.body.CreateConnection.json} apiParam
+* @apiSchema {jsonschema=../schema/connections.json} apiSuccess
+*/
+
+
+/**
+* @api {patch} /connection/:connectionid Update Connection
+* @apiVersion 1.0.0
+* @apiName PATCH-/connection/:connectionid
+* @apiGroup Connection
+* @apiPermission admin
+*
+* @apidescription
+*   Update a connection
+*
+* @apiParam {string} connectionid param
+*
+*
+* @apiSchema (Body) {jsonschema=../schema/req.body.PatchConnection.json} apiParam
+* @apiSchema {jsonschema=../schema/connections.json} apiSuccess
+*/
+
+
+/**
+* @api {get} /connection/:connectionid Get Connection
+* @apiVersion 1.0.0
+* @apiName GET-/connection/:connectionid
+* @apiGroup Connection
+* @apiPermission user
+*
+* @apidescription
+*   Get a connection
+*
+* @apiParam {string} connectionid param
+*
+*
+*
+* @apiSchema {jsonschema=../schema/connections.json} apiSuccess
+*/
+
+
+/**
 * @api {get} /layer List Layers
 * @apiVersion 1.0.0
 * @apiName GET-/layer
@@ -72,14 +144,14 @@
 
 
 /**
-* @api {post} /layer/:layerid Create Layer
+* @api {get} /layer/:layerid Get Layer
 * @apiVersion 1.0.0
-* @apiName POST-/layer/:layerid
+* @apiName GET-/layer/:layerid
 * @apiGroup Layer
-* @apiPermission admin
+* @apiPermission user
 *
 * @apidescription
-*   Register a new layer
+*   Get a layer
 *
 * @apiParam {string} layerid param
 *
