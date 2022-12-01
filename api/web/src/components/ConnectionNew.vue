@@ -64,8 +64,8 @@
         </div>
     </div>
 
-    <PageFooter/>
     <Err v-if='err' :err='err' @close='err = null'/>
+    <PageFooter/>
 </div>
 </template>
 

@@ -7,20 +7,9 @@
                     <div class="col d-flex">
                         <ol class="breadcrumb" aria-label="breadcrumbs">
                             <li class="breadcrumb-item" aria-current="page"><a @click='$router.push("/")' class='cursor-pointer'>Home</a></li>
-                            <li class="breadcrumb-item active" aria-current="page"><a href="#">Connections</a></li>
+                            <li class="breadcrumb-item" aria-current="page"><a @click='$router.push("/connection")' class='cursor-pointer'>Connections</a></li>
+                            <li class="breadcrumb-item active" aria-current="page"><a href="#" v-text='connection.id'></a></li>
                         </ol>
-
-                        <div class='ms-auto'>
-                            <div class='btn-list'>
-                                <a @click='query.shown = !query.shown' class="cursor-pointer btn btn-secondary">
-                                    <SearchIcon/>
-                                </a>
-
-                                <a @click='$router.push("/connection/new")' class="cursor-pointer btn btn-primary">
-                                    New Connection
-                                </a>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -30,21 +19,7 @@
     <div class='page-body'>
         <div class='container-xl'>
             <div class='row row-deck row-cards'>
-                <div v-if='query.shown' class="col-lg-12">
-                    <div class="card">
-                        <div class="card-body">
-                            <label class="form-label">Connection Search</label>
-                            <div class="input-icon mb-3">
-                                <input v-text='query.search' type="text" value="" class="form-control" placeholder="Search…">
-                                <span class="input-icon-addon">
-                                    <SearchIcon/>
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div :key='connection.id' v-for='connection in list.connections' class="col-lg-12">
+                <div class="col-lg-12">
                     <div class="card">
                         <div class="card-header">
                             <span class="status-indicator status-green status-indicator-animated">
@@ -53,7 +28,7 @@
                                   <span class="status-indicator-circle"></span>
                             </span>
 
-                            <a @click='$router.push(`/connection/${connection.id}`)' class="card-title cursor-pointer" v-text='connection.name'></a>
+                            <a @click='$router.push(`/connetion/${connection.id}`)' class="card-title cursor-pointer" v-text='connection.name'></a>
 
                             <div class='ms-auto'>
                                 <div class='btn-list'>
@@ -77,11 +52,10 @@
 </template>
 
 <script>
-import PageFooter from './PageFooter.vue';
 import { Err } from '@tak-ps/vue-tabler';
+import PageFooter from './PageFooter.vue';
 import {
-    SettingsIcon,
-    SearchIcon
+    SettingsIcon
 } from 'vue-tabler-icons'
 
 export default {
@@ -89,22 +63,18 @@ export default {
     data: function() {
         return {
             err: false,
-            query: {
-                shown: false,
-                search: ''
-            },
-            list: {
-                connections: []
+            connection: {
+
             }
         }
     },
     mounted: function() {
-        this.fetchList();
+        this.fetch();
     },
     methods: {
-        fetchList: async function() {
+        fetch: async function() {
             try {
-                this.list = await window.std('/api/connection');
+                this.connection = await window.std(`/api/connection/${this.$route.params.connectionid}`);
             } catch (err) {
                 this.err = err;
             }
@@ -113,7 +83,6 @@ export default {
     components: {
         Err,
         SettingsIcon,
-        SearchIcon,
         PageFooter,
     }
 }

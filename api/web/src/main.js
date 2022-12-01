@@ -19,6 +19,7 @@ const router = new VueRouter.createRouter({
 
         { path: '/connection', name: 'connections', component: () => import('./components/Connections.vue') },
         { path: '/connection/new', name: 'connection-new', component: () => import('./components/ConnectionNew.vue') },
+        { path: '/connection/:connectionid', name: 'connection', component: () => import('./components/Connection.vue') },
     ]
 });
 
