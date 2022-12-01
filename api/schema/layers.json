@@ -8,6 +8,12 @@
         "name": {
             "$ref": "./layers/name.json"
         },
+        "created": {
+            "$ref": "./layers/created.json"
+        },
+        "updated": {
+            "$ref": "./layers/updated.json"
+        },
         "description": {
             "$ref": "./layers/description.json"
         },
@@ -16,13 +22,23 @@
         },
         "enabled": {
             "$ref": "./layers/enabled.json"
+        },
+        "connection": {
+            "$ref": "./layers/connection.json"
+        },
+        "stale": {
+            "$ref": "./layers/stale.json"
         }
     },
     "required": [
         "id",
         "name",
+        "created",
+        "updated",
         "description",
         "cron",
-        "enabled"
+        "enabled",
+        "connection",
+        "stale"
     ]
 }

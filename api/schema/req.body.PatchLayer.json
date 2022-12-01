@@ -13,6 +13,12 @@
         },
         "enabled": {
             "$ref": "./layers/enabled.json"
+        },
+        "connection": {
+            "$ref": "./layers/connection.json"
+        },
+        "stale": {
+            "$ref": "./layers/stale.json"
         }
     }
 }

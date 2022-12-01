@@ -5,7 +5,8 @@
         "name",
         "description",
         "cron",
-        "enabled"
+        "enabled",
+        "connection"
     ],
     "properties": {
         "name": {
@@ -19,6 +20,12 @@
         },
         "enabled": {
             "$ref": "./layers/enabled.json"
+        },
+        "connection": {
+            "$ref": "./layers/connection.json"
+        },
+        "stale": {
+            "$ref": "./layers/stale.json"
         }
     }
 }
