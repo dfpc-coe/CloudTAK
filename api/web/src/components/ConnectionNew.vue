@@ -105,8 +105,7 @@ export default {
                         name: this.name,
                         description: this.description,
                         enabled: this.enabled,
-                        cron: this.cron,
-                        task: this.task
+                        auth: {}
                     }
                 });
 
