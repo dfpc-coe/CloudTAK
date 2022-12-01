@@ -89,7 +89,7 @@ export default {
     },
     methods: {
         create: async function() {
-            for (const field of ['name', 'description', 'cron', 'task']) {
+            for (const field of ['name', 'description' ]) {
                 if (!this[field]) this.errors[field] = 'Cannot be empty';
                 else this.errors[field] = false;
             }
