@@ -7,7 +7,9 @@ function up(knex) {
             updated             TIMESTAMP NOT NULL DEFAULT Now(),
             description         TEXT NOT NULL DEFAULT '',
             cron                TEXT NOT NULL,
-            enabled             BOOLEAN NOT NULL DEFAULT True
+            enabled             BOOLEAN NOT NULL DEFAULT True,
+            connection          BIGINT NOT NULL REFERENCES connections(id),
+            stale               INT NOT NULL DEFAULT 20000
         );
 
         CREATE TABLE connections (
