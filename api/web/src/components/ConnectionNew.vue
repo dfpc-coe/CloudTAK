@@ -24,27 +24,19 @@
                         <div class="card-body">
                             <div class='row row-cards'>
                                 <div class="col-md-12">
-                                    <label class="row">
-                                        <span class="col">
-                                            <label class='form-label'>Connection Name</label>
-                                        </span>
-                                        <span class="col-auto">
-                                            <label class="form-check form-check-single form-switch">
-                                                <input v-model='enabled' class="form-check-input" type="checkbox">
-                                            </label>
-                                        </span>
-                                    </label>
-                                    <input v-model='name' type="text" :class='{
-                                        "is-invalid": errors.name
-                                    }' class="form-control" placeholder="Connection Name">
-                                    <div v-if='errors.name' v-text='errors.name' class="invalid-feedback"></div>
+                                    <TablerInput
+                                        label='Connection Name'
+                                        v-model='name'
+                                        :error='errors.name'
+                                    />
                                 </div>
                                 <div class="col-md-12">
-                                    <label class="form-label">Connection Description</label>
-                                    <textarea v-model='description' :class='{
-                                        "is-invalid": errors.description
-                                    }' class="form-control" rows="6" placeholder="Connection Description..."></textarea>
-                                    <div v-if='errors.description' v-text='errors.description' class="invalid-feedback"></div>
+                                    <TablerInput
+                                        label='Connection Description'
+                                        v-model='description'
+                                        :error='errors.description'
+                                        :rows='6'
+                                    />
                                 </div>
 
                                 <div class="col-md-12">
@@ -71,7 +63,10 @@
 
 <script>
 import PageFooter from './PageFooter.vue';
-import { Err } from '@tak-ps/vue-tabler';
+import {
+    Err,
+    Input
+} from '@tak-ps/vue-tabler';
 
 export default {
     name: 'ConnectionNew',
@@ -79,19 +74,18 @@ export default {
         return {
             err: false,
             errors: {
-                name: false,
-                description: false,
+                name: '',
+                description: '',
             },
             name: '',
             description: '',
-            enabled: true,
         }
     },
     methods: {
         create: async function() {
             for (const field of ['name', 'description' ]) {
                 if (!this[field]) this.errors[field] = 'Cannot be empty';
-                else this.errors[field] = false;
+                else this.errors[field] = '';
             }
 
             for (const e in this.errors) {
@@ -104,7 +98,7 @@ export default {
                     body: {
                         name: this.name,
                         description: this.description,
-                        enabled: this.enabled,
+                        enabled: true,
                         auth: {}
                     }
                 });
@@ -117,6 +111,7 @@ export default {
     },
     components: {
         Err,
+        TablerInput: Input,
         PageFooter,
     }
 }
