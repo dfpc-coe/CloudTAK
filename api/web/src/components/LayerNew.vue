@@ -60,6 +60,9 @@
                                     }' class="form-control" rows="6" placeholder="Layer Description..."></textarea>
                                     <div v-if='errors.description' v-text='errors.description' class="invalid-feedback"></div>
                                 </div>
+                                <div class="col-md-12">
+                                    <label class="form-label">Connection</label>
+                                </div>
 
                                 <div class="col-md-12">
                                     <div class='d-flex'>
