@@ -52,12 +52,11 @@ export default async function server(config) {
     });
 
     config.conns = await TAKPool.init(config.pool);
-    /*
-    config.tak = await TAK.connect(new URL(process.env.TAK_SERVER))
-    config.tak.on('cot', (cot) => {
+
+    config.conns.get(1).tak.on('cot', (cot) => {
         const json = cot.to_geojson();
         console.error('on:msg:', json.properties.type, `(${json.properties.callsign}) [${json.geometry.coordinates.join(',')}]`);
-    */
+    });
 
     const app = express();
 
