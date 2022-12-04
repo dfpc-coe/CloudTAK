@@ -30,11 +30,19 @@ export default {
     data: function() {
         return {
             dropzone: null
-        }    
+        }
     },
     mounted: function() {
         this.$nextTick(() => {
-            this.dropzone = new Dropzone("#dropzone-default", { url: "/file/post"});
+            this.dropzone = new Dropzone("#dropzone-default");
+
+            this.dropzone.on('addedfile', (file) => {
+                const read = new FileReader();
+                read.onload = (event) => {
+                    console.error(event.target.result);
+                };
+                read.readAsDataURL(file);
+            });
         });
     },
     methods: {
