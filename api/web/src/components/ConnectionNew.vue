@@ -23,7 +23,7 @@
                     <div class="card">
                         <div class="card-body">
                             <div class='row row-cards'>
-                                <div class="col-md-12">
+                                <div class="col-md-12 mt-3">
                                     <TablerInput
                                         label='Connection Name'
                                         v-model='name'
@@ -37,6 +37,37 @@
                                         :error='errors.description'
                                         :rows='6'
                                     />
+                                </div>
+
+                                <div class='col-md-12'>
+                                    <div class='d-flex'>
+                                        <h3>Authentication</h3>
+
+                                        <div class='ms-auto'>
+                                            <a @click='upload = true' class="cursor-pointer btn btn-outline-secondary">
+                                                Upload .p12
+                                            </a>
+                                        </div>
+                                    </div>
+
+                                    <div class='row mt-3'>
+                                        <div class="col-md-6">
+                                            <TablerInput
+                                                label='Connection Cert'
+                                                v-model='description'
+                                                :error='errors.description'
+                                                :rows='6'
+                                            />
+                                        </div>
+                                        <div class="col-md-6">
+                                            <TablerInput
+                                                label='Connection Key'
+                                                v-model='description'
+                                                :error='errors.description'
+                                                :rows='6'
+                                            />
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <div class="col-md-12">
@@ -56,6 +87,12 @@
         </div>
     </div>
 
+    <Upload
+        v-if='upload'
+        @close='upload = false'
+
+    />
+
     <Err v-if='err' :err='err' @close='err = null'/>
     <PageFooter/>
 </div>
@@ -63,6 +100,7 @@
 
 <script>
 import PageFooter from './PageFooter.vue';
+import Upload from './util/Upload.vue';
 import {
     Err,
     Input
@@ -73,6 +111,7 @@ export default {
     data: function() {
         return {
             err: false,
+            upload: false,
             errors: {
                 name: '',
                 description: '',
@@ -111,6 +150,7 @@ export default {
     },
     components: {
         Err,
+        Upload,
         TablerInput: Input,
         PageFooter,
     }
