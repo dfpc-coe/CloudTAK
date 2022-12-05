@@ -63,4 +63,19 @@ export default async function router(schema, config) {
             return Err.respond(err, res);
         }
     });
+
+    await schema.delete('/connection/:connectionid', {
+        name: 'DElete Connection',
+        group: 'Connection',
+        auth: 'user',
+        description: 'Delete a connection',
+        ':connectionid': 'string',
+        res: 'res.Standard.json'
+    }, async (req, res) => {
+        try {
+            res.json(await Connection.delete(config.pool, req.params.connectionid));
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
 }
