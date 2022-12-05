@@ -24,7 +24,7 @@ export default async function router(schema, config) {
         auth: 'admin',
         description: 'Register a new connection',
         body: 'req.body.CreateConnection.json',
-        res: 'connections.json'
+        res: 'res.Connection.json'
     }, async (req, res) => {
         try {
             res.json(await Connection.generate(config.pool, req.body));
@@ -40,7 +40,8 @@ export default async function router(schema, config) {
         description: 'Update a connection',
         ':connectionid': 'string',
         body: 'req.body.PatchConnection.json',
-        res: 'connections.json'
+        res: 'res.Connection.json'
+onnections.json'
     }, async (req, res) => {
         try {
             res.json(await Connection.commit(config.pool, req.params.connectionid, req.body));
@@ -55,7 +56,7 @@ export default async function router(schema, config) {
         auth: 'user',
         description: 'Get a connection',
         ':connectionid': 'string',
-        res: 'connections.json'
+        res: 'res.Connection.json'
     }, async (req, res) => {
         try {
             res.json(await Connection.from(config.pool, req.params.connectionid));
