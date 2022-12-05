@@ -33,9 +33,8 @@ export default class TAKPool extends Map {
         this.set(conn.id, { conn, tak });
     }
 
-    async delete(id) {
-        conn.tak.destroy();
-
-        super.delete(id);
+    delete(id) {
+        this.get(id).tak.destroy();
+        this.delete(id);
     }
 }

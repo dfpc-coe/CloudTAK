@@ -41,7 +41,7 @@
                 </div>
 
                 <div class="col-lg-12">
-                    <ConnectionLayers :connection='connection'/>
+                    <ConnectionLayers v-if='connection.id' :connection='connection'/>
                 </div>
             </div>
         </div>
@@ -61,7 +61,7 @@ import {
 } from 'vue-tabler-icons'
 
 export default {
-    name: 'Connections',
+    name: 'Connection',
     data: function() {
         return {
             err: false,
