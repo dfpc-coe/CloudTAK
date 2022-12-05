@@ -7,7 +7,7 @@
                     <div class="col d-flex">
                         <ol class="breadcrumb" aria-label="breadcrumbs">
                             <li class="breadcrumb-item" aria-current="page"><a @click='$router.push("/")' class='cursor-pointer'>Home</a></li>
-                            <li class="breadcrumb-item" aria-current="page"><a @click='$router.push("/layers")' class='cursor-pointer'>Layers</a></li>
+                            <li class="breadcrumb-item" aria-current="page"><a @click='$router.push("/layer")' class='cursor-pointer'>Layers</a></li>
                             <li class="breadcrumb-item active" aria-current="page"><a href="#" v-text='layer.id'></a></li>
                         </ol>
                     </div>
