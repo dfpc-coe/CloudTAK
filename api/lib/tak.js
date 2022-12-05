@@ -63,9 +63,9 @@ export default class TAK extends EventEmitter {
 
                     try {
                         if (cot.raw.event._attributes.type === 't-x-c-t-r') {
-                            this.open = true;
+                            tak.open = true;
                         } else if (cot.raw.event._attributes.type === 't-x-takp-v') {
-                            this.version = cot.raw.event.detail.TakControl.TakServerVersionInfo._attributes.serverVersion;
+                            tak.version = cot.raw.event.detail.TakControl.TakServerVersionInfo._attributes.serverVersion;
                         } else {
                             tak.emit('cot', cot)
                         }
