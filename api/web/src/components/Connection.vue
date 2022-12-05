@@ -24,7 +24,7 @@
                         <div class="card-header">
                             <ConnectionStatus :connection='connection'/>
 
-                            <a @click='$router.push(`/connetion/${connection.id}`)' class="card-title cursor-pointer" v-text='connection.name'></a>
+                            <a @click='$router.push(`/connection/${connection.id}`)' class="card-title cursor-pointer" v-text='connection.name'></a>
 
                             <div class='ms-auto'>
                                 <div class='btn-list'>
