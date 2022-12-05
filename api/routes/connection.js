@@ -12,7 +12,13 @@ export default async function router(schema, config) {
         res: 'res.ListConnections.json'
     }, async (req, res) => {
         try {
-            res.json(await Connection.list(config.pool, req.query));
+            const list = await Connection.list(config.pool, req.query);
+
+            list.connections.map((conn) => {
+                conn.status = config.conns.get(conn.id).tak.open ? 'live' : 'dead';
+            });
+
+            return res.json(list);
         } catch (err) {
             return Err.respond(err, res);
         }
@@ -24,10 +30,15 @@ export default async function router(schema, config) {
         auth: 'admin',
         description: 'Register a new connection',
         body: 'req.body.CreateConnection.json',
-        res: 'connections.json'
+        res: 'res.Connection.json'
     }, async (req, res) => {
         try {
-            res.json(await Connection.generate(config.pool, req.body));
+            const conn = await Connection.generate(config.pool, req.body);
+
+            await config.conns.add(conn);
+
+            conn.status = config.conns.get(conn.id).tak.open ? 'live' : 'dead';
+            return res.json(conn);
         } catch (err) {
             return Err.respond(err, res);
         }
@@ -40,10 +51,12 @@ export default async function router(schema, config) {
         description: 'Update a connection',
         ':connectionid': 'string',
         body: 'req.body.PatchConnection.json',
-        res: 'connections.json'
+        res: 'res.Connection.json'
     }, async (req, res) => {
         try {
-            res.json(await Connection.commit(config.pool, req.params.connectionid, req.body));
+            const conn = await Connection.commit(config.pool, req.params.connectionid, req.body);
+            conn.status = config.conns.get(conn.id).tak.open ? 'live' : 'dead';
+            return res.json(conn);
         } catch (err) {
             return Err.respond(err, res);
         }
@@ -55,10 +68,34 @@ export default async function router(schema, config) {
         auth: 'user',
         description: 'Get a connection',
         ':connectionid': 'string',
-        res: 'connections.json'
+        res: 'res.Connection.json'
     }, async (req, res) => {
         try {
-            res.json(await Connection.from(config.pool, req.params.connectionid));
+            const conn = (await Connection.from(config.pool, req.params.connectionid)).serialize();
+            conn.status = config.conns.get(conn.id).tak.open ? 'live' : 'dead';
+            return res.json(conn);
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
+
+    await schema.delete('/connection/:connectionid', {
+        name: 'Delete Connection',
+        group: 'Connection',
+        auth: 'user',
+        description: 'Delete a connection',
+        ':connectionid': 'string',
+        res: 'res.Standard.json'
+    }, async (req, res) => {
+        try {
+            await Connection.delete(config.pool, req.params.connectionid);
+
+            config.conns.delete(req.params.connectionid);
+
+            return res.json({
+                status: 200,
+                message: 'Connection Deleted'
+            });
         } catch (err) {
             return Err.respond(err, res);
         }

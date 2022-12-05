@@ -49,7 +49,7 @@
 *
 *
 * @apiSchema (Body) {jsonschema=../schema/req.body.CreateConnection.json} apiParam
-* @apiSchema {jsonschema=../schema/connections.json} apiSuccess
+* @apiSchema {jsonschema=../schema/res.Connection.json} apiSuccess
 */
 
 
@@ -67,7 +67,7 @@
 *
 *
 * @apiSchema (Body) {jsonschema=../schema/req.body.PatchConnection.json} apiParam
-* @apiSchema {jsonschema=../schema/connections.json} apiSuccess
+* @apiSchema {jsonschema=../schema/res.Connection.json} apiSuccess
 */
 
 
@@ -85,7 +85,25 @@
 *
 *
 *
-* @apiSchema {jsonschema=../schema/connections.json} apiSuccess
+* @apiSchema {jsonschema=../schema/res.Connection.json} apiSuccess
+*/
+
+
+/**
+* @api {delete} /connection/:connectionid Delete Connection
+* @apiVersion 1.0.0
+* @apiName DELETE-/connection/:connectionid
+* @apiGroup Connection
+* @apiPermission user
+*
+* @apidescription
+*   Delete a connection
+*
+* @apiParam {string} connectionid param
+*
+*
+*
+* @apiSchema {jsonschema=../schema/res.Standard.json} apiSuccess
 */
 
 

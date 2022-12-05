@@ -7,7 +7,7 @@ import history from 'connect-history-api-fallback';
 import Schema from '@openaddresses/batch-schema';
 import { Pool } from '@openaddresses/batch-generic';
 import minimist from 'minimist';
-import TAK from './lib/tak.js';
+import TAKPool from './lib/tak-pool.js';
 import { XML as COT } from '@tak-ps/node-cot';
 
 import Config from './lib/config.js';
@@ -51,32 +51,14 @@ export default async function server(config) {
         }
     });
 
-    config.tak = await TAK.connect(new URL(process.env.TAK_SERVER))
-    config.tak.on('cot', (cot) => {
+    config.conns = await TAKPool.init(config.pool);
+
+    /**
+    config.conns.get(6).tak.on('cot', (cot) => {
         const json = cot.to_geojson();
         console.error('on:msg:', json.properties.type, `(${json.properties.callsign}) [${json.geometry.coordinates.join(',')}]`);
-
-        /*
-        config.tak.write(COT.from_geojson({
-            id: 'KC3DNF',
-            type: 'Feature',
-            properties: {
-                callsign: 'KC3DNF',
-                type: 'a-f-G',
-                how: 'm-g'
-            },
-            geometry: {
-                type: 'Point',
-                coordinates: [ -108.6043183759879, 39.07042003514718 ]
-            }
-        }));
-        */
-    }).on('error', (err) => {
-        console.error('on:error:', err);
-    }).on('end', () => {
-        console.error('on:end');
     });
-
+    */
 
     const app = express();
 
