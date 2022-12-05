@@ -1,6 +1,5 @@
 import EventEmitter from 'events';
 import { XML as COT } from '@tak-ps/node-cot'
-import * as p12 from 'p12-pem';
 import path from 'path';
 import tls from 'tls';
 
@@ -14,29 +13,13 @@ export default class TAK extends EventEmitter {
         this.version; // Server Version
     }
 
-    static async connect(url) {
+    static async connect(url, auth) {
         if (!(url instanceof URL)) throw new Error('TAK Server URL not provided');
 
         if (url.protocol === 'ssl:') {
-            let cert = null;
-            let key = null;
-
-            if (process.env.TAK_P12 && process.env.TAK_P12_PASSWORD) {
-                const certs = p12.getPemFromP12(new URL(path.resolve(process.env.TAK_P12), import.meta.url), process.env.TAK_P12_PASSWORD)
-
-                cert = certs.pemCertificate
-                    .split('-----BEGIN CERTIFICATE-----')
-                    .join('-----BEGIN CERTIFICATE-----\n')
-                    .split('-----END CERTIFICATE-----')
-                    .join('\n-----END CERTIFICATE-----');
-                key = certs.pemKey
-                    .split('-----BEGIN RSA PRIVATE KEY-----')
-                    .join('-----BEGIN RSA PRIVATE KEY-----\n')
-                    .split('-----END RSA PRIVATE KEY-----')
-                    .join('\n-----END RSA PRIVATE KEY-----');
-            }
-
-            return await this.connect_ssl(url, cert, key);
+            if (!auth.cert) throw new Error('auth.cert required');
+            if (!auth.key) throw new Error('auth.key required');
+            return await this.connect_ssl(url, auth.cert, auth.key);
         } else {
             throw new Error('Unknown TAK Server Protocol');
         }
