@@ -12,7 +12,14 @@ export default async function router(schema, config) {
         res: 'res.ListConnections.json'
     }, async (req, res) => {
         try {
-            res.json(await Connection.list(config.pool, req.query));
+        console.error(config.conns.get(5))
+            const list = await Connection.list(config.pool, req.query);
+
+            list.connections.map((conn) => {
+                conn.status = config.conns.get(conn.id).open ? 'live': 'dead';
+            });
+
+            return res.json(list);
         } catch (err) {
             return Err.respond(err, res);
         }
@@ -29,7 +36,9 @@ export default async function router(schema, config) {
         try {
             await config.conns.add(req.body);
 
-            res.json(await Connection.generate(config.pool, req.body));
+            const conn = await Connection.generate(config.pool, req.body);
+            conn.status = config.conns.get(conn.id).open ? 'live': 'dead';
+            return res.json(conn);
         } catch (err) {
             return Err.respond(err, res);
         }
@@ -45,7 +54,9 @@ export default async function router(schema, config) {
         res: 'res.Connection.json'
     }, async (req, res) => {
         try {
-            res.json(await Connection.commit(config.pool, req.params.connectionid, req.body));
+            const conn = await Connection.commit(config.pool, req.params.connectionid, req.body);
+            conn.status = config.conns.get(conn.id).open ? 'live': 'dead';
+            return res.json(conn);
         } catch (err) {
             return Err.respond(err, res);
         }
@@ -60,14 +71,16 @@ export default async function router(schema, config) {
         res: 'res.Connection.json'
     }, async (req, res) => {
         try {
-            res.json(await Connection.from(config.pool, req.params.connectionid));
+            const conn = (await Connection.from(config.pool, req.params.connectionid)).serialize();
+            conn.status = config.conns.get(conn.id).open ? 'live': 'dead';
+            return res.json(conn);
         } catch (err) {
             return Err.respond(err, res);
         }
     });
 
     await schema.delete('/connection/:connectionid', {
-        name: 'DElete Connection',
+        name: 'Delete Connection',
         group: 'Connection',
         auth: 'user',
         description: 'Delete a connection',
