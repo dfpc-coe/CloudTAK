@@ -1,0 +1,24 @@
+{
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+        "id": {
+            "$ref": "./connections/id.json"
+        },
+        "name": {
+            "$ref": "./connections/name.json"
+        },
+        "description": {
+            "$ref": "./connections/description.json"
+        },
+        "enabled": {
+            "$ref": "./connections/enabled.json"
+        }
+    },
+    "required": [
+        "id",
+        "name",
+        "description",
+        "enabled"
+    ]
+}
