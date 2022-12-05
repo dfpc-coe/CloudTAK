@@ -32,4 +32,10 @@ export default class TAKPool extends Map {
         const tak = await TAK.connect(new URL(process.env.TAK_SERVER), conn.auth);
         this.set(conn.id, { conn, tak });
     }
+
+    async delete(id) {
+        conn.tak.destroy();
+
+        super.delete(id);
+    }
 }
