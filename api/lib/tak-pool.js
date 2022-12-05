@@ -19,13 +19,17 @@ export default class TAKPool extends Map {
         return new Promise((resolve, reject) => {
             stream.on('data', (conn) => {
                 conns.push(async () => {
-                    const tak = await TAK.connect(new URL(process.env.TAK_SERVER), conn.auth);
-                    takpool.set(conn.id, { conn, tak });
+                    await takpool.add(conn);
                 });
             }).on('end', async () => {
                 for (const conn of conns) await conn();
                 return resolve(takpool);
             });
         });
+    }
+
+    async add(conn) {
+        const tak = await TAK.connect(new URL(process.env.TAK_SERVER), conn.auth);
+        this.set(conn.id, { conn, tak });
     }
 }
