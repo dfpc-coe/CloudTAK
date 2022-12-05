@@ -90,6 +90,24 @@
 
 
 /**
+* @api {delete} /connection/:connectionid DElete Connection
+* @apiVersion 1.0.0
+* @apiName DELETE-/connection/:connectionid
+* @apiGroup Connection
+* @apiPermission user
+*
+* @apidescription
+*   Delete a connection
+*
+* @apiParam {string} connectionid param
+*
+*
+*
+* @apiSchema {jsonschema=../schema/res.Standard.json} apiSuccess
+*/
+
+
+/**
 * @api {get} /layer List Layers
 * @apiVersion 1.0.0
 * @apiName GET-/layer
