@@ -99,8 +99,6 @@ export default class TAK extends EventEmitter {
      * Write a COT to the TAK Connection
      */
     write(cot) {
-        console.error(`writing:${cot.raw.event._attributes.type}`);
-        console.error(cot.to_xml());
         this.client.write(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n${cot.to_xml()}`)
     }
 
