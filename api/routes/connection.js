@@ -12,11 +12,10 @@ export default async function router(schema, config) {
         res: 'res.ListConnections.json'
     }, async (req, res) => {
         try {
-        console.error(config.conns.get(5))
             const list = await Connection.list(config.pool, req.query);
 
             list.connections.map((conn) => {
-                conn.status = config.conns.get(conn.id).open ? 'live': 'dead';
+                conn.status = config.conns.get(conn.id).tak.open ? 'live' : 'dead';
             });
 
             return res.json(list);
@@ -37,7 +36,7 @@ export default async function router(schema, config) {
             await config.conns.add(req.body);
 
             const conn = await Connection.generate(config.pool, req.body);
-            conn.status = config.conns.get(conn.id).open ? 'live': 'dead';
+            conn.status = config.conns.get(conn.id).tak.open ? 'live' : 'dead';
             return res.json(conn);
         } catch (err) {
             return Err.respond(err, res);
@@ -55,7 +54,7 @@ export default async function router(schema, config) {
     }, async (req, res) => {
         try {
             const conn = await Connection.commit(config.pool, req.params.connectionid, req.body);
-            conn.status = config.conns.get(conn.id).open ? 'live': 'dead';
+            conn.status = config.conns.get(conn.id).tak.open ? 'live' : 'dead';
             return res.json(conn);
         } catch (err) {
             return Err.respond(err, res);
@@ -72,7 +71,7 @@ export default async function router(schema, config) {
     }, async (req, res) => {
         try {
             const conn = (await Connection.from(config.pool, req.params.connectionid)).serialize();
-            conn.status = config.conns.get(conn.id).open ? 'live': 'dead';
+            conn.status = config.conns.get(conn.id).tak.open ? 'live' : 'dead';
             return res.json(conn);
         } catch (err) {
             return Err.respond(err, res);
