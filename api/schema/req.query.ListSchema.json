@@ -1,0 +1,25 @@
+{
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+        "method": {
+            "type": "string",
+            "description": "HTTP Verb",
+            "enum": [
+                "GET",
+                "HEAD",
+                "POST",
+                "PUT",
+                "DELETE",
+                "CONNECT",
+                "OPTIONS",
+                "TRACE",
+                "PATCH"
+            ]
+        },
+        "url": {
+            "type": "string",
+            "description": "URLEncoded URL that you want to fetch"
+        }
+    }
+}
