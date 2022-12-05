@@ -49,7 +49,7 @@
 *
 *
 * @apiSchema (Body) {jsonschema=../schema/req.body.CreateConnection.json} apiParam
-* @apiSchema {jsonschema=../schema/connections.json} apiSuccess
+* @apiSchema {jsonschema=../schema/res.Connection.json} apiSuccess
 */
 
 
@@ -67,7 +67,7 @@
 *
 *
 * @apiSchema (Body) {jsonschema=../schema/req.body.PatchConnection.json} apiParam
-* @apiSchema {jsonschema=../schema/connections.json} apiSuccess
+* @apiSchema {jsonschema=../schema/res.Connection.json} apiSuccess
 */
 
 
@@ -85,7 +85,7 @@
 *
 *
 *
-* @apiSchema {jsonschema=../schema/connections.json} apiSuccess
+* @apiSchema {jsonschema=../schema/res.Connection.json} apiSuccess
 */
 
 

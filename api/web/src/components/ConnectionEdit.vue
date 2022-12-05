@@ -39,7 +39,7 @@
                                     />
                                 </div>
 
-                                <div class='col-md-12'>
+                                <div v-if='!$route.params.connectionid' class='col-md-12'>
                                     <div class='d-flex'>
                                         <h3>Authentication</h3>
 
@@ -55,7 +55,7 @@
                                             <TablerInput
                                                 label='Connection Cert'
                                                 v-model='connection.auth.cert'
-                                                :error='errors.description'
+                                                :error='errors.cert'
                                                 :rows='6'
                                             />
                                         </div>
@@ -63,7 +63,7 @@
                                             <TablerInput
                                                 label='Connection Key'
                                                 v-model='connection.auth.key'
-                                                :error='errors.description'
+                                                :error='errors.key'
                                                 :rows='6'
                                             />
                                         </div>
@@ -77,9 +77,8 @@
                                         </a>
 
                                         <div class='ms-auto'>
-                                            <a @click='create' class="cursor-pointer btn btn-primary">
-                                                Create Connection
-                                            </a>
+                                            <a v-if='$route.params.connectionid' @click='create' class="cursor-pointer btn btn-primary">Edit Connection</a>
+                                            <a v-else @click='create' class="cursor-pointer btn btn-primary">Create Connection</a>
                                         </div>
                                     </div>
                                 </div>
