@@ -62,6 +62,10 @@
                                 </div>
                                 <div class="col-md-12">
                                     <label class="form-label">Connection</label>
+                                    <div v-if='conn.id' class='d-flex'>
+                                        <ConnectionStatus :connection='conn'/>
+                                        <span class='mt-2' v-text='conn.name'/>
+                                    </div>
 
                                     <div class='table-resposive'>
                                         <table class='table'>
@@ -71,7 +75,7 @@
                                                 </tr>
                                             </thead>
                                             <tbody class='table-tbody'>
-                                                <tr :key='connection.id' v-for='connection of connections.connections'>
+                                                <tr @click='conn = connection' :key='connection.id' v-for='connection of connections.connections' class='cursor-pointer'>
                                                     <td>
                                                         <div class='d-flex'>
                                                             <ConnectionStatus :connection='connection'/>
@@ -125,6 +129,11 @@ export default {
                 cron: false,
                 task: false
             },
+            conn: {
+                id: null,
+                status: '',
+                name: ''
+            },
             name: '',
             description: '',
             enabled: true,
@@ -160,6 +169,7 @@ export default {
                         name: this.name,
                         description: this.description,
                         enabled: this.enabled,
+                        connection: this.conn.id,
                         cron: this.cron,
                         task: this.task
                     }

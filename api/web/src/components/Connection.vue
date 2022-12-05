@@ -39,6 +39,10 @@
                         </div>
                     </div>
                 </div>
+
+                <div class="col-lg-12">
+                    <ConnectionLayers :connection='connection'/>
+                </div>
             </div>
         </div>
     </div>
@@ -51,6 +55,7 @@
 import { Err } from '@tak-ps/vue-tabler';
 import PageFooter from './PageFooter.vue';
 import ConnectionStatus from './Connection/Status.vue';
+import ConnectionLayers from './Connection/Layers.vue';
 import {
     SettingsIcon
 } from 'vue-tabler-icons'
@@ -81,7 +86,8 @@ export default {
         Err,
         SettingsIcon,
         PageFooter,
-        ConnectionStatus
+        ConnectionStatus,
+        ConnectionLayers
     }
 }
 </script>
