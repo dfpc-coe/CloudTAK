@@ -54,7 +54,7 @@
                                         <div class="col-md-6">
                                             <TablerInput
                                                 label='Connection Cert'
-                                                v-model='description'
+                                                v-model='auth.cert'
                                                 :error='errors.description'
                                                 :rows='6'
                                             />
@@ -62,7 +62,7 @@
                                         <div class="col-md-6">
                                             <TablerInput
                                                 label='Connection Key'
-                                                v-model='description'
+                                                v-model='auth.key'
                                                 :error='errors.description'
                                                 :rows='6'
                                             />
@@ -89,8 +89,9 @@
 
     <Upload
         v-if='upload'
+        @certs='p12upload($event)'
         @close='upload = false'
-
+        @err='err = $event'
     />
 
     <Err v-if='err' :err='err' @close='err = null'/>
@@ -100,7 +101,7 @@
 
 <script>
 import PageFooter from './PageFooter.vue';
-import Upload from './util/Upload.vue';
+import Upload from './util/UploadP12.vue';
 import {
     Err,
     Input
@@ -118,9 +119,26 @@ export default {
             },
             name: '',
             description: '',
+            auth: {
+                cert: '',
+                key: ''
+            }
         }
     },
     methods: {
+        p12upload: function(certs) {
+            this.upload = false;
+            this.auth.cert = certs.pemCertificate
+                .split('-----BEGIN CERTIFICATE-----')
+                .join('-----BEGIN CERTIFICATE-----\n')
+                .split('-----END CERTIFICATE-----')
+                .join('\n-----END CERTIFICATE-----');
+            this.auth.key = certs.pemKey
+                .split('-----BEGIN RSA PRIVATE KEY-----')
+                .join('-----BEGIN RSA PRIVATE KEY-----\n')
+                .split('-----END RSA PRIVATE KEY-----')
+                .join('\n-----END RSA PRIVATE KEY-----');
+        },
         create: async function() {
             for (const field of ['name', 'description' ]) {
                 if (!this[field]) this.errors[field] = 'Cannot be empty';
