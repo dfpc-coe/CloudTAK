@@ -80,7 +80,10 @@ export default class TAK extends EventEmitter {
             });
 
             tak.client.on('error', (err) => { tak.emit('error', err); })
-            tak.client.on('end', () => { tak.emit('end'); })
+            tak.client.on('end', () => {
+                tak.open = false;
+                tak.emit('end');
+            })
 
             tak.ping();
 

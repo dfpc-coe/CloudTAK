@@ -62,6 +62,26 @@
                                 </div>
                                 <div class="col-md-12">
                                     <label class="form-label">Connection</label>
+
+                                    <div class='table-resposive'>
+                                        <table class='table'>
+                                            <thead>
+                                                <tr>
+                                                    <th>(Status) Name</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class='table-tbody'>
+                                                <tr :key='connection.id' v-for='connection of connections.connections'>
+                                                    <td>
+                                                        <div class='d-flex'>
+                                                            <ConnectionStatus :connection='connection'/>
+                                                            <span class='mt-2' v-text='connection.name'/>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 </div>
 
                                 <div class="col-md-12">
@@ -87,6 +107,7 @@
 </template>
 
 <script>
+import ConnectionStatus from './Connection/Status.vue';
 import PageFooter from './PageFooter.vue';
 import { Err } from '@tak-ps/vue-tabler';
 
@@ -95,6 +116,9 @@ export default {
     data: function() {
         return {
             err: false,
+            connections: {
+                list: []
+            },
             errors: {
                 name: false,
                 description: false,
@@ -108,7 +132,17 @@ export default {
             task: ''
         }
     },
+    mounted: function() {
+        this.listConnections();
+    },
     methods: {
+        listConnections: async function() {
+            try {
+                this.connections = await window.std('/api/connection');
+            } catch (err) {
+                this.err = err;
+            }
+        },
         create: async function() {
             for (const field of ['name', 'description', 'cron', 'task']) {
                 if (!this[field]) this.errors[field] = 'Cannot be empty';
@@ -140,6 +174,7 @@ export default {
     components: {
         Err,
         PageFooter,
+        ConnectionStatus
     }
 }
 </script>
