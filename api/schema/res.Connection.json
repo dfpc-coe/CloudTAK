@@ -5,6 +5,13 @@
         "id": {
             "$ref": "./connections/id.json"
         },
+        "status": {
+            "type": "string",
+            "enum": [
+                "live",
+                "dead"
+            ]
+        },
         "name": {
             "$ref": "./connections/name.json"
         },
@@ -19,6 +26,7 @@
         "id",
         "name",
         "description",
-        "enabled"
+        "enabled",
+        "status"
     ]
 }

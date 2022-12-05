@@ -9,6 +9,7 @@ export default class TAK extends EventEmitter {
 
         this.type = type;
         this.opts = opts;
+        this.open = false;
 
         this.version; // Server Version
     }
@@ -61,7 +62,9 @@ export default class TAK extends EventEmitter {
                     const cot = new COT(result.event);
 
                     try {
-                        if (cot.raw.event._attributes.type === 't-x-takp-v') {
+                        if (cot.raw.event._attributes.type === 't-x-c-t-r') {
+                            this.open = true;
+                        } else if (cot.raw.event._attributes.type === 't-x-takp-v') {
                             this.version = cot.raw.event.detail.TakControl.TakServerVersionInfo._attributes.serverVersion;
                         } else {
                             tak.emit('cot', cot)
@@ -79,13 +82,14 @@ export default class TAK extends EventEmitter {
             tak.client.on('error', (err) => { tak.emit('error', err); })
             tak.client.on('end', () => { tak.emit('end'); })
 
+            tak.ping();
+
             return resolve(tak);
         });
     }
 
     async ping() {
-        //if (cot.raw.event._attributes.type === 't-x-c-t-r') {
-        tak.write(COT.ping());
+        this.write(COT.ping());
     }
 
     /**

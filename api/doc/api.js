@@ -90,7 +90,7 @@
 
 
 /**
-* @api {delete} /connection/:connectionid DElete Connection
+* @api {delete} /connection/:connectionid Delete Connection
 * @apiVersion 1.0.0
 * @apiName DELETE-/connection/:connectionid
 * @apiGroup Connection

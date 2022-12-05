@@ -22,11 +22,7 @@
                 <div class="col-lg-12">
                     <div class="card">
                         <div class="card-header">
-                            <span class="status-indicator status-green status-indicator-animated">
-                                  <span class="status-indicator-circle"></span>
-                                  <span class="status-indicator-circle"></span>
-                                  <span class="status-indicator-circle"></span>
-                            </span>
+                            <ConnectionStatus :connection='connection'/>
 
                             <a @click='$router.push(`/connetion/${connection.id}`)' class="card-title cursor-pointer" v-text='connection.name'></a>
 
@@ -54,6 +50,7 @@
 <script>
 import { Err } from '@tak-ps/vue-tabler';
 import PageFooter from './PageFooter.vue';
+import ConnectionStatus from './Connection/Status.vue';
 import {
     SettingsIcon
 } from 'vue-tabler-icons'
@@ -84,6 +81,7 @@ export default {
         Err,
         SettingsIcon,
         PageFooter,
+        ConnectionStatus
     }
 }
 </script>
