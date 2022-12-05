@@ -33,9 +33,10 @@ export default async function router(schema, config) {
         res: 'res.Connection.json'
     }, async (req, res) => {
         try {
-            await config.conns.add(req.body);
-
             const conn = await Connection.generate(config.pool, req.body);
+
+            await config.conns.add(conn);
+
             conn.status = config.conns.get(conn.id).tak.open ? 'live' : 'dead';
             return res.json(conn);
         } catch (err) {
