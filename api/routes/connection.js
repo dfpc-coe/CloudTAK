@@ -27,6 +27,8 @@ export default async function router(schema, config) {
         res: 'res.Connection.json'
     }, async (req, res) => {
         try {
+            await config.conns.add(req.body);
+
             res.json(await Connection.generate(config.pool, req.body));
         } catch (err) {
             return Err.respond(err, res);
