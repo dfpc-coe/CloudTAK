@@ -41,7 +41,6 @@ export default async function router(schema, config) {
         ':connectionid': 'string',
         body: 'req.body.PatchConnection.json',
         res: 'res.Connection.json'
-onnections.json'
     }, async (req, res) => {
         try {
             res.json(await Connection.commit(config.pool, req.params.connectionid, req.body));
