@@ -88,7 +88,14 @@ export default async function router(schema, config) {
         res: 'res.Standard.json'
     }, async (req, res) => {
         try {
-            res.json(await Connection.delete(config.pool, req.params.connectionid));
+            await Connection.delete(config.pool, req.params.connectionid);
+
+            config.conns.delete(req.params.connectionid);
+
+            return res.json({
+                status: 200,
+                message: 'Connection Deleted'
+            });
         } catch (err) {
             return Err.respond(err, res);
         }
