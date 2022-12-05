@@ -73,9 +73,12 @@ export default async function router(schema, config) {
         res: 'res.Standard.json'
     }, async (req, res) => {
         try {
-            console.error(`OBTAINED FEATURE`, req.body.features.length);
+            const layer = await Layer.from(config.pool, req.params.layerid);
+
+            const conn = await config.conns.get(layer.connection);
+
             for (const feature of req.body.features) {
-                config.tak.write(COT.from_geojson(feature));
+                conn.tak.write(COT.from_geojson(feature));
             }
 
             res.json({
