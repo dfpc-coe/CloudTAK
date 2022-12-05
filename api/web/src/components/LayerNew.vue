@@ -60,6 +60,33 @@
                                     }' class="form-control" rows="6" placeholder="Layer Description..."></textarea>
                                     <div v-if='errors.description' v-text='errors.description' class="invalid-feedback"></div>
                                 </div>
+                                <div class="col-md-12">
+                                    <label class="form-label">Connection</label>
+                                    <div v-if='conn.id' class='d-flex'>
+                                        <ConnectionStatus :connection='conn'/>
+                                        <span class='mt-2' v-text='conn.name'/>
+                                    </div>
+
+                                    <div class='table-resposive'>
+                                        <table class='table'>
+                                            <thead>
+                                                <tr>
+                                                    <th>(Status) Name</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class='table-tbody'>
+                                                <tr @click='conn = connection' :key='connection.id' v-for='connection of connections.connections' class='cursor-pointer'>
+                                                    <td>
+                                                        <div class='d-flex'>
+                                                            <ConnectionStatus :connection='connection'/>
+                                                            <span class='mt-2' v-text='connection.name'/>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
 
                                 <div class="col-md-12">
                                     <div class='d-flex'>
@@ -84,6 +111,7 @@
 </template>
 
 <script>
+import ConnectionStatus from './Connection/Status.vue';
 import PageFooter from './PageFooter.vue';
 import { Err } from '@tak-ps/vue-tabler';
 
@@ -92,11 +120,19 @@ export default {
     data: function() {
         return {
             err: false,
+            connections: {
+                list: []
+            },
             errors: {
                 name: false,
                 description: false,
                 cron: false,
                 task: false
+            },
+            conn: {
+                id: null,
+                status: '',
+                name: ''
             },
             name: '',
             description: '',
@@ -105,7 +141,17 @@ export default {
             task: ''
         }
     },
+    mounted: function() {
+        this.listConnections();
+    },
     methods: {
+        listConnections: async function() {
+            try {
+                this.connections = await window.std('/api/connection');
+            } catch (err) {
+                this.err = err;
+            }
+        },
         create: async function() {
             for (const field of ['name', 'description', 'cron', 'task']) {
                 if (!this[field]) this.errors[field] = 'Cannot be empty';
@@ -123,6 +169,7 @@ export default {
                         name: this.name,
                         description: this.description,
                         enabled: this.enabled,
+                        connection: this.conn.id,
                         cron: this.cron,
                         task: this.task
                     }
@@ -137,6 +184,7 @@ export default {
     components: {
         Err,
         PageFooter,
+        ConnectionStatus
     }
 }
 </script>

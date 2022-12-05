@@ -7,8 +7,8 @@
                     <div class="col d-flex">
                         <ol class="breadcrumb" aria-label="breadcrumbs">
                             <li class="breadcrumb-item" aria-current="page"><a @click='$router.push("/")' class='cursor-pointer'>Home</a></li>
-                            <li class="breadcrumb-item" aria-current="page"><a @click='$router.push("/connection")' class='cursor-pointer'>Connections</a></li>
-                            <li class="breadcrumb-item active" aria-current="page"><a href="#" v-text='connection.id'></a></li>
+                            <li class="breadcrumb-item" aria-current="page"><a @click='$router.push("/layer")' class='cursor-pointer'>Layers</a></li>
+                            <li class="breadcrumb-item active" aria-current="page"><a href="#" v-text='layer.id'></a></li>
                         </ol>
                     </div>
                 </div>
@@ -22,51 +22,50 @@
                 <div class="col-lg-12">
                     <div class="card">
                         <div class="card-header">
-                            <ConnectionStatus :connection='connection'/>
+                            <span class="status-indicator status-green status-indicator-animated">
+                                  <span class="status-indicator-circle"></span>
+                                  <span class="status-indicator-circle"></span>
+                                  <span class="status-indicator-circle"></span>
+                            </span>
 
-                            <a @click='$router.push(`/connection/${connection.id}`)' class="card-title cursor-pointer" v-text='connection.name'></a>
+                            <a @click='$router.push(`/layer/${layer.id}`)' class="card-title cursor-pointer" v-text='layer.name'></a>
 
                             <div class='ms-auto'>
                                 <div class='btn-list'>
-                                    <SettingsIcon class='cursor-pointer' @click='$router.push(`/connection/${connection.id}/edit`)'/>
+                                    <span v-text='cronstr(layer.cron)'/>
+
+                                    <SettingsIcon class='cursor-pointer' @click='$router.push(`/layer/${layer.id}/edit`)'/>
                                 </div>
                             </div>
                         </div>
-                        <div class="card-body" v-text='connection.description'>
+                        <div class="card-body" v-text='layer.description'>
                         </div>
                         <div class="card-footer">
                             Last updated 3 mins ago
                         </div>
                     </div>
                 </div>
-
-                <div class="col-lg-12">
-                    <ConnectionLayers :connection='connection'/>
-                </div>
             </div>
         </div>
     </div>
-    <Err v-if='err' :err='err' @close='err = null'/>
+
     <PageFooter/>
 </div>
 </template>
 
 <script>
-import { Err } from '@tak-ps/vue-tabler';
 import PageFooter from './PageFooter.vue';
-import ConnectionStatus from './Connection/Status.vue';
-import ConnectionLayers from './Connection/Layers.vue';
+import cronstrue from 'cronstrue';
 import {
-    SettingsIcon
+    SettingsIcon,
 } from 'vue-tabler-icons'
 
 export default {
-    name: 'Connections',
+    name: 'Layer',
     data: function() {
         return {
             err: false,
-            connection: {
-
+            layer: {
             }
         }
     },
@@ -74,20 +73,21 @@ export default {
         this.fetch();
     },
     methods: {
+        cronstr: function(cron) {
+            if (!cron) return;
+            return cronstrue.toString(cron);
+        },
         fetch: async function() {
             try {
-                this.connection = await window.std(`/api/connection/${this.$route.params.connectionid}`);
+                this.layer = await window.std(`/api/layer/${this.$route.params.layerid}`);
             } catch (err) {
                 this.err = err;
             }
         }
     },
     components: {
-        Err,
         SettingsIcon,
         PageFooter,
-        ConnectionStatus,
-        ConnectionLayers
     }
 }
 </script>
