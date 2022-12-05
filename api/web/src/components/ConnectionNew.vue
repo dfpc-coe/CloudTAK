@@ -116,6 +116,8 @@ export default {
             errors: {
                 name: '',
                 description: '',
+                cert: '',
+                key: ''
             },
             name: '',
             description: '',
@@ -145,6 +147,11 @@ export default {
                 else this.errors[field] = '';
             }
 
+            for (const field of Object.keys(this.auth)) {
+                if (!this.auth[field]) this.errors[field] = 'Cannot be empty';
+                else this.errors[field] = '';
+            }
+
             for (const e in this.errors) {
                 if (this.errors[e]) return;
             }
@@ -156,7 +163,7 @@ export default {
                         name: this.name,
                         description: this.description,
                         enabled: true,
-                        auth: {}
+                        auth: this.auth
                     }
                 });
 
