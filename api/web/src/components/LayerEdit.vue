@@ -24,11 +24,11 @@
                         <div class="card-body">
                             <div class='row row-cards'>
                                 <div class="col-md-12">
-                                    <label class="form-label">Layer Name</label>
-                                    <input v-model='name' type="text" :class='{
-                                        "is-invalid": errors.name
-                                    }' class="form-control" placeholder="Layer Name">
-                                    <div v-if='errors.name' v-text='errors.name' class="invalid-feedback"></div>
+                                    <TablerInput
+                                        label='Layer Name'
+                                        v-model='layer.name'
+                                        :error='errors.name'
+                                    />
                                 </div>
                                 <div class="col-md-6">
                                     <label class="row">
@@ -37,28 +37,29 @@
                                         </span>
                                         <span class="col-auto">
                                             <label class="form-check form-check-single form-switch">
-                                                <input v-model='enabled' class="form-check-input" type="checkbox">
+                                                <input v-model='layer.enabled' class="form-check-input" type="checkbox">
                                             </label>
                                         </span>
                                     </label>
-                                    <input v-model='cron' type="text" :class='{
+                                    <input v-model='layer.cron' type="text" :class='{
                                         "is-invalid": errors.cron
                                     }' class="form-control" placeholder="CRON Schedule">
                                     <div v-if='errors.cron' v-text='errors.cron' class="invalid-feedback"></div>
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label">Layer Task</label>
-                                    <input v-model='task' type="text" :class='{
+                                    <input v-model='layer.task' type="text" :class='{
                                         "is-invalid": errors.task
                                     }' class="form-control" placeholder="Layer Task">
                                     <div v-if='errors.task' v-text='errors.task' class="invalid-feedback"></div>
                                 </div>
                                 <div class="col-md-12">
-                                    <label class="form-label">Layer Description</label>
-                                    <textarea v-model='description' :class='{
-                                        "is-invalid": errors.description
-                                    }' class="form-control" rows="6" placeholder="Layer Description..."></textarea>
-                                    <div v-if='errors.description' v-text='errors.description' class="invalid-feedback"></div>
+                                    <TablerInput
+                                        label='Layer Description'
+                                        rows='6'
+                                        v-model='layer.description'
+                                        :error='errors.description'
+                                    />
                                 </div>
                                 <div class="col-md-12">
                                     <label class="form-label">Connection</label>
@@ -90,10 +91,12 @@
 
                                 <div class="col-md-12">
                                     <div class='d-flex'>
+                                        <a v-if='$route.params.layerid' @click='create' class="cursor-pointer btn btn-outline-danger">
+                                            Delete Layer
+                                        </a>
                                         <div class='ms-auto'>
-                                            <a @click='create' class="cursor-pointer btn btn-primary">
-                                                Create Layer
-                                            </a>
+                                            <a v-if='$route.params.layerid' @click='patch' class="cursor-pointer btn btn-primary">Update Layer</a>
+                                            <a v-else @click='create' class="cursor-pointer btn btn-primary">Create Layer</a>
                                         </div>
                                     </div>
                                 </div>
@@ -113,7 +116,7 @@
 <script>
 import ConnectionStatus from './Connection/Status.vue';
 import PageFooter from './PageFooter.vue';
-import { Err } from '@tak-ps/vue-tabler';
+import { Err, Input } from '@tak-ps/vue-tabler';
 
 export default {
     name: 'LayerNew',
@@ -124,25 +127,29 @@ export default {
                 list: []
             },
             errors: {
-                name: false,
-                description: false,
-                cron: false,
-                task: false
+                name: '',
+                description: '',
+                cron: '',
+                task: ''
             },
             conn: {
                 id: null,
                 status: '',
                 name: ''
             },
-            name: '',
-            description: '',
-            enabled: true,
-            cron: '0/15 * * * ? *',
-            task: ''
+            layer: {
+                name: '',
+                description: '',
+                enabled: true,
+                cron: '0/15 * * * ? *',
+                task: ''
+            }
         }
     },
     mounted: function() {
         this.listConnections();
+
+        if (this.$route.params.layerid) this.fetch();
     },
     methods: {
         listConnections: async function() {
@@ -152,9 +159,45 @@ export default {
                 this.err = err;
             }
         },
+        fetch: async function() {
+            try {
+                this.layer = await window.std(`/api/layer/${this.$route.params.layerid}`);
+                this.conn = await window.std(`/api/connection/${this.layer.connection}`);
+            } catch (err) {
+                this.err = err;
+            }
+        },
+        patch: async function() {
+            for (const field of ['name', 'description', 'cron', 'task']) {
+                if (!this.layer[field]) this.errors[field] = 'Cannot be empty';
+                else this.errors[field] = false;
+            }
+
+            for (const e in this.errors) {
+                if (this.errors[e]) return;
+            }
+
+            try {
+                const create = await window.std(`/api/layer/${this.$route.params.layerid}`, {
+                    method: 'PATCH',
+                    body: {
+                        name: this.name,
+                        description: this.description,
+                        enabled: this.enabled,
+                        connection: this.conn.id,
+                        cron: this.cron,
+                        task: this.task
+                    }
+                });
+
+                this.$router.push(`/layer/${create.id}`);
+            } catch (err) {
+                this.err = err;
+            }
+        },
         create: async function() {
             for (const field of ['name', 'description', 'cron', 'task']) {
-                if (!this[field]) this.errors[field] = 'Cannot be empty';
+                if (!this.layer[field]) this.errors[field] = 'Cannot be empty';
                 else this.errors[field] = false;
             }
 
@@ -184,7 +227,8 @@ export default {
     components: {
         Err,
         PageFooter,
-        ConnectionStatus
+        ConnectionStatus,
+        TablerInput: Input
     }
 }
 </script>
