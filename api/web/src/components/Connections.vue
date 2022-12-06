@@ -35,7 +35,7 @@
                         <div class="card-body">
                             <label class="form-label">Connection Search</label>
                             <div class="input-icon mb-3">
-                                <input v-text='query.search' type="text" value="" class="form-control" placeholder="Search…">
+                                <input v-model='query.search' type="text"  class="form-control" placeholder="Search…">
                                 <span class="input-icon-addon">
                                     <SearchIcon/>
                                 </span>
@@ -95,13 +95,20 @@ export default {
             }
         }
     },
+    watch: {
+        'query.search': function() {
+            this.fetchList();
+        }
+    },
     mounted: function() {
         this.fetchList();
     },
     methods: {
         fetchList: async function() {
             try {
-                this.list = await window.std('/api/connection');
+                const url = window.stdurl('/api/connection');
+                if (this.query.shown && this.query.search) url.searchParams.append('filter', this.query.search);
+                this.list = await window.std(url);
             } catch (err) {
                 this.err = err;
             }
