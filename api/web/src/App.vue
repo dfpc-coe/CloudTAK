@@ -48,10 +48,10 @@
                             </a>
                         </li>
                     </ul>
-                </div> 
-            </div> 
-        </div> 
-    </div> 
+                </div>
+            </div>
+        </div>
+    </div>
 
 
     <router-view/>
@@ -72,8 +72,17 @@ export default {
     name: 'Tak-PS-Stats',
     data: function() {
         return {
-            err: false,
+            ws: null,
+            err: null,
         }
+    },
+    mounted: function() {
+        const url = window.stdurl('/');
+        url.protocol = 'ws:';
+
+        console.error(url);
+
+        this.ws = new WebSocket(url);
     },
     components: {
         HomeIcon,

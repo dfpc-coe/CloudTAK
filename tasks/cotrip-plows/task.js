@@ -45,7 +45,7 @@ export default class Task {
                     id: plow.avl_location.vehicle.id2,
                     type: 'Feature',
                     properties: {
-                        type: 'a-f-G',
+                        type: 'a-f-G-E-V-A-T-H',
                         how: 'm-g',
                         callsign: `${plow.avl_location.vehicle.fleet} ${plow.avl_location.vehicle.type}`
                     },

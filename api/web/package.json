@@ -24,7 +24,8 @@
         "vue": "^3.2.31",
         "vue-router": "^4.0.14",
         "vue-tabler-icons": "^2.16.0",
-        "vue3-apexcharts": "^1.4.1"
+        "vue3-apexcharts": "^1.4.1",
+        "ws": "^8.11.0"
     },
     "devDependencies": {
         "@babel/eslint-parser": "^7.17.0",

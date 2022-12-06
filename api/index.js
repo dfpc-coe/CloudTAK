@@ -9,6 +9,7 @@ import { Pool } from '@openaddresses/batch-generic';
 import minimist from 'minimist';
 import TAKPool from './lib/tak-pool.js';
 import { XML as COT } from '@tak-ps/node-cot';
+import { WebSocketServer } from 'ws';
 
 import Config from './lib/config.js';
 
@@ -157,12 +158,26 @@ export default async function server(config) {
 
     app.use(express.static('web/dist'));
 
+    const wss = new WebSocketServer({
+        noServer: true,
+        verifyClient: ({ req }, cb) => {
+            console.error(req);
+            return cb(true);
+        }
+    });
+
     return new Promise((resolve, reject) => {
         const srv = app.listen(5001, (err) => {
             if (err) return reject(err);
 
             if (!config.silent) console.log('ok - http://localhost:5001');
             return resolve(srv);
+        });
+
+        srv.on('upgrade', (request, socket, head) => {
+            wss.handleUpgrade(request, socket, head, (ws) => {
+                wss.emit('connection', ws, request);
+            });
         });
     });
 }
