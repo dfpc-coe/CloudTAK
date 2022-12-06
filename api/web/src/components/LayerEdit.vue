@@ -56,7 +56,7 @@
                                 <div class="col-md-12">
                                     <TablerInput
                                         label='Layer Description'
-                                        rows='6'
+                                        :rows='6'
                                         v-model='layer.description'
                                         :error='errors.description'
                                     />
@@ -95,7 +95,7 @@
                                             Delete Layer
                                         </a>
                                         <div class='ms-auto'>
-                                            <a v-if='$route.params.layerid' @click='patch' class="cursor-pointer btn btn-primary">Update Layer</a>
+                                            <a v-if='$route.params.layerid' @click='create' class="cursor-pointer btn btn-primary">Update Layer</a>
                                             <a v-else @click='create' class="cursor-pointer btn btn-primary">Create Layer</a>
                                         </div>
                                     </div>
@@ -167,38 +167,10 @@ export default {
                 this.err = err;
             }
         },
-        patch: async function() {
-            for (const field of ['name', 'description', 'cron', 'task']) {
-                if (!this.layer[field]) this.errors[field] = 'Cannot be empty';
-                else this.errors[field] = false;
-            }
-
-            for (const e in this.errors) {
-                if (this.errors[e]) return;
-            }
-
-            try {
-                const create = await window.std(`/api/layer/${this.$route.params.layerid}`, {
-                    method: 'PATCH',
-                    body: {
-                        name: this.name,
-                        description: this.description,
-                        enabled: this.enabled,
-                        connection: this.conn.id,
-                        cron: this.cron,
-                        task: this.task
-                    }
-                });
-
-                this.$router.push(`/layer/${create.id}`);
-            } catch (err) {
-                this.err = err;
-            }
-        },
         create: async function() {
             for (const field of ['name', 'description', 'cron', 'task']) {
                 if (!this.layer[field]) this.errors[field] = 'Cannot be empty';
-                else this.errors[field] = false;
+                else this.errors[field] = '';
             }
 
             for (const e in this.errors) {
@@ -206,15 +178,24 @@ export default {
             }
 
             try {
-                const create = await window.std('/api/layer', {
-                    method: 'POST',
+                let url, method;
+                if (this.$route.params.layerid) {
+                    url = window.stdurl(`/api/layer/${this.$route.params.layerid}`);
+                    method = 'PATCH'
+                } else {
+                    url = window.urlstd(`/api/layer`);
+                    method = 'POST'
+                }
+
+                const create = await window.std(url, {
+                    method,
                     body: {
-                        name: this.name,
-                        description: this.description,
-                        enabled: this.enabled,
+                        name: this.layer.name,
+                        description: this.layer.description,
+                        enabled: this.layer.enabled,
                         connection: this.conn.id,
-                        cron: this.cron,
-                        task: this.task
+                        cron: this.layer.cron,
+                        task: this.layertask
                     }
                 });
 
