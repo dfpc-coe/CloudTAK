@@ -34,7 +34,8 @@
         "moment": "^2.29.4",
         "pg": "^8.8.0",
         "slonik": "^32.0.0",
-        "tilebase": "^4.0.0"
+        "tilebase": "^4.0.0",
+        "ws": "^8.11.0"
     },
     "devDependencies": {
         "apidoc": "^0.53.1",
@@ -49,5 +50,9 @@
         "name": "TAK PS ETL API",
         "title": "TAK PS ETL API",
         "version": "1.0.0"
+    },
+    "optionalDependencies": {
+        "bufferutil": "^4.0.7",
+        "utf-8-validate": "^5.0.10"
     }
 }
