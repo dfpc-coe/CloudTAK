@@ -1,6 +1,7 @@
 import Err from '@openaddresses/batch-error';
 import Layer from '../lib/types/layer.js';
 import { XML as COT } from '@tak-ps/node-cot';
+import { sql } from 'slonik';
 
 export default async function router(schema, config) {
     await schema.get('/layer', {
@@ -80,6 +81,8 @@ export default async function router(schema, config) {
             for (const feature of req.body.features) {
                 conn.tak.write(COT.from_geojson(feature));
             }
+
+            await layer.commit({ updated: sql`NOW()` });
 
             res.json({
                 status: 200,
