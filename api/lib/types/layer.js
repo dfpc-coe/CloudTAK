@@ -23,7 +23,7 @@ export default class Layer extends Generic {
                 FROM
                     ${sql.identifier([this._table])}
                 WHERE
-                    name ~ ${query.filter}
+                    name ~* ${query.filter}
                     AND (${query.connection}::BIGINT IS NULL OR ${query.connection}::BIGINT = connection)
                 ORDER BY
                     id DESC
