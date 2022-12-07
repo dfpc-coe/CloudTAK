@@ -89,16 +89,25 @@
                                     </div>
                                 </div>
 
-                                <div class="col-md-12">
-                                    <div class='d-flex'>
-                                        <a v-if='$route.params.layerid' @click='create' class="cursor-pointer btn btn-outline-danger">
-                                            Delete Layer
-                                        </a>
-                                        <div class='ms-auto'>
-                                            <a v-if='$route.params.layerid' @click='create' class="cursor-pointer btn btn-primary">Update Layer</a>
-                                            <a v-else @click='create' class="cursor-pointer btn btn-primary">Create Layer</a>
-                                        </div>
-                                    </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-12">
+                    <StyleUtil/>
+                </div>
+
+                <div class="col-lg-12">
+                    <div class='card'>
+                        <div class="card-body">
+                            <div class='d-flex'>
+                                <a v-if='$route.params.layerid' @click='create' class="cursor-pointer btn btn-outline-danger">
+                                    Delete Layer
+                                </a>
+                                <div class='ms-auto'>
+                                    <a v-if='$route.params.layerid' @click='create' class="cursor-pointer btn btn-primary">Update Layer</a>
+                                    <a v-else @click='create' class="cursor-pointer btn btn-primary">Create Layer</a>
                                 </div>
                             </div>
                         </div>
@@ -116,6 +125,7 @@
 <script>
 import ConnectionStatus from './Connection/Status.vue';
 import PageFooter from './PageFooter.vue';
+import StyleUtil from './util/Styles.vue';
 import { Err, Input } from '@tak-ps/vue-tabler';
 
 export default {
@@ -209,7 +219,8 @@ export default {
         Err,
         PageFooter,
         ConnectionStatus,
-        TablerInput: Input
+        TablerInput: Input,
+        StyleUtil
     }
 }
 </script>
