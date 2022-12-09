@@ -30,7 +30,7 @@
                     ]'
                     class="col-auto">
                         <label class="form-colorinput">
-                            <input :disabled='disabled' v-model='filters[mode].color' type="radio" class="form-colorinput-input">
+                            <input :disabled='disabled' v-model='filters[mode].color' :value='color' type="radio" class="form-colorinput-input">
                             <span class="form-colorinput-color bg-dark" :class='[
                                 `bg-${color}`
                             ]'></span>
@@ -78,7 +78,7 @@ export default {
     props: {
         disabled: {
             type: Boolean,
-            default: true
+            default: false
         }
     },
     data: function() {
