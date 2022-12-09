@@ -6,6 +6,7 @@ function up(knex) {
             created             TIMESTAMP NOT NULL DEFAULT Now(),
             updated             TIMESTAMP NOT NULL DEFAULT Now(),
             description         TEXT NOT NULL DEFAULT '',
+            task                TEXT NOT NULL,
             cron                TEXT NOT NULL,
             enabled             BOOLEAN NOT NULL DEFAULT True,
             connection          BIGINT NOT NULL REFERENCES connections(id),
