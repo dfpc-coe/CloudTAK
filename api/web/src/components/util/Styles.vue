@@ -125,7 +125,10 @@ export default {
         }
     },
     mounted: function() {
-        Object.assign(this.filters, this.modelValue);
+        for (const key in this.modelValue) {
+            Object.assign(this.filters[key], this.modelValue[key]);
+        }
+
         this.$emit('update:modelValue', this.filters);
     },
     components: {
