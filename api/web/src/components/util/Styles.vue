@@ -22,7 +22,7 @@
             </div>
 
 
-            <div class='col-md-6'>
+            <div class='col-md-6 mb-3'>
                 <label class="form-label">Color Input</label>
                 <div class="row g-2">
                     <div :key='color' v-for='color in [
@@ -30,7 +30,7 @@
                     ]'
                     class="col-auto">
                         <label class="form-colorinput">
-                            <input name="color" type="radio" :value='color' class="form-colorinput-input">
+                            <input v-model='filters[mode].color' type="radio" class="form-colorinput-input">
                             <span class="form-colorinput-color bg-dark" :class='[
                                 `bg-${color}`
                             ]'></span>
@@ -38,20 +38,25 @@
                     </div>
                 </div>
             </div>
-            <div class='col-md-6'>
-                <label class="form-label">Line Thickness</label>
-                <input type="range" class="form-range mb-2" value="40" min="0" max="100" step="10">
-            </div>
-            <div class='col-md-6'>
-                <label class="form-label">Fill Opacity (Polygons)</label>
-                <input type="range" class="form-range mb-2" value="40" min="0" max="100" step="10">
-            </div>
-            <div class='col-md-6'>
+            <div class='col-md-6 mb-3'>
                 <label class="form-label">Line Style</label>
-                Solid, Dashed, Dotted, Outlined
+                <select v-model='filters[mode].style' class="form-select">
+                    <option value="solid">Solid</option>
+                    <option value="dashed">Dashed</option>
+                    <option value="dotted">Dotted</option>
+                    <option value="outlined">Outlined</option>
+                </select>
+            </div>
+            <div class='col-md-6 mb-3'>
+                <label class="form-label">Line Thickness</label>
+                <input v-model='filters[mode].thickness' type="range" class="form-range mb-2" min="0" max="100" step="10">
+            </div>
+            <div class='col-md-6 mb-3'>
+                <label class="form-label">Fill Opacity (Polygons)</label>
+                <input v-model='filters[mode].opacity' type="range" class="form-range mb-2" min="0" max="100" step="1">
             </div>
             <div class='col-md-12'>
-                <TablerInput v-model='Remarks' label='Remarks'/>
+                <TablerInput v-model='filters[mode].remarks' label='Remarks'/>
             </div>
         </div>
     </div>
@@ -73,7 +78,29 @@ export default {
     data: function() {
         return {
             mode: 'point',
-            remarks: ''
+            filters: {
+                point: {
+                    style: 'solid',
+                    color: 'red',
+                    thickness: 0,
+                    opacity: 0,
+                    remarks: ''
+                },
+                line: {
+                    style: 'solid',
+                    color: 'red',
+                    thickness: 0,
+                    opacity: 0,
+                    remarks: ''
+                },
+                polygon: {
+                    style: 'solid',
+                    color: 'red',
+                    thickness: 0,
+                    opacity: 0,
+                    remarks: ''
+                }
+            }
         };
     },
     components: {
