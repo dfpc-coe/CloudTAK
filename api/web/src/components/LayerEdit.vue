@@ -16,7 +16,8 @@
         </div>
     </div>
 
-    <div class='page-body'>
+    <Loading v-if='loading.layer' desc='Loading Layer'/>
+    <div v-else class='page-body'>
         <div class='container-xl'>
             <div class='row row-deck row-cards'>
                 <div class="col-lg-12">
@@ -157,6 +158,9 @@ export default {
             connections: {
                 list: []
             },
+            loading: {
+                layer: true
+            },
             errors: {
                 name: '',
                 description: '',
@@ -193,8 +197,10 @@ export default {
         },
         fetch: async function() {
             try {
+                this.loading.layer = true;
                 this.layer = await window.std(`/api/layer/${this.$route.params.layerid}`);
                 this.conn = await window.std(`/api/connection/${this.layer.connection}`);
+                this.loading.layer = false;
             } catch (err) {
                 this.err = err;
             }
