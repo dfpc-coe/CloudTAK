@@ -63,42 +63,47 @@
                                 </div>
                                 <div class="col-md-12">
                                     <label class="form-label">Connection</label>
-                                    <div v-if='conn.id' class='d-flex'>
-                                        <ConnectionStatus :connection='conn'/>
-                                        <span class='mt-2' v-text='conn.name'/>
-                                    </div>
+                                    <div class='d-flex'>
+                                        <template v-if='conn.id'>
+                                            <ConnectionStatus :connection='conn'/>
+                                            <span class='mt-2' v-text='conn.name'/>
+                                        </template>
+                                        <template v-else>
+                                            Select A Connection Using the Gear Icon on the right
+                                        </template>
 
-                                    <div class="dropdown">
-                                        <div class="dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
-                                            <SettingsIcon
-                                                class='cursor-pointer dropdown-toggle'
-                                                height=16
-                                                width=16
-                                            />
-                                        </div>
-                                        <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                                            <div class='m-1'>
-                                                <div class='table-resposive'>
-                                                    <table class='table table-hover'>
-                                                        <thead>
-                                                            <tr>
-                                                                <th>(Status) Name</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody class='table-tbody'>
-                                                            <tr @click='conn = connection' :key='connection.id' v-for='connection of connections.connections' class='cursor-pointer'>
-                                                                <td>
-                                                                    <div class='d-flex'>
-                                                                        <ConnectionStatus :connection='connection'/>
-                                                                        <span class='mt-2' v-text='connection.name'/>
-                                                                    </div>
-                                                                </td>
-                                                            </tr>
-                                                        </tbody>
-                                                    </table>
+                                        <div class='ms-auto'>
+                                            <div class="dropdown">
+                                                <div class="dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+                                                    <SettingsIcon
+                                                        class='cursor-pointer dropdown-toggle'
+                                                    />
                                                 </div>
+                                                <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                                                    <div class='m-1'>
+                                                        <div class='table-resposive'>
+                                                            <table class='table table-hover'>
+                                                                <thead>
+                                                                    <tr>
+                                                                        <th>(Status) Name</th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody class='table-tbody'>
+                                                                    <tr @click='conn = connection' :key='connection.id' v-for='connection of connections.connections' class='cursor-pointer'>
+                                                                        <td>
+                                                                            <div class='d-flex'>
+                                                                                <ConnectionStatus :connection='connection'/>
+                                                                                <span class='mt-2' v-text='connection.name'/>
+                                                                            </div>
+                                                                        </td>
+                                                                    </tr>
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
+                                                    </div>
+                                                </ul>
                                             </div>
-                                        </ul>
+                                        </div>
                                     </div>
                                 </div>
 
