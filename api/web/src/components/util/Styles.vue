@@ -1,6 +1,22 @@
 <template>
 <div class='card'>
-    <div class='card-body'>
+    <div class='card-header'>
+        <h3 class='card-title'>Style Overrides</h3>
+
+        <div class='ms-auto'>
+            <div class='d-flex'>
+                <span class='px-2'>Disable Overrides</span>
+                <label class="form-check form-switch">
+                    <input v-model='global_disable' class="form-check-input" type="checkbox" checked="">
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <div v-if='global_disable' class='card-body'>
+        Style Overrides are disabled
+    </div>
+    <div v-else class='card-body'>
         <div class='row'>
             <div class="d-flex justify-content-center mb-4">
                 <div class="btn-list">
@@ -91,6 +107,7 @@ export default {
     data: function() {
         return {
             mode: 'point',
+            global_disable: true,
             filters: {
                 point: {
                     style: 'solid',
