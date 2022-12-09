@@ -3,7 +3,7 @@
     <div class='card-header'>Layers</div>
 
     <div class='table-resposive'>
-        <table class='table'>
+        <table class='table table-hover'>
             <thead>
                 <tr>
                     <th>Name</th>
