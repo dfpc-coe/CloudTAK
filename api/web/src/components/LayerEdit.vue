@@ -31,29 +31,6 @@
                                         :error='errors.name'
                                     />
                                 </div>
-                                <div class="col-md-6">
-                                    <label class="row">
-                                        <span class="col">
-                                            <label class='form-label'>Scheduled</label>
-                                        </span>
-                                        <span class="col-auto">
-                                            <label class="form-check form-check-single form-switch">
-                                                <input v-model='layer.enabled' class="form-check-input" type="checkbox">
-                                            </label>
-                                        </span>
-                                    </label>
-                                    <input v-model='layer.cron' type="text" :class='{
-                                        "is-invalid": errors.cron
-                                    }' class="form-control" placeholder="CRON Schedule">
-                                    <div v-if='errors.cron' v-text='errors.cron' class="invalid-feedback"></div>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">Layer Task</label>
-                                    <input v-model='layer.task' type="text" :class='{
-                                        "is-invalid": errors.task
-                                    }' class="form-control" placeholder="Layer Task">
-                                    <div v-if='errors.task' v-text='errors.task' class="invalid-feedback"></div>
-                                </div>
                                 <div class="col-md-12">
                                     <TablerInput
                                         label='Layer Description'
@@ -114,6 +91,10 @@
                 </div>
 
                 <div class="col-lg-12">
+                    <LayerUtil v-model='layer.styles'/>
+                </div>
+
+                <div class="col-lg-12">
                     <StyleUtil v-model='layer.styles'/>
                 </div>
 
@@ -145,7 +126,8 @@
 import ConnectionStatus from './Connection/Status.vue';
 import PageFooter from './PageFooter.vue';
 import StyleUtil from './util/Styles.vue';
-import { Err, Input } from '@tak-ps/vue-tabler';
+import LayerUtil from './util/Layer.vue';
+import { Err, Input, Loading } from '@tak-ps/vue-tabler';
 import {
     SettingsIcon
 } from 'vue-tabler-icons';
@@ -185,7 +167,11 @@ export default {
     mounted: function() {
         this.listConnections();
 
-        if (this.$route.params.layerid) this.fetch();
+        if (this.$route.params.layerid) {
+            this.fetch();
+        } else {
+            this.loading.layer = false;
+        }
     },
     methods: {
         listConnections: async function() {
@@ -250,7 +236,9 @@ export default {
         ConnectionStatus,
         TablerInput: Input,
         StyleUtil,
-        SettingsIcon
+        LayerUtil,
+        SettingsIcon,
+        Loading
     }
 }
 </script>
