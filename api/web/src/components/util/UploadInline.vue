@@ -31,6 +31,14 @@ export default {
                 const read = new FileReader();
                 read.onload = (event) => {
                     this.file = event.target.result;
+
+                    const body = new FormData();
+                    body.append('file', file);
+
+                    window.std('/api/asset', {
+                        method: 'POST',
+                        body
+                    });
                 };
                 read.readAsDataURL(file);
             });
