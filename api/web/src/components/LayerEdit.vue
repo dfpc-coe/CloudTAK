@@ -68,24 +68,37 @@
                                         <span class='mt-2' v-text='conn.name'/>
                                     </div>
 
-                                    <div class='table-resposive'>
-                                        <table class='table'>
-                                            <thead>
-                                                <tr>
-                                                    <th>(Status) Name</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody class='table-tbody'>
-                                                <tr @click='conn = connection' :key='connection.id' v-for='connection of connections.connections' class='cursor-pointer'>
-                                                    <td>
-                                                        <div class='d-flex'>
-                                                            <ConnectionStatus :connection='connection'/>
-                                                            <span class='mt-2' v-text='connection.name'/>
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
+                                    <div class="dropdown">
+                                        <div class="dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+                                            <SettingsIcon
+                                                class='cursor-pointer dropdown-toggle'
+                                                height=16
+                                                width=16
+                                            />
+                                        </div>
+                                        <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                                            <div class='m-1'>
+                                                <div class='table-resposive'>
+                                                    <table class='table table-hover'>
+                                                        <thead>
+                                                            <tr>
+                                                                <th>(Status) Name</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody class='table-tbody'>
+                                                            <tr @click='conn = connection' :key='connection.id' v-for='connection of connections.connections' class='cursor-pointer'>
+                                                                <td>
+                                                                    <div class='d-flex'>
+                                                                        <ConnectionStatus :connection='connection'/>
+                                                                        <span class='mt-2' v-text='connection.name'/>
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </ul>
                                     </div>
                                 </div>
 
@@ -127,6 +140,9 @@ import ConnectionStatus from './Connection/Status.vue';
 import PageFooter from './PageFooter.vue';
 import StyleUtil from './util/Styles.vue';
 import { Err, Input } from '@tak-ps/vue-tabler';
+import {
+    SettingsIcon
+} from 'vue-tabler-icons';
 
 export default {
     name: 'LayerNew',
@@ -220,7 +236,8 @@ export default {
         PageFooter,
         ConnectionStatus,
         TablerInput: Input,
-        StyleUtil
+        StyleUtil,
+        SettingsIcon
     }
 }
 </script>
