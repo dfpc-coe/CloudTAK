@@ -42,52 +42,6 @@
                                         :error='errors.description'
                                     />
                                 </div>
-                                <div class="col-md-12">
-                                    <label class="form-label">Connection</label>
-                                    <div class='d-flex'>
-                                        <template v-if='conn.id'>
-                                            <ConnectionStatus :connection='conn'/>
-                                            <span class='mt-2' v-text='conn.name'/>
-                                        </template>
-                                        <template v-else>
-                                            Select A Connection Using the Gear Icon on the right
-                                        </template>
-
-                                        <div class='ms-auto'>
-                                            <div class="dropdown">
-                                                <div class="dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
-                                                    <SettingsIcon
-                                                        class='cursor-pointer dropdown-toggle'
-                                                    />
-                                                </div>
-                                                <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                                                    <div class='m-1'>
-                                                        <div class='table-resposive'>
-                                                            <table class='table table-hover'>
-                                                                <thead>
-                                                                    <tr>
-                                                                        <th>(Status) Name</th>
-                                                                    </tr>
-                                                                </thead>
-                                                                <tbody class='table-tbody'>
-                                                                    <tr @click='conn = connection' :key='connection.id' v-for='connection of connections.connections' class='cursor-pointer'>
-                                                                        <td>
-                                                                            <div class='d-flex'>
-                                                                                <ConnectionStatus :connection='connection'/>
-                                                                                <span class='mt-2' v-text='connection.name'/>
-                                                                            </div>
-                                                                        </td>
-                                                                    </tr>
-                                                                </tbody>
-                                                            </table>
-                                                        </div>
-                                                    </div>
-                                                </ul>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
                             </div>
                         </div>
                     </div>
@@ -126,14 +80,10 @@
 </template>
 
 <script>
-import ConnectionStatus from './Connection/Status.vue';
 import PageFooter from './PageFooter.vue';
 import StyleUtil from './util/Styles.vue';
-import LayerUtil from './util/Layer.vue';
+import LayerUtil from './util/LayerData.vue';
 import { Err, Input, Loading } from '@tak-ps/vue-tabler';
-import {
-    SettingsIcon
-} from 'vue-tabler-icons';
 
 export default {
     name: 'LayerEdit',
@@ -168,8 +118,6 @@ export default {
         }
     },
     mounted: function() {
-        this.listConnections();
-
         if (this.$route.params.layerid) {
             this.fetch();
         } else {
@@ -177,13 +125,6 @@ export default {
         }
     },
     methods: {
-        listConnections: async function() {
-            try {
-                this.connections = await window.std('/api/connection');
-            } catch (err) {
-                this.err = err;
-            }
-        },
         fetch: async function() {
             try {
                 this.loading.layer = true;
@@ -236,11 +177,9 @@ export default {
     components: {
         Err,
         PageFooter,
-        ConnectionStatus,
         TablerInput: Input,
         StyleUtil,
         LayerUtil,
-        SettingsIcon,
         Loading
     }
 }
