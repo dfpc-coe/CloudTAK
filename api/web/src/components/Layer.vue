@@ -47,7 +47,7 @@
                 </div>
 
                 <div class="col-lg-12">
-                    <Styles :styles='layer.styles' :disabled='true' />
+                    <Styles v-model='layer.styles' :disabled='true' />
                 </div>
             </div>
         </div>

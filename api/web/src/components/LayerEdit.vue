@@ -113,7 +113,7 @@
                 </div>
 
                 <div class="col-lg-12">
-                    <StyleUtil/>
+                    <StyleUtil v-model='layer.styles'/>
                 </div>
 
                 <div class="col-lg-12">
@@ -150,7 +150,7 @@ import {
 } from 'vue-tabler-icons';
 
 export default {
-    name: 'LayerNew',
+    name: 'LayerEdit',
     data: function() {
         return {
             err: false,
@@ -173,7 +173,8 @@ export default {
                 description: '',
                 enabled: true,
                 cron: '0/15 * * * ? *',
-                task: ''
+                task: '',
+                styles: {}
             }
         }
     },
@@ -226,7 +227,8 @@ export default {
                         enabled: this.layer.enabled,
                         connection: this.conn.id,
                         cron: this.layer.cron,
-                        task: this.layertask
+                        task: this.layer.task,
+                        styles: this.layer.styles
                     }
                 });
 

@@ -76,6 +76,13 @@ import {
 export default {
     name: 'StyleUtil',
     props: {
+        modelValue: {
+            type: Object,
+            default: function() {
+                return {};
+            },
+            required: true
+        },
         disabled: {
             type: Boolean,
             default: false
@@ -108,6 +115,18 @@ export default {
                 }
             }
         };
+    },
+    watch: {
+        filters: {
+            deep: true,
+            handler: function() {
+                this.$emit('update:modelValue', this.filters);
+            }
+        }
+    },
+    mounted: function() {
+        Object.assign(this.filters, this.modelValue);
+        this.$emit('update:modelValue', this.filters);
     },
     components: {
         TablerInput: Input,
