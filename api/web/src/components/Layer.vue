@@ -16,7 +16,8 @@
         </div>
     </div>
 
-    <div class='page-body'>
+    <Loading v-if='!loading.layer' desc='Loading Layer'/>
+    <div v-else class='page-body'>
         <div class='container-xl'>
             <div class='row row-deck row-cards'>
                 <div class="col-lg-12">
@@ -62,6 +63,9 @@ import PageFooter from './PageFooter.vue';
 import cronstrue from 'cronstrue';
 import Styles from './util/Styles.vue';
 import {
+    Loading
+} from '@tak-ps/vue-tabler'
+import {
     SettingsIcon,
 } from 'vue-tabler-icons'
 
@@ -70,6 +74,9 @@ export default {
     data: function() {
         return {
             err: false,
+            loading: {
+                layer: true
+            },
             layer: {
             }
         }
@@ -99,7 +106,9 @@ export default {
         },
         fetch: async function() {
             try {
+                this.loading.layer = true;
                 this.layer = await window.std(`/api/layer/${this.$route.params.layerid}`);
+                this.loading.layer = false;
             } catch (err) {
                 this.err = err;
             }
@@ -108,6 +117,7 @@ export default {
     components: {
         SettingsIcon,
         PageFooter,
+        Loading,
         Styles
     }
 }
