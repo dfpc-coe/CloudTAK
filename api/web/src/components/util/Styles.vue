@@ -40,11 +40,11 @@
             </div>
             <div class='col-md-6'>
                 <label class="form-label">Line Thickness</label>
-
                 <input type="range" class="form-range mb-2" value="40" min="0" max="100" step="10">
             </div>
             <div class='col-md-6'>
                 <label class="form-label">Fill Opacity (Polygons)</label>
+                <input type="range" class="form-range mb-2" value="40" min="0" max="100" step="10">
             </div>
             <div class='col-md-6'>
                 <label class="form-label">Line Style</label>
