@@ -30,7 +30,7 @@
                     ]'
                     class="col-auto">
                         <label class="form-colorinput">
-                            <input v-model='filters[mode].color' type="radio" class="form-colorinput-input">
+                            <input :disabled='disabled' v-model='filters[mode].color' type="radio" class="form-colorinput-input">
                             <span class="form-colorinput-color bg-dark" :class='[
                                 `bg-${color}`
                             ]'></span>
@@ -40,7 +40,7 @@
             </div>
             <div class='col-md-6 mb-3'>
                 <label class="form-label">Line Style</label>
-                <select v-model='filters[mode].style' class="form-select">
+                <select :disabled='disabled' v-model='filters[mode].style' class="form-select">
                     <option value="solid">Solid</option>
                     <option value="dashed">Dashed</option>
                     <option value="dotted">Dotted</option>
@@ -49,14 +49,14 @@
             </div>
             <div class='col-md-6 mb-3'>
                 <label class="form-label">Line Thickness</label>
-                <input v-model='filters[mode].thickness' type="range" class="form-range mb-2" min="0" max="100" step="10">
+                <input :disabled='disabled' v-model='filters[mode].thickness' type="range" class="form-range mb-2" min="0" max="100" step="10">
             </div>
             <div class='col-md-6 mb-3'>
                 <label class="form-label">Fill Opacity (Polygons)</label>
-                <input v-model='filters[mode].opacity' type="range" class="form-range mb-2" min="0" max="100" step="1">
+                <input :disabled='disabled' v-model='filters[mode].opacity' type="range" class="form-range mb-2" min="0" max="100" step="1">
             </div>
             <div class='col-md-12'>
-                <TablerInput v-model='filters[mode].remarks' label='Remarks'/>
+                <TablerInput :disabled='disabled' v-model='filters[mode].remarks' label='Remarks'/>
             </div>
         </div>
     </div>
@@ -75,6 +75,12 @@ import {
 
 export default {
     name: 'StyleUtil',
+    props: {
+        disabled: {
+            type: Boolean,
+            default: true
+        }
+    },
     data: function() {
         return {
             mode: 'point',
