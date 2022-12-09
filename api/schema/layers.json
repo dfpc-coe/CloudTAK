@@ -31,6 +31,9 @@
         },
         "styles": {
             "$ref": "./layers/styles.json"
+        },
+        "task": {
+            "$ref": "./layers/task.json"
         }
     },
     "required": [
@@ -43,6 +46,7 @@
         "enabled",
         "connection",
         "stale",
-        "styles"
+        "styles",
+        "task"
     ]
 }

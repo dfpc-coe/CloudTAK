@@ -17,6 +17,9 @@
         "connection": {
             "$ref": "./layers/connection.json"
         },
+        "task": {
+            "$ref": "./layers/task.json"
+        },
         "stale": {
             "$ref": "./layers/stale.json"
         },
