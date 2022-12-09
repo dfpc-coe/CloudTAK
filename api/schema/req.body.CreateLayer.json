@@ -7,7 +7,8 @@
         "cron",
         "enabled",
         "connection",
-        "styles"
+        "styles",
+        "task"
     ],
     "properties": {
         "name": {
@@ -15,6 +16,9 @@
         },
         "description": {
             "$ref": "./layers/description.json"
+        },
+        "task": {
+            "$ref": "./layers/task.json"
         },
         "cron": {
             "$ref": "./layers/cron.json"
