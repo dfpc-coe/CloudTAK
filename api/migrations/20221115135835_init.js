@@ -9,7 +9,8 @@ function up(knex) {
             cron                TEXT NOT NULL,
             enabled             BOOLEAN NOT NULL DEFAULT True,
             connection          BIGINT NOT NULL REFERENCES connections(id),
-            stale               INT NOT NULL DEFAULT 20000
+            stale               INT NOT NULL DEFAULT 20000,
+            styles              JSONB NOT NULL Default '{}'::JSONB
         );
 
         CREATE TABLE connections (
