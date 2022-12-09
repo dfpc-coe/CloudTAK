@@ -22,6 +22,9 @@
             <div class='row row-deck row-cards'>
                 <div class="col-lg-12">
                     <div class="card">
+                        <div class='card-header'>
+                            <h3 class='card-title'>Layer <span v-text='layer.id'/></h3>
+                        </div>
                         <div class="card-body">
                             <div class='row row-cards'>
                                 <div class="col-md-12">
