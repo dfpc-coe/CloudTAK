@@ -55,12 +55,17 @@
                     <div v-if='errors.task' v-text='errors.task' class="invalid-feedback"></div>
                 </div>
             </template>
+            <template v-else>
+                <UploadInline/>
+            </template>
         </div>
     </div>
 </div>
 </template>
 
 <script>
+import UploadInline from './UploadInline.vue';
+
 import {
     ClockIcon,
     FileUploadIcon
@@ -109,7 +114,8 @@ export default {
     },
     components: {
         ClockIcon,
-        FileUploadIcon
+        FileUploadIcon,
+        UploadInline
     }
 }
 </script>
