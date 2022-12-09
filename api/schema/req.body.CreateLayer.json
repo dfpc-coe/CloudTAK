@@ -6,7 +6,8 @@
         "description",
         "cron",
         "enabled",
-        "connection"
+        "connection",
+        "styles"
     ],
     "properties": {
         "name": {
@@ -26,6 +27,9 @@
         },
         "stale": {
             "$ref": "./layers/stale.json"
+        },
+        "styles": {
+            "$ref": "./util/styles.json"
         }
     }
 }

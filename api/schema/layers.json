@@ -28,6 +28,9 @@
         },
         "stale": {
             "$ref": "./layers/stale.json"
+        },
+        "styles": {
+            "$ref": "./layers/styles.json"
         }
     },
     "required": [
@@ -39,6 +42,7 @@
         "cron",
         "enabled",
         "connection",
-        "stale"
+        "stale",
+        "styles"
     ]
 }
