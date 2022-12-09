@@ -54,6 +54,9 @@
                     }' class="form-control" placeholder="Layer Task">
                     <div v-if='errors.task' v-text='errors.task' class="invalid-feedback"></div>
                 </div>
+                <div class="col-md-12">
+                    <ConnectionSelect :connection='layer.connection'/>
+                </div>
             </template>
             <template v-else>
                 <UploadInline/>
@@ -65,6 +68,7 @@
 
 <script>
 import UploadInline from './UploadInline.vue';
+import ConnectionSelect from './ConnectionSelect.vue';
 
 import {
     ClockIcon,
@@ -115,6 +119,7 @@ export default {
     components: {
         ClockIcon,
         FileUploadIcon,
+        ConnectionSelect,
         UploadInline
     }
 }
