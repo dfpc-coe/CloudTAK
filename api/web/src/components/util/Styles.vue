@@ -37,7 +37,6 @@
                 </div>
             </div>
 
-
             <div class='col-md-6 mb-3'>
                 <label class="form-label">Color Input</label>
                 <div class="row g-2">
