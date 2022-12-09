@@ -45,6 +45,10 @@
                         </div>
                     </div>
                 </div>
+
+                <div class="col-lg-12">
+                    <Styles :styles='layer.styles' :disabled='true' />
+                </div>
             </div>
         </div>
     </div>
@@ -56,6 +60,7 @@
 <script>
 import PageFooter from './PageFooter.vue';
 import cronstrue from 'cronstrue';
+import Styles from './util/Styles.vue';
 import {
     SettingsIcon,
 } from 'vue-tabler-icons'
@@ -103,6 +108,7 @@ export default {
     components: {
         SettingsIcon,
         PageFooter,
+        Styles
     }
 }
 </script>
