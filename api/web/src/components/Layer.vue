@@ -16,7 +16,7 @@
         </div>
     </div>
 
-    <Loading v-if='!loading.layer' desc='Loading Layer'/>
+    <Loading v-if='loading.layer' desc='Loading Layer'/>
     <div v-else class='page-body'>
         <div class='container-xl'>
             <div class='row row-deck row-cards'>
