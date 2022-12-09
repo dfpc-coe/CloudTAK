@@ -18,6 +18,11 @@ export default async function router(schema, config) {
                 conn.status = config.conns.get(conn.id).tak.open ? 'live' : 'dead';
             });
 
+            list.status = { dead: 0, live: 0 };
+            for (const conn of config.conns.values()) {
+                list.status[conn.tak.open]++;
+            }
+
             return res.json(list);
         } catch (err) {
             return Err.respond(err, res);
