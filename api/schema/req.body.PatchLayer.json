@@ -21,7 +21,7 @@
             "$ref": "./layers/stale.json"
         },
         "styles": {
-            "$ref": "./util/styles.json"
+            "$ref": "./layers/styles.json"
         }
     }
 }
