@@ -12,7 +12,7 @@
         "layers": {
             "type": "array",
             "items":  {
-                "$ref": "./layers.json"
+                "$ref": "./view_layers.json"
             }
         }
     }

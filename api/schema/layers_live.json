@@ -1,0 +1,28 @@
+{
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+        "layer_id": {
+            "$ref": "./layers_live/layer_id.json"
+        },
+        "stale": {
+            "$ref": "./layers_live/stale.json"
+        },
+        "task": {
+            "$ref": "./layers_live/task.json"
+        },
+        "connection": {
+            "$ref": "./layers_live/connection.json"
+        },
+        "cron": {
+            "$ref": "./layers_live/cron.json"
+        }
+    },
+    "required": [
+        "layer_id",
+        "stale",
+        "task",
+        "connection",
+        "cron"
+    ]
+}

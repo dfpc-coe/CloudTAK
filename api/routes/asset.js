@@ -70,8 +70,6 @@ export default async function router(schema, config) {
         ':assetid': 'integer',
         res: 'assets.json'
     }, async (req, res) => {
-        await Auth.is_auth(req);
-
         if (req.headers['content-type']) {
             req.headers['content-type'] = req.headers['content-type'].split(',')[0];
         } else {

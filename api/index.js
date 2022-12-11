@@ -54,11 +54,13 @@ export default async function server(config) {
 
     config.conns = await TAKPool.init(config.pool);
 
+    /*
     if (true) config.conns.get(5).tak.on('cot', function(cot) {
         const json = cot.to_geojson();
         console.error('on:msg:', json.properties.type, `(${json.properties.callsign}) [${json.geometry.coordinates.join(',')}]`);
         console.error(JSON.stringify(cot.raw))
     })
+    */
 
     const app = express();
 

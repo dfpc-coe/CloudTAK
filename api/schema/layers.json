@@ -17,23 +17,11 @@
         "description": {
             "$ref": "./layers/description.json"
         },
-        "cron": {
-            "$ref": "./layers/cron.json"
-        },
         "enabled": {
             "$ref": "./layers/enabled.json"
         },
-        "connection": {
-            "$ref": "./layers/connection.json"
-        },
-        "stale": {
-            "$ref": "./layers/stale.json"
-        },
         "styles": {
             "$ref": "./layers/styles.json"
-        },
-        "task": {
-            "$ref": "./layers/task.json"
         }
     },
     "required": [
@@ -42,11 +30,7 @@
         "created",
         "updated",
         "description",
-        "cron",
         "enabled",
-        "connection",
-        "stale",
-        "styles",
-        "task"
+        "styles"
     ]
 }

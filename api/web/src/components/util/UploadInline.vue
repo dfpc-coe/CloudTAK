@@ -25,21 +25,28 @@ export default {
     },
     mounted: function() {
         this.$nextTick(() => {
-            this.dropzone = new Dropzone("#dropzone-default");
+            this.dropzone = new Dropzone("#dropzone-default", {
+                autoProcessQueue: false
+            });
 
             this.dropzone.on('addedfile', (file) => {
                 const read = new FileReader();
-                read.onload = (event) => {
+                read.onload = async (event) => {
                     this.file = event.target.result;
 
                     const body = new FormData();
                     body.append('file', file);
 
-                    window.std('/api/asset', {
-                        method: 'POST',
-                        body
-                    });
+                    try {
+                        this.$emit('asset', await window.std('/api/asset', {
+                            method: 'POST',
+                            body
+                        }));
+                    } catch (err) {
+                        this.$emit('err', err);
+                    }
                 };
+
                 read.readAsDataURL(file);
             });
         });

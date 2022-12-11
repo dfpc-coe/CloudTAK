@@ -55,11 +55,23 @@
                     <div v-if='errors.task' v-text='errors.task' class="invalid-feedback"></div>
                 </div>
                 <div class="col-md-12">
-                    <ConnectionSelect :connection='layer.connection'/>
+                    <ConnectionSelect
+                        @err='$emit("err", $event)'
+                        :connection='layer.connection'
+
+                    />
                 </div>
             </template>
             <template v-else>
-                <UploadInline/>
+                <template v-if='!layer.asset_id'>
+                    <UploadInline
+                        @err='$emit("err", $event)'
+                        @asset='asset = $event'
+                    />
+                </template>
+                <template v-else>
+                    LAYER
+                </template>
             </template>
         </div>
     </div>
@@ -93,11 +105,13 @@ export default {
     data: function() {
         return {
             mode: 'scheduled',
+            asset: { },
             errors: {
                 task: '',
                 cron: ''
             },
             layer: {
+                asset_id: '',
                 task: '',
                 cron: ''
             }
