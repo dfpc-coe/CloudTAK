@@ -31,28 +31,11 @@
             </div>
 
             <template v-if='mode === "scheduled"'>
-                <div class="col-md-6">
-                    <label class="row">
-                        <span class="col">
-                            <label class='form-label'>Scheduled</label>
-                        </span>
-                        <span class="col-auto">
-                            <label class="form-check form-check-single form-switch">
-                                <input v-model='layer.enabled' class="form-check-input" type="checkbox"/>
-                            </label>
-                        </span>
-                    </label>
-                    <input v-model='layer.cron' type="text" :class='{
-                        "is-invalid": errors.cron
-                    }' class="form-control" placeholder="CRON Schedule">
-                    <div v-if='errors.cron' v-text='errors.cron' class="invalid-feedback"></div>
+                <div class="col-md-6 mb-3">
+                    <TablerInput label='Cron Schedule' v-model='layer.cron' :error='errors.cron'/>
                 </div>
-                <div class="col-md-6">
-                    <label class="form-label">Layer Task</label>
-                    <input v-model='layer.task' type="text" :class='{
-                        "is-invalid": errors.task
-                    }' class="form-control" placeholder="Layer Task">
-                    <div v-if='errors.task' v-text='errors.task' class="invalid-feedback"></div>
+                <div class="col-md-6 mb-3">
+                    <TablerInput label='Schedule Task' v-model='layer.task' :error='errors.task'/>
                 </div>
                 <div class="col-md-12">
                     <ConnectionSelect
@@ -80,6 +63,9 @@
 
 <script>
 import UploadInline from './UploadInline.vue';
+import {
+    Input
+} from '@tak-ps/vue-tabler';
 import ConnectionSelect from './ConnectionSelect.vue';
 
 import {
@@ -131,6 +117,7 @@ export default {
         //this.$emit('update:modelValue', this.filters);
     },
     components: {
+        TablerInput: Input,
         ClockIcon,
         FileUploadIcon,
         ConnectionSelect,

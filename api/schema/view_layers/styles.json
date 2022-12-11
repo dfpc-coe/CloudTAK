@@ -1,0 +1,8 @@
+{
+    "type": [
+        "object",
+        "null"
+    ],
+    "description": "",
+    "$comment": "jsonb"
+}
