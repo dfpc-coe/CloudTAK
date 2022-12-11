@@ -1,0 +1,16 @@
+{
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+        "layer_id": {
+            "$ref": "./layers_file/layer_id.json"
+        },
+        "asset_id": {
+            "$ref": "./layers_file/asset_id.json"
+        }
+    },
+    "required": [
+        "layer_id",
+        "asset_id"
+    ]
+}

@@ -1,5 +1,6 @@
 import Err from '@openaddresses/batch-error';
 import Layer from '../lib/types/layer.js';
+import ViewLayer from '../lib/views/layer.js';
 import { XML as COT } from '@tak-ps/node-cot';
 import { sql } from 'slonik';
 
@@ -13,7 +14,7 @@ export default async function router(schema, config) {
         res: 'res.ListLayers.json'
     }, async (req, res) => {
         try {
-            res.json(await Layer.list(config.pool, req.query));
+            res.json(await ViewLayer.list(config.pool, req.query));
         } catch (err) {
             return Err.respond(err, res);
         }
@@ -25,10 +26,11 @@ export default async function router(schema, config) {
         auth: 'admin',
         description: 'Register a new layer',
         body: 'req.body.CreateLayer.json',
-        res: 'layers.json'
+        res: 'view_layers.json'
     }, async (req, res) => {
         try {
-            res.json(await Layer.generate(config.pool, req.body));
+            await Layer.generate(config.pool, req.body);
+            res.json(await ViewLayer.from(config.pool, req.params.layerid));
         } catch (err) {
             return Err.respond(err, res);
         }
@@ -41,10 +43,11 @@ export default async function router(schema, config) {
         description: 'Update a layer',
         ':layerid': 'string',
         body: 'req.body.PatchLayer.json',
-        res: 'layers.json'
+        res: 'view_layers.json'
     }, async (req, res) => {
         try {
-            res.json(await Layer.commit(config.pool, req.params.layerid, req.body));
+            await Layer.commit(config.pool, req.params.layerid, req.body);
+            res.json(await ViewLayer.from(config.pool, req.params.layerid));
         } catch (err) {
             return Err.respond(err, res);
         }
@@ -56,10 +59,10 @@ export default async function router(schema, config) {
         auth: 'user',
         description: 'Get a layer',
         ':layerid': 'string',
-        res: 'layers.json'
+        res: 'view_layers.json'
     }, async (req, res) => {
         try {
-            res.json(await Layer.from(config.pool, req.params.layerid));
+            res.json(await ViewLayer.from(config.pool, req.params.layerid));
         } catch (err) {
             return Err.respond(err, res);
         }
