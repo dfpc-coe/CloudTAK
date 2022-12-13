@@ -102,7 +102,18 @@ export default {
         layer: {
             deep: true,
             handler: function() {
-                this.$emit('update:modelValue', this.layer);
+                if (this.layer.mode === 'scheduled') {
+                    this.$emit('update:modelValue', {
+                        mode: this.layer.mode,
+                        task: this.layer.task,
+                        cron: this.layer.cron,
+                    });
+                } else if (this.layer.mode === 'upload') {
+                    this.$emit('update:modelValue', {
+                        mode: this.layer.mode,
+                        asset_id: this.layer.asset_id
+                    });
+                }
             }
         }
     },
