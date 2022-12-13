@@ -2,15 +2,6 @@
 <div class='card'>
     <div class='card-header'>
         <h3 class='card-title'>Layer Data</h3>
-
-        <div class='ms-auto'>
-            <div class='d-flex'>
-                <span class='px-2'>Disable Layer</span>
-                <label class="form-check form-switch">
-                    <input class="form-check-input" type="checkbox" checked="">
-                </label>
-            </div>
-        </div>
     </div>
 
     <div class='card-body'>
@@ -18,19 +9,19 @@
             <div class="d-flex justify-content-center mb-4">
                 <div class="btn-list">
                     <div class="btn-group" role="group">
-                        <input v-model='mode' type="radio" class="btn-check" name="btn-radio-toolbar" value='scheduled'>
-                        <label @click='mode="scheduled"' class="btn btn-icon px-3">
+                        <input v-model='layer.mode' type="radio" class="btn-check" name="btn-radio-toolbar" value='scheduled'>
+                        <label @click='layer.mode="scheduled"' class="btn btn-icon px-3">
                             <ClockIcon/> Scheduled
                         </label>
-                        <input v-model='mode' type="radio" class="btn-check" name="btn-radio-toolbar" value='upload'>
-                        <label @click='mode="upload"' class="btn btn-icon px-3">
+                        <input v-model='layer.mode' type="radio" class="btn-check" name="btn-radio-toolbar" value='upload'>
+                        <label @click='layer.mode="upload"' class="btn btn-icon px-3">
                             <FileUploadIcon/> Upload
                         </label>
                     </div>
                 </div>
             </div>
 
-            <template v-if='mode === "scheduled"'>
+            <template v-if='layer.mode === "scheduled"'>
                 <div class="col-md-6 mb-3">
                     <TablerInput label='Cron Schedule' v-model='layer.cron' :error='errors.cron'/>
                 </div>
@@ -45,7 +36,7 @@
                     />
                 </div>
             </template>
-            <template v-else>
+            <template v-if='layer.mode === "upload"'>
                 <template v-if='!layer.asset_id'>
                     <UploadInline
                         @err='$emit("err", $event)'
@@ -55,6 +46,11 @@
                 <template v-else>
                     LAYER
                 </template>
+            </template>
+            <template v-else>
+                <div class='d-flex justify-content-center mb-3'>
+                    Select a Layer Type
+                </div>
             </template>
         </div>
     </div>
@@ -90,12 +86,12 @@ export default {
     },
     data: function() {
         return {
-            mode: 'scheduled',
             errors: {
                 task: '',
                 cron: ''
             },
             layer: {
+                mode: 'scheduled',
                 asset_id: '',
                 task: '',
                 cron: ''
