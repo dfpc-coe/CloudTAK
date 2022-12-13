@@ -25,7 +25,7 @@
             "$ref": "./layers/styles.json"
         },
         "data": {
-            "oneOf": [{
+            "anyOf": [{
                 "type": "object",
                 "required": [
                     "cron",

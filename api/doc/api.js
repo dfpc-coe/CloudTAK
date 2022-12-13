@@ -247,7 +247,7 @@
 *
 *
 * @apiSchema (Body) {jsonschema=../schema/req.body.CreateLayer.json} apiParam
-* @apiSchema {jsonschema=../schema/view_layers.json} apiSuccess
+* @apiSchema {jsonschema=../schema/res.Layer.json} apiSuccess
 */
 
 
@@ -265,7 +265,7 @@
 *
 *
 * @apiSchema (Body) {jsonschema=../schema/req.body.PatchLayer.json} apiParam
-* @apiSchema {jsonschema=../schema/view_layers.json} apiSuccess
+* @apiSchema {jsonschema=../schema/res.Layer.json} apiSuccess
 */
 
 
@@ -283,7 +283,7 @@
 *
 *
 *
-* @apiSchema {jsonschema=../schema/view_layers.json} apiSuccess
+* @apiSchema {jsonschema=../schema/res.Layer.json} apiSuccess
 */
 
 

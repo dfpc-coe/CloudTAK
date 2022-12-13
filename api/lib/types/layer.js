@@ -3,7 +3,7 @@ import Generic, { Params } from '@openaddresses/batch-generic';
 import { sql } from 'slonik';
 
 export default class Layer extends Generic {
-    static _view = 'layers';
+    static _table = 'layers';
 
     static async list(pool, query={}) {
         query.limit = Params.integer(query.limit, { default: 100 });
@@ -11,18 +11,23 @@ export default class Layer extends Generic {
         query.sort = Params.string(query.sort, { default: 'created' });
         query.order = Params.order(query.order);
         query.filter = Params.string(query.filter, { default: '' });
+
         query.connection = Params.integer(query.connection);
+        query.mode = Params.string(query.mode);
 
         try {
             const pgres = await pool.query(sql`
                 SELECT
                     count(*) OVER() AS count,
-                    *
+                    layers.*
                 FROM
-                    ${sql.identifier([this._view])}
+                    ${sql.identifier([this._table])}
+                        LEFT JOIN layers_live
+                            ON layers.id = layers_live.layer_id
                 WHERE
                     name ~* ${query.filter}
-                    AND (${query.connection}::BIGINT IS NULL OR ${query.connection}::BIGINT = connection)
+                    AND (${query.mode}::TEXT IS NULL OR ${query.mode}::TEXT = mode)
+                    AND (${query.connection}::BIGINT IS NULL OR ${query.connection}::BIGINT = layers_live.connection)
                 ORDER BY
                     id DESC
                 LIMIT
