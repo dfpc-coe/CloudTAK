@@ -64,7 +64,7 @@
 <script>
 import UploadInline from './UploadInline.vue';
 import {
-    Input
+    TablerInput
 } from '@tak-ps/vue-tabler';
 import ConnectionSelect from './ConnectionSelect.vue';
 
@@ -117,7 +117,7 @@ export default {
         //this.$emit('update:modelValue', this.filters);
     },
     components: {
-        TablerInput: Input,
+        TablerInput,
         ClockIcon,
         FileUploadIcon,
         ConnectionSelect,

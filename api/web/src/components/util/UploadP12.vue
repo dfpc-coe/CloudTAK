@@ -26,7 +26,10 @@
 </template>
 
 <script>
-import { Modal, Input } from '@tak-ps/vue-tabler';
+import { 
+    TablerModal,
+    TablerInput
+} from '@tak-ps/vue-tabler';
 import Dropzone from '@tabler/core/dist/libs/dropzone/dist/dropzone.mjs';
 import '@tabler/core/dist/libs/dropzone/dist/dropzone.css';
 import '@tabler/core/dist/css/tabler-vendors.min.css';
@@ -70,8 +73,8 @@ export default {
         }
     },
     components: {
-        TablerModal: Modal,
-        TablerInput: Input
+        TablerModal,
+        TablerInput
     }
 }
 </script>
