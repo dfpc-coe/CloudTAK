@@ -55,7 +55,7 @@ import ConnectionStatus from '../Connection/Status.vue';
 export default {
     name: 'ConnectionSelect',
     props: {
-        connection: Number,
+        modelValue: Number,
     },
     data: function() {
         return {
@@ -70,9 +70,14 @@ export default {
             }
         }
     },
+    watch: {
+        selected: function() {
+            this.$emit('update:modelValue', this.selected.id);
+        }
+    },
     mounted: function() {
         this.listConnections();
-        if (this.connection) this.fetch();
+        if (this.modelValue) this.fetch();
     },
     methods: {
         fetch: async function() {

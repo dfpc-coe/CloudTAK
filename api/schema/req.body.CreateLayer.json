@@ -4,11 +4,9 @@
     "required": [
         "name",
         "description",
-        "cron",
+        "data",
         "enabled",
-        "connection",
-        "styles",
-        "task"
+        "styles"
     ],
     "properties": {
         "name": {
@@ -17,23 +15,50 @@
         "description": {
             "$ref": "./layers/description.json"
         },
-        "task": {
-            "$ref": "./layers_live/task.json"
-        },
-        "cron": {
-            "$ref": "./layers_live/cron.json"
-        },
         "enabled": {
             "$ref": "./layers/enabled.json"
         },
-        "connection": {
-            "$ref": "./layers_live/connection.json"
-        },
-        "stale": {
-            "$ref": "./layers_live/stale.json"
+        "mode": {
+            "$ref": "./layers/mode.json"
         },
         "styles": {
             "$ref": "./layers/styles.json"
+        },
+        "data": {
+            "oneOf": [{
+                "type": "object",
+                "required": [
+                    "cron",
+                    "connection",
+                    "task"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                    "task": {
+                        "$ref": "./layers_live/task.json"
+                    },
+                    "stale": {
+                        "$ref": "./layers_live/stale.json"
+                    },
+                    "cron": {
+                        "$ref": "./layers_live/cron.json"
+                    },
+                    "connection": {
+                        "$ref": "./layers_live/connection.json"
+                    }
+                }
+            },{
+                "type": "object",
+                "required": [
+                    "asset_id"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                    "asset_id": {
+                        "$ref": "./assets/id.json"
+                    }
+                }
+            }]
         }
     }
 }

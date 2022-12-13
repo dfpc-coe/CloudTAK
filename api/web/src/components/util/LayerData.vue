@@ -9,19 +9,19 @@
             <div class="d-flex justify-content-center mb-4">
                 <div class="btn-list">
                     <div class="btn-group" role="group">
-                        <input v-model='layer.mode' type="radio" class="btn-check" name="btn-radio-toolbar" value='scheduled'>
-                        <label @click='layer.mode="scheduled"' class="btn btn-icon px-3">
+                        <input v-model='layer.mode' type="radio" class="btn-check" name="btn-radio-toolbar" value='live'>
+                        <label @click='layer.mode="live"' class="btn btn-icon px-3">
                             <ClockIcon/> Scheduled
                         </label>
-                        <input v-model='layer.mode' type="radio" class="btn-check" name="btn-radio-toolbar" value='upload'>
-                        <label @click='layer.mode="upload"' class="btn btn-icon px-3">
+                        <input v-model='layer.mode' type="radio" class="btn-check" name="btn-radio-toolbar" value='file'>
+                        <label @click='layer.mode="file"' class="btn btn-icon px-3">
                             <FileUploadIcon/> Upload
                         </label>
                     </div>
                 </div>
             </div>
 
-            <template v-if='layer.mode === "scheduled"'>
+            <template v-if='layer.mode === "live"'>
                 <div class="col-md-6 mb-3">
                     <TablerInput label='Cron Schedule' v-model='layer.cron' :error='errors.cron'/>
                 </div>
@@ -31,12 +31,12 @@
                 <div class="col-md-12">
                     <ConnectionSelect
                         @err='$emit("err", $event)'
-                        :connection='layer.connection'
+                        v-model='layer.connection'
 
                     />
                 </div>
             </template>
-            <template v-if='layer.mode === "upload"'>
+            <template v-else-if='layer.mode === "file"'>
                 <template v-if='!layer.asset_id'>
                     <UploadInline
                         @err='$emit("err", $event)'
@@ -74,9 +74,10 @@ export default {
     props: {
         modelValue: {
             type: Object,
-            default: function() {
-                return {};
-            },
+            required: true
+        },
+        errors: {
+            type: Object,
             required: true
         },
         disabled: {
@@ -86,13 +87,10 @@ export default {
     },
     data: function() {
         return {
-            errors: {
-                task: '',
-                cron: ''
-            },
             layer: {
-                mode: 'scheduled',
-                asset_id: '',
+                mode: 'live',
+                connection: null,
+                asset_id: null,
                 task: '',
                 cron: ''
             }
@@ -102,13 +100,14 @@ export default {
         layer: {
             deep: true,
             handler: function() {
-                if (this.layer.mode === 'scheduled') {
+                if (this.layer.mode === 'live') {
                     this.$emit('update:modelValue', {
                         mode: this.layer.mode,
                         task: this.layer.task,
                         cron: this.layer.cron,
+                        connection: this.layer.connection
                     });
-                } else if (this.layer.mode === 'upload') {
+                } else if (this.layer.mode === 'file') {
                     this.$emit('update:modelValue', {
                         mode: this.layer.mode,
                         asset_id: this.layer.asset_id

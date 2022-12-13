@@ -1,5 +1,7 @@
 import Err from '@openaddresses/batch-error';
 import Layer from '../lib/types/layer.js';
+import LayerLive from '../lib/types/layers_live.js';
+import LayerFile from '../lib/types/layers_file.js';
 import ViewLayer from '../lib/views/layer.js';
 import { XML as COT } from '@tak-ps/node-cot';
 import { sql } from 'slonik';
@@ -14,7 +16,7 @@ export default async function router(schema, config) {
         res: 'res.ListLayers.json'
     }, async (req, res) => {
         try {
-            res.json(await ViewLayer.list(config.pool, req.query));
+            res.json(await Layer.list(config.pool, req.query));
         } catch (err) {
             return Err.respond(err, res);
         }
@@ -26,11 +28,27 @@ export default async function router(schema, config) {
         auth: 'admin',
         description: 'Register a new layer',
         body: 'req.body.CreateLayer.json',
-        res: 'view_layers.json'
+        res: 'layers.json'
     }, async (req, res) => {
         try {
-            await Layer.generate(config.pool, req.body);
-            res.json(await ViewLayer.from(config.pool, req.params.layerid));
+            const data = req.body.data;
+            delete req.body.data;
+
+            const layer = await Layer.generate(config.pool, req.body);
+
+            if (layer.mode === 'live') {
+                await LayerLive.generate(config.pool, {
+                    id: layer.id,
+                    ...data
+                });
+            } else if (layer.mode === 'file') {
+                await LayerFile.generate(config.pool, {
+                    id: layer.id,
+                    ...data
+                });
+            }
+
+            res.json(await ViewLayer.from(config.pool, layer.id));
         } catch (err) {
             return Err.respond(err, res);
         }
@@ -43,11 +61,21 @@ export default async function router(schema, config) {
         description: 'Update a layer',
         ':layerid': 'string',
         body: 'req.body.PatchLayer.json',
-        res: 'view_layers.json'
+        res: 'layers.json'
     }, async (req, res) => {
         try {
-            await Layer.commit(config.pool, req.params.layerid, req.body);
-            res.json(await ViewLayer.from(config.pool, req.params.layerid));
+            const data = req.body.data;
+            delete req.body.data;
+
+            const layer = await Layer.commit(config.pool, req.params.layerid, req.body);
+
+            if (layer.mode === 'live') {
+                await LayerLive.commit(config.pool, layer.id, data);
+            } else if (layer.mode === 'file') {
+                await LayerFile.commit(config.pool, layer.id, data);
+            }
+
+            res.json(await Layer.from(config.pool, req.params.layerid));
         } catch (err) {
             return Err.respond(err, res);
         }
@@ -59,7 +87,7 @@ export default async function router(schema, config) {
         auth: 'user',
         description: 'Get a layer',
         ':layerid': 'string',
-        res: 'view_layers.json'
+        res: 'layers.json'
     }, async (req, res) => {
         try {
             res.json(await ViewLayer.from(config.pool, req.params.layerid));

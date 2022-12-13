@@ -57,7 +57,7 @@
                 </div>
 
                 <div class="col-lg-12">
-                    <LayerData v-model='layerdata'/>
+                    <LayerData :errors='errors' v-model='layerdata'/>
                 </div>
 
                 <div class="col-lg-12">
@@ -147,14 +147,17 @@ export default {
             }
         },
         create: async function() {
-            for (const field of ['name', 'description', 'cron', 'task']) {
-                if (!this.layer[field]) this.errors[field] = 'Cannot be empty';
-                else this.errors[field] = '';
+            for (const field of ['name', 'description']) {
+                this.errors[field] = !this.layer[field] ? 'Cannot be empty' : '';
             }
 
-            for (const e in this.errors) {
-                if (this.errors[e]) return;
+            if (this.layerdata.mode === 'live') {
+                for (const field of ['cron', 'task']) {
+                    this.errors[field] = !this.layerdata[field] ? 'Cannot be empty' : '';
+                }
             }
+
+            for (const e in this.errors) if (this.errors[e]) return;
 
             try {
                 let url, method;
@@ -168,6 +171,9 @@ export default {
 
                 const body = JSON.parse(JSON.stringify(this.layer));
                 body.data = JSON.parse(JSON.stringify(this.layerdata));
+
+                body.mode = body.data.mode;
+                delete body.data.mode;
 
                 const create = await window.std(url, { method, body });
 
