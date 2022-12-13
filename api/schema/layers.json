@@ -22,6 +22,9 @@
         },
         "styles": {
             "$ref": "./layers/styles.json"
+        },
+        "mode": {
+            "$ref": "./layers/mode.json"
         }
     },
     "required": [
@@ -31,6 +34,7 @@
         "updated",
         "description",
         "enabled",
-        "styles"
+        "styles",
+        "mode"
     ]
 }

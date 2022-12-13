@@ -20,6 +20,7 @@ function up(knex) {
 
         CREATE TABLE layers (
             id                  BIGSERIAL PRIMARY KEY,
+            mode                TEXT NOT NULL,
             name                TEXT NOT NULL,
             created             TIMESTAMP NOT NULL DEFAULT Now(),
             updated             TIMESTAMP NOT NULL DEFAULT Now(),
@@ -40,22 +41,6 @@ function up(knex) {
             layer_id            BIGINT PRIMARY KEY REFERENCES layers(id),
             asset_id            BIGINT NOT NULL REFERENCES assets(id)
         );
-
-        CREATE VIEW view_layers AS
-            SELECT
-                layers.*,
-                layers_live.stale,
-                layers_live.task,
-                layers_live.connection,
-                layers_live.cron,
-                layers_file.asset_id
-            FROM
-                layers
-                    LEFT JOIN layers_live
-                        ON layers.id = layers_live.layer_id
-                    LEFT JOIN layers_file
-                        ON layers.id = layers_file.layer_id
-
     `);
 }
 
