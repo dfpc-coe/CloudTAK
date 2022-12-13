@@ -61,7 +61,7 @@
                 </div>
 
                 <div class="col-lg-12">
-                    <StyleUtil v-model='layer.styles'/>
+                    <StyleUtil v-model='layer.styles' :enabled='layer.enabled_styles' @enabled='layer.enabled_styles = $event'/>
                 </div>
 
                 <div class="col-lg-12">
@@ -99,9 +99,6 @@ export default {
     data: function() {
         return {
             err: false,
-            connections: {
-                list: []
-            },
             loading: {
                 layer: true
             },
@@ -124,6 +121,7 @@ export default {
                 name: '',
                 description: '',
                 enabled: true,
+                enabled_styles: false,
                 styles: {}
             }
         }
@@ -140,7 +138,6 @@ export default {
             try {
                 this.loading.layer = true;
                 this.layer = await window.std(`/api/layer/${this.$route.params.layerid}`);
-                this.conn = await window.std(`/api/connection/${this.layer.connection}`);
                 this.loading.layer = false;
             } catch (err) {
                 this.err = err;

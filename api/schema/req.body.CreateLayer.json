@@ -6,6 +6,7 @@
         "description",
         "data",
         "enabled",
+        "enabled_styles",
         "styles"
     ],
     "properties": {
@@ -17,6 +18,9 @@
         },
         "enabled": {
             "$ref": "./layers/enabled.json"
+        },
+        "enabled_styles": {
+            "$ref": "./layers/enabled_styles.json"
         },
         "mode": {
             "$ref": "./layers/mode.json"

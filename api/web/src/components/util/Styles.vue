@@ -7,13 +7,13 @@
             <div class='d-flex'>
                 <span class='px-2'>Disable Overrides</span>
                 <label class="form-check form-switch">
-                    <input v-model='global_disable' class="form-check-input" type="checkbox" checked="">
+                    <input v-model='global_enabled' class="form-check-input" type="checkbox">
                 </label>
             </div>
         </div>
     </div>
 
-    <div v-if='global_disable' class='card-body'>
+    <div v-if='!global_enabled' class='card-body'>
         Style Overrides are disabled
     </div>
     <div v-else class='card-body'>
@@ -98,6 +98,10 @@ export default {
             },
             required: true
         },
+        enabled: {
+            type: Boolean,
+            default: false
+        },
         disabled: {
             type: Boolean,
             default: false
@@ -106,7 +110,7 @@ export default {
     data: function() {
         return {
             mode: 'point',
-            global_disable: true,
+            global_enabled: null,
             filters: {
                 point: {
                     style: 'solid',
@@ -133,6 +137,9 @@ export default {
         };
     },
     watch: {
+        global_enabled: function() {
+            this.$emit('enabled', this.global_enabled);
+        },
         filters: {
             deep: true,
             handler: function() {
@@ -141,6 +148,8 @@ export default {
         }
     },
     mounted: function() {
+        this.global_enabled = this.enabled;
+
         for (const key in this.modelValue) {
             Object.assign(this.filters[key], this.modelValue[key]);
         }
