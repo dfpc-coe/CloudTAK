@@ -106,7 +106,7 @@ export default {
         layer: {
             deep: true,
             handler: function() {
-                this.$emit('update:modelValue', this.filters);
+                this.$emit('update:modelValue', this.layer);
             }
         }
     },
