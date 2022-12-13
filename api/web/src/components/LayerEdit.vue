@@ -48,7 +48,7 @@
                 </div>
 
                 <div class="col-lg-12">
-                    <LayerUtil v-model='layer.styles'/>
+                    <LayerData v-model='layer'/>
                 </div>
 
                 <div class="col-lg-12">
@@ -82,7 +82,7 @@
 <script>
 import PageFooter from './PageFooter.vue';
 import StyleUtil from './util/Styles.vue';
-import LayerUtil from './util/LayerData.vue';
+import LayerData from './util/LayerData.vue';
 import { TablerError, TablerInput, TablerLoading } from '@tak-ps/vue-tabler';
 
 export default {
@@ -179,7 +179,7 @@ export default {
         PageFooter,
         TablerInput,
         StyleUtil,
-        LayerUtil,
+        LayerData,
         TablerLoading
     }
 }

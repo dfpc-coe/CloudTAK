@@ -49,7 +49,7 @@
                 <template v-if='!layer.asset_id'>
                     <UploadInline
                         @err='$emit("err", $event)'
-                        @asset='asset = $event'
+                        @asset='layer.asset_id = $event.id'
                     />
                 </template>
                 <template v-else>
@@ -91,7 +91,6 @@ export default {
     data: function() {
         return {
             mode: 'scheduled',
-            asset: { },
             errors: {
                 task: '',
                 cron: ''
@@ -104,17 +103,15 @@ export default {
         };
     },
     watch: {
-/*
-        filters: {
+        layer: {
             deep: true,
             handler: function() {
                 this.$emit('update:modelValue', this.filters);
             }
         }
-*/
     },
     mounted: function() {
-        //this.$emit('update:modelValue', this.filters);
+        this.layer = Object.assign(this.modelValue);
     },
     components: {
         TablerInput,
