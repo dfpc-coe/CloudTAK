@@ -3,7 +3,7 @@
     <div class="card-body">
         <div class="row align-items-center">
             <div class="col-auto">
-                <span @click='$router.push("/connection")' class="bg-primary text-white avatar cursor-pointer">
+                <span @click='$router.push("/layer")' class="bg-primary text-white avatar cursor-pointer">
                     <DatabaseIcon/>
                 </span>
             </div>
