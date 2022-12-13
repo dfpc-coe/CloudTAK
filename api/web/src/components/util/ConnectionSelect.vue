@@ -73,6 +73,9 @@ export default {
     watch: {
         selected: function() {
             this.$emit('update:modelValue', this.selected.id);
+        },
+        modelValue: function() {
+            if (this.modelValue) this.fetch();
         }
     },
     mounted: function() {
@@ -82,7 +85,7 @@ export default {
     methods: {
         fetch: async function() {
             try {
-                this.selected = await window.std(`/api/connection/${this.connection}`);
+                this.selected = await window.std(`/api/connection/${this.modelValue}`);
             } catch (err) {
                 this.$emit('err', err);
             }
