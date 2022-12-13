@@ -24,6 +24,15 @@
                     <div class="card">
                         <div class='card-header'>
                             <h3 class='card-title'>Layer <span v-text='layer.id'/></h3>
+
+                            <div class='ms-auto'>
+                                <div class='d-flex'>
+                                    <span class='px-2'>Enabled</span>
+                                    <label class="form-check form-switch">
+                                        <input v-model='layer.enabled' class="form-check-input" type="checkbox">
+                                    </label>
+                                </div>
+                            </div>
                         </div>
                         <div class="card-body">
                             <div class='row row-cards'>
@@ -48,7 +57,7 @@
                 </div>
 
                 <div class="col-lg-12">
-                    <LayerData v-model='layer'/>
+                    <LayerData v-model='layerdata'/>
                 </div>
 
                 <div class="col-lg-12">
@@ -107,12 +116,14 @@ export default {
                 status: '',
                 name: ''
             },
+            layerdata: {
+                cron: '0/15 * * * ? *',
+                task: '',
+            },
             layer: {
                 name: '',
                 description: '',
                 enabled: true,
-                cron: '0/15 * * * ? *',
-                task: '',
                 styles: {}
             }
         }
@@ -151,22 +162,14 @@ export default {
                     url = window.stdurl(`/api/layer/${this.$route.params.layerid}`);
                     method = 'PATCH'
                 } else {
-                    url = window.urlstd(`/api/layer`);
+                    url = window.stdurl(`/api/layer`);
                     method = 'POST'
                 }
 
-                const create = await window.std(url, {
-                    method,
-                    body: {
-                        name: this.layer.name,
-                        description: this.layer.description,
-                        enabled: this.layer.enabled,
-                        connection: this.conn.id,
-                        cron: this.layer.cron,
-                        task: this.layer.task,
-                        styles: this.layer.styles
-                    }
-                });
+                const body = JSON.parse(JSON.stringify(this.layer));
+                body.data = JSON.parse(JSON.stringify(this.layerdata));
+
+                const create = await window.std(url, { method, body });
 
                 this.$router.push(`/layer/${create.id}`);
             } catch (err) {
