@@ -42,11 +42,7 @@
             "$ref": "./layers/mode.json"
         },
         "data": {
-            "oneOf": [{
-                "$ref": "./layers_live.json"
-            },{
-                "$ref": "./layers_file.json"
-            }]
+            "type": "object"
         }
     }
 }

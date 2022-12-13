@@ -114,8 +114,6 @@ export default {
                 name: ''
             },
             layerdata: {
-                cron: '0/15 * * * ? *',
-                task: '',
             },
             layer: {
                 name: '',
@@ -137,7 +135,15 @@ export default {
         fetch: async function() {
             try {
                 this.loading.layer = true;
-                this.layer = await window.std(`/api/layer/${this.$route.params.layerid}`);
+
+                const layer = await window.std(`/api/layer/${this.$route.params.layerid}`);
+                this.layerdata = {
+                    mode: layer.mode,
+                    ...layer.data
+                };
+                delete layer.data;
+                this.layer = layer;
+
                 this.loading.layer = false;
             } catch (err) {
                 this.err = err;

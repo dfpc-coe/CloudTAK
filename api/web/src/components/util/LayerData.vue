@@ -6,41 +6,41 @@
 
     <div class='card-body'>
         <div class='row'>
-            <div class="d-flex justify-content-center mb-4">
+            <div v-if='!$route.params.layerid' class="d-flex justify-content-center mb-4">
                 <div class="btn-list">
                     <div class="btn-group" role="group">
-                        <input v-model='layer.mode' type="radio" class="btn-check" name="btn-radio-toolbar" value='live'>
-                        <label @click='layer.mode="live"' class="btn btn-icon px-3">
+                        <input v-model='layerdata.mode' type="radio" class="btn-check" name="btn-radio-toolbar" value='live'>
+                        <label @click='layerdata.mode="live"' class="btn btn-icon px-3">
                             <ClockIcon/> Scheduled
                         </label>
-                        <input v-model='layer.mode' type="radio" class="btn-check" name="btn-radio-toolbar" value='file'>
-                        <label @click='layer.mode="file"' class="btn btn-icon px-3">
+                        <input v-model='layerdata.mode' type="radio" class="btn-check" name="btn-radio-toolbar" value='file'>
+                        <label @click='layerdata.mode="file"' class="btn btn-icon px-3">
                             <FileUploadIcon/> Upload
                         </label>
                     </div>
                 </div>
             </div>
 
-            <template v-if='layer.mode === "live"'>
+            <template v-if='layerdata.mode === "live"'>
                 <div class="col-md-6 mb-3">
-                    <TablerInput label='Cron Schedule' v-model='layer.cron' :error='errors.cron'/>
+                    <TablerInput label='Cron Schedule' v-model='layerdata.cron' :error='errors.cron'/>
                 </div>
                 <div class="col-md-6 mb-3">
-                    <TablerInput label='Schedule Task' v-model='layer.task' :error='errors.task'/>
+                    <TablerInput label='Schedule Task' v-model='layerdata.task' :error='errors.task'/>
                 </div>
                 <div class="col-md-12">
                     <ConnectionSelect
                         @err='$emit("err", $event)'
-                        v-model='layer.connection'
+                        v-model='layerdata.connection'
 
                     />
                 </div>
             </template>
-            <template v-else-if='layer.mode === "file"'>
-                <template v-if='!layer.asset_id'>
+            <template v-else-if='layerdata.mode === "file"'>
+                <template v-if='!layerdata.asset_id'>
                     <UploadInline
                         @err='$emit("err", $event)'
-                        @asset='layer.asset_id = $event.id'
+                        @asset='layerdata.asset_id = $event.id'
                     />
                 </template>
                 <template v-else>
@@ -70,7 +70,7 @@ import {
 } from 'vue-tabler-icons'
 
 export default {
-    name: 'LayerUtil',
+    name: 'LayerData',
     props: {
         modelValue: {
             type: Object,
@@ -87,37 +87,37 @@ export default {
     },
     data: function() {
         return {
-            layer: {
+            layerdata: {
                 mode: 'live',
                 connection: null,
                 asset_id: null,
                 task: '',
-                cron: ''
+                cron: '0/15 * * * ? *'
             }
         };
     },
     watch: {
-        layer: {
+        layerdata: {
             deep: true,
             handler: function() {
-                if (this.layer.mode === 'live') {
+                if (this.layerdata.mode === 'live') {
                     this.$emit('update:modelValue', {
-                        mode: this.layer.mode,
-                        task: this.layer.task,
-                        cron: this.layer.cron,
-                        connection: this.layer.connection
+                        mode: this.layerdata.mode,
+                        task: this.layerdata.task,
+                        cron: this.layerdata.cron,
+                        connection: this.layerdata.connection
                     });
-                } else if (this.layer.mode === 'file') {
+                } else if (this.layerdata.mode === 'file') {
                     this.$emit('update:modelValue', {
-                        mode: this.layer.mode,
-                        asset_id: this.layer.asset_id
+                        mode: this.layerdata.mode,
+                        asset_id: this.layerdata.asset_id
                     });
                 }
             }
         }
     },
     mounted: function() {
-        this.layer = Object.assign(this.modelValue);
+        this.layerdata = Object.assign(this.modelValue);
     },
     components: {
         TablerInput,
