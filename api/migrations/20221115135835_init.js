@@ -26,6 +26,7 @@ function up(knex) {
             updated             TIMESTAMP NOT NULL DEFAULT Now(),
             description         TEXT NOT NULL DEFAULT '',
             enabled             BOOLEAN NOT NULL DEFAULT True,
+            enabled_styles      BOOLEAN NOT NULL DEFAULT False,
             styles              JSONB NOT NULL Default '{}'::JSONB
         );
 

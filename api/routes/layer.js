@@ -97,8 +97,6 @@ export default async function router(schema, config) {
         try {
             const layer = (await Layer.from(config.pool, req.params.layerid)).serialize();
 
-            console.error(layer);
-
             layer.data = (layer.mode === 'file' ? await LayerFile.from(config.pool, layer.id) : await LayerLive.from(config.pool, layer.id)).serialize();
 
             return res.json(layer);
