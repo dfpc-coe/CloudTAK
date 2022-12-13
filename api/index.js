@@ -163,7 +163,6 @@ export default async function server(config) {
     const wss = new WebSocketServer({
         noServer: true,
         verifyClient: ({ req }, cb) => {
-            console.error(req);
             return cb(true);
         }
     });

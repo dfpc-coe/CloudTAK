@@ -1,0 +1,48 @@
+{
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+        "id",
+        "name",
+        "created",
+        "updated",
+        "description",
+        "enabled",
+        "styles",
+        "mode",
+        "data"
+    ],
+    "properties": {
+        "id": {
+            "$ref": "./layers/id.json"
+        },
+        "name": {
+            "$ref": "./layers/name.json"
+        },
+        "created": {
+            "$ref": "./layers/created.json"
+        },
+        "updated": {
+            "$ref": "./layers/updated.json"
+        },
+        "description": {
+            "$ref": "./layers/description.json"
+        },
+        "enabled": {
+            "$ref": "./layers/enabled.json"
+        },
+        "styles": {
+            "$ref": "./layers/styles.json"
+        },
+        "mode": {
+            "$ref": "./layers/mode.json"
+        },
+        "data": {
+            "oneOf": [{
+                "$ref": "./layers_live.json"
+            },{
+                "$ref": "./layers_file.json"
+            }]
+        }
+    }
+}
