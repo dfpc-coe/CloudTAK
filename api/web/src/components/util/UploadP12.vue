@@ -43,7 +43,9 @@ export default {
     },
     mounted: function() {
         this.$nextTick(() => {
-            this.dropzone = new Dropzone("#dropzone-default");
+            this.dropzone = new Dropzone("#dropzone-default", {
+                autoProcessQueue: false
+            });
 
             this.dropzone.on('addedfile', (file) => {
                 const read = new FileReader();
