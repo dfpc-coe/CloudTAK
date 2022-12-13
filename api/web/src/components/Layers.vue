@@ -44,6 +44,11 @@
                     </div>
                 </div>
 
+                <None
+                    v-if='!list.layers.length'
+                    label='Layers'
+                    @create='$router.push("/layer/new")'
+                />
                 <div :key='layer.id' v-for='layer in list.layers' class="col-lg-12">
                     <div class="card">
                         <div class="card-header">
@@ -74,13 +79,18 @@
         </div>
     </div>
 
+    <TablerError v-if='err' :err='err' @close='err = null'/>
     <PageFooter/>
 </div>
 </template>
 
 <script>
+import None from './cards/None.vue';
 import PageFooter from './PageFooter.vue';
 import cronstrue from 'cronstrue';
+import {
+    TablerError
+} from '@tak-ps/vue-tabler';
 import {
     SettingsIcon,
     SearchIcon
@@ -138,6 +148,8 @@ export default {
         }
     },
     components: {
+        None,
+        TablerError,
         SettingsIcon,
         SearchIcon,
         PageFooter,

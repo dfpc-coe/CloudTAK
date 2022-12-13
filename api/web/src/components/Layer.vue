@@ -16,7 +16,7 @@
         </div>
     </div>
 
-    <Loading v-if='loading.layer' desc='Loading Layer'/>
+    <TablerLoading v-if='loading.layer' desc='Loading Layer'/>
     <div v-else class='page-body'>
         <div class='container-xl'>
             <div class='row row-deck row-cards'>
@@ -63,7 +63,7 @@ import PageFooter from './PageFooter.vue';
 import cronstrue from 'cronstrue';
 import Styles from './util/Styles.vue';
 import {
-    Loading
+    TablerLoading
 } from '@tak-ps/vue-tabler'
 import {
     SettingsIcon,
@@ -117,7 +117,7 @@ export default {
     components: {
         SettingsIcon,
         PageFooter,
-        Loading,
+        TablerLoading,
         Styles
     }
 }

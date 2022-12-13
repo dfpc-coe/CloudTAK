@@ -21,13 +21,13 @@
         </table>
     </div>
 
-    <Err v-if='err' :err='err' @close='err = null'/>
+    <TablerError v-if='err' :err='err' @close='err = null'/>
 </div>
 
 </template>
 
 <script>
-import { Err } from '@tak-ps/vue-tabler';
+import { TablerError } from '@tak-ps/vue-tabler';
 
 export default {
     name: 'ConnectionLayers',
@@ -60,7 +60,7 @@ export default {
         }
     },
     components: {
-        Err
+        TablerError
     }
 }
 </script>

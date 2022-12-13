@@ -80,7 +80,7 @@
 
 <script>
 import {
-    Input
+    TablerInput
 } from '@tak-ps/vue-tabler'
 import {
     PointIcon,
@@ -148,7 +148,7 @@ export default {
         this.$emit('update:modelValue', this.filters);
     },
     components: {
-        TablerInput: Input,
+        TablerInput,
         PointIcon,
         LineIcon,
         PolygonIcon

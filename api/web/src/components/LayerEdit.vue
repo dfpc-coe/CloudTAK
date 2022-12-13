@@ -16,7 +16,7 @@
         </div>
     </div>
 
-    <Loading v-if='loading.layer' desc='Loading Layer'/>
+    <TablerLoading v-if='loading.layer' desc='Loading Layer'/>
     <div v-else class='page-body'>
         <div class='container-xl'>
             <div class='row row-deck row-cards'>
@@ -75,7 +75,7 @@
     </div>
 
     <PageFooter/>
-    <Err v-if='err' :err='err' @close='err = null'/>
+    <TablerError v-if='err' :err='err' @close='err = null'/>
 </div>
 </template>
 
@@ -83,7 +83,7 @@
 import PageFooter from './PageFooter.vue';
 import StyleUtil from './util/Styles.vue';
 import LayerUtil from './util/LayerData.vue';
-import { Err, Input, Loading } from '@tak-ps/vue-tabler';
+import { TablerError, TablerInput, TablerLoading } from '@tak-ps/vue-tabler';
 
 export default {
     name: 'LayerEdit',
@@ -175,12 +175,12 @@ export default {
         }
     },
     components: {
-        Err,
+        TablerError,
         PageFooter,
-        TablerInput: Input,
+        TablerInput,
         StyleUtil,
         LayerUtil,
-        Loading
+        TablerLoading
     }
 }
 </script>

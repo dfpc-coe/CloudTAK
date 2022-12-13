@@ -44,6 +44,11 @@
                     </div>
                 </div>
 
+                <None
+                    v-if='!list.connections.length'
+                    label='Connections'
+                    @create='$router.push("/connection/new")'
+                />
                 <div :key='connection.id' v-for='connection in list.connections' class="col-lg-12">
                     <div class="card">
                         <div class="card-header">
@@ -67,15 +72,18 @@
             </div>
         </div>
     </div>
-    <Err v-if='err' :err='err' @close='err = null'/>
+    <TablerError v-if='err' :err='err' @close='err = null'/>
     <PageFooter/>
 </div>
 </template>
 
 <script>
 import PageFooter from './PageFooter.vue';
-import { Err } from '@tak-ps/vue-tabler';
+import {
+    TablerError
+} from '@tak-ps/vue-tabler';
 import ConnectionStatus from './Connection/Status.vue';
+import None from './cards/None.vue';
 import {
     SettingsIcon,
     SearchIcon
@@ -115,7 +123,8 @@ export default {
         }
     },
     components: {
-        Err,
+        None,
+        TablerError,
         SettingsIcon,
         SearchIcon,
         PageFooter,
