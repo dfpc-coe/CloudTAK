@@ -37,13 +37,13 @@
                 </div>
             </template>
             <template v-else-if='layerdata.mode === "file"'>
-                <template v-if='!layerdata.asset_id'>
+                <template v-if='!layerdata.raw_asset_id'>
                     <UploadInline
-                        @asset='layerdata.asset_id = $event.id'
+                        @asset='layerdata.raw_asset_id = $event.id'
                     />
                 </template>
                 <template v-else>
-                    <Asset :asset_id='layerdata.asset_id'/>
+                    <Asset :asset_id='layerdata.raw_asset_id'/>
                 </template>
             </template>
             <template v-else>
@@ -92,7 +92,8 @@ export default {
             layerdata: {
                 mode: 'live',
                 connection: null,
-                asset_id: null,
+                raw_asset_id: null,
+                std_asset_id: null,
                 task: '',
                 cron: '0/15 * * * ? *'
             }
@@ -112,7 +113,7 @@ export default {
                 } else if (this.layerdata.mode === 'file') {
                     this.$emit('update:modelValue', {
                         mode: this.layerdata.mode,
-                        asset_id: this.layerdata.asset_id
+                        raw_asset_id: this.layerdata.raw_asset_id
                     });
                 }
             }

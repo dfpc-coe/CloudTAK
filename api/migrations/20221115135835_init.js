@@ -40,7 +40,8 @@ function up(knex) {
 
         CREATE TABLE layers_file (
             layer_id            BIGINT PRIMARY KEY REFERENCES layers(id),
-            asset_id            BIGINT NOT NULL REFERENCES assets(id)
+            raw_asset_id        BIGINT NOT NULL REFERENCES assets(id),
+            std_asset_id        BIGINT REFERENCES assets(id)
         );
     `);
 }

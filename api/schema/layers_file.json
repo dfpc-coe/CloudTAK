@@ -5,12 +5,16 @@
         "layer_id": {
             "$ref": "./layers_file/layer_id.json"
         },
-        "asset_id": {
-            "$ref": "./layers_file/asset_id.json"
+        "raw_asset_id": {
+            "$ref": "./layers_file/raw_asset_id.json"
+        },
+        "std_asset_id": {
+            "$ref": "./layers_file/std_asset_id.json"
         }
     },
     "required": [
         "layer_id",
-        "asset_id"
+        "raw_asset_id",
+        "std_asset_id"
     ]
 }
