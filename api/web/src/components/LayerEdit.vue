@@ -8,7 +8,14 @@
                         <ol class="breadcrumb" aria-label="breadcrumbs">
                             <li class="breadcrumb-item"><a @click='$router.push("/")' class="cursor-pointer">Home</a></li>
                             <li class="breadcrumb-item" aria-current="page"><a  @click='$router.push("/layer")' class="cursor-pointer">Layer</a></li>
-                            <li class="breadcrumb-item active" aria-current="page"><a href="#">New</a></li>
+
+                            <template v-if='$route.params.layerid'>
+                                <li class="breadcrumb-item" aria-current="page"><a  @click='$router.push(`/layer/${$route.params.layerid}`)' class="cursor-pointer" v-text='$route.params.layerid'></a></li>
+                                <li class="breadcrumb-item active" aria-current="page"><a href="#">Edit</a></li>
+                            </template>
+                            <template v-else>
+                                <li class="breadcrumb-item active" aria-current="page"><a href="#">New</a></li>
+                            </template>
                         </ol>
                     </div>
                 </div>
@@ -84,7 +91,6 @@
     </div>
 
     <PageFooter/>
-    <TablerError v-if='err' :err='err' @close='err = null'/>
 </div>
 </template>
 
@@ -92,13 +98,12 @@
 import PageFooter from './PageFooter.vue';
 import StyleUtil from './util/Styles.vue';
 import LayerData from './util/LayerData.vue';
-import { TablerError, TablerInput, TablerLoading } from '@tak-ps/vue-tabler';
+import { TablerInput, TablerLoading } from '@tak-ps/vue-tabler';
 
 export default {
     name: 'LayerEdit',
     data: function() {
         return {
-            err: false,
             loading: {
                 layer: true
             },
@@ -124,30 +129,26 @@ export default {
             }
         }
     },
-    mounted: function() {
+    mounted: async function() {
         if (this.$route.params.layerid) {
-            this.fetch();
+            await this.fetch();
         } else {
             this.loading.layer = false;
         }
     },
     methods: {
         fetch: async function() {
-            try {
-                this.loading.layer = true;
+            this.loading.layer = true;
 
-                const layer = await window.std(`/api/layer/${this.$route.params.layerid}`);
-                this.layerdata = {
-                    mode: layer.mode,
-                    ...layer.data
-                };
-                delete layer.data;
-                this.layer = layer;
+            const layer = await window.std(`/api/layer/${this.$route.params.layerid}`);
+            this.layerdata = {
+                mode: layer.mode,
+                ...layer.data
+            };
+            delete layer.data;
+            this.layer = layer;
 
-                this.loading.layer = false;
-            } catch (err) {
-                this.err = err;
-            }
+            this.loading.layer = false;
         },
         create: async function() {
             for (const field of ['name', 'description']) {
@@ -162,32 +163,27 @@ export default {
 
             for (const e in this.errors) if (this.errors[e]) return;
 
-            try {
-                let url, method;
-                if (this.$route.params.layerid) {
-                    url = window.stdurl(`/api/layer/${this.$route.params.layerid}`);
-                    method = 'PATCH'
-                } else {
-                    url = window.stdurl(`/api/layer`);
-                    method = 'POST'
-                }
-
-                const body = JSON.parse(JSON.stringify(this.layer));
-                body.data = JSON.parse(JSON.stringify(this.layerdata));
-
-                body.mode = body.data.mode;
-                delete body.data.mode;
-
-                const create = await window.std(url, { method, body });
-
-                this.$router.push(`/layer/${create.id}`);
-            } catch (err) {
-                this.err = err;
+            let url, method;
+            if (this.$route.params.layerid) {
+                url = window.stdurl(`/api/layer/${this.$route.params.layerid}`);
+                method = 'PATCH'
+            } else {
+                url = window.stdurl(`/api/layer`);
+                method = 'POST'
             }
+
+            const body = JSON.parse(JSON.stringify(this.layer));
+            body.data = JSON.parse(JSON.stringify(this.layerdata));
+
+            body.mode = body.data.mode;
+            delete body.data.mode;
+
+            const create = await window.std(url, { method, body });
+
+            this.$router.push(`/layer/${create.id}`);
         }
     },
     components: {
-        TablerError,
         PageFooter,
         TablerInput,
         StyleUtil,

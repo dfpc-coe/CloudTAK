@@ -38,16 +38,12 @@ export default {
             }
         }
     },
-    mounted: function() {
-        this.fetch()
+    mounted: async function() {
+        await this.fetch()
     },
     methods: {
         fetch: async function() {
-            try {
-                this.list = await window.std('/api/connection?limit=1');
-            } catch (err) {
-                this.$emit('err', err);
-            }
+            this.list = await window.std('/api/connection?limit=1');
         }
     },
     components: {

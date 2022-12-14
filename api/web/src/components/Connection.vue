@@ -46,13 +46,11 @@
             </div>
         </div>
     </div>
-    <TablerError v-if='err' :err='err' @close='err = null'/>
     <PageFooter/>
 </div>
 </template>
 
 <script>
-import { TablerError } from '@tak-ps/vue-tabler';
 import PageFooter from './PageFooter.vue';
 import ConnectionStatus from './Connection/Status.vue';
 import ConnectionLayers from './Connection/Layers.vue';
@@ -64,26 +62,18 @@ export default {
     name: 'Connection',
     data: function() {
         return {
-            err: false,
-            connection: {
-
-            }
+            connection: {}
         }
     },
-    mounted: function() {
-        this.fetch();
+    mounted: async function() {
+        await this.fetch();
     },
     methods: {
         fetch: async function() {
-            try {
-                this.connection = await window.std(`/api/connection/${this.$route.params.connectionid}`);
-            } catch (err) {
-                this.err = err;
-            }
+            this.connection = await window.std(`/api/connection/${this.$route.params.connectionid}`);
         }
     },
     components: {
-        TablerError,
         SettingsIcon,
         PageFooter,
         ConnectionStatus,

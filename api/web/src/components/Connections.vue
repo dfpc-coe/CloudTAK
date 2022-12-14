@@ -72,16 +72,12 @@
             </div>
         </div>
     </div>
-    <TablerError v-if='err' :err='err' @close='err = null'/>
     <PageFooter/>
 </div>
 </template>
 
 <script>
 import PageFooter from './PageFooter.vue';
-import {
-    TablerError
-} from '@tak-ps/vue-tabler';
 import ConnectionStatus from './Connection/Status.vue';
 import None from './cards/None.vue';
 import {
@@ -108,23 +104,18 @@ export default {
             this.fetchList();
         }
     },
-    mounted: function() {
-        this.fetchList();
+    mounted: async function() {
+        await this.fetchList();
     },
     methods: {
         fetchList: async function() {
-            try {
-                const url = window.stdurl('/api/connection');
-                if (this.query.shown && this.query.search) url.searchParams.append('filter', this.query.search);
-                this.list = await window.std(url);
-            } catch (err) {
-                this.err = err;
-            }
+            const url = window.stdurl('/api/connection');
+            if (this.query.shown && this.query.search) url.searchParams.append('filter', this.query.search);
+            this.list = await window.std(url);
         }
     },
     components: {
         None,
-        TablerError,
         SettingsIcon,
         SearchIcon,
         PageFooter,

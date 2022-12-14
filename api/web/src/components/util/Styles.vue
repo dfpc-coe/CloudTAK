@@ -5,7 +5,7 @@
 
         <div class='ms-auto'>
             <div class='d-flex'>
-                <span class='px-2'>Disable Overrides</span>
+                <span class='px-2'>Enabled</span>
                 <label class="form-check form-switch">
                     <input :disabled='disabled' v-model='global_enabled' class="form-check-input" type="checkbox">
                 </label>

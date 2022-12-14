@@ -1,0 +1,27 @@
+{
+    "type": "object",
+    "oneOf": [{
+        "required": [ "cron", "connection", "task" ]
+    },{
+        "required": [ "asset_id" ]
+    }],
+    "additionalProperties": false,
+    "properties": {
+        "asset_id": {
+            "$ref": "../assets/id.json"
+        },
+
+        "task": {
+            "$ref": "../layers_live/task.json"
+        },
+        "stale": {
+            "$ref": "../layers_live/stale.json"
+        },
+        "cron": {
+            "$ref": "../layers_live/cron.json"
+        },
+        "connection": {
+            "$ref": "../layers_live/connection.json"
+        }
+    }
+}
