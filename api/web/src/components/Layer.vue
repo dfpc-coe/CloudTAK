@@ -31,7 +31,7 @@
                                 </span>
                             </template>
                             <template v-else>
-                                <span class="status-indicator status-gray status-indicator-animated">
+                                <span class="status-indicator status-blue status-indicator-animated">
                                       <span class="status-indicator-circle"></span>
                                       <span class="status-indicator-circle"></span>
                                       <span class="status-indicator-circle"></span>
@@ -61,7 +61,7 @@
                 </div>
 
                 <div class="col-lg-12">
-                    <Styles v-model='layer.styles' :disabled='true' />
+                    <Styles v-model='layer.styles' :enabled='layer.enabled_styles' :disabled='true' />
                 </div>
             </div>
         </div>
@@ -95,8 +95,8 @@ export default {
             layer: {}
         }
     },
-    mounted: function() {
-        this.fetch();
+    mounted: async function() {
+        await this.fetch();
     },
     methods: {
         cronstr: function(cron) {
@@ -119,21 +119,17 @@ export default {
             return '~' + Math.round(elapsed/msPerYear ) + ' years ago';
         },
         fetch: async function() {
-            try {
-                this.loading.layer = true;
+            this.loading.layer = true;
 
-                const layer = await window.std(`/api/layer/${this.$route.params.layerid}`);
-                this.layerdata = {
-                    mode: layer.mode,
-                    ...layer.data
-                };
-                delete layer.data;
-                this.layer = layer;
+            const layer = await window.std(`/api/layer/${this.$route.params.layerid}`);
+            this.layerdata = {
+                mode: layer.mode,
+                ...layer.data
+            };
+            delete layer.data;
+            this.layer = layer;
 
-                this.loading.layer = false;
-            } catch (err) {
-                this.err = err;
-            }
+            this.loading.layer = false;
         }
     },
     components: {

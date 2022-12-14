@@ -30,7 +30,6 @@
                 </div>
                 <div class="col-md-12">
                     <ConnectionSelect
-                        @err='$emit("err", $event)'
                         :disabled='disabled'
                         v-model='layerdata.connection'
 
@@ -40,12 +39,11 @@
             <template v-else-if='layerdata.mode === "file"'>
                 <template v-if='!layerdata.asset_id'>
                     <UploadInline
-                        @err='$emit("err", $event)'
                         @asset='layerdata.asset_id = $event.id'
                     />
                 </template>
                 <template v-else>
-                    LAYER
+                    <Asset :asset_id='layerdata.asset_id'/>
                 </template>
             </template>
             <template v-else>
@@ -60,6 +58,7 @@
 
 <script>
 import UploadInline from './UploadInline.vue';
+import Asset from './Asset.vue';
 import {
     TablerInput
 } from '@tak-ps/vue-tabler';
@@ -123,6 +122,7 @@ export default {
         this.layerdata = Object.assign(this.modelValue);
     },
     components: {
+        Asset,
         TablerInput,
         ClockIcon,
         FileUploadIcon,

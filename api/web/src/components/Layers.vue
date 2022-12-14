@@ -60,7 +60,7 @@
                                 </span>
                             </template>
                             <template v-else>
-                                <span class="status-indicator status-gray status-indicator-animated">
+                                <span class="status-indicator status-blue status-indicator-animated">
                                       <span class="status-indicator-circle"></span>
                                       <span class="status-indicator-circle"></span>
                                       <span class="status-indicator-circle"></span>
@@ -86,7 +86,6 @@
         </div>
     </div>
 
-    <TablerError v-if='err' :err='err' @close='err = null'/>
     <PageFooter/>
 </div>
 </template>
@@ -94,9 +93,6 @@
 <script>
 import None from './cards/None.vue';
 import PageFooter from './PageFooter.vue';
-import {
-    TablerError
-} from '@tak-ps/vue-tabler';
 import {
     SettingsIcon,
     SearchIcon
@@ -121,8 +117,8 @@ export default {
             this.fetchList();
         }
     },
-    mounted: function() {
-        this.fetchList();
+    mounted: async function() {
+        await this.fetchList();
     },
     methods: {
         timeDiff: function(updated) {
@@ -141,18 +137,13 @@ export default {
             return '~' + Math.round(elapsed/msPerYear ) + ' years ago';
         },
         fetchList: async function() {
-            try {
-                const url = window.stdurl('/api/layer');
-                if (this.query.shown && this.query.search) url.searchParams.append('filter', this.query.search);
-                this.list = await window.std(url);
-            } catch (err) {
-                this.err = err;
-            }
+            const url = window.stdurl('/api/layer');
+            if (this.query.shown && this.query.search) url.searchParams.append('filter', this.query.search);
+            this.list = await window.std(url);
         }
     },
     components: {
         None,
-        TablerError,
         SettingsIcon,
         SearchIcon,
         PageFooter,
