@@ -54,24 +54,6 @@
 
 
 /**
-* @api {get} /asset/:assetid/raw Raw Asset
-* @apiVersion 1.0.0
-* @apiName GET-/asset/:assetid/raw
-* @apiGroup Assets
-* @apiPermission user
-*
-* @apidescription
-*   Get single raw asset
-*
-* @apiParam {integer} assetid param
-*
-*
-*
-*
-*/
-
-
-/**
 * @api {post} /asset Create Asset
 * @apiVersion 1.0.0
 * @apiName POST-/asset
@@ -122,6 +104,24 @@
 *
 *
 * @apiSchema {jsonschema=../schema/res.Standard.json} apiSuccess
+*/
+
+
+/**
+* @api {get} /asset/:assetid/raw Raw Asset
+* @apiVersion 1.0.0
+* @apiName GET-/asset/:assetid/raw
+* @apiGroup Assets
+* @apiPermission user
+*
+* @apidescription
+*   Get single raw asset
+*
+* @apiParam {integer} assetid param
+*
+*
+*
+*
 */
 
 

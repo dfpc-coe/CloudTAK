@@ -37,31 +37,6 @@ export default async function router(schema, config) {
         }
     });
 
-    await schema.get('/asset/:assetid/raw', {
-        name: 'Raw Asset',
-        auth: 'user',
-        group: 'Assets',
-        description: 'Get single raw asset',
-        ':assetid': 'integer',
-    }, async (req, res) => {
-        try {
-            // this should be optimized to read directly... maybe store the extension in the DB?
-            // could also allow user restricted files in the future..
-            let afile = null;
-            for (const file of await fs.readdir(new URL('../assets/', import.meta.url))) {
-                if (parseInt(path.parse(file).name) === req.params.assetid) {
-                    afile = file;
-                    break;
-                }
-            }
-
-            res.contentType(afile);
-            res.send(await fs.readFile(new URL('../assets/' + afile, import.meta.url)));
-        } catch (err) {
-            return Err.respond(err, res);
-        }
-    });
-
     await schema.post('/asset', {
         name: 'Create Asset',
         auth: 'user',
@@ -153,4 +128,30 @@ export default async function router(schema, config) {
             return Err.respond(err, res);
         }
     });
+
+    await schema.get('/asset/:assetid/raw', {
+        name: 'Raw Asset',
+        auth: 'user',
+        group: 'Assets',
+        description: 'Get single raw asset',
+        ':assetid': 'integer',
+    }, async (req, res) => {
+        try {
+            // this should be optimized to read directly... maybe store the extension in the DB?
+            // could also allow user restricted files in the future..
+            let afile = null;
+            for (const file of await fs.readdir(new URL('../assets/', import.meta.url))) {
+                if (parseInt(path.parse(file).name) === req.params.assetid) {
+                    afile = file;
+                    break;
+                }
+            }
+
+            res.contentType(afile);
+            res.send(await fs.readFile(new URL('../assets/' + afile, import.meta.url)));
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
+
 }

@@ -3,14 +3,16 @@
     "oneOf": [{
         "required": [ "cron", "connection", "task" ]
     },{
-        "required": [ "asset_id" ]
+        "required": [ "raw_asset_id" ]
     }],
     "additionalProperties": false,
     "properties": {
-        "asset_id": {
+        "raw_asset_id": {
             "$ref": "../assets/id.json"
         },
-
+        "std_asset_id": {
+            "$ref": "../assets/id.json"
+        },
         "task": {
             "$ref": "../layers_live/task.json"
         },
