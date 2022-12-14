@@ -29,40 +29,7 @@
             "$ref": "./layers/styles.json"
         },
         "data": {
-            "anyOf": [{
-                "type": "object",
-                "required": [
-                    "cron",
-                    "connection",
-                    "task"
-                ],
-                "additionalProperties": false,
-                "properties": {
-                    "task": {
-                        "$ref": "./layers_live/task.json"
-                    },
-                    "stale": {
-                        "$ref": "./layers_live/stale.json"
-                    },
-                    "cron": {
-                        "$ref": "./layers_live/cron.json"
-                    },
-                    "connection": {
-                        "$ref": "./layers_live/connection.json"
-                    }
-                }
-            },{
-                "type": "object",
-                "required": [
-                    "asset_id"
-                ],
-                "additionalProperties": false,
-                "properties": {
-                    "asset_id": {
-                        "$ref": "./assets/id.json"
-                    }
-                }
-            }]
+            "$ref": "./util/layerdata.json"
         }
     }
 }
