@@ -69,7 +69,9 @@ export default async function router(schema, config) {
             const data = req.body.data;
             delete req.body.data;
 
-            let layer = await Layer.commit(config.pool, req.params.layerid, req.body);
+            let layer = Object.keys(req.body).length > 0
+                ?  await Layer.commit(config.pool, req.params.layerid, req.body)
+                :  await Layer.from(config.pool, req.params.layerid);
 
             if (layer.mode === 'live') {
                 await LayerLive.commit(config.pool, layer.id, data);
