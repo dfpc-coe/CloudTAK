@@ -31,7 +31,7 @@
                                 </span>
                             </template>
                             <template v-else>
-                                <span class="status-indicator status-gray status-indicator-animated">
+                                <span class="status-indicator status-blue status-indicator-animated">
                                       <span class="status-indicator-circle"></span>
                                       <span class="status-indicator-circle"></span>
                                       <span class="status-indicator-circle"></span>
