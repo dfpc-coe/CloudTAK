@@ -45,14 +45,14 @@ export default async function router(schema, config) {
         ':assetid': 'integer',
         res: 'assets.json'
     }, async (req, res) => {
-        if (req.headers['content-type']) {
-            req.headers['content-type'] = req.headers['content-type'].split(',')[0];
-        } else {
-            throw new Err(400, null, 'Missing Content-Type Header');
-        }
-
         let bb;
         try {
+            if (req.headers['content-type']) {
+                req.headers['content-type'] = req.headers['content-type'].split(',')[0];
+            } else {
+                throw new Err(400, null, 'Missing Content-Type Header');
+            }
+
             bb = busboy({
                 headers: req.headers,
                 limits: {
@@ -63,14 +63,17 @@ export default async function router(schema, config) {
             return Err.respond(err, res);
         }
 
-
         const assets = [];
         bb.on('file', async (fieldname, file, blob) => {
-            const asset = await Asset.generate(config.pool, {
-                name: blob.filename
-            });
+            try {
+                const asset = await Asset.generate(config.pool, {
+                    name: blob.filename
+                });
 
-            assets.push(asset.upload(file));
+                assets.push(asset.upload(file));
+            } catch (err) {
+                return Err.respond(err, res);
+            }
         }).on('finish', async () => {
             try {
                 if (!assets.length) throw new Err(400, null, 'No Asset Provided');

@@ -74,13 +74,17 @@ export default async function router(schema, config) {
                 :  await Layer.from(config.pool, req.params.layerid);
 
             if (layer.mode === 'live') {
-                await LayerLive.commit(config.pool, layer.id, data);
+                await LayerLive.commit(config.pool, layer.id, data, {
+                    column: 'layer_id'
+                });
             } else if (layer.mode === 'file') {
-                await LayerFile.commit(config.pool, layer.id, data);
+                await LayerFile.commit(config.pool, layer.id, data, {
+                    column: 'layer_id'
+                });
             }
 
             layer = layer.serialize();
-            layer.data = (layer.mode === 'file' ? await LayerFile.from(config.pool, layer.id) : await LayerLive.from(config.pool, layer.id)).serialize();
+            layer.data = (layer.mode === 'file' ? await LayerFile.from(config.pool, layer.id, { column: 'layer_id' }) : await LayerLive.from(config.pool, layer.id, { column: 'layer_id' })).serialize();
 
             return res.json(layer);
         } catch (err) {
