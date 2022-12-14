@@ -10,7 +10,7 @@
             Select A Connection Using the Gear Icon on the right
         </template>
 
-        <div class='ms-auto'>
+        <div v-if='!disabled' class='ms-auto'>
             <div class="dropdown">
                 <div class="dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
                     <SettingsIcon
@@ -56,6 +56,10 @@ export default {
     name: 'ConnectionSelect',
     props: {
         modelValue: Number,
+        disabled: {
+            type: Boolean,
+            default: false
+        }
     },
     data: function() {
         return {

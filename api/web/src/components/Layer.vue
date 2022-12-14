@@ -23,17 +23,26 @@
                 <div class="col-lg-12">
                     <div class="card">
                         <div class="card-header">
-                            <span class="status-indicator status-green status-indicator-animated">
-                                  <span class="status-indicator-circle"></span>
-                                  <span class="status-indicator-circle"></span>
-                                  <span class="status-indicator-circle"></span>
-                            </span>
+                            <template v-if='layer.mode === "live"'>
+                                <span class="status-indicator status-green status-indicator-animated">
+                                      <span class="status-indicator-circle"></span>
+                                      <span class="status-indicator-circle"></span>
+                                      <span class="status-indicator-circle"></span>
+                                </span>
+                            </template>
+                            <template v-else>
+                                <span class="status-indicator status-gray status-indicator-animated">
+                                      <span class="status-indicator-circle"></span>
+                                      <span class="status-indicator-circle"></span>
+                                      <span class="status-indicator-circle"></span>
+                                </span>
+                            </template>
 
                             <a @click='$router.push(`/layer/${layer.id}`)' class="card-title cursor-pointer" v-text='layer.name'></a>
 
                             <div class='ms-auto'>
                                 <div class='btn-list'>
-                                    <span v-text='cronstr(layer.cron)'/>
+                                    <span v-if='layerdata.cron' v-text='cronstr(layer.cron)'/>
 
                                     <SettingsIcon class='cursor-pointer' @click='$router.push(`/layer/${layer.id}/edit`)'/>
                                 </div>
@@ -45,6 +54,10 @@
                             Last updated <span v-text='timeDiff(layer.updated)'/>
                         </div>
                     </div>
+                </div>
+
+                <div class="col-lg-12">
+                    <LayerData v-model='layerdata' :disabled='true'/>
                 </div>
 
                 <div class="col-lg-12">
@@ -61,6 +74,7 @@
 <script>
 import PageFooter from './PageFooter.vue';
 import cronstrue from 'cronstrue';
+import LayerData from './util/LayerData.vue';
 import Styles from './util/Styles.vue';
 import {
     TablerLoading
@@ -77,8 +91,8 @@ export default {
             loading: {
                 layer: true
             },
-            layer: {
-            }
+            layerdata: {},
+            layer: {}
         }
     },
     mounted: function() {
@@ -107,7 +121,15 @@ export default {
         fetch: async function() {
             try {
                 this.loading.layer = true;
-                this.layer = await window.std(`/api/layer/${this.$route.params.layerid}`);
+
+                const layer = await window.std(`/api/layer/${this.$route.params.layerid}`);
+                this.layerdata = {
+                    mode: layer.mode,
+                    ...layer.data
+                };
+                delete layer.data;
+                this.layer = layer;
+
                 this.loading.layer = false;
             } catch (err) {
                 this.err = err;
@@ -116,6 +138,7 @@ export default {
     },
     components: {
         SettingsIcon,
+        LayerData,
         PageFooter,
         TablerLoading,
         Styles

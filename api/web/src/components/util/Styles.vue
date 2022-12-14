@@ -7,7 +7,7 @@
             <div class='d-flex'>
                 <span class='px-2'>Disable Overrides</span>
                 <label class="form-check form-switch">
-                    <input v-model='global_enabled' class="form-check-input" type="checkbox">
+                    <input :disabled='disabled' v-model='global_enabled' class="form-check-input" type="checkbox">
                 </label>
             </div>
         </div>
