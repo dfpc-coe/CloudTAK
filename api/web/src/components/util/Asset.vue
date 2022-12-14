@@ -39,7 +39,7 @@ export default {
             this.asset = await window.std(`/api/asset/${this.asset_id}`);
         },
         download: function() {
-
+            window.open(window.stdurl(`/api/asset/${this.asset_id}/raw`), "_blank")
         }
     },
     components: {
