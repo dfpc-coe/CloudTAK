@@ -43,7 +43,7 @@
                     />
                 </template>
                 <template v-else>
-                    LAYER
+                    <Asset :asset_id='layerdata.asset_id'/>
                 </template>
             </template>
             <template v-else>
@@ -58,6 +58,7 @@
 
 <script>
 import UploadInline from './UploadInline.vue';
+import Asset from './Asset.vue';
 import {
     TablerInput
 } from '@tak-ps/vue-tabler';
@@ -121,6 +122,7 @@ export default {
         this.layerdata = Object.assign(this.modelValue);
     },
     components: {
+        Asset,
         TablerInput,
         ClockIcon,
         FileUploadIcon,
