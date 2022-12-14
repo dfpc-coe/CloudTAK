@@ -4,9 +4,10 @@
     "required": [
         "name",
         "description",
-        "cron",
+        "data",
         "enabled",
-        "connection"
+        "enabled_styles",
+        "styles"
     ],
     "properties": {
         "name": {
@@ -15,17 +16,53 @@
         "description": {
             "$ref": "./layers/description.json"
         },
-        "cron": {
-            "$ref": "./layers/cron.json"
-        },
         "enabled": {
             "$ref": "./layers/enabled.json"
         },
-        "connection": {
-            "$ref": "./layers/connection.json"
+        "enabled_styles": {
+            "$ref": "./layers/enabled_styles.json"
         },
-        "stale": {
-            "$ref": "./layers/stale.json"
+        "mode": {
+            "$ref": "./layers/mode.json"
+        },
+        "styles": {
+            "$ref": "./layers/styles.json"
+        },
+        "data": {
+            "anyOf": [{
+                "type": "object",
+                "required": [
+                    "cron",
+                    "connection",
+                    "task"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                    "task": {
+                        "$ref": "./layers_live/task.json"
+                    },
+                    "stale": {
+                        "$ref": "./layers_live/stale.json"
+                    },
+                    "cron": {
+                        "$ref": "./layers_live/cron.json"
+                    },
+                    "connection": {
+                        "$ref": "./layers_live/connection.json"
+                    }
+                }
+            },{
+                "type": "object",
+                "required": [
+                    "asset_id"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                    "asset_id": {
+                        "$ref": "./assets/id.json"
+                    }
+                }
+            }]
         }
     }
 }

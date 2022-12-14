@@ -16,11 +16,24 @@
         </div>
     </div>
 
-    <div class='page-body'>
+    <TablerLoading v-if='loading.layer' desc='Loading Layer'/>
+    <div v-else class='page-body'>
         <div class='container-xl'>
             <div class='row row-deck row-cards'>
                 <div class="col-lg-12">
                     <div class="card">
+                        <div class='card-header'>
+                            <h3 class='card-title'>Layer <span v-text='layer.id'/></h3>
+
+                            <div class='ms-auto'>
+                                <div class='d-flex'>
+                                    <span class='px-2'>Enabled</span>
+                                    <label class="form-check form-switch">
+                                        <input v-model='layer.enabled' class="form-check-input" type="checkbox">
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
                         <div class="card-body">
                             <div class='row row-cards'>
                                 <div class="col-md-12">
@@ -30,29 +43,6 @@
                                         :error='errors.name'
                                     />
                                 </div>
-                                <div class="col-md-6">
-                                    <label class="row">
-                                        <span class="col">
-                                            <label class='form-label'>Scheduled</label>
-                                        </span>
-                                        <span class="col-auto">
-                                            <label class="form-check form-check-single form-switch">
-                                                <input v-model='layer.enabled' class="form-check-input" type="checkbox">
-                                            </label>
-                                        </span>
-                                    </label>
-                                    <input v-model='layer.cron' type="text" :class='{
-                                        "is-invalid": errors.cron
-                                    }' class="form-control" placeholder="CRON Schedule">
-                                    <div v-if='errors.cron' v-text='errors.cron' class="invalid-feedback"></div>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">Layer Task</label>
-                                    <input v-model='layer.task' type="text" :class='{
-                                        "is-invalid": errors.task
-                                    }' class="form-control" placeholder="Layer Task">
-                                    <div v-if='errors.task' v-text='errors.task' class="invalid-feedback"></div>
-                                </div>
                                 <div class="col-md-12">
                                     <TablerInput
                                         label='Layer Description'
@@ -61,44 +51,29 @@
                                         :error='errors.description'
                                     />
                                 </div>
-                                <div class="col-md-12">
-                                    <label class="form-label">Connection</label>
-                                    <div v-if='conn.id' class='d-flex'>
-                                        <ConnectionStatus :connection='conn'/>
-                                        <span class='mt-2' v-text='conn.name'/>
-                                    </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-                                    <div class='table-resposive'>
-                                        <table class='table'>
-                                            <thead>
-                                                <tr>
-                                                    <th>(Status) Name</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody class='table-tbody'>
-                                                <tr @click='conn = connection' :key='connection.id' v-for='connection of connections.connections' class='cursor-pointer'>
-                                                    <td>
-                                                        <div class='d-flex'>
-                                                            <ConnectionStatus :connection='connection'/>
-                                                            <span class='mt-2' v-text='connection.name'/>
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
+                <div class="col-lg-12">
+                    <LayerData :errors='errors' v-model='layerdata'/>
+                </div>
 
-                                <div class="col-md-12">
-                                    <div class='d-flex'>
-                                        <a v-if='$route.params.layerid' @click='create' class="cursor-pointer btn btn-outline-danger">
-                                            Delete Layer
-                                        </a>
-                                        <div class='ms-auto'>
-                                            <a v-if='$route.params.layerid' @click='create' class="cursor-pointer btn btn-primary">Update Layer</a>
-                                            <a v-else @click='create' class="cursor-pointer btn btn-primary">Create Layer</a>
-                                        </div>
-                                    </div>
+                <div class="col-lg-12">
+                    <StyleUtil v-model='layer.styles' :enabled='layer.enabled_styles' @enabled='layer.enabled_styles = $event'/>
+                </div>
+
+                <div class="col-lg-12">
+                    <div class='card'>
+                        <div class="card-body">
+                            <div class='d-flex'>
+                                <a v-if='$route.params.layerid' @click='create' class="cursor-pointer btn btn-outline-danger">
+                                    Delete Layer
+                                </a>
+                                <div class='ms-auto'>
+                                    <a v-if='$route.params.layerid' @click='create' class="cursor-pointer btn btn-primary">Update Layer</a>
+                                    <a v-else @click='create' class="cursor-pointer btn btn-primary">Create Layer</a>
                                 </div>
                             </div>
                         </div>
@@ -109,22 +84,23 @@
     </div>
 
     <PageFooter/>
-    <Err v-if='err' :err='err' @close='err = null'/>
+    <TablerError v-if='err' :err='err' @close='err = null'/>
 </div>
 </template>
 
 <script>
-import ConnectionStatus from './Connection/Status.vue';
 import PageFooter from './PageFooter.vue';
-import { Err, Input } from '@tak-ps/vue-tabler';
+import StyleUtil from './util/Styles.vue';
+import LayerData from './util/LayerData.vue';
+import { TablerError, TablerInput, TablerLoading } from '@tak-ps/vue-tabler';
 
 export default {
-    name: 'LayerNew',
+    name: 'LayerEdit',
     data: function() {
         return {
             err: false,
-            connections: {
-                list: []
+            loading: {
+                layer: true
             },
             errors: {
                 name: '',
@@ -137,45 +113,54 @@ export default {
                 status: '',
                 name: ''
             },
+            layerdata: {
+            },
             layer: {
                 name: '',
                 description: '',
                 enabled: true,
-                cron: '0/15 * * * ? *',
-                task: ''
+                enabled_styles: false,
+                styles: {}
             }
         }
     },
     mounted: function() {
-        this.listConnections();
-
-        if (this.$route.params.layerid) this.fetch();
+        if (this.$route.params.layerid) {
+            this.fetch();
+        } else {
+            this.loading.layer = false;
+        }
     },
     methods: {
-        listConnections: async function() {
-            try {
-                this.connections = await window.std('/api/connection');
-            } catch (err) {
-                this.err = err;
-            }
-        },
         fetch: async function() {
             try {
-                this.layer = await window.std(`/api/layer/${this.$route.params.layerid}`);
-                this.conn = await window.std(`/api/connection/${this.layer.connection}`);
+                this.loading.layer = true;
+
+                const layer = await window.std(`/api/layer/${this.$route.params.layerid}`);
+                this.layerdata = {
+                    mode: layer.mode,
+                    ...layer.data
+                };
+                delete layer.data;
+                this.layer = layer;
+
+                this.loading.layer = false;
             } catch (err) {
                 this.err = err;
             }
         },
         create: async function() {
-            for (const field of ['name', 'description', 'cron', 'task']) {
-                if (!this.layer[field]) this.errors[field] = 'Cannot be empty';
-                else this.errors[field] = '';
+            for (const field of ['name', 'description']) {
+                this.errors[field] = !this.layer[field] ? 'Cannot be empty' : '';
             }
 
-            for (const e in this.errors) {
-                if (this.errors[e]) return;
+            if (this.layerdata.mode === 'live') {
+                for (const field of ['cron', 'task']) {
+                    this.errors[field] = !this.layerdata[field] ? 'Cannot be empty' : '';
+                }
             }
+
+            for (const e in this.errors) if (this.errors[e]) return;
 
             try {
                 let url, method;
@@ -183,21 +168,17 @@ export default {
                     url = window.stdurl(`/api/layer/${this.$route.params.layerid}`);
                     method = 'PATCH'
                 } else {
-                    url = window.urlstd(`/api/layer`);
+                    url = window.stdurl(`/api/layer`);
                     method = 'POST'
                 }
 
-                const create = await window.std(url, {
-                    method,
-                    body: {
-                        name: this.layer.name,
-                        description: this.layer.description,
-                        enabled: this.layer.enabled,
-                        connection: this.conn.id,
-                        cron: this.layer.cron,
-                        task: this.layertask
-                    }
-                });
+                const body = JSON.parse(JSON.stringify(this.layer));
+                body.data = JSON.parse(JSON.stringify(this.layerdata));
+
+                body.mode = body.data.mode;
+                delete body.data.mode;
+
+                const create = await window.std(url, { method, body });
 
                 this.$router.push(`/layer/${create.id}`);
             } catch (err) {
@@ -206,10 +187,12 @@ export default {
         }
     },
     components: {
-        Err,
+        TablerError,
         PageFooter,
-        ConnectionStatus,
-        TablerInput: Input
+        TablerInput,
+        StyleUtil,
+        LayerData,
+        TablerLoading
     }
 }
 </script>

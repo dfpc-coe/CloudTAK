@@ -44,21 +44,33 @@
                     </div>
                 </div>
 
+                <None
+                    v-if='!list.layers.length'
+                    label='Layers'
+                    @create='$router.push("/layer/new")'
+                />
                 <div :key='layer.id' v-for='layer in list.layers' class="col-lg-12">
                     <div class="card">
                         <div class="card-header">
-                            <span class="status-indicator status-green status-indicator-animated">
-                                  <span class="status-indicator-circle"></span>
-                                  <span class="status-indicator-circle"></span>
-                                  <span class="status-indicator-circle"></span>
-                            </span>
+                            <template v-if='layer.mode === "live"'>
+                                <span class="status-indicator status-green status-indicator-animated">
+                                      <span class="status-indicator-circle"></span>
+                                      <span class="status-indicator-circle"></span>
+                                      <span class="status-indicator-circle"></span>
+                                </span>
+                            </template>
+                            <template v-else>
+                                <span class="status-indicator status-gray status-indicator-animated">
+                                      <span class="status-indicator-circle"></span>
+                                      <span class="status-indicator-circle"></span>
+                                      <span class="status-indicator-circle"></span>
+                                </span>
+                            </template>
 
                             <a @click='$router.push(`/layer/${layer.id}`)' class="card-title cursor-pointer" v-text='layer.name'></a>
 
                             <div class='ms-auto'>
                                 <div class='btn-list'>
-                                    <span v-text='cronstr(layer.cron)'/>
-
                                     <SettingsIcon class='cursor-pointer' @click='$router.push(`/layer/${layer.id}/edit`)'/>
                                 </div>
                             </div>
@@ -74,13 +86,17 @@
         </div>
     </div>
 
+    <TablerError v-if='err' :err='err' @close='err = null'/>
     <PageFooter/>
 </div>
 </template>
 
 <script>
+import None from './cards/None.vue';
 import PageFooter from './PageFooter.vue';
-import cronstrue from 'cronstrue';
+import {
+    TablerError
+} from '@tak-ps/vue-tabler';
 import {
     SettingsIcon,
     SearchIcon
@@ -109,9 +125,6 @@ export default {
         this.fetchList();
     },
     methods: {
-        cronstr: function(cron) {
-            return cronstrue.toString(cron);
-        },
         timeDiff: function(updated) {
             const msPerMinute = 60 * 1000;
             const msPerHour = msPerMinute * 60;
@@ -138,6 +151,8 @@ export default {
         }
     },
     components: {
+        None,
+        TablerError,
         SettingsIcon,
         SearchIcon,
         PageFooter,

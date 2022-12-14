@@ -24,6 +24,7 @@
         "@tak-ps/node-cot": "^2.4.0",
         "ajv": "^8.11.2",
         "ajv-formats": "^2.1.1",
+        "busboy": "^1.6.0",
         "connect-history-api-fallback": "^2.0.0",
         "cors": "^2.8.5",
         "csv-stringify": "^6.2.1",

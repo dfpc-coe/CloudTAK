@@ -97,7 +97,7 @@
         @err='err = $event'
     />
 
-    <Err v-if='err' :err='err' @close='err = null'/>
+    <TablerError v-if='err' :err='err' @close='err = null'/>
     <PageFooter/>
 </div>
 </template>
@@ -106,8 +106,8 @@
 import PageFooter from './PageFooter.vue';
 import Upload from './util/UploadP12.vue';
 import {
-    Err,
-    Input
+    TablerError,
+    TablerInput
 } from '@tak-ps/vue-tabler';
 
 export default {
@@ -200,9 +200,9 @@ export default {
         }
     },
     components: {
-        Err,
+        TablerError,
         Upload,
-        TablerInput: Input,
+        TablerInput,
         PageFooter,
     }
 }
