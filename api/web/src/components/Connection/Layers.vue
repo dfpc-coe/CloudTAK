@@ -20,15 +20,11 @@
             </tbody>
         </table>
     </div>
-
-    <TablerError v-if='err' :err='err' @close='err = null'/>
 </div>
 
 </template>
 
 <script>
-import { TablerError } from '@tak-ps/vue-tabler';
-
 export default {
     name: 'ConnectionLayers',
     props: {
@@ -39,28 +35,20 @@ export default {
     },
     data: function() {
         return {
-            err: false,
             layers: {
                 list: []
             },
         }
     },
-    mounted: function() {
-        this.listLayers();
+    mounted: async function() {
+        await this.listLayers();
     },
     methods: {
         listLayers: async function() {
-            try {
-                const url = window.stdurl('/api/layer');
-                url.searchParams.append('connection', this.connection.id);
-                this.layers = await window.std(url);
-            } catch (err) {
-                this.err = err;
-            }
+            const url = window.stdurl('/api/layer');
+            url.searchParams.append('connection', this.connection.id);
+            this.layers = await window.std(url);
         }
-    },
-    components: {
-        TablerError
     }
 }
 </script>

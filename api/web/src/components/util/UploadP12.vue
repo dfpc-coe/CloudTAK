@@ -64,12 +64,8 @@ export default {
             this.$emit('close');
         },
         extract: function() {
-            try {
-                const certs = convertToPem(atob(this.file.split('base64,')[1]), this.password);
-                this.$emit('certs', certs);
-            } catch (err) {
-                this.$emit('err', err);
-            }
+            const certs = convertToPem(atob(this.file.split('base64,')[1]), this.password);
+            this.$emit('certs', certs);
         }
     },
     components: {
