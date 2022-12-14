@@ -61,7 +61,7 @@
                 </div>
 
                 <div class="col-lg-12">
-                    <Styles v-model='layer.styles' :disabled='true' />
+                    <Styles v-model='layer.styles' :enabled='layer.enabled_styles' :disabled='true' />
                 </div>
             </div>
         </div>
