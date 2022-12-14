@@ -37,14 +37,10 @@ export default {
                     const body = new FormData();
                     body.append('file', file);
 
-                    try {
-                        this.$emit('asset', await window.std('/api/asset', {
-                            method: 'POST',
-                            body
-                        }));
-                    } catch (err) {
-                        this.$emit('err', err);
-                    }
+                    this.$emit('asset', await window.std('/api/asset', {
+                        method: 'POST',
+                        body
+                    }));
                 };
 
                 read.readAsDataURL(file);

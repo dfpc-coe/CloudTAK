@@ -97,7 +97,6 @@
         @err='err = $event'
     />
 
-    <TablerError v-if='err' :err='err' @close='err = null'/>
     <PageFooter/>
 </div>
 </template>
@@ -105,16 +104,12 @@
 <script>
 import PageFooter from './PageFooter.vue';
 import Upload from './util/UploadP12.vue';
-import {
-    TablerError,
-    TablerInput
-} from '@tak-ps/vue-tabler';
+import { TablerInput } from '@tak-ps/vue-tabler';
 
 export default {
     name: 'ConnectionNew',
     data: function() {
         return {
-            err: false,
             upload: false,
             errors: {
                 name: '',
@@ -132,16 +127,12 @@ export default {
             }
         }
     },
-    mounted: function() {
-        if (this.$route.params.connectionid) this.fetch();
+    mounted: async function() {
+        if (this.$route.params.connectionid) await this.fetch();
     },
     methods: {
         fetch: async function() {
-            try {
-                this.connection = await window.std(`/api/connection/${this.$route.params.connectionid}`);
-            } catch (err) {
-                this.err = err;
-            }
+            this.connection = await window.std(`/api/connection/${this.$route.params.connectionid}`);
         },
         p12upload: function(certs) {
             this.upload = false;
@@ -171,36 +162,26 @@ export default {
                 if (this.errors[e]) return;
             }
 
-            try {
-                const create = await window.std('/api/connection', {
-                    method: 'POST',
-                    body: {
-                        name: this.connection.name,
-                        description: this.connection.description,
-                        enabled: true,
-                        auth: this.connection.auth
-                    }
-                });
+            const create = await window.std('/api/connection', {
+                method: 'POST',
+                body: {
+                    name: this.connection.name,
+                    description: this.connection.description,
+                    enabled: true,
+                    auth: this.connection.auth
+                }
+            });
 
-                this.$router.push(`/connection/${create.id}`);
-            } catch (err) {
-                this.err = err;
-            }
+            this.$router.push(`/connection/${create.id}`);
         },
         del: async function() {
-            try {
-                await window.std(`/api/connection/${this.$route.params.connectionid}`, {
-                    method: 'DELETE'
-                });
-
-                this.$router.push('/connection');
-            } catch (err) {
-                this.err = err;
-            }
+            await window.std(`/api/connection/${this.$route.params.connectionid}`, {
+                method: 'DELETE'
+            });
+            this.$router.push('/connection');
         }
     },
     components: {
-        TablerError,
         Upload,
         TablerInput,
         PageFooter,

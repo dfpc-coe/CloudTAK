@@ -82,24 +82,16 @@ export default {
             if (this.modelValue) this.fetch();
         }
     },
-    mounted: function() {
-        this.listConnections();
-        if (this.modelValue) this.fetch();
+    mounted: async function() {
+        if (this.modelValue) await this.fetch();
+        await this.listConnections();
     },
     methods: {
         fetch: async function() {
-            try {
-                this.selected = await window.std(`/api/connection/${this.modelValue}`);
-            } catch (err) {
-                this.$emit('err', err);
-            }
+            this.selected = await window.std(`/api/connection/${this.modelValue}`);
         },
         listConnections: async function() {
-            try {
-                this.connections = await window.std('/api/connection');
-            } catch (err) {
-                this.err = err;
-            }
+            this.connections = await window.std('/api/connection');
         },
     },
     components: {

@@ -30,7 +30,6 @@
                 </div>
                 <div class="col-md-12">
                     <ConnectionSelect
-                        @err='$emit("err", $event)'
                         :disabled='disabled'
                         v-model='layerdata.connection'
 
@@ -40,7 +39,6 @@
             <template v-else-if='layerdata.mode === "file"'>
                 <template v-if='!layerdata.asset_id'>
                     <UploadInline
-                        @err='$emit("err", $event)'
                         @asset='layerdata.asset_id = $event.id'
                     />
                 </template>

@@ -53,8 +53,9 @@
         </div>
     </div>
 
-
     <router-view/>
+
+    <TablerError v-if='err' :err='err' @close='err = null'/>
 </div>
 </template>
 
@@ -67,6 +68,9 @@ import {
     NetworkIcon,
     DatabaseIcon
 } from 'vue-tabler-icons';
+import {
+    TablerError
+} from '@tak-ps/vue-tabler';
 
 export default {
     name: 'Tak-PS-Stats',
@@ -75,6 +79,10 @@ export default {
             ws: null,
             err: null,
         }
+    },
+    errorCaptured: function(err) {
+        console.error('FUCK', err);
+        this.err = err;
     },
     mounted: function() {
         const url = window.stdurl('/');
@@ -88,7 +96,8 @@ export default {
         HomeIcon,
         CodeIcon,
         NetworkIcon,
-        DatabaseIcon
+        DatabaseIcon,
+        TablerError
     }
 }
 </script>
