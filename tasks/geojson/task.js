@@ -36,11 +36,13 @@ export default class Task {
 
         const dom = new DOMParser().parseFromString(await data.text(), 'text/xml');
 
-        const converted = JSON.stringify(kml(dom));
+        const converted = kml(dom).features.map((feat) => {
+            return JSON.stringify(feat);
+        }).join('\n');
         console.error('ok - converted to GeoJSON');
 
         const form = new FormData();
-        form.append('file', new File([converted], 'processed.geojson'));
+        form.append('file', new File([converted], 'processed.ldgeojson'));
 
         const encoder = new FormDataEncoder(form)
 
