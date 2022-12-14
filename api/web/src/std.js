@@ -24,7 +24,7 @@ function std() {
         try {
             if (!opts.headers) opts.headers = {};
 
-            if (typeof opts.body === 'object' && !opts.headers['Content-Type']) {
+            if (!(opts.body instanceof FormData) && typeof opts.body === 'object' && !opts.headers['Content-Type']) {
                 opts.body = JSON.stringify(opts.body);
                 opts.headers['Content-Type'] = 'application/json';
             }

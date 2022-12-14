@@ -1,0 +1,34 @@
+{
+    "type": "object",
+    "$comment": "jsonb",
+    "description": "",
+    "additionalProperties": false,
+    "patternProperties": {
+        ".*": {
+            "type": "object",
+            "properties": {
+                "style": {
+                    "type": "string",
+                    "enum": [
+                        "solid",
+                        "dashed",
+                        "dotted",
+                        "outlined"
+                    ]
+                },
+                "thickness": {
+                    "type": "number"
+                },
+                "opacity": {
+                    "type": "number"
+                },
+                "color": {
+                    "type": "string"
+                },
+                "remarks": {
+                    "type": "string"
+                }
+            }
+        }
+    }
+}

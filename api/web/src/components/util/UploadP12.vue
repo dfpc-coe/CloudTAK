@@ -26,7 +26,10 @@
 </template>
 
 <script>
-import { Modal, Input } from '@tak-ps/vue-tabler';
+import { 
+    TablerModal,
+    TablerInput
+} from '@tak-ps/vue-tabler';
 import Dropzone from '@tabler/core/dist/libs/dropzone/dist/dropzone.mjs';
 import '@tabler/core/dist/libs/dropzone/dist/dropzone.css';
 import '@tabler/core/dist/css/tabler-vendors.min.css';
@@ -43,7 +46,9 @@ export default {
     },
     mounted: function() {
         this.$nextTick(() => {
-            this.dropzone = new Dropzone("#dropzone-default");
+            this.dropzone = new Dropzone("#dropzone-default", {
+                autoProcessQueue: false
+            });
 
             this.dropzone.on('addedfile', (file) => {
                 const read = new FileReader();
@@ -68,8 +73,8 @@ export default {
         }
     },
     components: {
-        TablerModal: Modal,
-        TablerInput: Input
+        TablerModal,
+        TablerInput
     }
 }
 </script>

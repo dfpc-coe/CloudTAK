@@ -46,13 +46,13 @@
             </div>
         </div>
     </div>
-    <Err v-if='err' :err='err' @close='err = null'/>
+    <TablerError v-if='err' :err='err' @close='err = null'/>
     <PageFooter/>
 </div>
 </template>
 
 <script>
-import { Err } from '@tak-ps/vue-tabler';
+import { TablerError } from '@tak-ps/vue-tabler';
 import PageFooter from './PageFooter.vue';
 import ConnectionStatus from './Connection/Status.vue';
 import ConnectionLayers from './Connection/Layers.vue';
@@ -83,7 +83,7 @@ export default {
         }
     },
     components: {
-        Err,
+        TablerError,
         SettingsIcon,
         PageFooter,
         ConnectionStatus,

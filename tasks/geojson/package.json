@@ -1,0 +1,22 @@
+{
+    "name": "geojson",
+    "type": "module",
+    "private": true,
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "author": "Nick Ingalls <nick@ingalls.ca>",
+    "license": "ISC",
+    "dependencies": {
+        "@turf/bbox": "^6.5.0",
+        "@turf/meta": "^6.5.0",
+        "adm-zip": "^0.5.9",
+        "geojson-precision": "^1.0.0",
+        "parse-kml": "^1.0.1",
+        "rmfr": "^2.0.0",
+        "shpjs": "^4.0.4"
+    }
+}

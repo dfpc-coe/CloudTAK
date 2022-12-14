@@ -9,16 +9,61 @@
             "$ref": "./layers/description.json"
         },
         "cron": {
-            "$ref": "./layers/cron.json"
+            "$ref": "./layers_live/cron.json"
         },
         "enabled": {
             "$ref": "./layers/enabled.json"
         },
+        "enabled_styles": {
+            "$ref": "./layers/enabled_styles.json"
+        },
         "connection": {
-            "$ref": "./layers/connection.json"
+            "$ref": "./layers_live/connection.json"
+        },
+        "task": {
+            "$ref": "./layers_live/task.json"
         },
         "stale": {
-            "$ref": "./layers/stale.json"
+            "$ref": "./layers_live/stale.json"
+        },
+        "styles": {
+            "$ref": "./layers/styles.json"
+        },
+        "data": {
+            "anyOf": [{
+                "type": "object",
+                "required": [
+                    "cron",
+                    "connection",
+                    "task"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                    "task": {
+                        "$ref": "./layers_live/task.json"
+                    },
+                    "stale": {
+                        "$ref": "./layers_live/stale.json"
+                    },
+                    "cron": {
+                        "$ref": "./layers_live/cron.json"
+                    },
+                    "connection": {
+                        "$ref": "./layers_live/connection.json"
+                    }
+                }
+            },{
+                "type": "object",
+                "required": [
+                    "asset_id"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                    "asset_id": {
+                        "$ref": "./assets/id.json"
+                    }
+                }
+            }]
         }
     }
 }

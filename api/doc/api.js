@@ -18,6 +18,114 @@
 
 
 /**
+* @api {get} /asset List Assets
+* @apiVersion 1.0.0
+* @apiName GET-/asset
+* @apiGroup Assets
+* @apiPermission user
+*
+* @apidescription
+*   List Assets
+*
+
+*
+* @apiSchema (Query) {jsonschema=../schema/req.query.ListAssets.json} apiParam
+*
+* @apiSchema {jsonschema=../schema/res.ListAssets.json} apiSuccess
+*/
+
+
+/**
+* @api {get} /asset/:assetid Get Asset
+* @apiVersion 1.0.0
+* @apiName GET-/asset/:assetid
+* @apiGroup Assets
+* @apiPermission user
+*
+* @apidescription
+*   Get single asset
+*
+* @apiParam {integer} assetid param
+*
+*
+*
+* @apiSchema {jsonschema=../schema/assets.json} apiSuccess
+*/
+
+
+/**
+* @api {get} /asset/:assetid/raw Raw Asset
+* @apiVersion 1.0.0
+* @apiName GET-/asset/:assetid/raw
+* @apiGroup Assets
+* @apiPermission user
+*
+* @apidescription
+*   Get single raw asset
+*
+* @apiParam {integer} assetid param
+*
+*
+*
+*
+*/
+
+
+/**
+* @api {post} /asset Create Asset
+* @apiVersion 1.0.0
+* @apiName POST-/asset
+* @apiGroup Assets
+* @apiPermission user
+*
+* @apidescription
+*   Create a new asset
+*
+* @apiParam {integer} assetid param
+*
+*
+*
+* @apiSchema {jsonschema=../schema/assets.json} apiSuccess
+*/
+
+
+/**
+* @api {patch} /asset/:assetid Update Asset
+* @apiVersion 1.0.0
+* @apiName PATCH-/asset/:assetid
+* @apiGroup Assets
+* @apiPermission user
+*
+* @apidescription
+*   Update Asset
+*
+* @apiParam {integer} assetid param
+*
+*
+*
+* @apiSchema {jsonschema=../schema/assets.json} apiSuccess
+*/
+
+
+/**
+* @api {delete} /asset/:assetid Delete Asset
+* @apiVersion 1.0.0
+* @apiName DELETE-/asset/:assetid
+* @apiGroup Assets
+* @apiPermission user
+*
+* @apidescription
+*   Delete Asset
+*
+* @apiParam {integer} assetid param
+*
+*
+*
+* @apiSchema {jsonschema=../schema/res.Standard.json} apiSuccess
+*/
+
+
+/**
 * @api {get} /connection List Connections
 * @apiVersion 1.0.0
 * @apiName GET-/connection
@@ -139,7 +247,7 @@
 *
 *
 * @apiSchema (Body) {jsonschema=../schema/req.body.CreateLayer.json} apiParam
-* @apiSchema {jsonschema=../schema/layers.json} apiSuccess
+* @apiSchema {jsonschema=../schema/res.Layer.json} apiSuccess
 */
 
 
@@ -157,7 +265,7 @@
 *
 *
 * @apiSchema (Body) {jsonschema=../schema/req.body.PatchLayer.json} apiParam
-* @apiSchema {jsonschema=../schema/layers.json} apiSuccess
+* @apiSchema {jsonschema=../schema/res.Layer.json} apiSuccess
 */
 
 
@@ -175,7 +283,7 @@
 *
 *
 *
-* @apiSchema {jsonschema=../schema/layers.json} apiSuccess
+* @apiSchema {jsonschema=../schema/res.Layer.json} apiSuccess
 */
 
 

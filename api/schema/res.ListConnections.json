@@ -2,12 +2,22 @@
     "type": "object",
     "required": [
         "total",
+        "status",
         "connections"
     ],
     "additionalProperties": false,
     "properties": {
-        "count": {
+        "total": {
             "type": "integer"
+        },
+        "status": {
+            "type": "object",
+            "required": [ "dead", "live" ],
+            "additionalProperties": false,
+            "properties": {
+                "dead": { "type": "integer" },
+                "live": { "type": "integer" }
+            }
         },
         "connections": {
             "type": "array",
