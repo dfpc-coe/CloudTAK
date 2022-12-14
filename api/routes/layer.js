@@ -48,7 +48,7 @@ export default async function router(schema, config) {
             }
 
             layer = layer.serialize();
-            layer.data = (layer.mode === 'file' ? await LayerFile.from(config.pool, layer.id) : await LayerLive.from(config.pool, layer.id)).serialize();
+            layer.data = (layer.mode === 'file' ? await LayerFile.from(config.pool, layer.id, { column: 'layer_id' }) : await LayerLive.from(config.pool, layer.id, { column: 'layer_id' })).serialize();
 
             return res.json(layer);
         } catch (err) {
@@ -97,7 +97,7 @@ export default async function router(schema, config) {
         try {
             const layer = (await Layer.from(config.pool, req.params.layerid)).serialize();
 
-            layer.data = (layer.mode === 'file' ? await LayerFile.from(config.pool, layer.id) : await LayerLive.from(config.pool, layer.id)).serialize();
+            layer.data = (layer.mode === 'file' ? await LayerFile.from(config.pool, layer.id, { column: 'layer_id' }) : await LayerLive.from(config.pool, layer.id, { column: 'layer_id' })).serialize();
 
             return res.json(layer);
         } catch (err) {
