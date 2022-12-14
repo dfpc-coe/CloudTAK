@@ -44,6 +44,7 @@
                 </template>
                 <template v-else>
                     <Asset :asset_id='layerdata.raw_asset_id'/>
+                    <Asset v-if='layerdata.std_asset_id' :asset_id='layerdata.std_asset_id'/>
                 </template>
             </template>
             <template v-else>

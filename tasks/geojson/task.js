@@ -1,8 +1,10 @@
 import fs from 'fs';
 import { kml } from '@tmcw/togeojson';
 import { DOMParser } from '@xmldom/xmldom';
-import FormData from 'form-data';
 import fetch from 'node-fetch';
+import {FormData, File} from "formdata-node"
+import {FormDataEncoder} from "form-data-encoder"
+import {Readable} from "stream"
 
 try {
     const dotfile = new URL('.env', import.meta.url);
@@ -35,15 +37,20 @@ export default class Task {
         const dom = new DOMParser().parseFromString(await data.text(), 'text/xml');
 
         const converted = JSON.stringify(kml(dom));
+        console.error('ok - converted to GeoJSON');
 
-        const body = new FormData();
-        body.append('file', converted, 'processed.geojson');
+        const form = new FormData();
+        form.append('file', new File([converted], 'processed.geojson'));
+
+        const encoder = new FormDataEncoder(form)
 
         let asset = await fetch(new URL(`/api/asset`, this.etl), {
             method: 'POST',
-            body
+            headers: encoder.headers,
+            body: Readable.from(encoder)
         });
         asset = await asset.json();
+        console.error(`ok - Uploaded Asset: ${asset.id}`);
 
         layer.data.std_asset_id = asset.id;
         layer = await fetch(new URL(`/api/layer/${layer.id}`, this.etl), {
