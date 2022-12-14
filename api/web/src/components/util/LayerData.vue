@@ -23,14 +23,15 @@
 
             <template v-if='layerdata.mode === "live"'>
                 <div class="col-md-6 mb-3">
-                    <TablerInput label='Cron Schedule' v-model='layerdata.cron' :error='errors.cron'/>
+                    <TablerInput :disabled='disabled' label='Cron Schedule' v-model='layerdata.cron' :error='errors.cron'/>
                 </div>
                 <div class="col-md-6 mb-3">
-                    <TablerInput label='Schedule Task' v-model='layerdata.task' :error='errors.task'/>
+                    <TablerInput :disabled='disabled' label='Schedule Task' v-model='layerdata.task' :error='errors.task'/>
                 </div>
                 <div class="col-md-12">
                     <ConnectionSelect
                         @err='$emit("err", $event)'
+                        :disabled='disabled'
                         v-model='layerdata.connection'
 
                     />
@@ -78,7 +79,9 @@ export default {
         },
         errors: {
             type: Object,
-            required: true
+            default: function () {
+                return {}
+            }
         },
         disabled: {
             type: Boolean,
