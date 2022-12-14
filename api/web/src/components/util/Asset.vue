@@ -1,5 +1,6 @@
 <template>
 <div>
+    I'm an ASSET!
 </div>
 </template>
 
@@ -17,15 +18,10 @@ export default {
             a: {}
         }
     },
-    mounted: function() {
-        this.fetch();
+    mounted: async function() {
+        await this.fetch();
     },
     methods: {
-        try {
-
-        } catch (err) {
-            this.$emit('err', err);
-        }
     },
 }
 </script>
