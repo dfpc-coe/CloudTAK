@@ -8,7 +8,14 @@
                         <ol class="breadcrumb" aria-label="breadcrumbs">
                             <li class="breadcrumb-item"><a @click='$router.push("/")' class="cursor-pointer">Home</a></li>
                             <li class="breadcrumb-item" aria-current="page"><a  @click='$router.push("/layer")' class="cursor-pointer">Layer</a></li>
-                            <li class="breadcrumb-item active" aria-current="page"><a href="#">New</a></li>
+
+                            <template v-if='$route.params.layerid'>
+                                <li class="breadcrumb-item" aria-current="page"><a  @click='$router.push(`/layer/${$route.params.layerid}`)' class="cursor-pointer" v-text='$route.params.layerid'></a></li>
+                                <li class="breadcrumb-item active" aria-current="page"><a href="#">Edit</a></li>
+                            </template>
+                            <template v-else>
+                                <li class="breadcrumb-item active" aria-current="page"><a href="#">New</a></li>
+                            </template>
                         </ol>
                     </div>
                 </div>
