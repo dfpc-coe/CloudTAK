@@ -11,12 +11,10 @@
     "author": "Nick Ingalls <nick@ingalls.ca>",
     "license": "ISC",
     "dependencies": {
-        "@turf/bbox": "^6.5.0",
-        "@turf/meta": "^6.5.0",
-        "adm-zip": "^0.5.9",
+        "@tmcw/togeojson": "^5.5.0",
+        "@xmldom/xmldom": "^0.8.6",
+        "form-data": "^4.0.0",
         "geojson-precision": "^1.0.0",
-        "parse-kml": "^1.0.1",
-        "rmfr": "^2.0.0",
-        "shpjs": "^4.0.4"
+        "node-fetch": "^3.3.0"
     }
 }

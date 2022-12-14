@@ -1,4 +1,8 @@
 import fs from 'fs';
+import { kml } from '@tmcw/togeojson';
+import { DOMParser } from '@xmldom/xmldom';
+import FormData from 'form-data';
+import fetch from 'node-fetch';
 
 try {
     const dotfile = new URL('.env', import.meta.url);
@@ -20,54 +24,40 @@ export default class Task {
     }
 
     async control() {
-        const plows = [];
-        let batch = -1;
-        let res;
-        do {
-            console.error(`ok - fetching ${++batch} of plows`);
-            const url = new URL('/api/v1/snowPlows', this.api);
-            url.searchParams.append('apiKey', this.token);
-            if (res) url.searchParams.append('offset', res.headers.get('next-offset'));
+        let layer = await fetch(new URL(`/api/layer/${this.layer}`, this.etl));
+        layer = await layer.json();
 
-            res = await fetch(url);
+        if (layer.mode !== 'file') throw new Error('Only File Layers can be processed');
+        if (!layer.data.raw_asset_id) throw new Error('Layer does not contain an raw_asset_id');
 
-            plows.push(...(await res.json()).features);
-        } while (res.headers.has('next-offset') && res.headers.get('next-offset') !== 'None')
-        console.log(`ok - fetched ${plows.length} plows`);
+        let data = await fetch(new URL(`/api/asset/${layer.data.raw_asset_id}/raw`, this.etl));
 
-        const features = {
-            type: 'FeatureCollection',
-            features: plows.map((plow) => {
-                const feat = {
-                    id: plow.avl_location.vehicle.id2,
-                    type: 'Feature',
-                    properties: {
-                        type: 'a-f-G-E-V-A-T-H',
-                        how: 'm-g',
-                        callsign: `${plow.avl_location.vehicle.fleet} ${plow.avl_location.vehicle.type}`
-                    },
-                    geometry: {
-                        type: 'Point',
-                        coordinates: [
-                            plow.avl_location.position.longitude,
-                            plow.avl_location.position.latitude
-                        ]
-                    }
-                };
+        const dom = new DOMParser().parseFromString(await data.text(), 'text/xml');
 
-                return feat;
-            })
-        };
+        const converted = JSON.stringify(kml(dom));
 
-        const post = await fetch(new URL(`/api/layer/${this.layer}/cot`, this.etl), {
+        const body = new FormData();
+        body.append('file', converted, 'processed.geojson');
+
+        let asset = await fetch(new URL(`/api/asset`, this.etl), {
             method: 'POST',
+            body
+        });
+        asset = await asset.json();
+
+        layer.data.std_asset_id = asset.id;
+        layer = await fetch(new URL(`/api/layer/${layer.id}`, this.etl), {
+            method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify(features)
+            body: JSON.stringify({
+                data: layer.data
+            })
         });
+        layer = await layer.json();
 
-        console.error(await post.json());
+        console.error(layer);
     }
 }
 
