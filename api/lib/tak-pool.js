@@ -49,7 +49,7 @@ export default class TAKPool extends Map {
                 client.send(JSON.stringify({
                     type: 'cot',
                     connection: conn.id,
-                    data: cot
+                    data: cot.raw
                 }));
             }
         }).on('error', (err) => {
