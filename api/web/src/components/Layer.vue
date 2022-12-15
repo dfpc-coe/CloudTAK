@@ -74,8 +74,8 @@
 <script>
 import PageFooter from './PageFooter.vue';
 import cronstrue from 'cronstrue';
-import LayerData from './util/LayerData.vue';
-import Styles from './util/Styles.vue';
+import LayerData from './Layer/LayerData.vue';
+import Styles from './Layer/Styles.vue';
 import {
     TablerLoading
 } from '@tak-ps/vue-tabler'

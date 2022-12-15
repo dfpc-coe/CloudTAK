@@ -96,8 +96,8 @@
 
 <script>
 import PageFooter from './PageFooter.vue';
-import StyleUtil from './util/Styles.vue';
-import LayerData from './util/LayerData.vue';
+import StyleUtil from './Layer/Styles.vue';
+import LayerData from './Layer/LayerData.vue';
 import { TablerInput, TablerLoading } from '@tak-ps/vue-tabler';
 
 export default {

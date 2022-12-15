@@ -58,12 +58,12 @@
 </template>
 
 <script>
-import UploadInline from './UploadInline.vue';
-import Asset from './Asset.vue';
+import UploadInline from '../util/UploadInline.vue';
+import Asset from '../util/Asset.vue';
 import {
     TablerInput
 } from '@tak-ps/vue-tabler';
-import ConnectionSelect from './ConnectionSelect.vue';
+import ConnectionSelect from '../util/ConnectionSelect.vue';
 
 import {
     ClockIcon,
