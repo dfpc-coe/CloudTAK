@@ -26,7 +26,7 @@ export default {
         ws: {
             type: Object,
             required: true
-        }   
+        }
     },
     data: function() {
         return {
@@ -42,9 +42,11 @@ export default {
     mounted: function() {
         this.ws.addEventListener('message', (msg) => {
             msg = JSON.parse(msg.data);
+            if (this.paused) return;
             if (msg.type !== 'cot' || msg.connection !== parseInt(this.$route.params.connectionid)) return;
 
-            this.events.push(JSON.stringify(msg.data));
+            if (this.events.length > 200) this.events.pop();
+            this.events.unshift(JSON.stringify(msg.data));
         });
     },
     components: {
