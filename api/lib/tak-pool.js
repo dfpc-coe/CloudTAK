@@ -43,8 +43,6 @@ export default class TAKPool extends Map {
         this.set(conn.id, { conn, tak });
 
         tak.on('cot', (cot) => {
-            console.error('COT', conn.id, cot);
-
             for (const client of this.clients) {
                 client.send(JSON.stringify({
                     type: 'cot',
