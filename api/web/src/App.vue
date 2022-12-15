@@ -53,7 +53,11 @@
         </div>
     </div>
 
-    <router-view/>
+    <template v-if='ws'>
+        <router-view
+            :ws='ws'
+        />
+    </template>
 
     <TablerError v-if='err' :err='err' @close='err = null'/>
 </div>
@@ -81,16 +85,16 @@ export default {
         }
     },
     errorCaptured: function(err) {
-        console.error('FUCK', err);
         this.err = err;
     },
     mounted: function() {
         const url = window.stdurl('/');
         url.protocol = 'ws:';
 
-        console.error(url);
-
         this.ws = new WebSocket(url);
+        this.ws.addEventListener('error', (err) => {
+            this.err = err;
+        });
     },
     components: {
         HomeIcon,

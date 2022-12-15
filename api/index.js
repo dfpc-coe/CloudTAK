@@ -52,7 +52,8 @@ export default async function server(config) {
         }
     });
 
-    config.conns = await TAKPool.init(config.pool);
+    config.wsClients = [];
+    config.conns = await TAKPool.init(config.pool, config.wsClients);
 
     /*
     if (true) config.conns.get(5).tak.on('cot', function(cot) {
@@ -165,6 +166,8 @@ export default async function server(config) {
         verifyClient: ({ req }, cb) => {
             return cb(true);
         }
+    }).on('connection', (ws) => {
+        config.wsClients.push(ws);
     });
 
     return new Promise((resolve, reject) => {
