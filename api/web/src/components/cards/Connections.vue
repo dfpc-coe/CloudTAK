@@ -8,9 +8,9 @@
                 </span>
             </div>
             <div class="col">
-                <div class="font-weight-medium">
+                <a @click='$router.push("/connection")' class="font-weight-medium cursor-pointer">
                     <span v-text='list.total'/> Connections
-                </div>
+                </a>
                 <div class="text-muted">
                     <span v-text='list.status.dead'/> dead connections
                 </div>
