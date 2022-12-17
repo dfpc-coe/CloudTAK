@@ -8,9 +8,9 @@
                 </span>
             </div>
             <div class="col">
-                <div class="font-weight-medium">
+                <a @click='$router.push("/layer")' class="font-weight-medium cursor-pointer">
                     <span v-text='list.total'/> Layers
-                </div>
+                </a>
                 <div class="text-muted">
                 </div>
             </div>
