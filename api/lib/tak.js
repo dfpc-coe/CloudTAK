@@ -1,4 +1,5 @@
 import EventEmitter from 'events';
+import TAKAPI from './tak-api.js';
 import { XML as COT } from '@tak-ps/node-cot'
 import path from 'path';
 import tls from 'tls';
@@ -12,6 +13,8 @@ export default class TAK extends EventEmitter {
         this.open = false;
 
         this.version; // Server Version
+
+        this.api = new TAKAPI(type, opts);
     }
 
     static async connect(url, auth) {
