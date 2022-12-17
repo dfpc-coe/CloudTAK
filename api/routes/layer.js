@@ -3,6 +3,7 @@ import Layer from '../lib/types/layer.js';
 import LayerLive from '../lib/types/layers_live.js';
 import LayerFile from '../lib/types/layers_file.js';
 import { XML as COT } from '@tak-ps/node-cot';
+import Cacher from '../lib/cacher.js';
 import { sql } from 'slonik';
 
 export default async function router(schema, config) {
@@ -86,6 +87,8 @@ export default async function router(schema, config) {
             layer = layer.serialize();
             layer.data = (layer.mode === 'file' ? await LayerFile.from(config.pool, layer.id, { column: 'layer_id' }) : await LayerLive.from(config.pool, layer.id, { column: 'layer_id' })).serialize();
 
+            await config.cacher.del(`layer-${req.params.layerid}`);
+
             return res.json(layer);
         } catch (err) {
             return Err.respond(err, res);
@@ -101,9 +104,11 @@ export default async function router(schema, config) {
         res: 'res.Layer.json'
     }, async (req, res) => {
         try {
-            const layer = (await Layer.from(config.pool, req.params.layerid)).serialize();
-
-            layer.data = (layer.mode === 'file' ? await LayerFile.from(config.pool, layer.id, { column: 'layer_id' }) : await LayerLive.from(config.pool, layer.id, { column: 'layer_id' })).serialize();
+            let layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
+                const layer = (await Layer.from(config.pool, req.params.layerid)).serialize();
+                layer.data = (layer.mode === 'file' ? await LayerFile.from(config.pool, layer.id, { column: 'layer_id' }) : await LayerLive.from(config.pool, layer.id, { column: 'layer_id' })).serialize();
+                return layer;
+            });
 
             return res.json(layer);
         } catch (err) {
@@ -120,7 +125,11 @@ export default async function router(schema, config) {
         res: 'res.Standard.json'
     }, async (req, res) => {
         try {
-            const layer = await Layer.from(config.pool, req.params.layerid);
+            let layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
+                const layer = (await Layer.from(config.pool, req.params.layerid)).serialize();
+                layer.data = (layer.mode === 'file' ? await LayerFile.from(config.pool, layer.id, { column: 'layer_id' }) : await LayerLive.from(config.pool, layer.id, { column: 'layer_id' })).serialize();
+                return layer;
+            });
 
             const conn = await config.conns.get(layer.connection);
 
