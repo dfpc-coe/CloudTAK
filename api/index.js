@@ -47,7 +47,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
  */
 
 export default async function server(config) {
-    config.cacher = new Cacher(config.args['no-cache'], config.silent);
+    config.cacher = new Cacher(args['no-cache'], config.silent);
     config.pool = await Pool.connect(process.env.POSTGRES || args.postgres || 'postgres://postgres@localhost:5432/tak_ps_etl', {
         schemas: {
             dir: new URL('./schema', import.meta.url)
