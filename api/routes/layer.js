@@ -137,8 +137,6 @@ export default async function router(schema, config) {
                 conn.tak.write(COT.from_geojson(feature));
             }
 
-            await layer.commit({ updated: sql`NOW()` });
-
             res.json({
                 status: 200,
                 message: 'Submitted'
