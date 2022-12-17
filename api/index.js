@@ -10,13 +10,14 @@ import minimist from 'minimist';
 import TAKPool from './lib/tak-pool.js';
 import { XML as COT } from '@tak-ps/node-cot';
 import { WebSocketServer } from 'ws';
+import Cacher from './lib/cacher.js';
 
 import Config from './lib/config.js';
 
 const pkg = JSON.parse(fs.readFileSync(new URL('./package.json', import.meta.url)));
 
 const args = minimist(process.argv, {
-    boolean: ['help', 'silent'],
+    boolean: ['help', 'silent', 'no-cache'],
     string: ['postgres']
 });
 
@@ -46,6 +47,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
  */
 
 export default async function server(config) {
+    config.cacher = new Cacher(args['no-cache'], config.silent);
     config.pool = await Pool.connect(process.env.POSTGRES || args.postgres || 'postgres://postgres@localhost:5432/tak_ps_etl', {
         schemas: {
             dir: new URL('./schema', import.meta.url)

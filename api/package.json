@@ -2,7 +2,7 @@
     "name": "@tak-ps/etl.api",
     "type": "module",
     "version": "1.0.0",
-    "description": "",
+    "description": "Facilitate ETL operations to bring non-TAK sources into a TAK Server",
     "main": "index.js",
     "scripts": {
         "test": "tape test/**.test.js",
@@ -31,6 +31,7 @@
         "express": "^4.18.2",
         "express-minify": "^1.0.0",
         "knex": "^2.3.0",
+        "memjs": "^1.3.0",
         "minimist": "^1.2.7",
         "moment": "^2.29.4",
         "pg": "^8.8.0",
