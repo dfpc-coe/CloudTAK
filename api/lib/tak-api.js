@@ -1,4 +1,6 @@
 import MissionData from './api/mission-data.js';
+import https from 'https';
+import fetch from 'node-fetch';
 
 /**
  * Handle TAK HTTP API Operations
@@ -9,14 +11,22 @@ export default class TAKAPI {
         this.type = type;
         this.opts = opts;
 
-        this.MissionData = new MissionData(type, opts);
+        this.url = new URL(`https://${opts.url.hostname}:8080`);
+
+        this.agent = new https.Agent({
+            cert: this.opts.cert,
+            key: this.opts.key,
+            keepAlive: false
+        });
+
+        this.MissionData = new MissionData(this);
     }
 
     stdurl(url) {
         try {
             url = new URL(url);
         } catch (err) {
-            url = new URL(url, this.opts.url);
+            url = new URL(url, this.url);
         }
 
         return url;
@@ -28,8 +38,10 @@ export default class TAKAPI {
      * @param {URL|String} url      - Full URL or API fragment to request
      * @param {Object} [opts={}]    - Options
      */
-    fetch(url, opts = {}) {
-        url = window.stdurl(url)
+    async fetch(url, opts = {}) {
+        url = this.stdurl(url)
+
+        console.error('TAK API', url);
 
         try {
             if (!opts.headers) opts.headers = {};
@@ -39,9 +51,11 @@ export default class TAKAPI {
                 opts.headers['Content-Type'] = 'application/json';
             }
 
-            if (localStorage.token && !opts.headers.Authorization) {
-                opts.headers['Authorization'] = 'Bearer ' + localStorage.token;
+            if (!opts.headers.Authorization) {
+                console.error('NEED TO SET AUTH');
             }
+
+            opts.agent = this.agent;
 
             const res = await fetch(url, opts);
 
@@ -60,6 +74,7 @@ export default class TAKAPI {
 
             return await res.json();
         } catch (err) {
+            console.error(err);
             throw new Error(err.message);
         }
     }
