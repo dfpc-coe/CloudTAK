@@ -1,0 +1,35 @@
+name: Test
+
+on:
+    push:
+        branches:
+            - main
+    pull_request:
+        types:
+            - opened
+            - synchronize
+            - reopened
+            - ready_for_review
+
+jobs:
+    test:
+        runs-on: ubuntu-latest
+        if: github.event.pull_request.draft == false
+        steps:
+            - uses: actions/checkout@v3
+              with:
+                  ref: ${{ github.event.pull_request.head.sha }}
+
+            - uses: actions/setup-node@v3
+              with:
+                  node-version: 18
+                  registry-url: https://registry.npmjs.org/
+
+            - name: Install
+              run: cd api/ && npm install
+
+            - name: Lint
+              run: cd api/ && npm run lint
+
+            - name: Test
+              run: cd api/ && npm test
