@@ -137,7 +137,7 @@ export default async function router(schema, config) {
         auth: 'user',
         group: 'Assets',
         description: 'Get single raw asset',
-        ':assetid': 'integer',
+        ':assetid': 'integer'
     }, async (req, res) => {
         try {
             // this should be optimized to read directly... maybe store the extension in the DB?
