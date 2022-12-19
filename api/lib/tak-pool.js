@@ -8,7 +8,7 @@ import Connection from './types/connection.js';
  * @param {Array}   clients     WSS Clients Array
  */
 export default class TAKPool extends Map {
-    constructor(clients=[]) {
+    constructor(clients = []) {
         super();
         this.clients = clients;
     }
@@ -19,14 +19,14 @@ export default class TAKPool extends Map {
      * @param {Pool}    pool        Postgres Pol
      * @param {Array}   clients     WSS Clients Array
      */
-    static async init(pool, clients=[]) {
+    static async init(pool, clients = []) {
         const takpool = new TAKPool(clients);
 
         const conns = [];
 
         const stream = await Connection.stream(pool);
 
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             stream.on('data', (conn) => {
                 conns.push(async () => {
                     await takpool.add(conn);
@@ -51,7 +51,7 @@ export default class TAKPool extends Map {
                 }));
             }
         }).on('error', (err) => {
-            console.error('ERROR', conn.id);
+            console.error('ERROR', err, conn.id);
         });
     }
 

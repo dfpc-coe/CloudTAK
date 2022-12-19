@@ -39,7 +39,7 @@ export default class TAKAPI {
      * @param {Object} [opts={}]    - Options
      */
     async fetch(url, opts = {}) {
-        url = this.stdurl(url)
+        url = this.stdurl(url);
 
         console.error('TAK API', url);
 

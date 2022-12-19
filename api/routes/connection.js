@@ -1,6 +1,5 @@
 import Err from '@openaddresses/batch-error';
 import Connection from '../lib/types/connection.js';
-import { XML as COT } from '@tak-ps/node-cot';
 
 export default async function router(schema, config) {
     await schema.get('/connection', {
