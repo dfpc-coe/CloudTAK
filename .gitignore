@@ -2,6 +2,7 @@
 *.p12
 *.cert
 *.key
+*.crt
 api/assets/*
 
 # Logs
