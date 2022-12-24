@@ -29,7 +29,7 @@ export default {
                 },
                 Path: '/service-role/',
                 ManagedPolicyArns: ['arn:aws:iam::aws:policy/service-role/AWSBatchServiceRole']
-            },
+            }
         },
         BatchJobRole: {
             Type: 'AWS::IAM::Role',
@@ -77,8 +77,8 @@ export default {
                 ComputeResources: {
                     Type: 'FARGATE',
                     MaxvCpus: 128,
-                    SecurityGroupIds: [ cf.ref('BatchSecurityGroup') ],
-                    Subnets: [ cf.ref('SubnetB') ],
+                    SecurityGroupIds: [cf.ref('BatchSecurityGroup')],
+                    Subnets: [cf.ref('SubnetB')]
                 },
                 'State': 'ENABLED'
             }
@@ -107,6 +107,6 @@ export default {
                 GroupDescription: cf.join([cf.stackName, ' Batch Security Group']),
                 SecurityGroupIngress: []
             }
-        },
+        }
     }
-}
+};
