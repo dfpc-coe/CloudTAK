@@ -10,7 +10,7 @@ export default cf.merge(
     KMS,
     Batch,
     {
-        Description: 'SAM Template for @tak-ps/etl',
+        Description: 'Template for @tak-ps/etl',
         Parameters: {
             GitSha: {
                 Description: 'GitSha that is currently being deployed',

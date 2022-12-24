@@ -22,7 +22,7 @@ export default {
                 CidrBlock: '10.0.5.0/28',
                 MapPublicIpOnLaunch: true,
                 Tags: [{
-                    Key: "Name",
+                    Key: 'Name',
                     Value: cf.join('-', [cf.stackName, 'subnet-a'])
                 }]
             }
@@ -35,17 +35,17 @@ export default {
                 CidrBlock: '10.0.5.16/28',
                 MapPublicIpOnLaunch: false,
                 Tags: [{
-                    Key: "Name",
+                    Key: 'Name',
                     Value: cf.join('-', [cf.stackName, 'subnet-b'])
                 }]
             }
         },
         RouteNATGateway : {
-            DependsOn: [ "NatGateway" ],
+            DependsOn: ['NatGateway'],
             Type: 'AWS::EC2::Route',
             Properties : {
                 RouteTableId : cf.ref('RouteTablePrivate'),
-                DestinationCidrBlock : "0.0.0.0/0",
+                DestinationCidrBlock : '0.0.0.0/0',
                 NatGatewayId : cf.ref('NatGateway')
             }
         },
