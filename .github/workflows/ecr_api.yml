@@ -21,7 +21,7 @@ jobs:
           ref: ${{github.event.pull_request.head.sha || github.sha}}
 
       - name: Docker Build API
-        run: docker build -t api api/
+        run: docker-compose build api
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -35,7 +35,7 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v1
 
       - name: Docker Tag API
-        run: docker tag api ${{secrets.AWS_ACCOUNT_ID}}.dkr.ecr.us-east-1.amazonaws.com/tak_ps_etl:${{github.event.pull_request.head.sha || github.sha}}
+        run: docker tag etl_api:latest ${{secrets.AWS_ACCOUNT_ID}}.dkr.ecr.us-east-1.amazonaws.com/tak_ps_etl:${{github.event.pull_request.head.sha || github.sha}}
 
       - name: Docker Push API
         run: docker push ${{secrets.AWS_ACCOUNT_ID}}.dkr.ecr.us-east-1.amazonaws.com/tak_ps_etl:${{github.event.pull_request.head.sha || github.sha}}
