@@ -7,7 +7,7 @@ WORKDIR $HOME
 
 RUN apt-get update \
     && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends apt-utils tzdata python3 \
-    && apt-get install -y nginx memcached curl
+    && apt-get install -y nginx memcached curl build-essential
 
 RUN export NODEV='19.3.0' \
     && curl "https://nodejs.org/dist/v${NODEV}/node-v${NODEV}-linux-x64.tar.gz" | tar -xzv > /dev/null \
