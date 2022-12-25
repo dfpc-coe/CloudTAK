@@ -15,21 +15,30 @@ jobs:
   test:
     runs-on: ubuntu-latest
     if: github.event.pull_request.draft == false
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v3
         with:
-          ref: ${{ github.event.pull_request.head.sha }}
+          ref: ${{github.event.pull_request.head.sha || github.sha}}
 
       - uses: actions/setup-node@v3
         with:
           node-version: 18
           registry-url: https://registry.npmjs.org/
 
-      - name: Install
-        run: cd api/ && npm install
+      - name: Docker Compose Build
+        run: docker-compose up --build -d postgis
 
-      - name: Lint
-        run: cd api/ && npm run lint
+      - name: Docker API Build
+        run: docker-compose build api
 
-      - name: Test
-        run: cd api/ && npm test
+      - name: Docker API Lint
+        run: docker run stats_api:latest sh -c "npm install --include=dev && npm run lint"
+
+      - name: Docker API Test
+        run: docker run --network stats_default
+          -e "POSTGRES=postgres://docker:docker@postgis:5432/gis"
+          stats_api:latest npm test
+
+      - name: Docker Cleanup
+        run: docker-compose kill
