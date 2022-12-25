@@ -5,6 +5,9 @@
         "id": {
             "$ref": "./layers/id.json"
         },
+        "mode": {
+            "$ref": "./layers/mode.json"
+        },
         "name": {
             "$ref": "./layers/name.json"
         },
@@ -20,25 +23,22 @@
         "enabled": {
             "$ref": "./layers/enabled.json"
         },
-        "styles": {
-            "$ref": "./layers/styles.json"
-        },
-        "mode": {
-            "$ref": "./layers/mode.json"
-        },
         "enabled_styles": {
             "$ref": "./layers/enabled_styles.json"
+        },
+        "styles": {
+            "$ref": "./layers/styles.json"
         }
     },
     "required": [
         "id",
+        "mode",
         "name",
         "created",
         "updated",
         "description",
         "enabled",
-        "styles",
-        "mode",
-        "enabled_styles"
+        "enabled_styles",
+        "styles"
     ]
 }

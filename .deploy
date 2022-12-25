@@ -1,0 +1,15 @@
+{
+    "profile": "labs",
+    "tags": [
+        {
+            "Key": "Project",
+            "Value": "etl"
+        },
+        "Owner"
+    ],
+    "artifacts": {
+        "docker": [
+            "{{project}}:api-{{gitsha}}"
+        ]
+    }
+}

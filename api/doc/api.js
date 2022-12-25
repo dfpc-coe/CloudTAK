@@ -303,3 +303,21 @@
 *
 * @apiSchema {jsonschema=../schema/res.Standard.json} apiSuccess
 */
+
+
+/**
+* @api {get} /connection/:connectionid/mission List Data
+* @apiVersion 1.0.0
+* @apiName GET-/connection/:connectionid/mission
+* @apiGroup MissionData
+* @apiPermission user
+*
+* @apidescription
+*   List Mission Data
+*
+* @apiParam {integer} connectionid param
+*
+*
+*
+*
+*/
