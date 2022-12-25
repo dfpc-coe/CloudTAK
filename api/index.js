@@ -8,7 +8,6 @@ import Schema from '@openaddresses/batch-schema';
 import { Pool } from '@openaddresses/batch-generic';
 import minimist from 'minimist';
 import TAKPool from './lib/tak-pool.js';
-import { XML as COT } from '@tak-ps/node-cot';
 import { WebSocketServer } from 'ws';
 import Cacher from './lib/cacher.js';
 
@@ -164,10 +163,7 @@ export default async function server(config) {
     app.use(express.static('web/dist'));
 
     const wss = new WebSocketServer({
-        noServer: true,
-        verifyClient: ({ req }, cb) => {
-            return cb(true);
-        }
+        noServer: true
     }).on('connection', (ws) => {
         config.wsClients.push(ws);
     });
