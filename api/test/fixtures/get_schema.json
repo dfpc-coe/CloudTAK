@@ -4,9 +4,89 @@
         "query": true,
         "res": true
     },
-    "POST /record": {
+    "GET /asset": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "GET /asset/:assetid": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "POST /asset": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "PATCH /asset/:assetid": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "DELETE /asset/:assetid": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /asset/:assetid/raw": {
+        "body": false,
+        "query": false,
+        "res": false
+    },
+    "GET /connection": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "POST /connection": {
         "body": true,
         "query": false,
         "res": true
+    },
+    "PATCH /connection/:connectionid": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "GET /connection/:connectionid": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "DELETE /connection/:connectionid": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /layer": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "POST /layer": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "PATCH /layer/:layerid": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "GET /layer/:layerid": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "POST /layer/:layerid/cot": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /connection/:connectionid/mission": {
+        "body": false,
+        "query": false,
+        "res": false
     }
 }
