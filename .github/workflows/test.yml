@@ -36,7 +36,7 @@ jobs:
         run: docker run etl_api:latest sh -c "npm install --include=dev && npm run lint"
 
       - name: Docker API Test
-        run: docker run --network stats_default
+        run: docker run --network etl_default
           -e "POSTGRES=postgres://docker:docker@postgis:5432/gis"
           etl_api:latest npm test
 
