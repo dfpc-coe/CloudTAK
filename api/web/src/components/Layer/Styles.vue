@@ -64,7 +64,7 @@
             </div>
             <div class='col-md-6 mb-3'>
                 <label class="form-label">Line Thickness</label>
-                <input :disabled='disabled' v-model='filters[mode].thickness' type="range" class="form-range mb-2" min="0" max="100" step="10">
+                <input :disabled='disabled' v-model='filters[mode].thickness' type="range" class="form-range mb-2" min="1" max="6" step="1">
             </div>
             <div class='col-md-6 mb-3'>
                 <label class="form-label">Fill Opacity (Polygons)</label>
