@@ -7,9 +7,11 @@ const flight = new Flight();
 flight.init(test, false);
 //flight.takeoff(test);
 
-test('POST: api/layer/1/cot - no Content-Type', async (t) => {
+const LAYER=process.env.LAYER || 2
+
+test(`POST: api/layer/${LAYER}/cot - no Content-Type`, async (t) => {
     try {
-        const res = await flight.fetch('/api/layer/1/cot', {
+        const res = await flight.fetch(`/api/layer/${LAYER}/cot`, {
             method: 'POST',
         }, false);
 
@@ -23,9 +25,9 @@ test('POST: api/layer/1/cot - no Content-Type', async (t) => {
     t.end();
 });
 
-test('POST: api/layer/1/cot - Polygon Feature', async (t) => {
+test(`POST: api/layer/${LAYER}/cot - Polygon Feature`, async (t) => {
     try {
-        const res = await flight.fetch('/api/layer/1/cot', {
+        const res = await flight.fetch(`/api/layer/${LAYER}/cot`, {
             method: 'POST',
             body: {
                 type: 'FeatureCollection',
@@ -58,9 +60,9 @@ test('POST: api/layer/1/cot - Polygon Feature', async (t) => {
     t.end();
 });
 
-test('POST: api/layer/1/cot - LineString Feature', async (t) => {
+test(`POST: api/layer/1/cot - LineString Feature`, async (t) => {
     try {
-        const res = await flight.fetch('/api/layer/1/cot', {
+        const res = await flight.fetch(`/api/layer/${LAYER}/cot`, {
             method: 'POST',
             body: {
                 type: 'FeatureCollection',

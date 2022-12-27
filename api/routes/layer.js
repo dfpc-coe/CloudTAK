@@ -139,20 +139,11 @@ export default async function router(schema, config) {
             for (const feature of req.body.features) {
                 if (layer.enabled_styles) {
                     if (feature.geometry.type === 'Point') {
-                        Object.assign(feature.properties, {
-                        });
+                        Object.assign(feature.properties, layer.styles.point);
                     } else if (feature.geometry.type === 'LineString') {
-                        Object.assign(feature.properties, {
-                            'stroke': layer.styles.line.color,
-                            'stroke-width': layer.styles.line.thickness,
-                            'stroke-style': layer.styles.line.style,
-                            remarks: layer.styles.line.remarks
-                        });
-                    } else if (feature.geometry.type === 'Polygon') { console.error(layer.styles);
-                        Object.assign(feature.properties, {
-                            'fill': layer.styles.line.color,
-                            'fill-opacity': layer.styles.line.opacity
-                        });
+                        Object.assign(feature.properties, layer.styles.line)
+                    } else if (feature.geometry.type === 'Polygon') {
+                        Object.assign(feature.properties, layer.styles.polygon)
                     }
                 }
 
