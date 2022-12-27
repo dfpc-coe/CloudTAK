@@ -37,8 +37,8 @@
                 </div>
             </div>
 
-            <div class='col-md-6 mb-3'>
-                <label class="form-label">Color Input</label>
+            <div v-if='filters[mode].color !== undefined' class='col-md-6 mb-3'>
+                <label class="form-label">Point Color</label>
                 <div class="row g-2">
                     <div :key='color' v-for='color in [
                         "dark", "white", "blue", "azure", "indigo", "purple", "pink", "red", "orange", "yellow", "lime"
@@ -53,23 +53,63 @@
                     </div>
                 </div>
             </div>
-            <div class='col-md-6 mb-3'>
+
+            <div v-if='filters[mode].stroke !== undefined' class='col-md-6 mb-3'>
+                <label class="form-label">Line Color</label>
+                <div class="row g-2">
+                    <div :key='color' v-for='color in [
+                        "dark", "white", "blue", "azure", "indigo", "purple", "pink", "red", "orange", "yellow", "lime"
+                    ]'
+                    class="col-auto">
+                        <label class="form-colorinput">
+                            <input :disabled='disabled' v-model='filters[mode].stroke' :value='color' type="radio" class="form-colorinput-input">
+                            <span class="form-colorinput-color bg-dark" :class='[
+                                `bg-${color}`
+                            ]'></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div v-if='filters[mode]["stroke-style"] !== undefined' class='col-md-6 mb-3'>
                 <label class="form-label">Line Style</label>
-                <select :disabled='disabled' v-model='filters[mode].style' class="form-select">
+                <select :disabled='disabled' v-model='filters[mode]["stroke-style"]' class="form-select">
                     <option value="solid">Solid</option>
                     <option value="dashed">Dashed</option>
                     <option value="dotted">Dotted</option>
                     <option value="outlined">Outlined</option>
                 </select>
             </div>
-            <div class='col-md-6 mb-3'>
+            <div v-if='filters[mode]["stroke-width"] !== undefined' class='col-md-6 mb-3'>
                 <label class="form-label">Line Thickness</label>
-                <input :disabled='disabled' v-model='filters[mode].thickness' type="range" class="form-range mb-2" min="0" max="100" step="10">
+                <input :disabled='disabled' v-model='filters[mode]["stroke-width"]' type="range" class="form-range mb-2" min="1" max="6" step="1">
             </div>
-            <div class='col-md-6 mb-3'>
-                <label class="form-label">Fill Opacity (Polygons)</label>
-                <input :disabled='disabled' v-model='filters[mode].opacity' type="range" class="form-range mb-2" min="0" max="100" step="1">
+            <div v-if='filters[mode]["stroke-opacity"] !== undefined' class='col-md-6 mb-3'>
+                <label class="form-label">Line Opacity</label>
+                <input :disabled='disabled' v-model='filters[mode]["stroke-opacity"]' type="range" class="form-range mb-2" min="0" max="256" step="1">
             </div>
+
+            <div v-if='filters[mode].fill !== undefined' class='col-md-6 mb-3'>
+                <label class="form-label">Fill Color</label>
+                <div class="row g-2">
+                    <div :key='color' v-for='color in [
+                        "dark", "white", "blue", "azure", "indigo", "purple", "pink", "red", "orange", "yellow", "lime"
+                    ]'
+                    class="col-auto">
+                        <label class="form-colorinput">
+                            <input :disabled='disabled' v-model='filters[mode].fill' :value='color' type="radio" class="form-colorinput-input">
+                            <span class="form-colorinput-color bg-dark" :class='[
+                                `bg-${color}`
+                            ]'></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div v-if='filters[mode]["fill-opacity"] !== undefined' class='col-md-6 mb-3'>
+                <label class="form-label">Fill Opacity</label>
+                <input :disabled='disabled' v-model='filters[mode]["fill-opacity"]' type="range" class="form-range mb-2" min="0" max="256" step="1">
+            </div>
+
             <div class='col-md-12'>
                 <TablerInput :disabled='disabled' v-model='filters[mode].remarks' label='Remarks'/>
             </div>
@@ -113,24 +153,23 @@ export default {
             global_enabled: null,
             filters: {
                 point: {
-                    style: 'solid',
                     color: 'red',
-                    thickness: 0,
-                    opacity: 0,
                     remarks: ''
                 },
                 line: {
-                    style: 'solid',
-                    color: 'red',
-                    thickness: 0,
-                    opacity: 0,
+                    stroke: 'red',
+                    'stroke-style': 'solid',
+                    'stroke-opacity': 256,
+                    'stroke-width': 3,
                     remarks: ''
                 },
                 polygon: {
-                    style: 'solid',
-                    color: 'red',
-                    thickness: 0,
-                    opacity: 0,
+                    stroke: 'red',
+                    'stroke-style': 'solid',
+                    'stroke-opacity': 256,
+                    'stroke-width': 3,
+                    'fill': 'red',
+                    'fill-opacity': 256,
                     remarks: ''
                 }
             }
@@ -143,7 +182,7 @@ export default {
         filters: {
             deep: true,
             handler: function() {
-                this.$emit('update:modelValue', this.filters);
+                this.format();
             }
         }
     },
@@ -151,10 +190,65 @@ export default {
         this.global_enabled = this.enabled;
 
         for (const key in this.modelValue) {
-            Object.assign(this.filters[key], this.modelValue[key]);
-        }
+            const style = JSON.parse(JSON.stringify(this.modelValue[key]));
 
-        this.$emit('update:modelValue', this.filters);
+            const colors = {
+                '#1d273b': 'dark',
+                '#ffffff': 'white',
+                '#206bc4': 'blue',
+                '#4299e1': 'azure',
+                '#4263eb': 'indigo',
+                '#ae3ec9': 'purple',
+                '#d6336c': 'pink',
+                '#d63939': 'red',
+                '#f76707': 'orange',
+                '#f59f00': 'yellow',
+                '#74b816': 'lime'
+            };
+
+            for (const color of ['color', 'stroke', 'fill']) {
+                if (style[color]) style[color] = colors[style[color]];
+            }
+
+            Object.assign(this.filters[key], style);
+
+            this.format();
+        }
+    },
+    methods: {
+        format: function() {
+            const styles = JSON.parse(JSON.stringify(this.filters));
+            if (styles) {
+                const colors = {
+                    dark: '#1d273b',
+                    white: '#ffffff',
+                    blue: '#206bc4',
+                    azure: '#4299e1',
+                    indigo: '#4263eb',
+                    purple: '#ae3ec9',
+                    pink: '#d6336c',
+                    red: '#d63939',
+                    orange: '#f76707',
+                    yellow: '#f59f00',
+                    lime: '#74b816'
+                };
+
+                for (const key in styles) {
+                    for (const intkey of ['fill-opacity', 'stroke-width', 'stroke-opacity']) {
+                        if (styles[key][intkey]) styles[key][intkey] = parseInt(styles[key][intkey])
+                    }
+
+                    for (const color of ['color', 'stroke', 'fill']) {
+                        if (styles[key][color]) {
+                            styles[key][color] = colors[styles[key][color]];
+                        }
+                    }
+                }
+            }
+
+
+            this.$emit('update:modelValue', styles);
+        }
     },
     components: {
         TablerInput,

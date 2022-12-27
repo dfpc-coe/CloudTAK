@@ -124,15 +124,29 @@ export default async function router(schema, config) {
         res: 'res.Standard.json'
     }, async (req, res) => {
         try {
+            if (!req.headers['content-type']) throw new Err(400, null, 'Content-Type not set');
+
             const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
                 const layer = (await Layer.from(config.pool, req.params.layerid)).serialize();
                 layer.data = (layer.mode === 'file' ? await LayerFile.from(config.pool, layer.id, { column: 'layer_id' }) : await LayerLive.from(config.pool, layer.id, { column: 'layer_id' })).serialize();
                 return layer;
             });
 
-            const conn = await config.conns.get(layer.connection);
+            if (layer.mode !== 'live') throw new Err(400, null, 'Cannot post CoT to file layer');
+
+            const conn = await config.conns.get(layer.data.connection);
 
             for (const feature of req.body.features) {
+                if (layer.enabled_styles) {
+                    if (feature.geometry.type === 'Point') {
+                        Object.assign(feature.properties, layer.styles.point);
+                    } else if (feature.geometry.type === 'LineString') {
+                        Object.assign(feature.properties, layer.styles.line);
+                    } else if (feature.geometry.type === 'Polygon') {
+                        Object.assign(feature.properties, layer.styles.polygon);
+                    }
+                }
+
                 conn.tak.write(COT.from_geojson(feature));
             }
 

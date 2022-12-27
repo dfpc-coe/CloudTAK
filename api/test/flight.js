@@ -44,14 +44,17 @@ export default class Flight {
      * Clear and restore an empty database schema
      *
      * @param {Tape} test Tape test instance
+     * @param {boolean} dropdb Should the database be dropped
      */
-    init(test) {
+    init(test, dropdb = true) {
         test('start: database', async (t) => {
             try {
-                await drop();
-                const knex = Knex(KnexConfig);
-                await knex.migrate.latest();
-                await knex.destroy();
+                if (dropdb) {
+                    await drop();
+                    const knex = Knex(KnexConfig);
+                    await knex.migrate.latest();
+                    await knex.destroy();
+                }
             } catch (err) {
                 t.error(err);
             }
@@ -129,7 +132,6 @@ export default class Flight {
         } else if (req.auth && req.auth.username && req.auth.password) {
             req.headers['Authorization'] = 'Basic ' + btoa(req.auth.username + ':' + req.auth.password);
         }
-
         delete req.auth;
 
         if (!defs.verify) {
@@ -138,6 +140,7 @@ export default class Flight {
             const res = new FlightResponse(_res, body);
             return res;
         }
+
 
         if (!req.method) req.method = 'GET';
 
