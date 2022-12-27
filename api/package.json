@@ -21,7 +21,7 @@
         "@openaddresses/batch-error": "^1.1.0",
         "@openaddresses/batch-generic": "^13.0.1",
         "@openaddresses/batch-schema": "^7.3.0",
-        "@tak-ps/node-cot": "^2.4.0",
+        "@tak-ps/node-cot": "^2.6.0",
         "ajv": "^8.11.2",
         "ajv-formats": "^2.1.1",
         "busboy": "^1.6.0",
