@@ -60,7 +60,7 @@ test(`POST: api/layer/${LAYER}/cot - Polygon Feature`, async (t) => {
     t.end();
 });
 
-test(`POST: api/layer/1/cot - LineString Feature`, async (t) => {
+test(`POST: api/layer/${LAYER}/cot - LineString Feature`, async (t) => {
     try {
         const res = await flight.fetch(`/api/layer/${LAYER}/cot`, {
             method: 'POST',

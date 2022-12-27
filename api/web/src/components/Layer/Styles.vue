@@ -182,7 +182,7 @@ export default {
         filters: {
             deep: true,
             handler: function() {
-                this.$emit('update:modelValue', this.filters);
+                this.format();
             }
         }
     },
@@ -206,45 +206,50 @@ export default {
                 '#74b816': 'lime'
             };
 
+            console.error('PRE', style);
             for (const color of ['color', 'stroke', 'fill']) {
-                if (style[color]) {
-                    style[color] = colors[style[color]];
-                }
+                if (style[color]) style[color] = colors[style[color]];
             }
+            console.error('POST', style);
 
             Object.assign(this.filters[key], style);
+
+            this.format();
         }
+    },
+    methods: {
+        format: function() {
+            const styles = JSON.parse(JSON.stringify(this.filters));
+            if (styles) {
+                const colors = {
+                    dark: '#1d273b',
+                    white: '#ffffff',
+                    blue: '#206bc4',
+                    azure: '#4299e1',
+                    indigo: '#4263eb',
+                    purple: '#ae3ec9',
+                    pink: '#d6336c',
+                    red: '#d63939',
+                    orange: '#f76707',
+                    yellow: '#f59f00',
+                    lime: '#74b816'
+                };
 
-        const styles = JSON.parse(JSON.stringify(this.filters));
-        if (styles) {
-            const colors = {
-                dark: '#1d273b',
-                white: '#ffffff',
-                blue: '#206bc4',
-                azure: '#4299e1',
-                indigo: '#4263eb',
-                purple: '#ae3ec9',
-                pink: '#d6336c',
-                red: '#d63939',
-                orange: '#f76707',
-                yellow: '#f59f00',
-                lime: '#74b816'
-            };
+                for (const key in styles) {
+                    if (styles[key].opacity) styles[key].opacity = parseInt(styles[key].opacity)
+                    if (styles[key].thickness) styles[key].thickness = parseInt(styles[key].thickness)
 
-            for (const key in styles) {
-                if (styles[key].opacity) styles[key].opacity = parseInt(styles[key].opacity)
-                if (styles[key].thickness) styles[key].thickness = parseInt(styles[key].thickness)
-
-                for (const color of ['color', 'stroke', 'fill']) {
-                    if (styles[key][color]) {
-                        styles[key][color] = colors[styles[key][color]];
+                    for (const color of ['color', 'stroke', 'fill']) {
+                        if (styles[key][color]) {
+                            styles[key][color] = colors[styles[key][color]];
+                        }
                     }
                 }
             }
+
+
+            this.$emit('update:modelValue', styles);
         }
-
-
-        this.$emit('update:modelValue', styles);
     },
     components: {
         TablerInput,
