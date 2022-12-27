@@ -5,6 +5,8 @@
 
         <div class='ms-auto'>
             <div class='btn-list'>
+                <TrashIcon @click='events = []' class='cursor-pointer'/>
+
                 <PlayerPlayIcon @click='paused = false' class='cursor-pointer' v-if='paused'/>
                 <PlayerPauseIcon @click='paused = true' class='cursor-pointer' v-else/>
             </div>
@@ -16,6 +18,7 @@
 
 <script>
 import {
+    TrashIcon,
     PlayerPlayIcon,
     PlayerPauseIcon
 } from 'vue-tabler-icons';
@@ -50,6 +53,7 @@ export default {
         });
     },
     components: {
+        TrashIcon,
         PlayerPauseIcon,
         PlayerPlayIcon
     }
