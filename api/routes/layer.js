@@ -141,9 +141,9 @@ export default async function router(schema, config) {
                     if (feature.geometry.type === 'Point') {
                         Object.assign(feature.properties, layer.styles.point);
                     } else if (feature.geometry.type === 'LineString') {
-                        Object.assign(feature.properties, layer.styles.line)
+                        Object.assign(feature.properties, layer.styles.line);
                     } else if (feature.geometry.type === 'Polygon') {
-                        Object.assign(feature.properties, layer.styles.polygon)
+                        Object.assign(feature.properties, layer.styles.polygon);
                     }
                 }
 

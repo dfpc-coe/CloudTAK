@@ -44,12 +44,12 @@ export default class Flight {
      * Clear and restore an empty database schema
      *
      * @param {Tape} test Tape test instance
-     * @param {boolean} drop Should the database be dropped
+     * @param {boolean} dropdb Should the database be dropped
      */
-    init(test, drop=true) {
+    init(test, dropdb = true) {
         test('start: database', async (t) => {
             try {
-                if (drop) {
+                if (dropdb) {
                     await drop();
                     const knex = Knex(KnexConfig);
                     await knex.migrate.latest();
