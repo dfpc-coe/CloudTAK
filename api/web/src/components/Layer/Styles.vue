@@ -80,13 +80,13 @@
                     <option value="outlined">Outlined</option>
                 </select>
             </div>
-            <div v-if='filters[mode]["stroke-width"]' class='col-md-6 mb-3'>
+            <div v-if='filters[mode]["stroke-width"] !== undefined' class='col-md-6 mb-3'>
                 <label class="form-label">Line Thickness</label>
                 <input :disabled='disabled' v-model='filters[mode]["stroke-width"]' type="range" class="form-range mb-2" min="1" max="6" step="1">
             </div>
-            <div v-if='filters[mode]["stroke-opacity"]' class='col-md-6 mb-3'>
+            <div v-if='filters[mode]["stroke-opacity"] !== undefined' class='col-md-6 mb-3'>
                 <label class="form-label">Line Opacity</label>
-                <input :disabled='disabled' v-model='filters[mode]["stroke-opacity"]' type="range" class="form-range mb-2" min="0" max="100" step="1">
+                <input :disabled='disabled' v-model='filters[mode]["stroke-opacity"]' type="range" class="form-range mb-2" min="0" max="256" step="1">
             </div>
 
             <div v-if='filters[mode].fill !== undefined' class='col-md-6 mb-3'>
@@ -105,9 +105,9 @@
                     </div>
                 </div>
             </div>
-            <div v-if='filters[mode]["fill-opacity"]' class='col-md-6 mb-3'>
+            <div v-if='filters[mode]["fill-opacity"] !== undefined' class='col-md-6 mb-3'>
                 <label class="form-label">Fill Opacity</label>
-                <input :disabled='disabled' v-model='filters[mode]["fill-opacity"]' type="range" class="form-range mb-2" min="0" max="100" step="1">
+                <input :disabled='disabled' v-model='filters[mode]["fill-opacity"]' type="range" class="form-range mb-2" min="0" max="256" step="1">
             </div>
 
             <div class='col-md-12'>
@@ -159,17 +159,17 @@ export default {
                 line: {
                     stroke: 'red',
                     'stroke-style': 'solid',
-                    'stroke-opacity': 50,
+                    'stroke-opacity': 256,
                     'stroke-width': 3,
                     remarks: ''
                 },
                 polygon: {
                     stroke: 'red',
                     'stroke-style': 'solid',
-                    'stroke-opacity': 50,
+                    'stroke-opacity': 256,
                     'stroke-width': 3,
                     'fill': 'red',
-                    'fill-opacity': 25,
+                    'fill-opacity': 256,
                     remarks: ''
                 }
             }
@@ -206,11 +206,9 @@ export default {
                 '#74b816': 'lime'
             };
 
-            console.error('PRE', style);
             for (const color of ['color', 'stroke', 'fill']) {
                 if (style[color]) style[color] = colors[style[color]];
             }
-            console.error('POST', style);
 
             Object.assign(this.filters[key], style);
 
@@ -236,8 +234,9 @@ export default {
                 };
 
                 for (const key in styles) {
-                    if (styles[key].opacity) styles[key].opacity = parseInt(styles[key].opacity)
-                    if (styles[key].thickness) styles[key].thickness = parseInt(styles[key].thickness)
+                    for (const intkey of ['fill-opacity', 'stroke-width', 'stroke-opacity']) {
+                        if (styles[key][intkey]) styles[key][intkey] = parseInt(styles[key][intkey])
+                    }
 
                     for (const color of ['color', 'stroke', 'fill']) {
                         if (styles[key][color]) {
