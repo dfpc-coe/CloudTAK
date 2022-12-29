@@ -1,12 +1,12 @@
 import cf from '@mapbox/cloudfriend';
 import S3 from './lib/s3.js';
-import VPC from './lib/vpc.js';
+import API from './lib/api.js';
 import KMS from './lib/kms.js';
 import Batch from './lib/batch.js';
 
 export default cf.merge(
     S3,
-    VPC,
+    API<
     KMS,
     Batch,
     {
