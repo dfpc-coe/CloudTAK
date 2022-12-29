@@ -1,4 +1,4 @@
-import EventEmitter from 'events';
+import EventEmitter from 'node:events';
 import TAKAPI from './tak-api.js';
 import { XML as COT } from '@tak-ps/node-cot';
 import tls from 'tls';
@@ -9,7 +9,11 @@ export default class TAK extends EventEmitter {
 
         this.type = type;
         this.opts = opts;
+
         this.open = false;
+        this.destroyed = false;
+
+        this.client = null;
 
         this.version; // Server Version
 
@@ -19,29 +23,29 @@ export default class TAK extends EventEmitter {
     static async connect(url, auth) {
         if (!(url instanceof URL)) throw new Error('TAK Server URL not provided');
 
+        const tak = new TAK('ssl', { url, auth });
+
         if (url.protocol === 'ssl:') {
-            if (!auth.cert) throw new Error('auth.cert required');
-            if (!auth.key) throw new Error('auth.key required');
-            return await this.connect_ssl(url, auth.cert, auth.key);
+            if (!tak.opts.auth.cert) throw new Error('auth.cert required');
+            if (!tak.opts.auth.key) throw new Error('auth.key required');
+            return await tak.connect_ssl(tak);
         } else {
             throw new Error('Unknown TAK Server Protocol');
         }
     }
 
-    static connect_ssl(url, cert, key) {
-        if (!(url instanceof URL)) throw new Error('SSL url must be URL instance');
-        if (typeof cert !== 'string') throw new Error('Cert must be a String');
-        if (typeof key !== 'string') throw new Error('Key must be a String');
-
-        const tak = new TAK('ssl', { url, cert, key });
+    connect_ssl(tak) {
+        if (!(tak.opts.url instanceof URL)) throw new Error('SSL url must be URL instance');
+        if (typeof tak.opts.auth.cert !== 'string') throw new Error('Cert must be a String');
+        if (typeof tak.opts.auth.key !== 'string') throw new Error('Key must be a String');
 
         return new Promise((resolve) => {
             tak.client = tls.connect({
                 rejectUnauthorized: false,
-                host: url.hostname,
-                port: url.port,
-                cert,
-                key
+                host: tak.opts.url.hostname,
+                port: tak.opts.url.port,
+                cert: tak.opts.auth.cert,
+                key: tak.opts.auth.key
             });
 
             tak.client.on('connect', () => {
@@ -79,10 +83,11 @@ export default class TAK extends EventEmitter {
 
                     result = TAK.findCoT(buff);
                 }
-            });
-
-            tak.client.on('error', (err) => { tak.emit('error', err); });
-            tak.client.on('end', () => {
+            }).on('timeout', () => {
+                if (!tak.destroyed) tak.emit('timeout');
+            }).on('error', (err) => {
+                tak.emit('error', err);
+            }).on('end', () => {
                 tak.open = false;
                 tak.emit('end');
             });
@@ -91,6 +96,15 @@ export default class TAK extends EventEmitter {
 
             return resolve(tak);
         });
+    }
+
+    async reconnect() {
+        return await tak.connect_ssl(tak);
+    }
+
+    destroy() {
+        this.destroyed = true;
+        tak.client.destroy();
     }
 
     async ping() {

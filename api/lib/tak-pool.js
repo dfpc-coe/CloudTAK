@@ -50,8 +50,15 @@ export default class TAKPool extends Map {
                     data: cot.raw
                 }));
             }
-        }).on('error', (err) => {
-            console.error('ERROR', err, conn.id);
+        }).on('close', async () => {
+            console.error(`not ok - ${conn.id}@close`);
+            await tak.reconnect();
+        }).on('timeout', async () => {
+            console.error(`not ok - ${conn.id}@timeout`);
+            await tak.reconnect();
+        }).on('error', async (err) => {
+            console.error(`not ok - ${conn.id}:@error:${err}`);
+            await tak.reconnect();
         });
     }
 
