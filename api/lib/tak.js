@@ -99,12 +99,12 @@ export default class TAK extends EventEmitter {
     }
 
     async reconnect() {
-        return await tak.connect_ssl(tak);
+        return await this.connect_ssl(tak);
     }
 
     destroy() {
         this.destroyed = true;
-        tak.client.destroy();
+        this.client.destroy();
     }
 
     async ping() {
