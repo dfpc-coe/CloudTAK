@@ -1,5 +1,6 @@
 {
-    "profile": "labs",
+    "name": "coe-etl",
+    "profile": "coe",
     "tags": [
         {
             "Key": "Project",
