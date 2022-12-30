@@ -31,4 +31,4 @@ RUN cd web \
 CMD service nginx restart \
     && service memcached restart \
     && npx knex migrate:latest \
-    && npm run start
+    && npm run prod
