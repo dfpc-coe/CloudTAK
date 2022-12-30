@@ -6,7 +6,7 @@ import Batch from './lib/batch.js';
 
 export default cf.merge(
     S3,
-    API<
+    API,
     KMS,
     Batch,
     {
