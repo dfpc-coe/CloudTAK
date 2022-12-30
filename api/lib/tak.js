@@ -28,38 +28,38 @@ export default class TAK extends EventEmitter {
         if (url.protocol === 'ssl:') {
             if (!tak.opts.auth.cert) throw new Error('auth.cert required');
             if (!tak.opts.auth.key) throw new Error('auth.key required');
-            return await tak.connect_ssl(tak);
+            return await tak.connect_ssl();
         } else {
             throw new Error('Unknown TAK Server Protocol');
         }
     }
 
-    connect_ssl(tak) {
-        if (!(tak.opts.url instanceof URL)) throw new Error('SSL url must be URL instance');
-        if (typeof tak.opts.auth.cert !== 'string') throw new Error('Cert must be a String');
-        if (typeof tak.opts.auth.key !== 'string') throw new Error('Key must be a String');
+    connect_ssl() {
+        if (!(this.opts.url instanceof URL)) throw new Error('SSL url must be URL instance');
+        if (typeof this.opts.auth.cert !== 'string') throw new Error('Cert must be a String');
+        if (typeof this.opts.auth.key !== 'string') throw new Error('Key must be a String');
 
         return new Promise((resolve) => {
-            tak.client = tls.connect({
+            this.client = tls.connect({
                 rejectUnauthorized: false,
-                host: tak.opts.url.hostname,
-                port: tak.opts.url.port,
-                cert: tak.opts.auth.cert,
-                key: tak.opts.auth.key
+                host: this.opts.url.hostname,
+                port: this.opts.url.port,
+                cert: this.opts.auth.cert,
+                key: this.opts.auth.key
             });
 
-            tak.client.on('connect', () => {
-                console.log('connect', tak.client.authorized);
-                console.log('connect', tak.client.authorizationError);
+            this.client.on('connect', () => {
+                console.log('connect', this.client.authorized);
+                console.log('connect', this.client.authorizationError);
             });
 
-            tak.client.on('secureConnect', () => {
-                console.log('secure', tak.client.authorized);
-                console.log('secure', tak.client.authorizationError);
+            this.client.on('secureConnect', () => {
+                console.log('secure', this.client.authorized);
+                console.log('secure', this.client.authorizationError);
             });
 
             let buff = '';
-            tak.client.on('data', (data) => {
+            this.client.on('data', (data) => {
                 // Eventually Parse ProtoBuf
                 buff = buff + data.toString();
 
@@ -69,11 +69,11 @@ export default class TAK extends EventEmitter {
 
                     try {
                         if (cot.raw.event._attributes.type === 't-x-c-t-r') {
-                            tak.open = true;
+                            this.open = true;
                         } else if (cot.raw.event._attributes.type === 't-x-takp-v') {
-                            tak.version = cot.raw.event.detail.TakControl.TakServerVersionInfo._attributes.serverVersion;
+                            this.version = cot.raw.event.detail.TakControl.TakServerVersionInfo._attributes.serverVersion;
                         } else {
-                            tak.emit('cot', cot);
+                            this.emit('cot', cot);
                         }
                     } catch (e) {
                         console.error('Error parsing', e, data.toString());
@@ -84,22 +84,22 @@ export default class TAK extends EventEmitter {
                     result = TAK.findCoT(buff);
                 }
             }).on('timeout', () => {
-                if (!tak.destroyed) tak.emit('timeout');
+                if (!this.destroyed) this.emit('timeout');
             }).on('error', (err) => {
-                tak.emit('error', err);
+                this.emit('error', err);
             }).on('end', () => {
-                tak.open = false;
-                tak.emit('end');
+                this.open = false;
+                this.emit('end');
             });
 
-            tak.ping();
+            this.ping();
 
-            return resolve(tak);
+            return resolve(this);
         });
     }
 
     async reconnect() {
-        return await this.connect_ssl(tak);
+        return await this.connect_ssl();
     }
 
     destroy() {
