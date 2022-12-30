@@ -59,7 +59,7 @@ export default {
                 HealthCheckEnabled: true,
                 HealthCheckIntervalSeconds: 30,
                 HealthCheckPath: '/api',
-                Port: 5000,
+                Port: 5001,
                 Protocol: 'HTTP',
                 TargetType: 'ip',
                 VpcId: cf.ref('VPC'),
@@ -156,7 +156,7 @@ export default {
                     Name: 'api',
                     Image: cf.join([cf.accountId, '.dkr.ecr.', cf.region, '.amazonaws.com/tak-ps-etl:', cf.ref('GitSha')]),
                     PortMappings: [{
-                        ContainerPort: 5000
+                        ContainerPort: 5001
                     }],
                     Environment: [
                         {
@@ -208,7 +208,7 @@ export default {
                 },
                 LoadBalancers: [{
                     ContainerName: 'api',
-                    ContainerPort: 5000,
+                    ContainerPort: 5001,
                     TargetGroupArn: cf.ref('TargetGroup')
                 }]
             }
@@ -221,8 +221,8 @@ export default {
                 SecurityGroupIngress: [{
                     CidrIp: '0.0.0.0/0',
                     IpProtocol: 'tcp',
-                    FromPort: 5000,
-                    ToPort: 5000
+                    FromPort: 5001,
+                    ToPort: 5001
                 }]
             }
         }
