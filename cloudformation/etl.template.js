@@ -4,6 +4,7 @@ import API from './lib/api.js';
 import KMS from './lib/kms.js';
 import Batch from './lib/batch.js';
 import DB from './lib/db.js';
+import Signing from './lib/signing.js';
 
 export default cf.merge(
     S3,
@@ -11,11 +12,16 @@ export default cf.merge(
     API,
     KMS,
     Batch,
+    Signing,
     {
         Description: 'Template for @tak-ps/etl',
         Parameters: {
             GitSha: {
                 Description: 'GitSha that is currently being deployed',
+                Type: 'String'
+            },
+            AlarmEmail: {
+                Description: 'Email to send alarms to',
                 Type: 'String'
             },
             VPC: {
@@ -39,5 +45,15 @@ export default cf.merge(
                 Type: 'String'
             }
         }
-    }
+    },
+    alarms({
+        prefix: 'Batch',
+        email: cf.ref('AlarmEmail'),
+        apache: cf.stackName,
+        cluster: cf.ref('ECSCluster'),
+        service: cf.getAtt('Service', 'Name'),
+        loadbalancer: cf.getAtt('ELB', 'LoadBalancerFullName'),
+        targetgroup: cf.getAtt('TargetGroup', 'TargetGroupFullName')
+
+    }),
 );
