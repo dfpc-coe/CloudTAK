@@ -16,8 +16,8 @@ export default {
                 Type: 'application',
                 SecurityGroups: [cf.ref('ELBSecurityGroup')],
                 Subnets:  [
-                    cf.ref('SubA'),
-                    cf.ref('SubB')
+                    cf.ref('SubnetPublicA'),
+                    cf.ref('SubnetPublicB')
                 ]
             }
 
@@ -88,9 +88,16 @@ export default {
                     }]
                 },
                 Policies: [{
-                    PolicyName: cf.join([cf.stackName, '-api-task']),
+                    PolicyName: cf.join('-', [cf.stackName, 'api-policy']),
                     PolicyDocument: {
-                        Statement: []
+                        Statement: [{
+                            Effect: 'Allow',
+                            Resource: [
+                                cf.join(['arn:aws:s3:::', cf.ref('AssetBucket')]),
+                                cf.join(['arn:aws:s3:::', cf.ref('AssetBucket'), '/*'])
+                            ],
+                            Action: '*'
+                        }]
                     }
                 }]
             }
@@ -160,7 +167,7 @@ export default {
                                 ':',
                                 cf.sub('{{resolve:secretsmanager:${AWS::StackName}/rds/secret:SecretString:password:AWSCURRENT}}'),
                                 '@',
-                                cf.getAtt('DBInstanceVPC', 'Endpoint.Address'),
+                                cf.getAtt('DBInstance', 'Endpoint.Address'),
                                 ':5432/tak_ps_etl'
                             ])
                         },
@@ -194,8 +201,8 @@ export default {
                         AssignPublicIp: 'ENABLED',
                         SecurityGroups: [cf.ref('ServiceSecurityGroup')],
                         Subnets:  [
-                            cf.ref('SubA'),
-                            cf.ref('SubB')
+                            cf.ref('SubnetPublicA'),
+                            cf.ref('SubnetPublicB')
                         ]
                     }
                 },
