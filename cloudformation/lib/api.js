@@ -147,7 +147,7 @@ export default {
                 TaskRoleArn: cf.getAtt('TaskRole', 'Arn'),
                 ContainerDefinitions: [{
                     Name: 'api',
-                    Image: cf.join([cf.accountId, '.dkr.ecr.', cf.region, '.amazonaws.com/tak-ps-stats:', cf.ref('GitSha')]),
+                    Image: cf.join([cf.accountId, '.dkr.ecr.', cf.region, '.amazonaws.com/tak-ps-etl:', cf.ref('GitSha')]),
                     PortMappings: [{
                         ContainerPort: 5000
                     }],
@@ -161,7 +161,7 @@ export default {
                                 cf.sub('{{resolve:secretsmanager:${AWS::StackName}/rds/secret:SecretString:password:AWSCURRENT}}'),
                                 '@',
                                 cf.getAtt('DBInstanceVPC', 'Endpoint.Address'),
-                                ':5432/tak_ps_stats'
+                                ':5432/tak_ps_etl'
                             ])
                         },
                         { Name: 'StackName', Value: cf.stackName },

@@ -16,6 +16,26 @@ export default cf.merge(
                 Description: 'GitSha that is currently being deployed',
                 Type: 'String'
             }
+        },
+        VPC: {
+            Description: 'VPC ID to deploy into',
+            Type: 'String'
+        },
+        SubnetPublicA: {
+            Description: 'VPC SubnetPublicA to deploy into',
+            Type: 'String'
+        },
+        SubnetPublicB: {
+            Description: 'VPC SubnetPublicB to deploy into',
+            Type: 'String'
+        },
+        SubnetPrivateA: {
+            Description: 'VPC SubnetPrivateA to deploy into',
+            Type: 'String'
+        },
+        SubnetPrivateB: {
+            Description: 'VPC SubnetPrivateB to deploy into',
+            Type: 'String'
         }
     }
 );

@@ -10,7 +10,7 @@
     ],
     "artifacts": {
         "docker": [
-            "coe-ecr-etl:api-{{gitsha}}"
+            "coe-ecr-etl:{{gitsha}}"
         ]
     }
 }
