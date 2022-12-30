@@ -16,8 +16,8 @@ export default {
                 Type: 'application',
                 SecurityGroups: [cf.ref('ELBSecurityGroup')],
                 Subnets:  [
-                    cf.ref('SubA'),
-                    cf.ref('SubB')
+                    cf.ref('SubnetPublicA'),
+                    cf.ref('SubnetPublicB')
                 ]
             }
 
@@ -59,7 +59,7 @@ export default {
                 HealthCheckEnabled: true,
                 HealthCheckIntervalSeconds: 30,
                 HealthCheckPath: '/api',
-                Port: 5000,
+                Port: 5001,
                 Protocol: 'HTTP',
                 TargetType: 'ip',
                 VpcId: cf.ref('VPC'),
@@ -88,9 +88,16 @@ export default {
                     }]
                 },
                 Policies: [{
-                    PolicyName: cf.join([cf.stackName, '-api-task']),
+                    PolicyName: cf.join('-', [cf.stackName, 'api-policy']),
                     PolicyDocument: {
-                        Statement: []
+                        Statement: [{
+                            Effect: 'Allow',
+                            Resource: [
+                                cf.join(['arn:aws:s3:::', cf.ref('AssetBucket')]),
+                                cf.join(['arn:aws:s3:::', cf.ref('AssetBucket'), '/*'])
+                            ],
+                            Action: '*'
+                        }]
                     }
                 }]
             }
@@ -147,9 +154,9 @@ export default {
                 TaskRoleArn: cf.getAtt('TaskRole', 'Arn'),
                 ContainerDefinitions: [{
                     Name: 'api',
-                    Image: cf.join([cf.accountId, '.dkr.ecr.', cf.region, '.amazonaws.com/tak-ps-stats:', cf.ref('GitSha')]),
+                    Image: cf.join([cf.accountId, '.dkr.ecr.', cf.region, '.amazonaws.com/tak-ps-etl:', cf.ref('GitSha')]),
                     PortMappings: [{
-                        ContainerPort: 5000
+                        ContainerPort: 5001
                     }],
                     Environment: [
                         {
@@ -160,8 +167,8 @@ export default {
                                 ':',
                                 cf.sub('{{resolve:secretsmanager:${AWS::StackName}/rds/secret:SecretString:password:AWSCURRENT}}'),
                                 '@',
-                                cf.getAtt('DBInstanceVPC', 'Endpoint.Address'),
-                                ':5432/tak_ps_stats'
+                                cf.getAtt('DBInstance', 'Endpoint.Address'),
+                                ':5432/tak_ps_etl'
                             ])
                         },
                         { Name: 'StackName', Value: cf.stackName },
@@ -194,14 +201,14 @@ export default {
                         AssignPublicIp: 'ENABLED',
                         SecurityGroups: [cf.ref('ServiceSecurityGroup')],
                         Subnets:  [
-                            cf.ref('SubA'),
-                            cf.ref('SubB')
+                            cf.ref('SubnetPublicA'),
+                            cf.ref('SubnetPublicB')
                         ]
                     }
                 },
                 LoadBalancers: [{
                     ContainerName: 'api',
-                    ContainerPort: 5000,
+                    ContainerPort: 5001,
                     TargetGroupArn: cf.ref('TargetGroup')
                 }]
             }
@@ -214,8 +221,8 @@ export default {
                 SecurityGroupIngress: [{
                     CidrIp: '0.0.0.0/0',
                     IpProtocol: 'tcp',
-                    FromPort: 5000,
-                    ToPort: 5000
+                    FromPort: 5001,
+                    ToPort: 5001
                 }]
             }
         }

@@ -55,8 +55,8 @@ export default {
                         },{
                             Effect: 'Allow',
                             Resource: [
-                                cf.join(['arn:aws:s3:::', cf.ref('DataBucketProduction')]),
-                                cf.join(['arn:aws:s3:::', cf.ref('DataBucketProduction'), '/*'])
+                                cf.join(['arn:aws:s3:::', cf.ref('AssetBucket')]),
+                                cf.join(['arn:aws:s3:::', cf.ref('AssetBucket'), '/*'])
                             ],
                             Action: '*'
                         },{
@@ -78,7 +78,10 @@ export default {
                     Type: 'FARGATE',
                     MaxvCpus: 128,
                     SecurityGroupIds: [cf.ref('BatchSecurityGroup')],
-                    Subnets: [cf.ref('SubnetB')]
+                    Subnets: [
+                        cf.ref('SubnetPrivateA'),
+                        cf.ref('SubnetPrivateB')
+                    ]
                 },
                 'State': 'ENABLED'
             }
