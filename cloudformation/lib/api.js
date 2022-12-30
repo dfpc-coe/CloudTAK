@@ -171,6 +171,7 @@ export default {
                                 ':5432/tak_ps_etl'
                             ])
                         },
+                        { Name: 'SigningSecret', Value: cf.sub('{{resolve:secretsmanager:${AWS::StackName}/api/secret:SecretString::AWSCURRENT}}') },
                         { Name: 'StackName', Value: cf.stackName },
                         { Name: 'AWS_DEFAULT_REGION', Value: cf.region }
                     ],
@@ -225,6 +226,12 @@ export default {
                     ToPort: 5001
                 }]
             }
+        }
+    },
+    Outputs: {
+        API: {
+            Description: 'API ELB',
+            Value: cf.getAtt('ELB', 'DNSName')
         }
     }
 };
