@@ -1,6 +1,6 @@
 FROM ubuntu:22.04
 
-EXPOSE 5001
+EXPOSE 5000
 
 ENV HOME=/home/etl
 WORKDIR $HOME
