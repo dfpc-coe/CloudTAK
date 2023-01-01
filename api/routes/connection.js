@@ -1,5 +1,6 @@
 import Err from '@openaddresses/batch-error';
 import Connection from '../lib/types/connection.js';
+import Auth from '../lib/auth.js';
 
 export default async function router(schema, config) {
     await schema.get('/connection', {
@@ -11,6 +12,8 @@ export default async function router(schema, config) {
         res: 'res.ListConnections.json'
     }, async (req, res) => {
         try {
+            await Auth.is_auth(req);
+
             const list = await Connection.list(config.pool, req.query);
 
             list.connections.map((conn) => {
@@ -37,6 +40,8 @@ export default async function router(schema, config) {
         res: 'res.Connection.json'
     }, async (req, res) => {
         try {
+            await Auth.is_auth(req);
+
             const conn = await Connection.generate(config.pool, req.body);
 
             await config.conns.add(conn);
@@ -58,6 +63,7 @@ export default async function router(schema, config) {
         res: 'res.Connection.json'
     }, async (req, res) => {
         try {
+            await Auth.is_auth(req);
             const conn = await Connection.commit(config.pool, req.params.connectionid, req.body);
             conn.status = config.conns.get(conn.id).tak.open ? 'live' : 'dead';
             return res.json(conn);
@@ -75,6 +81,8 @@ export default async function router(schema, config) {
         res: 'res.Connection.json'
     }, async (req, res) => {
         try {
+            await Auth.is_auth(req);
+
             const conn = (await Connection.from(config.pool, req.params.connectionid)).serialize();
             conn.status = config.conns.get(conn.id).tak.open ? 'live' : 'dead';
             return res.json(conn);
@@ -92,6 +100,8 @@ export default async function router(schema, config) {
         res: 'res.Standard.json'
     }, async (req, res) => {
         try {
+            await Auth.is_auth(req);
+
             await Connection.delete(config.pool, req.params.connectionid);
 
             config.conns.delete(req.params.connectionid);
