@@ -10,6 +10,7 @@ import minimist from 'minimist';
 import TAKPool from './lib/tak-pool.js';
 import { WebSocketServer } from 'ws';
 import Cacher from './lib/cacher.js';
+import BlueprintLogin from '@tak-ps/blueprint-login';
 
 import Config from './lib/config.js';
 
@@ -100,34 +101,13 @@ export default async function server(config) {
     app.use('/api', schema.router);
     app.use('/docs', express.static('./doc'));
 
-    schema.router.use(async (req, res, next) => {
-        if (req.header('authorization')) {
-            const authorization = req.header('authorization').split(' ');
-
-            if (authorization[0].toLowerCase() !== 'bearer') {
-                return res.status(401).json({
-                    status: 401,
-                    message: 'Only "Bearer" authorization header is allowed'
-                });
-            }
-
-            if (!authorization[1]) {
-                return res.status(401).json({
-                    status: 401,
-                    message: 'No bearer token present'
-                });
-            }
-
-            req.auth = false;
-        } else {
-            req.auth = false;
-        }
-
-        return next();
-    });
-
-
     await schema.api();
+
+    await schema.blueprint(new BlueprintLogin({
+        secret: config.SigningSecret,
+        username: config.Username,
+        password: config.Password
+    }));
 
     await schema.load(
         new URL('./routes/', import.meta.url),
