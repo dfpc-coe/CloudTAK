@@ -231,7 +231,7 @@ export default {
     Outputs: {
         API: {
             Description: 'API ELB',
-            Value: cf.getAtt('ELB', 'DNSName')
+            Value: cf.join(['http://', cf.getAtt('ELB', 'DNSName')])
         }
     }
 };
