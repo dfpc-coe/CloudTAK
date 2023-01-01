@@ -80,6 +80,7 @@ export default {
     name: 'Tak-PS-Stats',
     data: function() {
         return {
+            user: null,
             ws: null,
             err: null,
         }
@@ -95,6 +96,19 @@ export default {
         this.ws.addEventListener('error', (err) => {
             this.err = err;
         });
+
+        if (localStorage.token) return await this.getLogin();
+        if (this.$route.name !== 'login') this.$router.push("/login");
+    },
+    methods: {
+        getLogin: async function() {
+            try {
+                this.user = await window.std('/api/login');
+            } catch (err) {
+                delete localStorage.token;
+                this.$router.push("/login");
+            }
+        }
     },
     components: {
         HomeIcon,
