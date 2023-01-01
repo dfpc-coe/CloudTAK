@@ -88,6 +88,12 @@ export default {
     errorCaptured: function(err) {
         this.err = err;
     },
+    watch: {
+        async $route() {
+            if (localStorage.token) return await this.getLogin();
+            if (this.$route.name !== 'login') this.$router.push("/login");
+        }
+    },
     mounted: function() {
         const url = window.stdurl('/');
         url.protocol = 'ws:';
