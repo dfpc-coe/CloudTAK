@@ -94,7 +94,7 @@ export default {
             if (this.$route.name !== 'login') this.$router.push("/login");
         }
     },
-    mounted: function() {
+    mounted: async function() {
         const url = window.stdurl('/');
         url.protocol = 'ws:';
 
