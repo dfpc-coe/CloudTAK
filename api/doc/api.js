@@ -18,6 +18,42 @@
 
 
 /**
+* @api {post} /login Create Login
+* @apiVersion 1.0.0
+* @apiName POST-/login
+* @apiGroup Login
+* @apiPermission Unknown
+*
+* @apidescription
+*   No Description
+*
+
+*
+*
+*
+*
+*/
+
+
+/**
+* @api {get} /login Get Login
+* @apiVersion 1.0.0
+* @apiName GET-/login
+* @apiGroup Login
+* @apiPermission Unknown
+*
+* @apidescription
+*   No Description
+*
+
+*
+*
+*
+*
+*/
+
+
+/**
 * @api {get} /asset List Assets
 * @apiVersion 1.0.0
 * @apiName GET-/asset
