@@ -1,0 +1,15 @@
+{
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+        "url": {
+            "type": "string"
+        },
+        "auth": {
+            "type": "object"
+        },
+        "name": {
+            "type": "string"
+        }
+    }
+}

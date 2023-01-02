@@ -31,11 +31,12 @@
                                 </div>
                             </div>
                             <div class="card-body">
-                                <template v-if='edit'>
+                                <template v-if='server.status==="configured"'>
                                     <div class='row'>
                                         <div class='col-lg-12 py-2'>
                                             <TablerInput
                                                 v-model='server.name'
+                                                :disabled='!edit'
                                                 label='TAK Server Name'
                                                 placeholder='ssl://'
                                                 :error='errors.name'
@@ -45,13 +46,14 @@
                                         <div class='col-lg-12 py-2'>
                                             <TablerInput
                                                 v-model='server.url'
+                                                :disabled='!edit'
                                                 label='TAK Server URL'
                                                 placeholder='ssl://'
                                                 :error='errors.url'
                                             />
                                         </div>
 
-                                        <div class='col-lg-12 d-flex py-2'>
+                                        <div v-if='edit' class='col-lg-12 d-flex py-2'>
                                             <div class='ms-auto'>
                                                 <div @click='postServer' class='btn btn-primary'>
                                                     Save Server
@@ -68,12 +70,9 @@
                                         <span>No Connection Found</span>
                                     </div>
                                 </template>
-                                <template v-else>
-
-                                </template>
                             </div>
                             <div v-if='server.updated' class="card-footer">
-                                <span v-text='`Last Updated: ${server.updated}`'/>
+                                <span v-text='`Last Updated: ${timeDiff(server.updated)}`'/>
                             </div>
                         </template>
                     </div>
@@ -143,7 +142,8 @@ export default {
 
             for (const e in this.errors) if (this.errors[e]) return;
 
-            if (this.server.status === 'configured') {
+            this.loading = true;
+            if (this.server.status === 'unconfigured') {
                 this.server = await window.std(`/api/server`, {
                     method: 'POST',
                     body: {
@@ -158,6 +158,9 @@ export default {
                     }
                 });
             }
+
+            this.edit = false;
+            this.loading = false;
         }
     },
     components: {

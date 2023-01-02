@@ -375,3 +375,39 @@
 *
 * @apiSchema {jsonschema=../schema/res.Server.json} apiSuccess
 */
+
+
+/**
+* @api {post} /server Post Server
+* @apiVersion 1.0.0
+* @apiName POST-/server
+* @apiGroup Server
+* @apiPermission user
+*
+* @apidescription
+*   Post Server
+*
+
+*
+*
+* @apiSchema (Body) {jsonschema=../schema/req.body.Server.json} apiParam
+* @apiSchema {jsonschema=../schema/res.Server.json} apiSuccess
+*/
+
+
+/**
+* @api {patch} /server Patch Server
+* @apiVersion 1.0.0
+* @apiName PATCH-/server
+* @apiGroup Server
+* @apiPermission user
+*
+* @apidescription
+*   Patch Server
+*
+
+*
+*
+* @apiSchema (Body) {jsonschema=../schema/req.body.Server.json} apiParam
+* @apiSchema {jsonschema=../schema/res.Server.json} apiSuccess
+*/
