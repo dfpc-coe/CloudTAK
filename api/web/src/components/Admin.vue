@@ -110,6 +110,7 @@ export default {
                 id: null,
                 created: null,
                 updated: null,
+                name: '',
                 url: '',
                 auth: {}
             }
@@ -147,6 +148,7 @@ export default {
                 this.server = await window.std(`/api/server`, {
                     method: 'POST',
                     body: {
+                        name: this.server.name,
                         url: this.server.url
                     }
                 });
@@ -154,6 +156,7 @@ export default {
                 this.server = await window.std(`/api/server`, {
                     method: 'PATCH',
                     body: {
+                        name: this.server.name,
                         url: this.server.url
                     }
                 });
