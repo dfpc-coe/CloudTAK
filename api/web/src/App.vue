@@ -65,11 +65,9 @@
         </div>
     </div>
 
-    <template v-if='ws'>
-        <router-view
-            :ws='ws'
-        />
-    </template>
+    <router-view
+        :ws='ws'
+    />
 
     <TablerError v-if='err' :err='err' @close='err = null'/>
 </div>
@@ -96,6 +94,7 @@ export default {
             user: null,
             ws: null,
             err: null,
+            server: null,
         }
     },
     errorCaptured: function(err) {
@@ -116,8 +115,10 @@ export default {
             this.err = err;
         });
 
-        if (localStorage.token) return await this.getLogin();
+        if (localStorage.token) return await this.getServer();
         if (this.$route.name !== 'login') this.$router.push("/login");
+
+        await this.getServer();
     },
     methods: {
         getLogin: async function() {
@@ -126,6 +127,13 @@ export default {
             } catch (err) {
                 delete localStorage.token;
                 this.$router.push("/login");
+            }
+        },
+        getServer: async function() {
+            this.server = await window.std('/api/server');
+
+            if (this.server.status === 'unconfigured') {
+                this.$router.push("/admin");
             }
         }
     },
