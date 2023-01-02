@@ -79,9 +79,9 @@ export default async function router(schema, config) {
 
             let layer = Object.keys(req.body).length > 0
                 ?  await Layer.commit(config.pool, req.params.layerid, {
-                        updated: sql`Now()`,
-                        ...req.body
-                    })
+                    updated: sql`Now()`,
+                    ...req.body
+                })
                 :  await Layer.from(config.pool, req.params.layerid);
 
             if (layer.mode === 'live') {
