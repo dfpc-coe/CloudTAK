@@ -18,7 +18,7 @@
         </div>
     </header>
 
-    <div class="navbar-expand-md">
+    <div v-if='user' class="navbar-expand-md">
         <div class="collapse navbar-collapse" id="navbar-menu">
             <div class="navbar navbar-light">
                 <div class="container-xl">
@@ -48,6 +48,18 @@
                             </a>
                         </li>
                     </ul>
+                    <div class='ms-auto'>
+                        <ul class="navbar-nav">
+                            <li class="nav-item">
+                                <a class="nav-link cursor-pointer" @click='$router.push("/admin")'>
+                                    <span class="nav-link-icon d-md-none d-lg-inline-block">
+                                        <AdjustmentsIcon/>
+                                    </span>
+                                    <span class="nav-link-title">Admin</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
             </div>
         </div>
@@ -70,7 +82,8 @@ import {
     CodeIcon,
     HomeIcon,
     NetworkIcon,
-    DatabaseIcon
+    DatabaseIcon,
+    AdjustmentsIcon
 } from 'vue-tabler-icons';
 import {
     TablerError
@@ -121,7 +134,8 @@ export default {
         CodeIcon,
         NetworkIcon,
         DatabaseIcon,
-        TablerError
+        TablerError,
+        AdjustmentsIcon
     }
 }
 </script>
