@@ -25,6 +25,8 @@ const router = new VueRouter.createRouter({
         { path: '/connection/:connectionid/edit', name: 'connection-edit', component: () => import('./components/ConnectionEdit.vue') },
 
         { path: '/login', name: 'login', component: () => import('./components/Login.vue') },
+
+        { path: '/admin', name: 'admin', component: () => import('./components/Admin.vue') },
     ]
 });
 
