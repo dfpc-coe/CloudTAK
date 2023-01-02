@@ -357,3 +357,21 @@
 *
 *
 */
+
+
+/**
+* @api {get} /connection List Connections
+* @apiVersion 1.0.0
+* @apiName GET-/connection
+* @apiGroup Connection
+* @apiPermission user
+*
+* @apidescription
+*   List Connections
+*
+
+*
+* @apiSchema (Query) {jsonschema=../schema/req.query.ListConnections.json} apiParam
+*
+* @apiSchema {jsonschema=../schema/res.ListConnections.json} apiSuccess
+*/
