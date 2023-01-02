@@ -23,7 +23,26 @@
 
             <template v-if='layerdata.mode === "live"'>
                 <div class="col-md-6 mb-3">
-                    <TablerInput :disabled='disabled' label='Cron Schedule' v-model='layerdata.cron' :error='errors.cron'/>
+                    <div class='d-flex'>
+                        <label class='form-label'>Cron Expression</label>
+
+                        <div class='ms-auto'>
+                            <div class='dropdown'>
+                                <div class="dropdown-toggle" type="button" id="dropdownCron" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <SettingsIcon width='16' height='16' class='cursor-pointer dropdown-toggle'/>
+                                </div>
+                                <ul class="dropdown-menu px-1 py-1" aria-labelledby="dropdownCron">
+                                    <li class='py-1' @click='layerdata.cron = "rate(1 minutes)"'>rate(1 minutes)</li>
+                                    <li class='py-1' @click='layerdata.cron = "cron(15 10 * * ? *)"'>cron(15 10 * * ? *)</li>
+                                    <li class='py-1' @click='layerdata.cron = "cron(0/5 8-17 ? * MON-FRI *)"'>cron(0/5 8-17 ? * MON-FRI *)</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <input :disabled='disabled' v-model='layerdata.cron' :class='{
+                        "is-invalid": error
+                    }' class="form-control" placeholder='Cron Expression'/>
+                    <label v-text='cronstr(layerdata.cron)'/>
                 </div>
                 <div class="col-md-6 mb-3">
                     <TablerInput :disabled='disabled' label='Schedule Task' v-model='layerdata.task' :error='errors.task'/>
@@ -64,10 +83,12 @@ import {
     TablerInput
 } from '@tak-ps/vue-tabler';
 import ConnectionSelect from '../util/ConnectionSelect.vue';
+import cronstrue from 'cronstrue';
 
 import {
     ClockIcon,
-    FileUploadIcon
+    FileUploadIcon,
+    SettingsIcon
 } from 'vue-tabler-icons'
 
 export default {
@@ -123,11 +144,24 @@ export default {
     mounted: function() {
         this.layerdata = Object.assign(this.modelValue);
     },
+    methods: {
+        cronstr: function(cron) {
+            if (!cron) return;
+
+            if (cron.includes('cron(')) {
+                return cronstrue.toString(cron.replace('cron(', '').replace(')', ''));
+            } else {
+                const rate = cron.replace('rate(', '').replace(')', '');
+                return `Once every ${rate}`;
+            }
+        },
+    },
     components: {
         Asset,
         TablerInput,
         ClockIcon,
         FileUploadIcon,
+        SettingsIcon,
         ConnectionSelect,
         UploadInline
     }

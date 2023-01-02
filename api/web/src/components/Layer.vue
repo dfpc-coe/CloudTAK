@@ -105,7 +105,13 @@ export default {
         },
         cronstr: function(cron) {
             if (!cron) return;
-            return cronstrue.toString(cron);
+
+            if (cron.includes('cron(')) {
+                return cronstrue.toString(cron.replace('cron(', '').replace(')', ''));
+            } else {
+                const rate = cron.replace('rate(', '').replace(')', '');
+                return `Once every ${rate}`;
+            }   
         },
         fetch: async function() {
             this.loading.layer = true;
