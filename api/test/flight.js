@@ -1,7 +1,6 @@
 process.env.StackName = 'test';
 
 import assert from 'assert';
-import { sql } from 'slonik';
 import fs from 'fs';
 import api from '../index.js';
 import Config from '../lib/config.js';
@@ -229,52 +228,24 @@ export default class Flight {
      * Create a new user and return an API token for that user
      *
      * @param {Object} test Tape runner
-     * @param {String} username Username for user to create
-     * @param {Boolean} [admin=false] Should the created user be an admin
      */
-    user(test, username, admin = false) {
-        test.test(`Create Token: ${username}`, async (t) => {
-            const new_user_res = await fetch(new URL('/api/user', this.base), {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    username,
-                    password: 'testing123',
-                    email: `${username}@example.com`
-                })
-            });
-
-            const new_user = new FlightResponse(new_user_res, await new_user_res.json());
-
-            if (new_user.status !== 200) throw new Error(JSON.stringify(new_user.body));
-
-            if (admin) {
-                await this.config.pool.query(sql`
-                     UPDATE users
-                        SET
-                            access = 'admin'
-                        WHERE
-                            id = ${new_user.body.id}
-                `);
-            }
-
+    user(test) {
+        test.test('Create Token: admin', async (t) => {
             const new_login_res = await fetch(new URL('/api/login', this.base), {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    username,
-                    password: 'testing123'
+                    username: 'admin',
+                    password: 'admin'
                 })
             });
 
             const new_login = new FlightResponse(new_login_res, await new_login_res.json());
             if (new_login.status !== 200) throw new Error(JSON.stringify(new_login.body));
 
-            this.token[username] = (new_login.body).token;
+            this.token.admin = (new_login.body).token;
             t.end();
         });
     }
