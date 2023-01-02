@@ -21,7 +21,7 @@
                 <div class="col-lg-12">
                     <div class="card">
                         <TablerLoading v-if='loading'/>
-                        <template v-else-if='!edit'>
+                        <template v-else>
                             <div class="card-header">
                                 <h3 class='card-title'>TAK Server Configuration</h3>
                                 <div class='ms-auto'>
@@ -32,10 +32,40 @@
                             </div>
                             <div class="card-body">
                                 <template v-if='edit'>
-                                    <TablerInput v-model='server.url' placeholder='ssl://'/>
+                                    <div class='row'>
+                                        <div class='col-lg-12 py-2'>
+                                            <TablerInput
+                                                v-model='server.name'
+                                                label='TAK Server Name'
+                                                placeholder='ssl://'
+                                                :error='errors.name'
+                                            />
+                                        </div>
 
-                                    <div class='btn'>
-                                        Save Server
+                                        <div class='col-lg-12 py-2'>
+                                            <TablerInput
+                                                v-model='server.url'
+                                                label='TAK Server URL'
+                                                placeholder='ssl://'
+                                                :error='errors.url'
+                                            />
+                                        </div>
+
+                                        <div class='col-lg-12 d-flex py-2'>
+                                            <div class='ms-auto'>
+                                                <div @click='postServer' class='btn btn-primary'>
+                                                    Save Server
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </template>
+                                <template v-else-if='server.status === "unconfigured"'>
+                                    <div class='d-flex justify-content-center'>
+                                        <NoteIcon :height='48' :width='48'/>
+                                    </div>
+                                    <div class='d-flex justify-content-center'>
+                                        <span>No Connection Found</span>
                                     </div>
                                 </template>
                                 <template v-else>
@@ -62,6 +92,7 @@ import {
     TablerInput
 } from '@tak-ps/vue-tabler';
 import {
+    NoteIcon,
     SettingsIcon
 } from 'vue-tabler-icons';
 import timeDiff from '../timediff.js';
@@ -72,11 +103,16 @@ export default {
         return {
             edit: false,
             loading: true,
+            errors: {
+                name: '',
+                url: ''
+            },
             server: {
                 id: null,
                 created: null,
                 updated: null,
-                url: ''
+                url: '',
+                auth: {}
             }
         }
     },
@@ -91,9 +127,41 @@ export default {
             this.loading = true;
             this.server = await window.std(`/api/server`);
             this.loading = false;
+        },
+        postServer: async function() {
+            for (const field of ['url', 'name']) {
+                this.errors[field] = !this.server[field] ? 'Cannot be empty' : '';
+            }
+
+            if (!this.errors.url) {
+                try {
+                    new URL(this.server.url);
+                } catch (err) {
+                    this.errors.url = err.message;
+                }
+            }
+
+            for (const e in this.errors) if (this.errors[e]) return;
+
+            if (this.server.status === 'configured') {
+                this.server = await window.std(`/api/server`, {
+                    method: 'POST',
+                    body: {
+                        url: this.server.url
+                    }
+                });
+            } else {
+                this.server = await window.std(`/api/server`, {
+                    method: 'PATCH',
+                    body: {
+                        url: this.server.url
+                    }
+                });
+            }
         }
     },
     components: {
+        NoteIcon,
         PageFooter,
         SettingsIcon,
         TablerLoading,
