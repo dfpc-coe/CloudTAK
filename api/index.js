@@ -55,7 +55,6 @@ export default async function server(config) {
     });
 
     config.wsClients = [];
-    config.conns = await TAKPool.init(config.pool, config.wsClients);
 
     try {
         config.server = await Server.from(config.pool, 1);
@@ -63,6 +62,8 @@ export default async function server(config) {
         console.error(err);
         config.server = null;
     }
+
+    config.conns = await TAKPool.init(config.pool, config.server, config.wsClients);
 
     /*
     if (true) config.conns.get(5).tak.on('cot', function(cot) {

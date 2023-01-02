@@ -16,8 +16,8 @@ export default async function router(schema, config) {
 
             if (!config.server) {
                 return res.json({
-                    status: 'unconfigured',
-                })
+                    status: 'unconfigured'
+                });
             } else {
                 return res.json({
                     status: 'configured',
