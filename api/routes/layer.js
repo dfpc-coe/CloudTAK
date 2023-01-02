@@ -4,6 +4,7 @@ import LayerLive from '../lib/types/layers_live.js';
 import LayerFile from '../lib/types/layers_file.js';
 import { XML as COT } from '@tak-ps/node-cot';
 import Cacher from '../lib/cacher.js';
+import { sql } from 'slonik';
 import Auth from '../lib/auth.js';
 
 export default async function router(schema, config) {
@@ -77,7 +78,10 @@ export default async function router(schema, config) {
             delete req.body.data;
 
             let layer = Object.keys(req.body).length > 0
-                ?  await Layer.commit(config.pool, req.params.layerid, req.body)
+                ?  await Layer.commit(config.pool, req.params.layerid, {
+                        updated: sql`Now()`,
+                        ...req.body
+                    })
                 :  await Layer.from(config.pool, req.params.layerid);
 
             if (layer.mode === 'live') {

@@ -1,6 +1,7 @@
 import Err from '@openaddresses/batch-error';
 import Connection from '../lib/types/connection.js';
 import Auth from '../lib/auth.js';
+import { sql } from 'slonik';
 
 export default async function router(schema, config) {
     await schema.get('/connection', {
@@ -42,6 +43,7 @@ export default async function router(schema, config) {
         try {
             await Auth.is_auth(req);
 
+            if (!config.server) throw new Err(400, null, 'TAK Server must be configured before a connection can be made');
             const conn = await Connection.generate(config.pool, req.body);
 
             await config.conns.add(conn);
@@ -64,7 +66,10 @@ export default async function router(schema, config) {
     }, async (req, res) => {
         try {
             await Auth.is_auth(req);
-            const conn = await Connection.commit(config.pool, req.params.connectionid, req.body);
+            const conn = await Connection.commit(config.pool, req.params.connectionid, {
+                updated: sql`Now()`,
+                ...req.body
+            });
             conn.status = config.conns.get(conn.id).tak.open ? 'live' : 'dead';
             return res.json(conn);
         } catch (err) {

@@ -12,7 +12,16 @@
         "id": {
             "type": "integer"
         },
+        "url": {
+            "type": "string"
+        },
         "name": {
+            "type": "string"
+        },
+        "created": {
+            "type": "string"
+        },
+        "updated": {
             "type": "string"
         }
     }
