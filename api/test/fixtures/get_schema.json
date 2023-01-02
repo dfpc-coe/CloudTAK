@@ -4,6 +4,16 @@
         "query": true,
         "res": true
     },
+    "POST /login": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /login": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
     "GET /asset": {
         "body": false,
         "query": true,

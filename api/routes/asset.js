@@ -3,6 +3,7 @@ import busboy from 'busboy';
 import fs from 'fs/promises';
 import path from 'path';
 import Asset from '../lib/types/asset.js';
+import Auth from '../lib/auth.js';
 
 export default async function router(schema, config) {
     await schema.get('/asset', {
@@ -14,6 +15,7 @@ export default async function router(schema, config) {
         res: 'res.ListAssets.json'
     }, async (req, res) => {
         try {
+            await Auth.is_auth(req);
             const list = await Asset.list(config.pool, req.query);
             return res.json(list);
         } catch (err) {
@@ -30,6 +32,7 @@ export default async function router(schema, config) {
         res: 'assets.json'
     }, async (req, res) => {
         try {
+            await Auth.is_auth(req);
             const asset = await Asset.from(config.pool, req.params.assetid);
             return res.json(asset.serialize());
         } catch (err) {
@@ -47,6 +50,7 @@ export default async function router(schema, config) {
     }, async (req, res) => {
         let bb;
         try {
+            await Auth.is_auth(req);
             if (req.headers['content-type']) {
                 req.headers['content-type'] = req.headers['content-type'].split(',')[0];
             } else {
@@ -100,6 +104,7 @@ export default async function router(schema, config) {
         res: 'assets.json'
     }, async (req, res) => {
         try {
+            await Auth.is_auth(req);
             const asset = await Asset.from(config.pool, req.params.assetid);
             await asset.commit(req.body);
 
@@ -118,6 +123,7 @@ export default async function router(schema, config) {
         res: 'res.Standard.json'
     }, async (req, res) => {
         try {
+            await Auth.is_auth(req);
             const asset = await Asset.from(config.pool, req.params.assetid);
             await asset.delete();
 
@@ -140,6 +146,8 @@ export default async function router(schema, config) {
         ':assetid': 'integer'
     }, async (req, res) => {
         try {
+            await Auth.is_auth(req);
+
             // this should be optimized to read directly... maybe store the extension in the DB?
             // could also allow user restricted files in the future..
             let afile = null;

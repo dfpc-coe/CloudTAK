@@ -46,6 +46,9 @@ function std() {
                 const err = new Error(bdy.message || `Status Code: ${res.status}`);
                 err.body = bdy;
                 throw err;
+            } else if (res.status === 401) {
+                delete localStorage.token;
+                return window.location.reload();
             }
 
             return await res.json();

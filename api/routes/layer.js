@@ -4,6 +4,7 @@ import LayerLive from '../lib/types/layers_live.js';
 import LayerFile from '../lib/types/layers_file.js';
 import { XML as COT } from '@tak-ps/node-cot';
 import Cacher from '../lib/cacher.js';
+import Auth from '../lib/auth.js';
 
 export default async function router(schema, config) {
     await schema.get('/layer', {
@@ -15,6 +16,8 @@ export default async function router(schema, config) {
         res: 'res.ListLayers.json'
     }, async (req, res) => {
         try {
+            await Auth.is_auth(req);
+
             res.json(await Layer.list(config.pool, req.query));
         } catch (err) {
             return Err.respond(err, res);
@@ -30,6 +33,8 @@ export default async function router(schema, config) {
         res: 'res.Layer.json'
     }, async (req, res) => {
         try {
+            await Auth.is_auth(req);
+
             const data = req.body.data;
             delete req.body.data;
 
@@ -66,6 +71,8 @@ export default async function router(schema, config) {
         res: 'res.Layer.json'
     }, async (req, res) => {
         try {
+            await Auth.is_auth(req);
+
             const data = req.body.data;
             delete req.body.data;
 
@@ -103,6 +110,8 @@ export default async function router(schema, config) {
         res: 'res.Layer.json'
     }, async (req, res) => {
         try {
+            await Auth.is_auth(req);
+
             const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
                 const layer = (await Layer.from(config.pool, req.params.layerid)).serialize();
                 layer.data = (layer.mode === 'file' ? await LayerFile.from(config.pool, layer.id, { column: 'layer_id' }) : await LayerLive.from(config.pool, layer.id, { column: 'layer_id' })).serialize();
@@ -124,6 +133,8 @@ export default async function router(schema, config) {
         res: 'res.Standard.json'
     }, async (req, res) => {
         try {
+            await Auth.is_auth(req);
+
             if (!req.headers['content-type']) throw new Err(400, null, 'Content-Type not set');
 
             const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
