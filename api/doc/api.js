@@ -360,18 +360,18 @@
 
 
 /**
-* @api {get} /connection List Connections
+* @api {get} /server Get Server
 * @apiVersion 1.0.0
-* @apiName GET-/connection
-* @apiGroup Connection
+* @apiName GET-/server
+* @apiGroup Server
 * @apiPermission user
 *
 * @apidescription
-*   List Connections
+*   Get Server
 *
 
 *
-* @apiSchema (Query) {jsonschema=../schema/req.query.ListConnections.json} apiParam
 *
-* @apiSchema {jsonschema=../schema/res.ListConnections.json} apiSuccess
+*
+* @apiSchema {jsonschema=../schema/res.Server.json} apiSuccess
 */
