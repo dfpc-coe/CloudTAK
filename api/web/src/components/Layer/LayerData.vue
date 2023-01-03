@@ -25,7 +25,6 @@
                 <div class="col-md-6 mb-3">
                     <div class='d-flex'>
                         <label class='form-label'>Cron Expression</label>
-
                         <div class='ms-auto'>
                             <div class='dropdown'>
                                 <div class="dropdown-toggle" type="button" id="dropdownCron" data-bs-toggle="dropdown" aria-expanded="false">
@@ -43,6 +42,7 @@
                         "is-invalid": error
                     }' class="form-control" placeholder='Cron Expression'/>
                     <label v-text='cronstr(layerdata.cron)'/>
+                    <div v-if='errors.cron' v-text='errors.cron' class="invalid-feedback"></div>
                 </div>
                 <div class="col-md-6 mb-3">
                     <TablerInput :disabled='disabled' label='Schedule Task' v-model='layerdata.task' :error='errors.task'/>
