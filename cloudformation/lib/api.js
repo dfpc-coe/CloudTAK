@@ -97,6 +97,22 @@ export default {
                                 cf.join(['arn:aws:s3:::', cf.ref('AssetBucket'), '/*'])
                             ],
                             Action: '*'
+                        },{
+                            Effect: 'Allow', // Create events for scheduled ETL
+                            Action: [
+                                'events:PutRule',
+                                'events:DescribeRule',
+                                'events:ListRules',
+                                'events:PutTargets',
+                                'events:RemoveTargets',
+                                'events:DisableRule',
+                                'events:EnableRule',
+                                'events:DeleteRule'
+                            ],
+                            Resource: [
+                                cf.join(['arn:aws:events:', cf.region, ':', cf.accountId, ':rule/', cf.stackName, '-*'])
+                            ]
+
                         }]
                     }
                 }]
