@@ -45,7 +45,16 @@
                     <label v-if='layerdata.cron' v-text='cronstr(layerdata.cron)'/>
                 </div>
                 <div class="col-md-6 mb-3">
-                    <TablerInput :disabled='disabled' label='Schedule Task' v-model='layerdata.task' :error='errors.task'/>
+                    <div class='d-flex'>
+                        <label class='form-label'>Schedule Task</label>
+                        <div class='ms-auto'>
+                            <SettingsIcon @click='taskmodal = true' width='16' height='16' class='cursor-pointer'/>
+                        </div>
+                    </div>
+                    <input :disabled='disabled' v-model='layerdata.task' :class='{
+                        "is-invalid": errors.task
+                    }' class="form-control" placeholder='Schedule Task'/>
+                    <div v-if='errors.task' v-text='errors.task' class="invalid-feedback"></div>
                 </div>
                 <div class="col-md-12">
                     <ConnectionSelect
@@ -73,18 +82,17 @@
             </template>
         </div>
     </div>
+
+    <TaskModal v-if='taskmodal' @close='taskmodal = false'/>
 </div>
 </template>
 
 <script>
 import UploadInline from '../util/UploadInline.vue';
 import Asset from '../util/Asset.vue';
-import {
-    TablerInput
-} from '@tak-ps/vue-tabler';
 import ConnectionSelect from '../util/ConnectionSelect.vue';
 import cronstrue from 'cronstrue';
-
+import TaskModal from './TaskModal.vue';
 import {
     ClockIcon,
     FileUploadIcon,
@@ -111,6 +119,7 @@ export default {
     },
     data: function() {
         return {
+            taskmodal: false,
             layerdata: {
                 mode: 'live',
                 connection: null,
@@ -158,12 +167,12 @@ export default {
     },
     components: {
         Asset,
-        TablerInput,
         ClockIcon,
         FileUploadIcon,
         SettingsIcon,
         ConnectionSelect,
-        UploadInline
+        UploadInline,
+        TaskModal
     }
 }
 </script>
