@@ -39,10 +39,10 @@
                         </div>
                     </div>
                     <input :disabled='disabled' v-model='layerdata.cron' :class='{
-                        "is-invalid": error
+                        "is-invalid": errors.cron
                     }' class="form-control" placeholder='Cron Expression'/>
-                    <label v-text='cronstr(layerdata.cron)'/>
                     <div v-if='errors.cron' v-text='errors.cron' class="invalid-feedback"></div>
+                    <label v-if='layerdata.cron' v-text='cronstr(layerdata.cron)'/>
                 </div>
                 <div class="col-md-6 mb-3">
                     <TablerInput :disabled='disabled' label='Schedule Task' v-model='layerdata.task' :error='errors.task'/>
