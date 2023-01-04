@@ -6,6 +6,8 @@ import { XML as COT } from '@tak-ps/node-cot';
 import Cacher from '../lib/cacher.js';
 import { sql } from 'slonik';
 import Auth from '../lib/auth.js';
+import Lambda from '../lib/aws/lambda.js';
+import CloudFormation from '../lib/aws/cloudformation.js';
 
 export default async function router(schema, config) {
     await schema.get('/layer', {
@@ -55,6 +57,9 @@ export default async function router(schema, config) {
 
             layer = layer.serialize();
             layer.data = (layer.mode === 'file' ? await LayerFile.from(config.pool, layer.id, { column: 'layer_id' }) : await LayerLive.from(config.pool, layer.id, { column: 'layer_id' })).serialize();
+
+            const lambda = await Lambda.generate(config, data.task, data.cron);
+            await CloudFormation.create(config, data.task, lambda);
 
             return res.json(layer);
         } catch (err) {
