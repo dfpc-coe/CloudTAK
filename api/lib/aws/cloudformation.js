@@ -16,14 +16,13 @@ export default class CloudFormation {
 
     static async status(config, task) {
         const CF = new AWS.CloudFormation({ region: process.env.AWS_DEFAULT_REGION });
-
     }
 
-    static async  delete(config, task) {
+    static async delete(config, layer) {
         const CF = new AWS.CloudFormation({ region: process.env.AWS_DEFAULT_REGION });
 
-        CF.deleteStack({
-            StackName: config.StackName + '-' + data.task
+        await CF.deleteStack({
+            StackName: `${config.StackName}-layer-${layer.id}`,
         }).promise();
     }
 };

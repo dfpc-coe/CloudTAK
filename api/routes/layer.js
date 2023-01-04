@@ -133,6 +133,38 @@ export default async function router(schema, config) {
         }
     });
 
+    await schema.delete('/layer/:layerid', {
+        name: 'Delete Layer',
+        group: 'Layer',
+        auth: 'user',
+        description: 'Delete a layer',
+        ':layerid': 'string',
+        res: 'res.Layer.json'
+    }, async (req, res) => {
+        try {
+            await Auth.is_auth(req);
+
+            const layer = await Layer.from(config.pool, req.params.layerid);
+
+            await CloudFormation.delete(config, layer);
+
+            if (layer.mode === 'live') {
+                await LayerLive.delete(config.pool, layer.id);
+            } else if (layer.mode === 'file') {
+                await LayerFile.delete(config.pool, layer.id);
+            }
+
+            await layer.delete();
+
+            return res.json({
+                status: 200,
+                message: 'Layer Deleted'
+            });
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
+
     await schema.post('/layer/:layerid/cot', {
         name: 'Post COT',
         group: 'Layer',
