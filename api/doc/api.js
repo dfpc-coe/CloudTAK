@@ -324,6 +324,24 @@
 
 
 /**
+* @api {delete} /layer/:layerid Delete Layer
+* @apiVersion 1.0.0
+* @apiName DELETE-/layer/:layerid
+* @apiGroup Layer
+* @apiPermission user
+*
+* @apidescription
+*   Delete a layer
+*
+* @apiParam {string} layerid param
+*
+*
+*
+* @apiSchema {jsonschema=../schema/res.Layer.json} apiSuccess
+*/
+
+
+/**
 * @api {post} /layer/:layerid/cot Post COT
 * @apiVersion 1.0.0
 * @apiName POST-/layer/:layerid/cot
