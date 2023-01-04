@@ -8,23 +8,25 @@
             </template>
             <template v-else-if='!task'>
                 <h3 class='subtitle-header'>Available Tasks:</h3>
-                <div :key='image' v-for='image in Object.keys(list.tasks)'>
-                    <a @click='task = image' class='cursor-pointer' v-text='image'/>
+                <div class="list-group list-group-flush">
+                    <a @click='task = image' :key='image' v-for='image in Object.keys(list.tasks)' class='list-group-item list-group-item-action cursor-pointer' v-text='image'/>
                 </div>
             </template>
             <template v-else-if='!version'>
-                <h3 class='subtitle-header'>Task <span v-text='task'/> Versions</h3>
+                <h3 class='subtitle-header'>Available Versions</h3>
 
-                <div :key='v' v-for='v in list.tasks[task]'>
-                    <a @click='version = v' class='cursor-pointer' v-text='version'/>
+                <div class="list-group list-group-flush">
+                    <a @click='version = v' :key='v' v-for='v in list.tasks[task]' class='list-group-item list-group-item-action cursor-pointer' v-text='v'/>
                 </div>
             </template>
             <template v-else>
-                <h3 class='subtitle-header'>Task <span v-text='task'/> @ <span v-text='version'/></h3>
+                <h3 class='subtitle-header'>Selected Task</h3>
+
+                <pre v-text='`${task}-v${version}`'></pre>
 
                 <div class='d-flex'>
                     <div class='ms-auto'>
-                        <div @click='$emit("task", `task-v${version}`)' class='btn btn-primary'>
+                        <div @click='$emit("task", `${task}-v${version}`)' class='btn btn-primary'>
                             Select
                         </div>
                     </div>
