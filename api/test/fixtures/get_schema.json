@@ -113,5 +113,10 @@
         "body": true,
         "query": false,
         "res": true
+    },
+    "GET /task": {
+        "body": false,
+        "query": false,
+        "res": true
     }
 }
