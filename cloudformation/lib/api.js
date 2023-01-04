@@ -255,11 +255,39 @@ export default {
                 }]
             }
         }
+        ETLFunctionRole: {
+            Type: 'AWS::IAM::Role',
+            Properties: {
+                RoleName: cf.stackName,
+                AssumeRolePolicyDocument: {
+                    Version: '2012-10-17',
+                    Statement: [{
+                        Effect: 'Allow',
+                        Principal: {
+                            Service: 'lambda.amazonaws.com'
+                        },
+                        Action: 'sts:AssumeRole'
+                    }]
+                },
+                Path: '/',
+                Policies: [],
+                ManagedPolicyArns: [
+                    'arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'
+                ]
+            }
+        }
     },
     Outputs: {
         API: {
             Description: 'API ELB',
             Value: cf.join(['http://', cf.getAtt('ELB', 'DNSName')])
+        },
+        ETLRole: {
+            Description: 'ETL Lambda Role',
+            Export: {
+                Name: cf.join([cf.stackName, '-etl-role'])
+            },
+            Value: cf.getAtt('ETLFunctionRole', 'Arn')
         }
     }
 };
