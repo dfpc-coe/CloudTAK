@@ -98,12 +98,12 @@ export default {
                             ],
                             Action: '*'
                         },{
-                            Effect: 'Allow',,
+                            Effect: 'Allow',
                             Action: [
                                 'ecr:Describe*',
                                 'ecr:Get*',
                                 'ecr:List*'
-                            ]
+                            ],
                             Resource: [
                                 cf.join(['arn:aws:ecr:', cf.region, ':', cf.accountId, ':repository/coe-ecr-etl-tasks'])
                             ]
