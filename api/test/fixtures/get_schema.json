@@ -89,6 +89,11 @@
         "query": false,
         "res": true
     },
+    "DELETE /layer/:layerid": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
     "POST /layer/:layerid/cot": {
         "body": false,
         "query": false,
