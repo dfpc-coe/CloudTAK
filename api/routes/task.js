@@ -3,7 +3,7 @@ import Auth from '../lib/auth.js';
 import ECR from '../lib/aws/ecr.js';
 import semver from 'semver-sort';
 
-export default async function router(schema, config) {
+export default async function router(schema) {
     await schema.get('/task', {
         name: 'List Tasks',
         group: 'Task',
@@ -30,7 +30,7 @@ export default async function router(schema, config) {
             }
 
             for (const key in list.tasks) {
-                list.tasks[key] = semver.desc(list.tasks[key])
+                list.tasks[key] = semver.desc(list.tasks[key]);
             }
 
             return res.json(list);

@@ -3,8 +3,8 @@ import cf from '@mapbox/cloudfriend';
 /**
  * @class
  */
-class Lambda {
-    static cloudformation(config, task, cron) {
+export default class Lambda {
+    static generate(config, task, cron) {
         const name = `${config.StackName}-${task}`;
 
         return {
