@@ -75,7 +75,7 @@
                     <div class='card'>
                         <div class="card-body">
                             <div class='d-flex'>
-                                <a v-if='$route.params.layerid' @click='create' class="cursor-pointer btn btn-outline-danger">
+                                <a v-if='$route.params.layerid' @click='deleteLayer' class="cursor-pointer btn btn-outline-danger">
                                     Delete Layer
                                 </a>
                                 <div class='ms-auto'>
@@ -149,6 +149,13 @@ export default {
             this.layer = layer;
 
             this.loading.layer = false;
+        },
+        deleteLayer: async function() {
+            await window.std(`/api/layer/${this.$route.params.layerid}`, {
+                method: 'DELETE'
+            });
+
+            this.$router.push('/layer');
         },
         create: async function() {
             for (const field of ['name', 'description']) {

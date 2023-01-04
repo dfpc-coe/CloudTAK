@@ -89,6 +89,11 @@
         "query": false,
         "res": true
     },
+    "DELETE /layer/:layerid": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
     "POST /layer/:layerid/cot": {
         "body": false,
         "query": false,
@@ -98,5 +103,25 @@
         "body": false,
         "query": false,
         "res": false
+    },
+    "GET /server": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "POST /server": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "PATCH /server": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "GET /task": {
+        "body": false,
+        "query": false,
+        "res": true
     }
 }

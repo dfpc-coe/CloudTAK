@@ -11,7 +11,7 @@ import TAKPool from './lib/tak-pool.js';
 import { WebSocketServer } from 'ws';
 import Cacher from './lib/cacher.js';
 import BlueprintLogin from '@tak-ps/blueprint-login';
-
+import Server from './lib/types/server.js';
 import Config from './lib/config.js';
 
 const pkg = JSON.parse(fs.readFileSync(new URL('./package.json', import.meta.url)));
@@ -55,7 +55,16 @@ export default async function server(config) {
     });
 
     config.wsClients = [];
-    config.conns = await TAKPool.init(config.pool, config.wsClients);
+
+    try {
+        config.server = await Server.from(config.pool, 1);
+    } catch (err) {
+        console.error(err);
+        config.server = null;
+    }
+
+    config.conns = new TAKPool(config.server, config.wsClients);
+    await config.conns.init(config.pool);
 
     /*
     if (true) config.conns.get(5).tak.on('cot', function(cot) {

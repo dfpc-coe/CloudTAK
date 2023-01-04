@@ -18,6 +18,7 @@
     "author": "Nick Ingalls <nick@ingalls.ca>",
     "license": "ISC",
     "dependencies": {
+        "@mapbox/cloudfriend": "^6.0.0",
         "@openaddresses/batch-error": "^1.1.0",
         "@openaddresses/batch-generic": "^13.0.1",
         "@openaddresses/batch-schema": "^7.5.0",
@@ -37,6 +38,7 @@
         "moment": "^2.29.4",
         "node-fetch": "^3.3.0",
         "pg": "^8.8.0",
+        "semver-sort": "^1.0.0",
         "slonik": "^32.0.0",
         "tilebase": "^4.0.0",
         "ws": "^8.11.0"
