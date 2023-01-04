@@ -4,8 +4,8 @@ import cf from '@mapbox/cloudfriend';
  * @class
  */
 export default class Lambda {
-    static generate(config, task, cron) {
-        const name = `${config.StackName}-${task}`;
+    static generate(config, layer, layerdata) {
+        const StackName = `${config.StackName}-layer-${layer.id}`;
 
         return {
             Resources: {
@@ -21,7 +21,7 @@ export default class Lambda {
                     Properties: {
                         Description: name,
                         State: 'ENABLED',
-                        ScheduleExpression: cron,
+                        ScheduleExpression: layerdata.cron,
                         Targets: [{
                             Id: 'TagWatcherScheduler',
                             Arn: cf.getAtt('ETLFunction', 'Arn')
@@ -53,7 +53,7 @@ export default class Lambda {
                         },
                         Role: cf.importValue(config.StackName + '-etl-role'),
                         Code: {
-                            ImageUri: cf.join([cf.accountId, '.dkr.ecr.', cf.region, `.amazonaws.com/coe-ecr-etl-tasks:${name}`])
+                            ImageUri: cf.join([cf.accountId, '.dkr.ecr.', cf.region, `.amazonaws.com/coe-ecr-etl-tasks:${layerdata.task}`])
                         }
                     }
                 }
