@@ -98,5 +98,20 @@
         "body": false,
         "query": false,
         "res": false
+    },
+    "GET /server": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "POST /server": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "PATCH /server": {
+        "body": true,
+        "query": false,
+        "res": true
     }
 }
