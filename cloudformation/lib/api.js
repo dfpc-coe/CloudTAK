@@ -254,7 +254,7 @@ export default {
                     ToPort: 5000
                 }]
             }
-        }
+        },
         ETLFunctionRole: {
             Type: 'AWS::IAM::Role',
             Properties: {
