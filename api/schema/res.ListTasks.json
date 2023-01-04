@@ -1,0 +1,19 @@
+{
+    "type": "object",
+    "required": [
+        "total",
+        "tasks"
+    ],
+    "additionalProperties": false,
+    "properties": {
+        "total": {
+            "type": "integer"
+        },
+        "tasks": {
+            "type": "array",
+            "items":  {
+                "type": "object"
+            }
+        }
+    }
+}

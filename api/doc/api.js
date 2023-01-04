@@ -411,3 +411,21 @@
 * @apiSchema (Body) {jsonschema=../schema/req.body.Server.json} apiParam
 * @apiSchema {jsonschema=../schema/res.Server.json} apiSuccess
 */
+
+
+/**
+* @api {get} /task List Tasks
+* @apiVersion 1.0.0
+* @apiName GET-/task
+* @apiGroup Task
+* @apiPermission user
+*
+* @apidescription
+*   List Tasks
+*
+
+*
+*
+*
+* @apiSchema {jsonschema=../schema/res.ListTasks.json} apiSuccess
+*/

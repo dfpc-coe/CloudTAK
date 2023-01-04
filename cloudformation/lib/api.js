@@ -98,6 +98,16 @@ export default {
                             ],
                             Action: '*'
                         },{
+                            Effect: 'Allow',,
+                            Action: [
+                                'ecr:Describe*',
+                                'ecr:Get*',
+                                'ecr:List*'
+                            ]
+                            Resource: [
+                                cf.join(['arn:aws:ecr:', cf.region, ':', cf.accountId, ':repository/coe-ecr-etl-tasks'])
+                            ]
+                        },{
                             Effect: 'Allow', // Create events for scheduled ETL
                             Action: [
                                 'events:PutRule',
@@ -112,7 +122,6 @@ export default {
                             Resource: [
                                 cf.join(['arn:aws:events:', cf.region, ':', cf.accountId, ':rule/', cf.stackName, '-*'])
                             ]
-
                         }]
                     }
                 }]
