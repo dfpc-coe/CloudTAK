@@ -19,12 +19,8 @@ export default class TAKPool extends Map {
      * Page through connections and start a connection for each one
      *
      * @param {Pool}    pool        Postgres Pol
-     * @param {Server}  server      Server Connection Object
-     * @param {Array}   clients     WSS Clients Array
      */
-    static async init(pool, server, clients = []) {
-        const takpool = new TAKPool(server, clients);
-
+    async init(pool) {
         const conns = [];
 
         const stream = await Connection.stream(pool);
@@ -32,11 +28,18 @@ export default class TAKPool extends Map {
         return new Promise((resolve) => {
             stream.on('data', (conn) => {
                 conns.push(async () => {
-                    await takpool.add(conn);
+                    await this.add(conn);
                 });
             }).on('end', async () => {
-                for (const conn of conns) await conn();
-                return resolve(takpool);
+                for (const conn of conns) {
+                    try {
+                        await conn();
+                    } catch (err) {
+                        console.error(err);
+                    }
+                }
+
+                return resolve();
             });
         });
     }
