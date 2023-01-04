@@ -12,14 +12,14 @@ export default class Lambda {
                 ETLFunctionLogs: {
                     Type: 'AWS::Logs::LogGroup',
                     Properties: {
-                        LogGroupName: `/aws/lambda/${name}`,
+                        LogGroupName: `/aws/lambda/${StackName}`,
                         RetentionInDays: 7
                     }
                 },
                 ETLEvents: {
                     Type: 'AWS::Events::Rule',
                     Properties: {
-                        Description: name,
+                        Description: StackName,
                         State: 'ENABLED',
                         ScheduleExpression: layerdata.cron,
                         Targets: [{
@@ -40,10 +40,10 @@ export default class Lambda {
                 ETLFunction: {
                     Type: 'AWS::Lambda::Function',
                     Properties: {
-                        FunctionName: name,
+                        FunctionName: StackName,
                         MemorySize: 128,
                         Timeout: 60,
-                        Description: name,
+                        Description: StackName,
                         PackageType: 'Image',
                         Environment: {
                             Variables: {
