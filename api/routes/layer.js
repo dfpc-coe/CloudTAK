@@ -58,8 +58,8 @@ export default async function router(schema, config) {
             layer = layer.serialize();
             layer.data = (layer.mode === 'file' ? await LayerFile.from(config.pool, layer.id, { column: 'layer_id' }) : await LayerLive.from(config.pool, layer.id, { column: 'layer_id' })).serialize();
 
-            const lambda = await Lambda.generate(config, data.task, data.cron);
-            await CloudFormation.create(config, data.task, lambda);
+            const lambda = await Lambda.generate(config, layer, data);
+            await CloudFormation.create(config, layer, lambda);
 
             return res.json(layer);
         } catch (err) {
