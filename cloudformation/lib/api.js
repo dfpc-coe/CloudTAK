@@ -97,6 +97,31 @@ export default {
                                 cf.join(['arn:aws:s3:::', cf.ref('AssetBucket'), '/*'])
                             ],
                             Action: '*'
+                        },{
+                            Effect: 'Allow',
+                            Action: [
+                                'ecr:Describe*',
+                                'ecr:Get*',
+                                'ecr:List*'
+                            ],
+                            Resource: [
+                                cf.join(['arn:aws:ecr:', cf.region, ':', cf.accountId, ':repository/coe-ecr-etl-tasks'])
+                            ]
+                        },{
+                            Effect: 'Allow', // Create events for scheduled ETL
+                            Action: [
+                                'events:PutRule',
+                                'events:DescribeRule',
+                                'events:ListRules',
+                                'events:PutTargets',
+                                'events:RemoveTargets',
+                                'events:DisableRule',
+                                'events:EnableRule',
+                                'events:DeleteRule'
+                            ],
+                            Resource: [
+                                cf.join(['arn:aws:events:', cf.region, ':', cf.accountId, ':rule/', cf.stackName, '-*'])
+                            ]
                         }]
                     }
                 }]
@@ -173,6 +198,7 @@ export default {
                         },
                         { Name: 'SigningSecret', Value: cf.sub('{{resolve:secretsmanager:${AWS::StackName}/api/secret:SecretString::AWSCURRENT}}') },
                         { Name: 'StackName', Value: cf.stackName },
+                        { Name: 'ASSET_BUCKET', Value: cf.ref('AssetBucket') },
                         { Name: 'TAK_USERNAME', Value: cf.ref('Username') },
                         { Name: 'TAK_PASSWORD', Value: cf.ref('Password') },
                         { Name: 'AWS_DEFAULT_REGION', Value: cf.region }
@@ -228,12 +254,40 @@ export default {
                     ToPort: 5000
                 }]
             }
+        },
+        ETLFunctionRole: {
+            Type: 'AWS::IAM::Role',
+            Properties: {
+                RoleName: cf.stackName,
+                AssumeRolePolicyDocument: {
+                    Version: '2012-10-17',
+                    Statement: [{
+                        Effect: 'Allow',
+                        Principal: {
+                            Service: 'lambda.amazonaws.com'
+                        },
+                        Action: 'sts:AssumeRole'
+                    }]
+                },
+                Path: '/',
+                Policies: [],
+                ManagedPolicyArns: [
+                    'arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'
+                ]
+            }
         }
     },
     Outputs: {
         API: {
             Description: 'API ELB',
             Value: cf.join(['http://', cf.getAtt('ELB', 'DNSName')])
+        },
+        ETLRole: {
+            Description: 'ETL Lambda Role',
+            Export: {
+                Name: cf.join([cf.stackName, '-etl-role'])
+            },
+            Value: cf.getAtt('ETLFunctionRole', 'Arn')
         }
     }
 };

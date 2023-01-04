@@ -5,11 +5,13 @@ import Connection from './types/connection.js';
  * Maintain a pool of TAK Connections, reconnecting as necessary
  * @class
  *
+ * @param {Server}  server      Server Connection Object
  * @param {Array}   clients     WSS Clients Array
  */
 export default class TAKPool extends Map {
-    constructor(clients = []) {
+    constructor(server, clients = []) {
         super();
+        this.server = server;
         this.clients = clients;
     }
 
@@ -17,11 +19,8 @@ export default class TAKPool extends Map {
      * Page through connections and start a connection for each one
      *
      * @param {Pool}    pool        Postgres Pol
-     * @param {Array}   clients     WSS Clients Array
      */
-    static async init(pool, clients = []) {
-        const takpool = new TAKPool(clients);
-
+    async init(pool) {
         const conns = [];
 
         const stream = await Connection.stream(pool);
@@ -29,17 +28,24 @@ export default class TAKPool extends Map {
         return new Promise((resolve) => {
             stream.on('data', (conn) => {
                 conns.push(async () => {
-                    await takpool.add(conn);
+                    await this.add(conn);
                 });
             }).on('end', async () => {
-                for (const conn of conns) await conn();
-                return resolve(takpool);
+                for (const conn of conns) {
+                    try {
+                        await conn();
+                    } catch (err) {
+                        console.error(err);
+                    }
+                }
+
+                return resolve();
             });
         });
     }
 
     async add(conn) {
-        const tak = await TAK.connect(new URL(process.env.TAK_SERVER), conn.auth);
+        const tak = await TAK.connect(new URL(this.server.url), conn.auth);
         this.set(conn.id, { conn, tak });
 
         tak.on('cot', (cot) => {

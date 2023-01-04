@@ -324,6 +324,24 @@
 
 
 /**
+* @api {delete} /layer/:layerid Delete Layer
+* @apiVersion 1.0.0
+* @apiName DELETE-/layer/:layerid
+* @apiGroup Layer
+* @apiPermission user
+*
+* @apidescription
+*   Delete a layer
+*
+* @apiParam {string} layerid param
+*
+*
+*
+* @apiSchema {jsonschema=../schema/res.Layer.json} apiSuccess
+*/
+
+
+/**
 * @api {post} /layer/:layerid/cot Post COT
 * @apiVersion 1.0.0
 * @apiName POST-/layer/:layerid/cot
@@ -356,4 +374,76 @@
 *
 *
 *
+*/
+
+
+/**
+* @api {get} /server Get Server
+* @apiVersion 1.0.0
+* @apiName GET-/server
+* @apiGroup Server
+* @apiPermission user
+*
+* @apidescription
+*   Get Server
+*
+
+*
+*
+*
+* @apiSchema {jsonschema=../schema/res.Server.json} apiSuccess
+*/
+
+
+/**
+* @api {post} /server Post Server
+* @apiVersion 1.0.0
+* @apiName POST-/server
+* @apiGroup Server
+* @apiPermission user
+*
+* @apidescription
+*   Post Server
+*
+
+*
+*
+* @apiSchema (Body) {jsonschema=../schema/req.body.Server.json} apiParam
+* @apiSchema {jsonschema=../schema/res.Server.json} apiSuccess
+*/
+
+
+/**
+* @api {patch} /server Patch Server
+* @apiVersion 1.0.0
+* @apiName PATCH-/server
+* @apiGroup Server
+* @apiPermission user
+*
+* @apidescription
+*   Patch Server
+*
+
+*
+*
+* @apiSchema (Body) {jsonschema=../schema/req.body.Server.json} apiParam
+* @apiSchema {jsonschema=../schema/res.Server.json} apiSuccess
+*/
+
+
+/**
+* @api {get} /task List Tasks
+* @apiVersion 1.0.0
+* @apiName GET-/task
+* @apiGroup Task
+* @apiPermission user
+*
+* @apidescription
+*   List Tasks
+*
+
+*
+*
+*
+* @apiSchema {jsonschema=../schema/res.ListTasks.json} apiSuccess
 */

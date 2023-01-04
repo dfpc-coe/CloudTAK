@@ -18,7 +18,7 @@
         </div>
     </header>
 
-    <div class="navbar-expand-md">
+    <div v-if='user' class="navbar-expand-md">
         <div class="collapse navbar-collapse" id="navbar-menu">
             <div class="navbar navbar-light">
                 <div class="container-xl">
@@ -48,16 +48,26 @@
                             </a>
                         </li>
                     </ul>
+                    <div class='ms-auto'>
+                        <ul class="navbar-nav">
+                            <li class="nav-item">
+                                <a class="nav-link cursor-pointer" @click='$router.push("/admin")'>
+                                    <span class="nav-link-icon d-md-none d-lg-inline-block">
+                                        <AdjustmentsIcon/>
+                                    </span>
+                                    <span class="nav-link-title">Admin</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <template v-if='ws'>
-        <router-view
-            :ws='ws'
-        />
-    </template>
+    <router-view
+        :ws='ws'
+    />
 
     <TablerError v-if='err' :err='err' @close='err = null'/>
 </div>
@@ -70,7 +80,8 @@ import {
     CodeIcon,
     HomeIcon,
     NetworkIcon,
-    DatabaseIcon
+    DatabaseIcon,
+    AdjustmentsIcon
 } from 'vue-tabler-icons';
 import {
     TablerError
@@ -83,6 +94,7 @@ export default {
             user: null,
             ws: null,
             err: null,
+            server: null,
         }
     },
     errorCaptured: function(err) {
@@ -103,8 +115,10 @@ export default {
             this.err = err;
         });
 
-        if (localStorage.token) return await this.getLogin();
+        if (localStorage.token) return await this.getServer();
         if (this.$route.name !== 'login') this.$router.push("/login");
+
+        await this.getServer();
     },
     methods: {
         getLogin: async function() {
@@ -114,6 +128,13 @@ export default {
                 delete localStorage.token;
                 this.$router.push("/login");
             }
+        },
+        getServer: async function() {
+            this.server = await window.std('/api/server');
+
+            if (this.server.status === 'unconfigured') {
+                this.$router.push("/admin");
+            }
         }
     },
     components: {
@@ -121,7 +142,8 @@ export default {
         CodeIcon,
         NetworkIcon,
         DatabaseIcon,
-        TablerError
+        TablerError,
+        AdjustmentsIcon
     }
 }
 </script>

@@ -1,0 +1,28 @@
+{
+    "type": "object",
+    "required": [
+        "status"
+    ],
+    "additionalProperties": false,
+    "properties": {
+        "status": {
+            "type": "string",
+            "enum": [ "configured", "unconfigured" ]
+        },
+        "id": {
+            "type": "integer"
+        },
+        "url": {
+            "type": "string"
+        },
+        "name": {
+            "type": "string"
+        },
+        "created": {
+            "type": "string"
+        },
+        "updated": {
+            "type": "string"
+        }
+    }
+}

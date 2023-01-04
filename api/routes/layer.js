@@ -4,7 +4,10 @@ import LayerLive from '../lib/types/layers_live.js';
 import LayerFile from '../lib/types/layers_file.js';
 import { XML as COT } from '@tak-ps/node-cot';
 import Cacher from '../lib/cacher.js';
+import { sql } from 'slonik';
 import Auth from '../lib/auth.js';
+import Lambda from '../lib/aws/lambda.js';
+import CloudFormation from '../lib/aws/cloudformation.js';
 
 export default async function router(schema, config) {
     await schema.get('/layer', {
@@ -55,6 +58,9 @@ export default async function router(schema, config) {
             layer = layer.serialize();
             layer.data = (layer.mode === 'file' ? await LayerFile.from(config.pool, layer.id, { column: 'layer_id' }) : await LayerLive.from(config.pool, layer.id, { column: 'layer_id' })).serialize();
 
+            const lambda = await Lambda.generate(config, layer, data);
+            await CloudFormation.create(config, layer, lambda);
+
             return res.json(layer);
         } catch (err) {
             return Err.respond(err, res);
@@ -77,7 +83,10 @@ export default async function router(schema, config) {
             delete req.body.data;
 
             let layer = Object.keys(req.body).length > 0
-                ?  await Layer.commit(config.pool, req.params.layerid, req.body)
+                ?  await Layer.commit(config.pool, req.params.layerid, {
+                    updated: sql`Now()`,
+                    ...req.body
+                })
                 :  await Layer.from(config.pool, req.params.layerid);
 
             if (layer.mode === 'live') {
@@ -119,6 +128,38 @@ export default async function router(schema, config) {
             });
 
             return res.json(layer);
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
+
+    await schema.delete('/layer/:layerid', {
+        name: 'Delete Layer',
+        group: 'Layer',
+        auth: 'user',
+        description: 'Delete a layer',
+        ':layerid': 'string',
+        res: 'res.Layer.json'
+    }, async (req, res) => {
+        try {
+            await Auth.is_auth(req);
+
+            const layer = await Layer.from(config.pool, req.params.layerid);
+
+            await CloudFormation.delete(config, layer);
+
+            if (layer.mode === 'live') {
+                await LayerLive.delete(config.pool, layer.id);
+            } else if (layer.mode === 'file') {
+                await LayerFile.delete(config.pool, layer.id);
+            }
+
+            await layer.delete();
+
+            return res.json({
+                status: 200,
+                message: 'Layer Deleted'
+            });
         } catch (err) {
             return Err.respond(err, res);
         }
