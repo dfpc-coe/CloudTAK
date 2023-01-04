@@ -13,14 +13,20 @@
                 </div>
             </template>
             <template v-else-if='!version'>
-                <h3 class='subtitle-header'>Available Versions</h3>
+                <div class='d-flex'>
+                    <ArrowBackIcon class='mx-3' @click='task=null'/>
+                    <h3 class='subtitle-header'>Available Versions</h3>
+                </div>
 
                 <div class="list-group list-group-flush">
                     <a @click='version = v' :key='v' v-for='v in list.tasks[task]' class='list-group-item list-group-item-action cursor-pointer' v-text='v'/>
                 </div>
             </template>
             <template v-else>
-                <h3 class='subtitle-header'>Selected Task</h3>
+                <div class='d-flex'>
+                    <ArrowBackIcon class='mx-3' @click='version=null'/>
+                    <h3 class='subtitle-header'>Selected Task</h3>
+                </div>
 
                 <pre v-text='`${task}-v${version}`'></pre>
 
@@ -37,6 +43,9 @@
 </template>
 
 <script>
+import {
+    ArrowBackIcon
+} from 'vue-tabler-icons'
 import {
     TablerLoading,
     TablerModal,
@@ -69,6 +78,7 @@ export default {
         }
     },
     components: {
+        ArrowBackIcon,
         TablerLoading,
         TablerModal
     }
