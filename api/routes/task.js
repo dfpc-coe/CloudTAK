@@ -1,6 +1,7 @@
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import ECR from '../lib/aws/ecr.js';
+import semver from 'semver-sort';
 
 export default async function router(schema, config) {
     await schema.get('/task', {
@@ -11,7 +12,7 @@ export default async function router(schema, config) {
         res: 'res.ListTasks.json'
     }, async (req, res) => {
         try {
-            //await Auth.is_auth(req);
+            await Auth.is_auth(req);
 
             const images = await ECR.list();
 
@@ -26,6 +27,10 @@ export default async function router(schema, config) {
                 list.total++;
                 if (!list.tasks[match[1]]) list.tasks[match[1]] = [];
                 list.tasks[match[1]].push(match[2]);
+            }
+
+            for (const key in list.tasks) {
+                list.tasks[key] = semver.desc(list.tasks[key])
             }
 
             return res.json(list);
