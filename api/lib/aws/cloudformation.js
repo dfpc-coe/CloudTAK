@@ -5,11 +5,15 @@ import AWS from 'aws-sdk';
  * @class
  */
 export default class CloudFormation {
+    static name(config, layer) {
+        return `${config.StackName}-layer-${layer.id}`;
+    }
+
     static async create(config, layer, stack) {
         const CF = new AWS.CloudFormation({ region: process.env.AWS_DEFAULT_REGION });
 
         await CF.createStack({
-            StackName: `${config.StackName}-layer-${layer.id}`,
+            StackName: this.name(config, layer),
             TemplateBody: JSON.stringify(stack)
         }).promise();
     }
@@ -17,22 +21,30 @@ export default class CloudFormation {
     static async status(config, layer) {
         const CF = new AWS.CloudFormation({ region: process.env.AWS_DEFAULT_REGION });
 
-        const status = await CF.describeStacks({
+        try {
+            const status = await CF.describeStacks({
+                StackName: this.name(config, layer)
+            }).promise()
 
-        }).promise()
+            console.error(status);
 
-        console.error(status);
+            return {
 
-        return {
-
-        };
+            };
+        } catch (err) {
+            if (err.message.match(/Stack with id .* does not exist/)) {
+                return { status: 'destroyed' };
+            } else {
+                throw err;
+            }
+        }
     }
 
     static async delete(config, layer) {
         const CF = new AWS.CloudFormation({ region: process.env.AWS_DEFAULT_REGION });
 
         await CF.deleteStack({
-            StackName: `${config.StackName}-layer-${layer.id}`,
+            StackName: this.name(config, layer)
         }).promise();
     }
 };
