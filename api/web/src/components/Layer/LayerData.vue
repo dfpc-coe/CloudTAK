@@ -31,7 +31,8 @@
                                     <SettingsIcon width='16' height='16' class='cursor-pointer dropdown-toggle'/>
                                 </div>
                                 <ul class="dropdown-menu px-1 py-1" aria-labelledby="dropdownCron">
-                                    <li class='py-1' @click='layerdata.cron = "rate(1 minutes)"'>rate(1 minutes)</li>
+                                    <li class='py-1' @click='layerdata.cron = "rate(1 minute)"'>rate(1 minute)</li>
+                                    <li class='py-1' @click='layerdata.cron = "rate(5 minutes)"'>rate(5 minutes)</li>
                                     <li class='py-1' @click='layerdata.cron = "cron(15 10 * * ? *)"'>cron(15 10 * * ? *)</li>
                                     <li class='py-1' @click='layerdata.cron = "cron(0/5 8-17 ? * MON-FRI *)"'>cron(0/5 8-17 ? * MON-FRI *)</li>
                                 </ul>
