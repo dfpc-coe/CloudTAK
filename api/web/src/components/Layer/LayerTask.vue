@@ -8,9 +8,12 @@
         <template v-if='loading'>
             <TablerLoading/>
         </template>
-        <template v-else-if='status === "destroyed"'>
+        <template v-else-if='status.status === "destroyed"'>
             <div class="d-flex justify-content-center mb-4">
                 Stack Hasn't Deployed
+            </div>
+            <div class="d-flex justify-content-center mb-4">
+                <div @click='postStack' class='btn btn-primary'>Deploy Stack</div>
             </div>
         </template>
     </div>
@@ -23,7 +26,7 @@ import {
 } from '@tak-ps/vue-tabler';
 
 export default {
-    name: 'LayerData',
+    name: 'LayerTask',
     data: function() {
         return {
             status: {}
@@ -35,6 +38,11 @@ export default {
     methods: {
         fetch: async function() {
             this.status = await window.std(`/api/layer/${this.$route.params.layerid}/task`);
+        },
+        postStack: async function() {
+            await window.std(`/api/layer/${this.$route.params.layerid}/task`, {
+                method: 'POST'
+            });
         }
     },
     components: {

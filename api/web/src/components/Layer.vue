@@ -56,7 +56,7 @@
                     </div>
                 </div>
 
-                <div class="col-lg-12">
+                <div v-if='layer.mode === "live"' class="col-lg-12">
                     <LayerTask/>
                 </div>
 
