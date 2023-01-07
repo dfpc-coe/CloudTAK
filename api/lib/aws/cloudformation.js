@@ -14,8 +14,18 @@ export default class CloudFormation {
         }).promise();
     }
 
-    static async status(config, task) {
+    static async status(config, layer) {
         const CF = new AWS.CloudFormation({ region: process.env.AWS_DEFAULT_REGION });
+
+        const status = await CF.describeStacks({
+
+        }).promise()
+
+        console.error(status);
+
+        return {
+
+        };
     }
 
     static async delete(config, layer) {

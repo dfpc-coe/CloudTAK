@@ -25,7 +25,7 @@
                 <div class="col-md-6 mb-3">
                     <div class='d-flex'>
                         <label class='form-label'>Cron Expression</label>
-                        <div class='ms-auto'>
+                        <div v-if='!disabled' class='ms-auto'>
                             <div class='dropdown'>
                                 <div class="dropdown-toggle" type="button" id="dropdownCron" data-bs-toggle="dropdown" aria-expanded="false">
                                     <SettingsIcon width='16' height='16' class='cursor-pointer dropdown-toggle'/>
@@ -47,7 +47,7 @@
                 <div class="col-md-6 mb-3">
                     <div class='d-flex'>
                         <label class='form-label'>Schedule Task</label>
-                        <div class='ms-auto'>
+                        <div v-if='!disabled' class='ms-auto'>
                             <SettingsIcon @click='taskmodal = true' width='16' height='16' class='cursor-pointer'/>
                         </div>
                     </div>
