@@ -4,8 +4,9 @@ import ECR from '../lib/aws/ecr.js';
 import Layer from '../lib/types/layer.js';
 import semver from 'semver-sort';
 import CF from '../lib/aws/cloudformation.js';
+import Cacher from '../lib/cacher.js';
 
-export default async function router(schema) {
+export default async function router(schema, config) {
     await schema.get('/task', {
         name: 'List Tasks',
         group: 'Task',
@@ -58,7 +59,7 @@ export default async function router(schema) {
                 return layer;
             });
 
-            await CF.status(config, layer);
+            return res.json(await CF.status(config, layer));
         } catch (err) {
             return Err.respond(err, res);
         }
