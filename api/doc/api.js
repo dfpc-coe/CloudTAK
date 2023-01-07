@@ -465,3 +465,21 @@
 *
 * @apiSchema {jsonschema=../schema/res.TaskStatus.json} apiSuccess
 */
+
+
+/**
+* @api {post} /layer/:layerid/task Task Deploy
+* @apiVersion 1.0.0
+* @apiName POST-/layer/:layerid/task
+* @apiGroup Task
+* @apiPermission user
+*
+* @apidescription
+*   Deploy a task stack
+*
+* @apiParam {integer} layerid param
+*
+*
+*
+* @apiSchema {jsonschema=../schema/res.TaskStatus.json} apiSuccess
+*/

@@ -22,14 +22,12 @@ export default class CloudFormation {
         const CF = new AWS.CloudFormation({ region: process.env.AWS_DEFAULT_REGION });
 
         try {
-            const status = await CF.describeStacks({
+            const res = await CF.describeStacks({
                 StackName: this.name(config, layer)
             }).promise()
 
-            console.error(status);
-
             return {
-
+                status: res.Stacks[0].StackStatus
             };
         } catch (err) {
             if (err.message.match(/Stack with id .* does not exist/)) {
