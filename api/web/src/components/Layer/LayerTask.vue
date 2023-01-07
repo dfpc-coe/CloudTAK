@@ -52,9 +52,11 @@ export default {
             this.loading = false;
         },
         postStack: async function() {
+            this.loading = true;
             this.stack = await window.std(`/api/layer/${this.$route.params.layerid}/task`, {
                 method: 'POST'
             });
+            this.loading = false;
         }
     },
     components: {
