@@ -93,6 +93,9 @@ export default async function router(schema, config) {
                 await LayerLive.commit(config.pool, layer.id, data, {
                     column: 'layer_id'
                 });
+
+
+                // TODO Update CF properties if they change
             } else if (layer.mode === 'file') {
                 await LayerFile.commit(config.pool, layer.id, data, {
                     column: 'layer_id'
