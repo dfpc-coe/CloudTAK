@@ -8,6 +8,16 @@ export default class Lambda {
         const StackName = `${config.StackName}-layer-${layer.id}`;
 
         return {
+            Parameters: {
+                ScheduleExpression: {
+                    Type: 'String',
+                    Default: layerdata.cron
+                },
+                Task: {
+                    Type: 'String',
+                    Default: layerdata.task
+                }
+            },
             Resources: {
                 ETLFunctionLogs: {
                     Type: 'AWS::Logs::LogGroup',
@@ -21,7 +31,7 @@ export default class Lambda {
                     Properties: {
                         Description: StackName,
                         State: 'ENABLED',
-                        ScheduleExpression: layerdata.cron,
+                        ScheduleExpression: cf.ref('ScheduleExpression'),
                         Targets: [{
                             Id: 'TagWatcherScheduler',
                             Arn: cf.getAtt('ETLFunction', 'Arn')
@@ -53,7 +63,7 @@ export default class Lambda {
                         },
                         Role: cf.importValue(config.StackName + '-etl-role'),
                         Code: {
-                            ImageUri: cf.join([cf.accountId, '.dkr.ecr.', cf.region, `.amazonaws.com/coe-ecr-etl-tasks:${layerdata.task}`])
+                            ImageUri: cf.join([cf.accountId, '.dkr.ecr.', cf.region, `.amazonaws.com/coe-ecr-etl-tasks:`, cf.ref('Task')])
                         }
                     }
                 }
