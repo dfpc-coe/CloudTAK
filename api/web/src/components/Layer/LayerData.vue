@@ -64,6 +64,48 @@
 
                     />
                 </div>
+                <div class='col-md-12 my-3'>
+                    <div class='d-flex'>
+                        <h3>Environment</h3>
+                        <div v-if='!disabled' class='ms-auto'>
+                            <PlusIcon @click='environment.push({key: "", value: ""})' class='cursor-pointer'/>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-vcenter card-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Value</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template v-if='environment.length'>
+                                    <tr :key='kv_i' v-for='(kv, kv_i) in environment'>
+                                        <template v-if='disabled'>
+                                            <td><pre v-text='kv.key'/></td>
+                                            <td><pre v-text='kv.value'/></td>
+                                        </template>
+                                        <template v-else>
+                                            <td>
+                                                <TablerInput placeholder='KEY' v-model='kv.key'/>
+                                            </td>
+                                            <td>
+                                                <TablerInput placeholder='VALUE' v-model='kv.value'/>
+                                            </td>
+                                        </template>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                        <template v-if='!environment.length'>
+                            <div class="d-flex justify-content-center my-4">
+                                No Environment Variables Set
+                            </div>
+                        </template>
+                    </div>
+                </div>
             </template>
             <template v-else-if='layerdata.mode === "file"'>
                 <template v-if='!layerdata.raw_asset_id'>
@@ -95,7 +137,11 @@ import ConnectionSelect from '../util/ConnectionSelect.vue';
 import cronstrue from 'cronstrue';
 import TaskModal from './TaskModal.vue';
 import {
+    TablerInput
+} from '@tak-ps/vue-tabler';
+import {
     ClockIcon,
+    PlusIcon,
     FileUploadIcon,
     SettingsIcon
 } from 'vue-tabler-icons'
@@ -121,13 +167,15 @@ export default {
     data: function() {
         return {
             taskmodal: false,
+            environment: [],
             layerdata: {
                 mode: 'live',
                 connection: null,
                 raw_asset_id: null,
                 std_asset_id: null,
                 task: '',
-                cron: '0/15 * * * ? *'
+                cron: '0/15 * * * ? *',
+                environment: {}
             }
         };
     },
@@ -152,7 +200,10 @@ export default {
         }
     },
     mounted: function() {
-        this.layerdata = Object.assign(this.modelValue);
+        this.layerdata = Object.assign(this.layerdata, this.modelValue);
+        this.environment = Object.keys(this.layerdata.environment).map((key) => {
+            return { key: key, value: this.layerdata.environment[key] };
+        });
     },
     methods: {
         cronstr: function(cron) {
@@ -169,11 +220,13 @@ export default {
     components: {
         Asset,
         ClockIcon,
+        PlusIcon,
         FileUploadIcon,
         SettingsIcon,
         ConnectionSelect,
         UploadInline,
-        TaskModal
+        TaskModal,
+        TablerInput
     }
 }
 </script>

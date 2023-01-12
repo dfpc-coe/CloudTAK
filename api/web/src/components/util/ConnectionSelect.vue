@@ -1,48 +1,54 @@
 <template>
 <div class="col-md-12">
-    <label class="form-label">Connection</label>
-    <div class='d-flex'>
-        <template v-if='selected.id'>
-            <ConnectionStatus :connection='selected'/>
-            <span class='mt-2' v-text='selected.name'/>
-        </template>
-        <template v-else>
-            Select A Connection Using the Gear Icon on the right
-        </template>
+    <h3>Connection</h3>
 
-        <div v-if='!disabled' class='ms-auto'>
-            <div class="dropdown">
-                <div class="dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
-                    <SettingsIcon
-                        class='cursor-pointer dropdown-toggle'
-                    />
-                </div>
-                <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                    <div class='m-1'>
-                        <div class='table-resposive'>
-                            <table class='table table-hover'>
-                                <thead>
-                                    <tr>
-                                        <th>(Status) Name</th>
-                                    </tr>
-                                </thead>
-                                <tbody class='table-tbody'>
-                                    <tr @click='selected = connection' :key='connection.id' v-for='connection of connections.connections' class='cursor-pointer'>
-                                        <td>
-                                            <div class='d-flex'>
-                                                <ConnectionStatus :connection='connection'/>
-                                                <span class='mt-2' v-text='connection.name'/>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
+    <template v-if='loading'>
+        <TablerLoading/>
+    </template>
+    <template v-else>
+        <div class='d-flex'>
+            <template v-if='selected.id'>
+                <ConnectionStatus :connection='selected'/>
+                <span class='mt-2' v-text='selected.name'/>
+            </template>
+            <template v-else>
+                Select A Connection Using the Gear Icon on the right
+            </template>
+
+            <div v-if='!disabled' class='ms-auto'>
+                <div class="dropdown">
+                    <div class="dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+                        <SettingsIcon
+                            class='cursor-pointer dropdown-toggle'
+                        />
                     </div>
-                </ul>
+                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                        <div class='m-1'>
+                            <div class='table-resposive'>
+                                <table class='table table-hover'>
+                                    <thead>
+                                        <tr>
+                                            <th>(Status) Name</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class='table-tbody'>
+                                        <tr @click='selected = connection' :key='connection.id' v-for='connection of connections.connections' class='cursor-pointer'>
+                                            <td>
+                                                <div class='d-flex'>
+                                                    <ConnectionStatus :connection='connection'/>
+                                                    <span class='mt-2' v-text='connection.name'/>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </ul>
+                </div>
             </div>
         </div>
-    </div>
+    </template>
 </div>
 </template>
 
@@ -50,6 +56,9 @@
 import {
     SettingsIcon
 } from 'vue-tabler-icons';
+import {
+    TablerLoading
+} from '@tak-ps/vue-tabler';
 import ConnectionStatus from '../Connection/Status.vue';
 
 export default {
@@ -63,6 +72,7 @@ export default {
     },
     data: function() {
         return {
+            loading: true,
             selected: {
                 id: '',
                 status: 'dead',
@@ -85,6 +95,7 @@ export default {
     mounted: async function() {
         if (this.modelValue) await this.fetch();
         await this.listConnections();
+        this.loading = false;
     },
     methods: {
         fetch: async function() {
@@ -96,7 +107,8 @@ export default {
     },
     components: {
         SettingsIcon,
-        ConnectionStatus
+        ConnectionStatus,
+        TablerLoading
     }
 };
 </script>
