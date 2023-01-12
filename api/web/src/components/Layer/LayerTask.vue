@@ -1,10 +1,10 @@
 <template>
 <div class='card'>
     <div class='card-header'>
-            <h3 class='card-title'>Task Status</h3>
-            <div class='ms-auto'>
-                <RefreshIcon @click='fetch' class='cursor-pointer'/>
-            </div>
+        <h3 class='card-title'>Task Status</h3>
+        <div class='ms-auto'>
+            <RefreshIcon @click='fetch' class='cursor-pointer'/>
+        </div>
     </div>
 
     <div class='card-body'>
