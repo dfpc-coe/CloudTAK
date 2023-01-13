@@ -7,6 +7,8 @@ import CF from '../lib/aws/cloudformation.js';
 import Cacher from '../lib/cacher.js';
 import Lambda from '../lib/aws/lambda.js';
 import CloudFormation from '../lib/aws/cloudformation.js';
+import LayerLive from '../lib/types/layers_live.js';
+import LayerFile from '../lib/types/layers_file.js';
 
 export default async function router(schema, config) {
     await schema.get('/task', {
