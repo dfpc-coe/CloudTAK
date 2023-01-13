@@ -59,8 +59,9 @@ export default class Lambda {
                         Environment: {
                             Variables: {
                                 ...layerdata.environment,
-                                TAK_API: config.API_URL,
-                                TAK_TOKEN: jwt.sign({ access: 'cot', layer: layer.id }, config.SigningSecret)
+                                ETL_API: config.API_URL,
+                                ETL_TOKEN: jwt.sign({ access: 'cot', layer: layer.id }, config.SigningSecret),
+                                ETL_LAYER: layer.id
                             }
                         },
                         Role: cf.importValue(config.StackName + '-etl-role'),
