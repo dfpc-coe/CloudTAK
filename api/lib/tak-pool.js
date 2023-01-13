@@ -77,7 +77,15 @@ export default class TAKPool extends Map {
     }
 
     delete(id) {
-        this.get(id).tak.destroy();
-        this.delete(id);
+        if (this.has(id)) {
+            const conn = this.get(id);
+            conn.tak.destroy();
+            this.delete(id);
+
+            return true;
+        } else {
+        console.error('SKIP');
+            return false;
+        }
     }
 }

@@ -72,7 +72,7 @@ export default async function router(schema, config) {
         group: 'Layer',
         auth: 'admin',
         description: 'Update a layer',
-        ':layerid': 'string',
+        ':layerid': 'integer',
         body: 'req.body.PatchLayer.json',
         res: 'res.Layer.json'
     }, async (req, res) => {
@@ -125,7 +125,7 @@ export default async function router(schema, config) {
         group: 'Layer',
         auth: 'user',
         description: 'Get a layer',
-        ':layerid': 'string',
+        ':layerid': 'integer',
         res: 'res.Layer.json'
     }, async (req, res) => {
         try {
@@ -148,7 +148,7 @@ export default async function router(schema, config) {
         group: 'Layer',
         auth: 'user',
         description: 'Delete a layer',
-        ':layerid': 'string',
+        ':layerid': 'integer',
         res: 'res.Layer.json'
     }, async (req, res) => {
         try {
@@ -180,7 +180,7 @@ export default async function router(schema, config) {
         group: 'Layer',
         auth: 'admin',
         description: 'Post CoT data to a given layer',
-        ':layerid': 'string',
+        ':layerid': 'integer',
         res: 'res.Standard.json'
     }, async (req, res) => {
         try {
