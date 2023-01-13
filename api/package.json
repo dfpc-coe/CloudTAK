@@ -56,9 +56,5 @@
         "name": "TAK PS ETL API",
         "title": "TAK PS ETL API",
         "version": "1.0.0"
-    },
-    "optionalDependencies": {
-        "bufferutil": "^4.0.7",
-        "utf-8-validate": "^5.0.10"
     }
 }

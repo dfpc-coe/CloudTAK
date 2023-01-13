@@ -1,7 +1,7 @@
 {
     "type": "object",
     "oneOf": [{
-        "required": [ "cron", "connection", "task" ]
+        "required": [ "cron", "connection", "task", "environment" ]
     },{
         "required": [ "raw_asset_id" ]
     }],
@@ -24,6 +24,9 @@
         },
         "connection": {
             "$ref": "../layers_live/connection.json"
+        },
+        "environment": {
+            "$ref": "../layers_live/environment.json"
         }
     }
 }

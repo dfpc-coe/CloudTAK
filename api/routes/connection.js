@@ -18,7 +18,7 @@ export default async function router(schema, config) {
             const list = await Connection.list(config.pool, req.query);
 
             list.connections.map((conn) => {
-                conn.status = config.conns.get(conn.id).tak.open ? 'live' : 'dead';
+                conn.status = config.conns.status(conn.id);
             });
 
             list.status = { dead: 0, live: 0 };
@@ -48,7 +48,7 @@ export default async function router(schema, config) {
 
             await config.conns.add(conn);
 
-            conn.status = config.conns.get(conn.id).tak.open ? 'live' : 'dead';
+            conn.status = config.conns.status(conn.id);
             return res.json(conn);
         } catch (err) {
             return Err.respond(err, res);
@@ -70,7 +70,8 @@ export default async function router(schema, config) {
                 updated: sql`Now()`,
                 ...req.body
             });
-            conn.status = config.conns.get(conn.id).tak.open ? 'live' : 'dead';
+
+            conn.status = config.conns.status(conn.id);
             return res.json(conn);
         } catch (err) {
             return Err.respond(err, res);
@@ -89,7 +90,7 @@ export default async function router(schema, config) {
             await Auth.is_auth(req);
 
             const conn = (await Connection.from(config.pool, req.params.connectionid)).serialize();
-            conn.status = config.conns.get(conn.id).tak.open ? 'live' : 'dead';
+            conn.status = config.conns.status(conn.id);
             return res.json(conn);
         } catch (err) {
             return Err.respond(err, res);

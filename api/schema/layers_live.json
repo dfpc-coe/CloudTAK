@@ -16,6 +16,9 @@
         },
         "cron": {
             "$ref": "./layers_live/cron.json"
+        },
+        "environment": {
+            "$ref": "./layers_live/environment.json"
         }
     },
     "required": [
@@ -23,6 +26,7 @@
         "stale",
         "task",
         "connection",
-        "cron"
+        "cron",
+        "environment"
     ]
 }

@@ -118,8 +118,7 @@ export default {
                 status: '',
                 name: ''
             },
-            layerdata: {
-            },
+            layerdata: {},
             layer: {
                 name: '',
                 description: '',

@@ -25,13 +25,14 @@
                 <div class="col-md-6 mb-3">
                     <div class='d-flex'>
                         <label class='form-label'>Cron Expression</label>
-                        <div class='ms-auto'>
+                        <div v-if='!disabled' class='ms-auto'>
                             <div class='dropdown'>
                                 <div class="dropdown-toggle" type="button" id="dropdownCron" data-bs-toggle="dropdown" aria-expanded="false">
                                     <SettingsIcon width='16' height='16' class='cursor-pointer dropdown-toggle'/>
                                 </div>
                                 <ul class="dropdown-menu px-1 py-1" aria-labelledby="dropdownCron">
-                                    <li class='py-1' @click='layerdata.cron = "rate(1 minutes)"'>rate(1 minutes)</li>
+                                    <li class='py-1' @click='layerdata.cron = "rate(1 minute)"'>rate(1 minute)</li>
+                                    <li class='py-1' @click='layerdata.cron = "rate(5 minutes)"'>rate(5 minutes)</li>
                                     <li class='py-1' @click='layerdata.cron = "cron(15 10 * * ? *)"'>cron(15 10 * * ? *)</li>
                                     <li class='py-1' @click='layerdata.cron = "cron(0/5 8-17 ? * MON-FRI *)"'>cron(0/5 8-17 ? * MON-FRI *)</li>
                                 </ul>
@@ -47,7 +48,7 @@
                 <div class="col-md-6 mb-3">
                     <div class='d-flex'>
                         <label class='form-label'>Schedule Task</label>
-                        <div class='ms-auto'>
+                        <div v-if='!disabled' class='ms-auto'>
                             <SettingsIcon @click='taskmodal = true' width='16' height='16' class='cursor-pointer'/>
                         </div>
                     </div>
@@ -62,6 +63,48 @@
                         v-model='layerdata.connection'
 
                     />
+                </div>
+                <div class='col-md-12 my-3'>
+                    <div class='d-flex'>
+                        <h3>Environment</h3>
+                        <div v-if='!disabled' class='ms-auto'>
+                            <PlusIcon @click='environment.push({key: "", value: ""})' class='cursor-pointer'/>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-vcenter card-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Value</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template v-if='environment.length'>
+                                    <tr :key='kv_i' v-for='(kv, kv_i) in environment'>
+                                        <template v-if='disabled'>
+                                            <td v-text='kv.key'></td>
+                                            <td v-text='kv.value'></td>
+                                        </template>
+                                        <template v-else>
+                                            <td>
+                                                <TablerInput placeholder='KEY' v-model='kv.key'/>
+                                            </td>
+                                            <td>
+                                                <TablerInput placeholder='VALUE' v-model='kv.value'/>
+                                            </td>
+                                        </template>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                        <template v-if='!environment.length'>
+                            <div class="d-flex justify-content-center my-4">
+                                No Environment Variables Set
+                            </div>
+                        </template>
+                    </div>
                 </div>
             </template>
             <template v-else-if='layerdata.mode === "file"'>
@@ -94,7 +137,11 @@ import ConnectionSelect from '../util/ConnectionSelect.vue';
 import cronstrue from 'cronstrue';
 import TaskModal from './TaskModal.vue';
 import {
+    TablerInput
+} from '@tak-ps/vue-tabler';
+import {
     ClockIcon,
+    PlusIcon,
     FileUploadIcon,
     SettingsIcon
 } from 'vue-tabler-icons'
@@ -120,17 +167,29 @@ export default {
     data: function() {
         return {
             taskmodal: false,
+            environment: [],
             layerdata: {
                 mode: 'live',
                 connection: null,
                 raw_asset_id: null,
                 std_asset_id: null,
                 task: '',
-                cron: '0/15 * * * ? *'
+                cron: '0/15 * * * ? *',
+                environment: {}
             }
         };
     },
     watch: {
+        environment: {
+            deep: true,
+            handler: function() {
+                const env = {};
+                for (const kv of this.environment) {
+                    env[kv.key] = kv.value;
+                }
+                this.layerdata.environment = env;
+            }
+        },
         layerdata: {
             deep: true,
             handler: function() {
@@ -139,7 +198,8 @@ export default {
                         mode: this.layerdata.mode,
                         task: this.layerdata.task,
                         cron: this.layerdata.cron,
-                        connection: this.layerdata.connection
+                        connection: this.layerdata.connection,
+                        environment: this.layerdata.environment
                     });
                 } else if (this.layerdata.mode === 'file') {
                     this.$emit('update:modelValue', {
@@ -151,7 +211,10 @@ export default {
         }
     },
     mounted: function() {
-        this.layerdata = Object.assign(this.modelValue);
+        this.layerdata = Object.assign(this.layerdata, this.modelValue);
+        this.environment = Object.keys(this.layerdata.environment).map((key) => {
+            return { key: key, value: this.layerdata.environment[key] };
+        });
     },
     methods: {
         cronstr: function(cron) {
@@ -168,11 +231,13 @@ export default {
     components: {
         Asset,
         ClockIcon,
+        PlusIcon,
         FileUploadIcon,
         SettingsIcon,
         ConnectionSelect,
         UploadInline,
-        TaskModal
+        TaskModal,
+        TablerInput
     }
 }
 </script>
