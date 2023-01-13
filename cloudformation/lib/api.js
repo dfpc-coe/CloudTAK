@@ -110,6 +110,14 @@ export default {
                         },{
                             Effect: 'Allow',
                             Action: [
+                                'iam:PassRole'
+                            ],
+                            Resource: [
+                                cf.join(['arn:aws:iam::', cf.accountId, ':role/', cf.stackName])
+                            ]
+                        },{
+                            Effect: 'Allow',
+                            Action: [
                                 'cloudformation:*'
                             ],
                             Resource: [
@@ -119,7 +127,8 @@ export default {
                             Effect: 'Allow',
                             Action: [
                                 'logs:CreateLogGroup',
-                                'logs:DeleteLogGroup'
+                                'logs:DeleteLogGroup',
+                                'logs:PutRetentionPolicy'
                             ],
                             Resource: [
                                 cf.join(['arn:aws:logs:', cf.region, ':', cf.accountId, ':log-group:/aws/lambda/', cf.stackName, '-layer-*'])
