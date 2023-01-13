@@ -23,4 +23,18 @@ export default class Auth {
 
         return true;
     }
+
+    /**
+     * Is the request from a task lambda function
+     *
+     * @param {Object} req Express Request
+     */
+    static async is_layer(layer, req) {
+        await this.is_auth(req);
+
+        if (req.auth.access !== 'machine')  throw new Err(400, null, 'Token must have "machine" access');
+        if (req.auth.layer !== layer)  throw new Err(400, null, 'Token is not valid for this layer');
+
+        return true;
+    }
 }
