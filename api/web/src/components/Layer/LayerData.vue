@@ -84,8 +84,8 @@
                                 <template v-if='environment.length'>
                                     <tr :key='kv_i' v-for='(kv, kv_i) in environment'>
                                         <template v-if='disabled'>
-                                            <td><pre v-text='kv.key'/></td>
-                                            <td><pre v-text='kv.value'/></td>
+                                            <td v-text='kv.key'></td>
+                                            <td v-text='kv.value'></td>
                                         </template>
                                         <template v-else>
                                             <td>
@@ -180,6 +180,16 @@ export default {
         };
     },
     watch: {
+        environment: {
+            deep: true,
+            handler: function() {
+                const env = {};
+                for (const kv of this.environment) {
+                    env[kv.key] = kv.value;
+                }
+                this.layerdata.environment = env;
+            }
+        },
         layerdata: {
             deep: true,
             handler: function() {
@@ -188,7 +198,8 @@ export default {
                         mode: this.layerdata.mode,
                         task: this.layerdata.task,
                         cron: this.layerdata.cron,
-                        connection: this.layerdata.connection
+                        connection: this.layerdata.connection,
+                        environment: this.layerdata.environment
                     });
                 } else if (this.layerdata.mode === 'file') {
                     this.$emit('update:modelValue', {
