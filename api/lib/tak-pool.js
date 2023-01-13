@@ -44,9 +44,9 @@ export default class TAKPool extends Map {
         });
     }
 
-    status(conn) {
-        if (this.has(conn.id)) {
-            return this.get(conn.id).tak.open ? 'live' : 'dead';
+    status(id) {
+        if (this.has(id)) {
+            return this.get(id).tak.open ? 'live' : 'dead';
         } else {
             return 'unknown';
         }
