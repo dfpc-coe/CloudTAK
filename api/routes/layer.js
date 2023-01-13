@@ -104,9 +104,9 @@ export default async function router(schema, config) {
 
             const lambda = await Lambda.generate(config, layer, data);
             if (await CloudFormation.exists(config, layer)) {
-                await CloudFormation.create(config, layer, lambda);
-            } else {
                 await CloudFormation.update(config, layer, lambda);
+            } else {
+                await CloudFormation.create(config, layer, lambda);
             }
 
             layer = layer.serialize();
