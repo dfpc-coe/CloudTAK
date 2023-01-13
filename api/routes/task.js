@@ -6,6 +6,7 @@ import semver from 'semver-sort';
 import CF from '../lib/aws/cloudformation.js';
 import Cacher from '../lib/cacher.js';
 import Lambda from '../lib/aws/lambda.js';
+import Logs from '../lib/aws/logs.js';
 import CloudFormation from '../lib/aws/cloudformation.js';
 import LayerLive from '../lib/types/layers_live.js';
 import LayerFile from '../lib/types/layers_file.js';
@@ -87,6 +88,12 @@ export default async function router(schema, config) {
                 layer.data = (layer.mode === 'file' ? await LayerFile.from(config.pool, layer.id, { column: 'layer_id' }) : await LayerLive.from(config.pool, layer.id, { column: 'layer_id' })).serialize();
                 return layer;
             });
+
+            try {
+                await Logs.delete(config, layer);
+            } catch (err) {
+                console.log('no existing log groups');
+            }
 
             if (layer.mode === 'file') throw new Err(400, null, 'File Layers don\'t have associated stacks');
             const lambda = await Lambda.generate(config, layer, layer.data);

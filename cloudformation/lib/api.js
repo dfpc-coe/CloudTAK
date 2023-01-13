@@ -108,6 +108,31 @@ export default {
                                 cf.join(['arn:aws:ecr:', cf.region, ':', cf.accountId, ':repository/coe-ecr-etl-tasks'])
                             ]
                         },{
+                            Effect: 'Allow',
+                            Action: [
+                                'cloudformation:*'
+                            ],
+                            Resource: [
+                                cf.join(['arn:aws:cloudformation:', cf.region, ':', cf.accountId, ':stack/', cf.stackName, '-layer-*'])
+                            ]
+                        },{
+                            Effect: 'Allow',
+                            Action: [
+                                'logs:CreateLogGroup',
+                                'logs:DeleteLogGroup'
+                            ],
+                            Resource: [
+                                cf.join(['arn:aws:logs:', cf.region, ':', cf.accountId, ':log-group:/aws/lambda/', cf.stackName, '-layer-*'])
+                            ]
+                        },{
+                            Effect: 'Allow',
+                            Action: [
+                                'lambda:*'
+                            ],
+                            Resource: [
+                                cf.join(['arn:aws:lambda:', cf.region, ':', cf.accountId, ':function:', cf.stackName, '-layer-*'])
+                            ]
+                        },{
                             Effect: 'Allow', // Create events for scheduled ETL
                             Action: [
                                 'events:PutRule',
