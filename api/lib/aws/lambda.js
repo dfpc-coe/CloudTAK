@@ -17,6 +17,10 @@ export default class Lambda {
                 Task: {
                     Type: 'String',
                     Default: layerdata.task
+                },
+                Events: {
+                    Type: 'String',
+                    Default: layer.enabled ? 'ENABLED', 'DISABLED'
                 }
             },
             Resources: {
@@ -31,7 +35,7 @@ export default class Lambda {
                     Type: 'AWS::Events::Rule',
                     Properties: {
                         Description: StackName,
-                        State: 'ENABLED',
+                        State: cf.ref('Events'),
                         ScheduleExpression: cf.ref('ScheduleExpression'),
                         Targets: [{
                             Id: 'TagWatcherScheduler',
