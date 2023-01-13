@@ -102,6 +102,13 @@ export default async function router(schema, config) {
                 });
             }
 
+            const lambda = await Lambda.generate(config, layer, data);
+            if (await CloudFormation.exists(config, layer)) {
+                await CloudFormation.create(config, layer, lambda);
+            } else {
+                await CloudFormation.update(config, layer, lambda);
+            }
+
             layer = layer.serialize();
             layer.data = (layer.mode === 'file' ? await LayerFile.from(config.pool, layer.id, { column: 'layer_id' }) : await LayerLive.from(config.pool, layer.id, { column: 'layer_id' })).serialize();
 
