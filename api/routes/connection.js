@@ -91,6 +91,7 @@ export default async function router(schema, config) {
 
             const conn = (await Connection.from(config.pool, req.params.connectionid)).serialize();
             conn.status = config.conns.status(conn.id);
+
             return res.json(conn);
         } catch (err) {
             return Err.respond(err, res);
