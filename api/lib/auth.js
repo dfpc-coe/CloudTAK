@@ -27,6 +27,7 @@ export default class Auth {
     /**
      * Is the request from a task lambda function
      *
+     * @param {Number} layer Expected Layer
      * @param {Object} req Express Request
      */
     static async is_layer(layer, req) {
