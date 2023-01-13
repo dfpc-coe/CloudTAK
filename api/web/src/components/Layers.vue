@@ -44,44 +44,49 @@
                     </div>
                 </div>
 
-                <None
-                    v-if='!list.layers.length'
-                    label='Layers'
-                    @create='$router.push("/layer/new")'
-                />
-                <div :key='layer.id' v-for='layer in list.layers' class="col-lg-12">
-                    <div class="card">
-                        <div class="card-header">
-                            <template v-if='layer.mode === "live"'>
-                                <span class="status-indicator status-green status-indicator-animated">
-                                      <span class="status-indicator-circle"></span>
-                                      <span class="status-indicator-circle"></span>
-                                      <span class="status-indicator-circle"></span>
-                                </span>
-                            </template>
-                            <template v-else>
-                                <span class="status-indicator status-blue status-indicator-animated">
-                                      <span class="status-indicator-circle"></span>
-                                      <span class="status-indicator-circle"></span>
-                                      <span class="status-indicator-circle"></span>
-                                </span>
-                            </template>
+                <template v-if='loading'>
+                    <TablerLoading/>
+                </template>
+                <template v-else>
+                    <None
+                        v-if='!list.layers.length'
+                        label='Layers'
+                        @create='$router.push("/layer/new")'
+                    />
+                    <div :key='layer.id' v-for='layer in list.layers' class="col-lg-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <template v-if='layer.mode === "live"'>
+                                    <span class="status-indicator status-green status-indicator-animated">
+                                          <span class="status-indicator-circle"></span>
+                                          <span class="status-indicator-circle"></span>
+                                          <span class="status-indicator-circle"></span>
+                                    </span>
+                                </template>
+                                <template v-else>
+                                    <span class="status-indicator status-blue status-indicator-animated">
+                                          <span class="status-indicator-circle"></span>
+                                          <span class="status-indicator-circle"></span>
+                                          <span class="status-indicator-circle"></span>
+                                    </span>
+                                </template>
 
-                            <a @click='$router.push(`/layer/${layer.id}`)' class="card-title cursor-pointer" v-text='layer.name'></a>
+                                <a @click='$router.push(`/layer/${layer.id}`)' class="card-title cursor-pointer" v-text='layer.name'></a>
 
-                            <div class='ms-auto'>
-                                <div class='btn-list'>
-                                    <SettingsIcon class='cursor-pointer' @click='$router.push(`/layer/${layer.id}/edit`)'/>
+                                <div class='ms-auto'>
+                                    <div class='btn-list'>
+                                        <SettingsIcon class='cursor-pointer' @click='$router.push(`/layer/${layer.id}/edit`)'/>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="card-body" v-text='layer.description'>
-                        </div>
-                        <div class="card-footer">
-                            Last updated <span v-text='timeDiff(layer.updated)'/>
+                            <div class="card-body" v-text='layer.description'>
+                            </div>
+                            <div class="card-footer">
+                                Last updated <span v-text='timeDiff(layer.updated)'/>
+                            </div>
                         </div>
                     </div>
-                </div>
+                </template>
             </div>
         </div>
     </div>
@@ -94,6 +99,9 @@
 import None from './cards/None.vue';
 import PageFooter from './PageFooter.vue';
 import {
+    TablerLoading
+} from '@tak-ps/vue-tabler';
+import {
     SettingsIcon,
     SearchIcon
 } from 'vue-tabler-icons'
@@ -103,6 +111,7 @@ export default {
     data: function() {
         return {
             err: false,
+            loading: true,
             query: {
                 shown: false,
                 search: ''
@@ -137,9 +146,11 @@ export default {
             return '~' + Math.round(elapsed/msPerYear ) + ' years ago';
         },
         fetchList: async function() {
+            this.loading = true;
             const url = window.stdurl('/api/layer');
             if (this.query.shown && this.query.search) url.searchParams.append('filter', this.query.search);
             this.list = await window.std(url);
+            this.loading = false;
         }
     },
     components: {
@@ -147,6 +158,7 @@ export default {
         SettingsIcon,
         SearchIcon,
         PageFooter,
+        TablerLoading
     }
 }
 </script>
