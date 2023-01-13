@@ -108,6 +108,40 @@ export default {
                                 cf.join(['arn:aws:ecr:', cf.region, ':', cf.accountId, ':repository/coe-ecr-etl-tasks'])
                             ]
                         },{
+                            Effect: 'Allow',
+                            Action: [
+                                'iam:PassRole'
+                            ],
+                            Resource: [
+                                cf.join(['arn:aws:iam::', cf.accountId, ':role/', cf.stackName])
+                            ]
+                        },{
+                            Effect: 'Allow',
+                            Action: [
+                                'cloudformation:*'
+                            ],
+                            Resource: [
+                                cf.join(['arn:aws:cloudformation:', cf.region, ':', cf.accountId, ':stack/', cf.stackName, '-layer-*'])
+                            ]
+                        },{
+                            Effect: 'Allow',
+                            Action: [
+                                'logs:CreateLogGroup',
+                                'logs:DeleteLogGroup',
+                                'logs:PutRetentionPolicy'
+                            ],
+                            Resource: [
+                                cf.join(['arn:aws:logs:', cf.region, ':', cf.accountId, ':log-group:/aws/lambda/', cf.stackName, '-layer-*'])
+                            ]
+                        },{
+                            Effect: 'Allow',
+                            Action: [
+                                'lambda:*'
+                            ],
+                            Resource: [
+                                cf.join(['arn:aws:lambda:', cf.region, ':', cf.accountId, ':function:', cf.stackName, '-layer-*'])
+                            ]
+                        },{
                             Effect: 'Allow', // Create events for scheduled ETL
                             Action: [
                                 'events:PutRule',
@@ -199,6 +233,7 @@ export default {
                         { Name: 'SigningSecret', Value: cf.sub('{{resolve:secretsmanager:${AWS::StackName}/api/secret:SecretString::AWSCURRENT}}') },
                         { Name: 'StackName', Value: cf.stackName },
                         { Name: 'ASSET_BUCKET', Value: cf.ref('AssetBucket') },
+                        { Name: 'API_URL', Value: cf.join(['http://', cf.getAtt('ELB', 'DNSName')]) },
                         { Name: 'TAK_USERNAME', Value: cf.ref('Username') },
                         { Name: 'TAK_PASSWORD', Value: cf.ref('Password') },
                         { Name: 'AWS_DEFAULT_REGION', Value: cf.region }

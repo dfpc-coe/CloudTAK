@@ -56,6 +56,10 @@
                     </div>
                 </div>
 
+                <div v-if='layer.mode === "live"' class="col-lg-12">
+                    <LayerTask/>
+                </div>
+
                 <div class="col-lg-12">
                     <LayerData v-model='layerdata' :disabled='true'/>
                 </div>
@@ -75,6 +79,7 @@
 import PageFooter from './PageFooter.vue';
 import cronstrue from 'cronstrue';
 import LayerData from './Layer/LayerData.vue';
+import LayerTask from './Layer/LayerTask.vue';
 import Styles from './Layer/Styles.vue';
 import timeDiff from '../timediff.js';
 import {
@@ -111,7 +116,7 @@ export default {
             } else {
                 const rate = cron.replace('rate(', '').replace(')', '');
                 return `Once every ${rate}`;
-            }   
+            }
         },
         fetch: async function() {
             this.loading.layer = true;
@@ -132,6 +137,7 @@ export default {
         LayerData,
         PageFooter,
         TablerLoading,
+        LayerTask,
         Styles
     }
 }

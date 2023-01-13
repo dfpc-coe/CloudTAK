@@ -93,6 +93,9 @@ export default async function router(schema, config) {
                 await LayerLive.commit(config.pool, layer.id, data, {
                     column: 'layer_id'
                 });
+
+
+                // TODO Update CF properties if they change
             } else if (layer.mode === 'file') {
                 await LayerFile.commit(config.pool, layer.id, data, {
                     column: 'layer_id'
@@ -174,7 +177,7 @@ export default async function router(schema, config) {
         res: 'res.Standard.json'
     }, async (req, res) => {
         try {
-            await Auth.is_auth(req);
+            await Auth.is_machine(req.params.layerid, req);
 
             if (!req.headers['content-type']) throw new Err(400, null, 'Content-Type not set');
 

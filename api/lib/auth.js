@@ -23,4 +23,19 @@ export default class Auth {
 
         return true;
     }
+
+    /**
+     * Is the request from a task lambda function
+     *
+     * @param {Number} layer Expected Layer
+     * @param {Object} req Express Request
+     */
+    static async is_layer(layer, req) {
+        await this.is_auth(req);
+
+        if (req.auth.access !== 'cot')  throw new Err(400, null, 'Token must have "cot" access');
+        if (req.auth.layer !== layer)  throw new Err(400, null, 'Token is not valid for this layer');
+
+        return true;
+    }
 }

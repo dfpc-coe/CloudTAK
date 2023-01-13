@@ -44,6 +44,14 @@ export default class TAKPool extends Map {
         });
     }
 
+    status(conn) {
+        if (this.has(conn.id)) {
+            return this.get(conn.id).tak.open ? 'live' : 'dead';
+        } else {
+            return 'unknown';
+        }
+    }
+
     async add(conn) {
         const tak = await TAK.connect(new URL(this.server.url), conn.auth);
         this.set(conn.id, { conn, tak });

@@ -447,3 +447,39 @@
 *
 * @apiSchema {jsonschema=../schema/res.ListTasks.json} apiSuccess
 */
+
+
+/**
+* @api {get} /layer/:layerid/task Task Status
+* @apiVersion 1.0.0
+* @apiName GET-/layer/:layerid/task
+* @apiGroup Task
+* @apiPermission user
+*
+* @apidescription
+*   Get the status of a task stack in relation to a given layer
+*
+* @apiParam {integer} layerid param
+*
+*
+*
+* @apiSchema {jsonschema=../schema/res.TaskStatus.json} apiSuccess
+*/
+
+
+/**
+* @api {post} /layer/:layerid/task Task Deploy
+* @apiVersion 1.0.0
+* @apiName POST-/layer/:layerid/task
+* @apiGroup Task
+* @apiPermission user
+*
+* @apidescription
+*   Deploy a task stack
+*
+* @apiParam {integer} layerid param
+*
+*
+*
+* @apiSchema {jsonschema=../schema/res.TaskStatus.json} apiSuccess
+*/
