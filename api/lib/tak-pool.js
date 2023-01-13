@@ -84,7 +84,6 @@ export default class TAKPool extends Map {
 
             return true;
         } else {
-        console.error('SKIP');
             return false;
         }
     }
