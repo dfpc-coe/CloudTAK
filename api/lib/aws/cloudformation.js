@@ -47,6 +47,24 @@ export default class CloudFormation {
         }
     }
 
+    static async exists(config, layer) {
+        const CF = new AWS.CloudFormation({ region: process.env.AWS_DEFAULT_REGION });
+
+        try {
+            await CF.describeStacks({
+                StackName: this.name(config, layer)
+            }).promise()
+
+            return true;
+        } catch (err) {
+            if (err.message.match(/Stack with id .* does not exist/)) {
+                return false;
+            } else {
+                throw err;
+            }
+        }
+    }
+
     static async delete(config, layer) {
         const CF = new AWS.CloudFormation({ region: process.env.AWS_DEFAULT_REGION });
 
