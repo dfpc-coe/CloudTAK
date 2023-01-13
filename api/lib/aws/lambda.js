@@ -20,7 +20,7 @@ export default class Lambda {
                 },
                 Events: {
                     Type: 'String',
-                    Default: layer.enabled ? 'ENABLED', 'DISABLED'
+                    Default: layer.enabled ? 'ENABLED' : 'DISABLED'
                 }
             },
             Resources: {
