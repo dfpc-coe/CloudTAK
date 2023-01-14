@@ -199,6 +199,10 @@ export default async function router(schema, config) {
             const conn = await config.conns.get(layer.data.connection);
 
             for (const feature of req.body.features) {
+                if (layer.data.stale) {
+                    feature.properties.stale =  layer.data.stale;
+                }
+
                 if (layer.enabled_styles) {
                     if (feature.geometry.type === 'Point') {
                         Object.assign(feature.properties, layer.styles.point);

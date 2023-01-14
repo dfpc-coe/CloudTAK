@@ -65,7 +65,7 @@
                     />
                 </div>
                 <div class="col-md-6">
-                    <label>Stale Value (sec)</label>
+                    <label>Stale Value (ms)</label>
                     <TablerInput v-model='layerdata.stale' type='number' min='1' step='1'/>
                 </div>
                 <div class='col-md-12 my-3'>
@@ -179,7 +179,7 @@ export default {
                 std_asset_id: null,
                 task: '',
                 cron: '0/15 * * * ? *',
-                stale: 60,
+                stale: 60 * 1000,
                 environment: {}
             }
         };
