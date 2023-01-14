@@ -55,7 +55,9 @@
                                 <span class="nav-link-title">Utils</span>
                             </a>
                             <div class="dropdown-menu" aria-labelledby="util-dropdown">
-                                MENU
+                                <a @click='$router.push("/icon")' class="dropdown-item cursor-pointer">
+                                    Icon Explorer
+                                </a>
                             </div>
                         </li>
                     </ul>
