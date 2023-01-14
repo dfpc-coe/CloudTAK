@@ -15,6 +15,7 @@
                     <TablerInput
                         label='P12 Password'
                         v-model='password'
+                        v-on:keyup.enter='extract'
                     />
 
                     <div class="row mt-3">

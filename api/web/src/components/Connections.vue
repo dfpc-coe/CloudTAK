@@ -44,31 +44,36 @@
                     </div>
                 </div>
 
-                <None
-                    v-if='!list.connections.length'
-                    label='Connections'
-                    @create='$router.push("/connection/new")'
-                />
-                <div :key='connection.id' v-for='connection in list.connections' class="col-lg-12">
-                    <div class="card">
-                        <div class="card-header">
-                            <ConnectionStatus :connection='connection'/>
+                <template v-if='loading'>
+                    <TablerLoading/>
+                </template>
+                <template v-else>
+                    <None
+                        v-if='!list.connections.length'
+                        label='Connections'
+                        @create='$router.push("/connection/new")'
+                    />
+                    <div :key='connection.id' v-for='connection in list.connections' class="col-lg-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <ConnectionStatus :connection='connection'/>
 
-                            <a @click='$router.push(`/connection/${connection.id}`)' class="card-title cursor-pointer" v-text='connection.name'></a>
+                                <a @click='$router.push(`/connection/${connection.id}`)' class="card-title cursor-pointer" v-text='connection.name'></a>
 
-                            <div class='ms-auto'>
-                                <div class='btn-list'>
-                                    <SettingsIcon class='cursor-pointer' @click='$router.push(`/connection/${connection.id}/edit`)'/>
+                                <div class='ms-auto'>
+                                    <div class='btn-list'>
+                                        <SettingsIcon class='cursor-pointer' @click='$router.push(`/connection/${connection.id}/edit`)'/>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="card-body" v-text='connection.description'>
-                        </div>
-                        <div class="card-footer">
-                            Last updated 3 mins ago
+                            <div class="card-body" v-text='connection.description'>
+                            </div>
+                            <div class="card-footer">
+                                Last updated 3 mins ago
+                            </div>
                         </div>
                     </div>
-                </div>
+                </template>
             </div>
         </div>
     </div>
@@ -81,6 +86,9 @@ import PageFooter from './PageFooter.vue';
 import ConnectionStatus from './Connection/Status.vue';
 import None from './cards/None.vue';
 import {
+    TablerLoading
+} from '@tak-ps/vue-tabler';
+import {
     SettingsIcon,
     SearchIcon
 } from 'vue-tabler-icons'
@@ -90,6 +98,7 @@ export default {
     data: function() {
         return {
             err: false,
+            loading: true,
             query: {
                 shown: false,
                 search: ''
@@ -109,9 +118,11 @@ export default {
     },
     methods: {
         fetchList: async function() {
+            this.loading = true;
             const url = window.stdurl('/api/connection');
             if (this.query.shown && this.query.search) url.searchParams.append('filter', this.query.search);
             this.list = await window.std(url);
+            this.loading = false;
         }
     },
     components: {
@@ -119,7 +130,8 @@ export default {
         SettingsIcon,
         SearchIcon,
         PageFooter,
-        ConnectionStatus
+        ConnectionStatus,
+        TablerLoading
     }
 }
 </script>

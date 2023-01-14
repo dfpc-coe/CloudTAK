@@ -60,7 +60,7 @@ export default async function router(schema, config) {
         group: 'Connection',
         auth: 'admin',
         description: 'Update a connection',
-        ':connectionid': 'string',
+        ':connectionid': 'integer',
         body: 'req.body.PatchConnection.json',
         res: 'res.Connection.json'
     }, async (req, res) => {
@@ -83,7 +83,7 @@ export default async function router(schema, config) {
         group: 'Connection',
         auth: 'user',
         description: 'Get a connection',
-        ':connectionid': 'string',
+        ':connectionid': 'integer',
         res: 'res.Connection.json'
     }, async (req, res) => {
         try {
@@ -91,6 +91,7 @@ export default async function router(schema, config) {
 
             const conn = (await Connection.from(config.pool, req.params.connectionid)).serialize();
             conn.status = config.conns.status(conn.id);
+
             return res.json(conn);
         } catch (err) {
             return Err.respond(err, res);
@@ -102,7 +103,7 @@ export default async function router(schema, config) {
         group: 'Connection',
         auth: 'user',
         description: 'Delete a connection',
-        ':connectionid': 'string',
+        ':connectionid': 'integer',
         res: 'res.Standard.json'
     }, async (req, res) => {
         try {
