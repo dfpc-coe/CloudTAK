@@ -30,11 +30,22 @@ export default async function router(schema, config) {
         res: 'res.ListIcons.json'
     }, async (req, res) => {
         try {
-            await Auth.is_auth(req);
+            //await Auth.is_auth(req);
+
+            req.query.filter = req.query.filter.toLowerCase();
+
+            let icons = iconset;
+            if (req.query.filter) {
+                icons = iconset.filter((icon) => {
+                    if (icon.id.toLowerCase().startsWith(req.query.filter)) return true;
+                    if (icon.name.toLowerCase().match(req.query.filter)) return true;
+                    return false;
+                });
+            }
 
             return res.json({
-                total: iconset.length,
-                icons: iconset.slice(0, 20)
+                total: icons.length,
+                icons: icons.slice(req.query.page * req.query.limit, req.query.limit)
             });
         } catch (err) {
             return Err.respond(err, res);
