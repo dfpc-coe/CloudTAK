@@ -66,7 +66,7 @@
                 </div>
                 <div class="col-md-6">
                     <label>Stale Value (ms)</label>
-                    <TablerInput v-model='layerdata.stale' type='number' min='1' step='1'/>
+                    <TablerInput v-model='layerdata.stale' :disabled='disabled' type='number' min='1' step='1'/>
                 </div>
                 <div class='col-md-12 my-3'>
                     <div class='d-flex'>
