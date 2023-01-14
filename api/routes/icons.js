@@ -30,7 +30,7 @@ export default async function router(schema, config) {
         res: 'res.ListIcons.json'
     }, async (req, res) => {
         try {
-            //await Auth.is_auth(req);
+            await Auth.is_auth(req);
 
             req.query.filter = req.query.filter.toLowerCase();
 
@@ -45,7 +45,7 @@ export default async function router(schema, config) {
 
             return res.json({
                 total: icons.length,
-                icons: icons.slice(req.query.page * req.query.limit, req.query.limit)
+                icons: icons.slice(req.query.page * req.query.limit, req.query.page * req.query.limit + req.query.limit)
             });
         } catch (err) {
             return Err.respond(err, res);
