@@ -9,14 +9,14 @@ export default async function router(schema, config) {
     for (const icon of xmljs.xml2js(String(await fs.readFile(new URL('../icons/icons.xml', import.meta.url))), {
         compact: true
     }).icons.icon) {
-        if (!icon.filePath) continue;
+        if (!icon.filePath || !icon.filePath._text) continue;
 
         iconset.push({
             id: icon.id._text,
             name: icon.displayName._text,
             parent: icon.parentID._text,
             children: (icon.childrenIDs && Array.isArray(icon.childrenIDs.id)) ? icon.childrenIDs.id.map((id) => {
-                return id._text
+                return id._text;
             }) : []
         });
     }
