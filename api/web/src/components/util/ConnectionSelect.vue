@@ -1,6 +1,6 @@
 <template>
 <div class="col-md-12">
-    <h3>Connection</h3>
+    <label>Connection</label>
 
     <template v-if='loading'>
         <TablerLoading/>
