@@ -207,7 +207,7 @@
 * @apidescription
 *   Update a connection
 *
-* @apiParam {string} connectionid param
+* @apiParam {integer} connectionid param
 *
 *
 * @apiSchema (Body) {jsonschema=../schema/req.body.PatchConnection.json} apiParam
@@ -225,7 +225,7 @@
 * @apidescription
 *   Get a connection
 *
-* @apiParam {string} connectionid param
+* @apiParam {integer} connectionid param
 *
 *
 *
@@ -243,7 +243,7 @@
 * @apidescription
 *   Delete a connection
 *
-* @apiParam {string} connectionid param
+* @apiParam {integer} connectionid param
 *
 *
 *
@@ -297,7 +297,7 @@
 * @apidescription
 *   Update a layer
 *
-* @apiParam {string} layerid param
+* @apiParam {integer} layerid param
 *
 *
 * @apiSchema (Body) {jsonschema=../schema/req.body.PatchLayer.json} apiParam
@@ -315,7 +315,7 @@
 * @apidescription
 *   Get a layer
 *
-* @apiParam {string} layerid param
+* @apiParam {integer} layerid param
 *
 *
 *
@@ -333,7 +333,7 @@
 * @apidescription
 *   Delete a layer
 *
-* @apiParam {string} layerid param
+* @apiParam {integer} layerid param
 *
 *
 *
@@ -351,7 +351,7 @@
 * @apidescription
 *   Post CoT data to a given layer
 *
-* @apiParam {string} layerid param
+* @apiParam {integer} layerid param
 *
 *
 *

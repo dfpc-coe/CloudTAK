@@ -44,9 +44,9 @@ export default class TAKPool extends Map {
         });
     }
 
-    status(conn) {
-        if (this.has(conn.id)) {
-            return this.get(conn.id).tak.open ? 'live' : 'dead';
+    status(id) {
+        if (this.has(id)) {
+            return this.get(id).tak.open ? 'live' : 'dead';
         } else {
             return 'unknown';
         }
@@ -77,7 +77,14 @@ export default class TAKPool extends Map {
     }
 
     delete(id) {
-        this.get(id).tak.destroy();
-        this.delete(id);
+        if (this.has(id)) {
+            const conn = this.get(id);
+            conn.tak.destroy();
+            this.delete(id);
+
+            return true;
+        } else {
+            return false;
+        }
     }
 }

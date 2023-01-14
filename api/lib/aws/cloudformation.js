@@ -18,6 +18,15 @@ export default class CloudFormation {
         }).promise();
     }
 
+    static async update(config, layer, stack) {
+        const CF = new AWS.CloudFormation({ region: process.env.AWS_DEFAULT_REGION });
+
+        await CF.updateStack({
+            StackName: this.name(config, layer),
+            TemplateBody: JSON.stringify(stack)
+        }).promise();
+    }
+
     static async status(config, layer) {
         const CF = new AWS.CloudFormation({ region: process.env.AWS_DEFAULT_REGION });
 
@@ -32,6 +41,24 @@ export default class CloudFormation {
         } catch (err) {
             if (err.message.match(/Stack with id .* does not exist/)) {
                 return { status: 'destroyed' };
+            } else {
+                throw err;
+            }
+        }
+    }
+
+    static async exists(config, layer) {
+        const CF = new AWS.CloudFormation({ region: process.env.AWS_DEFAULT_REGION });
+
+        try {
+            await CF.describeStacks({
+                StackName: this.name(config, layer)
+            }).promise()
+
+            return true;
+        } catch (err) {
+            if (err.message.match(/Stack with id .* does not exist/)) {
+                return false;
             } else {
                 throw err;
             }

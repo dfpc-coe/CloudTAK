@@ -72,7 +72,7 @@ export default async function router(schema, config) {
         group: 'Layer',
         auth: 'admin',
         description: 'Update a layer',
-        ':layerid': 'string',
+        ':layerid': 'integer',
         body: 'req.body.PatchLayer.json',
         res: 'res.Layer.json'
     }, async (req, res) => {
@@ -102,6 +102,13 @@ export default async function router(schema, config) {
                 });
             }
 
+            const lambda = await Lambda.generate(config, layer, data);
+            if (await CloudFormation.exists(config, layer)) {
+                await CloudFormation.update(config, layer, lambda);
+            } else {
+                await CloudFormation.create(config, layer, lambda);
+            }
+
             layer = layer.serialize();
             layer.data = (layer.mode === 'file' ? await LayerFile.from(config.pool, layer.id, { column: 'layer_id' }) : await LayerLive.from(config.pool, layer.id, { column: 'layer_id' })).serialize();
 
@@ -118,7 +125,7 @@ export default async function router(schema, config) {
         group: 'Layer',
         auth: 'user',
         description: 'Get a layer',
-        ':layerid': 'string',
+        ':layerid': 'integer',
         res: 'res.Layer.json'
     }, async (req, res) => {
         try {
@@ -141,7 +148,7 @@ export default async function router(schema, config) {
         group: 'Layer',
         auth: 'user',
         description: 'Delete a layer',
-        ':layerid': 'string',
+        ':layerid': 'integer',
         res: 'res.Layer.json'
     }, async (req, res) => {
         try {
@@ -173,11 +180,11 @@ export default async function router(schema, config) {
         group: 'Layer',
         auth: 'admin',
         description: 'Post CoT data to a given layer',
-        ':layerid': 'string',
+        ':layerid': 'integer',
         res: 'res.Standard.json'
     }, async (req, res) => {
         try {
-            await Auth.is_machine(req.params.layerid, req);
+            await Auth.is_layer(req.params.layerid, req);
 
             if (!req.headers['content-type']) throw new Err(400, null, 'Content-Type not set');
 
