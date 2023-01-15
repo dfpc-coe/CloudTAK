@@ -42,21 +42,26 @@
     <div v-if='!global_enabled' class='card-body'>
         Style Overrides are disabled
     </div>
-    <template v-else-if='mode === "query" && !query'>
-        <div class='card-body'>
-            <div class="list-group list-group-flush">
-                <div :key='q_idx' v-for='(q, q_idx) in queries'>
-                    <a @click='query = q_idx' class="cursor-pointer list-group-item list-group-item-action" v-text='q.query'></a>
+    <template v-else-if='mode === "query"'>
+        <template v-if='query === null && queries.length'>
+            <div class='card-body'>
+                <div class="list-group list-group-flush">
+                    <div :key='q_idx' v-for='(q, q_idx) in queries'>
+                        <a @click='query = q_idx' class="cursor-pointer list-group-item list-group-item-action" v-text='q.query'></a>
+                    </div>
                 </div>
             </div>
-        </div>
-    </template>
-    <template v-else-if='mode === "query" && typeof query === "object"'>
-        <div class='card-body'>
-            <TablerInput v-model='query.query' placeholder='JSONata Query' label='JSONata Query'/>
+        </template>
+        <template v-else-if='query === null && !queries.length'>
+            <None label='Query' @create='query = {}'/>
+        </template>
+        <template v-else-if='typeof query === "object"'>
+            <div class='card-body'>
+                <TablerInput v-model='query.query' placeholder='JSONata Query' label='JSONata Query'/>
 
-            <StylesSingle v-model='query'/>
-        </div>
+                <StylesSingle v-model='query'/>
+            </div>
+        </template>
     </template>
     <template v-else>
         <StylesSingle v-model='basic'/>
@@ -73,6 +78,7 @@ import {
     TablerInput
 } from '@tak-ps/vue-tabler';
 import StylesSingle from './Styles/Single.vue';
+import None from '../cards/None.vue';
 
 export default {
     name: 'StyleUtil',
@@ -115,6 +121,7 @@ export default {
 
     },
     components: {
+        None,
         CodeIcon,
         AbcIcon,
         StylesSingle,
