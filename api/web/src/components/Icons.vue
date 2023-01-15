@@ -44,7 +44,7 @@
                     <div :key='icon.id' v-for='icon in list.icons' class="col-sm-6 col-lg-4">
                         <div class="card card-sm">
                             <a href="#" class="d-block">
-                                <img src="/icon/${icon.file}" class="card-img-top">
+                                <img :src="/icon/${icon.file}" class="card-img-top">
                             </a>
                             <div class="card-body">
                                 <div class="d-flex align-items-center">
