@@ -431,7 +431,7 @@
 </icon>
 <icon>
 <id>f-A-M-F-Q-H</id>
-<displayName>Friendly Combat search & rescue (CSAR)</displayName>
+<displayName>Friendly Combat search &amp; rescue (CSAR)</displayName>
 <filePath>Data/2525_Icons/sfapmfqh-------.png</filePath>
 <childrenIDs>
 </childrenIDs>
@@ -2764,7 +2764,7 @@
 </icon>
 <icon>
 <id>f-G-I-M-A</id>
-<displayName>Friendly Aircraft production & assembly</displayName>
+<displayName>Friendly Aircraft production &amp; assembly</displayName>
 <filePath>Data/2525_Icons/sfgpima---h----.png</filePath>
 <childrenIDs>
 </childrenIDs>
@@ -2772,7 +2772,7 @@
 </icon>
 <icon>
 <id>f-G-I-M-C</id>
-<displayName>Friendly Chemical & biological warfare production</displayName>
+<displayName>Friendly Chemical &amp; biological warfare production</displayName>
 <filePath>Data/2525_Icons/sfgpimc---h----.png</filePath>
 <childrenIDs>
 </childrenIDs>
@@ -2840,7 +2840,7 @@
 </icon>
 <icon>
 <id>f-G-I-M-M</id>
-<displayName>Friendly Missile & space system production</displayName>
+<displayName>Friendly Missile &amp; space system production</displayName>
 <filePath>Data/2525_Icons/sfgpimm---h----.png</filePath>
 <childrenIDs>
 </childrenIDs>
@@ -6889,7 +6889,7 @@
 </icon>
 <icon>
 <id>f-S-N-S</id>
-<displayName>Friendly Service & support harbor (yardcraft, barge, harbor, tug)</displayName>
+<displayName>Friendly Service &amp; support harbor (yardcraft, barge, harbor, tug)</displayName>
 <filePath>Data/2525_Icons/sfspns---------.png</filePath>
 <childrenIDs>
 </childrenIDs>
@@ -7723,7 +7723,7 @@
 </icon>
 <icon>
 <id>h-A-M-F-Q-H</id>
-<displayName>Hostile Combat search & rescue (CSAR)</displayName>
+<displayName>Hostile Combat search &amp; rescue (CSAR)</displayName>
 <filePath>Data/2525_Icons/shapmfqh-------.png</filePath>
 <childrenIDs>
 </childrenIDs>
@@ -10056,7 +10056,7 @@
 </icon>
 <icon>
 <id>h-G-I-M-A</id>
-<displayName>Hostile Aircraft production & assembly</displayName>
+<displayName>Hostile Aircraft production &amp; assembly</displayName>
 <filePath>Data/2525_Icons/shgpima---h----.png</filePath>
 <childrenIDs>
 </childrenIDs>
@@ -10064,7 +10064,7 @@
 </icon>
 <icon>
 <id>h-G-I-M-C</id>
-<displayName>Hostile Chemical & biological warfare production</displayName>
+<displayName>Hostile Chemical &amp; biological warfare production</displayName>
 <filePath>Data/2525_Icons/shgpimc---h----.png</filePath>
 <childrenIDs>
 </childrenIDs>
@@ -10132,7 +10132,7 @@
 </icon>
 <icon>
 <id>h-G-I-M-M</id>
-<displayName>Hostile Missile & space system production</displayName>
+<displayName>Hostile Missile &amp; space system production</displayName>
 <filePath>Data/2525_Icons/shgpimm---h----.png</filePath>
 <childrenIDs>
 </childrenIDs>
@@ -14181,7 +14181,7 @@
 </icon>
 <icon>
 <id>h-S-N-S</id>
-<displayName>Hostile Service & support harbor (yardcraft, barge, harbor, tug)</displayName>
+<displayName>Hostile Service &amp; support harbor (yardcraft, barge, harbor, tug)</displayName>
 <filePath>Data/2525_Icons/shspns---------.png</filePath>
 <childrenIDs>
 </childrenIDs>
@@ -15015,7 +15015,7 @@
 </icon>
 <icon>
 <id>n-A-M-F-Q-H</id>
-<displayName>Neutral Combat search & rescue (CSAR)</displayName>
+<displayName>Neutral Combat search &amp; rescue (CSAR)</displayName>
 <filePath>Data/2525_Icons/snapmfqh-------.png</filePath>
 <childrenIDs>
 </childrenIDs>
@@ -17348,7 +17348,7 @@
 </icon>
 <icon>
 <id>n-G-I-M-A</id>
-<displayName>Neutral Aircraft production & assembly</displayName>
+<displayName>Neutral Aircraft production &amp; assembly</displayName>
 <filePath>Data/2525_Icons/sngpima---h----.png</filePath>
 <childrenIDs>
 </childrenIDs>
@@ -17356,7 +17356,7 @@
 </icon>
 <icon>
 <id>n-G-I-M-C</id>
-<displayName>Neutral Chemical & biological warfare production</displayName>
+<displayName>Neutral Chemical &amp; biological warfare production</displayName>
 <filePath>Data/2525_Icons/sngpimc---h----.png</filePath>
 <childrenIDs>
 </childrenIDs>
@@ -17424,7 +17424,7 @@
 </icon>
 <icon>
 <id>n-G-I-M-M</id>
-<displayName>Neutral Missile & space system production</displayName>
+<displayName>Neutral Missile &amp; space system production</displayName>
 <filePath>Data/2525_Icons/sngpimm---h----.png</filePath>
 <childrenIDs>
 </childrenIDs>
@@ -21473,7 +21473,7 @@
 </icon>
 <icon>
 <id>n-S-N-S</id>
-<displayName>Neutral Service & support harbor (yardcraft, barge, harbor, tug)</displayName>
+<displayName>Neutral Service &amp; support harbor (yardcraft, barge, harbor, tug)</displayName>
 <filePath>Data/2525_Icons/snspns---------.png</filePath>
 <childrenIDs>
 </childrenIDs>
@@ -22307,7 +22307,7 @@
 </icon>
 <icon>
 <id>u-A-M-F-Q-H</id>
-<displayName>Unknown Combat search & rescue (CSAR)</displayName>
+<displayName>Unknown Combat search &amp; rescue (CSAR)</displayName>
 <filePath>Data/2525_Icons/suapmfqh-------.png</filePath>
 <childrenIDs>
 </childrenIDs>
@@ -24640,7 +24640,7 @@
 </icon>
 <icon>
 <id>u-G-I-M-A</id>
-<displayName>Unknown Aircraft production & assembly</displayName>
+<displayName>Unknown Aircraft production &amp; assembly</displayName>
 <filePath>Data/2525_Icons/sugpima---h----.png</filePath>
 <childrenIDs>
 </childrenIDs>
@@ -24648,7 +24648,7 @@
 </icon>
 <icon>
 <id>u-G-I-M-C</id>
-<displayName>Unknown Chemical & biological warfare production</displayName>
+<displayName>Unknown Chemical &amp; biological warfare production</displayName>
 <filePath>Data/2525_Icons/sugpimc---h----.png</filePath>
 <childrenIDs>
 </childrenIDs>
@@ -24716,7 +24716,7 @@
 </icon>
 <icon>
 <id>u-G-I-M-M</id>
-<displayName>Unknown Missile & space system production</displayName>
+<displayName>Unknown Missile &amp; space system production</displayName>
 <filePath>Data/2525_Icons/sugpimm---h----.png</filePath>
 <childrenIDs>
 </childrenIDs>
@@ -28765,7 +28765,7 @@
 </icon>
 <icon>
 <id>u-S-N-S</id>
-<displayName>Unknown Service & support harbor (yardcraft, barge, harbor, tug)</displayName>
+<displayName>Unknown Service &amp; support harbor (yardcraft, barge, harbor, tug)</displayName>
 <filePath>Data/2525_Icons/suspns---------.png</filePath>
 <childrenIDs>
 </childrenIDs>

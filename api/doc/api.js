@@ -252,6 +252,24 @@
 
 
 /**
+* @api {get} /icon List Icons
+* @apiVersion 1.0.0
+* @apiName GET-/icon
+* @apiGroup Icons
+* @apiPermission user
+*
+* @apidescription
+*   List Icons
+*
+
+*
+* @apiSchema (Query) {jsonschema=../schema/req.query.ListIcons.json} apiParam
+*
+* @apiSchema {jsonschema=../schema/res.ListIcons.json} apiSuccess
+*/
+
+
+/**
 * @api {get} /layer List Layers
 * @apiVersion 1.0.0
 * @apiName GET-/layer

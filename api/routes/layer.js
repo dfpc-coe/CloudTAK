@@ -8,6 +8,7 @@ import { sql } from 'slonik';
 import Auth from '../lib/auth.js';
 import Lambda from '../lib/aws/lambda.js';
 import CloudFormation from '../lib/aws/cloudformation.js';
+import jsonata from 'jsonata';
 
 export default async function router(schema, config) {
     await schema.get('/layer', {
@@ -58,8 +59,12 @@ export default async function router(schema, config) {
             layer = layer.serialize();
             layer.data = (layer.mode === 'file' ? await LayerFile.from(config.pool, layer.id, { column: 'layer_id' }) : await LayerLive.from(config.pool, layer.id, { column: 'layer_id' })).serialize();
 
-            const lambda = await Lambda.generate(config, layer, data);
-            await CloudFormation.create(config, layer, lambda);
+            try {
+                const lambda = await Lambda.generate(config, layer, data);
+                await CloudFormation.create(config, layer, lambda);
+            } catch (err) {
+                console.error(err);
+            }
 
             return res.json(layer);
         } catch (err) {
@@ -102,11 +107,15 @@ export default async function router(schema, config) {
                 });
             }
 
-            const lambda = await Lambda.generate(config, layer, data);
-            if (await CloudFormation.exists(config, layer)) {
-                await CloudFormation.update(config, layer, lambda);
-            } else {
-                await CloudFormation.create(config, layer, lambda);
+            try {
+                const lambda = await Lambda.generate(config, layer, data);
+                if (await CloudFormation.exists(config, layer)) {
+                    await CloudFormation.update(config, layer, lambda);
+                } else {
+                    await CloudFormation.create(config, layer, lambda);
+                }
+            } catch (err) {
+                console.error(err);
             }
 
             layer = layer.serialize();
@@ -199,12 +208,25 @@ export default async function router(schema, config) {
             const conn = await config.conns.get(layer.data.connection);
 
             for (const feature of req.body.features) {
+                if (layer.data.stale) {
+                    feature.properties.stale =  layer.data.stale;
+                }
+
                 if (layer.enabled_styles) {
-                    if (feature.geometry.type === 'Point') {
+                    if (layer.styles.queries) {
+                        for (const q of layer.styles.queries) {
+                            const expression = jsonata(q.query);
+                            const result = await expression.evaluate(feature);
+
+                            console.error(result);
+                        }
+                    }
+
+                    if (feature.geometry.type === 'Point' && layer.styles.point) {
                         Object.assign(feature.properties, layer.styles.point);
-                    } else if (feature.geometry.type === 'LineString') {
+                    } else if (feature.geometry.type === 'LineString' && layer.styles.line) {
                         Object.assign(feature.properties, layer.styles.line);
-                    } else if (feature.geometry.type === 'Polygon') {
+                    } else if (feature.geometry.type === 'Polygon' && layer.styles.polygon) {
                         Object.assign(feature.properties, layer.styles.polygon);
                     }
                 }
