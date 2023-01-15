@@ -69,6 +69,11 @@
         "query": false,
         "res": true
     },
+    "GET /icon": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
     "GET /layer": {
         "body": false,
         "query": true,

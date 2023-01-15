@@ -57,12 +57,16 @@
                     }' class="form-control" placeholder='Schedule Task'/>
                     <div v-if='errors.task' v-text='errors.task' class="invalid-feedback"></div>
                 </div>
-                <div class="col-md-12">
+                <div class="col-md-6">
                     <ConnectionSelect
                         :disabled='disabled'
                         v-model='layerdata.connection'
 
                     />
+                </div>
+                <div class="col-md-6">
+                    <label>Stale Value (ms)</label>
+                    <TablerInput v-model='layerdata.stale' :disabled='disabled' type='number' min='1' step='1'/>
                 </div>
                 <div class='col-md-12 my-3'>
                     <div class='d-flex'>
@@ -175,6 +179,7 @@ export default {
                 std_asset_id: null,
                 task: '',
                 cron: '0/15 * * * ? *',
+                stale: 60 * 1000,
                 environment: {}
             }
         };
@@ -198,6 +203,7 @@ export default {
                         mode: this.layerdata.mode,
                         task: this.layerdata.task,
                         cron: this.layerdata.cron,
+                        stale: parseInt(this.layerdata.stale),
                         connection: this.layerdata.connection,
                         environment: this.layerdata.environment
                     });

@@ -1,0 +1,47 @@
+{
+    "type": "object",
+    "required": [
+        "total",
+        "icons"
+    ],
+    "additionalProperties": false,
+    "properties": {
+        "total": {
+            "$ref": "./util/total.json"
+        },
+        "icons": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                    "id",
+                    "name",
+                    "parent",
+                    "file",
+                    "children"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "file": {
+                        "type": "string"
+                    },
+                    "parent": {
+                        "type": "string"
+                    },
+                    "children": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
