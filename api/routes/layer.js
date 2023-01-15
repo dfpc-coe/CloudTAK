@@ -58,8 +58,12 @@ export default async function router(schema, config) {
             layer = layer.serialize();
             layer.data = (layer.mode === 'file' ? await LayerFile.from(config.pool, layer.id, { column: 'layer_id' }) : await LayerLive.from(config.pool, layer.id, { column: 'layer_id' })).serialize();
 
-            const lambda = await Lambda.generate(config, layer, data);
-            await CloudFormation.create(config, layer, lambda);
+            try {
+                const lambda = await Lambda.generate(config, layer, data);
+                await CloudFormation.create(config, layer, lambda);
+            } catch (err) {
+                console.error(err);
+            }
 
             return res.json(layer);
         } catch (err) {
@@ -102,11 +106,15 @@ export default async function router(schema, config) {
                 });
             }
 
-            const lambda = await Lambda.generate(config, layer, data);
-            if (await CloudFormation.exists(config, layer)) {
-                await CloudFormation.update(config, layer, lambda);
-            } else {
-                await CloudFormation.create(config, layer, lambda);
+            try {
+                const lambda = await Lambda.generate(config, layer, data);
+                if (await CloudFormation.exists(config, layer)) {
+                    await CloudFormation.update(config, layer, lambda);
+                } else {
+                    await CloudFormation.create(config, layer, lambda);
+                }
+            } catch (err) {
+                console.error(err);
             }
 
             layer = layer.serialize();
