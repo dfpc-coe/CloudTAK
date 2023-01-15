@@ -9,11 +9,11 @@
             <div v-if='!$route.params.layerid' class="d-flex justify-content-center mb-4">
                 <div class="btn-list">
                     <div class="btn-group" role="group">
-                        <input v-model='layerdata.mode' type="radio" class="btn-check" name="btn-radio-toolbar" value='live'>
+                        <input v-model='layerdata.mode' type="radio" class="btn-check" name="task-type-toolbar" value='live'>
                         <label @click='layerdata.mode="live"' class="btn btn-icon px-3">
                             <ClockIcon/> Scheduled
                         </label>
-                        <input v-model='layerdata.mode' type="radio" class="btn-check" name="btn-radio-toolbar" value='file'>
+                        <input v-model='layerdata.mode' type="radio" class="btn-check" name="task-type-toolbar" value='file'>
                         <label @click='layerdata.mode="file"' class="btn btn-icon px-3">
                             <FileUploadIcon/> Upload
                         </label>
