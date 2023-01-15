@@ -8,6 +8,7 @@ import { sql } from 'slonik';
 import Auth from '../lib/auth.js';
 import Lambda from '../lib/aws/lambda.js';
 import CloudFormation from '../lib/aws/cloudformation.js';
+import jsonata from 'jsonata';
 
 export default async function router(schema, config) {
     await schema.get('/layer', {
@@ -212,11 +213,20 @@ export default async function router(schema, config) {
                 }
 
                 if (layer.enabled_styles) {
-                    if (feature.geometry.type === 'Point') {
+                    if (layer.styles.queries) {
+                        for (const q of layer.styles.queries) {
+                            const expression = jsonata(q.query);
+                            const result = await expression.evaluate(feature);
+
+                            console.error(result);
+                        }
+                    }
+
+                    if (feature.geometry.type === 'Point' && layer.styles.point) {
                         Object.assign(feature.properties, layer.styles.point);
-                    } else if (feature.geometry.type === 'LineString') {
+                    } else if (feature.geometry.type === 'LineString' && layer.styles.line) {
                         Object.assign(feature.properties, layer.styles.line);
-                    } else if (feature.geometry.type === 'Polygon') {
+                    } else if (feature.geometry.type === 'Polygon' && layer.styles.polygon) {
                         Object.assign(feature.properties, layer.styles.polygon);
                     }
                 }

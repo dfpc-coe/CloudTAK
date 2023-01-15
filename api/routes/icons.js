@@ -4,7 +4,7 @@ import Auth from '../lib/auth.js';
 import Err from '@openaddresses/batch-error';
 import xmljs from 'xml-js';
 
-export default async function router(schema, config) {
+export default async function router(schema) {
     const iconset = new Array();
     for (const icon of xmljs.xml2js(String(await fs.readFile(new URL('../icons/icons.xml', import.meta.url))), {
         compact: true
