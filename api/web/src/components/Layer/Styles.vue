@@ -1,14 +1,35 @@
 <template>
 <div class='card'>
     <div class='card-header'>
-        <h3 class='card-title'>Style Overrides</h3>
-
-        <div class='ms-auto'>
-            <div class='d-flex'>
-                <span class='px-2'>Enabled</span>
-                <label class="form-check form-switch">
-                    <input :disabled='disabled' v-model='global_enabled' class="form-check-input" type="checkbox">
-                </label>
+        <div class='row row-cards'>
+            <div class='col-md-4'>
+                <h3 class='card-title'>Style Overrides</h3>
+                <div class='ms-auto'>
+                    <div class='d-flex my-2'>
+                        <span class='px-2'>Enabled</span>
+                        <label class="form-check form-switch">
+                            <input :disabled='disabled' v-model='global_enabled' class="form-check-input" type="checkbox">
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class='col-md-4'>
+                <div v-if='global_enabled' class="d-flex justify-content-center">
+                    <div class="btn-list">
+                        <div class="btn-group" role="group">
+                            <input v-model='type' type="radio" class="btn-check" name="type-toolbar" value='basic'>
+                            <label @click='type="basic"' class="btn btn-icon px-3">
+                                <AbcIcon/> Basic
+                            </label>
+                            <input v-model='type' type="radio" class="btn-check" name="type-toolbar" value='query'>
+                            <label @click='type="query"' class="btn btn-icon px-3">
+                                <CodeIcon/> Query
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class='col-md-4'>
             </div>
         </div>
     </div>
@@ -16,20 +37,27 @@
     <div v-if='!global_enabled' class='card-body'>
         Style Overrides are disabled
     </div>
+    <div v-else-if='type === "query" && !query' class='card-body'>
+        <div class="list-group list-group-flush">
+            <div :key='q_idx' v-for='(q, q_idx) in queries'>
+                <a @click='query = q_idx' class="cursor-pointer list-group-item list-group-item-action" v-text='q.query'></a>
+            </div>
+        </div>
+    </div>
     <div v-else class='card-body'>
         <div class='row'>
             <div class="d-flex justify-content-center mb-4">
                 <div class="btn-list">
                     <div class="btn-group" role="group">
-                        <input v-model='mode' type="radio" class="btn-check" name="btn-radio-toolbar" value='point'>
+                        <input v-model='mode' type="radio" class="btn-check" name="geom-toolbar" value='point'>
                         <label @click='mode="point"' class="btn btn-icon px-3">
                             <PointIcon/> Points
                         </label>
-                        <input v-model='mode' type="radio" class="btn-check" name="btn-radio-toolbar" value='line'>
+                        <input v-model='mode' type="radio" class="btn-check" name="geom-toolbar" value='line'>
                         <label @click='mode="line"' class="btn btn-icon px-3">
                             <LineIcon/> Lines
                         </label>
-                        <input v-model='mode' type="radio" class="btn-check" name="btn-radio-toolbar" value='polygon'>
+                        <input v-model='mode' type="radio" class="btn-check" name="geom-toolbar" value='polygon'>
                         <label @click='mode="polygon"' class="btn btn-icon px-3">
                             <PolygonIcon/> Polygons
                         </label>
@@ -123,9 +151,11 @@ import {
     TablerInput
 } from '@tak-ps/vue-tabler'
 import {
+    AbcIcon,
     PointIcon,
     LineIcon,
-    PolygonIcon
+    PolygonIcon,
+    CodeIcon
 } from 'vue-tabler-icons'
 
 export default {
@@ -149,8 +179,11 @@ export default {
     },
     data: function() {
         return {
+            type: 'basic',
             mode: 'point',
             global_enabled: null,
+            query: null,
+            queries: [],
             filters: {
                 point: {
                     color: 'red',
@@ -254,7 +287,9 @@ export default {
         TablerInput,
         PointIcon,
         LineIcon,
-        PolygonIcon
+        PolygonIcon,
+        CodeIcon,
+        AbcIcon,
     }
 }
 </script>
