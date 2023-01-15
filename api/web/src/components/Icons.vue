@@ -41,7 +41,20 @@
                         label='Icons'
                         @create='$router.push("/layer/new")'
                     />
-                    <div :key='layer.id' v-for='layer in list.icons' class="col-lg-12">
+                    <div :key='icon.id' v-for='icon in list.icons' class="col-sm-6 col-lg-4">
+                        <div class="card card-sm">
+                            <a href="#" class="d-block">
+                                <img src="/icon/${icon.file}" class="card-img-top">
+                            </a>
+                            <div class="card-body">
+                                <div class="d-flex align-items-center">
+                                    <div>
+                                        <div v-text='icon.name'></div>
+                                        <div class="text-muted" v-text='icon.id'></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </template>
             </div>
