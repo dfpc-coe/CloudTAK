@@ -14,6 +14,7 @@ export default async function router(schema, config) {
         iconset.push({
             id: icon.id._text,
             name: icon.displayName._text,
+            file: path.parse(icon.filePath._text).base,
             parent: icon.parentID._text,
             children: (icon.childrenIDs && Array.isArray(icon.childrenIDs.id)) ? icon.childrenIDs.id.map((id) => {
                 return id._text;
