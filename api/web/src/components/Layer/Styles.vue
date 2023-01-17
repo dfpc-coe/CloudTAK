@@ -37,7 +37,7 @@
                                 <button @click='help("query")' class='btn'>
                                     <HelpIcon/>
                                 </button>
-                                <button @click='newQuery' class='btn'>
+                                <button v-if='query === null' @click='newQuery' class='btn'>
                                     <PlusIcon/>
                                 </button>
                             </template>
