@@ -51,7 +51,7 @@
                             <div class='d-flex'>
                                 <div class='align-self-center' v-text='q.query'></div>
                                 <div class='ms-auto'>
-                                    <div class='btn'><TrashIcon @click='removeQuery(idx)'/></div>
+                                    <div @click.stop='removeQuery(idx)' class='btn'><TrashIcon/></div>
                                 </div>
                             </div>
                         </div>
