@@ -49,7 +49,7 @@
                     <div :key='q_idx' v-for='(q, q_idx) in queries'>
                         <div @click='openQuery(q_idx)' class="cursor-pointer list-group-item list-group-item-action">
                             <div class='d-flex'>
-                                <div v-text='q.query'/>
+                                <div class='align-self-center' v-text='q.query'></div>
                                 <div class='ms-auto'>
                                     <div class='btn'><TrashIcon @click='removeQuery(idx)'/></div>
                                 </div>
@@ -155,7 +155,7 @@ export default {
 
             if (this.query.id !== undefined) {
                 delete this.query.id;
-                this.queries[this.query.id] = this.query;
+                this.queries.splice(this.query.id, 1, this.query);
             } else {
                 this.queries.push(this.query);
             }
