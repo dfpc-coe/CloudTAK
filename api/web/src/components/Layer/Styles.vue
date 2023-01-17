@@ -32,7 +32,7 @@
             <div class='col-md-4'>
                 <div class='d-flex'>
                     <div class='ms-auto'>
-                        <button v-if='mode === "query"' @click='query = {}' class='btn'>New Query</button>
+                        <button v-if='mode === "query"' @click='newQuery' class='btn'>New Query</button>
                     </div>
                 </div>
             </div>
@@ -53,13 +53,19 @@
             </div>
         </template>
         <template v-else-if='query === null && !queries.length'>
-            <None label='Query' @create='query = {}'/>
+            <None label='Query' @create='newQuery'/>
         </template>
         <template v-else-if='typeof query === "object"'>
             <div class='card-body'>
                 <TablerInput v-model='query.query' placeholder='JSONata Query' label='JSONata Query'/>
 
-                <StylesSingle v-model='query'/>
+                <StylesSingle v-model='query.style'/>
+
+                <div class='d-flex'>
+                    <div class='ms-auto'>
+                        <div @click='saveQuery' class='btn btn-primary'>Save Query</div>
+                    </div>
+                </div>
             </div>
         </template>
     </template>
@@ -119,6 +125,18 @@ export default {
         if (this.modelValue.queries) this.queries = this.modelValue.queries;
         else this.basic = this.modelValue;
 
+    },
+    methods: {
+        newQuery: function() {
+            this.query = {
+                query: '',
+                styles: {}
+            }
+        },
+        saveQuery: function() {
+            this.queries.push(this.query);
+            this.query = null;
+        }
     },
     components: {
         None,
