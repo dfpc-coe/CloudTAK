@@ -32,7 +32,16 @@
             <div class='col-md-4'>
                 <div class='d-flex'>
                     <div class='ms-auto'>
-                        <button v-if='mode === "query"' @click='newQuery' class='btn'>New Query</button>
+                        <div class='btn-list'>
+                            <template v-if='mode === "query"'>
+                                <button @click='help("query")' class='btn'>
+                                    <HelpIcon/>
+                                </button>
+                                <button @click='newQuery' class='btn'>
+                                    <PlusIcon/>
+                                </button>
+                            </template>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -88,6 +97,8 @@ import jsonata from 'jsonata';
 import {
     AbcIcon,
     CodeIcon,
+    PlusIcon,
+    HelpIcon,
     TrashIcon
 } from 'vue-tabler-icons'
 import {
@@ -140,6 +151,11 @@ export default {
 
     },
     methods: {
+        help: function(topic) {
+            if (topic === "query") {
+                window.open('http://docs.jsonata.org/simple', '_blank');
+            }
+        },
         newQuery: function() {
             this.query = {
                 query: '',
@@ -179,6 +195,8 @@ export default {
         None,
         CodeIcon,
         AbcIcon,
+        PlusIcon,
+        HelpIcon,
         StylesSingle,
         TablerInput,
         TrashIcon
