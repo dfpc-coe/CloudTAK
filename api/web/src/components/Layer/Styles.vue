@@ -47,7 +47,14 @@
             <div class='card-body'>
                 <div class="list-group list-group-flush">
                     <div :key='q_idx' v-for='(q, q_idx) in queries'>
-                        <a @click='query = q_idx' class="cursor-pointer list-group-item list-group-item-action" v-text='q.query'></a>
+                        <div @click='openQuery(q_idx)' class="cursor-pointer list-group-item list-group-item-action">
+                            <div class='d-flex'>
+                                <div v-text='q.query'/>
+                                <div class='ms-auto'>
+                                    <div class='btn'><TrashIcon @click='removeQuery(idx)'/></div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -78,7 +85,8 @@
 <script>
 import {
     AbcIcon,
-    CodeIcon
+    CodeIcon,
+    TrashIcon
 } from 'vue-tabler-icons'
 import {
     TablerInput
@@ -87,7 +95,7 @@ import StylesSingle from './Styles/Single.vue';
 import None from '../cards/None.vue';
 
 export default {
-    name: 'StyleUtil',
+    name: 'LayerStyles',
     props: {
         modelValue: {
             type: Object,
@@ -134,8 +142,23 @@ export default {
             }
         },
         saveQuery: function() {
-            this.queries.push(this.query);
+            if (this.query.id !== undefined) {
+                delete this.query.id;
+                this.queries[this.query.id] = this.query;
+            } else {
+                this.queries.push(this.query);
+            }
+
             this.query = null;
+        },
+        removeQuery: function(idx) {
+            this.queries.splice(idx, 1);
+        },
+        openQuery: function(idx) {
+            this.query = {
+                id: idx,
+                ...this.queries[idx]
+            };
         }
     },
     components: {
@@ -143,7 +166,8 @@ export default {
         CodeIcon,
         AbcIcon,
         StylesSingle,
-        TablerInput
+        TablerInput,
+        TrashIcon
     }
 }
 </script>
