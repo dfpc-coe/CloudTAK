@@ -140,6 +140,7 @@ export default {
             this.loading.layer = true;
 
             const layer = await window.std(`/api/layer/${this.$route.params.layerid}`);
+            if (layer.data.stale) layer.data.stale = String(layer.data.stale);
             this.layerdata = {
                 mode: layer.mode,
                 ...layer.data
