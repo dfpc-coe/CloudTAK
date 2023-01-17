@@ -64,7 +64,7 @@
         </template>
         <template v-else-if='typeof query === "object"'>
             <div class='card-body'>
-                <TablerInput v-model='query.query' placeholder='JSONata Query' label='JSONata Query'/>
+                <TablerInput v-model='query.query' placeholder='JSONata Query' label='JSONata Query' :error='errors.query'/>
 
                 <StylesSingle v-model='query.style'/>
 
@@ -83,6 +83,7 @@
 </template>
 
 <script>
+import jsonata from 'jsonata';
 import {
     AbcIcon,
     CodeIcon,
@@ -119,7 +120,10 @@ export default {
             global_enabled: null,
             query: null,
             queries: [],
-            basic: {}
+            basic: {},
+            errors: {
+                query: ''
+            }
         };
     },
     watch: {
@@ -142,6 +146,13 @@ export default {
             }
         },
         saveQuery: function() {
+            try {
+                jsonata(this.query.query);
+            } catch (err) {
+                this.errors.query = err.message;
+                return;
+            }
+
             if (this.query.id !== undefined) {
                 delete this.query.id;
                 this.queries[this.query.id] = this.query;
