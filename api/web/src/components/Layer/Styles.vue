@@ -69,6 +69,7 @@
                 <StylesSingle v-model='query.style'/>
 
                 <div class='d-flex'>
+                    <div @click='query = null' class='btn'>Cancel</div>
                     <div class='ms-auto'>
                         <div @click='saveQuery' class='btn btn-primary'>Save Query</div>
                     </div>
@@ -151,6 +152,8 @@ export default {
             } catch (err) {
                 this.errors.query = err.message;
                 return;
+            } finally {
+                this.errors.query = '';
             }
 
             if (this.query.id !== undefined) {
