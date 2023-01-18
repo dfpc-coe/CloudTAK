@@ -207,31 +207,37 @@ export default async function router(schema, config) {
 
             const conn = await config.conns.get(layer.data.connection);
 
-            for (const feature of req.body.features) {
-                if (layer.data.stale) {
-                    feature.properties.stale =  layer.data.stale;
-                }
+            if (req.headers['content-type'] === 'application/json') {
+                for (const feature of req.body.features) {
+                    if (layer.data.stale) {
+                        feature.properties.stale =  layer.data.stale;
+                    }
 
-                if (layer.enabled_styles) {
-                    if (layer.styles.queries) {
-                        for (const q of layer.styles.queries) {
-                            const expression = jsonata(q.query);
-                            const result = await expression.evaluate(feature);
+                    if (layer.enabled_styles) {
+                        if (layer.styles.queries) {
+                            for (const q of layer.styles.queries) {
+                                const expression = jsonata(q.query);
+                                const result = await expression.evaluate(feature);
 
-                            console.error(result);
+                                console.error(result);
+                            }
+                        }
+
+                        if (feature.geometry.type === 'Point' && layer.styles.point) {
+                            Object.assign(feature.properties, layer.styles.point);
+                        } else if (feature.geometry.type === 'LineString' && layer.styles.line) {
+                            Object.assign(feature.properties, layer.styles.line);
+                        } else if (feature.geometry.type === 'Polygon' && layer.styles.polygon) {
+                            Object.assign(feature.properties, layer.styles.polygon);
                         }
                     }
 
-                    if (feature.geometry.type === 'Point' && layer.styles.point) {
-                        Object.assign(feature.properties, layer.styles.point);
-                    } else if (feature.geometry.type === 'LineString' && layer.styles.line) {
-                        Object.assign(feature.properties, layer.styles.line);
-                    } else if (feature.geometry.type === 'Polygon' && layer.styles.polygon) {
-                        Object.assign(feature.properties, layer.styles.polygon);
-                    }
+                    conn.tak.write(COT.from_geojson(feature));
                 }
-
-                conn.tak.write(COT.from_geojson(feature));
+            } else if (req.headers['content-type'] === 'application/xml') {
+                conn.tak.write(new COT(req.body));
+            } else {
+                throw new Err(400, null, 'Unsupported Content-Type');
             }
 
             res.json({
