@@ -5,13 +5,61 @@
     "additionalProperties": false,
     "properties": {
         "point": {
-            "type": "object"
+            "type": "object",
+            "properties": {
+                "color": {
+                    "type": "string"
+                },
+                "remarks": {
+                    "type": "string"
+                }
+            }
         },
         "line": {
-            "type": "object"
+            "type": "object",
+            "properties": {
+                "stroke": {
+                    "type": "string"
+                },
+                "stroke-style": {
+                    "type": "string"
+                },
+                "stroke-opacity": {
+                    "type": "integer"
+                },
+                "stroke-width": {
+                    "type": "integer"
+                },
+                "remarks": {
+                    "type": "string"
+                }
+            }
         },
         "polygon": {
-            "type": "object"
+            "type": "object",
+            "properties": {
+                "stroke": {
+                    "type": "string"
+                },
+                "stroke-style": {
+                    "type": "string"
+                },
+                "stroke-opacity": {
+                    "type": "integer"
+                },
+                "stroke-width": {
+                    "type": "integer"
+                },
+                "fill": {
+                    "type": "string"
+                },
+                "fill-opacity": {
+                    "type": "integer"
+                },
+                "remarks": {
+                    "type": "string"
+                }
+            }
         }
     }
 }
