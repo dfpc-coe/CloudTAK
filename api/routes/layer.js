@@ -8,7 +8,6 @@ import { sql } from 'slonik';
 import Auth from '../lib/auth.js';
 import Lambda from '../lib/aws/lambda.js';
 import CloudFormation from '../lib/aws/cloudformation.js';
-import jsonata from 'jsonata';
 import Style from '../lib/style.js';
 
 export default async function router(schema, config) {
@@ -212,7 +211,7 @@ export default async function router(schema, config) {
 
             if (req.headers['content-type'] === 'application/json') {
                 for (const feature of req.body.features) {
-                    conn.tak.write(COT.from_geojson(style.feat(feature)));
+                    conn.tak.write(COT.from_geojson(await style.feat(feature)));
                 }
             } else if (req.headers['content-type'] === 'application/xml') {
                 conn.tak.write(new COT(req.body));
