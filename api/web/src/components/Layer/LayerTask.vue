@@ -11,6 +11,17 @@
         <template v-if='loading'>
             <TablerLoading/>
         </template>
+        <template v-else-if='error'>
+            <div class="text-center py-4">
+                <AlertCircleIcon height='48' width='48'/>
+                <h3 class='pt-3'>AWS Cloudformation Error</h3>
+                <div class="text-muted" v-text='error.message'></div>
+
+                <div class="d-flex justify-content-center my-3">
+                    <div @click='fetch' class='btn btn-secondary'>Refresh</div>
+                </div>
+            </div>
+        </template>
         <template v-else-if='stack.status === "destroyed"'>
             <div class="d-flex justify-content-center mb-4">
                 Stack Hasn't Deployed
@@ -31,13 +42,15 @@ import {
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import {
-    RefreshIcon
+    RefreshIcon,
+    AlertCircleIcon
 } from 'vue-tabler-icons';
 
 export default {
     name: 'LayerTask',
     data: function() {
         return {
+            error: false,
             loading: true,
             stack: {}
         };
@@ -48,7 +61,13 @@ export default {
     methods: {
         fetch: async function() {
             this.loading = true;
-            this.stack = await window.std(`/api/layer/${this.$route.params.layerid}/task`);
+            this.error = false;
+
+            try {
+                this.stack = await window.std(`/api/layer/${this.$route.params.layerid}/task`);
+            } catch (err) {
+                this.error = err;
+            }
             this.loading = false;
         },
         postStack: async function() {
@@ -61,7 +80,8 @@ export default {
     },
     components: {
         RefreshIcon,
-        TablerLoading
+        TablerLoading,
+        AlertCircleIcon
     }
 }
 </script>

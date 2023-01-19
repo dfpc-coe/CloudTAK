@@ -80,7 +80,7 @@
                 <div class='d-flex'>
                     <div @click='query = null' class='btn'>Cancel</div>
                     <div class='ms-auto'>
-                        <div @click='saveQuery' class='btn btn-primary'>Save Query</div>
+                        <div v-if='!disabled' @click='saveQuery' class='btn btn-primary'>Save Query</div>
                     </div>
                 </div>
             </div>
