@@ -3,11 +3,6 @@
     "$comment": "jsonb",
     "description": "",
     "additionalProperties": false,
-    "oneOf": [{
-        "required": []
-    },{
-        "required": ["queries"]
-    }],
     "properties": {
         "point": {
             "type": "object",
@@ -71,7 +66,8 @@
             "items": {
                 "type": "object",
                 "required": [
-                    "query"
+                    "query",
+                    "styles"
                 ],
                 "additionalProperties": false,
                 "properties": {
