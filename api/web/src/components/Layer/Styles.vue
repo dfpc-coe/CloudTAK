@@ -164,9 +164,13 @@ export default {
     mounted: function() {
         this.global_enabled = this.enabled;
 
-        if (this.modelValue.queries) this.queries = this.modelValue.queries;
-        else this.basic = this.modelValue;
-
+        if (this.modelValue.queries) {
+            this.queries = this.modelValue.queries;
+            this.mode = 'query';
+        } else {
+            this.basic = this.modelValue;
+            this.mode = 'basic';
+        }
     },
     methods: {
         help: function(topic) {
