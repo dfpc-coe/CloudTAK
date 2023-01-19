@@ -60,7 +60,7 @@
                             <div class='d-flex'>
                                 <div class='align-self-center' v-text='q.query'></div>
                                 <div class='ms-auto'>
-                                    <div @click.stop='removeQuery(idx)' class='btn'><TrashIcon/></div>
+                                    <div v-if='!disabled' @click.stop='removeQuery(idx)' class='btn'><TrashIcon/></div>
                                 </div>
                             </div>
                         </div>
@@ -73,7 +73,7 @@
         </template>
         <template v-else-if='typeof query === "object"'>
             <div class='card-body'>
-                <TablerInput v-model='query.query' placeholder='JSONata Query' label='JSONata Query' :error='errors.query'/>
+                <TablerInput :disabled='disabled' v-model='query.query' placeholder='JSONata Query' label='JSONata Query' :error='errors.query'/>
 
                 <StylesSingle :disabled='disabled' v-model='query.styles'/>
 

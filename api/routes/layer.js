@@ -42,6 +42,18 @@ export default async function router(schema, config) {
             const data = req.body.data;
             delete req.body.data;
 
+            if (req.body.styles.queries) {
+                req.body.styles = {
+                    queries: req.body.styles.queries
+                };
+            } else {
+                req.body.styles = {
+                    point: req.body.styles.point,
+                    line: req.body.styles.line,
+                    polygon: req.body.styles.polygon
+                };
+            }
+
             let layer = await Layer.generate(config.pool, req.body);
 
             if (layer.mode === 'live') {
@@ -86,6 +98,18 @@ export default async function router(schema, config) {
 
             const data = req.body.data;
             delete req.body.data;
+
+            if (req.body.styles && req.body.styles.queries) {
+                req.body.styles = {
+                    queries: req.body.styles.queries
+                };
+            } else if (req.body.styles) {
+                req.body.styles = {
+                    point: req.body.styles.point,
+                    line: req.body.styles.line,
+                    polygon: req.body.styles.polygon
+                };
+            }
 
             let layer = Object.keys(req.body).length > 0
                 ?  await Layer.commit(config.pool, req.params.layerid, {
