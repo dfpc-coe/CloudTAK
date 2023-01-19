@@ -33,7 +33,7 @@
                 <div class='d-flex'>
                     <div class='ms-auto'>
                         <div class='btn-list'>
-                            <template v-if='mode === "query"'>
+                            <template v-if='mode === "query" && !disabled'>
                                 <button @click='help("query")' class='btn'>
                                     <HelpIcon/>
                                 </button>
@@ -69,7 +69,7 @@
             </div>
         </template>
         <template v-else-if='query === null && !queries.length'>
-            <None label='Query' @create='newQuery'/>
+            <None label='Query' :create='!disabled' @create='newQuery'/>
         </template>
         <template v-else-if='typeof query === "object"'>
             <div class='card-body'>
