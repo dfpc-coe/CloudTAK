@@ -8,7 +8,7 @@ import { sql } from 'slonik';
 import Auth from '../lib/auth.js';
 import Lambda from '../lib/aws/lambda.js';
 import CloudFormation from '../lib/aws/cloudformation.js';
-import jsonata from 'jsonata';
+import Style from '../lib/style.js';
 
 export default async function router(schema, config) {
     await schema.get('/layer', {
@@ -41,6 +41,18 @@ export default async function router(schema, config) {
 
             const data = req.body.data;
             delete req.body.data;
+
+            if (req.body.styles.queries) {
+                req.body.styles = {
+                    queries: req.body.styles.queries
+                };
+            } else {
+                req.body.styles = {
+                    point: req.body.styles.point,
+                    line: req.body.styles.line,
+                    polygon: req.body.styles.polygon
+                };
+            }
 
             let layer = await Layer.generate(config.pool, req.body);
 
@@ -86,6 +98,18 @@ export default async function router(schema, config) {
 
             const data = req.body.data;
             delete req.body.data;
+
+            if (req.body.styles && req.body.styles.queries) {
+                req.body.styles = {
+                    queries: req.body.styles.queries
+                };
+            } else if (req.body.styles) {
+                req.body.styles = {
+                    point: req.body.styles.point,
+                    line: req.body.styles.line,
+                    polygon: req.body.styles.polygon
+                };
+            }
 
             let layer = Object.keys(req.body).length > 0
                 ?  await Layer.commit(config.pool, req.params.layerid, {
@@ -207,31 +231,16 @@ export default async function router(schema, config) {
 
             const conn = await config.conns.get(layer.data.connection);
 
-            for (const feature of req.body.features) {
-                if (layer.data.stale) {
-                    feature.properties.stale =  layer.data.stale;
+            const style = new Style(layer);
+
+            if (req.headers['content-type'] === 'application/json') {
+                for (const feature of req.body.features) {
+                    conn.tak.write(COT.from_geojson(await style.feat(feature)));
                 }
-
-                if (layer.enabled_styles) {
-                    if (layer.styles.queries) {
-                        for (const q of layer.styles.queries) {
-                            const expression = jsonata(q.query);
-                            const result = await expression.evaluate(feature);
-
-                            console.error(result);
-                        }
-                    }
-
-                    if (feature.geometry.type === 'Point' && layer.styles.point) {
-                        Object.assign(feature.properties, layer.styles.point);
-                    } else if (feature.geometry.type === 'LineString' && layer.styles.line) {
-                        Object.assign(feature.properties, layer.styles.line);
-                    } else if (feature.geometry.type === 'Polygon' && layer.styles.polygon) {
-                        Object.assign(feature.properties, layer.styles.polygon);
-                    }
-                }
-
-                conn.tak.write(COT.from_geojson(feature));
+            } else if (req.headers['content-type'] === 'application/xml') {
+                conn.tak.write(new COT(req.body));
+            } else {
+                throw new Err(400, null, 'Unsupported Content-Type');
             }
 
             res.json({

@@ -1,14 +1,49 @@
 <template>
 <div class='card'>
     <div class='card-header'>
-        <h3 class='card-title'>Style Overrides</h3>
-
-        <div class='ms-auto'>
-            <div class='d-flex'>
-                <span class='px-2'>Enabled</span>
-                <label class="form-check form-switch">
-                    <input :disabled='disabled' v-model='global_enabled' class="form-check-input" type="checkbox">
-                </label>
+        <div class='row row-cards'>
+            <div class='col-md-4'>
+                <h3 class='card-title'>Style Overrides</h3>
+                <div class='ms-auto'>
+                    <div class='d-flex my-2'>
+                        <span class='px-2'>Enabled</span>
+                        <label class="form-check form-switch">
+                            <input :disabled='disabled' v-model='global_enabled' class="form-check-input" type="checkbox">
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class='col-md-4'>
+                <div v-if='global_enabled' class="d-flex justify-content-center">
+                    <div class="btn-list">
+                        <div class="btn-group" role="group">
+                            <input v-model='mode' type="radio" class="btn-check" name="type-toolbar" value='basic'>
+                            <label @click='mode="basic"' class="btn btn-icon px-3">
+                                <AbcIcon/> Basic
+                            </label>
+                            <input v-model='mode' type="radio" class="btn-check" name="type-toolbar" value='query'>
+                            <label @click='mode="query"' class="btn btn-icon px-3">
+                                <CodeIcon/> Query
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class='col-md-4'>
+                <div class='d-flex'>
+                    <div class='ms-auto'>
+                        <div class='btn-list'>
+                            <template v-if='mode === "query" && !disabled'>
+                                <button @click='help("query")' class='btn'>
+                                    <HelpIcon/>
+                                </button>
+                                <button v-if='query === null' @click='newQuery' class='btn'>
+                                    <PlusIcon/>
+                                </button>
+                            </template>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -16,120 +51,64 @@
     <div v-if='!global_enabled' class='card-body'>
         Style Overrides are disabled
     </div>
-    <div v-else class='card-body'>
-        <div class='row'>
-            <div class="d-flex justify-content-center mb-4">
-                <div class="btn-list">
-                    <div class="btn-group" role="group">
-                        <input v-model='mode' type="radio" class="btn-check" name="btn-radio-toolbar" value='point'>
-                        <label @click='mode="point"' class="btn btn-icon px-3">
-                            <PointIcon/> Points
-                        </label>
-                        <input v-model='mode' type="radio" class="btn-check" name="btn-radio-toolbar" value='line'>
-                        <label @click='mode="line"' class="btn btn-icon px-3">
-                            <LineIcon/> Lines
-                        </label>
-                        <input v-model='mode' type="radio" class="btn-check" name="btn-radio-toolbar" value='polygon'>
-                        <label @click='mode="polygon"' class="btn btn-icon px-3">
-                            <PolygonIcon/> Polygons
-                        </label>
+    <template v-else-if='mode === "query"'>
+        <template v-if='query === null && queries.length'>
+            <div class='card-body'>
+                <div class="list-group list-group-flush">
+                    <div :key='q_idx' v-for='(q, q_idx) in queries'>
+                        <div @click='openQuery(q_idx)' class="cursor-pointer list-group-item list-group-item-action">
+                            <div class='d-flex'>
+                                <div class='align-self-center' v-text='q.query'></div>
+                                <div class='ms-auto'>
+                                    <div v-if='!disabled' @click.stop='removeQuery(idx)' class='btn'><TrashIcon/></div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
+        </template>
+        <template v-else-if='query === null && !queries.length'>
+            <None label='Query' :create='!disabled' @create='newQuery'/>
+        </template>
+        <template v-else-if='typeof query === "object"'>
+            <div class='card-body'>
+                <TablerInput :disabled='disabled' v-model='query.query' placeholder='JSONata Query' label='JSONata Query' :error='errors.query'/>
 
-            <div v-if='filters[mode].color !== undefined' class='col-md-6 mb-3'>
-                <label class="form-label">Point Color</label>
-                <div class="row g-2">
-                    <div :key='color' v-for='color in [
-                        "dark", "white", "blue", "azure", "indigo", "purple", "pink", "red", "orange", "yellow", "lime"
-                    ]'
-                    class="col-auto">
-                        <label class="form-colorinput">
-                            <input :disabled='disabled' v-model='filters[mode].color' :value='color' type="radio" class="form-colorinput-input">
-                            <span class="form-colorinput-color bg-dark" :class='[
-                                `bg-${color}`
-                            ]'></span>
-                        </label>
+                <StylesSingle :disabled='disabled' v-model='query.styles'/>
+
+                <div class='d-flex'>
+                    <div @click='query = null' class='btn'>Cancel</div>
+                    <div class='ms-auto'>
+                        <div v-if='!disabled' @click='saveQuery' class='btn btn-primary'>Save Query</div>
                     </div>
                 </div>
             </div>
-
-            <div v-if='filters[mode].stroke !== undefined' class='col-md-6 mb-3'>
-                <label class="form-label">Line Color</label>
-                <div class="row g-2">
-                    <div :key='color' v-for='color in [
-                        "dark", "white", "blue", "azure", "indigo", "purple", "pink", "red", "orange", "yellow", "lime"
-                    ]'
-                    class="col-auto">
-                        <label class="form-colorinput">
-                            <input :disabled='disabled' v-model='filters[mode].stroke' :value='color' type="radio" class="form-colorinput-input">
-                            <span class="form-colorinput-color bg-dark" :class='[
-                                `bg-${color}`
-                            ]'></span>
-                        </label>
-                    </div>
-                </div>
-            </div>
-
-            <div v-if='filters[mode]["stroke-style"] !== undefined' class='col-md-6 mb-3'>
-                <label class="form-label">Line Style</label>
-                <select :disabled='disabled' v-model='filters[mode]["stroke-style"]' class="form-select">
-                    <option value="solid">Solid</option>
-                    <option value="dashed">Dashed</option>
-                    <option value="dotted">Dotted</option>
-                    <option value="outlined">Outlined</option>
-                </select>
-            </div>
-            <div v-if='filters[mode]["stroke-width"] !== undefined' class='col-md-6 mb-3'>
-                <label class="form-label">Line Thickness</label>
-                <input :disabled='disabled' v-model='filters[mode]["stroke-width"]' type="range" class="form-range mb-2" min="1" max="6" step="1">
-            </div>
-            <div v-if='filters[mode]["stroke-opacity"] !== undefined' class='col-md-6 mb-3'>
-                <label class="form-label">Line Opacity</label>
-                <input :disabled='disabled' v-model='filters[mode]["stroke-opacity"]' type="range" class="form-range mb-2" min="0" max="256" step="1">
-            </div>
-
-            <div v-if='filters[mode].fill !== undefined' class='col-md-6 mb-3'>
-                <label class="form-label">Fill Color</label>
-                <div class="row g-2">
-                    <div :key='color' v-for='color in [
-                        "dark", "white", "blue", "azure", "indigo", "purple", "pink", "red", "orange", "yellow", "lime"
-                    ]'
-                    class="col-auto">
-                        <label class="form-colorinput">
-                            <input :disabled='disabled' v-model='filters[mode].fill' :value='color' type="radio" class="form-colorinput-input">
-                            <span class="form-colorinput-color bg-dark" :class='[
-                                `bg-${color}`
-                            ]'></span>
-                        </label>
-                    </div>
-                </div>
-            </div>
-            <div v-if='filters[mode]["fill-opacity"] !== undefined' class='col-md-6 mb-3'>
-                <label class="form-label">Fill Opacity</label>
-                <input :disabled='disabled' v-model='filters[mode]["fill-opacity"]' type="range" class="form-range mb-2" min="0" max="256" step="1">
-            </div>
-
-            <div class='col-md-12'>
-                <TablerInput :disabled='disabled' v-model='filters[mode].remarks' label='Remarks'/>
-            </div>
-        </div>
-    </div>
+        </template>
+    </template>
+    <template v-else>
+        <StylesSingle :disabled='disabled' v-model='basic'/>
+    </template>
 </div>
 </template>
 
 <script>
+import jsonata from 'jsonata';
+import {
+    AbcIcon,
+    CodeIcon,
+    PlusIcon,
+    HelpIcon,
+    TrashIcon
+} from 'vue-tabler-icons'
 import {
     TablerInput
-} from '@tak-ps/vue-tabler'
-import {
-    PointIcon,
-    LineIcon,
-    PolygonIcon
-} from 'vue-tabler-icons'
+} from '@tak-ps/vue-tabler';
+import StylesSingle from './Styles/Single.vue';
+import None from '../cards/None.vue';
 
 export default {
-    name: 'StyleUtil',
+    name: 'LayerStyles',
     props: {
         modelValue: {
             type: Object,
@@ -149,29 +128,13 @@ export default {
     },
     data: function() {
         return {
-            mode: 'point',
+            mode: 'basic',
             global_enabled: null,
-            filters: {
-                point: {
-                    color: 'red',
-                    remarks: ''
-                },
-                line: {
-                    stroke: 'red',
-                    'stroke-style': 'solid',
-                    'stroke-opacity': 256,
-                    'stroke-width': 3,
-                    remarks: ''
-                },
-                polygon: {
-                    stroke: 'red',
-                    'stroke-style': 'solid',
-                    'stroke-opacity': 256,
-                    'stroke-width': 3,
-                    'fill': 'red',
-                    'fill-opacity': 256,
-                    remarks: ''
-                }
+            query: null,
+            queries: [],
+            basic: {},
+            errors: {
+                query: ''
             }
         };
     },
@@ -179,82 +142,86 @@ export default {
         global_enabled: function() {
             this.$emit('enabled', this.global_enabled);
         },
-        filters: {
+        basic: {
             deep: true,
             handler: function() {
-                this.format();
+                if (this.mode === 'basic') {
+                    this.$emit('update:modelValue', this.basic);
+}
+            }
+        },
+        queries: {
+            deep: true,
+            handler: function() {
+                if (this.mode === 'query') {
+                    this.$emit('update:modelValue', {
+                        queries: this.queries
+                    });
+                }
             }
         }
     },
     mounted: function() {
         this.global_enabled = this.enabled;
 
-        for (const key in this.modelValue) {
-            const style = JSON.parse(JSON.stringify(this.modelValue[key]));
-
-            const colors = {
-                '#1d273b': 'dark',
-                '#ffffff': 'white',
-                '#206bc4': 'blue',
-                '#4299e1': 'azure',
-                '#4263eb': 'indigo',
-                '#ae3ec9': 'purple',
-                '#d6336c': 'pink',
-                '#d63939': 'red',
-                '#f76707': 'orange',
-                '#f59f00': 'yellow',
-                '#74b816': 'lime'
-            };
-
-            for (const color of ['color', 'stroke', 'fill']) {
-                if (style[color]) style[color] = colors[style[color]];
-            }
-
-            Object.assign(this.filters[key], style);
-
-            this.format();
+        if (this.modelValue.queries) {
+            this.queries = this.modelValue.queries;
+            this.mode = 'query';
+        } else {
+            this.basic = this.modelValue;
+            this.mode = 'basic';
         }
     },
     methods: {
-        format: function() {
-            const styles = JSON.parse(JSON.stringify(this.filters));
-            if (styles) {
-                const colors = {
-                    dark: '#1d273b',
-                    white: '#ffffff',
-                    blue: '#206bc4',
-                    azure: '#4299e1',
-                    indigo: '#4263eb',
-                    purple: '#ae3ec9',
-                    pink: '#d6336c',
-                    red: '#d63939',
-                    orange: '#f76707',
-                    yellow: '#f59f00',
-                    lime: '#74b816'
-                };
-
-                for (const key in styles) {
-                    for (const intkey of ['fill-opacity', 'stroke-width', 'stroke-opacity']) {
-                        if (styles[key][intkey]) styles[key][intkey] = parseInt(styles[key][intkey])
-                    }
-
-                    for (const color of ['color', 'stroke', 'fill']) {
-                        if (styles[key][color]) {
-                            styles[key][color] = colors[styles[key][color]];
-                        }
-                    }
-                }
+        help: function(topic) {
+            if (topic === "query") {
+                window.open('http://docs.jsonata.org/simple', '_blank');
+            }
+        },
+        newQuery: function() {
+            this.query = {
+                query: '',
+                styles: {}
+            }
+        },
+        saveQuery: function() {
+            try {
+                jsonata(this.query.query);
+            } catch (err) {
+                this.errors.query = err.message;
+                return;
+            } finally {
+                this.errors.query = '';
             }
 
+            if (this.query.id !== undefined) {
+                delete this.query.id;
+                this.queries.splice(this.query.id, 1, this.query);
+            } else {
+                this.queries.push(this.query);
+            }
 
-            this.$emit('update:modelValue', styles);
+            this.query = null;
+        },
+        removeQuery: function(idx) {
+            this.queries.splice(idx, 1);
+        },
+        openQuery: function(idx) {
+            this.query = {
+                id: idx,
+                ...this.queries[idx]
+            };
         }
     },
     components: {
+        None,
+        CodeIcon,
+        AbcIcon,
+        PlusIcon,
+        HelpIcon,
+        StylesSingle,
         TablerInput,
-        PointIcon,
-        LineIcon,
-        PolygonIcon
+        TrashIcon
     }
 }
 </script>
