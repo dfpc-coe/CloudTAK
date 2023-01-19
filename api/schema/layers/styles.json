@@ -3,63 +3,138 @@
     "$comment": "jsonb",
     "description": "",
     "additionalProperties": false,
-    "properties": {
-        "point": {
-            "type": "object",
-            "properties": {
-                "color": {
-                    "type": "string"
-                },
-                "remarks": {
-                    "type": "string"
+    "oneOf": [{
+        "properties": {
+            "point": {
+                "type": "object",
+                "properties": {
+                    "color": {
+                        "type": "string"
+                    },
+                    "remarks": {
+                        "type": "string"
+                    }
                 }
-            }
-        },
-        "line": {
-            "type": "object",
-            "properties": {
-                "stroke": {
-                    "type": "string"
-                },
-                "stroke-style": {
-                    "type": "string"
-                },
-                "stroke-opacity": {
-                    "type": "integer"
-                },
-                "stroke-width": {
-                    "type": "integer"
-                },
-                "remarks": {
-                    "type": "string"
+            },
+            "line": {
+                "type": "object",
+                "properties": {
+                    "stroke": {
+                        "type": "string"
+                    },
+                    "stroke-style": {
+                        "type": "string"
+                    },
+                    "stroke-opacity": {
+                        "type": "integer"
+                    },
+                    "stroke-width": {
+                        "type": "integer"
+                    },
+                    "remarks": {
+                        "type": "string"
+                    }
                 }
-            }
-        },
-        "polygon": {
-            "type": "object",
-            "properties": {
-                "stroke": {
-                    "type": "string"
-                },
-                "stroke-style": {
-                    "type": "string"
-                },
-                "stroke-opacity": {
-                    "type": "integer"
-                },
-                "stroke-width": {
-                    "type": "integer"
-                },
-                "fill": {
-                    "type": "string"
-                },
-                "fill-opacity": {
-                    "type": "integer"
-                },
-                "remarks": {
-                    "type": "string"
+            },
+            "polygon": {
+                "type": "object",
+                "properties": {
+                    "stroke": {
+                        "type": "string"
+                    },
+                    "stroke-style": {
+                        "type": "string"
+                    },
+                    "stroke-opacity": {
+                        "type": "integer"
+                    },
+                    "stroke-width": {
+                        "type": "integer"
+                    },
+                    "fill": {
+                        "type": "string"
+                    },
+                    "fill-opacity": {
+                        "type": "integer"
+                    },
+                    "remarks": {
+                        "type": "string"
+                    }
                 }
             }
         }
-    }
+    },{
+        "properties": {
+            "queries": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "required": ["query"],
+                    "additionalProperties": false,
+                    "properties": {
+                        "query": {
+                            "type": "string"
+                        },
+                        "point": {
+                            "type": "object",
+                            "properties": {
+                                "color": {
+                                    "type": "string"
+                                },
+                                "remarks": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "line": {
+                            "type": "object",
+                            "properties": {
+                                "stroke": {
+                                    "type": "string"
+                                },
+                                "stroke-style": {
+                                    "type": "string"
+                                },
+                                "stroke-opacity": {
+                                    "type": "integer"
+                                },
+                                "stroke-width": {
+                                    "type": "integer"
+                                },
+                                "remarks": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "polygon": {
+                            "type": "object",
+                            "properties": {
+                                "stroke": {
+                                    "type": "string"
+                                },
+                                "stroke-style": {
+                                    "type": "string"
+                                },
+                                "stroke-opacity": {
+                                    "type": "integer"
+                                },
+                                "stroke-width": {
+                                    "type": "integer"
+                                },
+                                "fill": {
+                                    "type": "string"
+                                },
+                                "fill-opacity": {
+                                    "type": "integer"
+                                },
+                                "remarks": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }]
 }
