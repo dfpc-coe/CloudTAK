@@ -75,7 +75,7 @@
             <div class='card-body'>
                 <TablerInput v-model='query.query' placeholder='JSONata Query' label='JSONata Query' :error='errors.query'/>
 
-                <StylesSingle v-model='query.style'/>
+                <StylesSingle v-model='query.styles'/>
 
                 <div class='d-flex'>
                     <div @click='query = null' class='btn'>Cancel</div>
