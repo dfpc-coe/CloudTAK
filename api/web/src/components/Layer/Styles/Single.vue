@@ -183,9 +183,9 @@ export default {
             }
 
             Object.assign(this.filters[key], style);
-
-            this.format();
         }
+
+        this.format();
     },
     methods: {
         format: function() {
