@@ -120,10 +120,6 @@ export default {
             },
             required: true
         },
-        enabled: {
-            type: Boolean,
-            default: false
-        },
         disabled: {
             type: Boolean,
             default: false

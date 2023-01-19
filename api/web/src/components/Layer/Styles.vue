@@ -75,7 +75,7 @@
             <div class='card-body'>
                 <TablerInput v-model='query.query' placeholder='JSONata Query' label='JSONata Query' :error='errors.query'/>
 
-                <StylesSingle v-model='query.styles'/>
+                <StylesSingle :disabled='disabled' v-model='query.styles'/>
 
                 <div class='d-flex'>
                     <div @click='query = null' class='btn'>Cancel</div>
@@ -87,7 +87,7 @@
         </template>
     </template>
     <template v-else>
-        <StylesSingle v-model='basic'/>
+        <StylesSingle :disabled='disabled' v-model='basic'/>
     </template>
 </div>
 </template>
@@ -141,6 +141,24 @@ export default {
     watch: {
         global_enabled: function() {
             this.$emit('enabled', this.global_enabled);
+        },
+        basic: {
+            deep: true,
+            handler: function() {
+                if (this.mode === 'basic') {
+                    this.$emit('update:modelValue', this.basic);
+}
+            }
+        },
+        queries: {
+            deep: true,
+            handler: function() {
+                if (this.mode === 'query') {
+                    this.$emit('update:modelValue', {
+                        queries: this.queries
+                    });
+                }
+            }
         }
     },
     mounted: function() {
