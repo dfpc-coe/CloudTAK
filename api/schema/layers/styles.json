@@ -1,17 +1,5 @@
 {
     "type": "object",
-    "$comment": "jsonb",
     "description": "",
-    "additionalProperties": false,
-    "properties": {
-        "point": {
-            "type": "object"
-        },
-        "line": {
-            "type": "object"
-        },
-        "polygon": {
-            "type": "object"
-        }
-    }
+    "$comment": "jsonb"
 }
