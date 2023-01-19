@@ -26,7 +26,7 @@
             "$ref": "./layers/mode.json"
         },
         "styles": {
-            "$ref": "./layers/styles.json"
+            "$ref": "./util/styles.json"
         },
         "data": {
             "$ref": "./util/layerdata.json"

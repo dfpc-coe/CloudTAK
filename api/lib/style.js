@@ -6,7 +6,7 @@ import jsonata from 'jsonata';
  *
  * @prop {Layer} layer  Layer object
  */
-export class Style {
+export default class Style {
     constructor(layer) {
         this.layer = layer;
     }
