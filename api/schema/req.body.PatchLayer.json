@@ -27,7 +27,7 @@
             "$ref": "./layers_live/stale.json"
         },
         "styles": {
-            "$ref": "./layers/styles.json"
+            "$ref": "./util/styles.json"
         },
         "data": {
             "$ref": "./util/layerdata.json"

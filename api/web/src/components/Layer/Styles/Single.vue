@@ -222,7 +222,6 @@ export default {
                 }
             }
 
-
             this.$emit('update:modelValue', styles);
         }
     },
