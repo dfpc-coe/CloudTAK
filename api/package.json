@@ -9,7 +9,7 @@
         "lint": "eslint index.js routes/**.js lib/**.js test/**.js",
         "doc": "apidoc -i ./doc",
         "prod": "node index.js",
-        "dev": "StackName=test nodemon -i schema/ -i web/ -i doc/ index.js"
+        "dev": "nodemon -i schema/ -i web/ -i doc/ index.js"
     },
     "repository": {
         "type": "git",

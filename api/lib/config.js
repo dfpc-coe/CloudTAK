@@ -1,8 +1,10 @@
+import AWS from 'aws-sdk';
+
 /**
  * @class
  */
 export default class Config {
-    static env(args = {}) {
+    static async env(args = {}) {
         const config = new Config();
 
         config.silent = args.silent;
@@ -24,21 +26,31 @@ export default class Config {
                 config.API_URL = 'http://localhost:5001';
             } else {
                 if (!process.env.StackName) throw new Error('StackName env must be set');
-                if (!process.env.SigningSecret) throw new Error('SigningSecret env must be set');
                 if (!process.env.TAK_USERNAME) throw new Error('TAK_USERNAME env must be set');
                 if (!process.env.TAK_PASSWORD) throw new Error('TAK_PASSWORD env must be set');
                 if (!process.env.API_URL) throw new Error('API_URL env must be set');
 
                 config.StackName = process.env.StackName;
-                config.SigningSecret = process.env.SigningSecret;
                 config.Username = process.env.TAK_USERNAME;
                 config.Password = process.env.TAK_PASSWORD;
                 config.API_URL = process.env.API_URL;
+
+                config.SigningSecret = await config.fetchSigningSecret();
             }
         } catch (err) {
             throw new Error(err);
         }
 
         return config;
+    }
+
+    async fetchSigningSecret() {
+        const secrets = new AWS.SecretsManager({ region: process.env.AWS_DEFAULT_REGION });
+
+        const secret = await secrets.getSecretValue({
+            SecretId: `${this.StackName}/api/secret`
+        }).promise();
+
+        return secret.SecretString;
     }
 }

@@ -200,7 +200,7 @@ export default class Flight {
      */
     takeoff(test, custom = {}) {
         test('test server takeoff', async (t) => {
-            this.config = Config.env({
+            this.config = await Config.env({
                 silent: true,
                 validate: false,
                 meta: {
