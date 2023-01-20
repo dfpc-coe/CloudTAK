@@ -3,6 +3,7 @@
 *.cert
 *.key
 *.crt
+*.dump
 api/assets/*
 
 # Logs
