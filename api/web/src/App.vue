@@ -122,7 +122,7 @@ export default {
         }
     },
     mounted: async function() {
-        const url = window.stdurl('/');
+        const url = window.stdurl('/api');
         url.protocol = 'ws:';
 
         this.ws = new WebSocket(url);
