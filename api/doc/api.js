@@ -481,7 +481,7 @@
 *
 *
 *
-* @apiSchema {jsonschema=../schema/res.ListTasks.json} apiSuccess
+* @apiSchema {jsonschema=../schema/res.ListTaskVersions.json} apiSuccess
 */
 
 
