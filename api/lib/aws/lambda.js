@@ -24,6 +24,29 @@ export default class Lambda {
                 }
             },
             Resources: {
+                LambdaAlarm: {
+                    Type: 'AWS::CloudWatch::Alarm',
+                    Properties: {
+                        AlarmName: StackName,
+                        ActionsEnabled: true,
+                        OKActions: [],
+                        AlarmActions: [ `arn:aws:sns:us-east-1:126505572887:${config.StackName}-topic` ],
+                        InsufficientDataActions: [],
+                        MetricName: 'Errors',
+                        Namespace: 'AWS/Lambda',
+                        Statistic: 'Maximum',
+                        Dimensions: [{
+                            Name: 'FunctionName',
+                            Value: StackName
+                        }],
+                        Period: 60,
+                        EvaluationPeriods: 1,
+                        DatapointsToAlarm: 1,
+                        Threshold: 0,
+                        ComparisonOperator: 'GreaterThanThreshold',
+                        TreatMissingData: 'missing'
+                    }
+                },
                 ETLFunctionLogs: {
                     Type: 'AWS::Logs::LogGroup',
                     Properties: {
