@@ -52,8 +52,11 @@
                             <SettingsIcon @click='taskmodal = true' width='16' height='16' class='cursor-pointer'/>
                         </div>
                         <div v-else class='ms-auto'>
-                            <RefreshIcon v-if='!newVersion' @click='latestVersion' width='16' height='16' class='cursor-pointer'/>
-                            <span v-else>New Task</span>
+                            <RefreshIcon v-if='!newTaskVersion && !loading.version' @click='latestVersion' width='16' height='16' class='cursor-pointer'/>
+                            <div v-else-if='loading.version' class='d-flex justify-content-center'>
+                                <div class="spinner-border" role="status"></div>
+                            </div>
+                            <span v-else>New Task Version <span v-text='newTaskVersion'/></span>
                         </div>
                     </div>
                     <input :disabled='disabled' v-model='layerdata.task' :class='{
@@ -177,7 +180,10 @@ export default {
         return {
             taskmodal: false,
             environment: [],
-            newTask: false,
+            newTaskVersion: false,
+            loading: {
+                version: false
+            },
             layerdata: {
                 mode: 'live',
                 connection: null,
@@ -240,6 +246,7 @@ export default {
             }
         },
         latestVersion: async function() {
+            this.loading.version = true;
             const match = this.layerdata.task.match(/^(.*)-v([0-9]+\.[0-9]+\.[0-9]+)$/)
             if (!match) return;
             const task = match[1];
@@ -248,8 +255,9 @@ export default {
             const list = await window.std(`/api/task/${task}`);
 
             if (list.versions.indexOf(version) !== 0) {
-                this.newTask = list.versions[0];
+                this.newTaskVersion = list.versions[0];
             }
+            this.loading.version = false;
         }
     },
     components: {
