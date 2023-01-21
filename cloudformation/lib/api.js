@@ -110,6 +110,23 @@ export default {
                         },{
                             Effect: 'Allow',
                             Action: [
+                                'kms:Decrypt',
+                                'kms:GenerateDataKey'
+                            ],
+                            Resource: [cf.getAtt('KMS', 'Arn')]
+                        },{
+                            Effect: 'Allow',
+                            Action: [
+                                'secretsmanager:Describe*',
+                                'secretsmanager:Get*',
+                                'secretsmanager:List*'
+                            ],
+                            Resource: [
+                                cf.join(['arn:aws:secretsmanager:', cf.region, ':', cf.accountId, ':secret:', cf.stackName, '/*'])
+                            ]
+                        },{
+                            Effect: 'Allow',
+                            Action: [
                                 'iam:PassRole'
                             ],
                             Resource: [

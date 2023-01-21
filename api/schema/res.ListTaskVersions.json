@@ -1,0 +1,19 @@
+{
+    "type": "object",
+    "required": [
+        "total",
+        "versions"
+    ],
+    "additionalProperties": false,
+    "properties": {
+        "total": {
+            "type": "integer"
+        },
+        "versions": {
+            "type": "array",
+            "items":  {
+                "type": "string"
+            }
+        }
+    }
+}

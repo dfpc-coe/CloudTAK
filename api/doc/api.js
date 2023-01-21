@@ -468,6 +468,24 @@
 
 
 /**
+* @api {get} /task/:task List Tasks
+* @apiVersion 1.0.0
+* @apiName GET-/task/:task
+* @apiGroup Task
+* @apiPermission user
+*
+* @apidescription
+*   List Version for a specific task
+*
+* @apiParam {string} task param
+*
+*
+*
+* @apiSchema {jsonschema=../schema/res.ListTaskVersions.json} apiSuccess
+*/
+
+
+/**
 * @api {get} /layer/:layerid/task Task Status
 * @apiVersion 1.0.0
 * @apiName GET-/layer/:layerid/task

@@ -200,21 +200,13 @@ export default class Flight {
      */
     takeoff(test, custom = {}) {
         test('test server takeoff', async (t) => {
-            this.config = Config.env({
+            this.config = await Config.env({
                 silent: true,
                 validate: false,
                 meta: {
                     'user::registration': true
                 }
             });
-
-            this.config.sqs = {};
-            for (const sqs of ['queue', 'transform-queue', 'obtain-queue']) {
-                this.config.sqs[sqs] = {
-                    url: 'http://example.com/queue',
-                    arn: 'arn:aws:example'
-                };
-            }
 
             Object.assign(this.config, custom);
 
@@ -259,6 +251,7 @@ export default class Flight {
         test('test server landing - api', (t) => {
             this.srv.close(async () => {
                 await this.config.pool.end();
+                this.config.cacher.end();
                 delete this.config;
                 delete this.srv;
                 t.end();
