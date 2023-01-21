@@ -2,6 +2,7 @@
     "type": "object",
     "required": [
         "total",
+        "status",
         "layers"
     ],
     "additionalProperties": false,
@@ -9,10 +10,20 @@
         "total": {
             "type": "integer"
         },
+        "status": {
+            "type": "object",
+            "required": [ "healthy", "alarm" , "unknown" ],
+            "additionalProperties": false,
+            "properties": {
+                "healthy": { "type": "integer" },
+                "alarm": { "type": "integer" },
+                "unknown": { "type": "integer" }
+            }
+        },
         "layers": {
             "type": "array",
             "items":  {
-                "$ref": "./layers.json"
+                "$ref": "res.Layer.json"
             }
         }
     }

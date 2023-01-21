@@ -57,18 +57,7 @@
                         <div class="card">
                             <div class="card-header">
                                 <template v-if='layer.mode === "live"'>
-                                    <span class="status-indicator status-green status-indicator-animated">
-                                          <span class="status-indicator-circle"></span>
-                                          <span class="status-indicator-circle"></span>
-                                          <span class="status-indicator-circle"></span>
-                                    </span>
-                                </template>
-                                <template v-else>
-                                    <span class="status-indicator status-blue status-indicator-animated">
-                                          <span class="status-indicator-circle"></span>
-                                          <span class="status-indicator-circle"></span>
-                                          <span class="status-indicator-circle"></span>
-                                    </span>
+                                    <LayerStatus :layer='layer'/>
                                 </template>
 
                                 <a @click='$router.push(`/layer/${layer.id}`)' class="card-title cursor-pointer" v-text='layer.name'></a>
@@ -98,6 +87,7 @@
 <script>
 import None from './cards/None.vue';
 import PageFooter from './PageFooter.vue';
+import LayerStatus from './Layer/Status.vue';
 import {
     TablerLoading
 } from '@tak-ps/vue-tabler';
@@ -158,7 +148,8 @@ export default {
         SettingsIcon,
         SearchIcon,
         PageFooter,
-        TablerLoading
+        TablerLoading,
+        LayerStatus
     }
 }
 </script>
