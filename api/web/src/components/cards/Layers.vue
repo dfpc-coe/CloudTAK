@@ -12,7 +12,9 @@
                     <span v-text='list.total'/> Layers
                 </a>
                 <div class="text-muted">
+                    <span v-text='list.status.dead'/> Errored Layers
                 </div>
+
             </div>
         </div>
     </div>
@@ -29,7 +31,8 @@ export default {
     data: function() {
         return {
             list: {
-                total: 0
+                total: 0,
+                status: {}
             }
         }
     },

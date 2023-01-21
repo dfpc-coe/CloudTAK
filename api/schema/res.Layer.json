@@ -17,6 +17,14 @@
         "id": {
             "$ref": "./layers/id.json"
         },
+        "status": {
+            "type": "string",
+            "enum": [
+                "healthy",
+                "alarm",
+                "unknown"
+            ]
+        },
         "name": {
             "$ref": "./layers/name.json"
         },

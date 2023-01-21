@@ -21,9 +21,10 @@ export default async function router(schema, config) {
                 conn.status = config.conns.status(conn.id);
             });
 
-            list.status = { dead: 0, live: 0 };
+            list.status = { dead: 0, live: 0, unknown: 0 };
             for (const conn of config.conns.values()) {
-                list.status[conn.tak.open]++;
+                if (!conn.tak) list.status.unknown++;
+                else list.status[conn.tak.open]++;
             }
 
             return res.json(list);

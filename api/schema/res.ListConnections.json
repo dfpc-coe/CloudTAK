@@ -12,11 +12,12 @@
         },
         "status": {
             "type": "object",
-            "required": [ "dead", "live" ],
+            "required": [ "dead", "live", "unknown" ],
             "additionalProperties": false,
             "properties": {
                 "dead": { "type": "integer" },
-                "live": { "type": "integer" }
+                "live": { "type": "integer" },
+                "unknown": { "type": "integer" }
             }
         },
         "connections": {
