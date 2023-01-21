@@ -8,13 +8,17 @@
                 </span>
             </div>
             <div class="col">
-                <a @click='$router.push("/layer")' class="font-weight-medium cursor-pointer">
-                    <span v-text='list.total'/> Layers
-                </a>
-                <div class="text-muted">
-                    <span v-text='list.status.dead'/> Errored Layers
-                </div>
-
+                <template v-if='loading'>
+                    <TablerLoading :inline='true'/>
+                </template>
+                <template v-else>
+                    <a @click='$router.push("/layer")' class="font-weight-medium cursor-pointer">
+                        <span v-text='list.total'/> Layers
+                    </a>
+                    <div class="text-muted">
+                        <span v-text='list.status.dead'/> Errored Layers
+                    </div>
+                </template>
             </div>
         </div>
     </div>
@@ -25,11 +29,15 @@
 import {
     DatabaseIcon
 } from 'vue-tabler-icons';
+import {
+    TablerLoading
+} from '@tak-ps/vue-tabler';
 
 export default {
     name: 'CardLayers',
     data: function() {
         return {
+            loading: true,
             list: {
                 total: 0,
                 status: {}
@@ -41,11 +49,14 @@ export default {
     },
     methods: {
         fetch: async function() {
+            this.loading = true;
             this.list = await window.std('/api/layer?limit=1');
+            this.loading = false;
         }
     },
     components: {
-        DatabaseIcon
+        DatabaseIcon,
+        TablerLoading
     }
 }
 </script>

@@ -10,8 +10,11 @@ import Lambda from '../lib/aws/lambda.js';
 import CloudFormation from '../lib/aws/cloudformation.js';
 import Style from '../lib/style.js';
 import { check } from '@placemarkio/check-geojson';
+import Alarm from '../lib/aws/alarm.js';
 
 export default async function router(schema, config) {
+    const alarm = new Alarm(config.StackName);
+
     await schema.get('/layer', {
         name: 'List Layers',
         group: 'Layer',
@@ -23,7 +26,20 @@ export default async function router(schema, config) {
         try {
             await Auth.is_auth(req);
 
-            res.json(await Layer.list(config.pool, req.query));
+            const list = await Layer.list(config.pool, req.query);
+
+            const alarms = await alarm.list();
+
+            list.layers.map((layer) => {
+                layer.status = alarms.get(layer.id) || 'unknown';
+            });
+
+            list.status = { healthy: 0, alarm: 0, unknown: 0 };
+            for (const state of alarms.values()) {
+                list.status[state]++;
+            }
+
+            res.json(list);
         } catch (err) {
             return Err.respond(err, res);
         }
