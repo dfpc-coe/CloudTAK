@@ -146,7 +146,7 @@ export default {
                                 'cloudwatch:Describe*',
                                 'cloudwatch:Get*',
                                 'cloudwatch:List*',
-                                'cloudwatch:PutMetricAlarm',
+                                'cloudwatch:PutMetricAlarm'
                             ],
                             Resource: [
                                 cf.join(['arn:aws:cloudwatch:', cf.region, ':', cf.accountId, ':alarm:', cf.stackName, '-layer-*'])
