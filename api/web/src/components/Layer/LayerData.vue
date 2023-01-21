@@ -51,6 +51,10 @@
                         <div v-if='!disabled' class='ms-auto'>
                             <SettingsIcon @click='taskmodal = true' width='16' height='16' class='cursor-pointer'/>
                         </div>
+                        <div v-else class='ms-auto'>
+                            <RefreshIcon v-if='!newVersion' @click='latestVersion' width='16' height='16' class='cursor-pointer'/>
+                            <span v-else>New Task</span>
+                        </div>
                     </div>
                     <input :disabled='disabled' v-model='layerdata.task' :class='{
                         "is-invalid": errors.task
@@ -145,6 +149,7 @@ import {
 } from '@tak-ps/vue-tabler';
 import {
     ClockIcon,
+    RefreshIcon,
     PlusIcon,
     FileUploadIcon,
     SettingsIcon
@@ -172,6 +177,7 @@ export default {
         return {
             taskmodal: false,
             environment: [],
+            newTask: false,
             layerdata: {
                 mode: 'live',
                 connection: null,
@@ -233,10 +239,23 @@ export default {
                 return `Once every ${rate}`;
             }
         },
+        latestVersion: async function() {
+            const match = this.layerdata.task.match(/^(.*)-v([0-9]+\.[0-9]+\.[0-9]+)$/)
+            if (!match) return;
+            const task = match[1];
+            const version = match[2];
+
+            const list = await window.std(`/api/task/${task}`);
+
+            if (list.versions.indexOf(version) !== 0) {
+                this.newTask = list.versions[0];
+            }
+        }
     },
     components: {
         Asset,
         ClockIcon,
+        RefreshIcon,
         PlusIcon,
         FileUploadIcon,
         SettingsIcon,

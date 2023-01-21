@@ -33,7 +33,7 @@ try {
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
-    const config = Config.env(args);
+    const config = await Config.env(args);
     await server(config);
 }
 

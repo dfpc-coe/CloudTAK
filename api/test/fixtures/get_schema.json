@@ -129,6 +129,11 @@
         "query": false,
         "res": true
     },
+    "GET /task/:task": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
     "GET /layer/:layerid/task": {
         "body": false,
         "query": false,

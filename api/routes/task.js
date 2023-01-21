@@ -25,7 +25,7 @@ export default async function router(schema, config) {
             const images = await ECR.list();
 
             const list = {
-                total: {},
+                total: 0,
                 tasks: {}
             };
 
@@ -42,6 +42,40 @@ export default async function router(schema, config) {
             }
 
             return res.json(list);
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
+
+    await schema.get('/task/:task', {
+        name: 'List Tasks',
+        group: 'Task',
+        auth: 'user',
+        ':task': 'string',
+        description: 'List Version for a specific task',
+        res: 'res.ListTaskVersions.json'
+    }, async (req, res) => {
+        try {
+            await Auth.is_auth(req);
+
+            // Stuck with this approach for now - https://github.com/aws/containers-roadmap/issues/418
+            const images = await ECR.list();
+
+            const list = {
+                tasks: {}
+            };
+
+            for (const image of images.imageIds) {
+                const match = image.imageTag.match(/^(.*)-v([0-9]+\.[0-9]+\.[0-9]+)$/);
+                if (!match) continue;
+                if (!list.tasks[match[1]]) list.tasks[match[1]] = [];
+                list.tasks[match[1]].push(match[2]);
+            }
+
+            return res.json({
+                total: list.tasks[req.params.task].length || 0,
+                versions: semver.desc(list.tasks[req.params.task] || [])
+            });
         } catch (err) {
             return Err.respond(err, res);
         }
