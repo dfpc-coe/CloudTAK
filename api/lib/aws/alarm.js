@@ -42,7 +42,12 @@ export default class Alarm {
                 AlarmNames: [`${this.stack}-layer-${layer}`]
             }).promise();
 
-            return res;
+            if (!res.MetricAlarms.length) return 'unknown';
+
+            let value = 'healthy';
+            if (res.MetricAlarms[0].StateValue === 'ALARM') value = 'alarm';
+            if (res.MetricAlarms[0].StateValue === 'INSUFFICIENT_DATA') value = 'unknown';
+            return value;
         } catch (err) {
             throw new Err(500, new Error(err), 'Failed to describe alarm');
         }
