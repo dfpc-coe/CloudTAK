@@ -16,7 +16,7 @@
                         <span v-text='list.total'/> Layers
                     </a>
                     <div class="text-muted">
-                        <span v-text='list.status.dead'/> Errored Layers
+                        <span v-text='list.status.alarm'/> Alarming Layers
                     </div>
                 </template>
             </div>
