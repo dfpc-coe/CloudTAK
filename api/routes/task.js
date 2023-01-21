@@ -58,7 +58,7 @@ export default async function router(schema, config) {
         try {
             await Auth.is_auth(req);
 
-            //Stuck with this approach for now - https://github.com/aws/containers-roadmap/issues/418
+            // Stuck with this approach for now - https://github.com/aws/containers-roadmap/issues/418
             const images = await ECR.list();
 
             const list = {
