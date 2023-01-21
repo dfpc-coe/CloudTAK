@@ -124,7 +124,7 @@ export default {
                             Resource: [
                                 cf.join(['arn:aws:secretsmanager:', cf.region, ':', cf.accountId, ':secret:', cf.stackName, '/*'])
                             ]
-                        },{
+                        },{ // ------------ Permissions Required to stand up lambda tasks ------------
                             Effect: 'Allow',
                             Action: [
                                 'iam:PassRole'
@@ -139,6 +139,17 @@ export default {
                             ],
                             Resource: [
                                 cf.join(['arn:aws:cloudformation:', cf.region, ':', cf.accountId, ':stack/', cf.stackName, '-layer-*'])
+                            ]
+                        },{
+                            Effect: 'Allow',
+                            Action: [
+                                'cloudwatch:Describe*',
+                                'cloudwatch:Get*',
+                                'cloudwatch:List*',
+                                'cloudwatch:PutMetricAlarm'
+                            ],
+                            Resource: [
+                                cf.join(['arn:aws:cloudwatch:', cf.region, ':', cf.accountId, ':alarm:', cf.stackName, '-layer-*'])
                             ]
                         },{
                             Effect: 'Allow',
