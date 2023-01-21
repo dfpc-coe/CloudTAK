@@ -28,15 +28,22 @@ export default async function router(schema, config) {
 
             const list = await Layer.list(config.pool, req.query);
 
-            const alarms = await alarm.list();
+            if (config.StackName !== 'test') {
+                const alarms = await alarm.list();
 
-            list.layers.map((layer) => {
-                layer.status = alarms.get(layer.id) || 'unknown';
-            });
+                list.layers.map((layer) => {
+                    layer.status = alarms.get(layer.id) || 'unknown';
+                });
 
-            list.status = { healthy: 0, alarm: 0, unknown: 0 };
-            for (const state of alarms.values()) {
-                list.status[state]++;
+                list.status = { healthy: 0, alarm: 0, unknown: 0 };
+                for (const state of alarms.values()) {
+                    list.status[state]++;
+                }
+            } else {
+                list.status = { healthy: 0, alarm: 0, unknown: 0 };
+                list.layers.map((layer) => {
+                    layer.status = 'unknown';
+                });
             }
 
             res.json(list);
@@ -93,6 +100,12 @@ export default async function router(schema, config) {
                 await CloudFormation.create(config, layer, lambda);
             } catch (err) {
                 console.error(err);
+            }
+
+            if (config.StackName !== 'test') {
+                layer.status = await alarm.get(layer.id);
+            } else {
+                layer.status = 'unknown';
             }
 
             return res.json(layer);
@@ -164,6 +177,12 @@ export default async function router(schema, config) {
 
             await config.cacher.del(`layer-${req.params.layerid}`);
 
+            if (config.StackName !== 'test') {
+                layer.status = await alarm.get(layer.id);
+            } else {
+                layer.status = 'unknown';
+            }
+
             return res.json(layer);
         } catch (err) {
             return Err.respond(err, res);
@@ -186,6 +205,12 @@ export default async function router(schema, config) {
                 layer.data = (layer.mode === 'file' ? await LayerFile.from(config.pool, layer.id, { column: 'layer_id' }) : await LayerLive.from(config.pool, layer.id, { column: 'layer_id' })).serialize();
                 return layer;
             });
+
+            if (config.StackName !== 'test') {
+                layer.status = await alarm.get(layer.id);
+            } else {
+                layer.status = 'unknown';
+            }
 
             return res.json(layer);
         } catch (err) {
