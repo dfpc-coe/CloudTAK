@@ -3,12 +3,16 @@
     <div class='card-header'>
         <h3 class='card-title'>Task Status</h3>
         <div class='ms-auto'>
-            <RefreshIcon @click='fetch' class='cursor-pointer'/>
+            <RefreshIcon v-if='!loading.small' @click='fetch' width='24' height='24' class='cursor-pointer'/>
+            <div v-else class='d-flex justify-content-center'>
+                <div class="spinner-border" role="status"></div>
+            </div>
+
         </div>
     </div>
 
     <div class='card-body'>
-        <template v-if='loading'>
+        <template v-if='loading.full'>
             <TablerLoading/>
         </template>
         <template v-else-if='error'>
@@ -50,17 +54,33 @@ export default {
     name: 'LayerTask',
     data: function() {
         return {
+            looping: false,
             error: false,
-            loading: true,
+            loading: {
+                full: true,
+                small: true
+            },
             stack: {}
         };
     },
     mounted: async function() {
         await this.fetch();
+
+        this.looping = setInterval(() => {
+            this.fetch(false);
+        }, 10 * 1000);
+    },
+    unmounted: function() {
+        if (this.looping) clearInterval(this.looping);
     },
     methods: {
-        fetch: async function() {
-            this.loading = true;
+        fetch: async function(showLoading=true) {
+            if (showLoading) {
+                this.loading.full = true;
+            } else {
+                this.loading.small = true;
+            }
+
             this.error = false;
 
             try {
@@ -68,14 +88,16 @@ export default {
             } catch (err) {
                 this.error = err;
             }
-            this.loading = false;
+
+            this.loading.full = false;
+            this.loading.small = false;
         },
         postStack: async function() {
-            this.loading = true;
+            this.loading.full = true;
             this.stack = await window.std(`/api/layer/${this.$route.params.layerid}/task`, {
                 method: 'POST'
             });
-            this.loading = false;
+            this.loading.full = false;
         }
     },
     components: {
