@@ -9,7 +9,7 @@ import Auth from '../lib/auth.js';
 import Lambda from '../lib/aws/lambda.js';
 import CloudFormation from '../lib/aws/cloudformation.js';
 import Style from '../lib/style.js';
-import { check } from "@placemarkio/check-geojson"
+import { check } from '@placemarkio/check-geojson';
 
 export default async function router(schema, config) {
     await schema.get('/layer', {
