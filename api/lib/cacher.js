@@ -103,4 +103,8 @@ export default class Cacher {
             throw new Error('Failed to flush cache');
         }
     }
+
+    end() {
+        this.cache.close();
+    }
 }

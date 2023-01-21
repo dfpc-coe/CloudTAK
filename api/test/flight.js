@@ -208,14 +208,6 @@ export default class Flight {
                 }
             });
 
-            this.config.sqs = {};
-            for (const sqs of ['queue', 'transform-queue', 'obtain-queue']) {
-                this.config.sqs[sqs] = {
-                    url: 'http://example.com/queue',
-                    arn: 'arn:aws:example'
-                };
-            }
-
             Object.assign(this.config, custom);
 
             this.srv = await api(this.config);
@@ -259,6 +251,7 @@ export default class Flight {
         test('test server landing - api', (t) => {
             this.srv.close(async () => {
                 await this.config.pool.end();
+                this.config.cacher.end();
                 delete this.config;
                 delete this.srv;
                 t.end();
