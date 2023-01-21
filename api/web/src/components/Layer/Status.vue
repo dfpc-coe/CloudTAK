@@ -1,8 +1,8 @@
 <template>
 <span class="status-indicator status-indicator-animated" :class='{
-    "status-green": connection.status === "healthy",
-    "status-red": connection.status === "alarm",
-    "status-dark": connection.status === "unknown",
+    "status-green": layer.status === "healthy",
+    "status-red": layer.status === "alarm",
+    "status-dark": layer.status === "unknown",
 }'>
       <span class="status-indicator-circle"></span>
       <span class="status-indicator-circle"></span>
