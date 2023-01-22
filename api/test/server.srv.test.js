@@ -1,4 +1,3 @@
-import fs from 'fs';
 import test from 'tape';
 import Flight from './flight.js';
 
@@ -64,7 +63,7 @@ test('GET: api/server', async (t) => {
             method: 'GET',
             auth: {
                 bearer: flight.token.admin
-            },
+            }
         }, true);
 
         for (const key of ['created', 'updated']) {
