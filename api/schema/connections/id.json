@@ -1,5 +1,5 @@
 {
     "type": "number",
-    "description": "",
+    "description": "Unique Connection ID",
     "$comment": "int8"
 }
