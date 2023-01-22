@@ -22,9 +22,9 @@ export default class Style {
             feature.properties.stale = this.layer.data.stale;
         }
 
-        if (!this.layer.enabled_styles) return feature;
-
-        if (this.layer.styles.queries) {
+        if (!this.layer.enabled_styles) {
+            return feature;
+        } else if (this.layer.styles.queries) {
             for (const q of this.layer.styles.queries) {
                 const expression = jsonata(q.query);
 
@@ -32,8 +32,12 @@ export default class Style {
                     this.#by_geom(feature);
                 }
             }
+
+            return feature;
         } else {
             this.#by_geom(this.layer.styles, feature);
+
+            return feature;
         }
     }
 

@@ -143,7 +143,7 @@ export default {
                         },{
                             Effect: 'Allow',
                             Action: [
-                                'cloudwatch:Describe*',
+                                'cloudwatch:Describe*'
                             ],
                             Resource: [
                                 cf.join(['arn:aws:cloudwatch:', cf.region, ':', cf.accountId, ':alarm:*'])
