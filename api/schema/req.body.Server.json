@@ -1,12 +1,17 @@
 {
     "type": "object",
     "additionalProperties": false,
+    "required": [
+        "name",
+        "url"
+    ],
     "properties": {
         "url": {
             "type": "string"
         },
         "auth": {
-            "type": "object"
+            "type": "object",
+            "default": {}
         },
         "name": {
             "type": "string"
