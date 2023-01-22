@@ -144,6 +144,14 @@ export default {
                             Effect: 'Allow',
                             Action: [
                                 'cloudwatch:Describe*',
+                            ],
+                            Resource: [
+                                cf.join(['arn:aws:cloudwatch:', cf.region, ':', cf.accountId, ':alarm:*'])
+                            ]
+                        },{
+                            Effect: 'Allow',
+                            Action: [
+                                'cloudwatch:Describe*',
                                 'cloudwatch:Get*',
                                 'cloudwatch:List*',
                                 'cloudwatch:PutMetricAlarm'
