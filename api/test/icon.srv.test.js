@@ -35,7 +35,7 @@ test('GET: api/icon - ensure paging/limits work', async (t) => {
 
         let res;
         let page = 0;
-        let map = new Map();
+        const map = new Map();
         do {
             res = await flight.fetch(`/api/icon?page=${page}&limit=50`, {
                 method: 'GET',
@@ -50,7 +50,7 @@ test('GET: api/icon - ensure paging/limits work', async (t) => {
             }
 
             page++;
-        } while (res.body.icons.length)
+        } while (res.body.icons.length);
 
         t.equals(Array.from(map.keys()).length, total);
 
@@ -75,7 +75,7 @@ test('GET: api/icon/f-A-W', async (t) => {
             name: 'Friendly Weapon',
             file: 'sfapw----------.png',
             parent: 'f-A',
-            children: [ 'f-A-W-B', 'f-A-W-D', 'f-A-W-M' ]
+            children: ['f-A-W-B', 'f-A-W-D', 'f-A-W-M']
         });
     } catch (err) {
         t.error(err, 'no error');
