@@ -11,7 +11,10 @@ docker-compose up --build
 ```
 
 Once the database and API service have built, the server will start on port 5000.
-In your webbrowser visit `http://localhost:5000` to view the stats
+In your webbrowser visit `http://localhost:5000` to view the ETL UI
+
+For non-aws environments, the default username & password is `admin`, `admin`.
+This value can be customized via the `TAK_USERNAME` & `TAK_PASSWORD` env vars
 
 Installation outside of the docker environment is also fairly straightforward.
 In the `./api`, perform the following
@@ -28,6 +31,39 @@ npm run dev
 ```
 
 ## AWS Deployment
+
+### Pre-Reqs
+
+The ETL service assumes several pre-requisite dependencies are deployed before
+initial ETL deployment.
+The following are dependencies which need to be created:
+
+| Name                  | Notes |
+| --------------------- | ----- |
+| `coe-ecr-etl`         | ECR Repository for storing API Images     |
+| `coe-ecr-etl-tasks`   | ECR Repository for storing Task Images    |
+
+**coe-ecr-etl**
+
+Can be created using the [tak-ps/ecr](https://github.com/tak-ps/ecr) repository.
+
+From the ecr repo:
+```sh
+npm install
+npx deploy create etl
+```
+
+**coe-ecr-etl-tasks**
+
+Can be created using the [tak-ps/ecr](https://github.com/tak-ps/ecr) repository.
+
+From the ecr repo:
+```sh
+npm install
+npx deploy create etl-tasks
+```
+
+### ETL Deployment
 
 From the root directory, install the deploy dependencies
 
@@ -59,17 +95,8 @@ Deployment can then be performed via the following:
 
 ```
 npx deploy create <stack>
-```
-
-```
 npx deploy update <stack>
-```
-
-```
 npx deploy info <stack> --outputs
-```
-
-```
 npx deploy info <stack> --parameters
 ```
 
