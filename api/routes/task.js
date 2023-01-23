@@ -26,7 +26,7 @@ export default async function router(schema, config) {
 
             const list = {
                 total: 0,
-                tasks: {}
+                tasks: []
             };
 
             for (const image of images.imageIds) {
