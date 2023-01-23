@@ -84,7 +84,7 @@ export default class Flight {
             };
 
             try {
-                await this.fetch(req, t);
+                await this.fetch(req.url, req, t);
             } catch (err) {
                 t.error(err, 'no errors');
             }

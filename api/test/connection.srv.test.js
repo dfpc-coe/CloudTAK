@@ -79,4 +79,6 @@ test('POST: api/connection', async (t) => {
     t.end();
 });
 
+flight.fixture(test, 'server.json', flight.token.admin);
+
 flight.landing(test);
