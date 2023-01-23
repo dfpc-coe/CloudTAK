@@ -19,10 +19,10 @@
             "type": "string"
         },
         "created": {
-            "type": "string"
+            "type": "integer"
         },
         "updated": {
-            "type": "string"
+            "type": "integer"
         }
     }
 }

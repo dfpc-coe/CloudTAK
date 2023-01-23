@@ -74,6 +74,11 @@
         "query": true,
         "res": true
     },
+    "GET /icon/:cot": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
     "GET /layer": {
         "body": false,
         "query": true,
