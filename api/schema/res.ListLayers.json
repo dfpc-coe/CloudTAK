@@ -8,20 +8,32 @@
     "additionalProperties": false,
     "properties": {
         "total": {
-            "type": "integer"
+            "type": "integer",
+            "description": "Total number of layers related to the query"
         },
         "status": {
             "type": "object",
             "required": [ "healthy", "alarm" , "unknown" ],
             "additionalProperties": false,
+            "description": "Stats related to the status of layers",
             "properties": {
-                "healthy": { "type": "integer" },
-                "alarm": { "type": "integer" },
-                "unknown": { "type": "integer" }
+                "healthy": {
+                    "type": "integer",
+                    "description": "The CloudWatch alarm for the layer is not alarming"
+                },
+                "alarm": {
+                    "type": "integer",
+                    "description": "The CloudWatch alarm for the layer is alarming"
+                },
+                "unknown": {
+                    "type": "integer",
+                    "description": "The state of the CloudWatch alarm could not be determined"
+                }
             }
         },
         "layers": {
             "type": "array",
+            "description": "Array of layer objects",
             "items":  {
                 "$ref": "res.Layer.json"
             }
