@@ -47,4 +47,22 @@ test('GET: api/icon/f-A-W', async (t) => {
     t.end();
 });
 
+test('GET: api/icon/unknown', async (t) => {
+    try {
+        const res = await flight.fetch('/api/icon/f-A-W', {
+            method: 'GET',
+            auth: {
+                bearer: flight.token.admin
+            }
+        }, false);
+
+        t.deepEquals(res.body, {
+        });
+    } catch (err) {
+        t.error(err, 'no error');
+    }
+
+    t.end();
+});
+
 flight.landing(test);
