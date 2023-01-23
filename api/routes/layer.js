@@ -224,7 +224,7 @@ export default async function router(schema, config) {
         auth: 'user',
         description: 'Delete a layer',
         ':layerid': 'integer',
-        res: 'res.Layer.json'
+        res: 'res.Standard.json'
     }, async (req, res) => {
         try {
             await Auth.is_auth(req);

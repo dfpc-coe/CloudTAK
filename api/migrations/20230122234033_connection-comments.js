@@ -7,11 +7,11 @@ function up(knex) {
         COMMENT ON COLUMN
             connections.updated IS 'Updated TimeStamp';
         COMMENT ON COLUMN
-            connections.name IS 'Unique human readable name of the connection';
+            connections.name IS 'Unique human readable name';
         COMMENT ON COLUMN
-            connections.description IS 'Human readable description of the connection';
+            connections.description IS 'Human readable description';
         COMMENT ON COLUMN
-            connections.enabled IS 'Is the connection passing CoT messages from layers into the Connection';
+            connections.enabled IS 'Is the connection passing CoT messages from layers';
         COMMENT ON COLUMN
             connections.auth IS 'Authentication settings for the connection';
     `);
