@@ -1,0 +1,31 @@
+{
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+        "id",
+        "name",
+        "parent",
+        "file",
+        "children"
+    ],
+    "properties": {
+        "id": {
+            "type": "string"
+        },
+        "name": {
+            "type": "string"
+        },
+        "file": {
+            "type": "string"
+        },
+        "parent": {
+            "type": "string"
+        },
+        "children": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        }
+    }
+}

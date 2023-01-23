@@ -270,6 +270,24 @@
 
 
 /**
+* @api {get} /icon/:cot List Icons
+* @apiVersion 1.0.0
+* @apiName GET-/icon/:cot
+* @apiGroup Icons
+* @apiPermission user
+*
+* @apidescription
+*   Icon Metadata
+*
+* @apiParam {string} cot param
+*
+*
+*
+* @apiSchema {jsonschema=../schema/res.Icon.json} apiSuccess
+*/
+
+
+/**
 * @api {get} /layer List Layers
 * @apiVersion 1.0.0
 * @apiName GET-/layer
@@ -355,7 +373,7 @@
 *
 *
 *
-* @apiSchema {jsonschema=../schema/res.Layer.json} apiSuccess
+* @apiSchema {jsonschema=../schema/res.Standard.json} apiSuccess
 */
 
 
