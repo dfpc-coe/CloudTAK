@@ -49,7 +49,7 @@ test('GET: api/icon/f-A-W', async (t) => {
 
 test('GET: api/icon/unknown', async (t) => {
     try {
-        const res = await flight.fetch('/api/icon/f-A-W', {
+        const res = await flight.fetch('/api/icon/unknown', {
             method: 'GET',
             auth: {
                 bearer: flight.token.admin
@@ -57,6 +57,9 @@ test('GET: api/icon/unknown', async (t) => {
         }, false);
 
         t.deepEquals(res.body, {
+            status: 400,
+            message: 'Icon Not Found',
+            messages: []
         });
     } catch (err) {
         t.error(err, 'no error');
