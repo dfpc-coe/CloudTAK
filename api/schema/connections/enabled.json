@@ -1,5 +1,5 @@
 {
     "type": "boolean",
-    "description": "Is the connection passing CoT messages from layers into the Connection",
+    "description": "Is the connection passing CoT messages from layers",
     "$comment": "bool"
 }
