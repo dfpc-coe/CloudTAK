@@ -24,6 +24,43 @@ test('GET: api/icon', async (t) => {
     t.end();
 });
 
+test('GET: api/icon - ensure paging/limits work', async (t) => {
+    try {
+        const total = (await flight.fetch('/api/icon', {
+            method: 'GET',
+            auth: {
+                bearer: flight.token.admin
+            }
+        }, true)).body.total;
+
+        let res;
+        let page = 0;
+        let map = new Map();
+        do {
+            res = await flight.fetch(`/api/icon?page=${page}&limit=50`, {
+                method: 'GET',
+                auth: {
+                    bearer: flight.token.admin
+                }
+            }, true);
+
+            if (res.body.icons.length) {
+                t.ok(res.body.icons.length <= 50);
+                for (const icon of res.body.icons) map.set(icon.id, icon);
+            }
+
+            page++;
+        } while (res.body.icons.length)
+
+        t.equals(Array.from(map.keys()).length, total);
+
+    } catch (err) {
+        t.error(err, 'no error');
+    }
+
+    t.end();
+});
+
 test('GET: api/icon/f-A-W', async (t) => {
     try {
         const res = await flight.fetch('/api/icon/f-A-W', {
