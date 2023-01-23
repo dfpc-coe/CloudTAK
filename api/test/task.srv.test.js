@@ -10,15 +10,13 @@ flight.user(test);
 
 test('GET: api/task', async (t) => {
     try {
-        AWS.stub('SecretsManager', 'createSecret', async function(params) {
-            t.equals(params.Name, 'test-source-1');
-            t.equals(params.Description, 'test Source: 1');
-            t.deepEquals(JSON.parse(params.SecretString), {
-                aws_access_key_id: '123',
-                aws_secret_access_key: '123'
+        AWS.stub('ECR', 'listImages', async function(params) {
+            t.deepEquals(params, {
+                repositoryName: 'coe-ecr-etl-tasks'
             });
-
-            return this.request.promise.returns(Promise.resolve({}));
+            return this.request.promise.returns(Promise.resolve({
+                imageIds: []
+            }));
         });
 
 
@@ -31,12 +29,7 @@ test('GET: api/task', async (t) => {
 
         t.deepEquals(res.body, {
             total: 0,
-            connections: [],
-            status: {
-                dead: 0,
-                live: 0,
-                unknown: 0
-            }
+            tasks: []
         });
     } catch (err) {
         t.error(err, 'no error');
