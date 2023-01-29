@@ -41,6 +41,10 @@
                 </div>
 
                 <div class="col-lg-12">
+                    <ConnectionQuery v-if='connection.id' :connection='connection'/>
+                </div>
+
+                <div class="col-lg-12">
                     <ConnectionLayers v-if='connection.id' :connection='connection'/>
                 </div>
 
@@ -59,6 +63,7 @@ import PageFooter from './PageFooter.vue';
 import ConnectionStatus from './Connection/Status.vue';
 import ConnectionLayers from './Connection/Layers.vue';
 import ConnectionEvents from './Connection/Events.vue';
+import ConnectionQuery from './Connection/Queries.vue';
 import {
     SettingsIcon
 } from 'vue-tabler-icons'
@@ -89,7 +94,8 @@ export default {
         PageFooter,
         ConnectionStatus,
         ConnectionLayers,
-        ConnectionEvents
+        ConnectionEvents,
+        ConnectionQuery
     }
 }
 </script>
