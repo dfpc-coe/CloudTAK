@@ -1,0 +1,32 @@
+{
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+        "id": {
+            "$ref": "./connections_query/id.json"
+        },
+        "conn_id": {
+            "$ref": "./connections_query/conn_id.json"
+        },
+        "created": {
+            "$ref": "./connections_query/created.json"
+        },
+        "updated": {
+            "$ref": "./connections_query/updated.json"
+        },
+        "query": {
+            "$ref": "./connections_query/query.json"
+        },
+        "notify": {
+            "$ref": "./connections_query/notify.json"
+        }
+    },
+    "required": [
+        "id",
+        "conn_id",
+        "created",
+        "updated",
+        "query",
+        "notify"
+    ]
+}
