@@ -3,11 +3,15 @@
     <div class='card-header'>
         <h3 class='card-title'>Task Status</h3>
         <div class='ms-auto'>
-            <RefreshIcon v-if='!loading.small' @click='fetch' width='24' height='24' class='cursor-pointer'/>
-            <div v-else class='d-flex justify-content-center'>
-                <div class="spinner-border" role="status"></div>
-            </div>
+            <div class='btn-list'>
+                <ArticleIcon v-if='mode !== "logs"' @click='mode = "logs"' width='24' height='24' class='cursor-pointer'/>
+                <CircleDotIcon v-if='mode !== "status"' @click='mode = "status"' width='24' height='24' class='cursor-pointer'/>
 
+                <RefreshIcon v-if='!loading.small' @click='refresh' width='24' height='24' class='cursor-pointer'/>
+                <div v-else class='d-flex justify-content-center'>
+                    <div class="spinner-border" role="status"></div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -15,14 +19,25 @@
         <template v-if='loading.full'>
             <TablerLoading/>
         </template>
-        <template v-else-if='error'>
+        <template v-else-if='mode === "status" && errors.cloudformation'>
             <div class="text-center py-4">
                 <AlertCircleIcon height='48' width='48'/>
                 <h3 class='pt-3'>AWS Cloudformation Error</h3>
-                <div class="text-muted" v-text='error.message'></div>
+                <div class="text-muted" v-text='error.cloudformation.message'></div>
 
                 <div class="d-flex justify-content-center my-3">
-                    <div @click='fetch' class='btn btn-secondary'>Refresh</div>
+                    <div @click='refresh' class='btn btn-secondary'>Refresh</div>
+                </div>
+            </div>
+        </template>
+        <template v-else-if='mode === "logs" && errors.cloudwatch'>
+            <div class="text-center py-4">
+                <AlertCircleIcon height='48' width='48'/>
+                <h3 class='pt-3'>AWS CloudWatch Error</h3>
+                <div class="text-muted" v-text='errors.cloudwatch.message'></div>
+
+                <div class="d-flex justify-content-center my-3">
+                    <div @click='refresh' class='btn btn-secondary'>Refresh</div>
                 </div>
             </div>
         </template>
@@ -34,8 +49,11 @@
                 <div @click='postStack' class='btn btn-primary'>Deploy Stack</div>
             </div>
         </template>
-        <template v-else>
+        <template v-else-if='mode === "status"'>
             <pre v-text='stack.status'/>
+        </template>
+        <template v-else-if='mode === "logs"'>
+            <pre v-text='logs'/>
         </template>
     </div>
 </div>
@@ -46,6 +64,8 @@ import {
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import {
+    ArticleIcon,
+    CircleDotIcon,
     RefreshIcon,
     AlertCircleIcon
 } from 'vue-tabler-icons';
@@ -54,39 +74,87 @@ export default {
     name: 'LayerTask',
     data: function() {
         return {
+            mode: 'status',
             looping: false,
-            error: false,
+            errors: {
+                cloudformation: false,
+                cloudwatch: false
+            },
             loading: {
                 full: true,
                 small: true
             },
-            stack: {}
+            stack: {},
+            logs: {}
         };
     },
     mounted: async function() {
-        await this.fetch();
-
-        this.looping = setInterval(() => {
-            this.fetch(false);
-        }, 10 * 1000);
+        await this.init();
     },
     unmounted: function() {
-        if (this.looping) clearInterval(this.looping);
+        this.clear()
+    },
+    watch: {
+        mode: async function() {
+            this.clear();
+            await this.init();
+        }
     },
     methods: {
-        fetch: async function(showLoading=true) {
+        init: async function() {
+            if (this.mode === 'status') {
+                await this.fetchStatus();
+                this.looping = setInterval(() => {
+                    this.fetchStatus(false);
+                }, 10 * 1000);
+            } else if (this.mode === 'logs') {
+                await this.fetchLogs();
+                this.looping = setInterval(() => {
+                    this.fetchLogs(false);
+                }, 10 * 1000);
+            }
+        },
+        clear: function() {
+            if (this.looping) clearInterval(this.looping);
+        },
+        refresh: async function() {
+            if (this.mode === 'logs') await this.fetchLogs();
+            if (this.mode === 'status') await this.fetchStatus();
+        },
+        fetchStatus: async function(showLoading=true) {
             if (showLoading) {
                 this.loading.full = true;
             } else {
                 this.loading.small = true;
             }
 
-            this.error = false;
+            this.errors.cloudformation = false;
 
             try {
                 this.stack = await window.std(`/api/layer/${this.$route.params.layerid}/task`);
             } catch (err) {
-                this.error = err;
+                this.errors.cloudformation = err;
+            }
+
+            this.loading.full = false;
+            this.loading.small = false;
+        },
+        fetchLogs: async function(showLoading=true) {
+            if (showLoading) {
+                this.loading.full = true;
+            } else {
+                this.loading.small = true;
+            }
+
+            this.errors.cloudwatch = false;
+
+            try {
+                this.logs = (await window.std(`/api/layer/${this.$route.params.layerid}/task/logs`))
+                    .logs
+                    .map((log) => { return log.message })
+                    .join('\n');
+            } catch (err) {
+                this.errors.cloudwatch = err;
             }
 
             this.loading.full = false;
@@ -101,6 +169,8 @@ export default {
         }
     },
     components: {
+        ArticleIcon,
+        CircleDotIcon,
         RefreshIcon,
         TablerLoading,
         AlertCircleIcon
