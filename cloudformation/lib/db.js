@@ -35,6 +35,26 @@ export default {
                 TargetType: 'AWS::RDS::DBInstance'
             }
         },
+        DBMonitoringRole: {
+            Type: 'AWS::IAM::Role',
+            Properties: {
+                AssumeRolePolicyDocument: {
+                    Version: '2012-10-17',
+                    Statement: [{
+                        Sid: '',
+                        Effect: 'Allow',
+                        Principal: {
+                            Service: 'monitoring.rds.amazonaws.com'
+                        },
+                        Action: 'sts:AssumeRole'
+                    }]
+                },
+                ManagedPolicyArns: [
+                    'arn:aws:iam::aws:policy/service-role/AmazonRDSEnhancedMonitoringRole'
+                ],
+                Path: '/'
+            }
+        },
         DBInstance: {
             Type: 'AWS::RDS::DBInstance',
             DependsOn: ['DBMasterSecret'],
@@ -42,6 +62,8 @@ export default {
                 Engine: 'postgres',
                 DBName: 'tak_ps_etl',
                 DBInstanceIdentifier: cf.stackName,
+                MonitoringInterval: 60,
+                MonitoringRoleArn: cf.getAtt('DBMonitoringRole', 'Arn'),
                 KmsKeyId: cf.ref('KMS'),
                 EngineVersion: '14.5',
                 StorageEncrypted: true,
