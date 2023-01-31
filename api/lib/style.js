@@ -29,7 +29,7 @@ export default class Style {
                 const expression = jsonata(q.query);
 
                 if (await expression.evaluate(feature) === true) {
-                    this.#by_geom(feature);
+                    this.#by_geom(q.styles, feature);
                 }
             }
 
