@@ -5,7 +5,11 @@ import KMS from './lib/kms.js';
 import Batch from './lib/batch.js';
 import DB from './lib/db.js';
 import Signing from './lib/signing.js';
-import alarms from '@openaddresses/batch-alarms';
+import Dynamo from './lib/dynamo.js';
+import {
+    ELB as ELBAlarms,
+    RDS as RDSAlarms
+} from '@openaddresses/batch-alarms';
 
 export default cf.merge(
     S3,
@@ -14,6 +18,7 @@ export default cf.merge(
     KMS,
     Batch,
     Signing,
+    Dynamo,
     {
         Description: 'Template for @tak-ps/etl',
         Parameters: {
@@ -55,7 +60,7 @@ export default cf.merge(
             }
         }
     },
-    alarms({
+    ELBAlarms({
         prefix: 'Batch',
         email: cf.ref('AlarmEmail'),
         apache: cf.stackName,
@@ -63,6 +68,12 @@ export default cf.merge(
         service: cf.getAtt('Service', 'Name'),
         loadbalancer: cf.getAtt('ELB', 'LoadBalancerFullName'),
         targetgroup: cf.getAtt('TargetGroup', 'TargetGroupFullName')
+
+    }),
+    RDSAlarms({
+        prefix: 'Batch',
+        email: cf.ref('AlarmEmail'),
+        instance: cf.ref('DBInstance')
 
     })
 );

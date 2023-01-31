@@ -5,27 +5,22 @@ export default {
         DDBTable: {
             Type: 'AWS::DynamoDB::Table',
             Properties: {
+                TableName: cf.stackName,
                 AttributeDefinitions: [{
+                    AttributeName: 'LayerId',
+                    AttributeType: 'S'
+                },{
                     AttributeName: 'Id',
                     AttributeType: 'S'
-                },{
-                    AttributeName: 'Callsign',
-                    AttributeType: 'S'
-                },{
-                    AttributeName: 'Geometry',
-                    AttributeType: 'M'
-                },{
-                    AttributeName: 'Properties',
-                    AttributeType: 'M'
                 }],
                 KeySchema: [{
-                    AttributeName: 'Id',
+                    AttributeName: 'LayerId',
                     KeyType: 'HASH'
                 }],
                 GlobalSecondaryIndexes: [{
-                    IndexName: 'Callsign',
+                    IndexName: 'LayerFeature',
                     KeySchema: [{
-                        AttributeName: 'Callsign',
+                        AttributeName: 'Id',
                         KeyType: 'HASH'
                     }],
                     Projection: {
@@ -42,18 +37,18 @@ export default {
                 }
             }
         },
-        WriteCapacityScalableTarget: {
+        DDBWriteCapacityScalableTarget: {
             Type: 'AWS::ApplicationAutoScaling::ScalableTarget',
             Properties: {
                 MaxCapacity: 15,
                 MinCapacity: 5,
-                ResourceId: cf.join('/', [ 'table', cf.ref('DDBTable') ]),
-                RoleARN: cf.getAtt('ScalingRole', 'Arn'),
+                ResourceId: cf.join('/', ['table', cf.ref('DDBTable')]),
+                RoleARN: cf.getAtt('DDBScalingRole', 'Arn'),
                 ScalableDimension: 'dynamodb:table:WriteCapacityUnits',
                 ServiceNamespace: 'dynamodb'
             }
         },
-        ScalingRole: {
+        DDBScalingRole: {
             Type: 'AWS::IAM::Role',
             Properties: {
                 AssumeRolePolicyDocument: {
@@ -61,9 +56,9 @@ export default {
                     Statement: [{
                         Effect: 'Allow',
                         Principal: {
-                            Service: [ 'application-autoscaling.amazonaws.com' ]
+                            Service: ['application-autoscaling.amazonaws.com']
                         },
-                        Action: [ 'sts:AssumeRole' ]
+                        Action: ['sts:AssumeRole']
                     }]
                 },
                 Path: '/',
@@ -88,12 +83,12 @@ export default {
                 }]
             }
         },
-        WriteScalingPolicy: {
+        DDBWriteScalingPolicy: {
             Type: 'AWS::ApplicationAutoScaling::ScalingPolicy',
             Properties: {
                 PolicyName: 'WriteAutoScalingPolicy',
                 PolicyType: 'TargetTrackingScaling',
-                ScalingTargetId: cf.ref('WriteCapacityScalableTarget'),
+                ScalingTargetId: cf.ref('DDBWriteCapacityScalableTarget'),
                 TargetTrackingScalingPolicyConfiguration: {
                     TargetValue: 50.0,
                     ScaleInCooldown: 60,
@@ -105,4 +100,4 @@ export default {
             }
         }
     }
-}
+};
