@@ -164,7 +164,9 @@ export default {
                             Action: [
                                 'logs:CreateLogGroup',
                                 'logs:DeleteLogGroup',
-                                'logs:PutRetentionPolicy'
+                                'logs:PutRetentionPolicy',
+                                'logs:describe*',
+                                'logs:get*'
                             ],
                             Resource: [
                                 cf.join(['arn:aws:logs:', cf.region, ':', cf.accountId, ':log-group:/aws/lambda/', cf.stackName, '-layer-*'])
