@@ -8,7 +8,7 @@ export default {
                 TableName: cf.stackName,
                 AttributeDefinitions: [{
                     AttributeName: 'LayerId',
-                    AttributeType: 'S'
+                    AttributeType: 'N'
                 },{
                     AttributeName: 'Id',
                     AttributeType: 'S'

@@ -11,9 +11,11 @@ import CloudFormation from '../lib/aws/cloudformation.js';
 import Style from '../lib/style.js';
 import { check } from '@placemarkio/check-geojson';
 import Alarm from '../lib/aws/alarm.js';
+import Dynamo from '../lib/aws/dynamo.js';
 
 export default async function router(schema, config) {
     const alarm = new Alarm(config.StackName);
+    const ddb = new Dynamo(config.StackName);
 
     await schema.get('/layer', {
         name: 'List Layers',
@@ -284,7 +286,13 @@ export default async function router(schema, config) {
                 }
 
                 for (const feature of req.body.features) {
+                    // TODO Only GeoJSON Features go to Dynamo, this should also store CoT XML
                     conn.tak.write(COT.from_geojson(await style.feat(feature)));
+                }
+
+                for (const feature of req.body.features) {
+                    // TODO Only GeoJSON Features go to Dynamo, this should also store CoT XML
+                    await ddb.put(layer, feature);
                 }
             } else if (req.headers['content-type'] === 'application/xml') {
                 conn.tak.write(new COT(req.body));
