@@ -144,6 +144,11 @@
         "query": false,
         "res": true
     },
+    "GET /layer/:layerid/task/logs": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
     "POST /layer/:layerid/task": {
         "body": false,
         "query": false,

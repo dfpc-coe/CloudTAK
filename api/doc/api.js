@@ -522,6 +522,24 @@
 
 
 /**
+* @api {get} /layer/:layerid/task/logs Task Logs
+* @apiVersion 1.0.0
+* @apiName GET-/layer/:layerid/task/logs
+* @apiGroup Task
+* @apiPermission user
+*
+* @apidescription
+*   Get the logs related to the given task
+*
+* @apiParam {integer} layerid param
+*
+*
+*
+* @apiSchema {jsonschema=../schema/res.TaskLogs.json} apiSuccess
+*/
+
+
+/**
 * @api {post} /layer/:layerid/task Task Deploy
 * @apiVersion 1.0.0
 * @apiName POST-/layer/:layerid/task

@@ -106,6 +106,31 @@ export default async function router(schema, config) {
         }
     });
 
+    await schema.get('/layer/:layerid/task/logs', {
+        name: 'Task Logs',
+        group: 'Task',
+        auth: 'user',
+        ':layerid': 'integer',
+        description: 'Get the logs related to the given task',
+        res: 'res.TaskLogs.json'
+    }, async (req, res) => {
+        try {
+            await Auth.is_auth(req);
+
+            const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
+                const layer = (await Layer.from(config.pool, req.params.layerid)).serialize();
+                layer.data = (layer.mode === 'file' ? await LayerFile.from(config.pool, layer.id, { column: 'layer_id' }) : await LayerLive.from(config.pool, layer.id, { column: 'layer_id' })).serialize();
+                return layer;
+            });
+
+            if (layer.mode === 'file') throw new Err(400, null, 'File Layers don\'t have associated stacks');
+
+            return res.json(await Logs.list(config, layer));
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
+
     await schema.post('/layer/:layerid/task', {
         name: 'Task Deploy',
         group: 'Task',
