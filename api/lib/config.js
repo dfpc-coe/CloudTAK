@@ -24,6 +24,7 @@ export default class Config {
                 config.Username = 'admin';
                 config.Password = 'admin';
                 config.API_URL = 'http://localhost:5001';
+                config.DynamoDB = null;
             } else {
                 if (!process.env.StackName) throw new Error('StackName env must be set');
                 if (!process.env.TAK_USERNAME) throw new Error('TAK_USERNAME env must be set');
@@ -34,6 +35,8 @@ export default class Config {
                 config.Username = process.env.TAK_USERNAME;
                 config.Password = process.env.TAK_PASSWORD;
                 config.API_URL = process.env.API_URL;
+
+                config.DynamoDB = config.StackName;
 
                 config.SigningSecret = await config.fetchSigningSecret();
             }
