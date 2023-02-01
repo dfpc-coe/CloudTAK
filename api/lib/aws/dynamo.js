@@ -12,34 +12,15 @@ export default class Dynamo {
 
     async put(layer, feature) {
         try {
-            const ddb = new AWS.DynamoDB({ region: process.env.AWS_DEFAULT_REGION });
+            const ddb = new AWS.DynamoDB.DocumentClient({region: process.env.AWS_DEFAULT_REGION });
 
-            const props = {}
-            for (const key in feature.properties) {
-                if (typeof feature.properties[key] === 'string') {
-                    props[key] = { S: feature.properties.key }
-                } else {
-                    props[key] = { S: JSON.stringify(feature.properties.key) }
-                }
-            }
-
-            await ddb.putItem({
+            await ddb.put({
+                TableName: this.table,
                 Item: {
-                    LayerId: {
-                        N: layer.id
-                    },
-                    Id: {
-                        S: String(feature.id)
-                    },
-                    Properties: {
-                        M: feature.properties
-                    },
-                    Geometry: {
-                        M: {
-                            Type: { S: feature.geometry.type },
-                            Coordinates: { S: JSON.stringify(feature.geometry.coordinates) }
-                        }
-                    }
+                    LayerId: layer.id,
+                    Id: String(feature.id),
+                    Properties: feature.properties,
+                    Geometry: feature.geometry.type
                 }
             }).promise();
         } catch (err) {
