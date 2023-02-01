@@ -28,6 +28,9 @@
         },
         "styles": {
             "$ref": "./layers/styles.json"
+        },
+        "logging": {
+            "$ref": "./layers/logging.json"
         }
     },
     "required": [
@@ -39,6 +42,7 @@
         "description",
         "enabled",
         "enabled_styles",
-        "styles"
+        "styles",
+        "logging"
     ]
 }
