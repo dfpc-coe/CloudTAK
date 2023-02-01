@@ -23,10 +23,6 @@ export default class Dynamo {
                 }
             }
 
-            const geom = coordEach(JSON.parse(JSON.stringify(feature.geometry)), (coord) => {
-                return coord[String(coord[0]), String(coord[1])];
-            });
-
             await ddb.putItem({
                 Item: {
                     LayerId: {
@@ -41,7 +37,7 @@ export default class Dynamo {
                     Geometry: {
                         M: {
                             Type: { S: feature.geometry.type },
-                            Coordinates: { S: JSON.stringify(geom.coordinates) }
+                            Coordinates: { S: JSON.stringify(feature.geometry.coordinates) }
                         }
                     }
                 }
