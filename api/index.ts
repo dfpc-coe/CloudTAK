@@ -12,7 +12,6 @@ import minimist from 'minimist';
 // @ts-ignore
 import TAKPool from './lib/tak-pool.js';
 import { WebSocketServer } from 'ws';
-// @ts-ignore
 import Cacher from './lib/cacher.js';
 // @ts-ignore
 import BlueprintLogin from '@tak-ps/blueprint-login';
