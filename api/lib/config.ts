@@ -1,13 +1,36 @@
 import AWS from 'aws-sdk';
 
+interface ConfigArgs {
+    silent: boolean
+}
+
 /**
  * @class
  */
 export default class Config {
-    static async env(args = {}) {
+    silent: boolean;
+    StackName: string;
+    SigningSecret: string;
+    Username: string;
+    Password: string;
+    API_URL: string;
+    DynamoDB: string;
+    wsClients: any[];
+    pool: any;
+    cacher: any;
+    conns: any;
+    server: any;
+
+    static async env(args: ConfigArgs) {
         const config = new Config();
 
-        config.silent = args.silent;
+        config.silent = (args.silent || false);
+
+        config.wsClients = []
+        config.pool = null;
+        config.cacher = null;
+        config.conns = null;
+        config.server = null;
 
         try {
             if (!process.env.AWS_DEFAULT_REGION) {
@@ -24,7 +47,7 @@ export default class Config {
                 config.Username = 'admin';
                 config.Password = 'admin';
                 config.API_URL = 'http://localhost:5001';
-                config.DynamoDB = null;
+                config.DynamoDB = '';
             } else {
                 if (!process.env.StackName) throw new Error('StackName env must be set');
                 if (!process.env.TAK_USERNAME) throw new Error('TAK_USERNAME env must be set');
@@ -47,13 +70,13 @@ export default class Config {
         return config;
     }
 
-    async fetchSigningSecret() {
+    async fetchSigningSecret(): Promise<string> {
         const secrets = new AWS.SecretsManager({ region: process.env.AWS_DEFAULT_REGION });
 
         const secret = await secrets.getSecretValue({
             SecretId: `${this.StackName}/api/secret`
         }).promise();
 
-        return secret.SecretString;
+        return secret.SecretString || '';
     }
 }
