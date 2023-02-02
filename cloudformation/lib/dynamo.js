@@ -30,8 +30,8 @@ export default {
                         ProjectionType: 'KEYS_ONLY'
                     },
                     ProvisionedThroughput: {
-                        ReadCapacityUnits: 5,
-                        WriteCapacityUnits: 5
+                        ReadCapacityUnits: 1,
+                        WriteCapacityUnits: 1
                     }
                 }],
                 ProvisionedThroughput: {
@@ -43,7 +43,7 @@ export default {
         DDBWriteCapacityScalableTarget: {
             Type: 'AWS::ApplicationAutoScaling::ScalableTarget',
             Properties: {
-                MaxCapacity: 15,
+                MaxCapacity: 30,
                 MinCapacity: 5,
                 ResourceId: cf.join('/', ['table', cf.ref('DDBTable')]),
                 RoleARN: cf.getAtt('DDBScalingRole', 'Arn'),
@@ -93,7 +93,7 @@ export default {
                 PolicyType: 'TargetTrackingScaling',
                 ScalingTargetId: cf.ref('DDBWriteCapacityScalableTarget'),
                 TargetTrackingScalingPolicyConfiguration: {
-                    TargetValue: 50.0,
+                    TargetValue: 75.0,
                     ScaleInCooldown: 60,
                     ScaleOutCooldown: 60,
                     PredefinedMetricSpecification: {
