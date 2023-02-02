@@ -5,13 +5,10 @@
     "description": "Facilitate ETL operations to bring non-TAK sources into a TAK Server",
     "main": "index.js",
     "scripts": {
-        "prestart": "[[ -z $NOBUILD ]] && npm run build || echo 'skipping build'",
-        "start:api": "node .",
         "test": "tape test/**.test.js",
         "doc": "apidoc -i ./doc",
-        "prod": "node index.js",
-        "prebuild": "tslint -c tslint.json -p tsconfig.json --fix",
-        "build": "tsc",
+        "prod": "ts-node --esm index.ts",
+        "lint": "tslint -c tslint.json -p tsconfig.json --fix",
         "dev": "nodemon -i schema/ -i web/ -i doc/ --esm index.ts"
     },
     "repository": {
