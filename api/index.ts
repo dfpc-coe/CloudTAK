@@ -55,7 +55,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
  */
 
 export default async function server(config: Config) {
-    config.cacher = new Cacher(args['nocache'], config.silent);
+    config.cacher = new Cacher(args.nocache, config.silent);
     try {
         await config.cacher.flush();
     } catch (err) {
