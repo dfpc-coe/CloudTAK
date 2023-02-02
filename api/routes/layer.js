@@ -11,7 +11,7 @@ import CloudFormation from '../lib/aws/cloudformation.js';
 import Style from '../lib/style.js';
 import { check } from '@placemarkio/check-geojson';
 import Alarm from '../lib/aws/alarm.js';
-import DDBQueue from '../lib/queue.js';
+import DDBQueue from '../lib/queue.ts';
 
 export default async function router(schema, config) {
     const alarm = new Alarm(config.StackName);
@@ -292,7 +292,7 @@ export default async function router(schema, config) {
                 }
 
                 // TODO Only GeoJSON Features go to Dynamo, this should also store CoT XML
-                ddb.put(layer, req.body.features);
+                ddb.put(layer.id, req.body.features);
             } else if (req.headers['content-type'] === 'application/xml') {
                 conn.tak.write(new COT(req.body));
             } else {

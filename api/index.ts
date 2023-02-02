@@ -18,13 +18,12 @@ import Cacher from './lib/cacher.js';
 import BlueprintLogin from '@tak-ps/blueprint-login';
 // @ts-ignore
 import Server from './lib/types/server.js';
-// @ts-ignore
 import Config from './lib/config.js';
 
 const pkg = JSON.parse(String(fs.readFileSync(new URL('./package.json', import.meta.url))));
 
 const args = minimist(process.argv, {
-    boolean: ['help', 'silent', 'no-cache'],
+    boolean: ['help', 'silent', 'nocache'],
     string: ['postgres']
 });
 
@@ -40,7 +39,9 @@ try {
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
-    const config = await Config.env(args);
+    const config = await Config.env({
+        silent: args.silent || false
+    });
     await server(config);
 }
 
@@ -54,7 +55,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
  */
 
 export default async function server(config: Config) {
-    config.cacher = new Cacher(args['no-cache'], config.silent);
+    config.cacher = new Cacher(args['nocache'], config.silent);
     try {
         await config.cacher.flush();
     } catch (err) {

@@ -29,7 +29,10 @@
         "@tak-ps/blueprint-login": "^0.2.0",
         "@tak-ps/node-cot": "^2.8.0",
         "@turf/meta": "^6.5.0",
+        "@types/aws-sdk": "^2.7.0",
         "@types/cors": "^2.8.13",
+        "@types/pg": "^8.6.6",
+        "@types/slonik": "^22.1.6",
         "@types/ws": "^8.5.4",
         "ajv": "^8.11.2",
         "ajv-formats": "^2.1.1",
@@ -60,9 +63,9 @@
         "apidoc": "^0.53.1",
         "apidoc-plugin-schema2": "^0.1.8",
         "nodemon": "^2.0.20",
-        "ts-node": "^10.9.1",
         "path-to-regexp": "^6.2.1",
-        "tape": "^5.6.1"
+        "tape": "^5.6.1",
+        "ts-node": "^10.9.1"
     },
     "apidoc": {
         "name": "TAK PS ETL API",

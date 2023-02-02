@@ -1,17 +1,30 @@
+// @ts-ignore
 import Dynamo from './aws/dynamo.js';
 import { EventEmitter } from 'node:events';
 
+interface Item {
+    id: string;
+    layer: number;
+    type: string;
+    properties: object;
+    geometry: object;
+}
+
 export default class DDBQueue extends EventEmitter {
-    constructor(stack) {
+    db: Dynamo;
+    q: object[];
+    processing: boolean;
+
+    constructor(stack: string) {
         super();
         this.db = new Dynamo(stack);
         this.q = new Array();
         this.processing = false;
     }
 
-    queue(layer, items) {
+    queue(layer: number, items: Item[]) {
         for (const item of items) {
-            item.layer = layer.id;
+            item.layer = layer;
             this.q.push(item);
         }
 
@@ -26,7 +39,7 @@ export default class DDBQueue extends EventEmitter {
 
             this.db.puts(tiles);
         } catch (err) {
-            this.$emit('error');
+            this.emit('error');
         }
 
         this.processing = false;
