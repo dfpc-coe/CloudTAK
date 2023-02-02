@@ -16,6 +16,9 @@ export default {
                 KeySchema: [{
                     AttributeName: 'LayerId',
                     KeyType: 'HASH'
+                },{
+                    AttributeName: 'Id',
+                    KeyType: 'RANGE'
                 }],
                 GlobalSecondaryIndexes: [{
                     IndexName: 'LayerFeature',
