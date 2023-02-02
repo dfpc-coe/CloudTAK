@@ -5,7 +5,7 @@
     "description": "Facilitate ETL operations to bring non-TAK sources into a TAK Server",
     "main": "index.js",
     "scripts": {
-        "test": "tape test/**.test.js",
+        "test": "./test/test",
         "doc": "apidoc -i ./doc",
         "prod": "ts-node --esm index.ts",
         "lint": "tslint -c tslint.json -p tsconfig.json --fix",
