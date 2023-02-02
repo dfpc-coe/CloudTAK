@@ -2,19 +2,26 @@ import fs from 'fs';
 import path from 'path';
 import cors from 'cors';
 import express from 'express';
-import minify from 'express-minify';
+// @ts-ignore
 import history from 'connect-history-api-fallback';
+// @ts-ignore
 import Schema from '@openaddresses/batch-schema';
+// @ts-ignore
 import { Pool } from '@openaddresses/batch-generic';
 import minimist from 'minimist';
+// @ts-ignore
 import TAKPool from './lib/tak-pool.js';
 import { WebSocketServer } from 'ws';
+// @ts-ignore
 import Cacher from './lib/cacher.js';
+// @ts-ignore
 import BlueprintLogin from '@tak-ps/blueprint-login';
+// @ts-ignore
 import Server from './lib/types/server.js';
+// @ts-ignore
 import Config from './lib/config.js';
 
-const pkg = JSON.parse(fs.readFileSync(new URL('./package.json', import.meta.url)));
+const pkg = JSON.parse(String(fs.readFileSync(new URL('./package.json', import.meta.url))));
 
 const args = minimist(process.argv, {
     boolean: ['help', 'silent', 'no-cache'],
@@ -26,7 +33,7 @@ try {
 
     fs.accessSync(dotfile);
 
-    Object.assign(process.env, JSON.parse(fs.readFileSync(dotfile)));
+    Object.assign(process.env, JSON.parse(String(fs.readFileSync(dotfile))));
     console.log('ok - .env file loaded');
 } catch (err) {
     console.log('ok - no .env file loaded');
@@ -46,7 +53,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
  *   This API endpoint does not require authentication
  */
 
-export default async function server(config) {
+export default async function server(config: Config) {
     config.cacher = new Cacher(args['no-cache'], config.silent);
     try {
         await config.cacher.flush();
@@ -92,8 +99,6 @@ export default async function server(config) {
         credentials: true
     }));
 
-    app.use(minify());
-
     /**
      * @api {get} /api Get Metadata
      * @apiVersion 1.0.0
@@ -138,12 +143,12 @@ export default async function server(config) {
     app.use(history({
         rewrites: [{
             from: /.*\/js\/.*$/,
-            to: function(context) {
+            to(context: any) {
                 return context.parsedUrl.pathname.replace(/.*\/js\//, '/js/');
             }
         },{
             from: /.*$/,
-            to: function(context) {
+            to(context: any) {
                 const parse = path.parse(context.parsedUrl.path);
                 if (parse.ext) {
                     return context.parsedUrl.pathname;
@@ -163,9 +168,7 @@ export default async function server(config) {
     });
 
     return new Promise((resolve, reject) => {
-        const srv = app.listen(5001, (err) => {
-            if (err) return reject(err);
-
+        const srv = app.listen(5001, () => {
             if (!config.silent) console.log('ok - http://localhost:5001');
             return resolve(srv);
         });
