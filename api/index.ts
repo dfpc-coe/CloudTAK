@@ -79,14 +79,6 @@ export default async function server(config: Config) {
     config.conns = new TAKPool(config.server, config.wsClients);
     await config.conns.init(config.pool);
 
-    /*
-    if (true) config.conns.get(5).tak.on('cot', function(cot) {
-        const json = cot.to_geojson();
-        console.error('on:msg:', json.properties.type, `(${json.properties.callsign}) [${json.geometry.coordinates.join(',')}]`);
-        console.error(JSON.stringify(cot.raw))
-    })
-    */
-
     const app = express();
 
     const schema = new Schema(express.Router(), {
