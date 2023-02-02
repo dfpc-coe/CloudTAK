@@ -262,7 +262,7 @@ export default async function router(schema, config) {
         res: 'res.Standard.json'
     }, async (req, res) => {
         try {
-            await Auth.is_layer(req.params.layerid, req);
+            await Auth.is_layer(req, req.params.layerid);
 
             if (!req.headers['content-type']) throw new Err(400, null, 'Content-Type not set');
 

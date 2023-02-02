@@ -1,11 +1,17 @@
+// @ts-ignore
 import Err from '@openaddresses/batch-error';
+// @ts-ignore
 import busboy from 'busboy';
-import fs from 'fs/promises';
+import fs from 'node:fs/promises';
 import path from 'path';
+// @ts-ignore
 import Asset from '../lib/types/asset.js';
 import Auth from '../lib/auth.js';
 
-export default async function router(schema, config) {
+import { Request, Response } from 'express';
+import Config from '../lib/config.js';
+
+export default async function router(schema: any, config: Config) {
     await schema.get('/asset', {
         name: 'List Assets',
         auth: 'user',
@@ -13,7 +19,7 @@ export default async function router(schema, config) {
         description: 'List Assets',
         query: 'req.query.ListAssets.json',
         res: 'res.ListAssets.json'
-    }, async (req, res) => {
+    }, async (req: Request, res: Response) => {
         try {
             await Auth.is_auth(req);
             const list = await Asset.list(config.pool, req.query);
@@ -30,7 +36,7 @@ export default async function router(schema, config) {
         description: 'Get single asset',
         ':assetid': 'integer',
         res: 'assets.json'
-    }, async (req, res) => {
+    }, async (req: Request, res: Response) => {
         try {
             await Auth.is_auth(req);
             const asset = await Asset.from(config.pool, req.params.assetid);
@@ -47,7 +53,7 @@ export default async function router(schema, config) {
         description: 'Create a new asset',
         ':assetid': 'integer',
         res: 'assets.json'
-    }, async (req, res) => {
+    }, async (req: Request, res: Response) => {
         let bb;
         try {
             await Auth.is_auth(req);
@@ -67,7 +73,7 @@ export default async function router(schema, config) {
             return Err.respond(err, res);
         }
 
-        const assets = [];
+        const assets: any = [];
         bb.on('file', async (fieldname, file, blob) => {
             try {
                 const asset = await Asset.generate(config.pool, {
@@ -102,7 +108,7 @@ export default async function router(schema, config) {
         ':assetid': 'integer',
         req: 'req.body.PatchAsset.json',
         res: 'assets.json'
-    }, async (req, res) => {
+    }, async (req: Request, res: Response) => {
         try {
             await Auth.is_auth(req);
             const asset = await Asset.from(config.pool, req.params.assetid);
@@ -121,7 +127,7 @@ export default async function router(schema, config) {
         description: 'Delete Asset',
         ':assetid': 'integer',
         res: 'res.Standard.json'
-    }, async (req, res) => {
+    }, async (req: Request, res: Response) => {
         try {
             await Auth.is_auth(req);
             const asset = await Asset.from(config.pool, req.params.assetid);
@@ -144,7 +150,7 @@ export default async function router(schema, config) {
         group: 'Assets',
         description: 'Get single raw asset',
         ':assetid': 'integer'
-    }, async (req, res) => {
+    }, async (req: Request, res: Response) => {
         try {
             await Auth.is_auth(req);
 
@@ -152,7 +158,7 @@ export default async function router(schema, config) {
             // could also allow user restricted files in the future..
             let afile = null;
             for (const file of await fs.readdir(new URL('../assets/', import.meta.url))) {
-                if (parseInt(path.parse(file).name) === req.params.assetid) {
+                if (path.parse(file).name === String(req.params.assetid)) {
                     afile = file;
                     break;
                 }

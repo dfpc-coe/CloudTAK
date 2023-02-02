@@ -1,9 +1,13 @@
+// @ts-ignore
 import Err from '@openaddresses/batch-error';
+// @ts-ignore
 import Connection from '../lib/types/connection.js';
 import Auth from '../lib/auth.js';
 import { sql } from 'slonik';
+import Config from '../lib/config.js';
+import { Request, Response } from 'express';
 
-export default async function router(schema, config) {
+export default async function router(schema: any, config: Config) {
     await schema.get('/connection', {
         name: 'List Connections',
         group: 'Connection',
@@ -11,13 +15,13 @@ export default async function router(schema, config) {
         description: 'List Connections',
         query: 'req.query.ListConnections.json',
         res: 'res.ListConnections.json'
-    }, async (req, res) => {
+    }, async (req: Request, res: Response) => {
         try {
             await Auth.is_auth(req);
 
             const list = await Connection.list(config.pool, req.query);
 
-            list.connections.map((conn) => {
+            list.connections.map((conn: any) => {
                 conn.status = config.conns.status(conn.id);
             });
 
@@ -40,7 +44,7 @@ export default async function router(schema, config) {
         description: 'Register a new connection',
         body: 'req.body.CreateConnection.json',
         res: 'res.Connection.json'
-    }, async (req, res) => {
+    }, async (req: Request, res: Response) => {
         try {
             await Auth.is_auth(req);
 
@@ -64,7 +68,7 @@ export default async function router(schema, config) {
         ':connectionid': 'integer',
         body: 'req.body.PatchConnection.json',
         res: 'res.Connection.json'
-    }, async (req, res) => {
+    }, async (req: Request, res: Response) => {
         try {
             await Auth.is_auth(req);
             const conn = await Connection.commit(config.pool, req.params.connectionid, {
@@ -86,7 +90,7 @@ export default async function router(schema, config) {
         description: 'Get a connection',
         ':connectionid': 'integer',
         res: 'res.Connection.json'
-    }, async (req, res) => {
+    }, async (req: Request, res: Response) => {
         try {
             await Auth.is_auth(req);
 
@@ -106,7 +110,7 @@ export default async function router(schema, config) {
         description: 'Delete a connection',
         ':connectionid': 'integer',
         res: 'res.Standard.json'
-    }, async (req, res) => {
+    }, async (req: Request, res: Response) => {
         try {
             await Auth.is_auth(req);
 
