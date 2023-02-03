@@ -37,7 +37,7 @@ export default class DDBQueue extends EventEmitter {
         try {
             const tiles = this.q.splice(0, 25);
 
-            this.db.puts(tiles);
+            await this.db.puts(tiles);
         } catch (err) {
             this.emit('error');
         }
