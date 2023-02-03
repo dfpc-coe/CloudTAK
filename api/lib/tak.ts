@@ -1,14 +1,30 @@
 import EventEmitter from 'node:events';
+import tls from 'node:tls';
 import TAKAPI from './tak-api.js';
+// @ts-ignore
 import { XML as COT } from '@tak-ps/node-cot';
-import tls from 'tls';
+
+export interface TAKAuth {
+    cert: string;
+    key: string;
+}
 
 export default class TAK extends EventEmitter {
-    constructor(type, opts) {
+    type: string;
+    url: URL;
+    auth: TAKAuth;
+    open: boolean;
+    destroyed: boolean;
+    client: any;
+    version: string;
+    api: TAKAPI;
+
+    constructor(type: string, url: URL, auth: TAKAuth) {
         super();
 
         this.type = type;
-        this.opts = opts;
+        this.url = url;
+        this.auth = auth;
 
         this.open = false;
         this.destroyed = false;
@@ -17,35 +33,29 @@ export default class TAK extends EventEmitter {
 
         this.version; // Server Version
 
-        this.api = new TAKAPI(type, opts);
+        this.api = new TAKAPI(type, url, auth);
     }
 
-    static async connect(url, auth) {
-        if (!(url instanceof URL)) throw new Error('TAK Server URL not provided');
-
-        const tak = new TAK('ssl', { url, auth });
+    static async connect(url: URL, auth: TAKAuth) {
+        const tak = new TAK('ssl', url, auth);
 
         if (url.protocol === 'ssl:') {
-            if (!tak.opts.auth.cert) throw new Error('auth.cert required');
-            if (!tak.opts.auth.key) throw new Error('auth.key required');
+            if (!tak.auth.cert) throw new Error('auth.cert required');
+            if (!tak.auth.key) throw new Error('auth.key required');
             return await tak.connect_ssl();
         } else {
             throw new Error('Unknown TAK Server Protocol');
         }
     }
 
-    connect_ssl() {
-        if (!(this.opts.url instanceof URL)) throw new Error('SSL url must be URL instance');
-        if (typeof this.opts.auth.cert !== 'string') throw new Error('Cert must be a String');
-        if (typeof this.opts.auth.key !== 'string') throw new Error('Key must be a String');
-
+    connect_ssl(): Promise<TAK> {
         return new Promise((resolve) => {
             this.client = tls.connect({
+                host: this.url.hostname,
+                port: parseInt(this.url.port),
                 rejectUnauthorized: false,
-                host: this.opts.url.hostname,
-                port: this.opts.url.port,
-                cert: this.opts.auth.cert,
-                key: this.opts.auth.key
+                cert: this.auth.cert,
+                key: this.auth.key
             });
 
             this.client.on('connect', () => {
@@ -59,11 +69,11 @@ export default class TAK extends EventEmitter {
             });
 
             let buff = '';
-            this.client.on('data', (data) => {
+            this.client.on('data', (data: Buffer) => {
                 // Eventually Parse ProtoBuf
                 buff = buff + data.toString();
 
-                let result = TAK.findCoT(buff);
+                let result: any = TAK.findCoT(buff);
                 while (result && result.event) {
                     const cot = new COT(result.event);
 
@@ -85,7 +95,7 @@ export default class TAK extends EventEmitter {
                 }
             }).on('timeout', () => {
                 if (!this.destroyed) this.emit('timeout');
-            }).on('error', (err) => {
+            }).on('error', (err: Error) => {
                 this.emit('error', err);
             }).on('end', () => {
                 this.open = false;
@@ -116,11 +126,11 @@ export default class TAK extends EventEmitter {
      *
      * @param {COT} cot COT Object
      */
-    write(cot) {
+    write(cot: COT) {
         this.client.write(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n${cot.to_xml()}`);
     }
 
-    static findCoT(str) { // https://github.com/vidterra/multitak/blob/main/app/lib/helper.js#L4
+    static findCoT(str: string): object { // https://github.com/vidterra/multitak/blob/main/app/lib/helper.js#L4
         let match = str.match(/(<event.*?<\/event>)(.*)/); // find first COT
         if (!match) {
             match = str.match(/(<event[^>]*\/>)(.*)/); // find first COT

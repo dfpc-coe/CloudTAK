@@ -1,28 +1,35 @@
 import MissionData from './api/mission-data.js';
+import Err from '@openaddresses/batch-error';
 import https from 'https';
-import fetch from 'node-fetch';
+import { TAKAuth } from './tak.js';
 
 /**
  * Handle TAK HTTP API Operations
  * @class
  */
 export default class TAKAPI {
-    constructor(type, opts) {
-        this.type = type;
-        this.opts = opts;
+    type: string;
+    auth: TAKAuth;
+    url: URL;
+    agent: https.Agent;
+    MissionData: MissionData;
 
-        this.url = new URL(`https://${opts.url.hostname}:8080`);
+    constructor(type: string, url: URL, auth: TAKAuth) {
+        this.type = type;
+        this.auth = auth;
+
+        this.url = new URL(`https://${url.hostname}:8080`);
 
         this.agent = new https.Agent({
-            cert: this.opts.cert,
-            key: this.opts.key,
+            cert: this.auth.cert,
+            key: this.auth.key,
             keepAlive: false
         });
 
         this.MissionData = new MissionData(this);
     }
 
-    stdurl(url) {
+    stdurl(url: any) {
         try {
             url = new URL(url);
         } catch (err) {
@@ -38,7 +45,7 @@ export default class TAKAPI {
      * @param {URL|String} url      - Full URL or API fragment to request
      * @param {Object} [opts={}]    - Options
      */
-    async fetch(url, opts = {}) {
+    async fetch(url: URL, opts: any = {}) {
         url = this.stdurl(url);
 
         console.error('TAK API', url);
@@ -59,7 +66,7 @@ export default class TAKAPI {
 
             const res = await fetch(url, opts);
 
-            let bdy = {};
+            let bdy: any = {};
             if ((res.status < 200 || res.status >= 400) && ![401].includes(res.status)) {
                 try {
                     bdy = await res.json();
@@ -67,15 +74,12 @@ export default class TAKAPI {
                     throw new Error(`Status Code: ${res.status}`);
                 }
 
-                const err = new Error(bdy.message || `Status Code: ${res.status}`);
-                err.body = bdy;
-                throw err;
+                throw  new Error(bdy.message || `Status Code: ${res.status}`);
             }
 
             return await res.json();
         } catch (err) {
-            console.error(err);
-            throw new Error(err.message);
+            throw new Err(400, null, err.message);
         }
     }
 }
