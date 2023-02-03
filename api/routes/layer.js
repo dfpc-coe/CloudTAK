@@ -292,7 +292,7 @@ export default async function router(schema, config) {
                 }
 
                 // TODO Only GeoJSON Features go to Dynamo, this should also store CoT XML
-                ddb.put(layer.id, req.body.features);
+                ddb.queue(layer.id, req.body.features);
             } else if (req.headers['content-type'] === 'application/xml') {
                 conn.tak.write(new COT(req.body));
             } else {
