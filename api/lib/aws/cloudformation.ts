@@ -1,38 +1,40 @@
+// @ts-ignore
 import cf from '@mapbox/cloudfriend';
+import Config from '../config.js';
 import AWS from 'aws-sdk';
 
 /**
  * @class
  */
 export default class CloudFormation {
-    static name(config, layer) {
-        return `${config.StackName}-layer-${layer.id}`;
+    static stdname(config: Config, layerid: number): string {
+        return `${config.StackName}-layer-${layerid}`;
     }
 
-    static async create(config, layer, stack) {
+    static async create(config: Config, layerid: number, stack: object) {
         const CF = new AWS.CloudFormation({ region: process.env.AWS_DEFAULT_REGION });
 
         await CF.createStack({
-            StackName: this.name(config, layer),
+            StackName: this.stdname(config, layerid),
             TemplateBody: JSON.stringify(stack)
         }).promise();
     }
 
-    static async update(config, layer, stack) {
+    static async update(config: Config, layerid: number, stack: object) {
         const CF = new AWS.CloudFormation({ region: process.env.AWS_DEFAULT_REGION });
 
         await CF.updateStack({
-            StackName: this.name(config, layer),
+            StackName: this.stdname(config, layerid),
             TemplateBody: JSON.stringify(stack)
         }).promise();
     }
 
-    static async status(config, layer) {
+    static async status(config: Config, layerid: number) {
         const CF = new AWS.CloudFormation({ region: process.env.AWS_DEFAULT_REGION });
 
         try {
             const res = await CF.describeStacks({
-                StackName: this.name(config, layer)
+                StackName: this.stdname(config, layerid)
             }).promise()
 
             return {
@@ -47,12 +49,12 @@ export default class CloudFormation {
         }
     }
 
-    static async exists(config, layer) {
+    static async exists(config: Config, layerid: number) {
         const CF = new AWS.CloudFormation({ region: process.env.AWS_DEFAULT_REGION });
 
         try {
             await CF.describeStacks({
-                StackName: this.name(config, layer)
+                StackName: this.stdname(config, layerid)
             }).promise()
 
             return true;
@@ -65,11 +67,11 @@ export default class CloudFormation {
         }
     }
 
-    static async delete(config, layer) {
+    static async delete(config: Config, layerid: number) {
         const CF = new AWS.CloudFormation({ region: process.env.AWS_DEFAULT_REGION });
 
         await CF.deleteStack({
-            StackName: this.name(config, layer)
+            StackName: this.stdname(config, layerid)
         }).promise();
     }
 };
