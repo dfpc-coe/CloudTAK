@@ -1,19 +1,26 @@
 import Err from '@openaddresses/batch-error';
+// @ts-ignore
 import Layer from '../lib/types/layer.js';
+// @ts-ignore
 import LayerLive from '../lib/types/layers_live.js';
+// @ts-ignore
 import LayerFile from '../lib/types/layers_file.js';
+// @ts-ignore
 import { XML as COT } from '@tak-ps/node-cot';
 import Cacher from '../lib/cacher.js';
 import { sql } from 'slonik';
 import Auth from '../lib/auth.js';
 import Lambda from '../lib/aws/lambda.js';
 import CloudFormation from '../lib/aws/cloudformation.js';
+// @ts-ignore
 import Style from '../lib/style.js';
 import { check } from '@placemarkio/check-geojson';
 import Alarm from '../lib/aws/alarm.js';
-import DDBQueue from '../lib/queue.ts';
+import DDBQueue from '../lib/queue.js';
+import { Request, Response } from 'express';
+import Config from '../lib/config.js';
 
-export default async function router(schema, config) {
+export default async function router(schema: any, config: Config) {
     const alarm = new Alarm(config.StackName);
     const ddb = new DDBQueue(config.StackName);
     ddb.on('error', (err) => { console.error(err); });
@@ -25,7 +32,7 @@ export default async function router(schema, config) {
         description: 'List layers',
         query: 'req.query.ListLayers.json',
         res: 'res.ListLayers.json'
-    }, async (req, res) => {
+    }, async (req: Request, res: Response) => {
         try {
             await Auth.is_auth(req);
 
@@ -34,7 +41,7 @@ export default async function router(schema, config) {
             if (config.StackName !== 'test') {
                 const alarms = await alarm.list();
 
-                list.layers.map((layer) => {
+                list.layers.map((layer: any) => {
                     layer.status = alarms.get(layer.id) || 'unknown';
                 });
 
@@ -44,7 +51,7 @@ export default async function router(schema, config) {
                 }
             } else {
                 list.status = { healthy: 0, alarm: 0, unknown: 0 };
-                list.layers.map((layer) => {
+                list.layers.map((layer: any) => {
                     layer.status = 'unknown';
                 });
             }
@@ -62,7 +69,7 @@ export default async function router(schema, config) {
         description: 'Register a new layer',
         body: 'req.body.CreateLayer.json',
         res: 'res.Layer.json'
-    }, async (req, res) => {
+    }, async (req: Request, res: Response) => {
         try {
             await Auth.is_auth(req);
 
@@ -125,7 +132,7 @@ export default async function router(schema, config) {
         ':layerid': 'integer',
         body: 'req.body.PatchLayer.json',
         res: 'res.Layer.json'
-    }, async (req, res) => {
+    }, async (req: Request, res: Response) => {
         try {
             await Auth.is_auth(req);
 
@@ -145,11 +152,11 @@ export default async function router(schema, config) {
             }
 
             let layer = Object.keys(req.body).length > 0
-                ?  await Layer.commit(config.pool, req.params.layerid, {
+                ?  await Layer.commit(config.pool, parseInt(req.params.layerid), {
                     updated: sql`Now()`,
                     ...req.body
                 })
-                :  await Layer.from(config.pool, req.params.layerid);
+                :  await Layer.from(config.pool, parseInt(req.params.layerid));
 
             if (layer.mode === 'live') {
                 await LayerLive.commit(config.pool, layer.id, data, {
@@ -199,7 +206,7 @@ export default async function router(schema, config) {
         description: 'Get a layer',
         ':layerid': 'integer',
         res: 'res.Layer.json'
-    }, async (req, res) => {
+    }, async (req: Request, res: Response) => {
         try {
             await Auth.is_auth(req);
 
@@ -228,7 +235,7 @@ export default async function router(schema, config) {
         description: 'Delete a layer',
         ':layerid': 'integer',
         res: 'res.Standard.json'
-    }, async (req, res) => {
+    }, async (req: Request, res: Response) => {
         try {
             await Auth.is_auth(req);
 
@@ -260,9 +267,9 @@ export default async function router(schema, config) {
         description: 'Post CoT data to a given layer',
         ':layerid': 'integer',
         res: 'res.Standard.json'
-    }, async (req, res) => {
+    }, async (req: Request, res: Response) => {
         try {
-            await Auth.is_layer(req, req.params.layerid);
+            await Auth.is_layer(req, parseInt(req.params.layerid));
 
             if (!req.headers['content-type']) throw new Err(400, null, 'Content-Type not set');
 
