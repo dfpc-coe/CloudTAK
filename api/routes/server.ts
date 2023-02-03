@@ -1,16 +1,19 @@
 import Err from '@openaddresses/batch-error';
+// @ts-ignore
 import Server from '../lib/types/server.js';
 import Auth from '../lib/auth.js';
 import { sql } from 'slonik';
+import Config from '../lib/config.js';
+import { Request, Response } from 'express';
 
-export default async function router(schema, config) {
+export default async function router(schema: any, config: Config) {
     await schema.get('/server', {
         name: 'Get Server',
         group: 'Server',
         auth: 'user',
         description: 'Get Server',
         res: 'res.Server.json'
-    }, async (req, res) => {
+    }, async (req: Request, res: Response) => {
         try {
             await Auth.is_auth(req);
 
@@ -36,11 +39,11 @@ export default async function router(schema, config) {
         description: 'Post Server',
         body: 'req.body.Server.json',
         res: 'res.Server.json'
-    }, async (req, res) => {
+    }, async (req: Request, res: Response) => {
         try {
             await Auth.is_auth(req);
 
-            if (config.server) throw new Error(400, null, 'Cannot post to an existing server');
+            if (config.server) throw new Err(400, null, 'Cannot post to an existing server');
 
             config.server = await Server.generate(config.pool, req.body);
             config.conns.server = config.server;
@@ -61,11 +64,11 @@ export default async function router(schema, config) {
         description: 'Patch Server',
         body: 'req.body.Server.json',
         res: 'res.Server.json'
-    }, async (req, res) => {
+    }, async (req: Request, res: Response) => {
         try {
             await Auth.is_auth(req);
 
-            if (!config.server) throw new Error(400, null, 'Cannot patch a server that hasn\'t been created');
+            if (!config.server) throw new Err(400, null, 'Cannot patch a server that hasn\'t been created');
 
             config.server = await config.server.commit(req.body);
             config.conns.server = config.server;
