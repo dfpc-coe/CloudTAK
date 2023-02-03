@@ -46,7 +46,7 @@ export default class Dynamo {
                 req.RequestItems[this.table].push({
                     PutRequest: {
                         Item: {
-                            LayerId: feature.id,
+                            LayerId: feature.layer,
                             Id: String(feature.id),
                             Properties: feature.properties,
                             Geometry: feature.geometry
