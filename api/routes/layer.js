@@ -100,7 +100,7 @@ export default async function router(schema, config) {
 
             try {
                 const lambda = await Lambda.generate(config, layer, data);
-                await CloudFormation.create(config, layer, lambda);
+                await CloudFormation.create(config, layer.id, lambda);
             } catch (err) {
                 console.error(err);
             }
@@ -166,10 +166,10 @@ export default async function router(schema, config) {
 
             try {
                 const lambda = await Lambda.generate(config, layer, data);
-                if (await CloudFormation.exists(config, layer)) {
-                    await CloudFormation.update(config, layer, lambda);
+                if (await CloudFormation.exists(config, layer.id)) {
+                    await CloudFormation.update(config, layer.id, lambda);
                 } else {
-                    await CloudFormation.create(config, layer, lambda);
+                    await CloudFormation.create(config, layer.id, lambda);
                 }
             } catch (err) {
                 console.error(err);
@@ -234,7 +234,7 @@ export default async function router(schema, config) {
 
             const layer = await Layer.from(config.pool, req.params.layerid);
 
-            await CloudFormation.delete(config, layer);
+            await CloudFormation.delete(config, layer.id);
 
             if (layer.mode === 'live') {
                 await LayerLive.delete(config.pool, layer.id);
