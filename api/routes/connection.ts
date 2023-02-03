@@ -1,4 +1,3 @@
-// @ts-ignore
 import Err from '@openaddresses/batch-error';
 // @ts-ignore
 import Connection from '../lib/types/connection.js';

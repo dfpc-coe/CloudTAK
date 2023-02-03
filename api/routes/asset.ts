@@ -1,6 +1,4 @@
-// @ts-ignore
 import Err from '@openaddresses/batch-error';
-// @ts-ignore
 import busboy from 'busboy';
 import fs from 'node:fs/promises';
 import path from 'path';

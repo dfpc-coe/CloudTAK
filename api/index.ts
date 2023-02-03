@@ -2,7 +2,6 @@ import fs from 'fs';
 import path from 'path';
 import cors from 'cors';
 import express from 'express';
-// @ts-ignore
 import history from 'connect-history-api-fallback';
 // @ts-ignore
 import Schema from '@openaddresses/batch-schema';
@@ -159,7 +158,7 @@ export default async function server(config: Config) {
         config.wsClients.push(ws);
     });
 
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
         const srv = app.listen(5001, () => {
             if (!config.silent) console.log('ok - http://localhost:5001');
             return resolve(srv);
