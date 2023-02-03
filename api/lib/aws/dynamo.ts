@@ -6,11 +6,13 @@ import { coordEach } from '@turf/meta';
  * @class
  */
 export default class Dynamo {
-    constructor(table) {
+    table: string;
+
+    constructor(table: string) {
         this.table = table;
     }
 
-    async put(feature) {
+    async put(feature: any) {
         try {
             const ddb = new AWS.DynamoDB.DocumentClient({region: process.env.AWS_DEFAULT_REGION });
 
@@ -20,7 +22,7 @@ export default class Dynamo {
                     LayerId: feature.layer,
                     Id: String(feature.id),
                     Properties: feature.properties,
-                    Geometry: feature.geometry.type
+                    Geometry: feature.geometry
                 }
             }).promise();
         } catch (err) {
@@ -28,11 +30,13 @@ export default class Dynamo {
         }
     }
 
-    async puts(features) {
+    async puts(features: any[]) {
         try {
             const ddb = new AWS.DynamoDB.DocumentClient({region: process.env.AWS_DEFAULT_REGION });
 
-            const req = {
+            const req: {
+                RequestItems: any
+            } = {
                 RequestItems: {}
             };
 
@@ -45,7 +49,7 @@ export default class Dynamo {
                             LayerId: feature.id,
                             Id: String(feature.id),
                             Properties: feature.properties,
-                            Geometry: feature.geometry.type
+                            Geometry: feature.geometry
                         }
                     }
                 });
