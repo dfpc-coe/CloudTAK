@@ -18,7 +18,7 @@ export default class DDBQueue extends EventEmitter {
     constructor(stack: string) {
         super();
         this.db = new Dynamo(stack);
-        this.q = new Array();
+        this.q = [];
         this.processing = false;
     }
 

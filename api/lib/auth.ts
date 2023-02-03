@@ -1,4 +1,3 @@
-// @ts-ignore
 import Err from '@openaddresses/batch-error';
 import { Request } from 'express';
 
@@ -12,7 +11,7 @@ export default class Auth {
      * @param {Object} req Express Request
      * @param {boolean} token Should URL query tokens be allowed (usually only for downloads)
      */
-    static async is_auth(req: Request, token: boolean = false) {
+    static async is_auth(req: Request, token = false) {
         // @ts-ignore
         if (token && req.token) req.auth = req.token;
 

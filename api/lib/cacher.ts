@@ -5,7 +5,7 @@ export default class Cacher {
     nocache: boolean;
     cache: Client;
 
-    constructor(nocache: boolean = false, silent: boolean = false) {
+    constructor(nocache = false, silent = false) {
         this.nocache = nocache;
 
         if (!silent) {
@@ -24,9 +24,7 @@ export default class Cacher {
      * @param {function} miss Async Function to fallback to
      * @param {boolean} [isJSON=true] Should we automatically parse to JSON
      */
-    async get(key: string, miss: any, isJSON: boolean = true): Promise<any> {
-        let res;
-
+    async get(key: string, miss: any, isJSON = true): Promise<any> {
         try {
             if (!key || this.nocache) throw new Error('Miss');
 
@@ -41,8 +39,6 @@ export default class Cacher {
 
             return cached;
         } catch (err) {
-            if (res) return res;
-
             const fresh = await miss();
 
             try {
