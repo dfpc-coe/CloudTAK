@@ -10,10 +10,7 @@
             "type": "integer"
         },
         "tasks": {
-            "type": "array",
-            "items":  {
-                "type": "object"
-            }
+            "type": "object"
         }
     }
 }
