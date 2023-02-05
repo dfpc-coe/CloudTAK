@@ -13,7 +13,7 @@ export default class Dynamo {
     }
 
     #expiry(feature: any) {
-        let time = new Date(feature.properties.time || Date.now());
+        let time = new Date(feature.properties.stale || feature.properties.time || Date.now());
         time.setHours(time.getHours() + 24);
         return Math.round(time.getTime() / 1000);
     }
