@@ -22,7 +22,7 @@
     "homepage": "https://github.com/tak-ps/etl#readme",
     "dependencies": {
         "@mapbox/cloudfriend": "^6.0.0",
-        "@openaddresses/batch-alarms": "^3.0.0",
+        "@openaddresses/batch-alarms": "^3.1.0",
         "@openaddresses/deploy": "^7.5.0",
         "aws-sdk": "^2.1264.0",
         "xml-js": "^1.6.11"

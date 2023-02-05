@@ -5,7 +5,9 @@ import Err from '@openaddresses/batch-error';
  * @class
  */
 export default class Alarm {
-    constructor(stack) {
+    stack: string;
+
+    constructor(stack: string) {
         this.stack = stack;
     }
 
@@ -34,7 +36,7 @@ export default class Alarm {
         }
     }
 
-    async get(layer) {
+    async get(layer: number) {
         const cw = new AWS.CloudWatch({ region: process.env.AWS_DEFAULT_REGION });
 
         try {
