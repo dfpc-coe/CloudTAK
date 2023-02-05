@@ -30,6 +30,9 @@
         },
         "data": {
             "$ref": "./util/layerdata.json"
+        },
+        "loggin": {
+            "$ref": "./layers/logging.json"
         }
     }
 }

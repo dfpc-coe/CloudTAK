@@ -34,10 +34,20 @@
 
                             <div class='ms-auto'>
                                 <div class='d-flex'>
-                                    <span class='px-2'>Enabled</span>
-                                    <label class="form-check form-switch">
-                                        <input v-model='layer.enabled' class="form-check-input" type="checkbox">
-                                    </label>
+                                    <div class='btn-list'>
+                                        <div class='d-flex'>
+                                            <span class='px-2'>Logging</span>
+                                            <label class="form-check form-switch">
+                                                <input v-model='layer.logging' class="form-check-input" type="checkbox">
+                                            </label>
+                                        </div>
+                                        <div class='d-flex'>
+                                            <span class='px-2'>Enabled</span>
+                                            <label class="form-check form-switch">
+                                                <input v-model='layer.enabled' class="form-check-input" type="checkbox">
+                                            </label>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -123,6 +133,7 @@ export default {
                 name: '',
                 description: '',
                 enabled: true,
+                logging: true,
                 enabled_styles: false,
                 styles: {}
             }

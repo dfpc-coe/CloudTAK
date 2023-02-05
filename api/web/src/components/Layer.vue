@@ -31,7 +31,12 @@
 
                             <div class='ms-auto'>
                                 <div class='btn-list'>
-                                    <span v-if='layerdata.cron' v-text='cronstr(layer.cron)'/>
+                                    <div class='d-flex'>
+                                        <span class='px-2'>Logging</span>
+                                        <label class="form-check form-switch">
+                                            <input disabled v-model='layer.logging' class="form-check-input" type="checkbox">
+                                        </label>
+                                    </div>
 
                                     <SettingsIcon class='cursor-pointer' @click='$router.push(`/layer/${layer.id}/edit`)'/>
                                 </div>
