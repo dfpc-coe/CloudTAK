@@ -29,7 +29,7 @@ test('GET: api/task', async (t) => {
 
         t.deepEquals(res.body, {
             total: 0,
-            tasks: []
+            tasks: {}
         });
     } catch (err) {
         t.error(err, 'no error');

@@ -41,6 +41,7 @@ export default async function router(schema: any, config: Config) {
                 tasks.get(match[1]).push(match[2]);
             }
 
+            const taskarr = new Array()
             for (const key in tasks.keys()) {
                 tasks.set(key, semver.desc(tasks.get(key)));
             }
