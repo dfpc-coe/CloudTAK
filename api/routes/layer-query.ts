@@ -33,15 +33,17 @@ export default async function router(schema: any, config: Config) {
 
             if (!layer.logging) throw new Err(400, null, 'Feature Logging has been disabled for this layer');
 
-            await ddb.query(layer.id);
+            const features = (await ddb.query(layer.id)).map((feat) => {
+                return {
+                    id: feat.Id,
+                    properties: feat.Properties,
+                    geometry: feat.Geometry
+                }
+            });
 
             return res.json({
                 type: 'FeatureCollection',
-                features: [{
-                    type: 'Feature',
-                    properties: {},
-                    geometry: {}
-                }]
+                features
             });
         } catch (err) {
             return Err.respond(err, res);

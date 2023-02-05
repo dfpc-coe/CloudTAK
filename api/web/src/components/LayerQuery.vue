@@ -35,26 +35,24 @@
                             </div>
                         </div>
                         <None v-else-if='!list.features.length' :create='false'/>
-                        <table v-else class="table card-table table-vcenter">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                </tr>
-                                <tr>
-                                    <th>Properties</th>
-                                </tr>
-                                <tr>
-                                    <th>Geometry</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr :key='feature.id' v-for='feature in list.features'>
-                                    <td v-text='features.id'></td>
-                                    <td v-text='JSON.stringify(feature.properties)'></td>
-                                    <td v-text='JSON.stringify(feature.geometry)'></td>
-                                </tr>
-                            </tbody>
-                        </table>
+                        <div v-else class='table-responsive'>
+                            <table class="table card-table table-vcenter">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Type</th>
+                                        <th>Properties</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr :key='feature.id' v-for='feature in list.features'>
+                                        <td v-text='feature.id'></td>
+                                        <td v-text='feature.geometry.type'></td>
+                                        <td v-text='JSON.stringify(feature.properties)'></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -94,6 +92,7 @@ export default {
     },
     methods: {
         query: async function() {
+            this.error = false;
             this.loading.query = true;
             try {
                 this.list = await window.std(`/api/layer/${this.$route.params.layerid}/query`);
