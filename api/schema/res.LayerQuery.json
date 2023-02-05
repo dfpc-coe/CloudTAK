@@ -1,0 +1,20 @@
+{
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+        "type":,
+        "features"
+    ],
+    "properties": {
+        "type": {
+            "type": "string",
+            "enum": [ "FeatureCollection" ]
+        },
+        "features": {
+            "type": "array",
+            "items": {
+                "type": "object"
+            }
+        }
+    }
+}

@@ -1,0 +1,113 @@
+<template>
+<div>
+    <div class='page-wrapper'>
+        <div class="page-header d-print-none">
+            <div class="container-xl">
+                <div class="row g-2 align-items-center">
+                    <div class="col d-flex">
+                        <ol class="breadcrumb" aria-label="breadcrumbs">
+                            <li class="breadcrumb-item" aria-current="page"><a @click='$router.push("/")' class='cursor-pointer'>Home</a></li>
+                            <li class="breadcrumb-item" aria-current="page"><a @click='$router.push("/layer")' class='cursor-pointer'>Layers</a></li>
+                            <li class="breadcrumb-item" aria-current="page"><a @click='$router.push("/layer")' class='cursor-pointer' v-text='$route.params.layerid'></a></li>
+                            <li class="breadcrumb-item active" aria-current="page">Query</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class='page-body'>
+        <div class='container-xl'>
+            <div class='row row-deck row-cards'>
+                <div class="col-lg-12">
+                    <div class="card">
+                        <TablerLoading v-if='loading.query' desc='Loading Query'/>
+                        <div v-else-if='error'>
+                            <div class="text-center py-4">
+                                <AlertCircleIcon height='48' width='48'/>
+                                <h3 class='pt-3'>Query Error</h3>
+                                <div class="text-muted" v-text='error.message'></div>
+
+                                <div class="d-flex justify-content-center my-3">
+                                    <div @click='query' class='btn btn-secondary'>Refresh</div>
+                                </div>
+                            </div>
+                        </div>
+                        <None v-else-if='!list.features.length' :create='false'/>
+                        <table v-else class="table card-table table-vcenter">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                </tr>
+                                <tr>
+                                    <th>Properties</th>
+                                </tr>
+                                <tr>
+                                    <th>Geometry</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr :key='feature.id' v-for='feature in list.features'>
+                                    <td v-text='features.id'></td>
+                                    <td v-text='JSON.stringify(feature.properties)'></td>
+                                    <td v-text='JSON.stringify(feature.geometry)'></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <PageFooter/>
+</div>
+</template>
+
+<script>
+import PageFooter from './PageFooter.vue';
+import None from './cards/None.vue';
+import {
+    AlertCircleIcon
+} from 'vue-tabler-icons';
+import {
+    TablerLoading
+} from '@tak-ps/vue-tabler'
+
+export default {
+    name: 'LayerQuery',
+    data: function() {
+        return {
+            error: false,
+            loading: {
+                query: true
+            },
+            list: {
+                type: 'FeatureCollection',
+                features: []
+            }
+        }
+    },
+    mounted: async function() {
+        await this.query();
+    },
+    methods: {
+        query: async function() {
+            this.loading.query = true;
+            try {
+                this.list = await window.std(`/api/layer/${this.$route.params.layerid}/query`);
+            } catch (err) {
+                this.error = err;
+            }
+            this.loading.query = false;
+        }
+    },
+    components: {
+        None,
+        PageFooter,
+        TablerLoading,
+        AlertCircleIcon
+    }
+}
+</script>

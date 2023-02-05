@@ -31,13 +31,7 @@
 
                             <div class='ms-auto'>
                                 <div class='btn-list'>
-                                    <div class='d-flex'>
-                                        <span class='px-2'>Logging</span>
-                                        <label class="form-check form-switch">
-                                            <input disabled v-model='layer.logging' class="form-check-input" type="checkbox">
-                                        </label>
-                                    </div>
-
+                                    <DatabaseIcon class='cursor-pointer' @click='$router.push(`/layer/${layer.id}/query`)'/>
                                     <SettingsIcon class='cursor-pointer' @click='$router.push(`/layer/${layer.id}/edit`)'/>
                                 </div>
                             </div>
@@ -82,6 +76,7 @@ import {
 } from '@tak-ps/vue-tabler'
 import {
     SettingsIcon,
+    DatabaseIcon,
 } from 'vue-tabler-icons'
 
 export default {
@@ -133,6 +128,7 @@ export default {
         LayerData,
         PageFooter,
         TablerLoading,
+        DatabaseIcon,
         LayerTask,
         Styles
     }

@@ -12,6 +12,24 @@ export default class Dynamo {
         this.table = table;
     }
 
+    async query(layerid: number) {
+        try {
+            const ddb = new AWS.DynamoDB.DocumentClient({region: process.env.AWS_DEFAULT_REGION });
+
+            const list = await ddb.query({
+                TableName: this.table,
+                KeyConditionExpression: `LayerId = :layerid`,
+                ExpressionAttributeValues: {
+                    ':layerid': layerid
+                }
+            }).promise();
+
+            console.error(list);
+        } catch (err) {
+            throw new Err(500, new Error(err), 'DynamoDB Query Failed');
+        }
+    }
+
     #expiry(feature: any) {
         let time = new Date(feature.properties.stale || feature.properties.time || Date.now());
         time.setHours(time.getHours() + 24);

@@ -288,9 +288,9 @@
 
 
 /**
-* @api {get} /layer/:layerid/log Get Layer
+* @api {get} /layer/:layerid/query Get Layer
 * @apiVersion 1.0.0
-* @apiName GET-/layer/:layerid/log
+* @apiName GET-/layer/:layerid/query
 * @apiGroup LayerQuery
 * @apiPermission user
 *

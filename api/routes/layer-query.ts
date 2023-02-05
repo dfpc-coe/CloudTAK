@@ -14,7 +14,7 @@ import { Request, Response } from 'express';
 export default async function router(schema: any, config: Config) {
     const ddb = new Dynamo(config.StackName);
 
-    await schema.get('/layer/:layerid/log', {
+    await schema.get('/layer/:layerid/query', {
         name: 'Get Layer',
         group: 'LayerQuery',
         auth: 'user',
@@ -31,9 +31,17 @@ export default async function router(schema: any, config: Config) {
                 return layer;
             });
 
+            if (!layer.logging) throw new Err(400, null, 'Feature Logging has been disabled for this layer');
+
+            await ddb.query(layer.id);
+
             return res.json({
                 type: 'FeatureCollection',
-                features: []
+                features: [{
+                    type: 'Feature',
+                    properties: {},
+                    geometry: {}
+                }]
             });
         } catch (err) {
             return Err.respond(err, res);
