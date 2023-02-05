@@ -1,10 +1,11 @@
 import AWS from 'aws-sdk';
+import Config from '../config.js';
 
 /**
  * @class
  */
 export default class LogGroup {
-    static async delete(config, layer) {
+    static async delete(config: Config, layer: any) {
         const CWL = new AWS.CloudWatchLogs({ region: process.env.AWS_DEFAULT_REGION });
 
         await CWL.deleteLogGroup({
@@ -12,7 +13,7 @@ export default class LogGroup {
         }).promise();
     }
 
-    static async list(config, layer) {
+    static async list(config: Config, layer: any) {
         const CWL = new AWS.CloudWatchLogs({ region: process.env.AWS_DEFAULT_REGION });
 
         const streams = await CWL.describeLogStreams({

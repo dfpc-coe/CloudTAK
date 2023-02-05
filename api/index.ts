@@ -2,22 +2,26 @@ import fs from 'fs';
 import path from 'path';
 import cors from 'cors';
 import express from 'express';
-import minify from 'express-minify';
 import history from 'connect-history-api-fallback';
+// @ts-ignore
 import Schema from '@openaddresses/batch-schema';
+// @ts-ignore
 import { Pool } from '@openaddresses/batch-generic';
 import minimist from 'minimist';
+// @ts-ignore
 import TAKPool from './lib/tak-pool.js';
 import { WebSocketServer } from 'ws';
 import Cacher from './lib/cacher.js';
+// @ts-ignore
 import BlueprintLogin from '@tak-ps/blueprint-login';
+// @ts-ignore
 import Server from './lib/types/server.js';
 import Config from './lib/config.js';
 
-const pkg = JSON.parse(fs.readFileSync(new URL('./package.json', import.meta.url)));
+const pkg = JSON.parse(String(fs.readFileSync(new URL('./package.json', import.meta.url))));
 
 const args = minimist(process.argv, {
-    boolean: ['help', 'silent', 'no-cache'],
+    boolean: ['help', 'silent', 'nocache'],
     string: ['postgres']
 });
 
@@ -26,14 +30,16 @@ try {
 
     fs.accessSync(dotfile);
 
-    Object.assign(process.env, JSON.parse(fs.readFileSync(dotfile)));
+    Object.assign(process.env, JSON.parse(String(fs.readFileSync(dotfile))));
     console.log('ok - .env file loaded');
 } catch (err) {
     console.log('ok - no .env file loaded');
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
-    const config = await Config.env(args);
+    const config = await Config.env({
+        silent: args.silent || false
+    });
     await server(config);
 }
 
@@ -46,8 +52,8 @@ if (import.meta.url === `file://${process.argv[1]}`) {
  *   This API endpoint does not require authentication
  */
 
-export default async function server(config) {
-    config.cacher = new Cacher(args['no-cache'], config.silent);
+export default async function server(config: Config) {
+    config.cacher = new Cacher(args.nocache, config.silent);
     try {
         await config.cacher.flush();
     } catch (err) {
@@ -71,14 +77,6 @@ export default async function server(config) {
     config.conns = new TAKPool(config.server, config.wsClients);
     await config.conns.init(config.pool);
 
-    /*
-    if (true) config.conns.get(5).tak.on('cot', function(cot) {
-        const json = cot.to_geojson();
-        console.error('on:msg:', json.properties.type, `(${json.properties.callsign}) [${json.geometry.coordinates.join(',')}]`);
-        console.error(JSON.stringify(cot.raw))
-    })
-    */
-
     const app = express();
 
     const schema = new Schema(express.Router(), {
@@ -91,8 +89,6 @@ export default async function server(config) {
         allowedHeaders: ['Content-Type', 'Authorization'],
         credentials: true
     }));
-
-    app.use(minify());
 
     /**
      * @api {get} /api Get Metadata
@@ -138,12 +134,12 @@ export default async function server(config) {
     app.use(history({
         rewrites: [{
             from: /.*\/js\/.*$/,
-            to: function(context) {
+            to(context: any) {
                 return context.parsedUrl.pathname.replace(/.*\/js\//, '/js/');
             }
         },{
             from: /.*$/,
-            to: function(context) {
+            to(context: any) {
                 const parse = path.parse(context.parsedUrl.path);
                 if (parse.ext) {
                     return context.parsedUrl.pathname;
@@ -162,10 +158,8 @@ export default async function server(config) {
         config.wsClients.push(ws);
     });
 
-    return new Promise((resolve, reject) => {
-        const srv = app.listen(5001, (err) => {
-            if (err) return reject(err);
-
+    return new Promise((resolve) => {
+        const srv = app.listen(5001, () => {
             if (!config.silent) console.log('ok - http://localhost:5001');
             return resolve(srv);
         });

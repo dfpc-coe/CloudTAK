@@ -1,11 +1,13 @@
+// @ts-ignore
 import cf from '@mapbox/cloudfriend';
+import Config from '../config.js';
 import jwt from 'jsonwebtoken';
 
 /**
  * @class
  */
 export default class Lambda {
-    static generate(config, layer, layerdata) {
+    static generate(config: Config, layer: any, layerdata: any) {
         const StackName = `${config.StackName}-layer-${layer.id}`;
 
         return {
@@ -29,9 +31,7 @@ export default class Lambda {
                     Properties: {
                         AlarmName: StackName,
                         ActionsEnabled: true,
-                        OKActions: [],
                         AlarmActions: [ `arn:aws:sns:us-east-1:126505572887:${config.StackName}-topic` ],
-                        InsufficientDataActions: [],
                         MetricName: 'Errors',
                         Namespace: 'AWS/Lambda',
                         Statistic: 'Maximum',

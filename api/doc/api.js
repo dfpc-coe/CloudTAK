@@ -288,6 +288,24 @@
 
 
 /**
+* @api {get} /layer/:layerid/log Get Layer
+* @apiVersion 1.0.0
+* @apiName GET-/layer/:layerid/log
+* @apiGroup LayerQuery
+* @apiPermission user
+*
+* @apidescription
+*   Get the latest feature from a layer
+*
+* @apiParam {integer} layerid param
+*
+*
+*
+*
+*/
+
+
+/**
 * @api {get} /layer List Layers
 * @apiVersion 1.0.0
 * @apiName GET-/layer

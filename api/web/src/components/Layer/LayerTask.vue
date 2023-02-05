@@ -23,7 +23,7 @@
             <div class="text-center py-4">
                 <AlertCircleIcon height='48' width='48'/>
                 <h3 class='pt-3'>AWS Cloudformation Error</h3>
-                <div class="text-muted" v-text='error.cloudformation.message'></div>
+                <div class="text-muted" v-text='errors.cloudformation.message'></div>
 
                 <div class="d-flex justify-content-center my-3">
                     <div @click='refresh' class='btn btn-secondary'>Refresh</div>

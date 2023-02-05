@@ -1,9 +1,10 @@
 import memjs from 'memjs';
+import { Client } from 'memjs';
 
-/**
- * @class
- */
 export default class Cacher {
+    nocache: boolean;
+    cache: Client;
+
     constructor(nocache = false, silent = false) {
         this.nocache = nocache;
 
@@ -23,25 +24,21 @@ export default class Cacher {
      * @param {function} miss Async Function to fallback to
      * @param {boolean} [isJSON=true] Should we automatically parse to JSON
      */
-    async get(key, miss, isJSON = true) {
-        let res;
-
+    async get(key: string, miss: any, isJSON = true): Promise<any> {
         try {
             if (!key || this.nocache) throw new Error('Miss');
 
-            let cached = await this.cache.get(key);
+            let cached: any = await this.cache.get(key);
 
             if (!cached.value) throw new Error('Miss');
             if (isJSON) {
-                cached = JSON.parse(cached.value);
+                cached = JSON.parse(String(cached.value));
             } else {
                 cached = cached.value;
             }
 
             return cached;
         } catch (err) {
-            if (res) return res;
-
             const fresh = await miss();
 
             try {
@@ -67,12 +64,8 @@ export default class Cacher {
     /**
      * If the cache key is set to false, a cache miss is forced
      * This function forces a cache miss if any query params are set
-     *
-     * @param {Object} obj Object to test
-     * @param {String} key Default Cache Key
-     * @return {Any}
      */
-    static Miss(obj, key) {
+    static Miss(obj: any, key: string): any {
         if (!obj) return key;
         if (Object.keys(obj).length === 0 && obj.constructor === Object) return key;
         return false;
@@ -80,10 +73,8 @@ export default class Cacher {
 
     /**
      * Delete a key from the cache
-     *
-     * @param {String} key
      */
-    async del(key) {
+    async del(key: string) {
         try {
             await this.cache.delete(key);
         } catch (err) {
