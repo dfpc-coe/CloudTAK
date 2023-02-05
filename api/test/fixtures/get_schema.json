@@ -79,7 +79,7 @@
         "query": false,
         "res": true
     },
-    "GET /layer/:layerid/log": {
+    "GET /layer/:layerid/query": {
         "body": false,
         "query": false,
         "res": false
