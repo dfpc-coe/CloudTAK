@@ -11,7 +11,8 @@
         "enabled_styles",
         "styles",
         "mode",
-        "data"
+        "data",
+        "logging"
     ],
     "properties": {
         "id": {
@@ -33,6 +34,9 @@
         },
         "updated": {
             "$ref": "./layers/updated.json"
+        },
+        "logging": {
+            "$ref": "./layers/logging.json"
         },
         "description": {
             "$ref": "./layers/description.json"
