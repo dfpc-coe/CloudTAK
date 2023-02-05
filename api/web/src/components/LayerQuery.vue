@@ -22,6 +22,20 @@
             <div class='row row-deck row-cards'>
                 <div class="col-lg-12">
                     <div class="card">
+                        <div class="card-body">
+                            <label class="form-label">ID Prefix</label>
+                            <div class="input-icon mb-3">
+                                <input v-model='params.filter' type="text" class="form-control" placeholder="Search…">
+                                <span class="input-icon-addon">
+                                    <SearchIcon/>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-12">
+                    <div class="card">
                         <TablerLoading v-if='loading.query' desc='Loading Query'/>
                         <div v-else-if='error'>
                             <div class="text-center py-4">
@@ -78,6 +92,9 @@ export default {
     data: function() {
         return {
             error: false,
+            params: {
+                filter: ''
+            },
             loading: {
                 query: true
             },
