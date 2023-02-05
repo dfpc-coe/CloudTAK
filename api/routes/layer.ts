@@ -163,23 +163,20 @@ export default async function router(schema: any, config: Config) {
                     column: 'layer_id'
                 });
 
-
-                // TODO Update CF properties if they change
+                try {
+                    const lambda = await Lambda.generate(config, layer, data);
+                    if (await CloudFormation.exists(config, layer.id)) {
+                        await CloudFormation.update(config, layer.id, lambda);
+                    } else {
+                        await CloudFormation.create(config, layer.id, lambda);
+                    }
+                } catch (err) {
+                    console.error(err);
+                }
             } else if (layer.mode === 'file') {
                 await LayerFile.commit(config.pool, layer.id, data, {
                     column: 'layer_id'
                 });
-            }
-
-            try {
-                const lambda = await Lambda.generate(config, layer, data);
-                if (await CloudFormation.exists(config, layer.id)) {
-                    await CloudFormation.update(config, layer.id, lambda);
-                } else {
-                    await CloudFormation.create(config, layer.id, lambda);
-                }
-            } catch (err) {
-                console.error(err);
             }
 
             layer = layer.serialize();

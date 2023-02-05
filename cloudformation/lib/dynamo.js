@@ -12,9 +12,6 @@ export default {
                 },{
                     AttributeName: 'Id',
                     AttributeType: 'S'
-                },{
-                    AttributeName: 'Expiry',
-                    AttributeType: 'N'
                 }],
                 KeySchema: [{
                     AttributeName: 'LayerId',
