@@ -105,7 +105,7 @@ export default async function router(schema: any, config: Config) {
 
             if (layer.mode === 'file') throw new Err(400, null, 'File Layers don\'t have associated stacks');
 
-            return res.json(await CF.status(config, layer));
+            return res.json(await CF.status(config, layer.id));
         } catch (err) {
             return Err.respond(err, res);
         }
@@ -163,7 +163,7 @@ export default async function router(schema: any, config: Config) {
             const lambda = await Lambda.generate(config, layer, layer.data);
             await CloudFormation.create(config, layer.id, lambda);
 
-            return res.json(await CF.status(config, layer));
+            return res.json(await CF.status(config, layer.id));
         } catch (err) {
             return Err.respond(err, res);
         }
