@@ -12,6 +12,9 @@ export default {
                 },{
                     AttributeName: 'Id',
                     AttributeType: 'S'
+                },{
+                    AttributeName: 'Expiry',
+                    AttributeType: 'N'
                 }],
                 KeySchema: [{
                     AttributeName: 'LayerId',
@@ -34,6 +37,10 @@ export default {
                         WriteCapacityUnits: 1
                     }
                 }],
+                TimeToLiveSpecification: {
+                    Enabled: true,
+                    AttributeName: 'Expiry'
+                },
                 ProvisionedThroughput: {
                     ReadCapacityUnits: 5,
                     WriteCapacityUnits: 5
