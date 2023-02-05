@@ -2,6 +2,14 @@ import AWS from 'aws-sdk';
 import Err from '@openaddresses/batch-error';
 import { coordEach } from '@turf/meta';
 
+export interface DynamoItem {
+    Id: string;
+    Properties: object;
+    Expiry: number;
+    LayerId: number;
+    Geometry: object;
+}
+
 /**
  * @class
  */
@@ -12,7 +20,7 @@ export default class Dynamo {
         this.table = table;
     }
 
-    async query(layerid: number) {
+    async query(layerid: number): Promise<DynamoItem[]> {
         try {
             const ddb = new AWS.DynamoDB.DocumentClient({region: process.env.AWS_DEFAULT_REGION });
 
@@ -24,7 +32,9 @@ export default class Dynamo {
                 }
             }).promise();
 
-            console.error(list);
+            const items = list.Items as DynamoItem[];
+
+            return items;
         } catch (err) {
             throw new Err(500, new Error(err), 'DynamoDB Query Failed');
         }
