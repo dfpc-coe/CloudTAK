@@ -34,7 +34,7 @@ export default async function router(schema: any, config: Config) {
 
             if (!layer.logging) throw new Err(400, null, 'Feature Logging has been disabled for this layer');
 
-            const features = (await ddb.query(layer.id)).map((feat) => {
+            const features = (await ddb.query(layer.id, req.query)).map((feat) => {
                 return {
                     id: feat.Id,
                     properties: feat.Properties,
