@@ -37,7 +37,7 @@ export default async function router(schema: any, config: Config) {
                 const match = image.imageTag.match(/^(.*)-v([0-9]+\.[0-9]+\.[0-9]+)$/);
                 if (!match) continue;
                 total++;
-                if (tasks.has(match[1])) tasks.set(match[1], []);
+                if (!tasks.has(match[1])) tasks.set(match[1], []);
                 tasks.get(match[1]).push(match[2]);
             }
 
@@ -46,7 +46,10 @@ export default async function router(schema: any, config: Config) {
                 tasks.set(key, semver.desc(tasks.get(key)));
             }
 
-            return res.json({ total, tasks });
+            return res.json({
+                total,
+                tasks: Object.fromEntries(tasks)
+            });
         } catch (err) {
             return Err.respond(err, res);
         }
@@ -73,7 +76,7 @@ export default async function router(schema: any, config: Config) {
                 const match = image.imageTag.match(/^(.*)-v([0-9]+\.[0-9]+\.[0-9]+)$/);
                 if (!match) continue;
                 total++;
-                if (tasks.has(match[1])) tasks.set(match[1], []);
+                if (!tasks.has(match[1])) tasks.set(match[1], []);
                 tasks.get(match[1]).push(match[2]);
             }
 
