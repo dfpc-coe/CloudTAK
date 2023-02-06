@@ -25,10 +25,16 @@
                         <div class="card-body">
                             <label class="form-label">ID Prefix</label>
                             <div class="input-icon mb-3">
-                                <input v-model='params.filter' type="text" class="form-control" placeholder="Search…">
+                                <input v-model='params.filter' v-on:keyup.enter='query' type="text" class="form-control" placeholder="Search…">
                                 <span class="input-icon-addon">
                                     <SearchIcon/>
                                 </span>
+                            </div>
+
+                            <div class='d-flex'>
+                                <div class='ms-auto'>
+                                    <button @click='query' class="cursor-pointer btn btn-primary">Search</button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -112,7 +118,9 @@ export default {
             this.error = false;
             this.loading.query = true;
             try {
-                this.list = await window.std(`/api/layer/${this.$route.params.layerid}/query`);
+                const url = window.stdurl(`/api/layer/${this.$route.params.layerid}/query`);
+                url.searchParams.append('filter', this.params.filter);
+                this.list = await window.std(url);
             } catch (err) {
                 this.error = err;
             }

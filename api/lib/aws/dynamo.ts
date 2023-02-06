@@ -10,6 +10,10 @@ export interface DynamoItem {
     Geometry: object;
 }
 
+export interface DynamoQuery {
+    filter?: string;
+}
+
 /**
  * @class
  */
@@ -20,16 +24,22 @@ export default class Dynamo {
         this.table = table;
     }
 
-    async query(layerid: number): Promise<DynamoItem[]> {
+    async query(layerid: number, query: DynamoQuery): Promise<DynamoItem[]> {
         try {
             const ddb = new AWS.DynamoDB.DocumentClient({region: process.env.AWS_DEFAULT_REGION });
 
+            let KeyConditionExpression: string = `LayerId = :layerid`;
+            const ExpressionAttributeValues = new Map();
+            ExpressionAttributeValues.set(':layerid', layerid);
+            if (query.filter.length) {
+                KeyConditionExpression = KeyConditionExpression + ` and begins_with(Id, :filter)`;
+                ExpressionAttributeValues.set(':filter', query.filter);
+            }
+
             const list = await ddb.query({
                 TableName: this.table,
-                KeyConditionExpression: `LayerId = :layerid`,
-                ExpressionAttributeValues: {
-                    ':layerid': layerid
-                }
+                KeyConditionExpression,
+                ExpressionAttributeValues: Object.fromEntries(ExpressionAttributeValues)
             }).promise();
 
             const items = list.Items as DynamoItem[];
