@@ -20,7 +20,8 @@ export default async function router(schema: any, config: Config) {
         auth: 'user',
         description: 'Get the latest feature from a layer',
         ':layerid': 'integer',
-        //res: 'res.Layer.json'
+        query: 'req.query.LayerQuery.json',
+        res: 'res.LayerQuery.json'
     }, async (req: Request, res: Response) => {
         try {
             await Auth.is_auth(req);

@@ -299,9 +299,9 @@
 *
 * @apiParam {integer} layerid param
 *
+* @apiSchema (Query) {jsonschema=../schema/req.query.LayerQuery.json} apiParam
 *
-*
-*
+* @apiSchema {jsonschema=../schema/res.LayerQuery.json} apiSuccess
 */
 
 
