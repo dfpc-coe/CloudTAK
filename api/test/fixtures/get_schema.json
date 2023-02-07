@@ -81,8 +81,8 @@
     },
     "GET /layer/:layerid/query": {
         "body": false,
-        "query": false,
-        "res": false
+        "query": true,
+        "res": true
     },
     "GET /layer": {
         "body": false,
@@ -150,6 +150,11 @@
         "res": true
     },
     "GET /layer/:layerid/task/logs": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /layer/:layerid/task/schema": {
         "body": false,
         "query": false,
         "res": true
