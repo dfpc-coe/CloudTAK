@@ -1,0 +1,10 @@
+{
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+        "filter": {
+            "type": "string",
+            "description": "Filter by Id prefix"
+        }
+    }
+}

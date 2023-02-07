@@ -37,16 +37,19 @@ export default async function router(schema: any, config: Config) {
                 const match = image.imageTag.match(/^(.*)-v([0-9]+\.[0-9]+\.[0-9]+)$/);
                 if (!match) continue;
                 total++;
-                if (tasks.has(match[1])) tasks.set(match[1], []);
+                if (!tasks.has(match[1])) tasks.set(match[1], []);
                 tasks.get(match[1]).push(match[2]);
             }
 
             const taskarr = new Array()
-            for (const key in tasks.keys()) {
+            for (const key of tasks.keys()) {
                 tasks.set(key, semver.desc(tasks.get(key)));
             }
 
-            return res.json({ total, tasks });
+            return res.json({
+                total,
+                tasks: Object.fromEntries(tasks)
+            });
         } catch (err) {
             return Err.respond(err, res);
         }
@@ -73,7 +76,7 @@ export default async function router(schema: any, config: Config) {
                 const match = image.imageTag.match(/^(.*)-v([0-9]+\.[0-9]+\.[0-9]+)$/);
                 if (!match) continue;
                 total++;
-                if (tasks.has(match[1])) tasks.set(match[1], []);
+                if (!tasks.has(match[1])) tasks.set(match[1], []);
                 tasks.get(match[1]).push(match[2]);
             }
 
@@ -131,6 +134,33 @@ export default async function router(schema: any, config: Config) {
             if (layer.mode === 'file') throw new Err(400, null, 'File Layers don\'t have associated stacks');
 
             return res.json(await Logs.list(config, layer));
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
+
+    await schema.get('/layer/:layerid/task/schema', {
+        name: 'Task Schema',
+        group: 'Task',
+        auth: 'user',
+        ':layerid': 'integer',
+        description: 'Get the JSONSchema for the expected environment variables',
+        res: 'res.TaskSchema.json'
+    }, async (req: Request, res: Response) => {
+        try {
+            await Auth.is_auth(req);
+
+            const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
+                const layer = (await Layer.from(config.pool, req.params.layerid)).serialize();
+                layer.data = (layer.mode === 'file' ? await LayerFile.from(config.pool, layer.id, { column: 'layer_id' }) : await LayerLive.from(config.pool, layer.id, { column: 'layer_id' })).serialize();
+                return layer;
+            });
+
+            if (layer.mode === 'file') throw new Err(400, null, 'File Layers don\'t have associated stacks');
+
+            return res.json({
+                schema: await Lambda.schema(config, layer.id)
+            });
         } catch (err) {
             return Err.respond(err, res);
         }
