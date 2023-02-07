@@ -558,6 +558,24 @@
 
 
 /**
+* @api {get} /layer/:layerid/task/schema Task Schema
+* @apiVersion 1.0.0
+* @apiName GET-/layer/:layerid/task/schema
+* @apiGroup Task
+* @apiPermission user
+*
+* @apidescription
+*   Get the JSONSchema for the expected environment variables
+*
+* @apiParam {integer} layerid param
+*
+*
+*
+* @apiSchema {jsonschema=../schema/res.TaskSchema.json} apiSuccess
+*/
+
+
+/**
 * @api {post} /layer/:layerid/task Task Deploy
 * @apiVersion 1.0.0
 * @apiName POST-/layer/:layerid/task
