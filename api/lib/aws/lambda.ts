@@ -1,5 +1,6 @@
 // @ts-ignore
 import cf from '@mapbox/cloudfriend';
+import AWS from 'aws-sdk';
 import Config from '../config.js';
 import jwt from 'jsonwebtoken';
 
@@ -7,6 +8,12 @@ import jwt from 'jsonwebtoken';
  * @class
  */
 export default class Lambda {
+    static schema(config: Config, layerid: number): object {
+        const FunctionName = `${config.StackName}-layer-${layerid}`;
+
+        return {};
+    }
+
     static generate(config: Config, layer: any, layerdata: any) {
         const StackName = `${config.StackName}-layer-${layer.id}`;
 

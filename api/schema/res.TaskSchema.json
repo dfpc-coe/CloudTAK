@@ -1,0 +1,12 @@
+{
+    "type": "object",
+    "required": [
+        "schema"
+    ],
+    "additionalProperties": false,
+    "properties": {
+        "schema": {
+            "type": "object"
+        }
+    }
+}
