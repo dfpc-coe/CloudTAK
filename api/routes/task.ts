@@ -158,7 +158,9 @@ export default async function router(schema: any, config: Config) {
 
             if (layer.mode === 'file') throw new Err(400, null, 'File Layers don\'t have associated stacks');
 
-            return res.json(await Lambda.schema(config, layer.id));
+            return res.json({
+                schema: await Lambda.schema(config, layer.id)
+            });
         } catch (err) {
             return Err.respond(err, res);
         }

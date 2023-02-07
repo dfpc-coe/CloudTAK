@@ -8,10 +8,22 @@ import jwt from 'jsonwebtoken';
  * @class
  */
 export default class Lambda {
-    static schema(config: Config, layerid: number): object {
+    static schema(config: Config, layerid: number): Promise<object> {
+        const lambda = new AWS.Lambda({ region: process.env.AWS_DEFAULT_REGION });
         const FunctionName = `${config.StackName}-layer-${layerid}`;
 
-        return {};
+        return new Promise((resolve, reject) => {
+            lambda.invoke({
+                FunctionName,
+                InvocationType: 'RequestResponse',
+                Payload: JSON.stringify({
+                    type: 'schema'
+                })
+            }, (err, res) => {
+                if (err) return reject(err);
+                return resolve(JSON.parse(String(res.Payload)));
+            });
+        });
     }
 
     static generate(config: Config, layer: any, layerdata: any) {
