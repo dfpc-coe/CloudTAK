@@ -299,9 +299,9 @@
 *
 * @apiParam {integer} layerid param
 *
+* @apiSchema (Query) {jsonschema=../schema/req.query.LayerQuery.json} apiParam
 *
-*
-*
+* @apiSchema {jsonschema=../schema/res.LayerQuery.json} apiSuccess
 */
 
 
@@ -554,6 +554,24 @@
 *
 *
 * @apiSchema {jsonschema=../schema/res.TaskLogs.json} apiSuccess
+*/
+
+
+/**
+* @api {get} /layer/:layerid/task/schema Task Schema
+* @apiVersion 1.0.0
+* @apiName GET-/layer/:layerid/task/schema
+* @apiGroup Task
+* @apiPermission user
+*
+* @apidescription
+*   Get the JSONSchema for the expected environment variables
+*
+* @apiParam {integer} layerid param
+*
+*
+*
+* @apiSchema {jsonschema=../schema/res.TaskSchema.json} apiSuccess
 */
 
 

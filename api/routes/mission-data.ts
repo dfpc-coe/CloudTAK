@@ -1,7 +1,9 @@
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
+import { Request, Response } from 'express';
+import Config from '../lib/config.js';
 
-export default async function router(schema, config) {
+export default async function router(schema: any, config: Config) {
     await schema.get('/connection/:connectionid/mission', {
         name: 'List Data',
         group: 'MissionData',
@@ -9,7 +11,7 @@ export default async function router(schema, config) {
         ':connectionid': 'integer',
         description: 'List Mission Data'
         // res: 'res.ListLayers.json'
-    }, async (req, res) => {
+    }, async (req: Request, res: Response) => {
         try {
             await Auth.is_auth(req);
 

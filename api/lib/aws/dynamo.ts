@@ -2,6 +2,18 @@ import AWS from 'aws-sdk';
 import Err from '@openaddresses/batch-error';
 import { coordEach } from '@turf/meta';
 
+export interface DynamoItem {
+    Id: string;
+    Properties: object;
+    Expiry: number;
+    LayerId: number;
+    Geometry: object;
+}
+
+export interface DynamoQuery {
+    filter?: string;
+}
+
 /**
  * @class
  */
@@ -12,19 +24,27 @@ export default class Dynamo {
         this.table = table;
     }
 
-    async query(layerid: number) {
+    async query(layerid: number, query: DynamoQuery): Promise<DynamoItem[]> {
         try {
             const ddb = new AWS.DynamoDB.DocumentClient({region: process.env.AWS_DEFAULT_REGION });
 
+            let KeyConditionExpression: string = `LayerId = :layerid`;
+            const ExpressionAttributeValues = new Map();
+            ExpressionAttributeValues.set(':layerid', layerid);
+            if (query.filter.length) {
+                KeyConditionExpression = KeyConditionExpression + ` and begins_with(Id, :filter)`;
+                ExpressionAttributeValues.set(':filter', query.filter);
+            }
+
             const list = await ddb.query({
                 TableName: this.table,
-                KeyConditionExpression: `LayerId = :layerid`,
-                ExpressionAttributeValues: {
-                    ':layerid': layerid
-                }
+                KeyConditionExpression,
+                ExpressionAttributeValues: Object.fromEntries(ExpressionAttributeValues)
             }).promise();
 
-            console.error(list);
+            const items = list.Items as DynamoItem[];
+
+            return items;
         } catch (err) {
             throw new Err(500, new Error(err), 'DynamoDB Query Failed');
         }
