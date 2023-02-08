@@ -75,48 +75,8 @@
                     <label>Stale Value (ms)</label>
                     <TablerInput v-model='layerdata.stale' :disabled='disabled' type='number' min='1' step='1'/>
                 </div>
-                <div class='col-md-12 my-3'>
-                    <div class='d-flex'>
-                        <h3>Environment</h3>
-                        <div v-if='!disabled' class='ms-auto'>
-                            <PlusIcon @click='environment.push({key: "", value: ""})' class='cursor-pointer'/>
-                        </div>
-                    </div>
 
-                    <div class="table-responsive">
-                        <table class="table table-vcenter card-table">
-                            <thead>
-                                <tr>
-                                    <th>Name</th>
-                                    <th>Value</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <template v-if='environment.length'>
-                                    <tr :key='kv_i' v-for='(kv, kv_i) in environment'>
-                                        <template v-if='disabled'>
-                                            <td v-text='kv.key'></td>
-                                            <td v-text='kv.value'></td>
-                                        </template>
-                                        <template v-else>
-                                            <td>
-                                                <TablerInput placeholder='KEY' v-model='kv.key'/>
-                                            </td>
-                                            <td>
-                                                <TablerInput placeholder='VALUE' v-model='kv.value'/>
-                                            </td>
-                                        </template>
-                                    </tr>
-                                </template>
-                            </tbody>
-                        </table>
-                        <template v-if='!environment.length'>
-                            <div class="d-flex justify-content-center my-4">
-                                No Environment Variables Set
-                            </div>
-                        </template>
-                    </div>
-                </div>
+                <LayerEnvironment @v-model='layerdata.environment'/>
             </template>
             <template v-else-if='layerdata.mode === "file"'>
                 <template v-if='!layerdata.raw_asset_id'>
@@ -143,6 +103,7 @@
 
 <script>
 import UploadInline from '../util/UploadInline.vue';
+import LayerEnvironment from './LayerEnvironent.vue';
 import Asset from '../util/Asset.vue';
 import ConnectionSelect from '../util/ConnectionSelect.vue';
 import cronstrue from 'cronstrue';
@@ -153,7 +114,6 @@ import {
 import {
     ClockIcon,
     RefreshIcon,
-    PlusIcon,
     FileUploadIcon,
     SettingsIcon
 } from 'vue-tabler-icons'
@@ -179,7 +139,6 @@ export default {
     data: function() {
         return {
             taskmodal: false,
-            environment: [],
             newTaskVersion: false,
             loading: {
                 version: false
@@ -197,16 +156,6 @@ export default {
         };
     },
     watch: {
-        environment: {
-            deep: true,
-            handler: function() {
-                const env = {};
-                for (const kv of this.environment) {
-                    env[kv.key] = kv.value;
-                }
-                this.layerdata.environment = env;
-            }
-        },
         layerdata: {
             deep: true,
             handler: function() {
@@ -230,9 +179,6 @@ export default {
     },
     mounted: function() {
         this.layerdata = Object.assign(this.layerdata, this.modelValue);
-        this.environment = Object.keys(this.layerdata.environment).map((key) => {
-            return { key: key, value: this.layerdata.environment[key] };
-        });
     },
     methods: {
         cronstr: function(cron) {
@@ -261,10 +207,10 @@ export default {
         }
     },
     components: {
+        LayerEnvironment,
         Asset,
         ClockIcon,
         RefreshIcon,
-        PlusIcon,
         FileUploadIcon,
         SettingsIcon,
         ConnectionSelect,
