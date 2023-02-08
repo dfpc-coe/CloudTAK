@@ -5,7 +5,8 @@
     </div>
 
     <div class='card-body'>
-        <div class='row'>
+        <TablerLoading v-if='loading.main'/>
+        <div v-else class='row'>
             <div v-if='!$route.params.layerid' class="d-flex justify-content-center mb-4">
                 <div class="btn-list">
                     <div class="btn-group" role="group">
@@ -76,7 +77,7 @@
                     <TablerInput v-model='layerdata.stale' :disabled='disabled' type='number' min='1' step='1'/>
                 </div>
 
-                <LayerEnvironment @v-model='layerdata.environment'/>
+                <LayerEnvironment v-model='layerdata.environment' :disabled='disabled'/>
             </template>
             <template v-else-if='layerdata.mode === "file"'>
                 <template v-if='!layerdata.raw_asset_id'>
@@ -109,7 +110,8 @@ import ConnectionSelect from '../util/ConnectionSelect.vue';
 import cronstrue from 'cronstrue';
 import TaskModal from './TaskModal.vue';
 import {
-    TablerInput
+    TablerInput,
+    TablerLoading
 } from '@tak-ps/vue-tabler';
 import {
     ClockIcon,
@@ -141,6 +143,7 @@ export default {
             taskmodal: false,
             newTaskVersion: false,
             loading: {
+                main: false,
                 version: false
             },
             layerdata: {
@@ -179,6 +182,9 @@ export default {
     },
     mounted: function() {
         this.layerdata = Object.assign(this.layerdata, this.modelValue);
+        this.$nextTick(() => {
+            this.loading.main = false;
+        });
     },
     methods: {
         cronstr: function(cron) {
@@ -208,6 +214,7 @@ export default {
     },
     components: {
         LayerEnvironment,
+        TablerLoading,
         Asset,
         ClockIcon,
         RefreshIcon,
