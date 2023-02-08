@@ -9,9 +9,6 @@
         "lint": "vue-cli-service lint"
     },
     "dependencies": {
-        "@jsonforms/core": "^3.0.0",
-        "@jsonforms/vue": "^3.0.0",
-        "@jsonforms/vue-vanilla": "^3.0.0",
         "@tabler/core": "^1.0.0-beta16",
         "@tak-ps/vue-tabler": "^2.1.0",
         "core-js": "^3.6.4",
