@@ -88,6 +88,7 @@ export default {
     },
     components: {
         PlusIcon,
+        TablerInput
     }
 }
 </script>
