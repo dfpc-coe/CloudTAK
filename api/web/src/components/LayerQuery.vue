@@ -22,6 +22,26 @@
             <div class='row row-deck row-cards'>
                 <div class="col-lg-12">
                     <div class="card">
+                        <div class="card-body">
+                            <label class="form-label">ID Prefix</label>
+                            <div class="input-icon mb-3">
+                                <input v-model='params.filter' v-on:keyup.enter='query' type="text" class="form-control" placeholder="Search…">
+                                <span class="input-icon-addon">
+                                    <SearchIcon/>
+                                </span>
+                            </div>
+
+                            <div class='d-flex'>
+                                <div class='ms-auto'>
+                                    <button @click='query' class="cursor-pointer btn btn-primary">Search</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-12">
+                    <div class="card">
                         <TablerLoading v-if='loading.query' desc='Loading Query'/>
                         <div v-else-if='error'>
                             <div class="text-center py-4">
@@ -35,26 +55,24 @@
                             </div>
                         </div>
                         <None v-else-if='!list.features.length' :create='false'/>
-                        <table v-else class="table card-table table-vcenter">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                </tr>
-                                <tr>
-                                    <th>Properties</th>
-                                </tr>
-                                <tr>
-                                    <th>Geometry</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr :key='feature.id' v-for='feature in list.features'>
-                                    <td v-text='features.id'></td>
-                                    <td v-text='JSON.stringify(feature.properties)'></td>
-                                    <td v-text='JSON.stringify(feature.geometry)'></td>
-                                </tr>
-                            </tbody>
-                        </table>
+                        <div v-else class='table-responsive'>
+                            <table class="table card-table table-vcenter">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Type</th>
+                                        <th>Properties</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr :key='feature.id' v-for='feature in list.features'>
+                                        <td v-text='feature.id'></td>
+                                        <td v-text='feature.geometry.type'></td>
+                                        <td v-text='JSON.stringify(feature.properties)'></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -80,6 +98,9 @@ export default {
     data: function() {
         return {
             error: false,
+            params: {
+                filter: ''
+            },
             loading: {
                 query: true
             },
@@ -94,9 +115,12 @@ export default {
     },
     methods: {
         query: async function() {
+            this.error = false;
             this.loading.query = true;
             try {
-                this.list = await window.std(`/api/layer/${this.$route.params.layerid}/query`);
+                const url = window.stdurl(`/api/layer/${this.$route.params.layerid}/query`);
+                url.searchParams.append('filter', this.params.filter);
+                this.list = await window.std(url);
             } catch (err) {
                 this.error = err;
             }
