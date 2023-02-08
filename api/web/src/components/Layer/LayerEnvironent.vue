@@ -99,7 +99,7 @@ export default {
     data: function() {
         return {
             environment: [],
-            mode: 'list',
+            mode: null,
             schema: null,
             loading: {
                 schema: false
@@ -110,26 +110,32 @@ export default {
         environment: {
             deep: true,
             handler: function() {
-                const env = {};
-                for (const kv of this.environment) {
-                    env[kv.key] = kv.value;
+                if (Array.isArray(this.environment)) {
+                    const env = {};
+                    for (const kv of this.environment) {
+                        env[kv.key] = kv.value;
+                    }
+                    this.$emit('update:modelValue', env);
+                } else {
+                    this.$emit('update:modelValue', this.environment);
                 }
-
-                this.$emit('update:modelValue', env);
             }
         },
     },
     mounted: async function() {
         await this.fetchSchema()
 
-        if (this.schema) {
-            this.mode = 'schema';
-
+        if (this.schema !== null) {
+            this.environment = JSON.parse(JSON.stringify(this.modelValue));
+            this.$nextTick(() => {
+                this.mode = 'schema';
+            });
+        } else {
+            this.environment = Object.keys(this.modelValue).map((key) => {
+                return { key: key, value: this.modelValue[key] };
+            });
+            this.mode = 'list';
         }
-
-        this.environment = Object.keys(this.modelValue).map((key) => {
-            return { key: key, value: this.modelValue[key] };
-        });
     },
     methods: {
         fetchSchema: async function() {
