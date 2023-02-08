@@ -56,7 +56,7 @@
                 </template>
                 <template v-if='schema.properties[key].type === "string"'>
                     <div class='row'>
-                        <TablerInput :label='key' v-model='environment[key]'/>
+                        <TablerInput :label='key' :disabled='disabled' v-model='environment[key]'/>
                     </div>
                 </template>
                 <template v-if='schema.properties[key].type === "boolean"'>
@@ -64,7 +64,7 @@
                         <div class='d-flex border rounded align-items-center'>
                             <span class='px-2' v-text='key'></span>
                             <label class="ms-auto form-check form-switch pt-2">
-                                <input v-model='environment[key]' class="form-check-input" type="checkbox">
+                                <input v-model='environment[key]' :disabled='disabled' class="form-check-input" type="checkbox">
                             </label>
                         </div>
                     </div>
