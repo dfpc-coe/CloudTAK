@@ -76,12 +76,12 @@
                         <div class='d-flex'>
                             <label class='form-label' v-text='key'/>
                             <div class='ms-auto'>
-                                <PlusIcon @click='environment[key].push("")' class='cursor-pointer'/>
+                                <PlusIcon v-if='!disabled' @click='environment[key].push("")' class='cursor-pointer'/>
                             </div>
                         </div>
 
                         <div :key='i' v-for='(arr, i) of environment[key]' class='my-1'>
-                            <TablerInput v-model='environment[key][i]'/>
+                            <TablerInput :disabled='disabled' v-model='environment[key][i]'/>
                         </div>
                     </div>
                 </template>
