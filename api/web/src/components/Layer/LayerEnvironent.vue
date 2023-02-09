@@ -49,17 +49,17 @@
         </template>
         <template v-else>
             <div :key='key' v-for='key in Object.keys(schema.properties)' class='py-2 floating-input'>
-                <template v-if='schema.properties[key].type === "string" && schema.properties[key].enum'>
+                <template v-if='schema.properties[key].enum'>
                     <div class='row'>
                         SELECT
                     </div>
                 </template>
-                <template v-if='schema.properties[key].type === "string"'>
+                <template v-else-if='schema.properties[key].type === "string"'>
                     <div class='row'>
                         <TablerInput :label='key' :disabled='disabled' v-model='environment[key]'/>
                     </div>
                 </template>
-                <template v-if='schema.properties[key].type === "boolean"'>
+                <template v-else-if='schema.properties[key].type === "boolean"'>
                     <div class='row' style='padding-left: 10px; padding-right: 10px;'>
                         <div class='d-flex border rounded align-items-center'>
                             <span class='px-2' v-text='key'></span>
@@ -67,6 +67,11 @@
                                 <input v-model='environment[key]' :disabled='disabled' class="form-check-input" type="checkbox">
                             </label>
                         </div>
+                    </div>
+                </template>
+                <template v-else-if='schema.properties[key].type === "array"'>
+                    <div class='row'>
+
                     </div>
                 </template>
             </div>

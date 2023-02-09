@@ -49,15 +49,23 @@
                 <div class="col-md-6 mb-3">
                     <div class='d-flex'>
                         <label class='form-label'>Schedule Task</label>
-                        <div v-if='!disabled' class='ms-auto'>
-                            <SettingsIcon @click='taskmodal = true' width='16' height='16' class='cursor-pointer'/>
-                        </div>
-                        <div v-else class='ms-auto'>
-                            <RefreshIcon v-if='!newTaskVersion && !loading.version' @click='latestVersion' width='16' height='16' class='cursor-pointer'/>
-                            <div v-else-if='loading.version' class='d-flex justify-content-center'>
-                                <div class="spinner-border" role="status"></div>
+                        <div class='ms-auto'>
+                            <div class='btn-list'>
+                                <div>
+                                    <RefreshIcon v-if='!newTaskVersion && !loading.version' @click='latestVersion' width='16' height='16' class='cursor-pointer'/>
+                                    <div v-else-if='loading.version' class='d-flex justify-content-center'>
+                                        <div class="spinner-border" role="status"></div>
+                                    </div>
+                                    <span v-else>
+                                        New Task Version
+                                        <span v-if='disabled' v-text='newTaskVersion'/>
+                                        <span v-else @click='updateTask' class='cursor-pointer text-blue' v-text='newTaskVersion'/>
+                                    </span>
+                                </div>
+                                <div v-if='!disabled'>
+                                    <SettingsIcon @click='taskmodal = true' width='16' height='16' class='cursor-pointer'/>
+                                </div>
                             </div>
-                            <span v-else>New Task Version <span v-text='newTaskVersion'/></span>
                         </div>
                     </div>
                     <input :disabled='disabled' v-model='layerdata.task' :class='{
@@ -187,6 +195,10 @@ export default {
         });
     },
     methods: {
+        updateTask: function() {
+            this.layerdata.task = this.layerdata.task.replace(/-v[0-9]+\.[0-9]+\.[0-9]+$/, `-v${this.newTaskVersion}`);
+            this.newTaskVersion = null;
+        },
         cronstr: function(cron) {
             if (!cron) return;
 
