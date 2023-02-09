@@ -6,20 +6,20 @@
             <template v-if='loading'>
                 <TablerLoading/>
             </template>
-            <template v-else-if='!task'>
+            <template v-else-if='!newtask'>
                 <h3 class='subtitle-header'>Available Tasks:</h3>
                 <div class="list-group list-group-flush">
-                    <a @click='task = image' :key='image' v-for='image in Object.keys(list.tasks)' class='list-group-item list-group-item-action cursor-pointer' v-text='image'/>
+                    <a @click='newtask = image' :key='image' v-for='image in Object.keys(list.tasks)' class='list-group-item list-group-item-action cursor-pointer' v-text='image'/>
                 </div>
             </template>
             <template v-else-if='!version'>
                 <div class='d-flex'>
-                    <ArrowBackIcon class='mx-3' @click='task=null'/>
+                    <ArrowBackIcon class='mx-3' @click='newtask=null'/>
                     <h3 class='subtitle-header'>Available Versions</h3>
                 </div>
 
                 <div class="list-group list-group-flush">
-                    <a @click='version = v' :key='v' v-for='v in list.tasks[task]' class='list-group-item list-group-item-action cursor-pointer' v-text='v'/>
+                    <a @click='version = v' :key='v' v-for='v in list.tasks[newtask]' class='list-group-item list-group-item-action cursor-pointer' v-text='v'/>
                 </div>
             </template>
             <template v-else>
@@ -28,11 +28,11 @@
                     <h3 class='subtitle-header'>Selected Task</h3>
                 </div>
 
-                <pre v-text='`${task}-v${version}`'></pre>
+                <pre v-text='`${newtask}-v${version}`'></pre>
 
                 <div class='d-flex'>
                     <div class='ms-auto'>
-                        <div @click='$emit("task", `${task}-v${version}`)' class='btn btn-primary'>
+                        <div @click='$emit("task", `${newtask}-v${version}`)' class='btn btn-primary'>
                             Select
                         </div>
                     </div>
@@ -53,19 +53,28 @@ import {
 
 export default {
     name: 'TaskModal',
+    props: {
+        task: {
+            type: String,
+            default: ''
+        }
+    },
     data: function() {
         return {
             loading: true,
-            task: false,
+            newtask: false,
             version: false,
             list: {
                 total: 0,
-                tasks: []
+                tasks: {}
             }
         }
     },
     mounted: async function() {
         await this.fetch();
+
+        const task = this.task.replace(/-v[0-9]+\.[0-9]+\.[0-9]+$/, '');
+        if (this.list.tasks[task]) this.newtask = task;
     },
     methods: {
         close: function() {
