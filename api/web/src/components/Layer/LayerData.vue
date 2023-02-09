@@ -106,7 +106,7 @@
         </div>
     </div>
 
-    <TaskModal v-if='taskmodal' @close='taskmodal = false' @task='taskmodal = false; layerdata.task = $event'/>
+    <TaskModal v-if='taskmodal' :task='layerdata.task' @close='taskmodal = false' @task='taskmodal = false; layerdata.task = $event'/>
 </div>
 </template>
 
