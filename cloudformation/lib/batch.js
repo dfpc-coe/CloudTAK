@@ -99,7 +99,7 @@ export default {
                         }
                     }]
                 },
-                ManagedPolicyArns: [cf.join(['arn:', cf.partition, :iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy'],
+                ManagedPolicyArns: [cf.join(['arn:', cf.partition, ':iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy'])],
                 Path: '/'
             }
         },
