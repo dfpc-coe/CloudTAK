@@ -50,7 +50,7 @@ export default {
                     }]
                 },
                 ManagedPolicyArns: [
-                    'arn:aws:iam::aws:policy/service-role/AmazonRDSEnhancedMonitoringRole'
+                    cf.join(['arn:', cf.partition, ':iam::aws:policy/service-role/AmazonRDSEnhancedMonitoringRole'])
                 ],
                 Path: '/'
             }

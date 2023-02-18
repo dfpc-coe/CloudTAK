@@ -28,7 +28,7 @@ export default {
                     }]
                 },
                 Path: '/service-role/',
-                ManagedPolicyArns: ['arn:aws:iam::aws:policy/service-role/AWSBatchServiceRole']
+                ManagedPolicyArns: [cf.join(['arn:', cf.partition, ':iam::aws:policy/service-role/AWSBatchServiceRole'])]
             }
         },
         BatchJobRole: {
@@ -55,8 +55,8 @@ export default {
                         },{
                             Effect: 'Allow',
                             Resource: [
-                                cf.join(['arn:aws:s3:::', cf.ref('AssetBucket')]),
-                                cf.join(['arn:aws:s3:::', cf.ref('AssetBucket'), '/*'])
+                                cf.join(['arn:', cf.partition, ':s3:::', cf.ref('AssetBucket')]),
+                                cf.join(['arn:', cf.partition, ':s3:::', cf.ref('AssetBucket'), '/*'])
                             ],
                             Action: '*'
                         },{
@@ -99,7 +99,7 @@ export default {
                         }
                     }]
                 },
-                ManagedPolicyArns: ['arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy'],
+                ManagedPolicyArns: [cf.join(['arn:', cf.partition, :iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy'],
                 Path: '/'
             }
         },
