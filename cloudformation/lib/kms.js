@@ -13,7 +13,7 @@ export default {
                     Statement: [{
                         Effect: 'Allow',
                         Principal: {
-                            AWS: cf.join(['arn:aws:iam::', cf.accountId, ':root'])
+                            AWS: cf.join(['arn:', cf.partition, ':iam::', cf.accountId, ':root'])
                         },
                         Action: ['kms:*'],
                         Resource: '*'
