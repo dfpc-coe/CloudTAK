@@ -85,7 +85,7 @@
                     <TablerInput v-model='layerdata.stale' :disabled='disabled' type='number' min='1' step='1'/>
                 </div>
 
-                <LayerEnvironment v-model='layerdata.environment' :disabled='disabled'/>
+                <LayerEnvironment v-if='$route.params.layerid' v-model='layerdata.environment' :disabled='disabled'/>
             </template>
             <template v-else-if='layerdata.mode === "file"'>
                 <template v-if='!layerdata.raw_asset_id'>
