@@ -2,8 +2,13 @@
 <div class='col-md-12 my-3'>
     <div class='d-flex'>
         <h3>Environment</h3>
-        <div v-if='!disabled' class='ms-auto'>
-            <PlusIcon @click='environment.push({key: "", value: ""})' class='cursor-pointer'/>
+        <div class='ms-auto'>
+            <div v-if='mode === "list"' class='btn-list'>
+                <PlusIcon v-if='!disabled' @click='environment.push({key: "", value: ""})' class='cursor-pointer'/>
+            </div>
+            <div v-else-if='mode === "schema"' class='btn-list'>
+                <RefreshIcon @click='fetchSchema' class='cursor-pointer'/>
+            </div>
         </div>
     </div>
 
@@ -103,7 +108,9 @@ import {
 } from '@tak-ps/vue-tabler';
 import {
     PlusIcon,
+    RefreshIcon
 } from 'vue-tabler-icons'
+import Alert from '../util/Alert.vue';
 
 export default {
     name: 'LayerEnvironment',
@@ -119,6 +126,7 @@ export default {
     },
     data: function() {
         return {
+            alert: false,
             environment: [],
             mode: null,
             schema: null,
@@ -169,13 +177,22 @@ export default {
     },
     methods: {
         fetchSchema: async function() {
-            this.loading.schema = true;
-            this.schema = (await window.std(`/api/layer/${this.$route.params.layerid}/task/schema`)).schema;
+            this.alert = false;
+
+            try {
+                this.loading.schema = true;
+                this.schema = (await window.std(`/api/layer/${this.$route.params.layerid}/task/schema`)).schema;
+            } catch (err) {
+                this.alert = true;
+            }
+
             this.loading.schema = false;
         }
     },
     components: {
+        Alert,
         PlusIcon,
+        RefreshIcon,
         TablerInput,
         TablerLoading,
     }
