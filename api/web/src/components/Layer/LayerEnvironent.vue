@@ -110,7 +110,6 @@ import {
     PlusIcon,
     RefreshIcon
 } from 'vue-tabler-icons'
-import Alert from '../util/Alert.vue';
 
 export default {
     name: 'LayerEnvironment',
@@ -190,7 +189,6 @@ export default {
         }
     },
     components: {
-        Alert,
         PlusIcon,
         RefreshIcon,
         TablerInput,
