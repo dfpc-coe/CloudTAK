@@ -50,7 +50,7 @@ export default class Lambda {
                     Properties: {
                         AlarmName: StackName,
                         ActionsEnabled: true,
-                        AlarmActions: [ cf.join(['arn:', cf.partition, `:sns:us-east-1:126505572887:${config.StackName}-topic`]) ],
+                        AlarmActions: [ cf.join(['arn:', cf.partition, ':sns:', cf.region, `:`, cf.accountId, `:${config.StackName}-topic`]) ],
                         MetricName: 'Errors',
                         Namespace: 'AWS/Lambda',
                         Statistic: 'Maximum',
