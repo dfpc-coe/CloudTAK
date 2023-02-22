@@ -163,7 +163,8 @@ export default {
                                 'cloudwatch:Describe*',
                                 'cloudwatch:Get*',
                                 'cloudwatch:List*',
-                                'cloudwatch:PutMetricAlarm'
+                                'cloudwatch:PutMetricAlarm',
+                                'cloudwatch:DeleteAlarms'
                             ],
                             Resource: [
                                 cf.join(['arn:', cf.partition, ':cloudwatch:', cf.region, ':', cf.accountId, ':alarm:', cf.stackName, '-layer-*'])
