@@ -181,6 +181,7 @@ export default {
 
             for (const e in this.errors) if (this.errors[e]) return;
 
+            this.loading.layer = true;
             let url, method;
             if (this.$route.params.layerid) {
                 url = window.stdurl(`/api/layer/${this.$route.params.layerid}`);
@@ -197,6 +198,8 @@ export default {
             delete body.data.mode;
 
             const create = await window.std(url, { method, body });
+
+            this.loading.layer = false;
 
             this.$router.push(`/layer/${create.id}`);
         }
