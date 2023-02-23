@@ -27,7 +27,24 @@
                     </thead>
                     <tbody>
                         <tr :key='i' v-for='(arr, i) in data[key]'>
-                            <td :key='prop' v-for='prop in Object.keys(schema.properties[key].items.properties)' v-text='arr[prop]'></td>
+                            <template v-if='disabled'>
+                                <td :key='prop' v-for='prop in Object.keys(schema.properties[key].items.properties)' v-text='arr[prop]'></td>
+                            </template>
+                            <template v-else>
+                                <td :key='prop' v-for='(prop, prop_it) in Object.keys(schema.properties[key].items.properties)'>
+                                    <template v-if='prop_it === Object.keys(schema.properties[key].items.properties).length - 1'>
+                                        <div class='d-flex'>
+                                            <TablerInput v-model='arr[prop]' class='w-full'/>
+                                            <div class='ms-auto' style='padding-left: 12px;'>
+                                                <TrashIcon @click='data[key].splice(i, 1)' class='my-1 cursor-pointer'/>
+                                            </div>
+                                        </div>
+                                    </template>
+                                    <template v-else>
+                                        <TablerInput v-model='arr[prop]'/>
+                                    </template>
+                                </td>
+                            </template>
                         </tr>
                     </tbody>
                 </table>
