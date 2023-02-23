@@ -18,16 +18,32 @@
                 </div>
             </div>
 
-            <div :key='i' v-for='(arr, i) of data[key]' class='border rounded my-2 py-2 mx-2 px-2'>
-                <div class='d-flex'>
-                    <div class='mx-2 my-2'>Entry <span v-text='i + 1'/></div>
-                    <div class='ms-auto mx-2 my-2'>
-                        <TrashIcon v-if='!disabled' @click='data[key].splice(i, 1)' class='cursor-pointer'/>
+            <template v-if='schema.properties[key].display === "table" && schema.properties[key].items.properties'>
+                <table class="table card-table table-vcenter border rounded">
+                    <thead>
+                        <tr>
+                            <th :key='prop' v-for='prop in Object.keys(schema.properties[key].items.properties)' v-text='prop'></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr :key='i' v-for='(arr, i) in data[key]'>
+                            <td :key='prop' v-for='prop in Object.keys(schema.properties[key].items.properties)' v-text='arr[prop]'></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </template>
+            <template v-else>
+                <div :key='i' v-for='(arr, i) of data[key]' class='border rounded my-2 py-2 mx-2 px-2'>
+                    <div class='d-flex'>
+                        <div class='mx-2 my-2'>Entry <span v-text='i + 1'/></div>
+                        <div class='ms-auto mx-2 my-2'>
+                            <TrashIcon v-if='!disabled' @click='data[key].splice(i, 1)' class='cursor-pointer'/>
+                        </div>
                     </div>
-                </div>
 
-                <Schema :schema='schema.properties[key].items' :disabled='disabled' v-model='data[key][i]' />
-            </div>
+                    <Schema :schema='schema.properties[key].items' :disabled='disabled' v-model='data[key][i]' />
+                </div>
+            </template>
         </template>
         <template v-else>
             <div class='row'>
