@@ -53,49 +53,7 @@
             </div>
         </template>
         <template v-else>
-            <div :key='key' v-for='key in Object.keys(schema.properties)' class='py-2 floating-input'>
-                <template v-if='schema.properties[key].enum'>
-                    <div class='row border round px-2 py-2'>
-                        SELECT
-                    </div>
-                </template>
-                <template v-else-if='schema.properties[key].type === "string"'>
-                    <div class='row border round px-2 py-2'>
-                        <TablerInput :label='key' :disabled='disabled' v-model='environment[key]'/>
-                    </div>
-                </template>
-                <template v-else-if='schema.properties[key].type === "boolean"'>
-                    <div class='row border round px-2 py-2'>
-                        <div style='padding-left: 10px; padding-right: 10px;'>
-                            <label class='form-label' v-text='key'/>
-                            <div class='d-flex border rounded align-items-center'>
-                                <label class="ms-auto form-check form-switch pt-2">
-                                    <input v-model='environment[key]' :disabled='disabled' class="form-check-input" type="checkbox">
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-                </template>
-                <template v-else-if='schema.properties[key].type === "array" && schema.properties[key].items.type === "string"'>
-                    <div class='row border round px-2 py-2'>
-                        <div class='d-flex'>
-                            <label class='form-label' v-text='key'/>
-                            <div class='ms-auto'>
-                                <PlusIcon v-if='!disabled' @click='environment[key].push("")' class='cursor-pointer'/>
-                            </div>
-                        </div>
-
-                        <div :key='i' v-for='(arr, i) of environment[key]' class='my-1'>
-                            <TablerInput :disabled='disabled' v-model='environment[key][i]'/>
-                        </div>
-                    </div>
-                </template>
-                <template v-else>
-                    <div class='row'>
-                        <TablerInput :label='key' :rows='3' :disabled='disabled' v-model='environment[key]'/>
-                    </div>
-                </template>
-            </div>
+            <Schema :schema='schema' :disabled='disabled' v-model='environment'/>
         </template>
     </div>
 </div>
@@ -104,8 +62,9 @@
 <script>
 import {
     TablerInput,
-    TablerLoading
+    TablerLoading,
 } from '@tak-ps/vue-tabler';
+import Schema from './Schema.vue';
 import {
     PlusIcon,
     RefreshIcon
@@ -156,14 +115,6 @@ export default {
         if (this.schema !== null) {
             this.environment = JSON.parse(JSON.stringify(this.modelValue));
 
-            if (this.schema.type === 'object' && this.schema.properties) {
-                for (const key in this.schema.properties) {
-                    if (!this.environment[key] && this.schema.properties[key].type === 'array') {
-                        this.environment[key] = [];
-                    }
-                }
-            }
-
             this.$nextTick(() => {
                 this.mode = 'schema';
             });
@@ -189,6 +140,7 @@ export default {
         }
     },
     components: {
+        Schema,
         PlusIcon,
         RefreshIcon,
         TablerInput,
