@@ -33,16 +33,31 @@
                             </template>
                             <template v-else>
                                 <td :key='prop' v-for='(prop, prop_it) in Object.keys(schema.properties[key].items.properties)'>
-                                    <template v-if='prop_it === Object.keys(schema.properties[key].items.properties).length - 1'>
-                                        <div class='d-flex'>
-                                            <TablerInput v-model='arr[prop]' class='w-full'/>
-                                            <div class='ms-auto' style='padding-left: 12px;'>
-                                                <TrashIcon @click='data[key].splice(i, 1)' class='my-1 cursor-pointer'/>
+                                    <template v-if='edit[key].has(arr)'>
+                                        <template v-if='prop_it === Object.keys(schema.properties[key].items.properties).length - 1'>
+                                            <div class='d-flex'>
+                                                <TablerInput v-model='arr[prop]' class='w-full'/>
+                                                <div class='ms-auto' style='padding-left: 12px;'>
+                                                    <TrashIcon @click='remove(key, arr, i)' class='my-1 cursor-pointer'/>
+                                                </div>
                                             </div>
-                                        </div>
+                                        </template>
+                                        <template v-else>
+                                            <TablerInput v-model='arr[prop]'/>
+                                        </template>
                                     </template>
                                     <template v-else>
-                                        <TablerInput v-model='arr[prop]'/>
+                                        <template v-if='prop_it === Object.keys(schema.properties[key].items.properties).length - 1'>
+                                            <div class='d-flex'>
+                                                <span v-text='arr[prop]' class='w-full'/>
+                                                <div class='ms-auto' style='padding-left: 12px;'>
+                                                    <PencilIcon @click='edit[key].set(arr, true)' class='my-1 cursor-pointer'/>
+                                                </div>
+                                            </div>
+                                        </template>
+                                        <template v-else>
+                                            <span v-text='arr[prop]'/>
+                                        </template>
                                     </template>
                                 </td>
                             </template>
@@ -82,6 +97,7 @@ import {
 import UploadCSV from '../util/UploadCSV.vue';
 import {
     PlusIcon,
+    PencilIcon,
     DatabaseImportIcon,
     TrashIcon
 } from 'vue-tabler-icons'
@@ -105,6 +121,7 @@ export default {
     data: function() {
         return {
             data: {},
+            edit: {},
             upload: {
                 headers: [],
                 data: null,
@@ -122,6 +139,12 @@ export default {
     },
     mounted: async function() {
         this.data = JSON.parse(JSON.stringify(this.modelValue));
+
+        for (const key of Object.keys(this.schema.properties)) {
+            if (this.schema.properties[key].display === 'table') {
+                this.edit[key] = new Map();
+            }
+        }
 
         if (this.schema.type === 'object' && this.schema.properties) {
             for (const key in this.schema.properties) {
@@ -149,6 +172,10 @@ export default {
                 this.upload.data.push(obj);
             }
         },
+        remove: function(key, arr, i) {
+            this.edit[key].delete(arr);
+            this.data[key].splice(i, 1)
+        },
         push: function(key) {
             if (!this.schema.properties[key].items) this.data[key].push('');
             if (this.schema.properties[key].items.type === 'object') {
@@ -164,6 +191,7 @@ export default {
     },
     components: {
         PlusIcon,
+        PencilIcon,
         DatabaseImportIcon,
         TrashIcon,
         TablerInput,
