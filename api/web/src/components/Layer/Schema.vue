@@ -14,6 +14,7 @@
             <div class='d-flex'>
                 <label class='form-label' v-text='key'/>
                 <div class='ms-auto'>
+                    <DatabaseImportIcon v-if='!disabled && schema.properties[key].display === "table" && schema.properties[key].items.properties' @click='importModal(Object.keys(schema.properties[key].items.properties), data[key])' class='cursor-pointer'/>
                     <PlusIcon v-if='!disabled' @click='push(key)' class='cursor-pointer'/>
                 </div>
             </div>
@@ -68,6 +69,8 @@
             </div>
         </template>
     </div>
+
+    <UploadCSV v-if='upload.shown' @close='upload.shown = false' @import='importCSV($event)'/>
 </div>
 </template>
 
@@ -76,8 +79,10 @@ import {
     TablerInput,
     TablerToggle
 } from '@tak-ps/vue-tabler';
+import UploadCSV from '../util/UploadCSV.vue';
 import {
     PlusIcon,
+    DatabaseImportIcon,
     TrashIcon
 } from 'vue-tabler-icons'
 
@@ -100,6 +105,11 @@ export default {
     data: function() {
         return {
             data: {},
+            upload: {
+                headers: [],
+                data: null,
+                shown: false
+            }
         };
     },
     watch: {
@@ -122,6 +132,23 @@ export default {
         }
     },
     methods: {
+        importModal: function(headers, data) {
+            this.upload.headers = headers;
+            this.upload.data = data;
+            this.upload.shown = true;
+        },
+        importCSV: function(csv) {
+            this.upload.shown = false;
+
+            for (const line of csv.split('\n')) {
+                const row = line.split('\t');
+                const obj = {};
+                for (let i = 0; i < this.upload.headers.length; i++) {
+                    obj[this.upload.headers[i]] = row[i]
+                }
+                this.upload.data.push(obj);
+            }
+        },
         push: function(key) {
             if (!this.schema.properties[key].items) this.data[key].push('');
             if (this.schema.properties[key].items.type === 'object') {
@@ -137,9 +164,11 @@ export default {
     },
     components: {
         PlusIcon,
+        DatabaseImportIcon,
         TrashIcon,
         TablerInput,
         TablerToggle,
+        UploadCSV
     }
 }
 </script>
