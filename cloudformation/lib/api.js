@@ -93,8 +93,8 @@ export default {
                         Statement: [{
                             Effect: 'Allow',
                             Resource: [
-                                cf.join(['arn:aws:s3:::', cf.ref('AssetBucket')]),
-                                cf.join(['arn:aws:s3:::', cf.ref('AssetBucket'), '/*'])
+                                cf.join(['arn:', cf.partition, ':s3:::', cf.ref('AssetBucket')]),
+                                cf.join(['arn:', cf.partition, ':s3:::', cf.ref('AssetBucket'), '/*'])
                             ],
                             Action: '*'
                         },{
@@ -105,7 +105,7 @@ export default {
                                 'ecr:List*'
                             ],
                             Resource: [
-                                cf.join(['arn:aws:ecr:', cf.region, ':', cf.accountId, ':repository/coe-ecr-etl-tasks'])
+                                cf.join(['arn:', cf.partition, ':ecr:', cf.region, ':', cf.accountId, ':repository/coe-ecr-etl-tasks'])
                             ]
                         },{
                             Effect: 'Allow',
@@ -131,7 +131,7 @@ export default {
                                 'secretsmanager:List*'
                             ],
                             Resource: [
-                                cf.join(['arn:aws:secretsmanager:', cf.region, ':', cf.accountId, ':secret:', cf.stackName, '/*'])
+                                cf.join(['arn:', cf.partition, ':secretsmanager:', cf.region, ':', cf.accountId, ':secret:', cf.stackName, '/*'])
                             ]
                         },{ // ------------ Permissions Required to stand up lambda tasks ------------
                             Effect: 'Allow',
@@ -139,7 +139,7 @@ export default {
                                 'iam:PassRole'
                             ],
                             Resource: [
-                                cf.join(['arn:aws:iam::', cf.accountId, ':role/', cf.stackName])
+                                cf.join(['arn:', cf.partition, ':iam::', cf.accountId, ':role/', cf.stackName])
                             ]
                         },{
                             Effect: 'Allow',
@@ -147,7 +147,7 @@ export default {
                                 'cloudformation:*'
                             ],
                             Resource: [
-                                cf.join(['arn:aws:cloudformation:', cf.region, ':', cf.accountId, ':stack/', cf.stackName, '-layer-*'])
+                                cf.join(['arn:', cf.partition, ':cloudformation:', cf.region, ':', cf.accountId, ':stack/', cf.stackName, '-layer-*'])
                             ]
                         },{
                             Effect: 'Allow',
@@ -155,7 +155,7 @@ export default {
                                 'cloudwatch:Describe*'
                             ],
                             Resource: [
-                                cf.join(['arn:aws:cloudwatch:', cf.region, ':', cf.accountId, ':alarm:*'])
+                                cf.join(['arn:', cf.partition, ':cloudwatch:', cf.region, ':', cf.accountId, ':alarm:*'])
                             ]
                         },{
                             Effect: 'Allow',
@@ -163,10 +163,11 @@ export default {
                                 'cloudwatch:Describe*',
                                 'cloudwatch:Get*',
                                 'cloudwatch:List*',
-                                'cloudwatch:PutMetricAlarm'
+                                'cloudwatch:PutMetricAlarm',
+                                'cloudwatch:DeleteAlarms'
                             ],
                             Resource: [
-                                cf.join(['arn:aws:cloudwatch:', cf.region, ':', cf.accountId, ':alarm:', cf.stackName, '-layer-*'])
+                                cf.join(['arn:', cf.partition, ':cloudwatch:', cf.region, ':', cf.accountId, ':alarm:', cf.stackName, '-layer-*'])
                             ]
                         },{
                             Effect: 'Allow',
@@ -178,7 +179,7 @@ export default {
                                 'logs:get*'
                             ],
                             Resource: [
-                                cf.join(['arn:aws:logs:', cf.region, ':', cf.accountId, ':log-group:/aws/lambda/', cf.stackName, '-layer-*'])
+                                cf.join(['arn:', cf.partition, ':logs:', cf.region, ':', cf.accountId, ':log-group:/aws/lambda/', cf.stackName, '-layer-*'])
                             ]
                         },{
                             Effect: 'Allow',
@@ -186,7 +187,7 @@ export default {
                                 'lambda:*'
                             ],
                             Resource: [
-                                cf.join(['arn:aws:lambda:', cf.region, ':', cf.accountId, ':function:', cf.stackName, '-layer-*'])
+                                cf.join(['arn:', cf.partition, ':lambda:', cf.region, ':', cf.accountId, ':function:', cf.stackName, '-layer-*'])
                             ]
                         },{
                             Effect: 'Allow', // Create events for scheduled ETL
@@ -201,7 +202,7 @@ export default {
                                 'events:DeleteRule'
                             ],
                             Resource: [
-                                cf.join(['arn:aws:events:', cf.region, ':', cf.accountId, ':rule/', cf.stackName, '-*'])
+                                cf.join(['arn:', cf.partition, ':events:', cf.region, ':', cf.accountId, ':rule/', cf.stackName, '-*'])
                             ]
                         }]
                     }
@@ -232,14 +233,12 @@ export default {
                                 'logs:PutLogEvents',
                                 'logs:DescribeLogStreams'
                             ],
-                            Resource: ['arn:aws:logs:*:*:*']
+                            Resource: [cf.join(['arn:', cf.partition, ':logs:*:*:*'])]
                         }]
                     }
                 }],
                 ManagedPolicyArns: [
-                    'arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy',
-                    'arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role',
-                    'arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly'
+                    cf.join(['arn:', cf.partition, ':iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy'])
                 ],
                 Path: '/service-role/'
             }
@@ -354,7 +353,7 @@ export default {
                 Path: '/',
                 Policies: [],
                 ManagedPolicyArns: [
-                    'arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'
+                    cf.join(['arn:', cf.partition, ':iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'])
                 ]
             }
         }

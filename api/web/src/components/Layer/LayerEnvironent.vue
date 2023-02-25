@@ -2,8 +2,13 @@
 <div class='col-md-12 my-3'>
     <div class='d-flex'>
         <h3>Environment</h3>
-        <div v-if='!disabled' class='ms-auto'>
-            <PlusIcon @click='environment.push({key: "", value: ""})' class='cursor-pointer'/>
+        <div class='ms-auto'>
+            <div v-if='mode === "list"' class='btn-list'>
+                <PlusIcon v-if='!disabled' @click='environment.push({key: "", value: ""})' class='cursor-pointer'/>
+            </div>
+            <div v-else-if='mode === "schema"' class='btn-list'>
+                <RefreshIcon @click='fetchSchema' class='cursor-pointer'/>
+            </div>
         </div>
     </div>
 
@@ -48,33 +53,7 @@
             </div>
         </template>
         <template v-else>
-            <div :key='key' v-for='key in Object.keys(schema.properties)' class='py-2 floating-input'>
-                <template v-if='schema.properties[key].enum'>
-                    <div class='row'>
-                        SELECT
-                    </div>
-                </template>
-                <template v-else-if='schema.properties[key].type === "string"'>
-                    <div class='row'>
-                        <TablerInput :label='key' :disabled='disabled' v-model='environment[key]'/>
-                    </div>
-                </template>
-                <template v-else-if='schema.properties[key].type === "boolean"'>
-                    <div class='row' style='padding-left: 10px; padding-right: 10px;'>
-                        <div class='d-flex border rounded align-items-center'>
-                            <span class='px-2' v-text='key'></span>
-                            <label class="ms-auto form-check form-switch pt-2">
-                                <input v-model='environment[key]' :disabled='disabled' class="form-check-input" type="checkbox">
-                            </label>
-                        </div>
-                    </div>
-                </template>
-                <template v-else-if='schema.properties[key].type === "array"'>
-                    <div class='row'>
-
-                    </div>
-                </template>
-            </div>
+            <Schema :schema='schema' :disabled='disabled' v-model='environment'/>
         </template>
     </div>
 </div>
@@ -83,10 +62,12 @@
 <script>
 import {
     TablerInput,
-    TablerLoading
+    TablerLoading,
 } from '@tak-ps/vue-tabler';
+import Schema from './Schema.vue';
 import {
     PlusIcon,
+    RefreshIcon
 } from 'vue-tabler-icons'
 
 export default {
@@ -103,6 +84,7 @@ export default {
     },
     data: function() {
         return {
+            alert: false,
             environment: [],
             mode: null,
             schema: null,
@@ -132,6 +114,7 @@ export default {
 
         if (this.schema !== null) {
             this.environment = JSON.parse(JSON.stringify(this.modelValue));
+
             this.$nextTick(() => {
                 this.mode = 'schema';
             });
@@ -144,13 +127,22 @@ export default {
     },
     methods: {
         fetchSchema: async function() {
-            this.loading.schema = true;
-            this.schema = (await window.std(`/api/layer/${this.$route.params.layerid}/task/schema`)).schema;
+            this.alert = false;
+
+            try {
+                this.loading.schema = true;
+                this.schema = (await window.std(`/api/layer/${this.$route.params.layerid}/task/schema`)).schema;
+            } catch (err) {
+                this.alert = true;
+            }
+
             this.loading.schema = false;
         }
     },
     components: {
+        Schema,
         PlusIcon,
+        RefreshIcon,
         TablerInput,
         TablerLoading,
     }
