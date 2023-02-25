@@ -306,6 +306,25 @@
 
 
 /**
+* @api {get} /layer/:layerid/query/:featid Get Layer
+* @apiVersion 1.0.0
+* @apiName GET-/layer/:layerid/query/:featid
+* @apiGroup LayerQuery
+* @apiPermission user
+*
+* @apidescription
+*   Get the latest feature from a layer
+*
+* @apiParam {integer} layerid param
+* @apiParam {string} featid param
+*
+*
+*
+* @apiSchema {jsonschema=../schema/res.LayerQueryFeature.json} apiSuccess
+*/
+
+
+/**
 * @api {get} /layer List Layers
 * @apiVersion 1.0.0
 * @apiName GET-/layer
