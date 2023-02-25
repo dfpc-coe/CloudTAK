@@ -29,6 +29,11 @@ export default class Lambda {
     static generate(config: Config, layer: any, layerdata: any) {
         const StackName = `${config.StackName}-layer-${layer.id}`;
 
+        const environment = JSON.parse(JSON.stringify(layerdata.environment));
+        for (const key of Object.keys(environment)) {
+            if (typeof environment[key] === 'object') environment[key] = JSON.stringify(environment[key]);
+        }
+
         return {
             Parameters: {
                 ScheduleExpression: {
@@ -50,7 +55,7 @@ export default class Lambda {
                     Properties: {
                         AlarmName: StackName,
                         ActionsEnabled: true,
-                        AlarmActions: [ `arn:aws:sns:us-east-1:126505572887:${config.StackName}-topic` ],
+                        AlarmActions: [ cf.join(['arn:', cf.partition, ':sns:', cf.region, `:`, cf.accountId, `:${config.StackName}-topic`]) ],
                         MetricName: 'Errors',
                         Namespace: 'AWS/Lambda',
                         Statistic: 'Maximum',
@@ -104,7 +109,7 @@ export default class Lambda {
                         PackageType: 'Image',
                         Environment: {
                             Variables: {
-                                ...layerdata.environment,
+                                ...environment,
                                 ETL_API: config.API_URL,
                                 ETL_TOKEN: jwt.sign({ access: 'cot', layer: layer.id }, config.SigningSecret),
                                 ETL_LAYER: layer.id

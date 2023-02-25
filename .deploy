@@ -1,6 +1,7 @@
 {
     "name": "coe-etl",
-    "profile": "coe",
+    "profile": "coegc",
+    "region": "us-gov-east-1",
     "tags": [
         {
             "Key": "Project",
