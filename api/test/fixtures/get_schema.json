@@ -84,6 +84,11 @@
         "query": true,
         "res": true
     },
+    "GET /layer/:layerid/query/:featid": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
     "GET /layer": {
         "body": false,
         "query": true,
