@@ -66,7 +66,7 @@
                                 </thead>
                                 <tbody>
                                     <tr :key='feature.id' v-for='feature in list.features'>
-                                        <td v-text='feature.id'></td>
+                                        <td><a @click='$router.push(`/layer/${$route.params.layerid}/query/${feature.id}`)' class='cursor-pointer' v-text='feature.id'></a></td>
                                         <td v-text='feature.geometry.type'></td>
                                         <td v-text='JSON.stringify(feature.properties)'></td>
                                     </tr>
