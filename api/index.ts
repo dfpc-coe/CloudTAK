@@ -21,7 +21,11 @@ import Config from './lib/config.js';
 const pkg = JSON.parse(String(fs.readFileSync(new URL('./package.json', import.meta.url))));
 
 const args = minimist(process.argv, {
-    boolean: ['help', 'silent', 'nocache'],
+    boolean: [
+        'silent',   // Turn off logging as much as possible
+        'nocache',  // Ignore MemCached
+        'unsafe'    // Allow unsecure local dev creds
+    ],
     string: ['postgres']
 });
 
@@ -38,7 +42,8 @@ try {
 
 if (import.meta.url === `file://${process.argv[1]}`) {
     const config = await Config.env({
-        silent: args.silent || false
+        silent: args.silent || false,
+        unsafe: args.unsafe || false
     });
     await server(config);
 }
@@ -115,6 +120,7 @@ export default async function server(config: Config) {
 
     await schema.blueprint(new BlueprintLogin({
         secret: config.SigningSecret,
+        unsafe: config.unsafe ? config.UnsafeSigningSecret : undefined,
         username: config.Username,
         password: config.Password
     }));

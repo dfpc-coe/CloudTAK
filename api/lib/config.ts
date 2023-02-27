@@ -1,7 +1,8 @@
 import AWS from 'aws-sdk';
 
 interface ConfigArgs {
-    silent: boolean
+    silent: boolean,
+    unsafe: boolean
 }
 
 /**
@@ -9,8 +10,10 @@ interface ConfigArgs {
  */
 export default class Config {
     silent: boolean;
+    unsafe: boolean;
     StackName: string;
     SigningSecret: string;
+    UnsafeSigningSecret: string;
     Username: string;
     Password: string;
     API_URL: string;
@@ -38,12 +41,15 @@ export default class Config {
                 process.env.AWS_DEFAULT_REGION = 'us-east-1';
             }
 
+            config.UnsafeSigningSecret = 'coe-wildland-fire';
+            config.unsafe = args.unsafe;
+
             if (!process.env.StackName || process.env.StackName === 'test') {
                 if (!config.silent) console.error('ok - set env StackName: test');
                 process.env.StackName = 'test';
 
+                config.SigningSecret = config.UnsafeSigningSecret;
                 config.StackName = 'test';
-                config.SigningSecret = 'coe-wildland-fire';
                 config.Username = 'admin';
                 config.Password = 'admin';
                 config.API_URL = 'http://localhost:5001';
