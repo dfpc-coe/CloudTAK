@@ -31,7 +31,7 @@ export default class Dynamo {
             let KeyConditionExpression: string = `LayerId = :layerid`;
             const ExpressionAttributeValues = new Map();
             ExpressionAttributeValues.set(':layerid', layerid);
-            if (query.filter.length) {
+            if (query.filter && query.filter.length) {
                 KeyConditionExpression = KeyConditionExpression + ` and begins_with(Id, :filter)`;
                 ExpressionAttributeValues.set(':filter', query.filter);
             }
