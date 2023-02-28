@@ -9,7 +9,7 @@ import Schedule from '../schedule.js';
  * @class
  */
 export default class Lambda {
-    static async schema(config: Config, layerid: number): Promise<object> {
+    static async schema(config: Config, layerid: number, type: string = 'schema'): Promise<object> {
         const lambda = new AWSLambda.LambdaClient({ region: process.env.AWS_DEFAULT_REGION });
         const FunctionName = `${config.StackName}-layer-${layerid}`;
 
@@ -17,7 +17,7 @@ export default class Lambda {
             FunctionName,
             InvocationType: 'RequestResponse',
             Payload: Buffer.from(JSON.stringify({
-                type: 'schema'
+                type
             }))
         }));
 
