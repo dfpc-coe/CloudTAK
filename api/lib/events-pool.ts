@@ -61,7 +61,7 @@ export default class EventsPool {
                         const layer = await layerfn();
                         if (!layer) return;
 
-                        this.add(layer);
+                        this.add(layer.id, layer.data);
                     } catch (err) {
                         console.error(err);
                     }
@@ -72,18 +72,18 @@ export default class EventsPool {
         });
     }
 
-    async add(layer: any) {
-        const name = `layer-${layer.id}`;
-        console.error(`ok - adding layer ${layer.id} @ ${layer.data.cron}`);
+    async add(layerid: number, layerdata: any) {
+        const name = `layer-${layerid}`;
+        console.error(`ok - adding layer ${layerid} @ ${layerdata.cron}`);
 
-        const parsed = Schedule.parse_rate(layer.data.cron);
+        const parsed = Schedule.parse_rate(layerdata.cron);
         await this.bree.add({
             name,
             path: (new URL('../jobs/lambda.js', import.meta.url)).pathname,
             interval: `${parsed.freq} ${parsed.unit}`,
             worker: {
                 workerData: {
-                    LayerID: layer.id,
+                    LayerID: layerid,
                     StackName: this.stackName
                 }
             }
@@ -91,8 +91,8 @@ export default class EventsPool {
         await this.bree.start(name);
     }
 
-    delete(layer: any) {
-        const name = `layer-${layer.id}`;
+    delete(layerid: number) {
+        const name = `layer-${layerid}`;
         this.bree.remove(name);
     }
 }
