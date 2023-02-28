@@ -3,6 +3,7 @@ import cf from '@openaddresses/cloudfriend';
 import AWSLambda from '@aws-sdk/client-lambda';
 import Config from '../config.js';
 import jwt from 'jsonwebtoken';
+import Schedule from '../schedule.js';
 
 /**
  * @class
@@ -23,23 +24,15 @@ export default class Lambda {
         return JSON.parse(Buffer.from(res.Payload).toString());
     }
 
-    static generate(config: Config, layer: any, layerdata: any) {
+    static generate(config: Config, layer: any, layerdata: any): any {
         const StackName = `${config.StackName}-layer-${layer.id}`;
 
-        return {
+        const stack: any = {
             Parameters: {
-                ScheduleExpression: {
-                    Type: 'String',
-                    Default: layerdata.cron
-                },
                 Task: {
                     Type: 'String',
                     Default: layerdata.task
                 },
-                Events: {
-                    Type: 'String',
-                    Default: layer.enabled ? 'ENABLED' : 'DISABLED'
-                }
             },
             Resources: {
                 LambdaAlarm: {
@@ -70,27 +63,6 @@ export default class Lambda {
                         RetentionInDays: 7
                     }
                 },
-                ETLEvents: {
-                    Type: 'AWS::Events::Rule',
-                    Properties: {
-                        Description: StackName,
-                        State: cf.ref('Events'),
-                        ScheduleExpression: cf.ref('ScheduleExpression'),
-                        Targets: [{
-                            Id: 'TagWatcherScheduler',
-                            Arn: cf.getAtt('ETLFunction', 'Arn')
-                        }]
-                    }
-                },
-                ETLFunctionInvoke: {
-                    Type: 'AWS::Lambda::Permission',
-                    Properties: {
-                        FunctionName: cf.getAtt('ETLFunction', 'Arn'),
-                        Action: 'lambda:InvokeFunction',
-                        Principal: 'events.amazonaws.com',
-                        SourceArn: cf.getAtt('ETLEvents', 'Arn')
-                    }
-                },
                 ETLFunction: {
                     Type: 'AWS::Lambda::Function',
                     Properties: {
@@ -114,5 +86,39 @@ export default class Lambda {
                 }
             }
         }
+
+        if (Schedule.is_aws(layerdata.cron)) {
+            stack.Parameters.ScheduleExpression = {
+                Type: 'String',
+                Default: layerdata.cron
+            };
+            stack.Parameters.Events = {
+                Type: 'String',
+                Default: layer.enabled ? 'ENABLED' : 'DISABLED'
+            };
+            stack.Resources.ETLEvents = {
+                Type: 'AWS::Events::Rule',
+                Properties: {
+                    Description: StackName,
+                    State: cf.ref('Events'),
+                    ScheduleExpression: cf.ref('ScheduleExpression'),
+                    Targets: [{
+                        Id: 'TagWatcherScheduler',
+                        Arn: cf.getAtt('ETLFunction', 'Arn')
+                    }]
+                }
+            };
+            stack.Resources.ETLFunctionInvoke = {
+                Type: 'AWS::Lambda::Permission',
+                Properties: {
+                    FunctionName: cf.getAtt('ETLFunction', 'Arn'),
+                    Action: 'lambda:InvokeFunction',
+                    Principal: 'events.amazonaws.com',
+                    SourceArn: cf.getAtt('ETLEvents', 'Arn')
+                }
+            };
+        }
+
+        return stack;
     }
 };
