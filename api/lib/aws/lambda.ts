@@ -1,6 +1,6 @@
 // @ts-ignore
-import cf from '@mapbox/cloudfriend';
-import AWS from 'aws-sdk';
+import cf from '@openaddresses/cloudfriend';
+import AWSLambda from '@aws-sdk/client-lambda';
 import Config from '../config.js';
 import jwt from 'jsonwebtoken';
 
@@ -8,22 +8,19 @@ import jwt from 'jsonwebtoken';
  * @class
  */
 export default class Lambda {
-    static schema(config: Config, layerid: number): Promise<object> {
-        const lambda = new AWS.Lambda({ region: process.env.AWS_DEFAULT_REGION });
+    static async schema(config: Config, layerid: number): Promise<object> {
+        const lambda = new AWSLambda.LambdaClient({ region: process.env.AWS_DEFAULT_REGION });
         const FunctionName = `${config.StackName}-layer-${layerid}`;
 
-        return new Promise((resolve, reject) => {
-            lambda.invoke({
-                FunctionName,
-                InvocationType: 'RequestResponse',
-                Payload: JSON.stringify({
-                    type: 'schema'
-                })
-            }, (err, res) => {
-                if (err) return reject(err);
-                return resolve(JSON.parse(String(res.Payload)));
-            });
-        });
+        const res = await lambda.send(new AWSLambda.InvokeCommand({
+            FunctionName,
+            InvocationType: 'RequestResponse',
+            Payload: Buffer.from(JSON.stringify({
+                type: 'schema'
+            }))
+        }));
+
+        return JSON.parse(Buffer.from(res.Payload).toString());
     }
 
     static generate(config: Config, layer: any, layerdata: any) {

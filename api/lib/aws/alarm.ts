@@ -1,5 +1,5 @@
-import AWS from 'aws-sdk';
 import Err from '@openaddresses/batch-error';
+import CloudWatch from '@aws-sdk/client-cloudwatch';
 
 /**
  * @class
@@ -12,13 +12,13 @@ export default class Alarm {
     }
 
     async list() {
-        const cw = new AWS.CloudWatch({ region: process.env.AWS_DEFAULT_REGION });
+        const cw = new CloudWatch.CloudWatchClient({ region: process.env.AWS_DEFAULT_REGION });
 
         try {
             const map = new Map();
-            const res = await cw.describeAlarms({
+            const res = await cw.send(new CloudWatch.DescribeAlarmsCommand({
                 AlarmNamePrefix: `${this.stack}-layer-`
-            }).promise();
+            }));
 
             for (const alarm of res.MetricAlarms) {
                 let value = 'healthy';
@@ -37,12 +37,12 @@ export default class Alarm {
     }
 
     async get(layer: number) {
-        const cw = new AWS.CloudWatch({ region: process.env.AWS_DEFAULT_REGION });
+        const cw = new CloudWatch.CloudWatchClient({ region: process.env.AWS_DEFAULT_REGION });
 
         try {
-            const res = await cw.describeAlarms({
+            const res = await cw.send(new CloudWatch.DescribeAlarmsCommand({
                 AlarmNames: [`${this.stack}-layer-${layer}`]
-            }).promise();
+            }));
 
             if (!res.MetricAlarms.length) return 'unknown';
 

@@ -1,4 +1,4 @@
-import AWS from 'aws-sdk';
+import AWSECR from '@aws-sdk/client-ecr';
 import Err from '@openaddresses/batch-error';
 
 /**
@@ -6,12 +6,12 @@ import Err from '@openaddresses/batch-error';
  */
 export default class ECR {
     static async list() {
-        const ecr = new AWS.ECR({ region: process.env.AWS_DEFAULT_REGION });
+        const ecr = new AWSECR.ECRClient({ region: process.env.AWS_DEFAULT_REGION });
 
         try {
-            const res = await ecr.listImages({
+            const res = await ecr.send(new AWSECR.ListImagesCommand({
                 repositoryName: 'coe-ecr-etl-tasks'
-            }).promise();
+            }));
 
             return res;
         } catch (err) {
