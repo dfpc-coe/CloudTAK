@@ -161,6 +161,8 @@ export default async function router(schema: any, config: Config) {
                 :  await Layer.from(config.pool, parseInt(req.params.layerid));
 
             if (layer.mode === 'live') {
+                Schedule.is_valid(data.cron);
+
                 await LayerLive.commit(config.pool, layer.id, data, {
                     column: 'layer_id'
                 });
