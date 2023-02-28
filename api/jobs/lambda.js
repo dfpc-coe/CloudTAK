@@ -5,15 +5,13 @@ try {
     const lambda = new AWSLambda.LambdaClient({ region: process.env.AWS_DEFAULT_REGION });
     const FunctionName = `${workerData.StackName}-layer-${workerData.LayerID}`;
 
-    const res = await lambda.send(new AWSLambda.InvokeCommand({
+    await lambda.send(new AWSLambda.InvokeCommand({
         FunctionName,
         InvocationType: 'Event',
         Payload: Buffer.from(JSON.stringify({
             type: 'default'
         }))
     }));
-
-    console.error(res);
 } catch (err) {
     console.error(err);
     throw err;
