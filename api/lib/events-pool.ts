@@ -24,8 +24,10 @@ export default class EventsPool {
             errorHandler: (error, workerMetadata) => {
                 if (workerMetadata.threadId) {
                     console.error(`ERROR: There was an error while running a worker ${workerMetadata.name} with thread ID: ${workerMetadata.threadId}`)
+                    console.error(error);
                 } else {
                     console.error(`ERROR: There was an error while running a worker ${workerMetadata.name}`)
+                    console.error(error);
                 }
             }
         })
