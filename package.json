@@ -21,8 +21,8 @@
     },
     "homepage": "https://github.com/tak-ps/etl#readme",
     "dependencies": {
-        "@openaddresses/cloudfriend": "^7.0.0",
         "@openaddresses/batch-alarms": "^3.2.0",
+        "@openaddresses/cloudfriend": "^7.0.0",
         "@openaddresses/deploy": "^7.5.0",
         "aws-sdk": "^2.1264.0",
         "xml-js": "^1.6.11"
