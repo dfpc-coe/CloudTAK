@@ -18,6 +18,7 @@ import Alarm from '../lib/aws/alarm.js';
 import DDBQueue from '../lib/queue.js';
 import { Request, Response } from 'express';
 import Config from '../lib/config.js';
+import Schedule from '../lib/schedule.js';
 
 export default async function router(schema: any, config: Config) {
     const alarm = new Alarm(config.StackName);
@@ -90,6 +91,8 @@ export default async function router(schema: any, config: Config) {
             let layer = await Layer.generate(config.pool, req.body);
 
             if (layer.mode === 'live') {
+                Schedule.is_valid(data.cron);
+
                 await LayerLive.generate(config.pool, {
                     layer_id: layer.id,
                     ...data
