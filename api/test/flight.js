@@ -202,6 +202,7 @@ export default class Flight {
         test('test server takeoff', async (t) => {
             this.config = await Config.env({
                 silent: true,
+                unsafe: true,
                 validate: false,
                 meta: {
                     'user::registration': true
