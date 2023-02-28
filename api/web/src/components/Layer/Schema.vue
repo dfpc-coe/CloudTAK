@@ -14,6 +14,7 @@
             <div class='d-flex'>
                 <label class='form-label' v-text='key'/>
                 <div class='ms-auto'>
+                    <TrashIcon v-if='!disabled && schema.properties[key].display === "table" && schema.properties[key].items.properties' @click='this.data[key].splice(0, this.data[key].length)' class='cursor-pointer'/>
                     <DatabaseImportIcon v-if='!disabled && schema.properties[key].display === "table" && schema.properties[key].items.properties' @click='importModal(Object.keys(schema.properties[key].items.properties), data[key])' class='cursor-pointer'/>
                     <PlusIcon v-if='!disabled' @click='push(key)' class='cursor-pointer'/>
                 </div>
@@ -97,9 +98,9 @@ import {
 import UploadCSV from '../util/UploadCSV.vue';
 import {
     PlusIcon,
+    TrashIcon,
     PencilIcon,
     DatabaseImportIcon,
-    TrashIcon
 } from 'vue-tabler-icons'
 
 export default {

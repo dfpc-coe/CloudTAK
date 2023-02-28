@@ -29,11 +29,6 @@ export default class Lambda {
     static generate(config: Config, layer: any, layerdata: any) {
         const StackName = `${config.StackName}-layer-${layer.id}`;
 
-        const environment = JSON.parse(JSON.stringify(layerdata.environment));
-        for (const key of Object.keys(environment)) {
-            if (typeof environment[key] === 'object') environment[key] = JSON.stringify(environment[key]);
-        }
-
         return {
             Parameters: {
                 ScheduleExpression: {
@@ -109,7 +104,6 @@ export default class Lambda {
                         PackageType: 'Image',
                         Environment: {
                             Variables: {
-                                ...environment,
                                 ETL_API: config.API_URL,
                                 ETL_TOKEN: jwt.sign({ access: 'cot', layer: layer.id }, config.SigningSecret),
                                 ETL_LAYER: layer.id
