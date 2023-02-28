@@ -1,4 +1,5 @@
 import SecretsManager from '@aws-sdk/client-secrets-manager';
+import type EventsPool from './events-pool.js';
 
 interface ConfigArgs {
     silent: boolean,
@@ -19,10 +20,11 @@ export default class Config {
     API_URL: string;
     DynamoDB: string;
     wsClients: any[];
-    pool: any;
+    pool?: any;
     cacher: any;
     conns: any;
     server: any;
+    events?: EventsPool;
 
     static async env(args: ConfigArgs) {
         const config = new Config();
