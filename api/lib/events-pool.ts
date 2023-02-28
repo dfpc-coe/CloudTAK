@@ -4,6 +4,7 @@ import LayersLive from './types/layers_live.js';
 import Layer from './types/layer.js';
 import Schedule from './schedule.js';
 import Bree from 'bree';
+import path from 'node:path';
 
 /**
  * Maintain a pool of Events - this pool handles second level
@@ -15,7 +16,17 @@ export default class EventsPool {
     bree: Bree;
 
     constructor() {
-        this.bree = new Bree({});
+        this.bree = new Bree({
+            root: false,
+            jobs: [],
+            errorHandler: (error, workerMetadata) => {
+                if (workerMetadata.threadId) {
+                    console.error(`ERROR: There was an error while running a worker ${workerMetadata.name} with thread ID: ${workerMetadata.threadId}`)
+                } else {
+                    console.error(`ERROR: There was an error while running a worker ${workerMetadata.name}`)
+                }
+            }
+        })
     }
 
     /**
@@ -46,13 +57,7 @@ export default class EventsPool {
                         const layer = await layerfn();
                         if (!layer) return;
 
-                        const name = `layer-${layer.id}`;
-                        await this.bree.add({
-                            name,
-                            interval: layer.data.cron,
-                            path: EventsPool.QueueLambda
-                        });
-                        await this.bree.start(layer);
+                        this.add(layer);
                     } catch (err) {
                         console.error(err);
                     }
@@ -63,14 +68,24 @@ export default class EventsPool {
         });
     }
 
-    static async QueueLambda() {
-        console.error(this);
+    async add(layer: any) {
+        const name = `layer-${layer.id}`;
+        console.error(`ok - adding layer ${layer.id} @ ${layer.data.cron}`);
+
+        const parsed = Schedule.parse_rate(layer.data.cron);
+        await this.bree.add({
+            name,
+            path: './jobs/lambda.js',
+            interval: `${parsed.freq} ${parsed.unit}`,
+            worker: {
+                workerData: layer
+            }
+        });
+        await this.bree.start(name);
     }
 
-    async add(conn: any) {
-    }
-
-    delete(id: number): boolean {
-        return true;
+    delete(layer: any) {
+        const name = `layer-${layer.id}`;
+        this.bree.remove(name);
     }
 }
