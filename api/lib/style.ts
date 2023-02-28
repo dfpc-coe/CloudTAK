@@ -7,7 +7,9 @@ import jsonata from 'jsonata';
  * @prop {Layer} layer  Layer object
  */
 export default class Style {
-    constructor(layer) {
+    layer: any;
+
+    constructor(layer: any) {
         this.layer = layer;
     }
 
@@ -17,7 +19,7 @@ export default class Style {
      * @param {Object} feature     GeoJSON Feature
      * @returns {Object} GeoJSON Feature
      */
-    async feat(feature) {
+    async feat(feature: any): Promise<any> {
         if (this.layer.data.stale) {
             feature.properties.stale = this.layer.data.stale;
         }
@@ -41,7 +43,7 @@ export default class Style {
         }
     }
 
-    #by_geom(style, feature) {
+    #by_geom(style: any, feature: any) {
         if (feature.geometry.type === 'Point' && style.point) {
             Object.assign(feature.properties, style.point);
         } else if (feature.geometry.type === 'LineString' && style.line) {

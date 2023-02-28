@@ -8,7 +8,6 @@ import Schema from '@openaddresses/batch-schema';
 // @ts-ignore
 import { Pool } from '@openaddresses/batch-generic';
 import minimist from 'minimist';
-// @ts-ignore
 import TAKPool from './lib/tak-pool.js';
 import { WebSocketServer } from 'ws';
 import Cacher from './lib/cacher.js';

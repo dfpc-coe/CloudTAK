@@ -12,7 +12,6 @@ import { sql } from 'slonik';
 import Auth from '../lib/auth.js';
 import Lambda from '../lib/aws/lambda.js';
 import CloudFormation from '../lib/aws/cloudformation.js';
-// @ts-ignore
 import Style from '../lib/style.js';
 import { check } from '@placemarkio/check-geojson';
 import Alarm from '../lib/aws/alarm.js';
