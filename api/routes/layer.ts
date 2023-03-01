@@ -99,9 +99,9 @@ export default async function router(schema: any, config: Config) {
                 });
 
                 if (!Schedule.is_aws(data.cron)) {
-                    this.config.events.add(layer.id, data.cron);
+                    config.events.add(layer.id, data.cron);
                 } else {
-                    this.config.events.delete(layer.id);
+                    config.events.delete(layer.id);
                 }
             } else if (layer.mode === 'file') {
                 await LayerFile.generate(config.pool, {
@@ -185,9 +185,9 @@ export default async function router(schema: any, config: Config) {
                 }
 
                 if (!Schedule.is_aws(data.cron)) {
-                    this.config.events.add(layer.id, data.cron);
+                    config.events.add(layer.id, data.cron);
                 } else {
-                    this.config.events.delete(layer.id);
+                    config.events.delete(layer.id);
                 }
             } else if (layer.mode === 'file') {
                 await LayerFile.commit(config.pool, layer.id, data, {
@@ -258,7 +258,7 @@ export default async function router(schema: any, config: Config) {
 
             if (layer.mode === 'live') {
                 await LayerLive.delete(config.pool, layer.id);
-                this.config.events.delete(layer.id);
+                config.events.delete(layer.id);
             } else if (layer.mode === 'file') {
                 await LayerFile.delete(config.pool, layer.id);
             }
