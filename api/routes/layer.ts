@@ -93,13 +93,13 @@ export default async function router(schema: any, config: Config) {
             if (layer.mode === 'live') {
                 Schedule.is_valid(data.cron);
 
-                await LayerLive.generate(config.pool, {
+                const layerdata = await LayerLive.generate(config.pool, {
                     layer_id: layer.id,
                     ...data
                 });
 
-                if (!Schedule.is_aws(data.cron)) {
-                    config.events.add(layer.id, data.cron);
+                if (!Schedule.is_aws(layerdata.cron)) {
+                    config.events.add(layer.id, layerdata.cron);
                 } else {
                     config.events.delete(layer.id);
                 }
@@ -167,14 +167,14 @@ export default async function router(schema: any, config: Config) {
                 :  await Layer.from(config.pool, parseInt(req.params.layerid));
 
             if (layer.mode === 'live') {
-                Schedule.is_valid(data.cron);
+                if (data.cron) Schedule.is_valid(data.cron);
 
-                await LayerLive.commit(config.pool, layer.id, data, {
+                const layerdata = await LayerLive.commit(config.pool, layer.id, data, {
                     column: 'layer_id'
                 });
 
                 try {
-                    const lambda = await Lambda.generate(config, layer, data);
+                    const lambda = await Lambda.generate(config, layer, layerdata);
                     if (await CloudFormation.exists(config, layer.id)) {
                         await CloudFormation.update(config, layer.id, lambda);
                     } else {
@@ -184,8 +184,8 @@ export default async function router(schema: any, config: Config) {
                     console.error(err);
                 }
 
-                if (!Schedule.is_aws(data.cron)) {
-                    config.events.add(layer.id, data.cron);
+                if (!Schedule.is_aws(layerdata.cron)) {
+                    config.events.add(layer.id, layerdata.cron);
                 } else {
                     config.events.delete(layer.id);
                 }
