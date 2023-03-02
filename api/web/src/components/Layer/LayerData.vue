@@ -84,6 +84,14 @@
                     <label>Stale Value (ms)</label>
                     <TablerInput v-model='layerdata.stale' :disabled='disabled' type='number' min='1' step='1'/>
                 </div>
+                <div class="col-md-6">
+                    <label>Memory (Mb)</label>
+                    <TablerInput v-model='layerdata.memory' :disabled='disabled' type='number' min='1' step='1'/>
+                </div>
+                <div class="col-md-6">
+                    <label>Timeout (s)</label>
+                    <TablerInput v-model='layerdata.timeout' :disabled='disabled' type='number' min='1' step='1'/>
+                </div>
 
                 <LayerEnvironment v-if='$route.params.layerid' v-model='layerdata.environment' :disabled='disabled'/>
             </template>
@@ -160,6 +168,8 @@ export default {
                 raw_asset_id: null,
                 std_asset_id: null,
                 task: '',
+                timeout: '',
+                memory: '',
                 cron: '0/15 * * * ? *',
                 stale: 60 * 1000,
                 environment: {}
@@ -176,6 +186,8 @@ export default {
                         task: this.layerdata.task,
                         cron: this.layerdata.cron,
                         stale: parseInt(this.layerdata.stale),
+                        memory: parseInt(this.layerdata.memory),
+                        timeout: parseInt(this.layerdata.timeout),
                         connection: this.layerdata.connection,
                         environment: this.layerdata.environment
                     });
