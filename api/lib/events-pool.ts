@@ -77,6 +77,7 @@ export default class EventsPool {
         console.error(`ok - adding layer ${layerid} @ ${cron}`);
 
         const parsed = Schedule.parse_rate(cron);
+        await this.delete(layerid);
         await this.bree.add({
             name,
             path: (new URL('../jobs/lambda.js', import.meta.url)).pathname,
@@ -91,8 +92,12 @@ export default class EventsPool {
         await this.bree.start(name);
     }
 
-    delete(layerid: number) {
-        const name = `layer-${layerid}`;
-        this.bree.remove(name);
+    async delete(layerid: number) {
+        try {
+            const name = `layer-${layerid}`;
+            await this.bree.remove(name);
+        } catch (err) {
+            // This usually only happens when a job is added that doesn't exist yet
+        }
     }
 }

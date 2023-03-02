@@ -7,7 +7,7 @@
     "scripts": {
         "test": "./test/test",
         "doc": "apidoc -i ./doc",
-        "prod": "ts-node --esm index.ts",
+        "prod": "ts-node index.ts",
         "lint": "eslint index.ts lib/**.ts",
         "dev": "nodemon -i schema/ -i web/ -i doc/ --esm index.ts"
     },

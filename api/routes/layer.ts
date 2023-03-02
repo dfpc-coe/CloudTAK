@@ -100,7 +100,7 @@ export default async function router(schema: any, config: Config) {
                 if (!Schedule.is_aws(layerdata.cron)) {
                     config.events.add(layer.id, layerdata.cron);
                 } else {
-                    config.events.delete(layer.id);
+                    await config.events.delete(layer.id);
                 }
             } else if (layer.mode === 'file') {
                 await LayerFile.generate(config.pool, {
@@ -186,7 +186,7 @@ export default async function router(schema: any, config: Config) {
                 if (!Schedule.is_aws(layerdata.cron)) {
                     config.events.add(layer.id, layerdata.cron);
                 } else {
-                    config.events.delete(layer.id);
+                    await config.events.delete(layer.id);
                 }
             } else if (layer.mode === 'file') {
                 await LayerFile.commit(config.pool, layer.id, data, {
