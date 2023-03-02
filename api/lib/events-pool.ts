@@ -61,7 +61,7 @@ export default class EventsPool {
                         const layer = await layerfn();
                         if (!layer) return;
 
-                        this.add(layer.id, layer.data);
+                        this.add(layer.id, layer.data.cron);
                     } catch (err) {
                         console.error(err);
                     }
@@ -72,11 +72,11 @@ export default class EventsPool {
         });
     }
 
-    async add(layerid: number, layerdata: any) {
+    async add(layerid: number, cron: string) {
         const name = `layer-${layerid}`;
-        console.error(`ok - adding layer ${layerid} @ ${layerdata.cron}`);
+        console.error(`ok - adding layer ${layerid} @ ${cron}`);
 
-        const parsed = Schedule.parse_rate(layerdata.cron);
+        const parsed = Schedule.parse_rate(cron);
         await this.bree.add({
             name,
             path: (new URL('../jobs/lambda.js', import.meta.url)).pathname,
