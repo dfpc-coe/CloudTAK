@@ -11,6 +11,12 @@
         "cron": {
             "$ref": "./layers_live/cron.json"
         },
+        "memory": {
+            "$ref": "./layers_live/memory.json"
+        },
+        "timeout": {
+            "$ref": "./layers_live/timeout.json"
+        },
         "enabled": {
             "$ref": "./layers/enabled.json"
         },
