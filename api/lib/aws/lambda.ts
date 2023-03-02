@@ -67,8 +67,8 @@ export default class Lambda {
                     Type: 'AWS::Lambda::Function',
                     Properties: {
                         FunctionName: StackName,
-                        MemorySize: 128,
-                        Timeout: 60,
+                        MemorySize: layerdata.memory,
+                        Timeout: layerdata.timeout,
                         Description: StackName,
                         PackageType: 'Image',
                         Environment: {
