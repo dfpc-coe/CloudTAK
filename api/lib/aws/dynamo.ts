@@ -1,4 +1,5 @@
-import AWS from 'aws-sdk';
+import DynamoDB from '@aws-sdk/client-dynamodb';
+import DynamoDBDoc from "@aws-sdk/lib-dynamodb";
 import Err from '@openaddresses/batch-error';
 import { coordEach } from '@turf/meta';
 
@@ -26,7 +27,8 @@ export default class Dynamo {
 
     async query(layerid: number, query: DynamoQuery): Promise<DynamoItem[]> {
         try {
-            const ddb = new AWS.DynamoDB.DocumentClient({region: process.env.AWS_DEFAULT_REGION });
+            const ddb = new DynamoDB.DynamoDBClient({region: process.env.AWS_DEFAULT_REGION });
+            const ddbdoc = DynamoDBDoc.DynamoDBDocumentClient.from(ddb);
 
             let KeyConditionExpression: string = `LayerId = :layerid`;
             const ExpressionAttributeValues = new Map();
@@ -36,11 +38,11 @@ export default class Dynamo {
                 ExpressionAttributeValues.set(':filter', query.filter);
             }
 
-            const list = await ddb.query({
+            const list = await ddbdoc.send(new DynamoDBDoc.QueryCommand({
                 TableName: this.table,
                 KeyConditionExpression,
                 ExpressionAttributeValues: Object.fromEntries(ExpressionAttributeValues)
-            }).promise();
+            }));
 
             const items = list.Items as DynamoItem[];
 
@@ -52,15 +54,16 @@ export default class Dynamo {
 
     async row(layerid: number, id: string): Promise<DynamoItem> {
         try {
-            const ddb = new AWS.DynamoDB.DocumentClient({region: process.env.AWS_DEFAULT_REGION });
+            const ddb = new DynamoDB.DynamoDBClient({region: process.env.AWS_DEFAULT_REGION });
+            const ddbdoc = DynamoDBDoc.DynamoDBDocumentClient.from(ddb);
 
-            const row = await ddb.get({
+            const row = await ddbdoc.send(new DynamoDBDoc.GetCommand({
                 TableName: this.table,
                 Key: {
                     LayerId: layerid,
                     Id: id
                 }
-            }).promise();
+            }));
 
             return row.Item as DynamoItem;
         } catch (err) {
@@ -76,9 +79,10 @@ export default class Dynamo {
 
     async put(feature: any) {
         try {
-            const ddb = new AWS.DynamoDB.DocumentClient({region: process.env.AWS_DEFAULT_REGION });
+            const ddb = new DynamoDB.DynamoDBClient({region: process.env.AWS_DEFAULT_REGION });
+            const ddbdoc = DynamoDBDoc.DynamoDBDocumentClient.from(ddb);
 
-            await ddb.put({
+            await ddbdoc.send(new DynamoDBDoc.PutCommand({
                 TableName: this.table,
                 Item: {
                     LayerId: feature.layer,
@@ -87,7 +91,7 @@ export default class Dynamo {
                     Properties: feature.properties,
                     Geometry: feature.geometry
                 }
-            }).promise();
+            }));
         } catch (err) {
             throw new Err(500, new Error(err), 'DynamoDB putItem Failed');
         }
@@ -95,7 +99,8 @@ export default class Dynamo {
 
     async puts(features: any[]) {
         try {
-            const ddb = new AWS.DynamoDB.DocumentClient({region: process.env.AWS_DEFAULT_REGION });
+            const ddb = new DynamoDB.DynamoDBClient({region: process.env.AWS_DEFAULT_REGION });
+            const ddbdoc = DynamoDBDoc.DynamoDBDocumentClient.from(ddb);
 
             const req: {
                 RequestItems: any
@@ -119,7 +124,7 @@ export default class Dynamo {
                 });
             }
 
-            await ddb.batchWrite(req).promise();
+            await ddbdoc.send(new DynamoDBDoc.BatchWriteCommand(req));
         } catch (err) {
             throw new Err(500, new Error(err), 'DynamoDB batchWrite Failed');
         }

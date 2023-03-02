@@ -1,6 +1,9 @@
 import test from 'tape';
 import Flight from './flight.js';
-import AWS from '@mapbox/mock-aws-sdk-js';
+import Sinon from 'sinon';
+import {
+    ECRClient
+} from '@aws-sdk/client-ecr';
 
 const flight = new Flight();
 
@@ -10,15 +13,12 @@ flight.user(test);
 
 test('GET: api/task - empty', async (t) => {
     try {
-        AWS.stub('ECR', 'listImages', async function(params) {
-            t.deepEquals(params, {
+        Sinon.stub(ECRClient.prototype, 'send').callsFake((command) => {
+            t.deepEquals(command.input, {
                 repositoryName: 'coe-ecr-etl-tasks'
             });
-            return this.request.promise.returns(Promise.resolve({
-                imageIds: []
-            }));
+            return Promise.resolve({ imageIds: [] });
         });
-
 
         const res = await flight.fetch('/api/task', {
             method: 'GET',
@@ -35,17 +35,18 @@ test('GET: api/task - empty', async (t) => {
         t.error(err, 'no error');
     }
 
-    AWS.ECR.restore();
+    Sinon.restore();
     t.end();
 });
 
 test('GET: api/task - empty', async (t) => {
     try {
-        AWS.stub('ECR', 'listImages', async function(params) {
-            t.deepEquals(params, {
+        Sinon.stub(ECRClient.prototype, 'send').callsFake((command) => {
+            t.deepEquals(command.input, {
                 repositoryName: 'coe-ecr-etl-tasks'
             });
-            return this.request.promise.returns(Promise.resolve({
+
+            return Promise.resolve({
                 imageIds: [{
                     imageTag: 'test-v1.1.1'
                 },{
@@ -57,9 +58,8 @@ test('GET: api/task - empty', async (t) => {
                 },{
                     imageTag: 'another-v10.1.0'
                 }]
-            }));
+            });
         });
-
 
         const res = await flight.fetch('/api/task', {
             method: 'GET',
@@ -79,7 +79,7 @@ test('GET: api/task - empty', async (t) => {
         t.error(err, 'no error');
     }
 
-    AWS.ECR.restore();
+    Sinon.restore();
     t.end();
 });
 

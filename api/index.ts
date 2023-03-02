@@ -8,8 +8,8 @@ import Schema from '@openaddresses/batch-schema';
 // @ts-ignore
 import { Pool } from '@openaddresses/batch-generic';
 import minimist from 'minimist';
-// @ts-ignore
 import TAKPool from './lib/tak-pool.js';
+import EventsPool from './lib/events-pool.js';
 import { WebSocketServer } from 'ws';
 import Cacher from './lib/cacher.js';
 // @ts-ignore
@@ -81,6 +81,8 @@ export default async function server(config: Config) {
 
     config.conns = new TAKPool(config.server, config.wsClients);
     await config.conns.init(config.pool);
+    config.events = new EventsPool(config.StackName);
+    await config.events.init(config.pool);
 
     const app = express();
 

@@ -1,4 +1,4 @@
-import AWS from 'aws-sdk';
+import CloudWatchLogs from '@aws-sdk/client-cloudwatch-logs';
 import Config from '../config.js';
 
 /**
@@ -6,22 +6,22 @@ import Config from '../config.js';
  */
 export default class LogGroup {
     static async delete(config: Config, layer: any) {
-        const CWL = new AWS.CloudWatchLogs({ region: process.env.AWS_DEFAULT_REGION });
+        const cwl = new CloudWatchLogs.CloudWatchLogsClient({ region: process.env.AWS_DEFAULT_REGION });
 
-        await CWL.deleteLogGroup({
+        await cwl.send(new CloudWatchLogs.DeleteLogGroupCommand({
             logGroupName: `/aws/lambda/${config.StackName}-layer-${layer.id}`
-        }).promise();
+        }));
     }
 
     static async list(config: Config, layer: any) {
-        const CWL = new AWS.CloudWatchLogs({ region: process.env.AWS_DEFAULT_REGION });
+        const cwl = new CloudWatchLogs.CloudWatchLogsClient({ region: process.env.AWS_DEFAULT_REGION });
 
-        const streams = await CWL.describeLogStreams({
+        const streams = await cwl.send(new CloudWatchLogs.DescribeLogStreamsCommand({
             limit: 1,
             descending: true,
             logGroupName: `/aws/lambda/${config.StackName}-layer-${layer.id}`,
             orderBy: 'LastEventTime'
-        }).promise();
+        }));
 
         if (!streams.logStreams.length) {
             return {
@@ -30,11 +30,11 @@ export default class LogGroup {
         }
 
         return {
-            logs: (await CWL.getLogEvents({
+            logs: (await cwl.send(new CloudWatchLogs.GetLogEventsCommand({
                 logStreamName: streams.logStreams[0].logStreamName,
                 logGroupName: `/aws/lambda/${config.StackName}-layer-${layer.id}`,
                 startFromHead: true,
-            }).promise()).events.map((log) => {
+            }))).events.map((log) => {
                 return {
                     message: log.message,
                     timestamp: log.timestamp

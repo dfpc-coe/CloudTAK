@@ -5,20 +5,19 @@ import Layer from '../lib/types/layer.js';
 import LayerLive from '../lib/types/layers_live.js';
 // @ts-ignore
 import LayerFile from '../lib/types/layers_file.js';
-// @ts-ignore
 import { XML as COT } from '@tak-ps/node-cot';
 import Cacher from '../lib/cacher.js';
 import { sql } from 'slonik';
 import Auth from '../lib/auth.js';
 import Lambda from '../lib/aws/lambda.js';
 import CloudFormation from '../lib/aws/cloudformation.js';
-// @ts-ignore
 import Style from '../lib/style.js';
 import { check } from '@placemarkio/check-geojson';
 import Alarm from '../lib/aws/alarm.js';
 import DDBQueue from '../lib/queue.js';
 import { Request, Response } from 'express';
 import Config from '../lib/config.js';
+import Schedule from '../lib/schedule.js';
 
 export default async function router(schema: any, config: Config) {
     const alarm = new Alarm(config.StackName);
@@ -91,10 +90,18 @@ export default async function router(schema: any, config: Config) {
             let layer = await Layer.generate(config.pool, req.body);
 
             if (layer.mode === 'live') {
-                await LayerLive.generate(config.pool, {
+                Schedule.is_valid(data.cron);
+
+                const layerdata = await LayerLive.generate(config.pool, {
                     layer_id: layer.id,
                     ...data
                 });
+
+                if (!Schedule.is_aws(layerdata.cron)) {
+                    config.events.add(layer.id, layerdata.cron);
+                } else {
+                    await config.events.delete(layer.id);
+                }
             } else if (layer.mode === 'file') {
                 await LayerFile.generate(config.pool, {
                     layer_id: layer.id,
@@ -159,12 +166,14 @@ export default async function router(schema: any, config: Config) {
                 :  await Layer.from(config.pool, parseInt(req.params.layerid));
 
             if (layer.mode === 'live') {
-                await LayerLive.commit(config.pool, layer.id, data, {
+                if (data.cron) Schedule.is_valid(data.cron);
+
+                const layerdata = await LayerLive.commit(config.pool, layer.id, data, {
                     column: 'layer_id'
                 });
 
                 try {
-                    const lambda = await Lambda.generate(config, layer, data);
+                    const lambda = await Lambda.generate(config, layer, layerdata);
                     if (await CloudFormation.exists(config, layer.id)) {
                         await CloudFormation.update(config, layer.id, lambda);
                     } else {
@@ -172,6 +181,12 @@ export default async function router(schema: any, config: Config) {
                     }
                 } catch (err) {
                     console.error(err);
+                }
+
+                if (!Schedule.is_aws(layerdata.cron)) {
+                    config.events.add(layer.id, layerdata.cron);
+                } else {
+                    await config.events.delete(layer.id);
                 }
             } else if (layer.mode === 'file') {
                 await LayerFile.commit(config.pool, layer.id, data, {
@@ -242,6 +257,7 @@ export default async function router(schema: any, config: Config) {
 
             if (layer.mode === 'live') {
                 await LayerLive.delete(config.pool, layer.id);
+                config.events.delete(layer.id);
             } else if (layer.mode === 'file') {
                 await LayerFile.delete(config.pool, layer.id);
             }

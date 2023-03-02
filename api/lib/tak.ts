@@ -1,7 +1,6 @@
 import EventEmitter from 'node:events';
 import tls from 'node:tls';
 import TAKAPI from './tak-api.js';
-// @ts-ignore
 import { XML as COT } from '@tak-ps/node-cot';
 
 export interface TAKAuth {

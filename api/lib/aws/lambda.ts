@@ -1,48 +1,38 @@
 // @ts-ignore
-import cf from '@mapbox/cloudfriend';
-import AWS from 'aws-sdk';
+import cf from '@openaddresses/cloudfriend';
+import AWSLambda from '@aws-sdk/client-lambda';
 import Config from '../config.js';
 import jwt from 'jsonwebtoken';
+import Schedule from '../schedule.js';
 
 /**
  * @class
  */
 export default class Lambda {
-    static schema(config: Config, layerid: number): Promise<object> {
-        const lambda = new AWS.Lambda({ region: process.env.AWS_DEFAULT_REGION });
+    static async schema(config: Config, layerid: number, type: string = 'schema'): Promise<object> {
+        const lambda = new AWSLambda.LambdaClient({ region: process.env.AWS_DEFAULT_REGION });
         const FunctionName = `${config.StackName}-layer-${layerid}`;
 
-        return new Promise((resolve, reject) => {
-            lambda.invoke({
-                FunctionName,
-                InvocationType: 'RequestResponse',
-                Payload: JSON.stringify({
-                    type: 'schema'
-                })
-            }, (err, res) => {
-                if (err) return reject(err);
-                return resolve(JSON.parse(String(res.Payload)));
-            });
-        });
+        const res = await lambda.send(new AWSLambda.InvokeCommand({
+            FunctionName,
+            InvocationType: 'RequestResponse',
+            Payload: Buffer.from(JSON.stringify({
+                type
+            }))
+        }));
+
+        return JSON.parse(Buffer.from(res.Payload).toString());
     }
 
-    static generate(config: Config, layer: any, layerdata: any) {
+    static generate(config: Config, layer: any, layerdata: any): any {
         const StackName = `${config.StackName}-layer-${layer.id}`;
 
-        return {
+        const stack: any = {
             Parameters: {
-                ScheduleExpression: {
-                    Type: 'String',
-                    Default: layerdata.cron
-                },
                 Task: {
                     Type: 'String',
                     Default: layerdata.task
                 },
-                Events: {
-                    Type: 'String',
-                    Default: layer.enabled ? 'ENABLED' : 'DISABLED'
-                }
             },
             Resources: {
                 LambdaAlarm: {
@@ -73,33 +63,12 @@ export default class Lambda {
                         RetentionInDays: 7
                     }
                 },
-                ETLEvents: {
-                    Type: 'AWS::Events::Rule',
-                    Properties: {
-                        Description: StackName,
-                        State: cf.ref('Events'),
-                        ScheduleExpression: cf.ref('ScheduleExpression'),
-                        Targets: [{
-                            Id: 'TagWatcherScheduler',
-                            Arn: cf.getAtt('ETLFunction', 'Arn')
-                        }]
-                    }
-                },
-                ETLFunctionInvoke: {
-                    Type: 'AWS::Lambda::Permission',
-                    Properties: {
-                        FunctionName: cf.getAtt('ETLFunction', 'Arn'),
-                        Action: 'lambda:InvokeFunction',
-                        Principal: 'events.amazonaws.com',
-                        SourceArn: cf.getAtt('ETLEvents', 'Arn')
-                    }
-                },
                 ETLFunction: {
                     Type: 'AWS::Lambda::Function',
                     Properties: {
                         FunctionName: StackName,
-                        MemorySize: 128,
-                        Timeout: 60,
+                        MemorySize: layerdata.memory,
+                        Timeout: layerdata.timeout,
                         Description: StackName,
                         PackageType: 'Image',
                         Environment: {
@@ -117,5 +86,39 @@ export default class Lambda {
                 }
             }
         }
+
+        if (Schedule.is_aws(layerdata.cron)) {
+            stack.Parameters.ScheduleExpression = {
+                Type: 'String',
+                Default: layerdata.cron
+            };
+            stack.Parameters.Events = {
+                Type: 'String',
+                Default: layer.enabled ? 'ENABLED' : 'DISABLED'
+            };
+            stack.Resources.ETLEvents = {
+                Type: 'AWS::Events::Rule',
+                Properties: {
+                    Description: StackName,
+                    State: cf.ref('Events'),
+                    ScheduleExpression: cf.ref('ScheduleExpression'),
+                    Targets: [{
+                        Id: 'TagWatcherScheduler',
+                        Arn: cf.getAtt('ETLFunction', 'Arn')
+                    }]
+                }
+            };
+            stack.Resources.ETLFunctionInvoke = {
+                Type: 'AWS::Lambda::Permission',
+                Properties: {
+                    FunctionName: cf.getAtt('ETLFunction', 'Arn'),
+                    Action: 'lambda:InvokeFunction',
+                    Principal: 'events.amazonaws.com',
+                    SourceArn: cf.getAtt('ETLEvents', 'Arn')
+                }
+            };
+        }
+
+        return stack;
     }
 };
