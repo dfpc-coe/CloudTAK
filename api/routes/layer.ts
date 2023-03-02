@@ -5,7 +5,6 @@ import Layer from '../lib/types/layer.js';
 import LayerLive from '../lib/types/layers_live.js';
 // @ts-ignore
 import LayerFile from '../lib/types/layers_file.js';
-// @ts-ignore
 import { XML as COT } from '@tak-ps/node-cot';
 import Cacher from '../lib/cacher.js';
 import { sql } from 'slonik';
