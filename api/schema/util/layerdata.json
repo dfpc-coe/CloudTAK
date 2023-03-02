@@ -1,7 +1,7 @@
 {
     "type": "object",
     "oneOf": [{
-        "required": [ "cron", "connection", "task", "environment" ]
+        "required": [ "cron", "connection", "task", "environment", "memory", "timeout" ]
     },{
         "required": [ "raw_asset_id" ]
     }],
@@ -21,6 +21,12 @@
         },
         "cron": {
             "$ref": "../layers_live/cron.json"
+        },
+        "memory": {
+            "$ref": "../layers_live/memory.json"
+        },
+        "timeout": {
+            "$ref": "../layers_live/timeout.json"
         },
         "connection": {
             "$ref": "../layers_live/connection.json"

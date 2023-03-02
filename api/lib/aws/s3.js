@@ -1,4 +1,4 @@
-import AWS from 'aws-sdk';
+import S3 from '@aws-sdk/client-s3';
 import Err from '@openaddresses/batch-error';
 
 /**
@@ -13,11 +13,11 @@ export default class S3 {
         try {
             if (!process.env.ASSET_BUCKET) throw new Err(400, null, 'ASSET_BUCKET not set');
 
-            const s3 = new AWS.S3({ region: process.env.AWS_DEFAULT_REGION });
-            const head = await s3.headObject({
+            const s3 = new S3.S3Client({ region: process.env.AWS_DEFAULT_REGION });
+            const head = await s3.send(new S3.HeadObjectCommand({
                 Bucket: process.env.ASSET_BUCKET,
                 Key: key
-            }).promise();
+            }));
 
             return head;
         } catch (err) {
@@ -29,12 +29,12 @@ export default class S3 {
         try {
             if (!process.env.ASSET_BUCKET) throw new Err(400, null, 'ASSET_BUCKET not set');
 
-            const s3 = new AWS.S3({ region: process.env.AWS_DEFAULT_REGION });
-            await s3.upload({
+            const s3 = new S3.S3Client({ region: process.env.AWS_DEFAULT_REGION });
+            await s3.send(new S3.UploadCommand({
                 Bucket: process.env.ASSET_BUCKET,
                 Key: key,
                 Body: stream
-            }).promise();
+            }));
         } catch (err) {
             throw new Err(500, new Error(err), 'Failed to upload file');
         }
@@ -44,11 +44,11 @@ export default class S3 {
         try {
             if (!process.env.ASSET_BUCKET) throw new Err(400, null, 'ASSET_BUCKET not set');
 
-            const s3 = new AWS.S3({ region: process.env.AWS_DEFAULT_REGION });
-            await s3.headObject({
+            const s3 = new S3.S3Client({ region: process.env.AWS_DEFAULT_REGION });
+            await s3.send(new S3.HeadObjectCommand({
                 Bucket: process.env.ASSET_BUCKET,
                 Key: key
-            }).promise();
+            }));
             return true;
         } catch (err) {
             if (err.code === 'NotFound') return false;
@@ -66,11 +66,11 @@ export default class S3 {
         try {
             if (!process.env.ASSET_BUCKET) throw new Err(400, null, 'ASSET_BUCKET not set');
 
-            const s3 = new AWS.S3({ region: process.env.AWS_DEFAULT_REGION });
-            const list = await s3.listObjectsV2({
+            const s3 = new S3.S3Client({ region: process.env.AWS_DEFAULT_REGION });
+            const list = await s3.send(new S3.ListObjectsV2Command({
                 Bucket: process.env.ASSET_BUCKET,
                 Prefix: fragment
-            }).promise();
+            }));
 
             return list.Contents;
         } catch (err) {
@@ -87,14 +87,14 @@ export default class S3 {
      */
     static async del(key, opts = {}) {
         if (!process.env.ASSET_BUCKET) return;
-        const s3 = new AWS.S3({ region: process.env.AWS_DEFAULT_REGION });
+        const s3 = new S3.S3Client({ region: process.env.AWS_DEFAULT_REGION });
 
         if (!opts.recurse) {
             try {
-                await s3.deleteObject({
+                await s3.send(new S3.DeleteObjectCommand({
                     Bucket: process.env.ASSET_BUCKET,
                     Key: key
-                }).promise();
+                }));
             } catch (err) {
                 throw new Err(500, new Error(err), 'Failed to delete file');
             }
@@ -102,7 +102,7 @@ export default class S3 {
             try {
                 const list = await this.list(key);
 
-                await s3.deleteObjects({
+                await s3.send(new S3.DeleteObjectsCommand({
                     Bucket: process.env.ASSET_BUCKET,
                     Delete: {
                         Objects: list.map((l) => {
@@ -111,7 +111,7 @@ export default class S3 {
                             };
                         })
                     }
-                }).promise();
+                }));
             } catch (err) {
                 throw new Err(500, new Error(err), 'Failed to delete files');
             }
@@ -119,13 +119,12 @@ export default class S3 {
     }
 
     stream(res, name) {
-        const s3 = new AWS.S3({ region: process.env.AWS_DEFAULT_REGION });
-        const s3request = s3.getObject(this.params);
-        const s3stream = s3request.createReadStream();
+        const s3 = new S3.S3Client({ region: process.env.AWS_DEFAULT_REGION });
+        const s3request = await s3.send(new S3.GetObjectCommand(this.params));
+        const s3stream = s3request.Body;
 
         s3request.on('httpHeaders', (statusCode, headers) => {
             headers['Content-disposition'] = `inline; filename="${name}"`;
-
             res.writeHead(statusCode, headers);
         });
 

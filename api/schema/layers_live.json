@@ -19,6 +19,12 @@
         },
         "environment": {
             "$ref": "./layers_live/environment.json"
+        },
+        "memory": {
+            "$ref": "./layers_live/memory.json"
+        },
+        "timeout": {
+            "$ref": "./layers_live/timeout.json"
         }
     },
     "required": [
@@ -27,6 +33,8 @@
         "task",
         "connection",
         "cron",
-        "environment"
+        "environment",
+        "memory",
+        "timeout"
     ]
 }

@@ -1,4 +1,5 @@
 import TAK from './tak.js';
+// @ts-ignore
 import Connection from './types/connection.js';
 
 /**
@@ -9,7 +10,10 @@ import Connection from './types/connection.js';
  * @param {Array}   clients     WSS Clients Array
  */
 export default class TAKPool extends Map {
-    constructor(server, clients = []) {
+    server: any;
+    clients: any[];
+
+    constructor(server: any, clients: any[] = []) {
         super();
         this.server = server;
         this.clients = clients;
@@ -20,13 +24,13 @@ export default class TAKPool extends Map {
      *
      * @param {Pool}    pool        Postgres Pol
      */
-    async init(pool) {
-        const conns = [];
+    async init(pool: any): Promise<void> {
+        const conns: any = [];
 
         const stream = await Connection.stream(pool);
 
         return new Promise((resolve) => {
-            stream.on('data', (conn) => {
+            stream.on('data', (conn: any) => {
                 conns.push(async () => {
                     await this.add(conn);
                 });
@@ -44,7 +48,7 @@ export default class TAKPool extends Map {
         });
     }
 
-    status(id) {
+    status(id: number): string {
         if (this.has(id)) {
             return this.get(id).tak.open ? 'live' : 'dead';
         } else {
@@ -52,7 +56,7 @@ export default class TAKPool extends Map {
         }
     }
 
-    async add(conn) {
+    async add(conn: any) {
         const tak = await TAK.connect(new URL(this.server.url), conn.auth);
         this.set(conn.id, { conn, tak });
 
@@ -76,7 +80,7 @@ export default class TAKPool extends Map {
         });
     }
 
-    delete(id) {
+    delete(id: number): boolean {
         if (this.has(id)) {
             const conn = this.get(id);
             conn.tak.destroy();

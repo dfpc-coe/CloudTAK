@@ -1,4 +1,5 @@
-import AWS from 'aws-sdk';
+import SecretsManager from '@aws-sdk/client-secrets-manager';
+import type EventsPool from './events-pool.js';
 
 interface ConfigArgs {
     silent: boolean,
@@ -19,10 +20,11 @@ export default class Config {
     API_URL: string;
     DynamoDB: string;
     wsClients: any[];
-    pool: any;
+    pool?: any;
     cacher: any;
     conns: any;
     server: any;
+    events?: EventsPool;
 
     static async env(args: ConfigArgs) {
         const config = new Config();
@@ -77,11 +79,11 @@ export default class Config {
     }
 
     async fetchSigningSecret(): Promise<string> {
-        const secrets = new AWS.SecretsManager({ region: process.env.AWS_DEFAULT_REGION });
+        const secrets = new SecretsManager.SecretsManagerClient({ region: process.env.AWS_DEFAULT_REGION });
 
-        const secret = await secrets.getSecretValue({
+        const secret = await secrets.send(new SecretsManager.GetSecretValueCommand({
             SecretId: `${this.StackName}/api/secret`
-        }).promise();
+        }));
 
         return secret.SecretString || '';
     }

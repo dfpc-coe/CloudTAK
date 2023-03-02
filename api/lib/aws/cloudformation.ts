@@ -1,7 +1,7 @@
 // @ts-ignore
-import cf from '@mapbox/cloudfriend';
+import cf from '@openaddresses/cloudfriend';
 import Config from '../config.js';
-import AWS from 'aws-sdk';
+import AWSCloudFormation from '@aws-sdk/client-cloudformation';
 
 /**
  * @class
@@ -12,30 +12,30 @@ export default class CloudFormation {
     }
 
     static async create(config: Config, layerid: number, stack: object) {
-        const CF = new AWS.CloudFormation({ region: process.env.AWS_DEFAULT_REGION });
+        const cf = new AWSCloudFormation.CloudFormationClient({ region: process.env.AWS_DEFAULT_REGION });
 
-        await CF.createStack({
+        await cf.send(new AWSCloudFormation.CreateStackCommand({
             StackName: this.stdname(config, layerid),
             TemplateBody: JSON.stringify(stack)
-        }).promise();
+        }));
     }
 
     static async update(config: Config, layerid: number, stack: object) {
-        const CF = new AWS.CloudFormation({ region: process.env.AWS_DEFAULT_REGION });
+        const cf = new AWSCloudFormation.CloudFormationClient({ region: process.env.AWS_DEFAULT_REGION });
 
-        await CF.updateStack({
+        await cf.send(new AWSCloudFormation.UpdateStackCommand({
             StackName: this.stdname(config, layerid),
             TemplateBody: JSON.stringify(stack)
-        }).promise();
+        }));
     }
 
     static async status(config: Config, layerid: number) {
-        const CF = new AWS.CloudFormation({ region: process.env.AWS_DEFAULT_REGION });
+        const cf = new AWSCloudFormation.CloudFormationClient({ region: process.env.AWS_DEFAULT_REGION });
 
         try {
-            const res = await CF.describeStacks({
+            const res = await cf.send(new AWSCloudFormation.DescribeStacksCommand({
                 StackName: this.stdname(config, layerid)
-            }).promise()
+            }));
 
             return {
                 status: res.Stacks[0].StackStatus
@@ -50,12 +50,12 @@ export default class CloudFormation {
     }
 
     static async exists(config: Config, layerid: number) {
-        const CF = new AWS.CloudFormation({ region: process.env.AWS_DEFAULT_REGION });
+        const cf = new AWSCloudFormation.CloudFormationClient({ region: process.env.AWS_DEFAULT_REGION });
 
         try {
-            await CF.describeStacks({
+            await cf.send(new AWSCloudFormation.DescribeStacksCommand({
                 StackName: this.stdname(config, layerid)
-            }).promise()
+            }));
 
             return true;
         } catch (err) {
@@ -68,10 +68,10 @@ export default class CloudFormation {
     }
 
     static async delete(config: Config, layerid: number) {
-        const CF = new AWS.CloudFormation({ region: process.env.AWS_DEFAULT_REGION });
+        const cf = new AWSCloudFormation.CloudFormationClient({ region: process.env.AWS_DEFAULT_REGION });
 
-        await CF.deleteStack({
+        await cf.send(new AWSCloudFormation.DeleteStackCommand({
             StackName: this.stdname(config, layerid)
-        }).promise();
+        }));
     }
 };
