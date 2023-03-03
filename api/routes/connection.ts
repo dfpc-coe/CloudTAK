@@ -50,7 +50,7 @@ export default async function router(schema: any, config: Config) {
             if (!config.server) throw new Err(400, null, 'TAK Server must be configured before a connection can be made');
             const conn = await Connection.generate(config.pool, req.body);
 
-            await config.conns.add(conn);
+            if (conn.enabled) await config.conns.add(conn);
 
             conn.status = config.conns.status(conn.id);
             return res.json(conn);
@@ -74,6 +74,12 @@ export default async function router(schema: any, config: Config) {
                 updated: sql`Now()`,
                 ...req.body
             });
+
+            if (conn.enabled && !config.conns.has(conn.id)) {
+                await config.conns.add(conn);
+            } else if (!conn.enabled && config.conns.has(conn.id)) {
+                await config.conns.delete(conn.id);
+            }
 
             conn.status = config.conns.status(conn.id);
             return res.json(conn);
