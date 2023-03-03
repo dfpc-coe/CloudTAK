@@ -8,7 +8,14 @@ export interface TAKAuth {
     key: string;
 }
 
+export interface PartialCoT {
+    event: string;
+    remainder: string;
+    discard: string;
+}
+
 export default class TAK extends EventEmitter {
+    id: number;
     type: string;
     url: URL;
     auth: TAKAuth;
@@ -18,8 +25,15 @@ export default class TAK extends EventEmitter {
     version: string;
     api: TAKAPI;
 
-    constructor(type: string, url: URL, auth: TAKAuth) {
+    constructor(
+        id: number,
+        type: string,
+        url: URL,
+        auth: TAKAuth
+    ) {
         super();
+
+        this.id = id;
 
         this.type = type;
         this.url = url;
@@ -35,8 +49,8 @@ export default class TAK extends EventEmitter {
         this.api = new TAKAPI(type, url, auth);
     }
 
-    static async connect(url: URL, auth: TAKAuth) {
-        const tak = new TAK('ssl', url, auth);
+    static async connect(id: number, url: URL, auth: TAKAuth) {
+        const tak = new TAK(id, 'ssl', url, auth);
 
         if (url.protocol === 'ssl:') {
             if (!tak.auth.cert) throw new Error('auth.cert required');
@@ -58,13 +72,11 @@ export default class TAK extends EventEmitter {
             });
 
             this.client.on('connect', () => {
-                console.log('connect', this.client.authorized);
-                console.log('connect', this.client.authorizationError);
+                console.error(`ok - ${this.id} @ connect:${this.client.authorized} - ${this.client.authorizationError}`);
             });
 
             this.client.on('secureConnect', () => {
-                console.log('secure', this.client.authorized);
-                console.log('secure', this.client.authorizationError);
+                console.error(`ok - ${this.id} @ secure:${this.client.authorized} - ${this.client.authorizationError}`);
             });
 
             let buff = '';
@@ -129,7 +141,8 @@ export default class TAK extends EventEmitter {
         this.client.write(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n${cot.to_xml()}`);
     }
 
-    static findCoT(str: string): object { // https://github.com/vidterra/multitak/blob/main/app/lib/helper.js#L4
+    // https://github.com/vidterra/multitak/blob/main/app/lib/helper.js#L4
+    static findCoT(str: string): null | PartialCoT {
         let match = str.match(/(<event.*?<\/event>)(.*)/); // find first COT
         if (!match) {
             match = str.match(/(<event[^>]*\/>)(.*)/); // find first COT
