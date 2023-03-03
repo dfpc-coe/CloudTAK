@@ -55,9 +55,11 @@ export default class TAKPool extends Map<number, TAKPoolClient> {
 
         return new Promise((resolve) => {
             stream.on('data', (conn: any) => {
-                conns.push(async () => {
-                    await this.add(conn);
-                });
+                if (conn.enabled) {
+                    conns.push(async () => {
+                        await this.add(conn);
+                    });
+                }
             }).on('end', async () => {
                 for (const conn of conns) {
                     try {
