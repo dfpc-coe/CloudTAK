@@ -21,6 +21,23 @@
             <div class='row row-deck row-cards'>
                 <div class="col-lg-12">
                     <div class="card">
+                        <div class='card-header'>
+                            <h3 v-if='$route.params.connectionid' class='card-title'>Connection <span v-text='connection.id'/></h3>
+                            <h3 v-else class='card-title'>New Connection</h3>
+
+                            <div class='ms-auto'>
+                                <div class='d-flex'>
+                                    <div class='btn-list'>
+                                        <div class='d-flex'>
+                                            <span class='px-2'>Enabled</span>
+                                            <label class="form-check form-switch">
+                                                <input v-model='connection.enabled' class="form-check-input" type="checkbox">
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                         <div class="card-body">
                             <div class='row row-cards'>
                                 <div class="col-md-12 mt-3">
@@ -77,8 +94,7 @@
                                         </a>
 
                                         <div class='ms-auto'>
-                                            <a v-if='$route.params.connectionid' @click='create' class="cursor-pointer btn btn-primary">Edit Connection</a>
-                                            <a v-else @click='create' class="cursor-pointer btn btn-primary">Create Connection</a>
+                                            <a @click='create' class="cursor-pointer btn btn-primary">Save Connection</a>
                                         </div>
                                     </div>
                                 </div>
@@ -120,6 +136,7 @@ export default {
             connection: {
                 name: '',
                 description: '',
+                enabled: true,
                 auth: {
                     cert: '',
                     key: ''
@@ -153,26 +170,30 @@ export default {
                 else this.errors[field] = '';
             }
 
-            for (const field of Object.keys(this.connection.auth)) {
-                if (!this.connection.auth[field]) this.errors[field] = 'Cannot be empty';
-                else this.errors[field] = '';
+            if (!this.$route.params.connectionid) {
+                for (const field of Object.keys(this.connection.auth)) {
+                    if (!this.connection.auth[field]) this.errors[field] = 'Cannot be empty';
+                    else this.errors[field] = '';
+                }
             }
 
             for (const e in this.errors) {
                 if (this.errors[e]) return;
             }
 
-            const create = await window.std('/api/connection', {
-                method: 'POST',
-                body: {
-                    name: this.connection.name,
-                    description: this.connection.description,
-                    enabled: true,
-                    auth: this.connection.auth
-                }
-            });
-
-            this.$router.push(`/connection/${create.id}`);
+            if (this.$route.params.connectionid) {
+                const create = await window.std(`/api/connection/${this.$route.params.connectionid}`, {
+                    method: 'PATCH',
+                    body: this.connection
+                });
+                this.$router.push(`/connection/${create.id}`);
+            } else {
+                const create = await window.std('/api/connection', {
+                    method: 'POST',
+                    body: this.connection
+                });
+                this.$router.push(`/connection/${create.id}`);
+            }
         },
         del: async function() {
             await window.std(`/api/connection/${this.$route.params.connectionid}`, {
