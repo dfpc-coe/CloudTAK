@@ -46,7 +46,7 @@ export default async function router(schema: any, config: Config) {
             if (config.server) throw new Err(400, null, 'Cannot post to an existing server');
 
             config.server = await Server.generate(config.pool, req.body);
-            config.conns.server = config.server;
+            await config.conns.refresh(config.pool, config.server);
 
             return res.json({
                 status: 'configured',
@@ -71,7 +71,7 @@ export default async function router(schema: any, config: Config) {
             if (!config.server) throw new Err(400, null, 'Cannot patch a server that hasn\'t been created');
 
             config.server = await config.server.commit(req.body);
-            config.conns.server = config.server;
+            await config.conns.refresh(config.pool, config.server);
 
             return res.json({
                 status: 'configured',

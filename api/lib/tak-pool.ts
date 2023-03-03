@@ -10,13 +10,23 @@ import Connection from './types/connection.js';
  * @param {Array}   clients     WSS Clients Array
  */
 export default class TAKPool extends Map {
-    server: any;
+    #server: any;
     clients: any[];
 
     constructor(server: any, clients: any[] = []) {
         super();
-        this.server = server;
+        this.#server = server;
         this.clients = clients;
+    }
+
+    async refresh(pool: any, server: any) {
+        this.#server = server;
+
+        for (const conn of this.keys()) {
+            this.delete(conn);
+        }
+
+        await this.init(pool);
     }
 
     /**
@@ -57,7 +67,7 @@ export default class TAKPool extends Map {
     }
 
     async add(conn: any) {
-        const tak = await TAK.connect(new URL(this.server.url), conn.auth);
+        const tak = await TAK.connect(new URL(this.#server.url), conn.auth);
         this.set(conn.id, { conn, tak });
 
         tak.on('cot', (cot) => {
@@ -84,7 +94,7 @@ export default class TAKPool extends Map {
         if (this.has(id)) {
             const conn = this.get(id);
             conn.tak.destroy();
-            this.delete(id);
+            super.delete(id);
 
             return true;
         } else {
