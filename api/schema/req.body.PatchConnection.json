@@ -1,11 +1,6 @@
 {
     "type": "object",
     "additionalProperties": false,
-    "required": [
-        "name",
-        "description",
-        "auth"
-    ],
     "properties": {
         "name": {
             "$ref": "./connections/name.json"
