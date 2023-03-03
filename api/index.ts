@@ -24,9 +24,10 @@ const args = minimist(process.argv, {
     boolean: [
         'silent',   // Turn off logging as much as possible
         'nocache',  // Ignore MemCached
-        'unsafe'    // Allow unsecure local dev creds
+        'unsafe',   // Allow unsecure local dev creds
+        'noevents'  // Disable Initialization of Second Level Events
     ],
-    string: ['postgres']
+    string: ['postgres'],
 });
 
 try {
@@ -43,7 +44,8 @@ try {
 if (import.meta.url === `file://${process.argv[1]}`) {
     const config = await Config.env({
         silent: args.silent || false,
-        unsafe: args.unsafe || false
+        unsafe: args.unsafe || false,
+        noevents: args.noevents || false,
     });
     await server(config);
 }
@@ -82,7 +84,7 @@ export default async function server(config: Config) {
     config.conns = new TAKPool(config.server, config.wsClients);
     await config.conns.init(config.pool);
     config.events = new EventsPool(config.StackName);
-    await config.events.init(config.pool);
+    if (!config.noevents) await config.events.init(config.pool);
 
     const app = express();
 

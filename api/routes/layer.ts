@@ -294,7 +294,7 @@ export default async function router(schema: any, config: Config) {
 
             if (layer.mode !== 'live') throw new Err(400, null, 'Cannot post CoT to file layer');
 
-            const conn = await config.conns.get(layer.data.connection);
+            const pooledClient = await config.conns.get(layer.data.connection);
 
             const style = new Style(layer);
 
@@ -309,14 +309,20 @@ export default async function router(schema: any, config: Config) {
                 const features: any[] = new Array();
                 for (const feat of req.body.features) {
                     const cot = COT.from_geojson(await style.feat(feat));
-                    conn.tak.write(cot);
+
+                    if (pooledClient.conn.enabled) {
+                        pooledClient.tak.write(cot);
+                    }
+
                     features.push(cot.to_geojson());
                 }
 
                 // TODO Only GeoJSON Features go to Dynamo, this should also store CoT XML
                 if (layer.logging) ddb.queue(layer.id, features);
             } else if (req.headers['content-type'] === 'application/xml') {
-                conn.tak.write(new COT(req.body));
+                if (pooledClient.conn.enabled) {
+                    pooledClient.tak.write(new COT(req.body));
+                }
             } else {
                 throw new Err(400, null, 'Unsupported Content-Type');
             }
