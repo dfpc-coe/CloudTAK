@@ -3,7 +3,8 @@ import type EventsPool from './events-pool.js';
 
 interface ConfigArgs {
     silent: boolean,
-    unsafe: boolean
+    unsafe: boolean,
+    noevents: boolean
 }
 
 /**
@@ -12,6 +13,7 @@ interface ConfigArgs {
 export default class Config {
     silent: boolean;
     unsafe: boolean;
+    noevents: boolean;
     StackName: string;
     SigningSecret: string;
     UnsafeSigningSecret: string;
@@ -30,6 +32,7 @@ export default class Config {
         const config = new Config();
 
         config.silent = (args.silent || false);
+        config.noevents = (args.noevents || false);
 
         config.wsClients = []
         config.pool = null;
