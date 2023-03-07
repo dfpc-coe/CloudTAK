@@ -138,7 +138,6 @@ export default class TAK extends EventEmitter {
      * @param {COT} cot COT Object
      */
     write(cot: COT) {
-        console.error(cot);
         this.client.write(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n${cot.to_xml()}`);
     }
 
