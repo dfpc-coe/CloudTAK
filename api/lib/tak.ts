@@ -22,8 +22,8 @@ export default class TAK extends EventEmitter {
     open: boolean;
     destroyed: boolean;
     client: any;
-
-    queue: COT[];
+    queue: string[];
+    writing: boolean;
 
     version: string;
     api: TAKAPI;
@@ -46,6 +46,7 @@ export default class TAK extends EventEmitter {
         this.destroyed = false;
 
         this.client = null;
+        this.queue = [];
 
         this.version; // Server Version
 
@@ -137,18 +138,49 @@ export default class TAK extends EventEmitter {
         this.write([COT.ping()]);
     }
 
+    writer(body: string): Promise<boolean> {
+        return new Promise((resolve) => {
+            let res = this.client.write(body, () => {
+                return resolve(res)
+            });
+        });
+    }
+
+    async process() {
+        this.writing = true;
+        while (this.queue.length) {
+            const body = this.queue.shift()
+            await this.writer(body);
+        }
+
+        await this.writer('');
+
+        if (this.queue.length) {
+            process.nextTick(() => {
+                this.process();
+            });
+        } else {
+            this.writing = false;
+        }
+    }
+
     /**
      * Write a COT to the TAK Connection
      *
      * @param {COT} cot COT Object
      */
     write(cots: COT[]) {
-        let xml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>';
-        xml = xml + cots.map((cot) => { return cot.to_xml() });
+        for (const cot of cots) {
+            this.queue.push(cot.to_xml());
+        }
 
-        this.client.write(xml + '\n', () => {
-            console.log('DRAIN');
-        });
+        if (this.queue.length && !this.writing) this.process();
+    }
+
+    write_xml(body: string) {
+        this.queue.push(body);
+
+        if (this.queue.length && !this.writing) this.process();
     }
 
     // https://github.com/vidterra/multitak/blob/main/app/lib/helper.js#L4
