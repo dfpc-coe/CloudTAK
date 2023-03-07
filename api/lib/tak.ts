@@ -22,6 +22,9 @@ export default class TAK extends EventEmitter {
     open: boolean;
     destroyed: boolean;
     client: any;
+
+    queue: COT[];
+
     version: string;
     api: TAKAPI;
 
@@ -70,6 +73,8 @@ export default class TAK extends EventEmitter {
                 cert: this.auth.cert,
                 key: this.auth.key
             });
+
+            this.client.setNoDelay();
 
             this.client.on('connect', () => {
                 console.error(`ok - ${this.id} @ connect:${this.client.authorized} - ${this.client.authorizationError}`);
@@ -129,7 +134,7 @@ export default class TAK extends EventEmitter {
     }
 
     async ping() {
-        this.write(COT.ping());
+        this.write([COT.ping()]);
     }
 
     /**
@@ -137,8 +142,13 @@ export default class TAK extends EventEmitter {
      *
      * @param {COT} cot COT Object
      */
-    write(cot: COT) {
-        this.client.write(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n${cot.to_xml()}`);
+    write(cots: COT[]) {
+        let xml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>';
+        xml = xml + cots.map((cot) => { return cot.to_xml() });
+
+        this.client.write(xml + '\n', () => {
+            console.log('DRAIN');
+        });
     }
 
     // https://github.com/vidterra/multitak/blob/main/app/lib/helper.js#L4

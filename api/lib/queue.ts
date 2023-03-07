@@ -12,7 +12,7 @@ interface Item {
 
 export default class DDBQueue extends EventEmitter {
     db: Dynamo;
-    q: object[];
+    q: Item[];
     processing: boolean;
 
     constructor(stack: string) {
@@ -22,12 +22,8 @@ export default class DDBQueue extends EventEmitter {
         this.processing = false;
     }
 
-    queue(layer: number, items: Item[]) {
-        for (const item of items) {
-            item.layer = layer;
-            this.q.push(item);
-        }
-
+    queue(items: Item[]) {
+        this.q.push(...items);
         if (!this.processing) this.process();
     }
 
