@@ -1,3 +1,4 @@
+import { check } from '@placemarkio/check-geojson';
 import Err from '@openaddresses/batch-error';
 // @ts-ignore
 import Layer from '../lib/types/layer.js';
@@ -12,7 +13,6 @@ import Auth from '../lib/auth.js';
 import Lambda from '../lib/aws/lambda.js';
 import CloudFormation from '../lib/aws/cloudformation.js';
 import Style from '../lib/style.js';
-import { check } from '@placemarkio/check-geojson';
 import Alarm from '../lib/aws/alarm.js';
 import DDBQueue from '../lib/queue.js';
 import { Request, Response } from 'express';
@@ -296,7 +296,14 @@ export default async function router(schema: any, config: Config) {
 
             const pooledClient = await config.conns.get(layer.data.connection);
 
-            const style = new Style(layer);
+            if (!pooledClient.conn.enabled) {
+                return res.json({
+                    status: 200,
+                    message: 'Recieved but Connection Paused'
+                });
+            }
+
+            //const style = new Style(layer);
 
             if (req.headers['content-type'] === 'application/json') {
                 try {
@@ -306,23 +313,17 @@ export default async function router(schema: any, config: Config) {
                     throw new Err(400, null, err.message);
                 }
 
-                const features: any[] = new Array();
+                const cots = [];
                 for (const feat of req.body.features) {
-                    const cot = COT.from_geojson(await style.feat(feat));
-
-                    if (pooledClient.conn.enabled) {
-                        pooledClient.tak.write(cot);
-                    }
-
-                    features.push(cot.to_geojson());
+                    feat.layer = layer.id;
+                    cots.push(COT.from_geojson(feat)) //await style.feat(feat)));
                 }
+                pooledClient.tak.write(cots);
 
                 // TODO Only GeoJSON Features go to Dynamo, this should also store CoT XML
-                if (layer.logging) ddb.queue(layer.id, features);
+                if (layer.logging) ddb.queue(req.body.features);
             } else if (req.headers['content-type'] === 'application/xml') {
-                if (pooledClient.conn.enabled) {
-                    pooledClient.tak.write(new COT(req.body));
-                }
+                pooledClient.tak.write(new COT(req.body));
             } else {
                 throw new Err(400, null, 'Unsupported Content-Type');
             }
