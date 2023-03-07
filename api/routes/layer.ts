@@ -97,9 +97,9 @@ export default async function router(schema: any, config: Config) {
                     ...data
                 });
 
-                if (!Schedule.is_aws(layerdata.cron)) {
+                if (!Schedule.is_aws(layerdata.cron) && layerdata.enabled) {
                     config.events.add(layer.id, layerdata.cron);
-                } else {
+                } else if (Schedule.is_aws(layerdata.cron) || !layer.enabled) {
                     await config.events.delete(layer.id);
                 }
             } else if (layer.mode === 'file') {
@@ -183,9 +183,9 @@ export default async function router(schema: any, config: Config) {
                     console.error(err);
                 }
 
-                if (!Schedule.is_aws(layerdata.cron)) {
+                if (!Schedule.is_aws(layerdata.cron) && layerdata.enabled) {
                     config.events.add(layer.id, layerdata.cron);
-                } else {
+                } else if (Schedule.is_aws(layerdata.cron) || !layer.enabled) {
                     await config.events.delete(layer.id);
                 }
             } else if (layer.mode === 'file') {
