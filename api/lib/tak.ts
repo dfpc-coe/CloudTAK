@@ -140,7 +140,7 @@ export default class TAK extends EventEmitter {
 
     writer(body: string): Promise<boolean> {
         return new Promise((resolve) => {
-            let res = this.client.write(body + '\n', () => {
+            const res = this.client.write(body + '\n', () => {
                 return resolve(res)
             });
         });

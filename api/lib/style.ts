@@ -1,4 +1,5 @@
 import jsonata from 'jsonata';
+import { Feature } from 'geojson';
 
 /**
  * Apply layer styling to CoT Messages
@@ -16,10 +17,10 @@ export default class Style {
     /**
      * Apply styling to a GeoJSON Feature in-place
      *
-     * @param {Object} feature     GeoJSON Feature
-     * @returns {Object} GeoJSON Feature
+     * @param feature       GeoJSON Feature
+     * @returns             GeoJSON Feature
      */
-    async feat(feature: any): Promise<any> {
+    async feat(feature: Feature): Promise<Feature> {
         if (this.layer.data.stale) {
             feature.properties.stale = this.layer.data.stale;
         }
@@ -43,7 +44,7 @@ export default class Style {
         }
     }
 
-    #by_geom(style: any, feature: any) {
+    #by_geom(style: any, feature: Feature) {
         if (feature.geometry.type === 'Point' && style.point) {
             Object.assign(feature.properties, style.point);
         } else if (feature.geometry.type === 'LineString' && style.line) {
