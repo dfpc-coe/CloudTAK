@@ -77,7 +77,7 @@ export default class Dynamo {
         return Math.round(time.getTime() / 1000);
     }
 
-    async put(feature: any) {
+    async put(feature: any): Promise<void> {
         try {
             const ddb = new DynamoDB.DynamoDBClient({region: process.env.AWS_DEFAULT_REGION });
             const ddbdoc = DynamoDBDoc.DynamoDBDocumentClient.from(ddb);
@@ -97,7 +97,7 @@ export default class Dynamo {
         }
     }
 
-    async puts(features: any[]) {
+    async puts(features: any[]): Promise<void> {
         try {
             const ddb = new DynamoDB.DynamoDBClient({region: process.env.AWS_DEFAULT_REGION });
             const ddbdoc = DynamoDBDoc.DynamoDBDocumentClient.from(ddb);
