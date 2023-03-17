@@ -168,8 +168,8 @@ export default {
                 raw_asset_id: null,
                 std_asset_id: null,
                 task: '',
-                timeout: '',
-                memory: '',
+                timeout: '60',
+                memory: '512',
                 cron: '0/15 * * * ? *',
                 stale: 60 * 1000,
                 environment: {}
