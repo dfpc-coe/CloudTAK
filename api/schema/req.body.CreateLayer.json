@@ -31,7 +31,7 @@
         "data": {
             "$ref": "./util/layerdata.json"
         },
-        "loggin": {
+        "logging": {
             "$ref": "./layers/logging.json"
         }
     }
