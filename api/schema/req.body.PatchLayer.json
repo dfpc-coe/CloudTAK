@@ -9,13 +9,13 @@
             "$ref": "./layers/description.json"
         },
         "cron": {
-            "$ref": "./layers_live/cron.json"
+            "$ref": "./layers/cron.json"
         },
         "memory": {
-            "$ref": "./layers_live/memory.json"
+            "$ref": "./layers/memory.json"
         },
         "timeout": {
-            "$ref": "./layers_live/timeout.json"
+            "$ref": "./layers/timeout.json"
         },
         "enabled": {
             "$ref": "./layers/enabled.json"
@@ -24,22 +24,40 @@
             "$ref": "./layers/enabled_styles.json"
         },
         "connection": {
-            "$ref": "./layers_live/connection.json"
+            "$ref": "./layers/connection.json"
         },
         "task": {
-            "$ref": "./layers_live/task.json"
+            "$ref": "./layers/task.json"
         },
         "stale": {
-            "$ref": "./layers_live/stale.json"
+            "$ref": "./layers/stale.json"
         },
         "styles": {
             "$ref": "./util/styles.json"
         },
-        "data": {
-            "$ref": "./util/layerdata.json"
-        },
         "logging": {
             "$ref": "./layers/logging.json"
+        },
+        "stale": {
+            "$ref": "./layers/stale.json"
+        },
+        "task": {
+            "$ref": "./layers/task.json"
+        },
+        "connection": {
+            "$ref": "./layers/connection.json"
+        },
+        "cron": {
+            "$ref": "./layers/cron.json"
+        },
+        "environment": {
+            "$ref": "./layers/environment.json"
+        },
+        "memory": {
+            "$ref": "./layers/memory.json"
+        },
+        "timeout": {
+            "$ref": "./layers/timeout.json"
         }
     }
 }

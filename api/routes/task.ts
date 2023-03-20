@@ -10,10 +10,6 @@ import Logs from '../lib/aws/logs.js';
 import Layer from '../lib/types/layer.js';
 import semver from 'semver-sort';
 import Cacher from '../lib/cacher.js';
-// @ts-ignore
-import LayerLive from '../lib/types/layers_live.js';
-// @ts-ignore
-import LayerFile from '../lib/types/layers_file.js';
 import Config from '../lib/config.js';
 import { Request, Response } from 'express';
 
@@ -101,9 +97,7 @@ export default async function router(schema: any, config: Config) {
             await Auth.is_auth(req);
 
             const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
-                const layer = (await Layer.from(config.pool, req.params.layerid)).serialize();
-                layer.data = (layer.mode === 'file' ? await LayerFile.from(config.pool, layer.id, { column: 'layer_id' }) : await LayerLive.from(config.pool, layer.id, { column: 'layer_id' })).serialize();
-                return layer;
+                return (await Layer.from(config.pool, req.params.layerid)).serialize();
             });
 
             if (layer.mode === 'file') throw new Err(400, null, 'File Layers don\'t have associated stacks');
@@ -126,9 +120,7 @@ export default async function router(schema: any, config: Config) {
             await Auth.is_auth(req);
 
             const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
-                const layer = (await Layer.from(config.pool, req.params.layerid)).serialize();
-                layer.data = (layer.mode === 'file' ? await LayerFile.from(config.pool, layer.id, { column: 'layer_id' }) : await LayerLive.from(config.pool, layer.id, { column: 'layer_id' })).serialize();
-                return layer;
+                return (await Layer.from(config.pool, req.params.layerid)).serialize();
             });
 
             if (layer.mode === 'file') throw new Err(400, null, 'File Layers don\'t have associated stacks');
@@ -151,9 +143,7 @@ export default async function router(schema: any, config: Config) {
             await Auth.is_auth(req);
 
             const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
-                const layer = (await Layer.from(config.pool, req.params.layerid)).serialize();
-                layer.data = (layer.mode === 'file' ? await LayerFile.from(config.pool, layer.id, { column: 'layer_id' }) : await LayerLive.from(config.pool, layer.id, { column: 'layer_id' })).serialize();
-                return layer;
+                return (await Layer.from(config.pool, req.params.layerid)).serialize();
             });
 
             if (layer.mode === 'file') throw new Err(400, null, 'File Layers don\'t have associated stacks');
@@ -178,9 +168,7 @@ export default async function router(schema: any, config: Config) {
             await Auth.is_auth(req);
 
             const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
-                const layer = (await Layer.from(config.pool, req.params.layerid)).serialize();
-                layer.data = (layer.mode === 'file' ? await LayerFile.from(config.pool, layer.id, { column: 'layer_id' }) : await LayerLive.from(config.pool, layer.id, { column: 'layer_id' })).serialize();
-                return layer;
+                return (await Layer.from(config.pool, req.params.layerid)).serialize();
             });
 
             try {
@@ -190,7 +178,7 @@ export default async function router(schema: any, config: Config) {
             }
 
             if (layer.mode === 'file') throw new Err(400, null, 'File Layers don\'t have associated stacks');
-            const lambda = await Lambda.generate(config, layer, layer.data);
+            const lambda = await Lambda.generate(config, layer);
             await CloudFormation.create(config, layer.id, lambda);
 
             return res.json(await CF.status(config, layer.id));

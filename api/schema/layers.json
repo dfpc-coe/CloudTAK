@@ -5,9 +5,6 @@
         "id": {
             "$ref": "./layers/id.json"
         },
-        "mode": {
-            "$ref": "./layers/mode.json"
-        },
         "name": {
             "$ref": "./layers/name.json"
         },
@@ -31,11 +28,31 @@
         },
         "logging": {
             "$ref": "./layers/logging.json"
+        },
+        "stale": {
+            "$ref": "./layers/stale.json"
+        },
+        "task": {
+            "$ref": "./layers/task.json"
+        },
+        "connection": {
+            "$ref": "./layers/connection.json"
+        },
+        "cron": {
+            "$ref": "./layers/cron.json"
+        },
+        "environment": {
+            "$ref": "./layers/environment.json"
+        },
+        "memory": {
+            "$ref": "./layers/memory.json"
+        },
+        "timeout": {
+            "$ref": "./layers/timeout.json"
         }
     },
     "required": [
         "id",
-        "mode",
         "name",
         "created",
         "updated",
@@ -43,6 +60,13 @@
         "enabled",
         "enabled_styles",
         "styles",
-        "logging"
+        "logging",
+        "stale",
+        "task",
+        "connection",
+        "cron",
+        "environment",
+        "memory",
+        "timeout"
     ]
 }
