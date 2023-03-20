@@ -49,6 +49,9 @@ function up(knex) {
 
         DROP TABLE
             layers_file;
+
+        ALTER TABLE layers
+            DROP COLUMN mode;
     `);
 }
 

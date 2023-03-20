@@ -1,6 +1,4 @@
 // @ts-ignore
-import LayersLive from './types/layers_live.js';
-// @ts-ignore
 import Layer from './types/layer.js';
 import Schedule from './schedule.js';
 import Bree from 'bree';
@@ -41,27 +39,20 @@ export default class EventsPool {
     async init(pool: any): Promise<void> {
         const layers: any[] = [];
 
-        const stream = await LayersLive.stream(pool);
+        const stream = await Layer.stream(pool);
 
         await this.bree.start();
 
         return new Promise((resolve) => {
-            stream.on('data', (layerlive: any) => {
-                if (Schedule.is_aws(layerlive.cron)) return;
+            stream.on('data', (layer: any) => {
+                if (Schedule.is_aws(layer.cron)) return;
 
-                layers.push(async () => {
-                    const layer = await Layer.from(pool, layerlive.layer_id);
-                    if (!layer.enabled) return;
-                    layer.data = layerlive;
-                    return layer;
-                });
+                if (!layer.enabled) return;
+                layers.push(layer);
             }).on('end', async () => {
-                for (const layerfn of layers) {
+                for (const layer of layers) {
                     try {
-                        const layer = await layerfn();
-                        if (!layer) return;
-
-                        this.add(layer.id, layer.data.cron);
+                        this.add(layer.id, layer.cron);
                     } catch (err) {
                         console.error(err);
                     }
