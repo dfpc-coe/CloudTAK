@@ -182,26 +182,32 @@ export default {
             for (const e in this.errors) if (this.errors[e]) return;
 
             this.loading.layer = true;
-            let url, method;
-            if (this.$route.params.layerid) {
-                url = window.stdurl(`/api/layer/${this.$route.params.layerid}`);
-                method = 'PATCH'
-            } else {
-                url = window.stdurl(`/api/layer`);
-                method = 'POST'
+
+            try {
+                let url, method;
+                if (this.$route.params.layerid) {
+                    url = window.stdurl(`/api/layer/${this.$route.params.layerid}`);
+                    method = 'PATCH'
+                } else {
+                    url = window.stdurl(`/api/layer`);
+                    method = 'POST'
+                }
+
+                const body = JSON.parse(JSON.stringify(this.layer));
+                body.data = JSON.parse(JSON.stringify(this.layerdata));
+
+                body.mode = body.data.mode;
+                delete body.data.mode;
+
+                const create = await window.std(url, { method, body });
+
+                this.loading.layer = false;
+
+                this.$router.push(`/layer/${create.id}`);
+            } catch (err) {
+                this.loading.layer = false;
+                throw err;
             }
-
-            const body = JSON.parse(JSON.stringify(this.layer));
-            body.data = JSON.parse(JSON.stringify(this.layerdata));
-
-            body.mode = body.data.mode;
-            delete body.data.mode;
-
-            const create = await window.std(url, { method, body });
-
-            this.loading.layer = false;
-
-            this.$router.push(`/layer/${create.id}`);
         }
     },
     components: {
