@@ -13,7 +13,6 @@ export default class Layer extends Generic {
         query.filter = Params.string(query.filter, { default: '' });
 
         query.connection = Params.integer(query.connection);
-        query.mode = Params.string(query.mode);
 
         try {
             const pgres = await pool.query(sql`
@@ -22,12 +21,9 @@ export default class Layer extends Generic {
                     layers.*
                 FROM
                     ${sql.identifier([this._table])}
-                        LEFT JOIN layers_live
-                            ON layers.id = layers_live.layer_id
                 WHERE
                     name ~* ${query.filter}
-                    AND (${query.mode}::TEXT IS NULL OR ${query.mode}::TEXT = mode)
-                    AND (${query.connection}::BIGINT IS NULL OR ${query.connection}::BIGINT = layers_live.connection)
+                    AND (${query.connection}::BIGINT IS NULL OR ${query.connection}::BIGINT = layers.connection)
                 ORDER BY
                     id DESC
                 LIMIT
