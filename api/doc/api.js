@@ -252,6 +252,24 @@
 
 
 /**
+* @api {get} /data List Data
+* @apiVersion 1.0.0
+* @apiName GET-/data
+* @apiGroup Data
+* @apiPermission user
+*
+* @apidescription
+*   List data
+*
+
+*
+* @apiSchema (Query) {jsonschema=../schema/req.query.ListData.json} apiParam
+*
+* @apiSchema {jsonschema=../schema/res.ListData.json} apiSuccess
+*/
+
+
+/**
 * @api {get} /icon List Icons
 * @apiVersion 1.0.0
 * @apiName GET-/icon
