@@ -49,7 +49,7 @@
                 </div>
 
                 <div class="col-lg-12">
-                    <LayerData v-model='layerdata' :disabled='true'/>
+                    <LayerData v-model='layer' :disabled='true'/>
                 </div>
 
                 <div class="col-lg-12">
@@ -87,7 +87,6 @@ export default {
             loading: {
                 layer: true
             },
-            layerdata: {},
             layer: {}
         }
     },
@@ -110,15 +109,7 @@ export default {
         },
         fetch: async function() {
             this.loading.layer = true;
-
-            const layer = await window.std(`/api/layer/${this.$route.params.layerid}`);
-            this.layerdata = {
-                mode: layer.mode,
-                ...layer.data
-            };
-            delete layer.data;
-            this.layer = layer;
-
+            this.layer = await window.std(`/api/layer/${this.$route.params.layerid}`);
             this.loading.layer = false;
         }
     },
