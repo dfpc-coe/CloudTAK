@@ -78,9 +78,9 @@ export default {
                     Type: 'FARGATE',
                     MaxvCpus: 128,
                     SecurityGroupIds: [cf.ref('BatchSecurityGroup')],
-                    Subnets: [
-                        cf.ref('SubnetPrivateA'),
-                        cf.ref('SubnetPrivateB')
+                    Aubnets: [
+                        cf.ref('coe-vpc-prod-subnet-private-a'),
+                        cf.ref('coe-vpc-prod-subnet-private-b')
                     ]
                 },
                 'State': 'ENABLED'
@@ -106,7 +106,7 @@ export default {
         BatchSecurityGroup: {
             Type: 'AWS::EC2::SecurityGroup',
             Properties: {
-                VpcId: cf.ref('VPC'),
+                VpcId: cf.import('coe-vpc-prod-vpc'),
                 GroupDescription: cf.join([cf.stackName, ' Batch Security Group']),
                 SecurityGroupIngress: []
             }
