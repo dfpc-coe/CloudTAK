@@ -16,8 +16,8 @@ export default {
                 Type: 'application',
                 SecurityGroups: [cf.ref('ELBSecurityGroup')],
                 Subnets:  [
-                    cf.ref('SubnetPublicA'),
-                    cf.ref('SubnetPublicB')
+                    cf.ref('coe-vpc-prod-subnet-public-a'),
+                    cf.ref('coe-vpc-prod-subnet-public-b')
                 ]
             }
 
@@ -37,15 +37,34 @@ export default {
                     FromPort: 80,
                     ToPort: 80
                 }],
-                VpcId: cf.ref('VPC')
+                VpcId: cf.import('coe-vpc-prod-vpc')
+            }
+        },
+        HttpsListener: {
+            Type: 'AWS::ElasticLoadBalancingV2::Listener',
+            Properties: {
+                Certificates: [{
+                    CertificateArn: cf.join(['arn:', cf.partition, ':acm:', cf.region, ':', cf.accountId, ':certificate/', cf.ref('SSLCertificateIdentifier')])
+                }],
+                DefaultActions: [{
+                    Type: 'forward',
+                    TargetGroupArn: cf.ref('TargetGroup')
+                }],
+                LoadBalancerArn: cf.ref('ELB'),
+                Port: 443,
+                Protocol: 'HTTPS'
             }
         },
         HttpListener: {
             Type: 'AWS::ElasticLoadBalancingV2::Listener',
             Properties: {
                 DefaultActions: [{
-                    Type: 'forward',
-                    TargetGroupArn: cf.ref('TargetGroup')
+                    Type: 'redirect',
+                    RedirectConfig: {
+                        Protocol: 'HTTPS',
+                        StatusCode: 'HTTP_301',
+                        Port: 443
+                    }
                 }],
                 LoadBalancerArn: cf.ref('ELB'),
                 Port: 80,
@@ -279,7 +298,7 @@ export default {
                         { Name: 'SigningSecret', Value: cf.sub('{{resolve:secretsmanager:${AWS::StackName}/api/secret:SecretString::AWSCURRENT}}') },
                         { Name: 'StackName', Value: cf.stackName },
                         { Name: 'ASSET_BUCKET', Value: cf.ref('AssetBucket') },
-                        { Name: 'API_URL', Value: cf.join(['http://', cf.getAtt('ELB', 'DNSName')]) },
+                        { Name: 'API_URL', Value: cf.ref('HostedURL') },
                         { Name: 'TAK_USERNAME', Value: cf.ref('Username') },
                         { Name: 'TAK_PASSWORD', Value: cf.ref('Password') },
                         { Name: 'AWS_DEFAULT_REGION', Value: cf.region }
@@ -311,8 +330,8 @@ export default {
                         AssignPublicIp: 'ENABLED',
                         SecurityGroups: [cf.ref('ServiceSecurityGroup')],
                         Subnets:  [
-                            cf.ref('SubnetPublicA'),
-                            cf.ref('SubnetPublicB')
+                            cf.ref('coe-vpc-prod-subnet-public-a'),
+                            cf.ref('coe-vpc-prod-subnet-public-b')
                         ]
                     }
                 },

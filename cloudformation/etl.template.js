@@ -26,6 +26,14 @@ export default cf.merge(
                 Description: 'GitSha that is currently being deployed',
                 Type: 'String'
             },
+            HostedURL: {
+                Description: 'URL of domain/subdomain at which the API is hosted',
+                Type: 'String'
+            },
+            SSLCertificateIdentifier: {
+                Description: 'ACM SSL Certificate for HTTP Protocol',
+                Type: 'String'
+            },
             AlarmEmail: {
                 Description: 'Email to send alarms to',
                 Type: 'String'
@@ -37,26 +45,6 @@ export default cf.merge(
             Password: {
                 Type: 'String',
                 Description: 'Temporary Password until LDAP lands'
-            },
-            VPC: {
-                Description: 'VPC ID to deploy into',
-                Type: 'String'
-            },
-            SubnetPublicA: {
-                Description: 'VPC SubnetPublicA to deploy into',
-                Type: 'String'
-            },
-            SubnetPublicB: {
-                Description: 'VPC SubnetPublicB to deploy into',
-                Type: 'String'
-            },
-            SubnetPrivateA: {
-                Description: 'VPC SubnetPrivateA to deploy into',
-                Type: 'String'
-            },
-            SubnetPrivateB: {
-                Description: 'VPC SubnetPrivateB to deploy into',
-                Type: 'String'
             }
         }
     },
