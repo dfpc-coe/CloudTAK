@@ -16,19 +16,19 @@
                                 <SettingsIcon width='16' height='16' class='cursor-pointer dropdown-toggle'/>
                             </div>
                             <ul class="dropdown-menu px-1 py-1" aria-labelledby="dropdownCron">
-                                <li class='py-1' @click='layerdata.cron = "rate(1 minute)"'>rate(1 minute)</li>
-                                <li class='py-1' @click='layerdata.cron = "rate(5 minutes)"'>rate(5 minutes)</li>
-                                <li class='py-1' @click='layerdata.cron = "cron(15 10 * * ? *)"'>cron(15 10 * * ? *)</li>
-                                <li class='py-1' @click='layerdata.cron = "cron(0/5 8-17 ? * MON-FRI *)"'>cron(0/5 8-17 ? * MON-FRI *)</li>
+                                <li class='py-1' @click='layer.cron = "rate(1 minute)"'>rate(1 minute)</li>
+                                <li class='py-1' @click='layer.cron = "rate(5 minutes)"'>rate(5 minutes)</li>
+                                <li class='py-1' @click='layer.cron = "cron(15 10 * * ? *)"'>cron(15 10 * * ? *)</li>
+                                <li class='py-1' @click='layer.cron = "cron(0/5 8-17 ? * MON-FRI *)"'>cron(0/5 8-17 ? * MON-FRI *)</li>
                             </ul>
                         </div>
                     </div>
                 </div>
-                <input :disabled='disabled' v-model='layerdata.cron' :class='{
+                <input :disabled='disabled' v-model='layer.cron' :class='{
                     "is-invalid": errors.cron
                 }' class="form-control" placeholder='Cron Expression'/>
                 <div v-if='errors.cron' v-text='errors.cron' class="invalid-feedback"></div>
-                <label v-if='layerdata.cron' v-text='cronstr(layerdata.cron)'/>
+                <label v-if='layer.cron' v-text='cronstr(layer.cron)'/>
             </div>
             <div class="col-md-6 mb-3">
                 <div class='d-flex'>
@@ -52,7 +52,7 @@
                         </div>
                     </div>
                 </div>
-                <input :disabled='disabled' v-model='layerdata.task' :class='{
+                <input :disabled='disabled' v-model='layer.task' :class='{
                     "is-invalid": errors.task
                 }' class="form-control" placeholder='Schedule Task'/>
                 <div v-if='errors.task' v-text='errors.task' class="invalid-feedback"></div>
@@ -60,28 +60,28 @@
             <div class="col-md-6">
                 <ConnectionSelect
                     :disabled='disabled'
-                    v-model='layerdata.connection'
+                    v-model='layer.connection'
 
                 />
             </div>
             <div class="col-md-6">
                 <label>Stale Value (ms)</label>
-                <TablerInput v-model='layerdata.stale' :disabled='disabled' type='number' min='1' step='1'/>
+                <TablerInput v-model='layer.stale' :disabled='disabled' type='number' min='1' step='1'/>
             </div>
             <div class="col-md-6">
                 <label>Memory (Mb)</label>
-                <TablerInput v-model='layerdata.memory' :disabled='disabled' type='number' min='1' step='1'/>
+                <TablerInput v-model='layer.memory' :disabled='disabled' type='number' min='1' step='1'/>
             </div>
             <div class="col-md-6">
                 <label>Timeout (s)</label>
-                <TablerInput v-model='layerdata.timeout' :disabled='disabled' type='number' min='1' step='1'/>
+                <TablerInput v-model='layer.timeout' :disabled='disabled' type='number' min='1' step='1'/>
             </div>
 
-            <LayerEnvironment v-if='$route.params.layerid' v-model='layerdata.environment' :disabled='disabled'/>
+            <LayerEnvironment v-if='$route.params.layerid' v-model='layer.environment' :disabled='disabled'/>
         </div>
     </div>
 
-    <TaskModal v-if='taskmodal' :task='layerdata.task' @close='taskmodal = false' @task='taskmodal = false; layerdata.task = $event'/>
+    <TaskModal v-if='taskmodal' :task='layer.task' @close='taskmodal = false' @task='taskmodal = false; layer.task = $event'/>
 </div>
 </template>
 
@@ -125,7 +125,7 @@ export default {
                 main: false,
                 version: false
             },
-            layerdata: {
+            layer: {
                 connection: null,
                 task: '',
                 timeout: '60',
@@ -140,26 +140,26 @@ export default {
         modelValue: {
             deep: true,
             handler: function() {
-                this.layerdata = Object.assign(this.layerdata, this.modelValue);
+                this.layer = Object.assign(this.layer, this.modelValue);
             }
         },
-        layerdata: {
+        layer: {
             deep: true,
             handler: function() {
-                const layer = Object.assign(this.modelValue, this.layerdata);
+                const layer = Object.assign(this.modelValue, this.layer);
                 this.$emit('update:modelValue', layer);
             }
         }
     },
     mounted: function() {
-        this.layerdata = Object.assign(this.layerdata, this.modelValue);
+        this.layer = Object.assign(this.layer, this.modelValue);
         this.$nextTick(() => {
             this.loading.main = false;
         });
     },
     methods: {
         updateTask: function() {
-            this.layerdata.task = this.layerdata.task.replace(/-v[0-9]+\.[0-9]+\.[0-9]+$/, `-v${this.newTaskVersion}`);
+            this.layer.task = this.layer.task.replace(/-v[0-9]+\.[0-9]+\.[0-9]+$/, `-v${this.newTaskVersion}`);
             this.newTaskVersion = null;
         },
         cronstr: function(cron) {
@@ -174,7 +174,7 @@ export default {
         },
         latestVersion: async function() {
             this.loading.version = true;
-            const match = this.layerdata.task.match(/^(.*)-v([0-9]+\.[0-9]+\.[0-9]+)$/)
+            const match = this.layer.task.match(/^(.*)-v([0-9]+\.[0-9]+\.[0-9]+)$/)
             if (!match) return;
             const task = match[1];
             const version = match[2];
