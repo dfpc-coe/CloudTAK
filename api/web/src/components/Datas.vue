@@ -7,7 +7,7 @@
                     <div class="col d-flex">
                         <ol class="breadcrumb" aria-label="breadcrumbs">
                             <li class="breadcrumb-item" aria-current="page"><a @click='$router.push("/")' class='cursor-pointer'>Home</a></li>
-                            <li class="breadcrumb-item active" aria-current="page"><a href="#">Layers</a></li>
+                            <li class="breadcrumb-item active" aria-current="page"><a href="#">Data</a></li>
                         </ol>
 
                         <div class='ms-auto'>
@@ -16,8 +16,8 @@
                                     <SearchIcon/>
                                 </a>
 
-                                <a @click='$router.push("/layer/new")' class="cursor-pointer btn btn-primary">
-                                    New Layer
+                                <a @click='$router.push("/data/new")' class="cursor-pointer btn btn-primary">
+                                    New Data
                                 </a>
                             </div>
                         </div>
@@ -33,7 +33,7 @@
                 <div v-if='query.shown' class="col-lg-12">
                     <div class="card">
                         <div class="card-body">
-                            <label class="form-label">Layer Search</label>
+                            <label class="form-label">Data Search</label>
                             <div class="input-icon mb-3">
                                 <input v-model='query.search' type="text" class="form-control" placeholder="Search…">
                                 <span class="input-icon-addon">
@@ -49,27 +49,25 @@
                 </template>
                 <template v-else>
                     <None
-                        v-if='!list.layers.length'
-                        label='Layers'
-                        @create='$router.push("/layer/new")'
+                        v-if='!list.data.length'
+                        label='Data'
+                        @create='$router.push("/data/new")'
                     />
-                    <div :key='layer.id' v-for='layer in list.layers' class="col-lg-12">
+                    <div :key='data.id' v-for='data in list.data' class="col-lg-12">
                         <div class="card">
                             <div class="card-header">
-                                <LayerStatus :layer='layer'/>
-
-                                <a @click='$router.push(`/layer/${layer.id}`)' class="card-title cursor-pointer" v-text='layer.name'></a>
+                                <a @click='$router.push(`/data/${data.id}`)' class="card-title cursor-pointer" v-text='data.name'></a>
 
                                 <div class='ms-auto'>
                                     <div class='btn-list'>
-                                        <SettingsIcon class='cursor-pointer' @click='$router.push(`/layer/${layer.id}/edit`)'/>
+                                        <SettingsIcon class='cursor-pointer' @click='$router.push(`/data/${data.id}/edit`)'/>
                                     </div>
                                 </div>
                             </div>
-                            <div class="card-body" v-text='layer.description'>
+                            <div class="card-body" v-text='data.description'>
                             </div>
                             <div class="card-footer">
-                                Last updated <span v-text='timeDiff(layer.updated)'/>
+                                Last updated <span v-text='timeDiff(data.updated)'/>
                             </div>
                         </div>
                     </div>
@@ -85,7 +83,6 @@
 <script>
 import None from './cards/None.vue';
 import PageFooter from './PageFooter.vue';
-import LayerStatus from './Layer/Status.vue';
 import {
     TablerLoading
 } from '@tak-ps/vue-tabler';
@@ -95,7 +92,7 @@ import {
 } from 'vue-tabler-icons'
 
 export default {
-    name: 'Layers',
+    name: 'Datas',
     data: function() {
         return {
             err: false,
@@ -105,7 +102,7 @@ export default {
                 search: ''
             },
             list: {
-                layers: []
+                data: []
             }
         }
     },
@@ -135,7 +132,7 @@ export default {
         },
         fetchList: async function() {
             this.loading = true;
-            const url = window.stdurl('/api/layer');
+            const url = window.stdurl('/api/data');
             if (this.query.shown && this.query.search) url.searchParams.append('filter', this.query.search);
             this.list = await window.std(url);
             this.loading = false;
@@ -147,7 +144,6 @@ export default {
         SearchIcon,
         PageFooter,
         TablerLoading,
-        LayerStatus
     }
 }
 </script>
