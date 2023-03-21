@@ -22,6 +22,8 @@ const router = new VueRouter.createRouter({
         { path: '/layer/:layerid/query/:featid', name: 'layer-query-feat', component: () => import('./components/LayerQueryFeature.vue') },
 
         { path: '/data', name: 'datas', component: () => import('./components/Datas.vue') },
+        { path: '/data/new', name: 'data-new', component: () => import('./components/DataEdit.vue') },
+        { path: '/data/:dataid/edit', name: 'data-edit', component: () => import('./components/DataEdit.vue') },
 
         { path: '/connection', name: 'connections', component: () => import('./components/Connections.vue') },
         { path: '/connection/new', name: 'connection-new', component: () => import('./components/ConnectionEdit.vue') },
