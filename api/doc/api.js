@@ -649,6 +649,24 @@
 
 
 /**
+* @api {post} /layer/:layerid/task Run Task
+* @apiVersion 1.0.0
+* @apiName POST-/layer/:layerid/task
+* @apiGroup Task
+* @apiPermission user
+*
+* @apidescription
+*   Manually invoke a Task
+*
+* @apiParam {integer} layerid param
+*
+*
+*
+* @apiSchema {jsonschema=../schema/res.Standard.json} apiSuccess
+*/
+
+
+/**
 * @api {get} /layer/:layerid/task/logs Task Logs
 * @apiVersion 1.0.0
 * @apiName GET-/layer/:layerid/task/logs

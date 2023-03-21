@@ -24,6 +24,17 @@ export default class Lambda {
         return JSON.parse(Buffer.from(res.Payload).toString());
     }
 
+    static async invoke(config: Config, layerid: number): Promise<void> {
+        const lambda = new AWSLambda.LambdaClient({ region: process.env.AWS_DEFAULT_REGION });
+        const FunctionName = `${config.StackName}-layer-${layerid}`;
+
+        await lambda.send(new AWSLambda.InvokeCommand({
+            FunctionName,
+            InvocationType: 'Event',
+            Payload: Buffer.from('')
+        }));
+    }
+
     static generate(config: Config, layer: any): any {
         const StackName = `${config.StackName}-layer-${layer.id}`;
 

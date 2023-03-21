@@ -100,7 +100,33 @@ export default async function router(schema: any, config: Config) {
                 return (await Layer.from(config.pool, req.params.layerid)).serialize();
             });
 
-            if (layer.mode === 'file') throw new Err(400, null, 'File Layers don\'t have associated stacks');
+            return res.json(await CF.status(config, layer.id));
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
+
+    await schema.post('/layer/:layerid/task', {
+        name: 'Run Task',
+        group: 'Task',
+        auth: 'user',
+        ':layerid': 'integer',
+        description: 'Manually invoke a Task',
+        res: 'res.Standard.json'
+    }, async (req: Request, res: Response) => {
+        try {
+            await Auth.is_auth(req);
+
+            const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
+                return (await Layer.from(config.pool, req.params.layerid)).serialize();
+            });
+
+            await Lambda.invoke(config, layer.id)
+
+            return res.json({
+                status: 200,
+                message: 'Manually Invoked Lambda'
+            });
 
             return res.json(await CF.status(config, layer.id));
         } catch (err) {
@@ -123,8 +149,6 @@ export default async function router(schema: any, config: Config) {
                 return (await Layer.from(config.pool, req.params.layerid)).serialize();
             });
 
-            if (layer.mode === 'file') throw new Err(400, null, 'File Layers don\'t have associated stacks');
-
             return res.json(await Logs.list(config, layer));
         } catch (err) {
             return Err.respond(err, res);
@@ -145,8 +169,6 @@ export default async function router(schema: any, config: Config) {
             const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
                 return (await Layer.from(config.pool, req.params.layerid)).serialize();
             });
-
-            if (layer.mode === 'file') throw new Err(400, null, 'File Layers don\'t have associated stacks');
 
             return res.json({
                 schema: await Lambda.schema(config, layer.id)
@@ -177,7 +199,6 @@ export default async function router(schema: any, config: Config) {
                 console.log('no existing log groups');
             }
 
-            if (layer.mode === 'file') throw new Err(400, null, 'File Layers don\'t have associated stacks');
             const lambda = await Lambda.generate(config, layer);
             await CloudFormation.create(config, layer.id, lambda);
 
