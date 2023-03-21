@@ -78,9 +78,9 @@ export default {
                     Type: 'FARGATE',
                     MaxvCpus: 128,
                     SecurityGroupIds: [cf.ref('BatchSecurityGroup')],
-                    Aubnets: [
-                        cf.ref('coe-vpc-prod-subnet-private-a'),
-                        cf.ref('coe-vpc-prod-subnet-private-b')
+                    Subnets: [
+                        cf.importValue('coe-vpc-prod-subnet-private-a'),
+                        cf.importValue('coe-vpc-prod-subnet-private-b')
                     ]
                 },
                 'State': 'ENABLED'
