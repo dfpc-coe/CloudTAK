@@ -23,9 +23,7 @@
                 <div class="col-lg-12">
                     <div class="card">
                         <div class="card-header">
-                            <template v-if='layer.mode === "live"'>
-                                <LayerStatus :layer='layer'/>
-                            </template>
+                            <LayerStatus :layer='layer'/>
 
                             <a @click='$router.push(`/layer/${layer.id}`)' class="card-title cursor-pointer" v-text='layer.name'></a>
 
@@ -44,7 +42,7 @@
                     </div>
                 </div>
 
-                <div v-if='layer.mode === "live"' class="col-lg-12">
+                <div class="col-lg-12">
                     <LayerTask/>
                 </div>
 
