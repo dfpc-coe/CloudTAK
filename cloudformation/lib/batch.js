@@ -106,7 +106,7 @@ export default {
         BatchSecurityGroup: {
             Type: 'AWS::EC2::SecurityGroup',
             Properties: {
-                VpcId: cf.import('coe-vpc-prod-vpc'),
+                VpcId: cf.importValue('coe-vpc-prod-vpc'),
                 GroupDescription: cf.join([cf.stackName, ' Batch Security Group']),
                 SecurityGroupIngress: []
             }

@@ -37,7 +37,7 @@ export default {
                     FromPort: 80,
                     ToPort: 80
                 }],
-                VpcId: cf.import('coe-vpc-prod-vpc')
+                VpcId: cf.importValue('coe-vpc-prod-vpc')
             }
         },
         HttpsListener: {
@@ -381,6 +381,13 @@ export default {
         API: {
             Description: 'API ELB',
             Value: cf.join(['http://', cf.getAtt('ELB', 'DNSName')])
+        },
+        HostedURL: {
+            Description: 'Hosted API Location',
+            Export: {
+                Name: cf.join([cf.stackName, '-hosted'])
+            },
+            Value: cf.ref('HostedURL')
         },
         ETLRole: {
             Description: 'ETL Lambda Role',
