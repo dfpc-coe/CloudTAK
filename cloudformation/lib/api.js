@@ -16,8 +16,8 @@ export default {
                 Type: 'application',
                 SecurityGroups: [cf.ref('ELBSecurityGroup')],
                 Subnets:  [
-                    cf.ref('coe-vpc-prod-subnet-public-a'),
-                    cf.ref('coe-vpc-prod-subnet-public-b')
+                    cf.importValue('coe-vpc-prod-subnet-public-a'),
+                    cf.importValue('coe-vpc-prod-subnet-public-b')
                 ]
             }
 
@@ -81,7 +81,7 @@ export default {
                 Port: 5000,
                 Protocol: 'HTTP',
                 TargetType: 'ip',
-                VpcId: cf.ref('VPC'),
+                VpcId: cf.importValue('coe-vpc-prod-vpc'),
                 Matcher: {
                     HttpCode: '200,202,302,304'
                 }
@@ -330,8 +330,8 @@ export default {
                         AssignPublicIp: 'ENABLED',
                         SecurityGroups: [cf.ref('ServiceSecurityGroup')],
                         Subnets:  [
-                            cf.ref('coe-vpc-prod-subnet-public-a'),
-                            cf.ref('coe-vpc-prod-subnet-public-b')
+                            cf.importValue('coe-vpc-prod-subnet-public-a'),
+                            cf.importValue('coe-vpc-prod-subnet-public-b')
                         ]
                     }
                 },
@@ -346,7 +346,7 @@ export default {
             Type: 'AWS::EC2::SecurityGroup',
             Properties: {
                 GroupDescription: cf.join('-', [cf.stackName, 'ec2-sg']),
-                VpcId: cf.ref('VPC'),
+                VpcId: cf.importValue('coe-vpc-prod-vpc'),
                 SecurityGroupIngress: [{
                     CidrIp: '0.0.0.0/0',
                     IpProtocol: 'tcp',
