@@ -42,9 +42,17 @@
                         <li class="nav-item">
                             <a class="nav-link cursor-pointer" @click='$router.push("/layer")'>
                                 <span class="nav-link-icon d-md-none d-lg-inline-block">
-                                    <DatabaseIcon/>
+                                    <BuildingBroadcastTowerIcon/>
                                 </span>
                                 <span class="nav-link-title">Layers</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link cursor-pointer" @click='$router.push("/data")'>
+                                <span class="nav-link-icon d-md-none d-lg-inline-block">
+                                    <DatabaseIcon/>
+                                </span>
+                                <span class="nav-link-title">Data</span>
                             </a>
                         </li>
                         <li class="nav-item dropdown">
@@ -95,6 +103,7 @@ import {
     HomeIcon,
     NetworkIcon,
     DatabaseIcon,
+    BuildingBroadcastTowerIcon,
     AdjustmentsIcon,
     ShovelIcon
 } from 'vue-tabler-icons';
@@ -158,6 +167,7 @@ export default {
         NetworkIcon,
         DatabaseIcon,
         TablerError,
+        BuildingBroadcastTowerIcon,
         AdjustmentsIcon,
         ShovelIcon,
     }
