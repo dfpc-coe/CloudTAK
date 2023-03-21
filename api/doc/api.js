@@ -270,6 +270,78 @@
 
 
 /**
+* @api {post} /data Create data
+* @apiVersion 1.0.0
+* @apiName POST-/data
+* @apiGroup Data
+* @apiPermission admin
+*
+* @apidescription
+*   Register a new data source
+*
+
+*
+*
+* @apiSchema (Body) {jsonschema=../schema/req.body.CreateData.json} apiParam
+* @apiSchema {jsonschema=../schema/data.json} apiSuccess
+*/
+
+
+/**
+* @api {patch} /data/:dataid Update Layer
+* @apiVersion 1.0.0
+* @apiName PATCH-/data/:dataid
+* @apiGroup Data
+* @apiPermission admin
+*
+* @apidescription
+*   Update a data source
+*
+* @apiParam {integer} dataid param
+*
+*
+* @apiSchema (Body) {jsonschema=../schema/req.body.PatchData.json} apiParam
+* @apiSchema {jsonschema=../schema/data.json} apiSuccess
+*/
+
+
+/**
+* @api {get} /data/:dataid Get Data
+* @apiVersion 1.0.0
+* @apiName GET-/data/:dataid
+* @apiGroup Data
+* @apiPermission user
+*
+* @apidescription
+*   Get a data source
+*
+* @apiParam {integer} dataid param
+*
+*
+*
+* @apiSchema {jsonschema=../schema/data.json} apiSuccess
+*/
+
+
+/**
+* @api {delete} /data/:dataid Delete Data
+* @apiVersion 1.0.0
+* @apiName DELETE-/data/:dataid
+* @apiGroup Data
+* @apiPermission user
+*
+* @apidescription
+*   Delete a data source
+*
+* @apiParam {integer} dataid param
+*
+*
+*
+* @apiSchema {jsonschema=../schema/res.Standard.json} apiSuccess
+*/
+
+
+/**
 * @api {get} /icon List Icons
 * @apiVersion 1.0.0
 * @apiName GET-/icon
