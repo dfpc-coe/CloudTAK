@@ -4,6 +4,7 @@
         <h3 class='card-title'>Task Status</h3>
         <div class='ms-auto'>
             <div class='btn-list'>
+                <PlayerPlayIcon v-if='mode !== "logs"' @click='invoke' width='24' height='24' class='cursor-pointer'/>
                 <ArticleIcon v-if='mode !== "logs"' @click='mode = "logs"' width='24' height='24' class='cursor-pointer'/>
                 <CircleDotIcon v-if='mode !== "status"' @click='mode = "status"' width='24' height='24' class='cursor-pointer'/>
 
@@ -65,6 +66,7 @@ import {
 } from '@tak-ps/vue-tabler';
 import {
     ArticleIcon,
+    PlayerPlayIcon,
     CircleDotIcon,
     RefreshIcon,
     AlertCircleIcon
@@ -121,6 +123,13 @@ export default {
             if (this.mode === 'logs') await this.fetchLogs();
             if (this.mode === 'status') await this.fetchStatus();
         },
+        invoke: async function() {
+            this.loading.full = true;
+            await window.std(`/api/layer/${this.$route.params.layerid}/task`, {
+                method: 'POST'
+            });
+            this.loading.full = false;
+        },
         fetchStatus: async function(showLoading=true) {
             if (showLoading) {
                 this.loading.full = true;
@@ -170,6 +179,7 @@ export default {
     },
     components: {
         ArticleIcon,
+        PlayerPlayIcon,
         CircleDotIcon,
         RefreshIcon,
         TablerLoading,
