@@ -21,6 +21,8 @@ const router = new VueRouter.createRouter({
         { path: '/layer/:layerid/query', name: 'layer-query', component: () => import('./components/LayerQuery.vue') },
         { path: '/layer/:layerid/query/:featid', name: 'layer-query-feat', component: () => import('./components/LayerQueryFeature.vue') },
 
+        { path: '/data', name: 'datas', component: () => import('./components/Datas.vue') },
+
         { path: '/connection', name: 'connections', component: () => import('./components/Connections.vue') },
         { path: '/connection/new', name: 'connection-new', component: () => import('./components/ConnectionEdit.vue') },
         { path: '/connection/:connectionid', name: 'connection', component: () => import('./components/Connection.vue') },
