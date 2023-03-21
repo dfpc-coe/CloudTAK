@@ -49,21 +49,14 @@
                                         :error='errors.description'
                                     />
                                 </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-lg-12">
-                    <div class='card'>
-                        <div class="card-body">
-                            <div class='d-flex'>
-                                <a v-if='$route.params.dataid' @click='deleteLayer' class="cursor-pointer btn btn-outline-danger">
-                                    Delete Data
-                                </a>
-                                <div class='ms-auto'>
-                                    <a v-if='$route.params.dataid' @click='create' class="cursor-pointer btn btn-primary">Update Data</a>
-                                    <a v-else @click='create' class="cursor-pointer btn btn-primary">Create Data</a>
+                                <div class='d-flex'>
+                                    <a v-if='$route.params.dataid' @click='deleteLayer' class="cursor-pointer btn btn-outline-danger">
+                                        Delete Data
+                                    </a>
+                                    <div class='ms-auto'>
+                                        <a v-if='$route.params.dataid' @click='create' class="cursor-pointer btn btn-primary">Update Data</a>
+                                        <a v-else @click='create' class="cursor-pointer btn btn-primary">Create Data</a>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -119,7 +112,7 @@ export default {
             this.$router.push('/data');
         },
         create: async function() {
-            for (const field of ['name', 'description', 'cron', 'task', 'timeout', 'memory']) {
+            for (const field of ['name', 'description']) {
                 this.errors[field] = !this.data[field] ? 'Cannot be empty' : '';
             }
             for (const e in this.errors) if (this.errors[e]) return;

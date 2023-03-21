@@ -23,6 +23,7 @@ const router = new VueRouter.createRouter({
 
         { path: '/data', name: 'datas', component: () => import('./components/Datas.vue') },
         { path: '/data/new', name: 'data-new', component: () => import('./components/DataEdit.vue') },
+        { path: '/data/:dataid', name: 'data', component: () => import('./components/Data.vue') },
         { path: '/data/:dataid/edit', name: 'data-edit', component: () => import('./components/DataEdit.vue') },
 
         { path: '/connection', name: 'connections', component: () => import('./components/Connections.vue') },
@@ -35,6 +36,8 @@ const router = new VueRouter.createRouter({
         { path: '/login', name: 'login', component: () => import('./components/Login.vue') },
 
         { path: '/admin', name: 'admin', component: () => import('./components/Admin.vue') },
+
+        { path: '/:catchAll(.*)', name: 'lost', component: () => import('./components/Lost.vue') },
     ]
 });
 
