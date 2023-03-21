@@ -73,7 +73,7 @@ export default class Lambda {
                         PackageType: 'Image',
                         Environment: {
                             Variables: {
-                                ETL_API: config.API_URL,
+                                ETL_API: cf.importValue(config.StackName + '-hosted'),
                                 ETL_TOKEN: jwt.sign({ access: 'cot', layer: layer.id }, config.SigningSecret),
                                 ETL_LAYER: layer.id
                             }
