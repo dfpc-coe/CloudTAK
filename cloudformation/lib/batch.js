@@ -2,6 +2,26 @@ import cf from '@openaddresses/cloudfriend';
 
 export default {
     Resources: {
+        BatchDataJob: {
+            Type: 'AWS::Batch::JobDefinition',
+            Properties: {
+                Type: 'container',
+                JobDefinitionName: cf.join('-', [cf.stackName, '-data-job']),
+                RetryStrategy: { Attempts: 1 },
+                Parameters: { },
+                ContainerProperties: {
+                    Environment: [
+                        { Name: 'StackName', Value: cf.stackName },
+                    ],
+                    Memory: 1900,
+                    Privileged: true,
+                    JobRoleArn: cf.getAtt('BatchJobRole', 'Arn'),
+                    ReadonlyRootFilesystem: false,
+                    Vcpus: 2,
+                    Image: cf.join([cf.accountId, '.dkr.ecr.', cf.region, '.amazonaws.com/coe-ecr-etl:task-', cf.ref('GitSha')])
+                }
+            }
+        },
         BatchJobQueue: {
             Type: 'AWS::Batch::JobQueue',
             Properties: {
