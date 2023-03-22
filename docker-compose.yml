@@ -14,6 +14,10 @@ services:
             - TAK_USERNAME
             - TAK_PASSWORD
 
+    task:
+        platform: linux/amd64
+        build: ./tasks/geojson/
+
     postgis:
         platform: linux/amd64
         image: postgis/postgis:15-3.3-alpine

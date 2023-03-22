@@ -9,7 +9,7 @@ RUN apt-get update \
     && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends apt-utils tzdata python3 \
     && apt-get install -y nginx memcached curl build-essential
 
-RUN export NODEV='19.3.0' \
+RUN export NODEV='19.8.1' \
     && curl "https://nodejs.org/dist/v${NODEV}/node-v${NODEV}-linux-x64.tar.gz" | tar -xzv > /dev/null \
     && cp ./node-v${NODEV}-linux-x64/bin/node /usr/bin/ \
     && ./node-v${NODEV}-linux-x64/bin/npm install -g npm

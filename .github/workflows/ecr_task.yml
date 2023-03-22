@@ -1,0 +1,45 @@
+name: AWS ECR Task
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - ready_for_review
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{github.event.pull_request.head.sha || github.sha}}
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: arn:aws-us-gov:iam::${{secrets.AWS_ACCOUNT_ID}}:role/Github-ECR-Builder
+          role-session-name: GithubECRBuilder
+          aws-region: ${{secrets.AWS_REGION}}
+
+      - name: Docker Build Task
+        run: docker-compose build task
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Docker Tag Task
+        run: docker tag etl_task:latest ${{secrets.AWS_ACCOUNT_ID}}.dkr.ecr.${{secrets.AWS_REGION}}.amazonaws.com/coe-ecr-etl:task-${{github.event.pull_request.head.sha || github.sha}}
+
+      - name: Docker Push task
+        run: docker push ${{secrets.AWS_ACCOUNT_ID}}.dkr.ecr.${{secrets.AWS_REGION}}.amazonaws.com/coe-ecr-etl:task-${{github.event.pull_request.head.sha || github.sha}}
