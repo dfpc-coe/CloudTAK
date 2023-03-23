@@ -38,6 +38,9 @@
                         </div>
                     </div>
                 </div>
+                <div class="col-lg-12">
+                    <DataAsset/>
+                </div>
             </div>
         </div>
     </div>
@@ -48,6 +51,7 @@
 
 <script>
 import PageFooter from './PageFooter.vue';
+import DataAsset from './Data/Assets.vue';
 import timeDiff from '../timediff.js';
 import {
     TablerLoading
@@ -57,7 +61,7 @@ import {
 } from 'vue-tabler-icons'
 
 export default {
-    name: 'Layer',
+    name: 'DataSingle',
     data: function() {
         return {
             err: false,
@@ -84,6 +88,7 @@ export default {
         SettingsIcon,
         PageFooter,
         TablerLoading,
+        DataAsset
     }
 }
 </script>

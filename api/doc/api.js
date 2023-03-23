@@ -54,6 +54,96 @@
 
 
 /**
+* @api {get} /connection List Connections
+* @apiVersion 1.0.0
+* @apiName GET-/connection
+* @apiGroup Connection
+* @apiPermission user
+*
+* @apidescription
+*   List Connections
+*
+
+*
+* @apiSchema (Query) {jsonschema=../schema/req.query.ListConnections.json} apiParam
+*
+* @apiSchema {jsonschema=../schema/res.ListConnections.json} apiSuccess
+*/
+
+
+/**
+* @api {post} /connection Create Connection
+* @apiVersion 1.0.0
+* @apiName POST-/connection
+* @apiGroup Connection
+* @apiPermission admin
+*
+* @apidescription
+*   Register a new connection
+*
+
+*
+*
+* @apiSchema (Body) {jsonschema=../schema/req.body.CreateConnection.json} apiParam
+* @apiSchema {jsonschema=../schema/res.Connection.json} apiSuccess
+*/
+
+
+/**
+* @api {patch} /connection/:connectionid Update Connection
+* @apiVersion 1.0.0
+* @apiName PATCH-/connection/:connectionid
+* @apiGroup Connection
+* @apiPermission admin
+*
+* @apidescription
+*   Update a connection
+*
+* @apiParam {integer} connectionid param
+*
+*
+* @apiSchema (Body) {jsonschema=../schema/req.body.PatchConnection.json} apiParam
+* @apiSchema {jsonschema=../schema/res.Connection.json} apiSuccess
+*/
+
+
+/**
+* @api {get} /connection/:connectionid Get Connection
+* @apiVersion 1.0.0
+* @apiName GET-/connection/:connectionid
+* @apiGroup Connection
+* @apiPermission user
+*
+* @apidescription
+*   Get a connection
+*
+* @apiParam {integer} connectionid param
+*
+*
+*
+* @apiSchema {jsonschema=../schema/res.Connection.json} apiSuccess
+*/
+
+
+/**
+* @api {delete} /connection/:connectionid Delete Connection
+* @apiVersion 1.0.0
+* @apiName DELETE-/connection/:connectionid
+* @apiGroup Connection
+* @apiPermission user
+*
+* @apidescription
+*   Delete a connection
+*
+* @apiParam {integer} connectionid param
+*
+*
+*
+* @apiSchema {jsonschema=../schema/res.Standard.json} apiSuccess
+*/
+
+
+/**
 * @api {get} /asset List Assets
 * @apiVersion 1.0.0
 * @apiName GET-/asset
@@ -158,96 +248,6 @@
 *
 *
 *
-*/
-
-
-/**
-* @api {get} /connection List Connections
-* @apiVersion 1.0.0
-* @apiName GET-/connection
-* @apiGroup Connection
-* @apiPermission user
-*
-* @apidescription
-*   List Connections
-*
-
-*
-* @apiSchema (Query) {jsonschema=../schema/req.query.ListConnections.json} apiParam
-*
-* @apiSchema {jsonschema=../schema/res.ListConnections.json} apiSuccess
-*/
-
-
-/**
-* @api {post} /connection Create Connection
-* @apiVersion 1.0.0
-* @apiName POST-/connection
-* @apiGroup Connection
-* @apiPermission admin
-*
-* @apidescription
-*   Register a new connection
-*
-
-*
-*
-* @apiSchema (Body) {jsonschema=../schema/req.body.CreateConnection.json} apiParam
-* @apiSchema {jsonschema=../schema/res.Connection.json} apiSuccess
-*/
-
-
-/**
-* @api {patch} /connection/:connectionid Update Connection
-* @apiVersion 1.0.0
-* @apiName PATCH-/connection/:connectionid
-* @apiGroup Connection
-* @apiPermission admin
-*
-* @apidescription
-*   Update a connection
-*
-* @apiParam {integer} connectionid param
-*
-*
-* @apiSchema (Body) {jsonschema=../schema/req.body.PatchConnection.json} apiParam
-* @apiSchema {jsonschema=../schema/res.Connection.json} apiSuccess
-*/
-
-
-/**
-* @api {get} /connection/:connectionid Get Connection
-* @apiVersion 1.0.0
-* @apiName GET-/connection/:connectionid
-* @apiGroup Connection
-* @apiPermission user
-*
-* @apidescription
-*   Get a connection
-*
-* @apiParam {integer} connectionid param
-*
-*
-*
-* @apiSchema {jsonschema=../schema/res.Connection.json} apiSuccess
-*/
-
-
-/**
-* @api {delete} /connection/:connectionid Delete Connection
-* @apiVersion 1.0.0
-* @apiName DELETE-/connection/:connectionid
-* @apiGroup Connection
-* @apiPermission user
-*
-* @apidescription
-*   Delete a connection
-*
-* @apiParam {integer} connectionid param
-*
-*
-*
-* @apiSchema {jsonschema=../schema/res.Standard.json} apiSuccess
 */
 
 
