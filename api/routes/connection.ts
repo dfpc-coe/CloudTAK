@@ -130,9 +130,10 @@ export default async function router(schema: any, config: Config) {
                 await config.conns.add(conn);
             }
 
-            conn.status = config.conns.status(conn.id);
+            const json = conn.serialize()
+            json.status = config.conns.status(conn.id);
 
-            return res.json(conn);
+            return res.json(json);
         } catch (err) {
             return Err.respond(err, res);
         }
