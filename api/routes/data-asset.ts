@@ -4,23 +4,32 @@ import fs from 'node:fs/promises';
 import path from 'path';
 // @ts-ignore
 import Asset from '../lib/types/asset.js';
+// @ts-ignore
+import Data from '../lib/types/data.js';
 import Auth from '../lib/auth.js';
+//import S3 from '../lib/aws/s3.js';
 
 import { Request, Response } from 'express';
 import Config from '../lib/config.js';
 
 export default async function router(schema: any, config: Config) {
-    await schema.get('/asset', {
+    await schema.get('/data/:dataid/asset', {
         name: 'List Assets',
         auth: 'user',
         group: 'Assets',
         description: 'List Assets',
+        ':dataid': 'integer',
         query: 'req.query.ListAssets.json',
         res: 'res.ListAssets.json'
     }, async (req: Request, res: Response) => {
         try {
             await Auth.is_auth(req);
-            const list = await Asset.list(config.pool, req.query);
+
+            const data = await Data.from(config.pool, req.params.dataid);
+
+            const list: any[] = [] //await S3.list(`data/${data.id}/`);
+
+console.error(list);
             return res.json(list);
         } catch (err) {
             return Err.respond(err, res);
