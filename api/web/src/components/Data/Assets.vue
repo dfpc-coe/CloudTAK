@@ -9,7 +9,8 @@
     </div>
 
     <div class='card-body'>
-        <None v-if='!assets.length' :create='false'/>
+        <TablerLoading v-if='loading.list'/>
+        <None v-else-if='!assets.length' :create='false'/>
     </div>
 </div>
 </template>
@@ -18,6 +19,9 @@
 import {
 } from 'vue-tabler-icons'
 import None from '../cards/None.vue';
+import {
+    TablerLoading
+} from '@tak-ps/vue-tabler';
 
 export default {
     name: 'DataAssets',
@@ -28,12 +32,19 @@ export default {
             assets: []
         };
     },
-    mounted: function() {
+    mounted: async function() {
+        await this.fetchList();
     },
     methods: {
+        fetchList: async function() {
+            this.loading.list = true;
+            this.assets = await window.std(`/api/data/${this.$route.params.dataid}/asset`);
+            this.loading.list = false;
+        }
     },
     components: {
-        None
+        None,
+        TablerLoading
     }
 }
 </script>

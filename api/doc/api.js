@@ -144,16 +144,16 @@
 
 
 /**
-* @api {get} /asset List Assets
+* @api {get} /data/:dataid/asset List Assets
 * @apiVersion 1.0.0
-* @apiName GET-/asset
+* @apiName GET-/data/:dataid/asset
 * @apiGroup Assets
 * @apiPermission user
 *
 * @apidescription
 *   List Assets
 *
-
+* @apiParam {integer} dataid param
 *
 * @apiSchema (Query) {jsonschema=../schema/req.query.ListAssets.json} apiParam
 *
