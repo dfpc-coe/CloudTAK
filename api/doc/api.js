@@ -126,6 +126,24 @@
 
 
 /**
+* @api {post} /connection/:connectionid/refresh Refresh Connection
+* @apiVersion 1.0.0
+* @apiName POST-/connection/:connectionid/refresh
+* @apiGroup Connection
+* @apiPermission admin
+*
+* @apidescription
+*   Refresh a connection
+*
+* @apiParam {integer} connectionid param
+*
+*
+*
+* @apiSchema {jsonschema=../schema/res.Connection.json} apiSuccess
+*/
+
+
+/**
 * @api {delete} /connection/:connectionid Delete Connection
 * @apiVersion 1.0.0
 * @apiName DELETE-/connection/:connectionid
