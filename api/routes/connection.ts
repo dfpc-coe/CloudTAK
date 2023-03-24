@@ -108,6 +108,36 @@ export default async function router(schema: any, config: Config) {
         }
     });
 
+    await schema.post('/connection/:connectionid/refresh', {
+        name: 'Refresh Connection',
+        group: 'Connection',
+        auth: 'admin',
+        description: 'Refresh a connection',
+        ':connectionid': 'integer',
+        res: 'res.Connection.json'
+    }, async (req: Request, res: Response) => {
+        try {
+            await Auth.is_auth(req);
+
+            const conn = await Connection.from(config.pool, req.params.connectionid);
+
+            if (!conn.enabled) throw new Err(400, null, 'Connection is not currently enabled');
+
+            if (config.conns.has(conn.id)) {
+                await config.conns.delete(conn.id);
+                await config.conns.add(conn);
+            } else {
+                await config.conns.add(conn);
+            }
+
+            conn.status = config.conns.status(conn.id);
+
+            return res.json(conn);
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
+
     await schema.delete('/connection/:connectionid', {
         name: 'Delete Connection',
         group: 'Connection',

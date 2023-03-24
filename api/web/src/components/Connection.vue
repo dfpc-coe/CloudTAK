@@ -29,6 +29,7 @@
                             <div class='ms-auto'>
                                 <div class='btn-list'>
                                     <SettingsIcon class='cursor-pointer' @click='$router.push(`/connection/${connection.id}/edit`)'/>
+                                    <RefreshIcon class='cursor-pointer' @click='refresh'/>
                                 </div>
                             </div>
                         </div>
@@ -60,6 +61,7 @@ import ConnectionStatus from './Connection/Status.vue';
 import ConnectionLayers from './Connection/Layers.vue';
 import ConnectionEvents from './Connection/Events.vue';
 import {
+    RefreshIcon,
     SettingsIcon
 } from 'vue-tabler-icons'
 
@@ -82,10 +84,16 @@ export default {
     methods: {
         fetch: async function() {
             this.connection = await window.std(`/api/connection/${this.$route.params.connectionid}`);
+        },
+        refresh: async function() {
+            this.connection = await window.std(`/api/connection/${this.$route.params.connectionid}/refresh`, {
+                method: 'POST'
+            });
         }
     },
     components: {
         SettingsIcon,
+        RefreshIcon,
         PageFooter,
         ConnectionStatus,
         ConnectionLayers,
