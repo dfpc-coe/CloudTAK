@@ -101,6 +101,9 @@ export default class TAKPool extends Map<number, TAKPoolClient> {
         }).on('close', async () => {
             console.error(`not ok - ${conn.id} @ close`);
             this.retry(pooledClient);
+        }).on('end', async () => {
+            console.error(`not ok - ${conn.id} @ end`);
+            this.retry(pooledClient);
         }).on('timeout', async () => {
             console.error(`not ok - ${conn.id} @ timeout`);
             this.retry(pooledClient);
