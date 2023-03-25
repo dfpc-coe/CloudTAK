@@ -16,11 +16,12 @@ export default class Metric {
 
         try {
             await cw.send(new CloudWatch.PutMetricDataCommand({
+                Namespace: 'TAKETL',
                 MetricData: [{
                     MetricName: `ConnectionHealth`,
-                    Unit: 'Count'
+                    Unit: 'Count',
                     Value: 1,
-                    TimeStamp: new Date(),
+                    Timestamp: new Date(),
                     Dimensions: [{
                         Name: 'ConnectionId',
                         Value: String(connid)

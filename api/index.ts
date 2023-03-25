@@ -81,7 +81,7 @@ export default async function server(config: Config) {
         config.server = null;
     }
 
-    config.conns = new TAKPool(config.server, config.wsClients);
+    config.conns = new TAKPool(config.server, config.wsClients, config.StackName);
     await config.conns.init(config.pool);
     config.events = new EventsPool(config.StackName);
     if (!config.noevents) await config.events.init(config.pool);
