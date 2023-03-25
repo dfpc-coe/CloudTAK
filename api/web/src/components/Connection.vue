@@ -28,8 +28,8 @@
 
                             <div class='ms-auto'>
                                 <div class='btn-list'>
-                                    <SettingsIcon class='cursor-pointer' @click='$router.push(`/connection/${connection.id}/edit`)'/>
                                     <RefreshIcon class='cursor-pointer' @click='refresh'/>
+                                    <SettingsIcon class='cursor-pointer' @click='$router.push(`/connection/${connection.id}/edit`)'/>
                                 </div>
                             </div>
                         </div>
