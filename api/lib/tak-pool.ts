@@ -1,6 +1,7 @@
 import TAK from './tak.js';
 // @ts-ignore
 import Connection from './types/connection.js';
+import Metrics from './aws/metric.js';
 
 class TAKPoolClient {
     conn: Connection;
@@ -26,11 +27,13 @@ class TAKPoolClient {
 export default class TAKPool extends Map<number, TAKPoolClient> {
     #server: any;
     clients: any[];
+    metrics: Metrics;
 
-    constructor(server: any, clients: any[] = []) {
+    constructor(server: any, clients: any[] = [], stackName: string) {
         super();
         this.#server = server;
         this.clients = clients;
+        this.metrics = new Metrics(stackName);
     }
 
     async refresh(pool: any, server: any) {
@@ -98,15 +101,14 @@ export default class TAKPool extends Map<number, TAKPoolClient> {
                     data: cot.raw
                 }));
             }
-        }).on('close', async () => {
-            console.error(`not ok - ${conn.id} @ close`);
-            this.retry(pooledClient);
         }).on('end', async () => {
             console.error(`not ok - ${conn.id} @ end`);
             this.retry(pooledClient);
         }).on('timeout', async () => {
             console.error(`not ok - ${conn.id} @ timeout`);
             this.retry(pooledClient);
+        }).on('ping', async () => {
+            console.error(`ok - ${conn.id} @ ping`);
         }).on('error', async (err) => {
             console.error(`not ok - ${conn.id} @ error:${err}`);
             this.retry(pooledClient);

@@ -97,6 +97,7 @@ export default class TAK extends EventEmitter {
                     try {
                         if (cot.raw.event._attributes.type === 't-x-c-t-r') {
                             this.open = true;
+                            this.emit('ping');
                         } else if (cot.raw.event._attributes.type === 't-x-takp-v') {
                             this.version = cot.raw.event.detail.TakControl.TakServerVersionInfo._attributes.serverVersion;
                         } else {
@@ -119,7 +120,9 @@ export default class TAK extends EventEmitter {
                 if (!this.destroyed) this.emit('end');
             });
 
-            this.ping();
+            setInterval(() => {
+                this.ping();
+            }, 5000);
 
             return resolve(this);
         });
