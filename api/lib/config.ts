@@ -60,6 +60,7 @@ export default class Config {
                 config.API_URL = 'http://localhost:5001';
                 config.DynamoDB = '';
             } else {
+                if (!config.silent) console.error(`ok - StackName: ${config.StackName}`);
                 if (!process.env.StackName) throw new Error('StackName env must be set');
                 if (!process.env.TAK_USERNAME) throw new Error('TAK_USERNAME env must be set');
                 if (!process.env.TAK_PASSWORD) throw new Error('TAK_PASSWORD env must be set');
