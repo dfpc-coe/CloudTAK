@@ -28,11 +28,13 @@ export default class TAKPool extends Map<number, TAKPoolClient> {
     #server: any;
     clients: any[];
     metrics: Metrics;
+    stackName: string;
 
     constructor(server: any, clients: any[] = [], stackName: string) {
         super();
         this.#server = server;
         this.clients = clients;
+        this.stackName = stackName,
         this.metrics = new Metrics(stackName);
     }
 
@@ -109,7 +111,7 @@ export default class TAKPool extends Map<number, TAKPoolClient> {
             this.retry(pooledClient);
         }).on('ping', async () => {
             console.error(`ok - ${conn.id} @ ping`);
-            this.metrics.post(conn.id);
+            if (this.stackName !== 'test') this.metrics.post(conn.id);
         }).on('error', async (err) => {
             console.error(`not ok - ${conn.id} @ error:${err}`);
             this.retry(pooledClient);
