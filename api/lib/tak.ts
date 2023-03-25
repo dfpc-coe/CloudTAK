@@ -116,7 +116,7 @@ export default class TAK extends EventEmitter {
                 this.emit('error', err);
             }).on('end', () => {
                 this.open = false;
-                this.emit('end');
+                if (!this.destroyed) this.emit('end');
             });
 
             this.ping();
