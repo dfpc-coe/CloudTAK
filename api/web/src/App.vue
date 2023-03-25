@@ -132,7 +132,12 @@ export default {
     },
     mounted: async function() {
         const url = window.stdurl('/api');
-        url.protocol = 'ws:';
+
+        if (window.location.host === 'localhost') {
+            url.protocol = 'ws:';
+        } else {
+            url.protocol = 'wss:';
+        }
 
         this.ws = new WebSocket(url);
         this.ws.addEventListener('error', (err) => {

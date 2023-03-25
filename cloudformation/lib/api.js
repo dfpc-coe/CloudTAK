@@ -179,6 +179,14 @@ export default {
                         },{
                             Effect: 'Allow',
                             Action: [
+                                'cloudwatch:PutMetricData',
+                            ],
+                            Resource: [
+                                '*'
+                            ]
+                        },{
+                            Effect: 'Allow',
+                            Action: [
                                 'cloudwatch:Describe*',
                                 'cloudwatch:Get*',
                                 'cloudwatch:List*',
