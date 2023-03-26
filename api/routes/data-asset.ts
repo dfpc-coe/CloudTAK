@@ -20,7 +20,6 @@ export default async function router(schema: any, config: Config) {
         group: 'DataAssets',
         description: 'List Assets',
         ':dataid': 'integer',
-        query: 'req.query.ListAssets.json',
         res: 'res.ListAssets.json'
     }, async (req: Request, res: Response) => {
         try {
@@ -30,7 +29,17 @@ export default async function router(schema: any, config: Config) {
 
             const list: any[] = await S3.list(`data/${data.id}/`);
 
-            return res.json(list);
+            return res.json({
+                total: list.length,
+                assets: list.map((asset) => {
+                    return {
+                        name: asset.Key.replace(`data/${data.id}/`, ''),
+                        updated: new Date(asset.LastModified).getTime(),
+                        etag: JSON.parse(asset.ETag),
+                        size: asset.Size
+                    };
+                })
+            });
         } catch (err) {
             return Err.respond(err, res);
         }

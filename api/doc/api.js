@@ -173,7 +173,7 @@
 *
 * @apiParam {integer} dataid param
 *
-* @apiSchema (Query) {jsonschema=../schema/req.query.ListAssets.json} apiParam
+*
 *
 * @apiSchema {jsonschema=../schema/res.ListAssets.json} apiSuccess
 */

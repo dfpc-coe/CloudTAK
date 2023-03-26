@@ -10,9 +10,26 @@
             "$ref": "./util/total.json"
         },
         "assets": {
-            "type": "array",
-            "items": {
-                "$ref": "./assets.json"
+            "type": "object",
+            "required": [
+                "name",
+                "updated",
+                "etag",
+                "size"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "updated": {
+                    "type": "integer"
+                },
+                "etag": {
+                    "type": "string"
+                },
+                "size": {
+                    "type": "integer"
+                }
             }
         }
     }
