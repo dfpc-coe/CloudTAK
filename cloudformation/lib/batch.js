@@ -11,7 +11,7 @@ export default {
                 Parameters: { },
                 ContainerProperties: {
                     Environment: [
-                        { Name: 'StackName', Value: cf.stackName },
+                        { Name: 'StackName', Value: cf.stackName }
                     ],
                     Memory: 1900,
                     Privileged: true,
