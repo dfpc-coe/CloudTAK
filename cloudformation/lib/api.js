@@ -179,7 +179,7 @@ export default {
                         },{
                             Effect: 'Allow',
                             Action: [
-                                'cloudwatch:PutMetricData',
+                                'cloudwatch:PutMetricData'
                             ],
                             Resource: [
                                 '*'
