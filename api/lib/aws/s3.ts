@@ -1,9 +1,8 @@
 import * as S3AWS from '@aws-sdk/client-s3';
+import { Upload } from '@aws-sdk/lib-storage';
 import Err from '@openaddresses/batch-error';
 import { Response } from 'express';
-import {
-    Stream
-} from 'node:stream';
+import { Readable } from 'node:stream';
 
 /**
  * @class
@@ -25,16 +24,22 @@ export default class S3 {
         }
     }
 
-    static async put(key: string, stream: Stream) {
+    static async put(key: string, stream: Readable) {
         try {
             if (!process.env.ASSET_BUCKET) throw new Err(400, null, 'ASSET_BUCKET not set');
 
             const s3 = new S3AWS.S3Client({ region: process.env.AWS_DEFAULT_REGION });
-            await s3.send(new S3AWS.PutObjectCommand({
-                Bucket: process.env.ASSET_BUCKET,
-                Key: key,
-                Body: stream
-            }));
+
+            const upload = new Upload({
+                client: s3,
+                params: {
+                    Bucket: process.env.ASSET_BUCKET,
+                    Key: key,
+                    Body: stream
+                }
+            });
+
+            await upload.done();
         } catch (err) {
             throw new Err(500, new Error(err), 'Failed to upload file');
         }
@@ -72,7 +77,7 @@ export default class S3 {
                 Prefix: fragment
             }));
 
-            return list.Contents;
+            return list.Contents || [];
         } catch (err) {
             throw new Err(500, new Error(err), 'Failed to list files');
         }
@@ -118,23 +123,5 @@ export default class S3 {
                 throw new Err(500, new Error(err), 'Failed to delete files');
             }
         }
-    }
-
-    static async stream(res: Response, name: string) {
-        const s3 = new S3AWS.S3Client({ region: process.env.AWS_DEFAULT_REGION });
-        const s3request = await s3.send(new S3AWS.GetObjectCommand(this.params));
-        const s3stream = s3request.Body;
-
-        s3request.on('httpHeaders', (statusCode: number, headers: object) => {
-            headers['Content-disposition'] = `inline; filename="${name}"`;
-            res.writeHead(statusCode, headers);
-        });
-
-        s3stream.on('error', (err: Error) => {
-            // Could not find object, ignore
-            console.error(err);
-        });
-
-        s3stream.pipe(res);
     }
 }

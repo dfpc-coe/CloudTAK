@@ -28,6 +28,7 @@
         "@aws-sdk/client-s3": "^3.279.0",
         "@aws-sdk/client-secrets-manager": "^3.279.0",
         "@aws-sdk/lib-dynamodb": "^3.279.0",
+        "@aws-sdk/lib-storage": "^3.299.0",
         "@openaddresses/batch-error": "^2.1.4",
         "@openaddresses/batch-generic": "^13.0.1",
         "@openaddresses/batch-schema": "^7.5.0",

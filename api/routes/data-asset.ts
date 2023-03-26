@@ -7,7 +7,8 @@ import Asset from '../lib/types/asset.js';
 // @ts-ignore
 import Data from '../lib/types/data.js';
 import Auth from '../lib/auth.js';
-//import S3 from '../lib/aws/s3.js';
+import S3 from '../lib/aws/s3.js';
+import Stream from 'node:stream';
 
 import { Request, Response } from 'express';
 import Config from '../lib/config.js';
@@ -27,7 +28,7 @@ export default async function router(schema: any, config: Config) {
 
             const data = await Data.from(config.pool, req.params.dataid);
 
-            const list: any[] = [] //await S3.list(`data/${data.id}/`);
+            const list: any[] = await S3.list(`data/${data.id}/`);
 
             return res.json(list);
         } catch (err) {
@@ -60,15 +61,15 @@ export default async function router(schema: any, config: Config) {
         ':dataid': 'integer',
         res: 'res.Standard.json'
     }, async (req: Request, res: Response) => {
+
         let bb;
+        let data: any;
         try {
             await Auth.is_auth(req);
 
-            if (req.headers['content-type']) {
-                req.headers['content-type'] = req.headers['content-type'].split(',')[0];
-            } else {
-                throw new Err(400, null, 'Missing Content-Type Header');
-            }
+            data = await Data.from(config.pool, req.params.dataid);
+
+            if (!req.headers['content-type']) throw new Err(400, null, 'Missing Content-Type Header');
 
             bb = busboy({
                 headers: req.headers,
@@ -80,14 +81,13 @@ export default async function router(schema: any, config: Config) {
             return Err.respond(err, res);
         }
 
-        const assets: any = [];
+        const assets: Promise<void>[] = [];
         bb.on('file', async (fieldname, file, blob) => {
             try {
-                const asset = await Asset.generate(config.pool, {
-                    name: blob.filename
-                });
+                const passThrough = new Stream.PassThrough();
+                file.pipe(passThrough);
 
-                assets.push(asset.upload(file));
+                assets.push(S3.put(`data/${data.id}/${blob.filename}`, passThrough));
             } catch (err) {
                 return Err.respond(err, res);
             }
@@ -95,8 +95,7 @@ export default async function router(schema: any, config: Config) {
             try {
                 if (!assets.length) throw new Err(400, null, 'No Asset Provided');
 
-                const asset = await assets[0];
-                await asset.commit({ storage: true });
+                await assets[0];
 
                 return res.json({
                     status: 200,
@@ -108,26 +107,6 @@ export default async function router(schema: any, config: Config) {
         });
 
         return req.pipe(bb);
-    });
-
-    await schema.patch('/asset/:assetid', {
-        name: 'Update Asset',
-        auth: 'user',
-        group: 'DataAssets',
-        description: 'Update Asset',
-        ':assetid': 'integer',
-        req: 'req.body.PatchAsset.json',
-        res: 'assets.json'
-    }, async (req: Request, res: Response) => {
-        try {
-            await Auth.is_auth(req);
-            const asset = await Asset.from(config.pool, req.params.assetid);
-            await asset.commit(req.body);
-
-            return res.json(asset.serialize());
-        } catch (err) {
-            return Err.respond(err, res);
-        }
     });
 
     await schema.delete('/asset/:assetid', {

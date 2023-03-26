@@ -15,6 +15,7 @@
             :url='uploadURL()'
             :headers='uploadHeaders()'
             @cancel='upload = false'
+            @done='fetchList'
         />
         <None v-else-if='!assets.length' :create='false'/>
     </div>
@@ -57,6 +58,8 @@ export default {
             return window.stdurl(`/api/data/${this.$route.params.dataid}/asset`);
         },
         fetchList: async function() {
+            this.upload = false;
+
             this.loading.list = true;
             this.assets = await window.std(`/api/data/${this.$route.params.dataid}/asset`);
             this.loading.list = false;
