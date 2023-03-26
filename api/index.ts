@@ -95,7 +95,12 @@ export default async function server(config: Config) {
     app.disable('x-powered-by');
     app.use(cors({
         origin: '*',
-        allowedHeaders: ['Content-Type', 'Authorization', 'Content-Length'],
+        allowedHeaders: [
+            'Content-Type',
+            'Authorization',
+            'Content-Length',
+            'x-requested-with'
+        ],
         credentials: true
     }));
 
