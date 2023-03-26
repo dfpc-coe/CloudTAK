@@ -165,7 +165,7 @@
 * @api {get} /data/:dataid/asset List Assets
 * @apiVersion 1.0.0
 * @apiName GET-/data/:dataid/asset
-* @apiGroup Assets
+* @apiGroup DataAssets
 * @apiPermission user
 *
 * @apidescription
@@ -183,7 +183,7 @@
 * @api {get} /asset/:assetid Get Asset
 * @apiVersion 1.0.0
 * @apiName GET-/asset/:assetid
-* @apiGroup Assets
+* @apiGroup DataAssets
 * @apiPermission user
 *
 * @apidescription
@@ -198,20 +198,20 @@
 
 
 /**
-* @api {post} /asset Create Asset
+* @api {post} /data/:dataid/asset Create Asset
 * @apiVersion 1.0.0
-* @apiName POST-/asset
-* @apiGroup Assets
+* @apiName POST-/data/:dataid/asset
+* @apiGroup DataAssets
 * @apiPermission user
 *
 * @apidescription
 *   Create a new asset
 *
-* @apiParam {integer} assetid param
+* @apiParam {integer} dataid param
 *
 *
 *
-* @apiSchema {jsonschema=../schema/assets.json} apiSuccess
+* @apiSchema {jsonschema=../schema/res.Standard.json} apiSuccess
 */
 
 
@@ -219,7 +219,7 @@
 * @api {patch} /asset/:assetid Update Asset
 * @apiVersion 1.0.0
 * @apiName PATCH-/asset/:assetid
-* @apiGroup Assets
+* @apiGroup DataAssets
 * @apiPermission user
 *
 * @apidescription
@@ -237,7 +237,7 @@
 * @api {delete} /asset/:assetid Delete Asset
 * @apiVersion 1.0.0
 * @apiName DELETE-/asset/:assetid
-* @apiGroup Assets
+* @apiGroup DataAssets
 * @apiPermission user
 *
 * @apidescription
@@ -255,7 +255,7 @@
 * @api {get} /asset/:assetid/raw Raw Asset
 * @apiVersion 1.0.0
 * @apiName GET-/asset/:assetid/raw
-* @apiGroup Assets
+* @apiGroup DataAssets
 * @apiPermission user
 *
 * @apidescription

@@ -1,15 +1,20 @@
 <template>
 <div class='card'>
-    <div class='card-header'>
-        <div class='row row-cards'>
-            <div class='col-md-4'>
-                <h3 class='card-title'>Data Assets</h3>
-            </div>
+    <div class='card-header d-flex'>
+        <h3 class='card-title'>Data Assets</h3>
+
+        <div class='ms-auto'>
+            <PlusIcon @click='upload = true' class='cursor-pointer'/>
         </div>
     </div>
 
     <div class='card-body'>
         <TablerLoading v-if='loading.list'/>
+        <Upload
+            v-else-if='upload'
+            :url='uploadURL()'
+            @cancel='upload = false'
+        />
         <None v-else-if='!assets.length' :create='false'/>
     </div>
 </div>
@@ -17,8 +22,10 @@
 
 <script>
 import {
+    PlusIcon
 } from 'vue-tabler-icons'
 import None from '../cards/None.vue';
+import Upload from '../util/Upload.vue';
 import {
     TablerLoading
 } from '@tak-ps/vue-tabler';
@@ -29,6 +36,7 @@ export default {
     },
     data: function() {
         return {
+            upload: false,
             loading: {
                 list: true
             },
@@ -39,6 +47,9 @@ export default {
         await this.fetchList();
     },
     methods: {
+        uploadURL: function() {
+            return window.stdurl(`/api/data/${this.$route.params.dataid}/asset`);
+        },
         fetchList: async function() {
             this.loading.list = true;
             this.assets = await window.std(`/api/data/${this.$route.params.dataid}/asset`);
@@ -47,6 +58,8 @@ export default {
     },
     components: {
         None,
+        Upload,
+        PlusIcon,
         TablerLoading
     }
 }
