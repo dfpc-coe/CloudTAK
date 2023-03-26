@@ -8,7 +8,25 @@
         </div>
     </div>
 
-    <div class='card-body'>
+    <div v-if='!upload && !loading.list && list.assets.length'>
+        <table class="table table-vcenter card-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Size</th>
+                    <th>Updated</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr :key='asset.name' v-for='asset in list.assets'>
+                    <td v-text='asset.name'></td>
+                    <td v-text='asset.size'></td>
+                    <td><TablerEpoch :date='asset.updated'/></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div v-else class='card-body'>
         <TablerLoading v-if='loading.list'/>
         <Upload
             v-else-if='upload'
@@ -17,7 +35,7 @@
             @cancel='upload = false'
             @done='fetchList'
         />
-        <None v-else-if='!assets.length' :create='false'/>
+        <None v-else-if='!list.assets.length' :create='false'/>
     </div>
 </div>
 </template>
@@ -29,7 +47,8 @@ import {
 import None from '../cards/None.vue';
 import Upload from '../util/Upload.vue';
 import {
-    TablerLoading
+    TablerLoading,
+    TablerEpoch
 } from '@tak-ps/vue-tabler';
 
 export default {
@@ -42,7 +61,10 @@ export default {
             loading: {
                 list: true
             },
-            assets: []
+            list: {
+                total: 0,
+                assets: []
+            }
         };
     },
     mounted: async function() {
@@ -61,7 +83,7 @@ export default {
             this.upload = false;
 
             this.loading.list = true;
-            this.assets = await window.std(`/api/data/${this.$route.params.dataid}/asset`);
+            this.list = await window.std(`/api/data/${this.$route.params.dataid}/asset`);
             this.loading.list = false;
         }
     },
@@ -69,7 +91,8 @@ export default {
         None,
         Upload,
         PlusIcon,
-        TablerLoading
+        TablerLoading,
+        TablerEpoch
     }
 }
 </script>
