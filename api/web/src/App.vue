@@ -133,7 +133,7 @@ export default {
     mounted: async function() {
         const url = window.stdurl('/api');
 
-        if (window.location.host === 'localhost') {
+        if (window.location.hostname === 'localhost') {
             url.protocol = 'ws:';
         } else {
             url.protocol = 'wss:';

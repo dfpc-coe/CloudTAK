@@ -29,6 +29,9 @@ export default {
     },
     data: function() {
         return {
+            loading: {
+                list: true
+            },
             assets: []
         };
     },
