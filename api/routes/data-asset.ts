@@ -16,7 +16,7 @@ export default async function router(schema: any, config: Config) {
     await schema.get('/data/:dataid/asset', {
         name: 'List Assets',
         auth: 'user',
-        group: 'Assets',
+        group: 'DataAssets',
         description: 'List Assets',
         ':dataid': 'integer',
         query: 'req.query.ListAssets.json',
@@ -29,7 +29,6 @@ export default async function router(schema: any, config: Config) {
 
             const list: any[] = [] //await S3.list(`data/${data.id}/`);
 
-console.error(list);
             return res.json(list);
         } catch (err) {
             return Err.respond(err, res);
@@ -39,7 +38,7 @@ console.error(list);
     await schema.get('/asset/:assetid', {
         name: 'Get Asset',
         auth: 'user',
-        group: 'Assets',
+        group: 'DataAssets',
         description: 'Get single asset',
         ':assetid': 'integer',
         res: 'assets.json'
@@ -53,17 +52,18 @@ console.error(list);
         }
     });
 
-    await schema.post('/asset', {
+    await schema.post('/data/:dataid/asset', {
         name: 'Create Asset',
         auth: 'user',
-        group: 'Assets',
+        group: 'DataAssets',
         description: 'Create a new asset',
-        ':assetid': 'integer',
-        res: 'assets.json'
+        ':dataid': 'integer',
+        res: 'res.Standard.json'
     }, async (req: Request, res: Response) => {
         let bb;
         try {
             await Auth.is_auth(req);
+
             if (req.headers['content-type']) {
                 req.headers['content-type'] = req.headers['content-type'].split(',')[0];
             } else {
@@ -98,7 +98,10 @@ console.error(list);
                 const asset = await assets[0];
                 await asset.commit({ storage: true });
 
-                return res.json(asset.serialize());
+                return res.json({
+                    status: 200,
+                    message: 'Asset Uploaded'
+                });
             } catch (err) {
                 Err.respond(err, res);
             }
@@ -110,7 +113,7 @@ console.error(list);
     await schema.patch('/asset/:assetid', {
         name: 'Update Asset',
         auth: 'user',
-        group: 'Assets',
+        group: 'DataAssets',
         description: 'Update Asset',
         ':assetid': 'integer',
         req: 'req.body.PatchAsset.json',
@@ -130,7 +133,7 @@ console.error(list);
     await schema.delete('/asset/:assetid', {
         name: 'Delete Asset',
         auth: 'user',
-        group: 'Assets',
+        group: 'DataAssets',
         description: 'Delete Asset',
         ':assetid': 'integer',
         res: 'res.Standard.json'
@@ -154,7 +157,7 @@ console.error(list);
     await schema.get('/asset/:assetid/raw', {
         name: 'Raw Asset',
         auth: 'user',
-        group: 'Assets',
+        group: 'DataAssets',
         description: 'Get single raw asset',
         ':assetid': 'integer'
     }, async (req: Request, res: Response) => {
