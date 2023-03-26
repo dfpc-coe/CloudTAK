@@ -13,6 +13,7 @@
         <Upload
             v-else-if='upload'
             :url='uploadURL()'
+            :headers='uploadHeaders()'
             @cancel='upload = false'
         />
         <None v-else-if='!assets.length' :create='false'/>
@@ -47,6 +48,11 @@ export default {
         await this.fetchList();
     },
     methods: {
+        uploadHeaders: function() {
+            return {
+                Authorization: `Bearer ${localStorage.token}`
+            };
+        },
         uploadURL: function() {
             return window.stdurl(`/api/data/${this.$route.params.dataid}/asset`);
         },
