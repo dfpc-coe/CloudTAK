@@ -1,6 +1,6 @@
 <template>
 <div class='card-body'>
-    <div class='row' :class='{ "none": progress !== 0 }'>
+    <div class='row' :class='{ "d-none": progress !== 0 }'>
         <div class='col-12 d-flex justify-content-center mb-3' v-text='label'></div>
         <div class='col-12 d-flex justify-content-center'>
             <div class='btn-list'>
@@ -21,28 +21,9 @@
         </form>
     </div>
     <div v-if='progress && progress < 101' class='row'>
-        <TablerLoading/>
-
-        <div class='col-12 d-flex justify-content-center' v-text='name'></div>
-
-        <TablerProgress :progress='progress'/>
+        <TablerLoading :desc='`Uploading ${name}`'/>
+        <TablerProgress :percent='progress / 100'/>
     </div>
-        <div v-else-if='progress === 101'>
-            <div class='flex flex--center-main'>
-                <svg class='icon color-green w60 h60'><use href='#icon-check'/></svg>
-            </div>
-            <div class='align-center'>Upload Complete</div>
-            <div class='col col--12 clearfix pt12'>
-                <template v-if='single'>
-                    <button @click='$emit("ok")' class='btn round btn--stroke fr btn--gray'>OK</button>
-                </template>
-                <template v-else>
-                    <button @click='refresh' class='btn round btn--stroke fr btn--gray'>
-                        <svg class='fl icon' style='margin-top: 6px;'><use href='#icon-refresh'/></svg>Upload
-                    </button>
-                </template>
-            </div>
-        </div>
 </div>
 </template>
 
@@ -55,10 +36,6 @@ import {
 export default {
     name: 'UploadFile',
     props: {
-        single: {
-            type: Boolean,
-            default: false
-        },
         url: {
             type: URL,
             required: true
@@ -120,7 +97,7 @@ export default {
 
                     this.progress = 101;
 
-                    this.$emit('done', JSON.parse(xhr.responseText));
+                    this.$emit('done');
                 });
 
                 formData.append('file', file)

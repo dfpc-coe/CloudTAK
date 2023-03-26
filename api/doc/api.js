@@ -216,24 +216,6 @@
 
 
 /**
-* @api {patch} /asset/:assetid Update Asset
-* @apiVersion 1.0.0
-* @apiName PATCH-/asset/:assetid
-* @apiGroup DataAssets
-* @apiPermission user
-*
-* @apidescription
-*   Update Asset
-*
-* @apiParam {integer} assetid param
-*
-*
-*
-* @apiSchema {jsonschema=../schema/assets.json} apiSuccess
-*/
-
-
-/**
 * @api {delete} /asset/:assetid Delete Asset
 * @apiVersion 1.0.0
 * @apiName DELETE-/asset/:assetid
