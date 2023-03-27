@@ -12,7 +12,7 @@
 
                         <div class='ms-auto'>
                             <div class='btn-list'>
-                                <a @click='query.shown = !query.shown' class="cursor-pointer btn btn-secondary">
+                                <a @click='query = !query' class="cursor-pointer btn btn-secondary">
                                     <SearchIcon/>
                                 </a>
 
@@ -30,7 +30,7 @@
     <div class='page-body'>
         <div class='container-xl'>
             <div class='row row-deck row-cards'>
-                <div v-if='query.shown' class="col-lg-12">
+                <div v-if='query' class="col-lg-12">
                     <div class="card">
                         <div class="card-body">
                             <label class="form-label">Connection Search</label>
