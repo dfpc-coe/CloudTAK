@@ -180,24 +180,6 @@
 
 
 /**
-* @api {get} /asset/:assetid Get Asset
-* @apiVersion 1.0.0
-* @apiName GET-/asset/:assetid
-* @apiGroup DataAssets
-* @apiPermission user
-*
-* @apidescription
-*   Get single asset
-*
-* @apiParam {integer} assetid param
-*
-*
-*
-* @apiSchema {jsonschema=../schema/assets.json} apiSuccess
-*/
-
-
-/**
 * @api {post} /data/:dataid/asset Create Asset
 * @apiVersion 1.0.0
 * @apiName POST-/data/:dataid/asset
@@ -216,16 +198,18 @@
 
 
 /**
-* @api {delete} /asset/:assetid Delete Asset
+* @api {delete} /data/:dataid/asset/:asset.:ext Delete Asset
 * @apiVersion 1.0.0
-* @apiName DELETE-/asset/:assetid
+* @apiName DELETE-/data/:dataid/asset/:asset.:ext
 * @apiGroup DataAssets
 * @apiPermission user
 *
 * @apidescription
 *   Delete Asset
 *
-* @apiParam {integer} assetid param
+* @apiParam {integer} dataid param
+* @apiParam {string} asset param
+* @apiParam {string} ext param
 *
 *
 *
@@ -234,16 +218,17 @@
 
 
 /**
-* @api {get} /asset/:assetid/raw Raw Asset
+* @api {get} /data/:dataid/asset/:asset Raw Asset
 * @apiVersion 1.0.0
-* @apiName GET-/asset/:assetid/raw
+* @apiName GET-/data/:dataid/asset/:asset
 * @apiGroup DataAssets
 * @apiPermission user
 *
 * @apidescription
 *   Get single raw asset
 *
-* @apiParam {integer} assetid param
+* @apiParam {integer} dataid param
+* @apiParam {string} asset param
 *
 *
 *

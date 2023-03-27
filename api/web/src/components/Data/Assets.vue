@@ -21,7 +21,12 @@
                 <tr :key='asset.name' v-for='asset in list.assets'>
                     <td v-text='asset.name'></td>
                     <td v-text='asset.size'></td>
-                    <td><TablerEpoch :date='asset.updated'/></td>
+                    <td class='d-flex'>
+                        <TablerEpoch :date='asset.updated'/>
+                        <div class='ms-auto'>
+                            <TrashIcon @click='deleteAsset(asset)' class='cursor-pointer'/>
+                        </div>
+                    </td>
                 </tr>
             </tbody>
         </table>
@@ -42,7 +47,8 @@
 
 <script>
 import {
-    PlusIcon
+    PlusIcon,
+    TrashIcon
 } from 'vue-tabler-icons'
 import None from '../cards/None.vue';
 import Upload from '../util/Upload.vue';
@@ -79,6 +85,14 @@ export default {
         uploadURL: function() {
             return window.stdurl(`/api/data/${this.$route.params.dataid}/asset`);
         },
+        deleteAsset: async function(asset) {
+            this.loading.list = true;
+            await window.std(`/api/data/${this.$route.params.dataid}/asset/${asset.name}`, {
+                method: 'DELETE'
+            });
+
+            this.fetchList();
+        },
         fetchList: async function() {
             this.upload = false;
 
@@ -91,6 +105,7 @@ export default {
         None,
         Upload,
         PlusIcon,
+        TrashIcon,
         TablerLoading,
         TablerEpoch
     }
