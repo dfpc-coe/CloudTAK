@@ -110,7 +110,6 @@ export default class TAKPool extends Map<number, TAKPoolClient> {
             console.error(`not ok - ${conn.id} @ timeout`);
             this.retry(pooledClient);
         }).on('ping', async () => {
-            console.error(`ok - ${conn.id} @ ping`);
             if (this.stackName !== 'test') {
                 try {
                     await this.metrics.post(conn.id);
