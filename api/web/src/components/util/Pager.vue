@@ -48,7 +48,7 @@ import {
 
 export default {
     name: 'Pager',
-    props: [ 'total', 'limit' ],
+    props: [ 'total', 'limit', 'current' ],
     data: function() {
         return this.create();
     },
@@ -58,7 +58,6 @@ export default {
 
             this.spread = set.spread;
             this.middle = set.middle;
-            this.current = set.current;
             this.end = set.end;
         },
         limit: function() {
@@ -66,7 +65,6 @@ export default {
 
             this.spread = set.spread;
             this.middle = set.middle;
-            this.current = set.current;
             this.end = set.end;
         },
         current: function() {
@@ -111,8 +109,7 @@ export default {
             };
         },
         page: function(page) {
-            this.current = page;
-            this.$emit('page', this.current);
+            this.$emit('page', page);
         }
     },
     components: {
