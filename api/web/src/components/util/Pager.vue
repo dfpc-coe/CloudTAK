@@ -48,7 +48,20 @@ import {
 
 export default {
     name: 'Pager',
-    props: [ 'total', 'limit', 'current' ],
+    props: {
+        total: {
+            type: Number,
+            required: true
+        },
+        limit: {
+            type: Number,
+            required: true
+        },
+        current: {
+            type: Number,
+            required: true
+        },
+    },
     data: function() {
         return this.create();
     },
@@ -104,7 +117,6 @@ export default {
             return {
                 spread: spread,
                 middle: middleAr,
-                current: 0,
                 end: end
             };
         },

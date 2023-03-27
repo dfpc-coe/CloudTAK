@@ -12,7 +12,7 @@
 
                         <div class='ms-auto'>
                             <div class='btn-list'>
-                                <a @click='query.shown = !query.shown' class="cursor-pointer btn btn-secondary">
+                                <a @click='query = !query' class="cursor-pointer btn btn-secondary">
                                     <SearchIcon/>
                                 </a>
 
@@ -30,12 +30,12 @@
     <div class='page-body'>
         <div class='container-xl'>
             <div class='row row-deck row-cards'>
-                <div v-if='query.shown' class="col-lg-12">
+                <div v-if='query' class="col-lg-12">
                     <div class="card">
                         <div class="card-body">
                             <label class="form-label">Layer Search</label>
                             <div class="input-icon mb-3">
-                                <input v-model='query.search' type="text" class="form-control" placeholder="Search…">
+                                <input v-model='paging.filter' type="text" class="form-control" placeholder="Search…">
                                 <span class="input-icon-addon">
                                     <SearchIcon/>
                                 </span>
@@ -53,26 +53,31 @@
                         label='Layers'
                         @create='$router.push("/layer/new")'
                     />
-                    <div :key='layer.id' v-for='layer in list.layers' class="col-lg-12">
-                        <div class="card">
-                            <div class="card-header">
-                                <LayerStatus :layer='layer'/>
+                    <template v-else>
+                        <div :key='layer.id' v-for='layer in list.layers' class="col-lg-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <LayerStatus :layer='layer'/>
 
-                                <a @click='$router.push(`/layer/${layer.id}`)' class="card-title cursor-pointer" v-text='layer.name'></a>
+                                    <a @click='$router.push(`/layer/${layer.id}`)' class="card-title cursor-pointer" v-text='layer.name'></a>
 
-                                <div class='ms-auto'>
-                                    <div class='btn-list'>
-                                        <SettingsIcon class='cursor-pointer' @click='$router.push(`/layer/${layer.id}/edit`)'/>
+                                    <div class='ms-auto'>
+                                        <div class='btn-list'>
+                                            <SettingsIcon class='cursor-pointer' @click='$router.push(`/layer/${layer.id}/edit`)'/>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="card-body" v-text='layer.description'>
-                            </div>
-                            <div class="card-footer">
-                                Last updated <span v-text='timeDiff(layer.updated)'/>
+                                <div class="card-body" v-text='layer.description'>
+                                </div>
+                                <div class="card-footer">
+                                    Last updated <span v-text='timeDiff(layer.updated)'/>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                        <div class="col-lg-12">
+                            <Pager @page='paging.page = $event' :current='paging.page'  :total='list.total' :limit='paging.limit'/>
+                        </div>
+                    </template>
                 </template>
             </div>
         </div>
@@ -84,6 +89,7 @@
 
 <script>
 import None from './cards/None.vue';
+import Pager from './util/Pager.vue'
 import PageFooter from './PageFooter.vue';
 import LayerStatus from './Layer/Status.vue';
 import {
@@ -100,19 +106,25 @@ export default {
         return {
             err: false,
             loading: true,
-            query: {
-                shown: false,
-                search: ''
+            query: false,
+            paging: {
+                filter: '',
+                limit: 10,
+                page: 0
             },
             list: {
+                total: 0,
                 layers: []
             }
         }
     },
     watch: {
-        'query.search': function() {
-            this.fetchList();
-        }
+       'paging.page': async function() {
+           await this.fetchList();
+       },
+       'paging.filter': async function() {
+           await this.fetchList();
+       },
     },
     mounted: async function() {
         await this.fetchList();
@@ -136,13 +148,16 @@ export default {
         fetchList: async function() {
             this.loading = true;
             const url = window.stdurl('/api/layer');
-            if (this.query.shown && this.query.search) url.searchParams.append('filter', this.query.search);
+            if (this.query && this.paging.filter) url.searchParams.append('filter', this.paging.filter);
+            url.searchParams.append('limit', this.paging.limit);
+            url.searchParams.append('page', this.paging.page);
             this.list = await window.std(url);
             this.loading = false;
         }
     },
     components: {
         None,
+        Pager,
         SettingsIcon,
         SearchIcon,
         PageFooter,
