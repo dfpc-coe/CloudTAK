@@ -90,9 +90,9 @@ export default class S3 {
      * @param {object}  opts            Options
      * @param {boolean} [opts.recurse]      Recursive Delete on key
      */
-    static async del(key: string, opts = {
+    static async del(key: string, opts: {
         recurse: Boolean
-    }) {
+    } = { recurse: false }) {
         if (!process.env.ASSET_BUCKET) return;
         const s3 = new S3AWS.S3Client({ region: process.env.AWS_DEFAULT_REGION });
 

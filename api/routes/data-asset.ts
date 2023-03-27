@@ -45,23 +45,6 @@ export default async function router(schema: any, config: Config) {
         }
     });
 
-    await schema.get('/asset/:assetid', {
-        name: 'Get Asset',
-        auth: 'user',
-        group: 'DataAssets',
-        description: 'Get single asset',
-        ':assetid': 'integer',
-        res: 'assets.json'
-    }, async (req: Request, res: Response) => {
-        try {
-            await Auth.is_auth(req);
-            const asset = await Asset.from(config.pool, req.params.assetid);
-            return res.json(asset.serialize());
-        } catch (err) {
-            return Err.respond(err, res);
-        }
-    });
-
     await schema.post('/data/:dataid/asset', {
         name: 'Create Asset',
         auth: 'user',
@@ -118,20 +101,22 @@ export default async function router(schema: any, config: Config) {
         return req.pipe(bb);
     });
 
-    await schema.delete('/asset/:assetid', {
+    await schema.delete('/data/:dataid/asset/:asset.:ext', {
         name: 'Delete Asset',
         auth: 'user',
         group: 'DataAssets',
         description: 'Delete Asset',
-        ':assetid': 'integer',
+        ':dataid': 'integer',
+        ':asset': 'string',
+        ':ext': 'string',
         res: 'res.Standard.json'
     }, async (req: Request, res: Response) => {
         try {
             await Auth.is_auth(req);
-            const asset = await Asset.from(config.pool, req.params.assetid);
-            await asset.delete();
 
-            await fs.unlink(new URL(`../assets/${asset.id}${path.parse(asset.name).ext}`, import.meta.url));
+            const data = await Data.from(config.pool, req.params.dataid);
+
+            await S3.del(`data/${data.id}/${req.params.asset}.${req.params.ext}`);
 
             return res.json({
                 status: 200,
@@ -142,28 +127,18 @@ export default async function router(schema: any, config: Config) {
         }
     });
 
-    await schema.get('/asset/:assetid/raw', {
+    await schema.get('/data/:dataid/asset/:asset', {
         name: 'Raw Asset',
         auth: 'user',
         group: 'DataAssets',
         description: 'Get single raw asset',
-        ':assetid': 'integer'
+        ':dataid': 'integer',
+        ':asset': 'string'
     }, async (req: Request, res: Response) => {
         try {
             await Auth.is_auth(req);
 
-            // this should be optimized to read directly... maybe store the extension in the DB?
-            // could also allow user restricted files in the future..
-            let afile = null;
-            for (const file of await fs.readdir(new URL('../assets/', import.meta.url))) {
-                if (path.parse(file).name === String(req.params.assetid)) {
-                    afile = file;
-                    break;
-                }
-            }
-
-            res.contentType(afile);
-            res.send(await fs.readFile(new URL('../assets/' + afile, import.meta.url)));
+            res.send({});
         } catch (err) {
             return Err.respond(err, res);
         }
