@@ -3,12 +3,11 @@ import busboy from 'busboy';
 import fs from 'node:fs/promises';
 import path from 'path';
 // @ts-ignore
-import Asset from '../lib/types/asset.js';
-// @ts-ignore
 import Data from '../lib/types/data.js';
 import Auth from '../lib/auth.js';
 import S3 from '../lib/aws/s3.js';
 import Stream from 'node:stream';
+import Batch from '../lib/aws/batch.js';
 
 import { Request, Response } from 'express';
 import Config from '../lib/config.js';
@@ -99,6 +98,33 @@ export default async function router(schema: any, config: Config) {
         });
 
         return req.pipe(bb);
+    });
+
+    await schema.post('/data/:dataid/asset/:asset.:ext', {
+        name: 'Convert Asset',
+        auth: 'user',
+        group: 'DataAssets',
+        description: 'Convert Asset',
+        ':dataid': 'integer',
+        ':asset': 'string',
+        ':ext': 'string',
+        body: 'req.ConvertAsset.json',
+        res: 'res.Standard.json'
+    }, async (req: Request, res: Response) => {
+        try {
+            await Auth.is_auth(req);
+
+            const data = await Data.from(config.pool, req.params.dataid);
+
+            await Batch.submit(config, data, `${req.params.asset}.${req.params.ext}`);
+
+            return res.json({
+                status: 200,
+                message: 'Conversion Initiated'
+            });
+        } catch (err) {
+            return Err.respond(err, res);
+        }
     });
 
     await schema.delete('/data/:dataid/asset/:asset.:ext', {

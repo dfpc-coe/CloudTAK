@@ -198,6 +198,26 @@
 
 
 /**
+* @api {post} /data/:dataid/asset/:asset.:ext Convert Asset
+* @apiVersion 1.0.0
+* @apiName POST-/data/:dataid/asset/:asset.:ext
+* @apiGroup DataAssets
+* @apiPermission user
+*
+* @apidescription
+*   Convert Asset
+*
+* @apiParam {integer} dataid param
+* @apiParam {string} asset param
+* @apiParam {string} ext param
+*
+*
+* @apiSchema (Body) {jsonschema=../schema/req.ConvertAsset.json} apiParam
+* @apiSchema {jsonschema=../schema/res.Standard.json} apiSuccess
+*/
+
+
+/**
 * @api {delete} /data/:dataid/asset/:asset.:ext Delete Asset
 * @apiVersion 1.0.0
 * @apiName DELETE-/data/:dataid/asset/:asset.:ext
