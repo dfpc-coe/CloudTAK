@@ -187,7 +187,6 @@ export default {
                         },{
                             Effect: 'Allow',
                             Action: [
-                                'cloudwatch:Describe*',
                                 'cloudwatch:Get*',
                                 'cloudwatch:List*',
                                 'cloudwatch:PutMetricAlarm',
@@ -230,6 +229,26 @@ export default {
                             ],
                             Resource: [
                                 cf.join(['arn:', cf.partition, ':events:', cf.region, ':', cf.accountId, ':rule/', cf.stackName, '-*'])
+                            ]
+                        },{
+                            Effect: 'Allow',
+                            Action: [
+                                'batch:SubmitJob',
+                                'batch:ListJobs',
+                                'batch:DescribeJobs'
+                            ],
+                            Resource: [
+                                cf.join(['arn:', cf.partition, ':batch:', cf.region, ':', cf.accountId, ':*'])
+                            ]
+                        },{
+                            Effect: 'Allow',
+                            Action: [
+                                'logs:GetLogEvents',
+                                'batch:CancelJob',
+                                'batch:DescribeJobs'
+                            ],
+                            Resource: [
+                                '*'
                             ]
                         }]
                     }
