@@ -93,8 +93,12 @@ export default {
             return window.stdurl(`/api/data/${this.$route.params.dataid}/asset`);
         },
         downloadAsset: async function(asset) {
+            const url = window.stdurl(`/api/data/${this.$route.params.dataid}/asset/${asset.name}`);
+            url.searchParams.append('token', localStorage.token);
+            window.open(url, "_blank")
         },
         transformAsset: async function(asset) {
+            window.stdurl(`/api/data/${this.$route.params.dataid}/asset/${asset.name}`);
         },
         deleteAsset: async function(asset) {
             this.loading.list = true;

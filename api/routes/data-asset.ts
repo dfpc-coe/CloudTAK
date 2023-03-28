@@ -140,9 +140,7 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            const data = await Data.from(config.pool, req.params.dataid);
-
-            await S3.del(`data/${data.id}/${req.params.asset}.${req.params.ext}`);
+            await S3.del(`data/${req.params.dataid}/${req.params.asset}.${req.params.ext}`);
 
             return res.json({
                 status: 200,
@@ -153,18 +151,21 @@ export default async function router(schema: any, config: Config) {
         }
     });
 
-    await schema.get('/data/:dataid/asset/:asset', {
+    await schema.get('/data/:dataid/asset/:asset.:ext', {
         name: 'Raw Asset',
         auth: 'user',
         group: 'DataAssets',
         description: 'Get single raw asset',
         ':dataid': 'integer',
-        ':asset': 'string'
+        ':asset': 'string',
+        ':ext': 'string'
     }, async (req: Request, res: Response) => {
         try {
-            await Auth.is_auth(req);
+            await Auth.is_auth(req, true);
 
-            res.send({});
+            const stream = await S3.get(`data/${req.params.dataid}/${req.params.asset}.${req.params.ext}`);
+
+            stream.pipe(res);
         } catch (err) {
             return Err.respond(err, res);
         }

@@ -45,6 +45,24 @@ export default class S3 {
         }
     }
 
+    static async get(key: string): Promise<Readable> {
+        try {
+            if (!process.env.ASSET_BUCKET) throw new Err(400, null, 'ASSET_BUCKET not set');
+
+            const s3 = new S3AWS.S3Client({ region: process.env.AWS_DEFAULT_REGION });
+
+            const res = await s3.send(new S3AWS.GetObjectCommand({
+                Bucket: process.env.ASSET_BUCKET,
+                Key: key
+            }));
+
+            const read = res.Body as Readable;
+            return read;
+        } catch (err) {
+            throw new Err(500, new Error(err), 'Failed to get file');
+        }
+    }
+
     static async exists(key: string) {
         try {
             if (!process.env.ASSET_BUCKET) throw new Err(400, null, 'ASSET_BUCKET not set');
