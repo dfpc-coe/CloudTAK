@@ -20,7 +20,9 @@
             <tbody>
                 <tr :key='asset.name' v-for='asset in list.assets'>
                     <td v-text='asset.name'></td>
-                    <td v-text='asset.size'></td>
+                    <td>
+                        <TablerBytes :bytes='asset.size'/>
+                    </td>
                     <td class='d-flex'>
                         <TablerEpoch :date='asset.updated'/>
                         <div class='ms-auto'>
@@ -54,6 +56,7 @@ import None from '../cards/None.vue';
 import Upload from '../util/Upload.vue';
 import {
     TablerLoading,
+    TablerBytes,
     TablerEpoch
 } from '@tak-ps/vue-tabler';
 
@@ -107,6 +110,7 @@ export default {
         PlusIcon,
         TrashIcon,
         TablerLoading,
+        TablerBytes,
         TablerEpoch
     }
 }
