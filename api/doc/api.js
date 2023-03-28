@@ -238,9 +238,9 @@
 
 
 /**
-* @api {get} /data/:dataid/asset/:asset Raw Asset
+* @api {get} /data/:dataid/asset/:asset.:ext Raw Asset
 * @apiVersion 1.0.0
-* @apiName GET-/data/:dataid/asset/:asset
+* @apiName GET-/data/:dataid/asset/:asset.:ext
 * @apiGroup DataAssets
 * @apiPermission user
 *
@@ -249,6 +249,7 @@
 *
 * @apiParam {integer} dataid param
 * @apiParam {string} asset param
+* @apiParam {string} ext param
 *
 *
 *
