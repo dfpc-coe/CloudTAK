@@ -25,8 +25,10 @@
                     </td>
                     <td class='d-flex'>
                         <TablerEpoch :date='asset.updated'/>
-                        <div class='ms-auto'>
+                        <div class='ms-auto btn-list'>
                             <TrashIcon @click='deleteAsset(asset)' class='cursor-pointer'/>
+                            <TransformIcon @click='transformAsset(asset)' class='cursor-pointer'/>
+                            <DownloadIcon @click='downloadAsset(asset)' class='cursor-pointer'/>
                         </div>
                     </td>
                 </tr>
@@ -50,7 +52,9 @@
 <script>
 import {
     PlusIcon,
-    TrashIcon
+    TrashIcon,
+    DownloadIcon,
+    TransformIcon,
 } from 'vue-tabler-icons'
 import None from '../cards/None.vue';
 import Upload from '../util/Upload.vue';
@@ -88,6 +92,10 @@ export default {
         uploadURL: function() {
             return window.stdurl(`/api/data/${this.$route.params.dataid}/asset`);
         },
+        downloadAsset: async function(asset) {
+        },
+        transformAsset: async function(asset) {
+        },
         deleteAsset: async function(asset) {
             this.loading.list = true;
             await window.std(`/api/data/${this.$route.params.dataid}/asset/${asset.name}`, {
@@ -109,6 +117,8 @@ export default {
         Upload,
         PlusIcon,
         TrashIcon,
+        TransformIcon,
+        DownloadIcon,
         TablerLoading,
         TablerBytes,
         TablerEpoch
