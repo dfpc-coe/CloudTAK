@@ -12,7 +12,7 @@ export default class Batch {
         const batch = new AWSBatch.BatchClient({ region: process.env.AWS_DEFAULT_REGION });
 
         const batchres = await batch.send(new AWSBatch.SubmitJobCommand({
-            jobName: `data-${data.id}-${asset}`,
+            jobName: `data-${data.id}-${asset.replace('.', '_')}`,
             jobQueue: `${config.StackName}-queue`,
             jobDefinition: `${config.StackName}-data-job`,
             containerOverrides: {
