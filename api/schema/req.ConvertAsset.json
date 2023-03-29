@@ -6,9 +6,10 @@
     "properties": {
         "format": {
             "type": "string",
+            "default": "GeoJSON",
             "enum": [
-                "geojson",
-                "pmtiles"
+                "GeoJSON",
+                "PMTiles"
             ]
         }
     }

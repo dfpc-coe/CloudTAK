@@ -27,7 +27,7 @@
                         <TablerEpoch :date='asset.updated'/>
                         <div class='ms-auto btn-list'>
                             <TrashIcon @click='deleteAsset(asset)' class='cursor-pointer'/>
-                            <TransformIcon @click='transformAsset(asset)' class='cursor-pointer'/>
+                            <TransformIcon @click='initTransform(asset)' class='cursor-pointer'/>
                             <DownloadIcon @click='downloadAsset(asset)' class='cursor-pointer'/>
                         </div>
                     </td>
@@ -46,6 +46,8 @@
         />
         <None v-else-if='!list.assets.length' :create='false'/>
     </div>
+
+    <TransformModal v-if='transform.shown' :asset='transform.asset' @close='initTransform'/>
 </div>
 </template>
 
@@ -57,6 +59,7 @@ import {
     TransformIcon,
 } from 'vue-tabler-icons'
 import None from '../cards/None.vue';
+import TransformModal from './TransformModal.vue';
 import Upload from '../util/Upload.vue';
 import {
     TablerLoading,
@@ -73,6 +76,10 @@ export default {
             upload: false,
             loading: {
                 list: true
+            },
+            transform: {
+                shown: false,
+                asset: {}
             },
             list: {
                 total: 0,
@@ -97,8 +104,14 @@ export default {
             url.searchParams.append('token', localStorage.token);
             window.open(url, "_blank")
         },
-        transformAsset: async function(asset) {
-            window.stdurl(`/api/data/${this.$route.params.dataid}/asset/${asset.name}`);
+        initTransform: function(asset) {
+            if (!asset) {
+                this.transform.asset = {};
+                this.transform.shown = false;
+            } else {
+                this.transform.asset = asset;
+                this.transform.shown = true;
+            }
         },
         deleteAsset: async function(asset) {
             this.loading.list = true;
@@ -125,7 +138,8 @@ export default {
         DownloadIcon,
         TablerLoading,
         TablerBytes,
-        TablerEpoch
+        TablerEpoch,
+        TransformModal
     }
 }
 </script>
