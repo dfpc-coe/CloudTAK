@@ -6,7 +6,15 @@
             <h3 class='subtitle-header'>Asset Transform:</h3>
 
             <TablerLoading v-if='loading'/>
-            <GenericSchema v-else v-model='transform' :schema='schema'/>
+            <template v-else>
+                <GenericSchema v-model='transform' :schema='schema'/>
+
+                <div class='col-12 d-flex'>
+                    <div class='ms-auto'>
+                        <button @click='submit' class='btn btn-primary'>Submit</button>
+                    </div>
+                </div>
+            </template>
         </div>
     </TablerModal>
 </template>
@@ -47,6 +55,13 @@ export default {
             this.schema = schema.body;
 
             this.loading = false;
+        },
+        submit: async function() {
+            await window.std(`/api/data/${this.$route.params.dataid}/asset/${this.asset.name}`, {
+                method: 'POST',
+                body: this.transform
+            });
+            this.close();
         },
         close: function() {
             this.$emit('close');

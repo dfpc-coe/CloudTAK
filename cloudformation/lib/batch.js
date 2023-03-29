@@ -6,7 +6,7 @@ export default {
             Type: 'AWS::Batch::JobDefinition',
             Properties: {
                 Type: 'container',
-                JobDefinitionName: cf.join('-', [cf.stackName, '-data-job']),
+                JobDefinitionName: cf.join('', [cf.stackName, '-data-job']),
                 RetryStrategy: { Attempts: 1 },
                 Parameters: { },
                 ContainerProperties: {
