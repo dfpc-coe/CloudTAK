@@ -52,12 +52,29 @@ export default class Task {
 
         await pipeline(res.Body, fs.createWriteStream(path.resolve(os.tmpdir(), this.etl.task.asset)));
 
+        const formats = new Map();
+
+        // TODO load all conversion files from a directory
+        for (const format of [KML]) {
+            const config = format.register();
+            for (const input of config.inputs) {
+                if (formats.has(input)) throw new Error('Input is already defined');
+                formats.set(input, format);
+            }
+        }
+
         let stream;
         let asset;
         if (this.etl.task.config.format === 'GeoJSON') {
-            const kml = new KML(this.etl);
-            stream = await kml.convert();
+            const { ext } = path.parse(this.etl.task.asset);
+            if (!formats.has(ext)) throw new Error('Unsupported Input Format');
+            const Convert = formats.get(ext);
+            const convert = new Convert(this.etl);
+
+            stream = await convert.convert();
             asset = path.parse(this.etl.task.asset).name + '.geojsonld';
+        } else {
+            throw new Error('Unknown Task Format');
         }
 
         await s3.send(new S3.PutObjectCommand({

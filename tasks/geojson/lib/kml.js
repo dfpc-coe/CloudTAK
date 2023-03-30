@@ -5,6 +5,12 @@ import { kml } from '@tmcw/togeojson';
 import { DOMParser } from '@xmldom/xmldom';
 
 export default class KML {
+    static register() {
+        return {
+            inputs: ['.kml']
+        };
+    }
+
     constructor(etl) {
         this.etl = etl;
     }
