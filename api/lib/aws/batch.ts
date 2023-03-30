@@ -27,10 +27,11 @@ export default class Batch {
             jobDefinition: `${config.StackName}-data-job`,
             containerOverrides: {
                 environment: [
-                    { name: 'ETL_API',   value:  config.API_URL },
-                    { name: 'ETL_TOKEN', value: jwt.sign({ access: 'data', data: data.id }, config.SigningSecret) },
-                    { name: 'ETL_DATA',  value: String(data.id) },
-                    { name: 'ETL_TASK', value: JSON.stringify({ asset: asset, config: task }) },
+                    { name: 'ETL_API',      value:  config.API_URL },
+                    { name: 'ETL_BUCKET',   value:  config.Bucket },
+                    { name: 'ETL_TOKEN',    value: jwt.sign({ access: 'data', data: data.id }, config.SigningSecret) },
+                    { name: 'ETL_DATA',     value: String(data.id) },
+                    { name: 'ETL_TASK',     value: JSON.stringify({ asset: asset, config: task }) },
                 ]
             }
         }));
