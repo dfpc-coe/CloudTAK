@@ -69,6 +69,11 @@
         "query": false,
         "res": false
     },
+    "GET /data/:dataid/job": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
     "GET /data": {
         "body": false,
         "query": true,
