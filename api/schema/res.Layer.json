@@ -10,9 +10,14 @@
         "enabled",
         "enabled_styles",
         "styles",
-        "mode",
-        "data",
-        "logging"
+        "logging",
+        "stale",
+        "task",
+        "connection",
+        "cron",
+        "environment",
+        "memory",
+        "timeout"
     ],
     "properties": {
         "id": {
@@ -50,11 +55,26 @@
         "styles": {
             "$ref": "./util/styles.json"
         },
-        "mode": {
-            "$ref": "./layers/mode.json"
+        "stale": {
+            "$ref": "./layers/stale.json"
         },
-        "data": {
-            "type": "object"
+        "task": {
+            "$ref": "./layers/task.json"
+        },
+        "connection": {
+            "$ref": "./layers/connection.json"
+        },
+        "cron": {
+            "$ref": "./layers/cron.json"
+        },
+        "environment": {
+            "$ref": "./layers/environment.json"
+        },
+        "memory": {
+            "$ref": "./layers/memory.json"
+        },
+        "timeout": {
+            "$ref": "./layers/timeout.json"
         }
     }
 }

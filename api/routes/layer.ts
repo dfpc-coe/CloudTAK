@@ -2,10 +2,6 @@ import { check } from '@placemarkio/check-geojson';
 import Err from '@openaddresses/batch-error';
 // @ts-ignore
 import Layer from '../lib/types/layer.js';
-// @ts-ignore
-import LayerLive from '../lib/types/layers_live.js';
-// @ts-ignore
-import LayerFile from '../lib/types/layers_file.js';
 import { XML as COT } from '@tak-ps/node-cot';
 import Cacher from '../lib/cacher.js';
 import { sql } from 'slonik';
@@ -72,9 +68,6 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            const data = req.body.data;
-            delete req.body.data;
-
             if (req.body.styles.queries) {
                 req.body.styles = {
                     queries: req.body.styles.queries
@@ -87,33 +80,19 @@ export default async function router(schema: any, config: Config) {
                 };
             }
 
+            Schedule.is_valid(req.body.cron);
             let layer = await Layer.generate(config.pool, req.body);
 
-            if (layer.mode === 'live') {
-                Schedule.is_valid(data.cron);
-
-                const layerdata = await LayerLive.generate(config.pool, {
-                    layer_id: layer.id,
-                    ...data
-                });
-
-                if (!Schedule.is_aws(layerdata.cron) && layerdata.enabled) {
-                    config.events.add(layer.id, layerdata.cron);
-                } else if (Schedule.is_aws(layerdata.cron) || !layer.enabled) {
-                    await config.events.delete(layer.id);
-                }
-            } else if (layer.mode === 'file') {
-                await LayerFile.generate(config.pool, {
-                    layer_id: layer.id,
-                    ...data
-                });
+            if (!Schedule.is_aws(layer.cron) && layer.enabled) {
+                config.events.add(layer.id, layer.cron);
+            } else if (Schedule.is_aws(layer.cron) || !layer.enabled) {
+                await config.events.delete(layer.id);
             }
 
             layer = layer.serialize();
-            layer.data = (layer.mode === 'file' ? await LayerFile.from(config.pool, layer.id, { column: 'layer_id' }) : await LayerLive.from(config.pool, layer.id, { column: 'layer_id' })).serialize();
 
             try {
-                const lambda = await Lambda.generate(config, layer, data);
+                const lambda = await Lambda.generate(config, layer);
                 await CloudFormation.create(config, layer.id, lambda);
             } catch (err) {
                 console.error(err);
@@ -143,9 +122,6 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            const data = req.body.data;
-            delete req.body.data;
-
             if (req.body.styles && req.body.styles.queries) {
                 req.body.styles = {
                     queries: req.body.styles.queries
@@ -158,44 +134,30 @@ export default async function router(schema: any, config: Config) {
                 };
             }
 
-            let layer = Object.keys(req.body).length > 0
-                ?  await Layer.commit(config.pool, parseInt(req.params.layerid), {
-                    updated: sql`Now()`,
-                    ...req.body
-                })
-                :  await Layer.from(config.pool, parseInt(req.params.layerid));
+            if (req.body.cron) Schedule.is_valid(req.body.cron);
+            let layer = await Layer.commit(config.pool, parseInt(req.params.layerid), {
+                updated: sql`Now()`,
+                ...req.body
+            });
 
-            if (layer.mode === 'live') {
-                if (data.cron) Schedule.is_valid(data.cron);
-
-                const layerdata = await LayerLive.commit(config.pool, layer.id, data, {
-                    column: 'layer_id'
-                });
-
-                try {
-                    const lambda = await Lambda.generate(config, layer, layerdata);
-                    if (await CloudFormation.exists(config, layer.id)) {
-                        await CloudFormation.update(config, layer.id, lambda);
-                    } else {
-                        await CloudFormation.create(config, layer.id, lambda);
-                    }
-                } catch (err) {
-                    console.error(err);
+            try {
+                const lambda = await Lambda.generate(config, layer);
+                if (await CloudFormation.exists(config, layer.id)) {
+                    await CloudFormation.update(config, layer.id, lambda);
+                } else {
+                    await CloudFormation.create(config, layer.id, lambda);
                 }
+            } catch (err) {
+                console.error(err);
+            }
 
-                if (!Schedule.is_aws(layerdata.cron) && layerdata.enabled) {
-                    config.events.add(layer.id, layerdata.cron);
-                } else if (Schedule.is_aws(layerdata.cron) || !layer.enabled) {
-                    await config.events.delete(layer.id);
-                }
-            } else if (layer.mode === 'file') {
-                await LayerFile.commit(config.pool, layer.id, data, {
-                    column: 'layer_id'
-                });
+            if (!Schedule.is_aws(layer.cron) && layer.enabled) {
+                config.events.add(layer.id, layer.cron);
+            } else if (Schedule.is_aws(layer.cron) || !layer.enabled) {
+                await config.events.delete(layer.id);
             }
 
             layer = layer.serialize();
-            layer.data = (layer.mode === 'file' ? await LayerFile.from(config.pool, layer.id, { column: 'layer_id' }) : await LayerLive.from(config.pool, layer.id, { column: 'layer_id' })).serialize();
 
             await config.cacher.del(`layer-${req.params.layerid}`);
 
@@ -223,9 +185,7 @@ export default async function router(schema: any, config: Config) {
             await Auth.is_auth(req);
 
             const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
-                const layer = (await Layer.from(config.pool, req.params.layerid)).serialize();
-                layer.data = (layer.mode === 'file' ? await LayerFile.from(config.pool, layer.id, { column: 'layer_id' }) : await LayerLive.from(config.pool, layer.id, { column: 'layer_id' })).serialize();
-                return layer;
+                return (await Layer.from(config.pool, req.params.layerid)).serialize();
             });
 
             if (config.StackName !== 'test') {
@@ -255,12 +215,7 @@ export default async function router(schema: any, config: Config) {
 
             await CloudFormation.delete(config, layer.id);
 
-            if (layer.mode === 'live') {
-                await LayerLive.delete(config.pool, layer.id);
-                config.events.delete(layer.id);
-            } else if (layer.mode === 'file') {
-                await LayerFile.delete(config.pool, layer.id);
-            }
+            config.events.delete(layer.id);
 
             await layer.delete();
 
@@ -287,14 +242,10 @@ export default async function router(schema: any, config: Config) {
             if (!req.headers['content-type']) throw new Err(400, null, 'Content-Type not set');
 
             const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
-                const layer = (await Layer.from(config.pool, req.params.layerid)).serialize();
-                layer.data = (layer.mode === 'file' ? await LayerFile.from(config.pool, layer.id, { column: 'layer_id' }) : await LayerLive.from(config.pool, layer.id, { column: 'layer_id' })).serialize();
-                return layer;
+                return (await Layer.from(config.pool, req.params.layerid)).serialize();
             });
 
-            if (layer.mode !== 'live') throw new Err(400, null, 'Cannot post CoT to file layer');
-
-            const pooledClient = await config.conns.get(layer.data.connection);
+            const pooledClient = await config.conns.get(layer.connection);
 
             if (!pooledClient.conn.enabled) {
                 return res.json({
@@ -303,7 +254,7 @@ export default async function router(schema: any, config: Config) {
                 });
             }
 
-            //const style = new Style(layer);
+            const style = new Style(layer);
 
             if (req.headers['content-type'] === 'application/json') {
                 try {
@@ -316,7 +267,7 @@ export default async function router(schema: any, config: Config) {
                 const cots = [];
                 for (const feat of req.body.features) {
                     feat.layer = layer.id;
-                    cots.push(COT.from_geojson(feat)) //await style.feat(feat)));
+                    cots.push(COT.from_geojson(await style.feat(feat)))
                 }
                 pooledClient.tak.write(cots);
 

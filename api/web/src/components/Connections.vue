@@ -12,7 +12,7 @@
 
                         <div class='ms-auto'>
                             <div class='btn-list'>
-                                <a @click='query.shown = !query.shown' class="cursor-pointer btn btn-secondary">
+                                <a @click='query = !query' class="cursor-pointer btn btn-secondary">
                                     <SearchIcon/>
                                 </a>
 
@@ -30,12 +30,12 @@
     <div class='page-body'>
         <div class='container-xl'>
             <div class='row row-deck row-cards'>
-                <div v-if='query.shown' class="col-lg-12">
+                <div v-if='query' class="col-lg-12">
                     <div class="card">
                         <div class="card-body">
                             <label class="form-label">Connection Search</label>
                             <div class="input-icon mb-3">
-                                <input v-model='query.search' type="text"  class="form-control" placeholder="Search…">
+                                <input v-model='paging.filter' type="text"  class="form-control" placeholder="Search…">
                                 <span class="input-icon-addon">
                                     <SearchIcon/>
                                 </span>
@@ -53,26 +53,32 @@
                         label='Connections'
                         @create='$router.push("/connection/new")'
                     />
-                    <div :key='connection.id' v-for='connection in list.connections' class="col-lg-12">
-                        <div class="card">
-                            <div class="card-header">
-                                <ConnectionStatus :connection='connection'/>
+                    <template v-else>
+                        <div :key='connection.id' v-for='connection in list.connections' class="col-lg-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <ConnectionStatus :connection='connection'/>
 
-                                <a @click='$router.push(`/connection/${connection.id}`)' class="card-title cursor-pointer" v-text='connection.name'></a>
+                                    <a @click='$router.push(`/connection/${connection.id}`)' class="card-title cursor-pointer" v-text='connection.name'></a>
 
-                                <div class='ms-auto'>
-                                    <div class='btn-list'>
-                                        <SettingsIcon class='cursor-pointer' @click='$router.push(`/connection/${connection.id}/edit`)'/>
+                                    <div class='ms-auto'>
+                                        <div class='btn-list'>
+                                            <SettingsIcon class='cursor-pointer' @click='$router.push(`/connection/${connection.id}/edit`)'/>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="card-body" v-text='connection.description'>
-                            </div>
-                            <div class="card-footer">
-                                Last updated 3 mins ago
+                                <div class="card-body" v-text='connection.description'>
+                                </div>
+                                <div class="card-footer">
+                                    Last updated 3 mins ago
+                                </div>
                             </div>
                         </div>
-                    </div>
+
+                        <div class="col-lg-12">
+                            <Pager @page='paging.page = $event' :current='paging.page'  :total='list.total' :limit='paging.limit'/>
+                        </div>
+                    </template>
                 </template>
             </div>
         </div>
@@ -83,6 +89,7 @@
 
 <script>
 import PageFooter from './PageFooter.vue';
+import Pager from './util/Pager.vue';
 import ConnectionStatus from './Connection/Status.vue';
 import None from './cards/None.vue';
 import {
@@ -99,34 +106,43 @@ export default {
         return {
             err: false,
             loading: true,
-            query: {
-                shown: false,
-                search: ''
+            query: false,
+            paging: {
+                filter: '',
+                limit: 10,
+                page: 0
             },
             list: {
+                total: 0,
                 connections: []
             }
-        }
-    },
-    watch: {
-        'query.search': function() {
-            this.fetchList();
         }
     },
     mounted: async function() {
         await this.fetchList();
     },
+    watch: {
+       'paging.page': async function() {
+           await this.fetchList();
+       },
+       'paging.filter': async function() {
+           await this.fetchList();
+       },
+    },
     methods: {
         fetchList: async function() {
             this.loading = true;
             const url = window.stdurl('/api/connection');
-            if (this.query.shown && this.query.search) url.searchParams.append('filter', this.query.search);
+            if (this.query && this.paging.filter) url.searchParams.append('filter', this.paging.filter);
+            url.searchParams.append('limit', this.paging.limit);
+            url.searchParams.append('page', this.paging.page);
             this.list = await window.std(url);
             this.loading = false;
         }
     },
     components: {
         None,
+        Pager,
         SettingsIcon,
         SearchIcon,
         PageFooter,

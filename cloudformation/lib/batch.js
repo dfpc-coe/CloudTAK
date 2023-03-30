@@ -2,6 +2,34 @@ import cf from '@openaddresses/cloudfriend';
 
 export default {
     Resources: {
+        BatchDataJob: {
+            Type: 'AWS::Batch::JobDefinition',
+            Properties: {
+                Type: 'container',
+                JobDefinitionName: cf.join('', [cf.stackName, '-data-job']),
+                PlatformCapabilities: ['FARGATE'],
+                RetryStrategy: { Attempts: 1 },
+                ContainerProperties: {
+                    FargatePlatformConfiguration: {
+                        PlatformVersion: 'LATEST'
+                    },
+                    Environment: [
+                        { Name: 'StackName', Value: cf.stackName }
+                    ],
+                    JobRoleArn: cf.getAtt('BatchJobRole', 'Arn'),
+                    ExecutionRoleArn: cf.getAtt('BatchExecRole', 'Arn'),
+                    Image: cf.join([cf.accountId, '.dkr.ecr.', cf.region, '.amazonaws.com/coe-ecr-etl:task-', cf.ref('GitSha')]),
+                    ReadonlyRootFilesystem: false,
+                    ResourceRequirements: [{
+                        Type: 'VCPU',
+                        Value: 1
+                    },{
+                        Type: 'MEMORY',
+                        Value: 2048
+                    }]
+                }
+            }
+        },
         BatchJobQueue: {
             Type: 'AWS::Batch::JobQueue',
             Properties: {
@@ -79,8 +107,8 @@ export default {
                     MaxvCpus: 128,
                     SecurityGroupIds: [cf.ref('BatchSecurityGroup')],
                     Subnets: [
-                        cf.ref('SubnetPrivateA'),
-                        cf.ref('SubnetPrivateB')
+                        cf.importValue('coe-vpc-prod-subnet-private-a'),
+                        cf.importValue('coe-vpc-prod-subnet-private-b')
                     ]
                 },
                 'State': 'ENABLED'
@@ -106,7 +134,7 @@ export default {
         BatchSecurityGroup: {
             Type: 'AWS::EC2::SecurityGroup',
             Properties: {
-                VpcId: cf.ref('VPC'),
+                VpcId: cf.importValue('coe-vpc-prod-vpc'),
                 GroupDescription: cf.join([cf.stackName, ' Batch Security Group']),
                 SecurityGroupIngress: []
             }

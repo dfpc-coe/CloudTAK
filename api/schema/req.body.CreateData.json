@@ -1,0 +1,16 @@
+{
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+        "name",
+        "description"
+    ],
+    "properties": {
+        "name": {
+            "$ref": "./data/name.json"
+        },
+        "description": {
+            "$ref": "./data/description.json"
+        }
+    }
+}

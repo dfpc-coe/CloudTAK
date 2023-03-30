@@ -44,4 +44,21 @@ export default class Auth {
 
         return true;
     }
+
+    /**
+     * Is the request from a task lambda function
+     *
+     * @param {Object} req Express Request
+     * @param {Number} data Expected Data
+     */
+    static async is_data(req: Request, data: number) {
+        await this.is_auth(req);
+
+        // @ts-ignore
+        if (req.auth.access !== 'cot')  throw new Err(400, null, 'Token must have "data" access');
+        // @ts-ignore
+        if (req.auth.data !== data)  throw new Err(400, null, 'Token is not valid for this data source');
+
+        return true;
+    }
 }

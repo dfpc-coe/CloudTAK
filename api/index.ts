@@ -81,7 +81,7 @@ export default async function server(config: Config) {
         config.server = null;
     }
 
-    config.conns = new TAKPool(config.server, config.wsClients);
+    config.conns = new TAKPool(config.server, config.wsClients, config.StackName);
     await config.conns.init(config.pool);
     config.events = new EventsPool(config.StackName);
     if (!config.noevents) await config.events.init(config.pool);
@@ -94,8 +94,13 @@ export default async function server(config: Config) {
 
     app.disable('x-powered-by');
     app.use(cors({
-        origin: true,
-        allowedHeaders: ['Content-Type', 'Authorization'],
+        origin: '*',
+        allowedHeaders: [
+            'Content-Type',
+            'Authorization',
+            'Content-Length',
+            'x-requested-with'
+        ],
         credentials: true
     }));
 

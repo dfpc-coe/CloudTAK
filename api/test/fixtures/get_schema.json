@@ -14,36 +14,6 @@
         "query": false,
         "res": true
     },
-    "GET /asset": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "GET /asset/:assetid": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "POST /asset": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "PATCH /asset/:assetid": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "DELETE /asset/:assetid": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /asset/:assetid/raw": {
-        "body": false,
-        "query": false,
-        "res": false
-    },
     "GET /connection": {
         "body": false,
         "query": true,
@@ -64,7 +34,77 @@
         "query": false,
         "res": true
     },
+    "POST /connection/:connectionid/refresh": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
     "DELETE /connection/:connectionid": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /data/:dataid/asset": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "POST /data/:dataid/asset": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "POST /data/:dataid/asset/:asset.:ext": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "DELETE /data/:dataid/asset/:asset.:ext": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /data/:dataid/asset/:asset.:ext": {
+        "body": false,
+        "query": false,
+        "res": false
+    },
+    "GET /data/:dataid/job": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /data/:dataid/job/:jobid": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /data/:dataid/job/:jobid/logs": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /data": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "POST /data": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "PATCH /data/:dataid": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "GET /data/:dataid": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "DELETE /data/:dataid": {
         "body": false,
         "query": false,
         "res": true
@@ -154,17 +194,17 @@
         "query": false,
         "res": true
     },
+    "POST /layer/:layerid/task": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
     "GET /layer/:layerid/task/logs": {
         "body": false,
         "query": false,
         "res": true
     },
     "GET /layer/:layerid/task/schema": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "POST /layer/:layerid/task": {
         "body": false,
         "query": false,
         "res": true

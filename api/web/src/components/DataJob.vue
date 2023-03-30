@@ -1,0 +1,92 @@
+<template>
+<div>
+    <div class='page-wrapper'>
+        <div class="page-header d-print-none">
+            <div class="container-xl">
+                <div class="row g-2 align-items-center">
+                    <div class="col d-flex">
+                        <TablerBreadCrumb/>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <TablerLoading v-if='loading.logs || loading.job' desc='Loading Job Logs'/>
+    <div v-else class='page-body'>
+        <div class='container-xl'>
+            <div class='row row-deck row-cards'>
+                <div class="col-lg-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class='card-title'>Job Logs</h2>
+
+                            <div class='ms-auto'>
+                                <div class='btn-list'>
+                                    <RefreshIcon @click='fetchLogs' class='cursor-pointer'/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <pre v-text='logs'></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <PageFooter/>
+</div>
+</template>
+
+<script>
+import PageFooter from './PageFooter.vue';
+import {
+    TablerLoading,
+    TablerBreadCrumb
+} from '@tak-ps/vue-tabler'
+import {
+    RefreshIcon
+} from 'vue-tabler-icons';
+
+export default {
+    name: 'DataJob',
+    data: function() {
+        return {
+            err: false,
+            loading: {
+                job: true,
+                logs: true
+            },
+            logs: ''
+        }
+    },
+    mounted: async function() {
+        await this.fetch();
+        await this.fetchLogs();
+    },
+    methods: {
+        fetch: async function() {
+            this.loading.job = true;
+            this.data = await window.std(`/api/data/${this.$route.params.dataid}/job/${this.$route.params.jobid}`);
+            this.loading.job = false;
+        },
+        fetchLogs: async function() {
+            this.loading.logs = true;
+            this.logs = (await window.std(`/api/data/${this.$route.params.dataid}/job/${this.$route.params.jobid}/logs`))
+                .logs
+                .map((log) => { return log.message })
+                .join('\n');
+
+            this.loading.logs = false;
+        }
+    },
+    components: {
+        PageFooter,
+        RefreshIcon,
+        TablerLoading,
+        TablerBreadCrumb
+    }
+}
+</script>
