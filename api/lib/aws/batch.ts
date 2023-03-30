@@ -18,7 +18,7 @@ export interface BatchJob {
  * @class
  */
 export default class Batch {
-    static async submit(config: Config, data: any, asset: string): Promise<any> {
+    static async submit(config: Config, data: any, asset: string, task: object): Promise<any> {
         const batch = new AWSBatch.BatchClient({ region: process.env.AWS_DEFAULT_REGION });
 
         const batchres = await batch.send(new AWSBatch.SubmitJobCommand({
@@ -30,6 +30,7 @@ export default class Batch {
                     { name: 'ETL_API',   value:  config.API_URL },
                     { name: 'ETL_TOKEN', value: jwt.sign({ access: 'data', data: data.id }, config.SigningSecret) },
                     { name: 'ETL_DATA',  value: String(data.id) },
+                    { name: 'ETL_TASK', value: JSON.stringify({ asset: asset, config: task }) },
                 ]
             }
         }));
