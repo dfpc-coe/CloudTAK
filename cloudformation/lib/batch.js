@@ -7,7 +7,7 @@ export default {
             Properties: {
                 Type: 'container',
                 JobDefinitionName: cf.join('', [cf.stackName, '-data-job']),
-                PlatformCapabilities: [ 'FARGATE' ],
+                PlatformCapabilities: ['FARGATE'],
                 RetryStrategy: { Attempts: 1 },
                 ContainerProperties: {
                     FargatePlatformConfiguration: {
@@ -40,25 +40,6 @@ export default {
                 State: 'ENABLED',
                 Priority: 1,
                 JobQueueName: cf.join('-', [cf.stackName, 'queue'])
-            }
-        },
-        BatchExecRole: {
-            Type: 'AWS::IAM::Role',
-            Properties: {
-                AssumeRolePolicyDocument: {
-                    Version: '2012-10-17',
-                    Statement: [{
-                        Effect: 'Allow',
-                        Action: 'sts:AssumeRole',
-                        Principal: {
-                            Service: 'ecs-tasks.amazonaws.com'
-                        }
-                    }]
-                },
-                ManagedPolicyArns: [
-                    cf.join(['arn:', cf.partition, ':iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy'])
-                ],
-                Path: '/'
             }
         },
         BatchServiceRole: {
