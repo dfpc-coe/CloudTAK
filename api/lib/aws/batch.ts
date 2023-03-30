@@ -5,6 +5,7 @@ import Config from '../config.js';
 import jwt from 'jsonwebtoken';
 
 export interface BatchJob {
+    id: string;
     asset: string;
     status: string;
     created: number;
@@ -50,6 +51,7 @@ export default class Batch {
             asset[name.lastIndexOf('_')] = '.';
 
             return {
+                id: job.jobId,
                 asset: asset.join(''),
                 status: job.status,
                 created: job.createdAt,

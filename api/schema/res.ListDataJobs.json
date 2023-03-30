@@ -11,12 +11,16 @@
         "list": {
             "type": "object",
             "required": [
+                "id",
                 "asset",
                 "status",
                 "created",
                 "updated"
             ],
             "properties": {
+                "id": {
+                    "type": "string"
+                },
                 "asset": {
                     "type": "string"
                 },
