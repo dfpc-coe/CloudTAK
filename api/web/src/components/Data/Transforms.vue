@@ -8,7 +8,7 @@
     </div>
 
     <div v-if='!loading.list && list.list.length'>
-        <table class="table table-vcenter card-table">
+        <table class="table table-vcenter card-table table-hover">
             <thead>
                 <tr>
                     <th>Asset</th>
@@ -18,14 +18,15 @@
                 </tr>
             </thead>
             <tbody>
-                <tr :key='job.created' v-for='job in list.list'>
+                <tr @click='$router.push(`/data/${$route.params.dataid}/job/${job.id}`)' :key='job.created' v-for='job in list.list' class='cursor-pointer'>
                     <td v-text='job.asset'></td>
                     <td v-text='job.status'></td>
                     <td>
                         <TablerEpoch :date='job.created'/>
                     </td>
                     <td class='d-flex'>
-                        <TablerEpoch :date='job.updated'/>
+                        <TablerEpoch v-if='job.updated' :date='job.updated'/>
+                        <span v-else>-</span>
                     </td>
                 </tr>
             </tbody>

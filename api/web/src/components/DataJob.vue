@@ -12,33 +12,24 @@
         </div>
     </div>
 
-    <TablerLoading v-if='loading.data' desc='Loading Data'/>
+    <TablerLoading v-if='loading.logs' desc='Loading Job Logs'/>
     <div v-else class='page-body'>
         <div class='container-xl'>
             <div class='row row-deck row-cards'>
                 <div class="col-lg-12">
                     <div class="card">
                         <div class="card-header">
-                            <a @click='$router.push(`/data/${data.id}`)' class="card-title cursor-pointer" v-text='data.name'></a>
+                            <h2 class='card-title'>Job Logs</h2>
 
                             <div class='ms-auto'>
                                 <div class='btn-list'>
-                                    <SettingsIcon class='cursor-pointer' @click='$router.push(`/data/${data.id}/edit`)'/>
                                 </div>
                             </div>
                         </div>
-                        <div class="card-body" v-text='data.description'>
-                        </div>
-                        <div class="card-footer">
-                            Last updated <span v-text='timeDiff(data.updated)'/>
+                        <div class="card-body">
+                            <pre>LOGS</pre>
                         </div>
                     </div>
-                </div>
-                <div class="col-lg-12">
-                    <DataAsset/>
-                </div>
-                <div class="col-lg-12">
-                    <DataTransforms/>
                 </div>
             </div>
         </div>
@@ -50,47 +41,35 @@
 
 <script>
 import PageFooter from './PageFooter.vue';
-import DataAsset from './Data/Assets.vue';
-import DataTransforms from './Data/Transforms.vue';
-import timeDiff from '../timediff.js';
 import {
     TablerLoading,
     TablerBreadCrumb
 } from '@tak-ps/vue-tabler'
-import {
-    SettingsIcon,
-} from 'vue-tabler-icons'
 
 export default {
-    name: 'DataSingle',
+    name: 'DataJob',
     data: function() {
         return {
             err: false,
             loading: {
-                data: true
+                logs: true
             },
-            data: {}
+            logs: []
         }
     },
     mounted: async function() {
         await this.fetch();
     },
     methods: {
-        timeDiff(update) {
-            return timeDiff(update);
-        },
         fetch: async function() {
-            this.loading.data = true;
+            this.loading.logs = true;
             this.data = await window.std(`/api/data/${this.$route.params.dataid}`);
-            this.loading.data = false;
+            this.loading.logs = false;
         }
     },
     components: {
-        SettingsIcon,
         PageFooter,
         TablerLoading,
-        DataAsset,
-        DataTransforms,
         TablerBreadCrumb
     }
 }

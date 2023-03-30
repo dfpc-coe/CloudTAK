@@ -235,14 +235,7 @@ export default {
                             Action: [
                                 'batch:SubmitJob',
                                 'batch:ListJobs',
-                                'batch:DescribeJobs'
-                            ],
-                            Resource: [
-                                cf.join(['arn:', cf.partition, ':batch:', cf.region, ':', cf.accountId, ':*'])
-                            ]
-                        },{
-                            Effect: 'Allow',
-                            Action: [
+                                'batch:DescribeJobs',
                                 'logs:GetLogEvents',
                                 'batch:CancelJob',
                                 'batch:DescribeJobs'

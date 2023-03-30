@@ -25,6 +25,8 @@ const router = new VueRouter.createRouter({
         { path: '/data/new', name: 'data-new', component: () => import('./components/DataEdit.vue') },
         { path: '/data/:dataid', name: 'data', component: () => import('./components/Data.vue') },
         { path: '/data/:dataid/edit', name: 'data-edit', component: () => import('./components/DataEdit.vue') },
+        { path: '/data/:dataid/job', name: 'data-jobs', component: () => import('./components/DataJobs.vue') },
+        { path: '/data/:dataid/job/:jobid', name: 'data-job', component: () => import('./components/DataJob.vue') },
 
         { path: '/connection', name: 'connections', component: () => import('./components/Connections.vue') },
         { path: '/connection/new', name: 'connection-new', component: () => import('./components/ConnectionEdit.vue') },
