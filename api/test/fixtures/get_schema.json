@@ -74,6 +74,16 @@
         "query": false,
         "res": true
     },
+    "GET /data/:dataid/job/:jobid": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /data/:dataid/job/:jobid/logs": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
     "GET /data": {
         "body": false,
         "query": true,
