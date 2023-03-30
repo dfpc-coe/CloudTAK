@@ -4,18 +4,22 @@
     "private": true,
     "version": "1.0.0",
     "description": "",
-    "main": "index.js",
+    "main": "task.js",
     "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1"
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "start": "node task.js"
     },
     "author": "Nick Ingalls <nick@ingalls.ca>",
     "license": "ISC",
     "dependencies": {
         "@tmcw/togeojson": "^5.5.0",
         "@xmldom/xmldom": "^0.8.6",
+        "eslint": "^8.37.0",
+        "eslint-plugin-node": "^11.1.0",
         "form-data-encoder": "^2.1.4",
         "formdata-node": "^5.0.0",
         "geojson-precision": "^1.0.0",
+        "jsonwebtoken": "^9.0.0",
         "node-fetch": "^3.3.0"
     }
 }

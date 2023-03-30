@@ -116,7 +116,7 @@ export default async function router(schema: any, config: Config) {
 
             const data = await Data.from(config.pool, req.params.dataid);
 
-            await Batch.submit(config, data, `${req.params.asset}.${req.params.ext}`);
+            await Batch.submit(config, data, `${req.params.asset}.${req.params.ext}`, req.body);
 
             return res.json({
                 status: 200,
