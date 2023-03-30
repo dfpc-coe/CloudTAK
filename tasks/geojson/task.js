@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import KML from './lib/kml.js';
 import S3 from '@aws-sdk/client-s3';
 import { pipeline } from 'node:stream/promises';
+import Tippecanoe from './lib/tippecanoe.js';
 import jwt from 'jsonwebtoken';
 import path from 'node:path';
 import os from 'node:os';
@@ -73,6 +74,29 @@ export default class Task {
 
             stream = await convert.convert();
             asset = path.parse(this.etl.task.asset).name + '.geojsonld';
+        } else if (this.etl.task.config.format === 'PMTiles') {
+            const tp = new Tippecanoe();
+
+            //TODO Check if input is a GeoJSONLD, if not, convert to GeoJSON before tiling
+
+            asset = path.parse(this.etl.task.asset).name + '.pmtiles';
+            console.log(`ok - tiling ${path.resolve(os.tmpdir(), asset)}`);
+            await tp.tile(
+                fs.createReadStream(path.resolve(os.tmpdir(), this.etl.task.asset)),
+                path.resolve(os.tmpdir(), asset), {
+                    std: false,
+                    name: asset,
+                    description: 'Automatically Converted by @tak-ps/etl',
+                    layer: 'out',
+                    force: true,
+                    zoom: {
+                        min: 0,
+                        max: 10
+                    }
+                }
+            );
+
+            stream = fs.createReadStream(path.resolve(os.tmpdir(), asset));
         } else {
             throw new Error('Unknown Task Format');
         }
