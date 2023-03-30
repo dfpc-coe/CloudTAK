@@ -74,7 +74,7 @@
                 </div>
 
                 <div class="col-lg-12">
-                    <LayerData :errors='errors' v-model='layerdata'/>
+                    <LayerData :errors='errors' v-model='layer'/>
                 </div>
 
                 <div class="col-lg-12">
@@ -128,7 +128,6 @@ export default {
                 status: '',
                 name: ''
             },
-            layerdata: {},
             layer: {
                 name: '',
                 description: '',
@@ -149,16 +148,7 @@ export default {
     methods: {
         fetch: async function() {
             this.loading.layer = true;
-
-            const layer = await window.std(`/api/layer/${this.$route.params.layerid}`);
-            if (layer.data.stale) layer.data.stale = String(layer.data.stale);
-            this.layerdata = {
-                mode: layer.mode,
-                ...layer.data
-            };
-            delete layer.data;
-            this.layer = layer;
-
+            this.layer = await window.std(`/api/layer/${this.$route.params.layerid}`);
             this.loading.layer = false;
         },
         deleteLayer: async function() {
@@ -169,39 +159,32 @@ export default {
             this.$router.push('/layer');
         },
         create: async function() {
-            for (const field of ['name', 'description']) {
+            for (const field of ['name', 'description', 'cron', 'task', 'timeout', 'memory']) {
                 this.errors[field] = !this.layer[field] ? 'Cannot be empty' : '';
             }
-
-            if (this.layerdata.mode === 'live') {
-                for (const field of ['cron', 'task']) {
-                    this.errors[field] = !this.layerdata[field] ? 'Cannot be empty' : '';
-                }
-            }
-
             for (const e in this.errors) if (this.errors[e]) return;
 
             this.loading.layer = true;
-            let url, method;
-            if (this.$route.params.layerid) {
-                url = window.stdurl(`/api/layer/${this.$route.params.layerid}`);
-                method = 'PATCH'
-            } else {
-                url = window.stdurl(`/api/layer`);
-                method = 'POST'
+
+            try {
+                let url, method;
+                if (this.$route.params.layerid) {
+                    url = window.stdurl(`/api/layer/${this.$route.params.layerid}`);
+                    method = 'PATCH'
+                } else {
+                    url = window.stdurl(`/api/layer`);
+                    method = 'POST'
+                }
+
+                const create = await window.std(url, { method, body: this.layer });
+
+                this.loading.layer = false;
+
+                this.$router.push(`/layer/${create.id}`);
+            } catch (err) {
+                this.loading.layer = false;
+                throw err;
             }
-
-            const body = JSON.parse(JSON.stringify(this.layer));
-            body.data = JSON.parse(JSON.stringify(this.layerdata));
-
-            body.mode = body.data.mode;
-            delete body.data.mode;
-
-            const create = await window.std(url, { method, body });
-
-            this.loading.layer = false;
-
-            this.$router.push(`/layer/${create.id}`);
         }
     },
     components: {

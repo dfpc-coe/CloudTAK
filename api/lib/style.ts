@@ -21,8 +21,8 @@ export default class Style {
      * @returns             GeoJSON Feature
      */
     async feat(feature: Feature): Promise<Feature> {
-        if (this.layer.data.stale) {
-            feature.properties.stale = this.layer.data.stale;
+        if (this.layer.stale) {
+            feature.properties.stale = this.layer.stale;
         }
 
         if (!this.layer.enabled_styles) {

@@ -7,121 +7,86 @@
     <div class='card-body'>
         <TablerLoading v-if='loading.main'/>
         <div v-else class='row'>
-            <div v-if='!$route.params.layerid' class="d-flex justify-content-center mb-4">
-                <div class="btn-list">
-                    <div class="btn-group" role="group">
-                        <input v-model='layerdata.mode' type="radio" class="btn-check" name="task-type-toolbar" value='live'>
-                        <label @click='layerdata.mode="live"' class="btn btn-icon px-3">
-                            <ClockIcon/> Scheduled
-                        </label>
-                        <input v-model='layerdata.mode' type="radio" class="btn-check" name="task-type-toolbar" value='file'>
-                        <label @click='layerdata.mode="file"' class="btn btn-icon px-3">
-                            <FileUploadIcon/> Upload
-                        </label>
+            <div class="col-md-6 mb-3">
+                <div class='d-flex'>
+                    <label class='form-label'>Cron Expression</label>
+                    <div v-if='!disabled' class='ms-auto'>
+                        <div class='dropdown'>
+                            <div class="dropdown-toggle" type="button" id="dropdownCron" data-bs-toggle="dropdown" aria-expanded="false">
+                                <SettingsIcon width='16' height='16' class='cursor-pointer dropdown-toggle'/>
+                            </div>
+                            <ul class="dropdown-menu px-1 py-1" aria-labelledby="dropdownCron">
+                                <li class='py-1' @click='layer.cron = "rate(1 minute)"'>rate(1 minute)</li>
+                                <li class='py-1' @click='layer.cron = "rate(5 minutes)"'>rate(5 minutes)</li>
+                                <li class='py-1' @click='layer.cron = "cron(15 10 * * ? *)"'>cron(15 10 * * ? *)</li>
+                                <li class='py-1' @click='layer.cron = "cron(0/5 8-17 ? * MON-FRI *)"'>cron(0/5 8-17 ? * MON-FRI *)</li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
+                <input :disabled='disabled' v-model='layer.cron' :class='{
+                    "is-invalid": errors.cron
+                }' class="form-control" placeholder='Cron Expression'/>
+                <div v-if='errors.cron' v-text='errors.cron' class="invalid-feedback"></div>
+                <label v-if='layer.cron' v-text='cronstr(layer.cron)'/>
+            </div>
+            <div class="col-md-6 mb-3">
+                <div class='d-flex'>
+                    <label class='form-label'>Schedule Task</label>
+                    <div class='ms-auto'>
+                        <div class='btn-list'>
+                            <div>
+                                <RefreshIcon v-if='!newTaskVersion && !loading.version' @click='latestVersion' width='16' height='16' class='cursor-pointer'/>
+                                <div v-else-if='loading.version' class='d-flex justify-content-center'>
+                                    <div class="spinner-border" role="status"></div>
+                                </div>
+                                <span v-else>
+                                    New Task Version
+                                    <span v-if='disabled' v-text='newTaskVersion'/>
+                                    <span v-else @click='updateTask' class='cursor-pointer text-blue' v-text='newTaskVersion'/>
+                                </span>
+                            </div>
+                            <div v-if='!disabled'>
+                                <SettingsIcon @click='taskmodal = true' width='16' height='16' class='cursor-pointer'/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <input :disabled='disabled' v-model='layer.task' :class='{
+                    "is-invalid": errors.task
+                }' class="form-control" placeholder='Schedule Task'/>
+                <div v-if='errors.task' v-text='errors.task' class="invalid-feedback"></div>
+            </div>
+            <div class="col-md-6">
+                <ConnectionSelect
+                    :disabled='disabled'
+                    v-model='layer.connection'
+
+                />
+            </div>
+            <div class="col-md-6">
+                <label>Stale Value (ms)</label>
+                <TablerInput v-model='layer.stale' :disabled='disabled' type='number' min='1' step='1'/>
+            </div>
+            <div class="col-md-6">
+                <label>Memory (Mb)</label>
+                <TablerInput v-model='layer.memory' :disabled='disabled' type='number' min='1' step='1'/>
+            </div>
+            <div class="col-md-6">
+                <label>Timeout (s)</label>
+                <TablerInput v-model='layer.timeout' :disabled='disabled' type='number' min='1' step='1'/>
             </div>
 
-            <template v-if='layerdata.mode === "live"'>
-                <div class="col-md-6 mb-3">
-                    <div class='d-flex'>
-                        <label class='form-label'>Cron Expression</label>
-                        <div v-if='!disabled' class='ms-auto'>
-                            <div class='dropdown'>
-                                <div class="dropdown-toggle" type="button" id="dropdownCron" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <SettingsIcon width='16' height='16' class='cursor-pointer dropdown-toggle'/>
-                                </div>
-                                <ul class="dropdown-menu px-1 py-1" aria-labelledby="dropdownCron">
-                                    <li class='py-1' @click='layerdata.cron = "rate(1 minute)"'>rate(1 minute)</li>
-                                    <li class='py-1' @click='layerdata.cron = "rate(5 minutes)"'>rate(5 minutes)</li>
-                                    <li class='py-1' @click='layerdata.cron = "cron(15 10 * * ? *)"'>cron(15 10 * * ? *)</li>
-                                    <li class='py-1' @click='layerdata.cron = "cron(0/5 8-17 ? * MON-FRI *)"'>cron(0/5 8-17 ? * MON-FRI *)</li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                    <input :disabled='disabled' v-model='layerdata.cron' :class='{
-                        "is-invalid": errors.cron
-                    }' class="form-control" placeholder='Cron Expression'/>
-                    <div v-if='errors.cron' v-text='errors.cron' class="invalid-feedback"></div>
-                    <label v-if='layerdata.cron' v-text='cronstr(layerdata.cron)'/>
-                </div>
-                <div class="col-md-6 mb-3">
-                    <div class='d-flex'>
-                        <label class='form-label'>Schedule Task</label>
-                        <div class='ms-auto'>
-                            <div class='btn-list'>
-                                <div>
-                                    <RefreshIcon v-if='!newTaskVersion && !loading.version' @click='latestVersion' width='16' height='16' class='cursor-pointer'/>
-                                    <div v-else-if='loading.version' class='d-flex justify-content-center'>
-                                        <div class="spinner-border" role="status"></div>
-                                    </div>
-                                    <span v-else>
-                                        New Task Version
-                                        <span v-if='disabled' v-text='newTaskVersion'/>
-                                        <span v-else @click='updateTask' class='cursor-pointer text-blue' v-text='newTaskVersion'/>
-                                    </span>
-                                </div>
-                                <div v-if='!disabled'>
-                                    <SettingsIcon @click='taskmodal = true' width='16' height='16' class='cursor-pointer'/>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <input :disabled='disabled' v-model='layerdata.task' :class='{
-                        "is-invalid": errors.task
-                    }' class="form-control" placeholder='Schedule Task'/>
-                    <div v-if='errors.task' v-text='errors.task' class="invalid-feedback"></div>
-                </div>
-                <div class="col-md-6">
-                    <ConnectionSelect
-                        :disabled='disabled'
-                        v-model='layerdata.connection'
-
-                    />
-                </div>
-                <div class="col-md-6">
-                    <label>Stale Value (ms)</label>
-                    <TablerInput v-model='layerdata.stale' :disabled='disabled' type='number' min='1' step='1'/>
-                </div>
-                <div class="col-md-6">
-                    <label>Memory (Mb)</label>
-                    <TablerInput v-model='layerdata.memory' :disabled='disabled' type='number' min='1' step='1'/>
-                </div>
-                <div class="col-md-6">
-                    <label>Timeout (s)</label>
-                    <TablerInput v-model='layerdata.timeout' :disabled='disabled' type='number' min='1' step='1'/>
-                </div>
-
-                <LayerEnvironment v-if='$route.params.layerid' v-model='layerdata.environment' :disabled='disabled'/>
-            </template>
-            <template v-else-if='layerdata.mode === "file"'>
-                <template v-if='!layerdata.raw_asset_id'>
-                    <UploadInline
-                        @asset='layerdata.raw_asset_id = $event.id'
-                    />
-                </template>
-                <template v-else>
-                    <Asset :asset_id='layerdata.raw_asset_id'/>
-                    <Asset v-if='layerdata.std_asset_id' :asset_id='layerdata.std_asset_id'/>
-                </template>
-            </template>
-            <template v-else>
-                <div class='d-flex justify-content-center mb-3'>
-                    Select a Layer Type
-                </div>
-            </template>
+            <LayerEnvironment v-if='$route.params.layerid' v-model='layer.environment' :disabled='disabled'/>
         </div>
     </div>
 
-    <TaskModal v-if='taskmodal' :task='layerdata.task' @close='taskmodal = false' @task='taskmodal = false; layerdata.task = $event'/>
+    <TaskModal v-if='taskmodal' :task='layer.task' @close='taskmodal = false' @task='taskmodal = false; layer.task = $event'/>
 </div>
 </template>
 
 <script>
-import UploadInline from '../util/UploadInline.vue';
 import LayerEnvironment from './LayerEnvironent.vue';
-import Asset from '../util/Asset.vue';
 import ConnectionSelect from '../util/ConnectionSelect.vue';
 import cronstrue from 'cronstrue';
 import TaskModal from './TaskModal.vue';
@@ -130,9 +95,7 @@ import {
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import {
-    ClockIcon,
     RefreshIcon,
-    FileUploadIcon,
     SettingsIcon
 } from 'vue-tabler-icons'
 
@@ -162,14 +125,11 @@ export default {
                 main: false,
                 version: false
             },
-            layerdata: {
-                mode: 'live',
+            layer: {
                 connection: null,
-                raw_asset_id: null,
-                std_asset_id: null,
                 task: '',
-                timeout: '',
-                memory: '',
+                timeout: '60',
+                memory: '512',
                 cron: '0/15 * * * ? *',
                 stale: 60 * 1000,
                 environment: {}
@@ -177,38 +137,29 @@ export default {
         };
     },
     watch: {
-        layerdata: {
+        modelValue: {
             deep: true,
             handler: function() {
-                if (this.layerdata.mode === 'live') {
-                    this.$emit('update:modelValue', {
-                        mode: this.layerdata.mode,
-                        task: this.layerdata.task,
-                        cron: this.layerdata.cron,
-                        stale: parseInt(this.layerdata.stale),
-                        memory: parseInt(this.layerdata.memory),
-                        timeout: parseInt(this.layerdata.timeout),
-                        connection: this.layerdata.connection,
-                        environment: this.layerdata.environment
-                    });
-                } else if (this.layerdata.mode === 'file') {
-                    this.$emit('update:modelValue', {
-                        mode: this.layerdata.mode,
-                        raw_asset_id: this.layerdata.raw_asset_id
-                    });
-                }
+                this.layer = Object.assign(this.layer, this.modelValue);
+            }
+        },
+        layer: {
+            deep: true,
+            handler: function() {
+                const layer = Object.assign(this.modelValue, this.layer);
+                this.$emit('update:modelValue', layer);
             }
         }
     },
     mounted: function() {
-        this.layerdata = Object.assign(this.layerdata, this.modelValue);
+        this.layer = Object.assign(this.layer, this.modelValue);
         this.$nextTick(() => {
             this.loading.main = false;
         });
     },
     methods: {
         updateTask: function() {
-            this.layerdata.task = this.layerdata.task.replace(/-v[0-9]+\.[0-9]+\.[0-9]+$/, `-v${this.newTaskVersion}`);
+            this.layer.task = this.layer.task.replace(/-v[0-9]+\.[0-9]+\.[0-9]+$/, `-v${this.newTaskVersion}`);
             this.newTaskVersion = null;
         },
         cronstr: function(cron) {
@@ -223,7 +174,7 @@ export default {
         },
         latestVersion: async function() {
             this.loading.version = true;
-            const match = this.layerdata.task.match(/^(.*)-v([0-9]+\.[0-9]+\.[0-9]+)$/)
+            const match = this.layer.task.match(/^(.*)-v([0-9]+\.[0-9]+\.[0-9]+)$/)
             if (!match) return;
             const task = match[1];
             const version = match[2];
@@ -239,13 +190,9 @@ export default {
     components: {
         LayerEnvironment,
         TablerLoading,
-        Asset,
-        ClockIcon,
         RefreshIcon,
-        FileUploadIcon,
         SettingsIcon,
         ConnectionSelect,
-        UploadInline,
         TaskModal,
         TablerInput
     }

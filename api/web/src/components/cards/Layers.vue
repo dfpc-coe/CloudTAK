@@ -4,7 +4,7 @@
         <div class="row align-items-center">
             <div class="col-auto">
                 <span @click='$router.push("/layer")' class="bg-primary text-white avatar cursor-pointer">
-                    <DatabaseIcon/>
+                    <BuildingBroadcastTowerIcon/>
                 </span>
             </div>
             <div class="col">
@@ -27,7 +27,7 @@
 
 <script>
 import {
-    DatabaseIcon
+    BuildingBroadcastTowerIcon
 } from 'vue-tabler-icons';
 import {
     TablerLoading
@@ -55,7 +55,7 @@ export default {
         }
     },
     components: {
-        DatabaseIcon,
+        BuildingBroadcastTowerIcon,
         TablerLoading
     }
 }

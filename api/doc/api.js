@@ -54,114 +54,6 @@
 
 
 /**
-* @api {get} /asset List Assets
-* @apiVersion 1.0.0
-* @apiName GET-/asset
-* @apiGroup Assets
-* @apiPermission user
-*
-* @apidescription
-*   List Assets
-*
-
-*
-* @apiSchema (Query) {jsonschema=../schema/req.query.ListAssets.json} apiParam
-*
-* @apiSchema {jsonschema=../schema/res.ListAssets.json} apiSuccess
-*/
-
-
-/**
-* @api {get} /asset/:assetid Get Asset
-* @apiVersion 1.0.0
-* @apiName GET-/asset/:assetid
-* @apiGroup Assets
-* @apiPermission user
-*
-* @apidescription
-*   Get single asset
-*
-* @apiParam {integer} assetid param
-*
-*
-*
-* @apiSchema {jsonschema=../schema/assets.json} apiSuccess
-*/
-
-
-/**
-* @api {post} /asset Create Asset
-* @apiVersion 1.0.0
-* @apiName POST-/asset
-* @apiGroup Assets
-* @apiPermission user
-*
-* @apidescription
-*   Create a new asset
-*
-* @apiParam {integer} assetid param
-*
-*
-*
-* @apiSchema {jsonschema=../schema/assets.json} apiSuccess
-*/
-
-
-/**
-* @api {patch} /asset/:assetid Update Asset
-* @apiVersion 1.0.0
-* @apiName PATCH-/asset/:assetid
-* @apiGroup Assets
-* @apiPermission user
-*
-* @apidescription
-*   Update Asset
-*
-* @apiParam {integer} assetid param
-*
-*
-*
-* @apiSchema {jsonschema=../schema/assets.json} apiSuccess
-*/
-
-
-/**
-* @api {delete} /asset/:assetid Delete Asset
-* @apiVersion 1.0.0
-* @apiName DELETE-/asset/:assetid
-* @apiGroup Assets
-* @apiPermission user
-*
-* @apidescription
-*   Delete Asset
-*
-* @apiParam {integer} assetid param
-*
-*
-*
-* @apiSchema {jsonschema=../schema/res.Standard.json} apiSuccess
-*/
-
-
-/**
-* @api {get} /asset/:assetid/raw Raw Asset
-* @apiVersion 1.0.0
-* @apiName GET-/asset/:assetid/raw
-* @apiGroup Assets
-* @apiPermission user
-*
-* @apidescription
-*   Get single raw asset
-*
-* @apiParam {integer} assetid param
-*
-*
-*
-*
-*/
-
-
-/**
 * @api {get} /connection List Connections
 * @apiVersion 1.0.0
 * @apiName GET-/connection
@@ -234,6 +126,24 @@
 
 
 /**
+* @api {post} /connection/:connectionid/refresh Refresh Connection
+* @apiVersion 1.0.0
+* @apiName POST-/connection/:connectionid/refresh
+* @apiGroup Connection
+* @apiPermission admin
+*
+* @apidescription
+*   Refresh a connection
+*
+* @apiParam {integer} connectionid param
+*
+*
+*
+* @apiSchema {jsonschema=../schema/res.Connection.json} apiSuccess
+*/
+
+
+/**
 * @api {delete} /connection/:connectionid Delete Connection
 * @apiVersion 1.0.0
 * @apiName DELETE-/connection/:connectionid
@@ -244,6 +154,248 @@
 *   Delete a connection
 *
 * @apiParam {integer} connectionid param
+*
+*
+*
+* @apiSchema {jsonschema=../schema/res.Standard.json} apiSuccess
+*/
+
+
+/**
+* @api {get} /data/:dataid/asset List Assets
+* @apiVersion 1.0.0
+* @apiName GET-/data/:dataid/asset
+* @apiGroup DataAssets
+* @apiPermission user
+*
+* @apidescription
+*   List Assets
+*
+* @apiParam {integer} dataid param
+*
+*
+*
+* @apiSchema {jsonschema=../schema/res.ListAssets.json} apiSuccess
+*/
+
+
+/**
+* @api {post} /data/:dataid/asset Create Asset
+* @apiVersion 1.0.0
+* @apiName POST-/data/:dataid/asset
+* @apiGroup DataAssets
+* @apiPermission user
+*
+* @apidescription
+*   Create a new asset
+*
+* @apiParam {integer} dataid param
+*
+*
+*
+* @apiSchema {jsonschema=../schema/res.Standard.json} apiSuccess
+*/
+
+
+/**
+* @api {post} /data/:dataid/asset/:asset.:ext Convert Asset
+* @apiVersion 1.0.0
+* @apiName POST-/data/:dataid/asset/:asset.:ext
+* @apiGroup DataAssets
+* @apiPermission user
+*
+* @apidescription
+*   Convert Asset
+*
+* @apiParam {integer} dataid param
+* @apiParam {string} asset param
+* @apiParam {string} ext param
+*
+*
+* @apiSchema (Body) {jsonschema=../schema/req.ConvertAsset.json} apiParam
+* @apiSchema {jsonschema=../schema/res.Standard.json} apiSuccess
+*/
+
+
+/**
+* @api {delete} /data/:dataid/asset/:asset.:ext Delete Asset
+* @apiVersion 1.0.0
+* @apiName DELETE-/data/:dataid/asset/:asset.:ext
+* @apiGroup DataAssets
+* @apiPermission user
+*
+* @apidescription
+*   Delete Asset
+*
+* @apiParam {integer} dataid param
+* @apiParam {string} asset param
+* @apiParam {string} ext param
+*
+*
+*
+* @apiSchema {jsonschema=../schema/res.Standard.json} apiSuccess
+*/
+
+
+/**
+* @api {get} /data/:dataid/asset/:asset.:ext Raw Asset
+* @apiVersion 1.0.0
+* @apiName GET-/data/:dataid/asset/:asset.:ext
+* @apiGroup DataAssets
+* @apiPermission user
+*
+* @apidescription
+*   Get single raw asset
+*
+* @apiParam {integer} dataid param
+* @apiParam {string} asset param
+* @apiParam {string} ext param
+*
+*
+*
+*
+*/
+
+
+/**
+* @api {get} /data/:dataid/job List Jobs
+* @apiVersion 1.0.0
+* @apiName GET-/data/:dataid/job
+* @apiGroup DataJobs
+* @apiPermission user
+*
+* @apidescription
+*   List Data Jobs
+*
+* @apiParam {integer} dataid param
+*
+*
+*
+* @apiSchema {jsonschema=../schema/res.ListDataJobs.json} apiSuccess
+*/
+
+
+/**
+* @api {get} /data/:dataid/job/:jobid List Jobs
+* @apiVersion 1.0.0
+* @apiName GET-/data/:dataid/job/:jobid
+* @apiGroup DataJobs
+* @apiPermission user
+*
+* @apidescription
+*   List Data Jobs
+*
+* @apiParam {integer} dataid param
+* @apiParam {string} jobid param
+*
+*
+*
+* @apiSchema {jsonschema=../schema/res.DataJob.json} apiSuccess
+*/
+
+
+/**
+* @api {get} /data/:dataid/job/:jobid/logs List Logs
+* @apiVersion 1.0.0
+* @apiName GET-/data/:dataid/job/:jobid/logs
+* @apiGroup DataJobLogs
+* @apiPermission user
+*
+* @apidescription
+*   List Data Job Logs
+*
+* @apiParam {integer} dataid param
+* @apiParam {string} jobid param
+*
+*
+*
+* @apiSchema {jsonschema=../schema/res.DataJobLogs.json} apiSuccess
+*/
+
+
+/**
+* @api {get} /data List Data
+* @apiVersion 1.0.0
+* @apiName GET-/data
+* @apiGroup Data
+* @apiPermission user
+*
+* @apidescription
+*   List data
+*
+
+*
+* @apiSchema (Query) {jsonschema=../schema/req.query.ListData.json} apiParam
+*
+* @apiSchema {jsonschema=../schema/res.ListData.json} apiSuccess
+*/
+
+
+/**
+* @api {post} /data Create data
+* @apiVersion 1.0.0
+* @apiName POST-/data
+* @apiGroup Data
+* @apiPermission admin
+*
+* @apidescription
+*   Register a new data source
+*
+
+*
+*
+* @apiSchema (Body) {jsonschema=../schema/req.body.CreateData.json} apiParam
+* @apiSchema {jsonschema=../schema/data.json} apiSuccess
+*/
+
+
+/**
+* @api {patch} /data/:dataid Update Layer
+* @apiVersion 1.0.0
+* @apiName PATCH-/data/:dataid
+* @apiGroup Data
+* @apiPermission admin
+*
+* @apidescription
+*   Update a data source
+*
+* @apiParam {integer} dataid param
+*
+*
+* @apiSchema (Body) {jsonschema=../schema/req.body.PatchData.json} apiParam
+* @apiSchema {jsonschema=../schema/data.json} apiSuccess
+*/
+
+
+/**
+* @api {get} /data/:dataid Get Data
+* @apiVersion 1.0.0
+* @apiName GET-/data/:dataid
+* @apiGroup Data
+* @apiPermission user
+*
+* @apidescription
+*   Get a data source
+*
+* @apiParam {integer} dataid param
+*
+*
+*
+* @apiSchema {jsonschema=../schema/data.json} apiSuccess
+*/
+
+
+/**
+* @api {delete} /data/:dataid Delete Data
+* @apiVersion 1.0.0
+* @apiName DELETE-/data/:dataid
+* @apiGroup Data
+* @apiPermission user
+*
+* @apidescription
+*   Delete a data source
+*
+* @apiParam {integer} dataid param
 *
 *
 *
@@ -555,6 +707,24 @@
 *
 *
 * @apiSchema {jsonschema=../schema/res.TaskStatus.json} apiSuccess
+*/
+
+
+/**
+* @api {post} /layer/:layerid/task Run Task
+* @apiVersion 1.0.0
+* @apiName POST-/layer/:layerid/task
+* @apiGroup Task
+* @apiPermission user
+*
+* @apidescription
+*   Manually invoke a Task
+*
+* @apiParam {integer} layerid param
+*
+*
+*
+* @apiSchema {jsonschema=../schema/res.Standard.json} apiSuccess
 */
 
 

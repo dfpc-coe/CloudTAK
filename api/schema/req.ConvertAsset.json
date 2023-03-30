@@ -1,0 +1,16 @@
+{
+    "type": "object",
+    "required": [
+        "format"
+    ],
+    "properties": {
+        "format": {
+            "type": "string",
+            "default": "GeoJSON",
+            "enum": [
+                "GeoJSON",
+                "PMTiles"
+            ]
+        }
+    }
+}

@@ -23,9 +23,7 @@
                 <div class="col-lg-12">
                     <div class="card">
                         <div class="card-header">
-                            <template v-if='layer.mode === "live"'>
-                                <LayerStatus :layer='layer'/>
-                            </template>
+                            <LayerStatus :layer='layer'/>
 
                             <a @click='$router.push(`/layer/${layer.id}`)' class="card-title cursor-pointer" v-text='layer.name'></a>
 
@@ -44,12 +42,12 @@
                     </div>
                 </div>
 
-                <div v-if='layer.mode === "live"' class="col-lg-12">
+                <div class="col-lg-12">
                     <LayerTask/>
                 </div>
 
                 <div class="col-lg-12">
-                    <LayerData v-model='layerdata' :disabled='true'/>
+                    <LayerData v-model='layer' :disabled='true'/>
                 </div>
 
                 <div class="col-lg-12">
@@ -87,7 +85,6 @@ export default {
             loading: {
                 layer: true
             },
-            layerdata: {},
             layer: {}
         }
     },
@@ -110,15 +107,7 @@ export default {
         },
         fetch: async function() {
             this.loading.layer = true;
-
-            const layer = await window.std(`/api/layer/${this.$route.params.layerid}`);
-            this.layerdata = {
-                mode: layer.mode,
-                ...layer.data
-            };
-            delete layer.data;
-            this.layer = layer;
-
+            this.layer = await window.std(`/api/layer/${this.$route.params.layerid}`);
             this.loading.layer = false;
         }
     },

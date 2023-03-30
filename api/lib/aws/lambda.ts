@@ -24,14 +24,25 @@ export default class Lambda {
         return JSON.parse(Buffer.from(res.Payload).toString());
     }
 
-    static generate(config: Config, layer: any, layerdata: any): any {
+    static async invoke(config: Config, layerid: number): Promise<void> {
+        const lambda = new AWSLambda.LambdaClient({ region: process.env.AWS_DEFAULT_REGION });
+        const FunctionName = `${config.StackName}-layer-${layerid}`;
+
+        await lambda.send(new AWSLambda.InvokeCommand({
+            FunctionName,
+            InvocationType: 'Event',
+            Payload: Buffer.from('')
+        }));
+    }
+
+    static generate(config: Config, layer: any): any {
         const StackName = `${config.StackName}-layer-${layer.id}`;
 
         const stack: any = {
             Parameters: {
                 Task: {
                     Type: 'String',
-                    Default: layerdata.task
+                    Default: layer.task
                 },
             },
             Resources: {
@@ -67,13 +78,13 @@ export default class Lambda {
                     Type: 'AWS::Lambda::Function',
                     Properties: {
                         FunctionName: StackName,
-                        MemorySize: layerdata.memory,
-                        Timeout: layerdata.timeout,
+                        MemorySize: layer.memory,
+                        Timeout: layer.timeout,
                         Description: StackName,
                         PackageType: 'Image',
                         Environment: {
                             Variables: {
-                                ETL_API: config.API_URL,
+                                ETL_API: cf.importValue(config.StackName + '-hosted'),
                                 ETL_TOKEN: jwt.sign({ access: 'cot', layer: layer.id }, config.SigningSecret),
                                 ETL_LAYER: layer.id
                             }
@@ -87,10 +98,10 @@ export default class Lambda {
             }
         }
 
-        if (Schedule.is_aws(layerdata.cron)) {
+        if (Schedule.is_aws(layer.cron)) {
             stack.Parameters.ScheduleExpression = {
                 Type: 'String',
-                Default: layerdata.cron
+                Default: layer.cron
             };
             stack.Parameters.Events = {
                 Type: 'String',

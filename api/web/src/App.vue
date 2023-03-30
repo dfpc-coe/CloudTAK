@@ -2,7 +2,10 @@
 <div class='page'>
     <header class='navbar navbar-expand-md navbar-dark d-print-none'>
         <div class="container-xl">
-            <div class="col">
+            <div class="col-auto">
+                <img @click='$router.push("/")' class='cursor-pointer' height='50' width='50' src='/logo.png'>
+            </div>
+            <div class="col mx-2">
                 <div class="page-pretitle">TAK Public Safety</div>
                 <h2 class="page-title">ETL Data Layers</h2>
             </div>
@@ -42,9 +45,17 @@
                         <li class="nav-item">
                             <a class="nav-link cursor-pointer" @click='$router.push("/layer")'>
                                 <span class="nav-link-icon d-md-none d-lg-inline-block">
-                                    <DatabaseIcon/>
+                                    <BuildingBroadcastTowerIcon/>
                                 </span>
                                 <span class="nav-link-title">Layers</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link cursor-pointer" @click='$router.push("/data")'>
+                                <span class="nav-link-icon d-md-none d-lg-inline-block">
+                                    <DatabaseIcon/>
+                                </span>
+                                <span class="nav-link-title">Data</span>
                             </a>
                         </li>
                         <li class="nav-item dropdown">
@@ -95,6 +106,7 @@ import {
     HomeIcon,
     NetworkIcon,
     DatabaseIcon,
+    BuildingBroadcastTowerIcon,
     AdjustmentsIcon,
     ShovelIcon
 } from 'vue-tabler-icons';
@@ -123,7 +135,12 @@ export default {
     },
     mounted: async function() {
         const url = window.stdurl('/api');
-        url.protocol = 'ws:';
+
+        if (window.location.hostname === 'localhost') {
+            url.protocol = 'ws:';
+        } else {
+            url.protocol = 'wss:';
+        }
 
         this.ws = new WebSocket(url);
         this.ws.addEventListener('error', (err) => {
@@ -158,6 +175,7 @@ export default {
         NetworkIcon,
         DatabaseIcon,
         TablerError,
+        BuildingBroadcastTowerIcon,
         AdjustmentsIcon,
         ShovelIcon,
     }

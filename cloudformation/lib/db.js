@@ -85,8 +85,8 @@ export default {
             Properties: {
                 DBSubnetGroupDescription: cf.join('-', [cf.stackName, 'rds-subnets']),
                 SubnetIds: [
-                    cf.ref('SubnetPrivateA'),
-                    cf.ref('SubnetPrivateB')
+                    cf.importValue('coe-vpc-prod-subnet-private-a'),
+                    cf.importValue('coe-vpc-prod-subnet-private-b')
                 ]
             }
         },
@@ -94,7 +94,7 @@ export default {
             Type: 'AWS::EC2::SecurityGroup',
             Properties: {
                 GroupDescription: cf.join('-', [cf.stackName, 'rds-sg']),
-                VpcId: cf.ref('VPC'),
+                VpcId: cf.importValue('coe-vpc-prod-vpc'),
                 SecurityGroupIngress: [{
                     IpProtocol: '-1',
                     SourceSecurityGroupId: cf.getAtt('ServiceSecurityGroup', 'GroupId')

@@ -4,10 +4,15 @@
     "required": [
         "name",
         "description",
-        "data",
         "enabled",
         "enabled_styles",
-        "styles"
+        "styles",
+        "task",
+        "connection",
+        "cron",
+        "environment",
+        "memory",
+        "timeout"
     ],
     "properties": {
         "name": {
@@ -22,17 +27,32 @@
         "enabled_styles": {
             "$ref": "./layers/enabled_styles.json"
         },
-        "mode": {
-            "$ref": "./layers/mode.json"
-        },
         "styles": {
             "$ref": "./util/styles.json"
         },
-        "data": {
-            "$ref": "./util/layerdata.json"
-        },
-        "loggin": {
+        "logging": {
             "$ref": "./layers/logging.json"
+        },
+        "stale": {
+            "$ref": "./layers/stale.json"
+        },
+        "task": {
+            "$ref": "./layers/task.json"
+        },
+        "connection": {
+            "$ref": "./layers/connection.json"
+        },
+        "cron": {
+            "$ref": "./layers/cron.json"
+        },
+        "environment": {
+            "$ref": "./layers/environment.json"
+        },
+        "memory": {
+            "$ref": "./layers/memory.json"
+        },
+        "timeout": {
+            "$ref": "./layers/timeout.json"
         }
     }
 }
