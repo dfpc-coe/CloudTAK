@@ -4,7 +4,7 @@ import ECR from '../lib/aws/ecr.js';
 import CF from '../lib/aws/cloudformation.js';
 import Lambda from '../lib/aws/lambda.js';
 import CloudFormation from '../lib/aws/cloudformation.js';
-import Logs from '../lib/aws/logs.js';
+import Logs from '../lib/aws/lambda-logs.js';
 
 // @ts-ignore
 import Layer from '../lib/types/layer.js';
