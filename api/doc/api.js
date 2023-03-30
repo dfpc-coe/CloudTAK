@@ -258,6 +258,24 @@
 
 
 /**
+* @api {get} /data/:dataid/job List Jobs
+* @apiVersion 1.0.0
+* @apiName GET-/data/:dataid/job
+* @apiGroup DataJobs
+* @apiPermission user
+*
+* @apidescription
+*   List Data Jobs
+*
+* @apiParam {integer} dataid param
+*
+*
+*
+* @apiSchema {jsonschema=../schema/res.ListDataJobs.json} apiSuccess
+*/
+
+
+/**
 * @api {get} /data List Data
 * @apiVersion 1.0.0
 * @apiName GET-/data

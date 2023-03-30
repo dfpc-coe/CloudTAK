@@ -1,0 +1,35 @@
+{
+    "type": "object",
+    "required": [
+        "total",
+        "list"
+    ],
+    "properties": {
+        "total": {
+            "type": "integer"
+        },
+        "list": {
+            "type": "object",
+            "required": [
+                "asset",
+                "status",
+                "created",
+                "updated"
+            ],
+            "properties": {
+                "asset": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "created": {
+                    "type": "integer"
+                },
+                "updated": {
+                    "type": "integer"
+                }
+            }
+        }
+    }
+}

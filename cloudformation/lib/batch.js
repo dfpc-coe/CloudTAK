@@ -7,18 +7,26 @@ export default {
             Properties: {
                 Type: 'container',
                 JobDefinitionName: cf.join('', [cf.stackName, '-data-job']),
+                PlatformCapabilities: [ 'FARGATE' ],
                 RetryStrategy: { Attempts: 1 },
-                Parameters: { },
                 ContainerProperties: {
+                    FargatePlatformConfiguration: {
+                        PlatformVersion: 'LATEST'
+                    },
                     Environment: [
                         { Name: 'StackName', Value: cf.stackName }
                     ],
-                    Memory: 1900,
-                    Privileged: true,
                     JobRoleArn: cf.getAtt('BatchJobRole', 'Arn'),
+                    ExecutionRoleArn: cf.getAtt('BatchExecRole', 'Arn'),
+                    Image: cf.join([cf.accountId, '.dkr.ecr.', cf.region, '.amazonaws.com/coe-ecr-etl:task-', cf.ref('GitSha')]),
                     ReadonlyRootFilesystem: false,
-                    Vcpus: 2,
-                    Image: cf.join([cf.accountId, '.dkr.ecr.', cf.region, '.amazonaws.com/coe-ecr-etl:task-', cf.ref('GitSha')])
+                    ResourceRequirements: [{
+                        Type: 'VCPU',
+                        Value: 1
+                    },{
+                        Type: 'MEMORY',
+                        Value: 2048
+                    }]
                 }
             }
         },
@@ -32,6 +40,25 @@ export default {
                 State: 'ENABLED',
                 Priority: 1,
                 JobQueueName: cf.join('-', [cf.stackName, 'queue'])
+            }
+        },
+        BatchExecRole: {
+            Type: 'AWS::IAM::Role',
+            Properties: {
+                AssumeRolePolicyDocument: {
+                    Version: '2012-10-17',
+                    Statement: [{
+                        Effect: 'Allow',
+                        Action: 'sts:AssumeRole',
+                        Principal: {
+                            Service: 'ecs-tasks.amazonaws.com'
+                        }
+                    }]
+                },
+                ManagedPolicyArns: [
+                    cf.join(['arn:', cf.partition, ':iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy'])
+                ],
+                Path: '/'
             }
         },
         BatchServiceRole: {
