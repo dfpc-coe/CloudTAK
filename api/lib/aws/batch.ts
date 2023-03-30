@@ -3,6 +3,7 @@ import cf from '@openaddresses/cloudfriend';
 import AWSBatch from '@aws-sdk/client-batch';
 import Config from '../config.js';
 import jwt from 'jsonwebtoken';
+import Err from '@openaddresses/batch-error';
 
 export interface BatchJob {
     id: string;
@@ -10,6 +11,7 @@ export interface BatchJob {
     status: string;
     created: number;
     updated: number;
+    logstream?: string;
 }
 
 /**
@@ -35,6 +37,31 @@ export default class Batch {
         return batchres;
     }
 
+    static async job(config: Config, jobid: string): Promise<BatchJob> {
+        const batch = new AWSBatch.BatchClient({ region: process.env.AWS_DEFAULT_REGION });
+
+        const jobs = await batch.send(new AWSBatch.DescribeJobsCommand({
+            jobs: [jobid]
+        }))
+
+        if (!jobs.jobs.length) throw new Err(400, null, 'AWS Does not report this job');
+
+        const job = jobs.jobs[0];
+
+        const name = job.jobName.replace(/data-[0-9]+-/, '');
+        let asset: string[] = [...name];
+        asset[name.lastIndexOf('_')] = '.';
+
+        return {
+            id: job.jobId,
+            asset: asset.join(''),
+            status: job.status,
+            created: job.createdAt,
+            updated: job.stoppedAt,
+            logstream: job.container.logStreamName
+        }
+    }
+
     static async list(config: Config, data: any): Promise<BatchJob[]> {
         const batch = new AWSBatch.BatchClient({ region: process.env.AWS_DEFAULT_REGION });
 
@@ -46,7 +73,6 @@ export default class Batch {
             }]
         }))).jobSummaryList.map((job) => {
             const name = job.jobName.replace(`data-${data.id}-`, '');
-
             let asset: string[] = [...name];
             asset[name.lastIndexOf('_')] = '.';
 

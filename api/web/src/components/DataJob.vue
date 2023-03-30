@@ -12,7 +12,7 @@
         </div>
     </div>
 
-    <TablerLoading v-if='loading.logs' desc='Loading Job Logs'/>
+    <TablerLoading v-if='loading.logs || loading.job' desc='Loading Job Logs'/>
     <div v-else class='page-body'>
         <div class='container-xl'>
             <div class='row row-deck row-cards'>
@@ -27,7 +27,7 @@
                             </div>
                         </div>
                         <div class="card-body">
-                            <pre>LOGS</pre>
+                            <pre v-text='logs'></pre>
                         </div>
                     </div>
                 </div>
@@ -52,18 +52,29 @@ export default {
         return {
             err: false,
             loading: {
+                job: true,
                 logs: true
             },
-            logs: []
+            logs: ''
         }
     },
     mounted: async function() {
         await this.fetch();
+        await this.fetchLogs();
     },
     methods: {
         fetch: async function() {
+            this.loading.job = true;
+            this.data = await window.std(`/api/data/${this.$route.params.dataid}/job/${this.$route.params.jobid}`);
+            this.loading.job = false;
+        },
+        fetchLogs: async function() {
             this.loading.logs = true;
-            this.data = await window.std(`/api/data/${this.$route.params.dataid}`);
+            this.logs = (await window.std(`/api/data/${this.$route.params.dataid}/job/${this.$route.params.jobid}/logs`))
+                .logs
+                .map((log) => { return log.message })
+                .join('\n');
+
             this.loading.logs = false;
         }
     },

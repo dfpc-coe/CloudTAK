@@ -276,6 +276,44 @@
 
 
 /**
+* @api {get} /data/:dataid/job/:jobid List Jobs
+* @apiVersion 1.0.0
+* @apiName GET-/data/:dataid/job/:jobid
+* @apiGroup DataJobs
+* @apiPermission user
+*
+* @apidescription
+*   List Data Jobs
+*
+* @apiParam {integer} dataid param
+* @apiParam {string} jobid param
+*
+*
+*
+* @apiSchema {jsonschema=../schema/res.DataJob.json} apiSuccess
+*/
+
+
+/**
+* @api {get} /data/:dataid/job/:jobid/logs List Logs
+* @apiVersion 1.0.0
+* @apiName GET-/data/:dataid/job/:jobid/logs
+* @apiGroup DataJobLogs
+* @apiPermission user
+*
+* @apidescription
+*   List Data Job Logs
+*
+* @apiParam {integer} dataid param
+* @apiParam {string} jobid param
+*
+*
+*
+* @apiSchema {jsonschema=../schema/res.DataJobLogs.json} apiSuccess
+*/
+
+
+/**
 * @api {get} /data List Data
 * @apiVersion 1.0.0
 * @apiName GET-/data
