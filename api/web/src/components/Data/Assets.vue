@@ -3,8 +3,9 @@
     <div class='card-header d-flex'>
         <h3 class='card-title'>Data Assets</h3>
 
-        <div class='ms-auto'>
+        <div class='ms-auto btn-list'>
             <PlusIcon @click='upload = true' class='cursor-pointer'/>
+            <RefreshIcon @click='fetchList' class='cursor-pointer'/>
         </div>
     </div>
 
@@ -55,6 +56,7 @@
 import {
     PlusIcon,
     TrashIcon,
+    RefreshIcon,
     DownloadIcon,
     TransformIcon,
 } from 'vue-tabler-icons'
@@ -134,6 +136,7 @@ export default {
         Upload,
         PlusIcon,
         TrashIcon,
+        RefreshIcon,
         TransformIcon,
         DownloadIcon,
         TablerLoading,
