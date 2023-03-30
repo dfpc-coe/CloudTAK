@@ -4,6 +4,13 @@ import AWSBatch from '@aws-sdk/client-batch';
 import Config from '../config.js';
 import jwt from 'jsonwebtoken';
 
+export interface BatchJob {
+    asset: string;
+    status: string;
+    created: number;
+    updated: number;
+}
+
 /**
  * @class
  */
@@ -25,5 +32,31 @@ export default class Batch {
         }));
 
         return batchres;
+    }
+
+    static async list(config: Config, data: any): Promise<BatchJob[]> {
+        const batch = new AWSBatch.BatchClient({ region: process.env.AWS_DEFAULT_REGION });
+
+        const jobs = (await batch.send(new AWSBatch.ListJobsCommand({
+            jobQueue: `${config.StackName}-queue`,
+            filters: [{
+                name: 'JOB_NAME',
+                values: [`data-${data.id}-*`]
+            }]
+        }))).jobSummaryList.map((job) => {
+            const name = job.jobName.replace(`data-${data.id}-`, '');
+
+            let asset: string[] = [...name];
+            asset[name.lastIndexOf('_')] = '.';
+
+            return {
+                asset: asset.join(''),
+                status: job.status,
+                created: job.createdAt,
+                updated: job.stoppedAt,
+            };
+        });
+
+        return jobs;
     }
 };

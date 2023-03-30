@@ -41,6 +41,9 @@
                 <div class="col-lg-12">
                     <DataAsset/>
                 </div>
+                <div class="col-lg-12">
+                    <DataTransforms/>
+                </div>
             </div>
         </div>
     </div>
@@ -52,6 +55,7 @@
 <script>
 import PageFooter from './PageFooter.vue';
 import DataAsset from './Data/Assets.vue';
+import DataTransforms from './Data/Transforms.vue';
 import timeDiff from '../timediff.js';
 import {
     TablerLoading
@@ -88,7 +92,8 @@ export default {
         SettingsIcon,
         PageFooter,
         TablerLoading,
-        DataAsset
+        DataAsset,
+        DataTransforms
     }
 }
 </script>
