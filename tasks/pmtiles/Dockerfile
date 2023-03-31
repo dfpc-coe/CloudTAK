@@ -5,4 +5,4 @@ COPY . ${LAMBDA_TASK_ROOT}/
 RUN npm install
 RUN npm run build
 
-CMD ["dist/task.handler"]
+CMD ["dist/index.handler"]

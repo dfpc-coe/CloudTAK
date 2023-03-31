@@ -16,9 +16,9 @@ export default {
                         CORS: '*'
                     }
                 },
-                Role: cf.ref('PMTilesLambdaRole'),
+                Role: cf.getAtt('PMTilesLambdaRole', 'Arn'),
                 Code: {
-                    ImageUri: cf.join([cf.accountId, '.dkr.ecr.', cf.region, `.amazonaws.com/coe-ecr-etl-tasks:pmtiles-`, cf.ref('GitSha')])
+                    ImageUri: cf.join([cf.accountId, '.dkr.ecr.', cf.region, '.amazonaws.com/coe-ecr-etl:pmtiles-', cf.ref('GitSha')])
                 }
             }
         },
@@ -46,7 +46,7 @@ export default {
                                 's3:List*',
                                 's3:Get*',
                                 's3:Head*',
-                                's3:Describe*',
+                                's3:Describe*'
                             ],
                             Resource: [
                                 cf.join(['arn:', cf.partition, ':s3:::', cf.ref('AssetBucket')]),
@@ -61,9 +61,9 @@ export default {
                 ]
             }
         }
-    },
+    }
 
-        /*
+    /*
         PMTilesCloudFront: {
             Type: 'AWS::CloudFront::Distribution',
             Properties: {

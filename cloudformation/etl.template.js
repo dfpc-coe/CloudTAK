@@ -20,6 +20,7 @@ export default cf.merge(
     Batch,
     Signing,
     Dynamo,
+    PMTiles,
     {
         Description: 'Template for @tak-ps/etl',
         Parameters: {
