@@ -42,7 +42,7 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v1
 
       - name: Docker Tag Task
-        run: docker tag etl_${{matrix.task}}:latest ${{secrets.AWS_ACCOUNT_ID}}.dkr.ecr.${{secrets.AWS_REGION}}.amazonaws.com/coe-ecr-etl:task-${{github.event.pull_request.head.sha || github.sha}}
+        run: docker tag etl_${{matrix.task}}:latest ${{secrets.AWS_ACCOUNT_ID}}.dkr.ecr.${{secrets.AWS_REGION}}.amazonaws.com/coe-ecr-etl:${{matrix.task}}-${{github.event.pull_request.head.sha || github.sha}}
 
       - name: Docker Push task
         run: docker push ${{secrets.AWS_ACCOUNT_ID}}.dkr.ecr.${{secrets.AWS_REGION}}.amazonaws.com/coe-ecr-etl:${{matrix.task}}-${{github.event.pull_request.head.sha || github.sha}}
