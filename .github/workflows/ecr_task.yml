@@ -19,7 +19,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
     if: github.event.pull_request.draft == false
-    timeout-minutes: 15
     strategy:
       matrix:
         task: [task, pmtiles]
