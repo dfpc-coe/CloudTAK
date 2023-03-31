@@ -18,6 +18,10 @@ services:
         platform: linux/amd64
         build: ./tasks/geojson/
 
+    pmtiles:
+        platform: linux/amd64
+        build: ./tasks/pmtiles/
+
     postgis:
         platform: linux/amd64
         image: postgis/postgis:15-3.3-alpine
