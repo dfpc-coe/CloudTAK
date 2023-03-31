@@ -5,6 +5,7 @@ import KMS from './lib/kms.js';
 import Batch from './lib/batch.js';
 import DB from './lib/db.js';
 import Signing from './lib/signing.js';
+import PMTiles from './lib/pmtiles.js';
 import Dynamo from './lib/dynamo.js';
 import {
     ELB as ELBAlarms,
