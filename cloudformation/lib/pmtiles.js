@@ -19,7 +19,7 @@ export default {
                 Role: cf.getAtt('PMTilesLambdaRole', 'Arn'),
                 Code: {
                     ImageUri: cf.join([cf.accountId, '.dkr.ecr.', cf.region, '.amazonaws.com/coe-ecr-etl:pmtiles-', cf.ref('GitSha')])
-                }
+                },
             }
         },
         PMTilesLambdaRole: {
@@ -60,35 +60,106 @@ export default {
                     cf.join(['arn:', cf.partition, ':iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'])
                 ]
             }
+        },
+        PMTilesApiGatewayRole: {
+            Type: 'AWS::IAM::Role',
+            Properties: {
+                AssumeRolePolicyDocument: {
+                    Version: '2012-10-17',
+                    Statement: [{
+                        Effect: 'Allow',
+                        Action: 'sts:AssumeRole',
+                        Principal: {
+                            Service: ['apigateway.amazonaws.com']
+                        }
+                    }]
+                },
+                Policies: [{
+                    PolicyName: cf.join([cf.stackName, '-pmtiles-api-gateway']),
+                    PolicyDocument: {
+                        Version: '2012-10-17',
+                        Statement: [{
+                            Effect: 'Allow',
+                            Action: [
+                                'lambda:InvokeFunction'
+                            ],
+                            Resource: [
+                                cf.getAtt('PMTilesLambda', 'Arn')
+                            ]
+                        }]
+                    }
+                }]
+            }
+        },
+        PMTilesLambdaAPI: {
+            Type: 'AWS::ApiGateway::RestApi',
+            Properties: {
+                Name: 'PMtiles Rest API',
+                EndpointConfiguration: {
+                    Types: ['REGIONAL']
+                }
+            }
+        },
+        PMTilesLambdaAPIResource: {
+            Type: 'AWS::ApiGateway::Resource',
+            Properties: {
+                ParentId: cf.getAtt('PMTilesLambdaAPI', 'RootResourceId'),
+                PathPart: 'Tile',
+                RestApiId: cf.ref('PMTilesLambdaAPI')
+            }
+        },
+        PMTilesAPIDeployment: {
+            Type: 'AWS::ApiGateway::Deployment',
+            DependsOn: [ 'PMTilesLambdaAPIResourceGET' ],
+            Properties: {
+                RestApiId: cf.ref('PMTilesLambdaAPI')
+            }
+        },
+        PMtilesLambdaAPIStage: {
+            Type: 'AWS::ApiGateway::Stage',
+            Properties: {
+                DeploymentId: cf.ref('PMTilesAPIDeployment'),
+                RestApiId: cf.ref('PMTilesLambdaAPI'),
+                StageName: 'tiles'
+            }
+        },
+        PMTilesLambdaAPIResourceGET: {
+            Type: 'AWS::ApiGateway::Method',
+            Properties: {
+                AuthorizationType: 'NONE',
+                HttpMethod: 'GET',
+                Integration: {
+                    ConnectionType: 'INTERNET',
+                    Credentials:  cf.getAtt('PMTilesApiGatewayRole', 'Arn'),
+                    IntegrationHttpMethod: 'POST',
+                    Type: 'AWS_PROXY',
+                    Uri: cf.join(['arn:', cf.partition, ':apigateway:', cf.region, ':lambda:path/2015-03-31/functions/', cf.getAtt('PMTilesLambda', 'Arn'), '/invocations']),
+                },
+                ResourceId: cf.ref('PMTilesLambdaAPIResource'),
+                RestApiId: cf.ref('PMTilesLambdaAPI')
+            }
         }
-    }
-
-    /*
+        /*
         PMTilesCloudFront: {
             Type: 'AWS::CloudFront::Distribution',
             Properties: {
                 DistributionConfig: {
-                    CacheBehaviors: [{
-                        LambdaFunctionAssociations: [{
-                            EventType: "string-value",
-                            LambdaFunctionARN: "string-value"
-                        }]
-                    }],
-                    DefaultCacheBehavior: {
-                        LambdaFunctionAssociations: [{
-                            EventType: "string-value",
-                            LambdaFunctionARN: "string-value"
-                        }]
-                    },
+                    PriceClass: 'PriceClass_All',
+                    HttpVersion: 'http2',
                     IPV6Enabled: true,
+                    Origins: [{
+                        DomainName: cf.getAtt('PMTilesLambda', 'FunctionUrl')
+
+                    }]
                     Origins: [{
                         "CustomOriginConfig": {
                             "OriginKeepaliveTimeout": "integer-value",
                             "OriginReadTimeout": "integer-value"
                         }
                     }]
+                }
             }
         }
+        */
     }
-    */
 };
