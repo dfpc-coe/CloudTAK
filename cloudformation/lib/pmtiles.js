@@ -19,7 +19,7 @@ export default {
                 Role: cf.getAtt('PMTilesLambdaRole', 'Arn'),
                 Code: {
                     ImageUri: cf.join([cf.accountId, '.dkr.ecr.', cf.region, '.amazonaws.com/coe-ecr-etl:pmtiles-', cf.ref('GitSha')])
-                },
+                }
             }
         },
         PMTilesLambdaRole: {
@@ -104,13 +104,13 @@ export default {
             Type: 'AWS::ApiGateway::Resource',
             Properties: {
                 ParentId: cf.getAtt('PMTilesLambdaAPI', 'RootResourceId'),
-                PathPart: 'Tile',
+                PathPart: '{proxy+}',
                 RestApiId: cf.ref('PMTilesLambdaAPI')
             }
         },
         PMTilesAPIDeployment: {
             Type: 'AWS::ApiGateway::Deployment',
-            DependsOn: [ 'PMTilesLambdaAPIResourceGET' ],
+            DependsOn: ['PMTilesLambdaAPIResourceGET'],
             Properties: {
                 RestApiId: cf.ref('PMTilesLambdaAPI')
             }
@@ -133,7 +133,7 @@ export default {
                     Credentials:  cf.getAtt('PMTilesApiGatewayRole', 'Arn'),
                     IntegrationHttpMethod: 'POST',
                     Type: 'AWS_PROXY',
-                    Uri: cf.join(['arn:', cf.partition, ':apigateway:', cf.region, ':lambda:path/2015-03-31/functions/', cf.getAtt('PMTilesLambda', 'Arn'), '/invocations']),
+                    Uri: cf.join(['arn:', cf.partition, ':apigateway:', cf.region, ':lambda:path/2015-03-31/functions/', cf.getAtt('PMTilesLambda', 'Arn'), '/invocations'])
                 },
                 ResourceId: cf.ref('PMTilesLambdaAPIResource'),
                 RestApiId: cf.ref('PMTilesLambdaAPI')
