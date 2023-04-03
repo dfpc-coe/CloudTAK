@@ -139,27 +139,5 @@ export default {
                 RestApiId: cf.ref('PMTilesLambdaAPI')
             }
         }
-        /*
-        PMTilesCloudFront: {
-            Type: 'AWS::CloudFront::Distribution',
-            Properties: {
-                DistributionConfig: {
-                    PriceClass: 'PriceClass_All',
-                    HttpVersion: 'http2',
-                    IPV6Enabled: true,
-                    Origins: [{
-                        DomainName: cf.getAtt('PMTilesLambda', 'FunctionUrl')
-
-                    }]
-                    Origins: [{
-                        "CustomOriginConfig": {
-                            "OriginKeepaliveTimeout": "integer-value",
-                            "OriginReadTimeout": "integer-value"
-                        }
-                    }]
-                }
-            }
-        }
-        */
     }
 };
