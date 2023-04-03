@@ -171,4 +171,20 @@ export default async function router(schema: any, config: Config) {
         }
     });
 
+    await schema.get('/data/:dataid/asset/:asset.pmtiles/tile', {
+        name: 'PMTiles TileJSON',
+        auth: 'user',
+        group: 'DataAssets',
+        description: 'Get TileJSON ',
+        ':dataid': 'integer',
+        ':asset': 'string'
+    }, async (req: Request, res: Response) => {
+        try {
+            await Auth.is_auth(req, true);
+
+            return res.redirect(`${Config.PMTILES_API}/data/${data.id}/${req.params.asset}`);
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
 }
