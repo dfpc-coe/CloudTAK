@@ -20,6 +20,7 @@ export default class Config {
     Username: string;
     Password: string;
     API_URL: string;
+    PMTILES_URL: string;
     DynamoDB: string;
     wsClients: any[];
     Bucket?: string;
@@ -59,6 +60,7 @@ export default class Config {
                 config.Username = 'admin';
                 config.Password = 'admin';
                 config.API_URL = 'http://localhost:5001';
+                config.PMTILES_URL = 'http://localhost:5001';
                 config.DynamoDB = '';
                 config.Bucket = process.env.ASSET_BUCKET;
             } else {
@@ -67,12 +69,14 @@ export default class Config {
                 if (!process.env.TAK_USERNAME) throw new Error('TAK_USERNAME env must be set');
                 if (!process.env.TAK_PASSWORD) throw new Error('TAK_PASSWORD env must be set');
                 if (!process.env.API_URL) throw new Error('API_URL env must be set');
+                if (!process.env.PMTILES_URL) throw new Error('PMTILES_URL env must be set');
                 if (!process.env.ASSET_BUCKET) throw new Error('ASSET_BUCKET env must be set');
 
                 config.StackName = process.env.StackName;
                 config.Username = process.env.TAK_USERNAME;
                 config.Password = process.env.TAK_PASSWORD;
                 config.API_URL = process.env.API_URL;
+                config.PMTILES_URL = process.env.PMTiles_URL;
                 config.Bucket = process.env.ASSET_BUCKET;
 
                 config.DynamoDB = config.StackName;

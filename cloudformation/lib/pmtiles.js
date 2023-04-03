@@ -139,5 +139,14 @@ export default {
                 RestApiId: cf.ref('PMTilesLambdaAPI')
             }
         }
+    },
+    Outputs: {
+        PMTilesAPI: {
+            Description: 'PMTiles API',
+            Value: cf.join([cf.ref('ApiGateway'), '.execute-api.', cf.region, '.amazonaws.com']),
+            Export: {
+                Name: cf.join([cf.stackName, '-pmtiles-api'])
+            }
+        }
     }
 };
