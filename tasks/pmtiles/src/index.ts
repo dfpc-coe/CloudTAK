@@ -163,7 +163,6 @@ export const handlerRaw = async (
         headers["Access-Control-Allow-Origin"] = process.env.CORS;
     }
 
-    console.error('DEBUG', path);
     const { ok, name, tile, ext } = tile_path(path, process.env.TILE_PATH);
 
     if (!ok) {
@@ -171,7 +170,6 @@ export const handlerRaw = async (
     }
 
     const source = new S3Source(name);
-    console.error('DEBUG', source);
     const p = new PMTiles(source, CACHE, nativeDecompress);
     try {
         const header = await p.getHeader();
