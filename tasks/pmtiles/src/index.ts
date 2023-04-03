@@ -1,25 +1,11 @@
-import { Readable } from "stream";
-import {
-    Context,
-    APIGatewayProxyResult,
-    APIGatewayProxyEventV2,
-} from "aws-lambda";
-import {
-    PMTiles,
-    ResolvedValueCache,
-    RangeResponse,
-    Source,
-    Compression,
-    TileType,
-} from "pmtiles";
-
+import Lambda from "aws-lambda";
+import S3 from "@aws-sdk/client-s3";
+import pmtiles from 'pmtiles';
 import zlib from "zlib";
-
-import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
 import { NodeHttpHandler } from "@aws-sdk/node-http-handler";
 
 // the region should default to the same one as the function
-const s3client = new S3Client({
+const s3client = new S3.S3Client({
     requestHandler: new NodeHttpHandler({
         connectionTimeout: 500,
         socketTimeout: 500,
@@ -28,11 +14,11 @@ const s3client = new S3Client({
 
 async function nativeDecompress(
     buf: ArrayBuffer,
-    compression: Compression
+    compression: pmtiles.Compression
 ): Promise<ArrayBuffer> {
-    if (compression === Compression.None || compression === Compression.Unknown) {
+    if (compression === pmtiles.Compression.None || compression === pmtiles.Compression.Unknown) {
         return buf;
-    } else if (compression === Compression.Gzip) {
+    } else if (compression === pmtiles.Compression.Gzip) {
         return zlib.gunzipSync(buf);
     } else {
         throw Error("Compression method not supported");
@@ -40,49 +26,37 @@ async function nativeDecompress(
 }
 
 // Lambda needs to run with 512MB, empty function takes about 70
-const CACHE = new ResolvedValueCache(undefined, undefined, nativeDecompress);
-
-// duplicated code below
-export const pmtiles_path = (name: string, setting?: string): string => {
-    if (setting) {
-        return setting.replaceAll("{name}", name);
-    }
-    return name + ".pmtiles";
-};
-
+const CACHE = new pmtiles.ResolvedValueCache(undefined, undefined, nativeDecompress);
 const TILE = /^\/(?<NAME>[0-9a-zA-Z\/!\-_\.\*\'\(\)]+)\/(?<Z>\d+)\/(?<X>\d+)\/(?<Y>\d+).(?<EXT>[a-z]+)$/;
+const META = /^\/(?<NAME>[0-9a-zA-Z\/!\-_\.\*\'\(\)]+)$/;
 
 export const tile_path = (
     path: string,
-    setting?: string
 ): {
     ok: boolean;
+    meta: boolean;
     name: string;
     tile: [number, number, number];
     ext: string;
 } => {
-    let pattern = TILE;
-    if (setting) {
-        // escape regex
-        setting = setting.replace(/[.*+?^$()|[\]\\]/g, "\\$&");
-        setting = setting.replace("{name}", "(?<NAME>[0-9a-zA-Z/!-_.*'()]+)");
-        setting = setting.replace("{z}", "(?<Z>\\d+)");
-        setting = setting.replace("{x}", "(?<X>\\d+)");
-        setting = setting.replace("{y}", "(?<Y>\\d+)");
-        setting = setting.replace("{ext}", "(?<EXT>[a-z]+)");
-        pattern = new RegExp(setting);
-    }
+    const meta_match = path.match(META);
 
-    let match = path.match(pattern);
+    if (meta_match) {
+        const g = meta_match.groups!;
+        return { ok: true, meta: true, name: g.NAME, tile: [0, 0, 0], ext: g.EXT };
+    } else {
+        const match = path.match(TILE);
 
-    if (match) {
-        const g = match.groups!;
-        return { ok: true, name: g.NAME, tile: [+g.Z, +g.X, +g.Y], ext: g.EXT };
+        if (match) {
+            const g = match.groups!;
+            return { ok: true, meta: false, name: g.NAME, tile: [+g.Z, +g.X, +g.Y], ext: g.EXT };
+        } else {
+            return { ok: false, meta: false, name: "", tile: [0, 0, 0], ext: "" };
+        }
     }
-    return { ok: false, name: "", tile: [0, 0, 0], ext: "" };
 };
 
-class S3Source implements Source {
+class S3Source implements pmtiles.Source {
     archive_name: string;
 
     constructor(archive_name: string) {
@@ -93,11 +67,11 @@ class S3Source implements Source {
         return this.archive_name;
     }
 
-    async getBytes(offset: number, length: number): Promise<RangeResponse> {
+    async getBytes(offset: number, length: number): Promise<pmtiles.RangeResponse> {
         const resp = await s3client.send(
-            new GetObjectCommand({
+            new S3.GetObjectCommand({
                 Bucket: process.env.BUCKET!,
-                Key: pmtiles_path(this.archive_name, process.env.PMTILES_PATH),
+                Key: this.archive_name + '.pmtiles',
                 Range: "bytes=" + offset + "-" + (offset + length - 1),
             })
         );
@@ -122,7 +96,7 @@ const apiResp = (
     body: string,
     isBase64Encoded = false,
     headers: Headers = {}
-): APIGatewayProxyResult => {
+): Lambda.APIGatewayProxyResult => {
     return {
         statusCode: statusCode,
         body: body,
@@ -133,58 +107,66 @@ const apiResp = (
 
 // Assumes event is a API Gateway V2 or Lambda Function URL formatted dict
 // and returns API Gateway V2 / Lambda Function dict responses
-// Does not work with CloudFront events/Lambda@Edge; see README
 export const handlerRaw = async (
-    event: APIGatewayProxyEventV2,
-    context: Context,
-    tilePostprocess?: (a: ArrayBuffer, t: TileType) => ArrayBuffer
-): Promise<APIGatewayProxyResult> => {
-    var path;
-    var is_api_gateway;
-    if (event.pathParameters) {
-        is_api_gateway = true;
-        if (event.pathParameters.proxy) {
-            path = "/" + event.pathParameters.proxy;
-        } else {
-            return apiResp(500, "Proxy integration missing tile_path parameter");
-        }
+    event: Lambda.APIGatewayProxyEventV2,
+    context: Lambda.Context,
+    tilePostprocess?: (a: ArrayBuffer, t: pmtiles.TileType) => ArrayBuffer
+): Promise<Lambda.APIGatewayProxyResult> => {
+    let path;
+
+    if (event && event.pathParameters && event.pathParameters.proxy) {
+        path = "/" + event.pathParameters.proxy;
     } else {
-        path = event.rawPath;
+        return apiResp(500, "Proxy integration missing tile_path parameter");
     }
 
-    if (!path) {
-        return apiResp(500, "Invalid event configuration");
-    }
+    if (!path) return apiResp(500, "Invalid event configuration");
 
-    var headers: Headers = {};
+    const headers: Headers = {};
     // TODO: metadata and TileJSON
 
-    if (process.env.CORS) {
-        headers["Access-Control-Allow-Origin"] = process.env.CORS;
-    }
+    if (process.env.CORS) headers["Access-Control-Allow-Origin"] = process.env.CORS;
 
-    const { ok, name, tile, ext } = tile_path(path, process.env.TILE_PATH);
+    const { ok, name, tile, ext, meta } = tile_path(path);
 
-    if (!ok) {
-        return apiResp(400, "Invalid tile URL", false, headers);
-    }
+    if (!ok) return apiResp(400, "Invalid tile URL", false, headers);
 
     const source = new S3Source(name);
-    const p = new PMTiles(source, CACHE, nativeDecompress);
+    const p = new pmtiles.PMTiles(source, CACHE, nativeDecompress);
+
     try {
         const header = await p.getHeader();
         if (tile[0] < header.minZoom || tile[0] > header.maxZoom) {
             return apiResp(404, "", false, headers);
         }
 
+        if (meta) {
+            headers["Content-Type"] = "application/json";
+            return apiResp(200, JSON.stringify({
+                "tilejson": "2.2.0",
+                "name": `${name}.pmtiles`,
+                "description": "Hosted by TAK-ETL",
+                "version": "1.0.0",
+                "scheme": "xyz",
+                "tiles": [
+                    "https://api.example.com/tiles/{z}/{x}/{y}.mvt"
+                ],
+                "minzoom": header.minZoom,
+                "maxzoom": header.maxZoom,
+                "bounds": [],
+                "meta": JSON.stringify(header),
+                "center": [0, 0, 3]
+            }), false, headers);
+        }
+
         for (const pair of [
-            [TileType.Mvt, "mvt"],
-        [TileType.Png, "png"],
-        [TileType.Jpeg, "jpg"],
-        [TileType.Webp, "webp"],
+            [pmtiles.TileType.Mvt, "mvt"],
+            [pmtiles.TileType.Png, "png"],
+            [pmtiles.TileType.Jpeg, "jpg"],
+            [pmtiles.TileType.Webp, "webp"],
         ]) {
             if (header.tileType === pair[0] && ext !== pair[1]) {
-                if (header.tileType == TileType.Mvt && ext === "pbf") {
+                if (header.tileType == pmtiles.TileType.Mvt && ext === "pbf") {
                     // allow this for now. Eventually we will delete this in favor of .mvt
                     continue;
                 }
@@ -200,17 +182,17 @@ export const handlerRaw = async (
         const tile_result = await p.getZxy(tile[0], tile[1], tile[2]);
         if (tile_result) {
             switch (header.tileType) {
-                case TileType.Mvt:
+                case pmtiles.TileType.Mvt:
                     // part of the list of Cloudfront compressible types.
                     headers["Content-Type"] = "application/vnd.mapbox-vector-tile";
                 break;
-                case TileType.Png:
+                case pmtiles.TileType.Png:
                     headers["Content-Type"] = "image/png";
                 break;
-                case TileType.Jpeg:
+                case pmtiles.TileType.Jpeg:
                     headers["Content-Type"] = "image/jpeg";
                 break;
-                case TileType.Webp:
+                case pmtiles.TileType.Webp:
                     headers["Content-Type"] = "image/webp";
                 break;
             }
@@ -221,26 +203,16 @@ export const handlerRaw = async (
                 data = tilePostprocess(data, header.tileType);
             }
 
-            if (is_api_gateway) {
-                // this is wasted work, but we need to force API Gateway to interpret the Lambda response as binary
-                // without depending on clients sending matching Accept: headers in the request.
-                const recompressed_data = zlib.gzipSync(data);
-                headers["Content-Encoding"] = "gzip";
-                return apiResp(
-                    200,
-                    Buffer.from(recompressed_data).toString("base64"),
-                    true,
-                    headers
-                );
-            } else {
-                // returns uncompressed response
-                return apiResp(
-                    200,
-                    Buffer.from(data).toString("base64"),
-                    true,
-                    headers
-                );
-            }
+            // We need to force API Gateway to interpret the Lambda response as binary
+            // without depending on clients sending matching Accept: headers in the request.
+            const recompressed_data = zlib.gzipSync(data);
+            headers["Content-Encoding"] = "gzip";
+            return apiResp(
+                200,
+                Buffer.from(recompressed_data).toString("base64"),
+                true,
+                headers
+            );
         } else {
             return apiResp(204, "", false, headers);
         }
@@ -254,8 +226,8 @@ export const handlerRaw = async (
 };
 
 export const handler = async (
-    event: APIGatewayProxyEventV2,
-    context: Context
-): Promise<APIGatewayProxyResult> => {
+    event: Lambda.APIGatewayProxyEventV2,
+    context: Lambda.Context
+): Promise<Lambda.APIGatewayProxyResult> => {
     return handlerRaw(event, context);
 };

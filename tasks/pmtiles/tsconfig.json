@@ -1,4 +1,7 @@
  {
+  "ts-node": {
+    "esm": true
+  },
   "compilerOptions": {
     "target": "es2021",
     "strict": true,
@@ -10,7 +13,7 @@
     "esModuleInterop": true, 
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true, 
-    "isolatedModules": true, 
+    "isolatedModules": true
   },
   "exclude": ["node_modules"]
 }

@@ -1,15 +1,20 @@
 {
     "name": "pmtiles-aws",
     "version": "0.0.0",
+    "type": "module",
     "devDependencies": {
         "@types/aws-lambda": "^8.10.108",
         "@types/node": "^18.11.2",
+        "@typescript-eslint/eslint-plugin": "^5.57.1",
+        "@typescript-eslint/parser": "^5.57.1",
         "esbuild": "^0.17.0",
+        "eslint": "^8.37.0",
         "typescript": "^5.0.0"
     },
     "private": true,
     "scripts": {
         "tsc": "tsc --noEmit --watch",
+        "lint": "eslint src/index.ts",
         "build": "esbuild src/index.ts --target=es2020 --outfile=dist/index.mjs --format=esm --bundle --platform=node --target=node18 --external:@aws-sdk/client-s3 --external:@aws-sdk/node-http-handler --banner:js=//$(git describe --always)"
     },
     "dependencies": {
