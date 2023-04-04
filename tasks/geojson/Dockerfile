@@ -1,18 +1,12 @@
-FROM ubuntu:22.04
+FROM alpine:3.17
 
 ENV HOME=/home/etl
 WORKDIR $HOME
 
-RUN apt-get update \
-    && apt-get install -y curl build-essential git libsqlite3-dev zlib1g-dev
-
-RUN export NODEV='19.8.1' \
-    && curl "https://nodejs.org/dist/v${NODEV}/node-v${NODEV}-linux-x64.tar.gz" | tar -xzv > /dev/null \
-    && cp ./node-v${NODEV}-linux-x64/bin/node /usr/bin/ \
-    && ./node-v${NODEV}-linux-x64/bin/npm install -g npm
+RUN apk add sqlite sqlite-dev nodejs-current npm git make bash g++ zlib-dev
 
 # Download and install Tippecanoe
-RUN git clone -b 2.24.0 https://github.com/felt/tippecanoe.git /tmp/tippecanoe && \
+RUN git clone -b 2.24.0 --depth 1 https://github.com/felt/tippecanoe.git /tmp/tippecanoe && \
     cd /tmp/tippecanoe && \
     make && \
     PREFIX=/usr/local make install && \
