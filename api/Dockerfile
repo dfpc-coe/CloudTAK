@@ -24,6 +24,8 @@ RUN cd web \
     && yarn prod \
     && cd ..
 
+COPY ./nginx.conf /etc/nginx/nginx.conf
+
 CMD memcached -d -u root \
     && nginx \
     && npx knex migrate:latest \
