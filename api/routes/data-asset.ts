@@ -182,7 +182,9 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req, true);
 
-            return res.redirect(`${Config.PMTILES_API}/data/${data.id}/${req.params.asset}`);
+            const data = await Data.from(config.pool, req.params.dataid);
+
+            return res.redirect(`${config.PMTILES_URL}/data/${data.id}/${req.params.asset}`);
         } catch (err) {
             return Err.respond(err, res);
         }
