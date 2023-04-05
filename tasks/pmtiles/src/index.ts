@@ -153,9 +153,18 @@ export const handlerRaw = async (
                 ],
                 "minzoom": header.minZoom,
                 "maxzoom": header.maxZoom,
-                "bounds": [],
-                "meta": JSON.stringify(header),
-                "center": [0, 0, 3]
+                "bounds": [)
+                    header.minLon,
+                    header.minLat,
+                    header.maxLon,
+                    header.maxLat
+                ],
+                "meta": header,
+                "center": [
+                    header.centerLon,
+                    header.centerLat,
+                    header.centerZoom
+                ]
             }), false, headers);
         }
 

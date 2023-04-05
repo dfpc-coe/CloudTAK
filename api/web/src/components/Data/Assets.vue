@@ -129,6 +129,8 @@ export default {
             this.loading.list = true;
             this.list = await window.std(`/api/data/${this.$route.params.dataid}/asset`);
             this.loading.list = false;
+
+            this.$emit('assets', this.list);
         }
     },
     components: {

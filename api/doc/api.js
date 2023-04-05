@@ -258,6 +258,25 @@
 
 
 /**
+* @api {get} /data/:dataid/asset/:asset.pmtiles/tile PMTiles TileJSON
+* @apiVersion 1.0.0
+* @apiName GET-/data/:dataid/asset/:asset.pmtiles/tile
+* @apiGroup DataAssets
+* @apiPermission user
+*
+* @apidescription
+*   Get TileJSON
+*
+* @apiParam {integer} dataid param
+* @apiParam {string} asset param
+*
+*
+*
+*
+*/
+
+
+/**
 * @api {get} /data/:dataid/job List Jobs
 * @apiVersion 1.0.0
 * @apiName GET-/data/:dataid/job

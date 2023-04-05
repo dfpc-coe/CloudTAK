@@ -319,7 +319,7 @@ export default {
                         { Name: 'StackName', Value: cf.stackName },
                         { Name: 'ASSET_BUCKET', Value: cf.ref('AssetBucket') },
                         { Name: 'API_URL', Value: cf.ref('HostedURL') },
-                        { Name: 'PMTILES_URL', Value: cf.join([cf.ref('PMTilesAPIDeployment'), '.execute-api.', cf.region, '.amazonaws.com']) },
+                        { Name: 'PMTILES_URL', Value: cf.join(['HTTP://', cf.ref('PMTilesAPIDeployment'), '.execute-api.', cf.region, '.amazonaws.com']) },
                         { Name: 'TAK_USERNAME', Value: cf.ref('Username') },
                         { Name: 'TAK_PASSWORD', Value: cf.ref('Password') },
                         { Name: 'AWS_DEFAULT_REGION', Value: cf.region }
