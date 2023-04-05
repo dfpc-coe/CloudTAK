@@ -16,17 +16,38 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 export default {
     name: 'LocationCard',
     props: {
-        asset: {
-            type: Object,
+        assets: {
+            type: Array,
             required: true
         },
+    },
+    data: function() {
+        return {
+            map: null,
+            pmtiles: [],
+            mounted: false,
+            asset: null
+        }
+    },
+    watch: {
+        assets: function() {
+            this.pmtiles = this.assets.assets.filter((asset) => {
+                return asset.name.endsWith('.pmtiles');
+            });
+
+            if (!this.asset) this.asset = this.pmtiles[0];
+        },
+        asset: function() {
+            if (!this.map) return;
+            this.mountPMTiles();
+        }
     },
     mounted: async function() {
         this.$nextTick(() => { this.mountMap(); });
     },
     methods: {
         mountMap: function() {
-            const map = new mapgl.Map({
+            this.map = new mapgl.Map({
                 container: 'map',
                 hash: "map",
                 zoom: 0,
@@ -38,10 +59,19 @@ export default {
                 },
             });
 
-            map.addControl(new mapgl.NavigationControl({}), "bottom-left");
+            this.map.addControl(new mapgl.NavigationControl({}), "bottom-left");
 
             const protocol = new pmtiles.Protocol();
             mapgl.addProtocol('pmtiles', protocol.tile);
+
+            this.mountPMTiles();
+        },
+        mountPMTiles: async function() {
+            const res = await window.std(`/api/data/${this.$route.params.dataid}/asset/${this.asset.name}/tile`, {
+                redirect: 'follow'
+            });
+
+            console.error(res);
         }
     }
 }

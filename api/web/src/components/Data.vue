@@ -35,10 +35,10 @@
                     </div>
                 </div>
                 <div class="col-lg-12">
-                    <DataAsset/>
+                    <DataAsset @assets='assets = $event'/>
                 </div>
                 <div class="col-lg-12">
-                    <DataLocation/>
+                    <DataLocation :assets='assets'/>
                 </div>
                 <div class="col-lg-12">
                     <DataTransforms/>
@@ -73,6 +73,7 @@ export default {
             loading: {
                 data: true
             },
+            assets: {},
             data: {}
         }
     },

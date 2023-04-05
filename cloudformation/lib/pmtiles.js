@@ -143,7 +143,7 @@ export default {
     Outputs: {
         PMTilesAPI: {
             Description: 'PMTiles API',
-            Value: cf.join([cf.ref('PMTilesAPIDeployment'), '.execute-api.', cf.region, '.amazonaws.com']),
+            Value: cf.join(['http://', cf.ref('PMtilesLambdaAPIStage'), '.execute-api.', cf.region, '.amazonaws.com']),
             Export: {
                 Name: cf.join([cf.stackName, '-pmtiles-api'])
             }
