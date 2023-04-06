@@ -13,7 +13,7 @@ export default {
         LDAPPassword: {
             Type: 'String',
             Description: 'Password to LDAP Service'
-        },
+        }
     },
     Resources: {
         ETLFunctionLogs: {
