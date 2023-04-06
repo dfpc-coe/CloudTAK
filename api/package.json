@@ -9,7 +9,7 @@
         "build": "tsc index.ts",
         "prod": "ts-node index.ts",
         "lint": "eslint index.ts lib/**.ts",
-        "dev": "nodemon -i schema/ -i web/ -i doc/ --esm index.ts"
+        "dev": "nodemon -i schema/ -i web/ --esm index.ts"
     },
     "repository": {
         "type": "git",
