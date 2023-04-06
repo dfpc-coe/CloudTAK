@@ -1,0 +1,22 @@
+{
+    "type": "object",
+    "properties": {
+        "format": {
+            "type": "string",
+            "description": "Format to export in",
+            "default": "csv",
+            "enum": [
+                "csv",
+                "jsonld"
+            ]
+        },
+        "before": {
+            "type": "string",
+            "description": "Time-like string that stats must be before"
+        },
+        "after": {
+            "type": "string",
+            "description": "Time-like string that stats must be before"
+        }
+    }
+}
