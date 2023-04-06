@@ -16,8 +16,6 @@ RUN npm install
 
 COPY ./ $HOME/api
 
-RUN npm run doc
-
 RUN cd web \
     && npm install \
     && npm install -g yarn \
