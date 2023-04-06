@@ -6,6 +6,7 @@ import Batch from './lib/batch.js';
 import DB from './lib/db.js';
 import Signing from './lib/signing.js';
 import PMTiles from './lib/pmtiles.js';
+import Stats from './lib/stats.js';
 import Dynamo from './lib/dynamo.js';
 import {
     ELB as ELBAlarms,
@@ -21,6 +22,7 @@ export default cf.merge(
     Signing,
     Dynamo,
     PMTiles,
+    Stats,
     {
         Description: 'Template for @tak-ps/etl',
         Parameters: {
