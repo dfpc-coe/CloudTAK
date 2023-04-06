@@ -315,6 +315,7 @@ export default {
                                 ':5432/tak_ps_etl'
                             ])
                         },
+                        { Name: 'TileBaseURL', Value: cf.join(['s3://', cf.ref('TileBaseS3'), '/zipcodes.tilebase']) },
                         { Name: 'SigningSecret', Value: cf.sub('{{resolve:secretsmanager:${AWS::StackName}/api/secret:SecretString::AWSCURRENT}}') },
                         { Name: 'StackName', Value: cf.stackName },
                         { Name: 'ASSET_BUCKET', Value: cf.ref('AssetBucket') },

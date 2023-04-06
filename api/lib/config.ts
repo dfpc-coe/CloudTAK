@@ -51,6 +51,8 @@ export default class Config {
             config.UnsafeSigningSecret = 'coe-wildland-fire';
             config.unsafe = args.unsafe;
 
+            config.TileBaseURL = new URL(process.env.TileBaseURL) || new URL('./data-dev/zipcodes.tilebase', import.meta.url);
+
             if (!process.env.StackName || process.env.StackName === 'test') {
                 if (!config.silent) console.error('ok - set env StackName: test');
                 process.env.StackName = 'test';

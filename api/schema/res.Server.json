@@ -1,28 +1,12 @@
 {
     "type": "object",
     "required": [
-        "status"
+        "version"
     ],
     "additionalProperties": false,
     "properties": {
-        "status": {
-            "type": "string",
-            "enum": [ "configured", "unconfigured" ]
-        },
-        "id": {
-            "type": "integer"
-        },
-        "url": {
+        "version": {
             "type": "string"
-        },
-        "name": {
-            "type": "string"
-        },
-        "created": {
-            "type": "integer"
-        },
-        "updated": {
-            "type": "integer"
         }
     }
 }

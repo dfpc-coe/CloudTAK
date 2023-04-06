@@ -1,0 +1,42 @@
+{
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+        "tilejson": {
+            "type": "string" 
+        },
+        "name": {
+            "type": "string" 
+        },
+        "description": {
+            "type": "string" 
+        },
+        "attribution": {
+            "type": "string" 
+        },
+        "version": {
+            "type": "string" 
+        },
+        "scheme": {
+            "type": "string" 
+        },
+        "tiles": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "minzoom": {
+            "type": "integer"
+        },
+        "maxzoom": {
+            "type": "integer"
+        },
+        "bounds": {
+            "type": "array",
+            "items": {
+                "type": "number"
+            }
+        }
+    }
+}
