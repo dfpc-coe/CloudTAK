@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import cors from 'cors';
 import express from 'express';
+import SwaggerUI from 'swagger-ui-express';
 import history from 'connect-history-api-fallback';
 // @ts-ignore
 import Schema from '@openaddresses/batch-schema';
@@ -89,7 +90,8 @@ export default async function server(config: Config) {
     const app = express();
 
     const schema = new Schema(express.Router(), {
-        schemas: new URL('./schema', import.meta.url)
+        schemas: new URL('./schema', import.meta.url),
+        openapi: true
     });
 
     app.disable('x-powered-by');
@@ -123,7 +125,6 @@ export default async function server(config: Config) {
     });
 
     app.use('/api', schema.router);
-    app.use('/docs', express.static('./doc'));
 
     await schema.api();
 
@@ -144,7 +145,8 @@ export default async function server(config: Config) {
     schema.not_found();
     schema.error();
 
-    fs.writeFileSync(new URL('./doc/api.js', import.meta.url), schema.docs.join('\n'));
+    app.use('/docs', SwaggerUI.serve, SwaggerUI.setup(schema.docs.base));
+
 
     app.use(history({
         rewrites: [{

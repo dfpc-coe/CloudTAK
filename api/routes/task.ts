@@ -106,7 +106,7 @@ export default async function router(schema: any, config: Config) {
         }
     });
 
-    await schema.post('/layer/:layerid/task', {
+    await schema.post('/layer/:layerid/task/invoke', {
         name: 'Run Task',
         group: 'Task',
         auth: 'user',
