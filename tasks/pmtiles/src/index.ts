@@ -153,7 +153,7 @@ export const handlerRaw = async (
                 ],
                 "minzoom": header.minZoom,
                 "maxzoom": header.maxZoom,
-                "bounds": [)
+                "bounds": [
                     header.minLon,
                     header.minLat,
                     header.maxLon,
