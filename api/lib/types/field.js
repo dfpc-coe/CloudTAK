@@ -25,6 +25,7 @@ export default class Total extends Generic {
                     1
             `);
 
+            if (!pgres.rows.length) return {};
             return pgres.rows[0].stats;
         } catch (err) {
             throw new Err(500, err, 'Failed to aggregate field');

@@ -21,6 +21,7 @@ export default class Config {
     Password: string;
     API_URL: string;
     PMTILES_URL: string;
+    TileBaseURL: URL;
     DynamoDB: string;
     wsClients: any[];
     Bucket?: string;
@@ -51,7 +52,7 @@ export default class Config {
             config.UnsafeSigningSecret = 'coe-wildland-fire';
             config.unsafe = args.unsafe;
 
-            config.TileBaseURL = new URL(process.env.TileBaseURL) || new URL('./data-dev/zipcodes.tilebase', import.meta.url);
+            config.TileBaseURL = process.env.TileBaseURL ? new URL(process.env.TileBaseURL) : new URL('./data-dev/zipcodes.tilebase', import.meta.url);
 
             if (!process.env.StackName || process.env.StackName === 'test') {
                 if (!config.silent) console.error('ok - set env StackName: test');
