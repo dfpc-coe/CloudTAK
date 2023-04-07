@@ -53,6 +53,8 @@ export default class Config {
             config.unsafe = args.unsafe;
 
             config.TileBaseURL = process.env.TileBaseURL ? new URL(process.env.TileBaseURL) : new URL('./data-dev/zipcodes.tilebase', import.meta.url);
+            config.PMTILES_URL = process.env.PMTILES_URL || 'http://localhost:5001';
+            if (!config.silent) console.log(`ok - PMTiles: ${config.PMTILES_URL}`);
 
             if (!process.env.StackName || process.env.StackName === 'test') {
                 if (!config.silent) console.error('ok - set env StackName: test');
@@ -63,7 +65,6 @@ export default class Config {
                 config.Username = 'admin';
                 config.Password = 'admin';
                 config.API_URL = 'http://localhost:5001';
-                config.PMTILES_URL = 'http://localhost:5001';
                 config.DynamoDB = '';
                 config.Bucket = process.env.ASSET_BUCKET;
             } else {
@@ -79,7 +80,6 @@ export default class Config {
                 config.Username = process.env.TAK_USERNAME;
                 config.Password = process.env.TAK_PASSWORD;
                 config.API_URL = process.env.API_URL;
-                config.PMTILES_URL = process.env.PMTiles_URL;
                 config.Bucket = process.env.ASSET_BUCKET;
 
                 config.DynamoDB = config.StackName;

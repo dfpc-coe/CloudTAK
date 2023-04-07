@@ -138,12 +138,28 @@ export default {
                 ResourceId: cf.ref('PMTilesLambdaAPIResource'),
                 RestApiId: cf.ref('PMTilesLambdaAPI')
             }
+        },
+        PMTilesLambdaAPIResourceOPTIONS: {
+            Type: 'AWS::ApiGateway::Method',
+            Properties: {
+                AuthorizationType: 'NONE',
+                HttpMethod: 'OPTIONS',
+                Integration: {
+                    ConnectionType: 'INTERNET',
+                    Credentials:  cf.getAtt('PMTilesApiGatewayRole', 'Arn'),
+                    IntegrationHttpMethod: 'POST',
+                    Type: 'AWS_PROXY',
+                    Uri: cf.join(['arn:', cf.partition, ':apigateway:', cf.region, ':lambda:path/2015-03-31/functions/', cf.getAtt('PMTilesLambda', 'Arn'), '/invocations'])
+                },
+                ResourceId: cf.ref('PMTilesLambdaAPIResource'),
+                RestApiId: cf.ref('PMTilesLambdaAPI')
+            }
         }
     },
     Outputs: {
         PMTilesAPI: {
             Description: 'PMTiles API',
-            Value: cf.join(['http://', cf.ref('PMtilesLambdaAPIStage'), '.execute-api.', cf.region, '.amazonaws.com']),
+            Value: cf.join(['http://', cf.ref('PMTilesLambdaAPI'), '.execute-api.', cf.region, '.amazonaws.com']),
             Export: {
                 Name: cf.join([cf.stackName, '-pmtiles-api'])
             }

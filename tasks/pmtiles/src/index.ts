@@ -97,12 +97,7 @@ const apiResp = (
     isBase64Encoded = false,
     headers: Headers = {}
 ): Lambda.APIGatewayProxyResult => {
-    return {
-        statusCode: statusCode,
-        body: body,
-        headers: headers,
-        isBase64Encoded: isBase64Encoded,
-    };
+    return { statusCode, body, headers, isBase64Encoded };
 };
 
 // Assumes event is a API Gateway V2 or Lambda Function URL formatted dict
@@ -123,9 +118,11 @@ export const handlerRaw = async (
     if (!path) return apiResp(500, "Invalid event configuration");
 
     const headers: Headers = {};
-    // TODO: metadata and TileJSON
-
     if (process.env.CORS) headers["Access-Control-Allow-Origin"] = process.env.CORS;
+
+    if (event.requestContext.http.method === 'OPTIONS') {
+        return apiResp(200, "", false, headers);
+    }
 
     const { ok, name, tile, ext, meta } = tile_path(path);
 
