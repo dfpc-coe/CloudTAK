@@ -127,7 +127,7 @@ export default {
             Type: 'AWS::ApiGateway::Method',
             Properties: {
                 AuthorizationType: 'NONE',
-                HttpMethod: 'GET',
+                HttpMethod: 'ANY',
                 Integration: {
                     ConnectionType: 'INTERNET',
                     Credentials:  cf.getAtt('PMTilesApiGatewayRole', 'Arn'),
@@ -139,22 +139,6 @@ export default {
                 RestApiId: cf.ref('PMTilesLambdaAPI')
             }
         },
-        PMTilesLambdaAPIResourceOPTIONS: {
-            Type: 'AWS::ApiGateway::Method',
-            Properties: {
-                AuthorizationType: 'NONE',
-                HttpMethod: 'OPTIONS',
-                Integration: {
-                    ConnectionType: 'INTERNET',
-                    Credentials:  cf.getAtt('PMTilesApiGatewayRole', 'Arn'),
-                    IntegrationHttpMethod: 'POST',
-                    Type: 'AWS_PROXY',
-                    Uri: cf.join(['arn:', cf.partition, ':apigateway:', cf.region, ':lambda:path/2015-03-31/functions/', cf.getAtt('PMTilesLambda', 'Arn'), '/invocations'])
-                },
-                ResourceId: cf.ref('PMTilesLambdaAPIResource'),
-                RestApiId: cf.ref('PMTilesLambdaAPI')
-            }
-        }
     },
     Outputs: {
         PMTilesAPI: {
