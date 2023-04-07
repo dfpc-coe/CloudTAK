@@ -13,7 +13,7 @@ export default {
                 Environment: {
                     Variables: {
                         BUCKET: cf.ref('AssetBucket'),
-                        CORS: '*'
+                        APIROOT: cf.join(['http://', cf.ref('PMTilesLambdaAPI'), '.execute-api.', cf.region, '.amazonaws.com']),
                     }
                 },
                 Role: cf.getAtt('PMTilesLambdaRole', 'Arn'),
@@ -127,7 +127,7 @@ export default {
             Type: 'AWS::ApiGateway::Method',
             Properties: {
                 AuthorizationType: 'NONE',
-                HttpMethod: 'ANY',
+                HttpMethod: 'GET',
                 Integration: {
                     ConnectionType: 'INTERNET',
                     Credentials:  cf.getAtt('PMTilesApiGatewayRole', 'Arn'),
@@ -139,6 +139,37 @@ export default {
                 RestApiId: cf.ref('PMTilesLambdaAPI')
             }
         },
+        PMTilesLambdaAPIResourceOPIONS: {
+            Type: 'AWS::ApiGateway::Method',
+            Properties: {
+                HttpMethod: 'OPTIONS',
+                ResourceId: cf.ref('PMTilesLambdaAPIResource'),
+                RestApiId: cf.ref('PMTilesLambdaAPI'),
+                AuthorizationType: 'NONE',
+                Integration: {
+                    IntegrationResponses: [{
+                        ResponseParameters: {
+                            'method.response.header.Access-Control-Allow-Headers': "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'",
+                            'method.response.header.Access-Control-Allow-Origin': "'*'",
+                            'method.response.header.Access-Control-Allow-Methods': "'OPTIONS,GET,PUT,POST,DELETE,PATCH,HEAD'",
+                        },
+                        StatusCode: '204'
+                    }],
+                    RequestTemplates: {
+                        'application/json': '{ statusCode: 200 }'
+                    },
+                    Type: 'MOCK'
+                },
+                MethodResponses: [{
+                    ResponseParameters: {
+                        'method.response.header.Access-Control-Allow-Headers': true,
+                        'method.response.header.Access-Control-Allow-Origin': true,
+                        'method.response.header.Access-Control-Allow-Methods': true
+                    },
+                    StatusCode: '204'
+                }]
+            }
+        }
     },
     Outputs: {
         PMTilesAPI: {
