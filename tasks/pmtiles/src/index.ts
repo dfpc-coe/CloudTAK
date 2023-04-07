@@ -117,12 +117,10 @@ export const handlerRaw = async (
 
     if (!path) return apiResp(500, "Invalid event configuration");
 
-    const headers: Headers = {};
-    if (process.env.CORS) headers["Access-Control-Allow-Origin"] = process.env.CORS;
-
-    if (event.requestContext.http.method === 'OPTIONS') {
-        return apiResp(200, "", false, headers);
-    }
+    const headers: Headers = {
+        "Access-Control-Allow-Origin": '*',
+        "Access-Control-Allow-Credentials": true
+    };
 
     const { ok, name, tile, ext, meta } = tile_path(path);
 
