@@ -143,9 +143,7 @@ export const handlerRaw = async (
                 "description": "Hosted by TAK-ETL",
                 "version": "1.0.0",
                 "scheme": "xyz",
-                "tiles": [
-                    String(new URL('/tiles/{z}/{x}/{y}.mvt', process.env.APIROOT))
-                ],
+                "tiles": [ process.env.APIROOT + '/tiles/{z}/{x}/{y}.mvt', process.env.APIROOT ],
                 "minzoom": header.minZoom,
                 "maxzoom": header.maxZoom,
                 "bounds": [
