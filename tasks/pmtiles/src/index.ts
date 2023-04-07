@@ -144,7 +144,7 @@ export const handlerRaw = async (
                 "version": "1.0.0",
                 "scheme": "xyz",
                 "tiles": [
-                    "https://api.example.com/tiles/{z}/{x}/{y}.mvt"
+                    String(new URL('/tiles/{z}/{x}/{y}.mvt', process.env.APIROOT))
                 ],
                 "minzoom": header.minZoom,
                 "maxzoom": header.maxZoom,
