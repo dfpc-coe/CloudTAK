@@ -39,21 +39,22 @@ export const tile_path = (
     tile: [number, number, number];
     ext: string;
 } => {
-    const meta_match = path.match(META);
+    const match = path.match(TILE);
 
-    if (meta_match) {
-        const g = meta_match.groups!;
-        return { ok: true, meta: true, name: g.NAME, tile: [0, 0, 0], ext: g.EXT };
+    if (match) {
+        const g = match.groups!;
+        return { ok: true, meta: false, name: g.NAME, tile: [+g.Z, +g.X, +g.Y], ext: g.EXT };
     } else {
-        const match = path.match(TILE);
+        const meta_match = path.match(META);
 
-        if (match) {
-            const g = match.groups!;
-            return { ok: true, meta: false, name: g.NAME, tile: [+g.Z, +g.X, +g.Y], ext: g.EXT };
+        if (meta_match) {
+            const g = meta_match.groups!;
+            return { ok: true, meta: true, name: g.NAME, tile: [0, 0, 0], ext: g.EXT };
         } else {
             return { ok: false, meta: false, name: "", tile: [0, 0, 0], ext: "" };
         }
     }
+
 };
 
 class S3Source implements pmtiles.Source {
@@ -119,7 +120,7 @@ export const handlerRaw = async (
 
     const headers: Headers = {
         "Access-Control-Allow-Origin": '*',
-        "Access-Control-Allow-Credentials": true
+        "Access-Control-Allow-Credentials": 'true'
     };
 
     const { ok, name, tile, ext, meta } = tile_path(path);
