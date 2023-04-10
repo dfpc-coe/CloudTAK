@@ -78,6 +78,19 @@ export default {
             });
 
             map.addLayer({
+                id: 'polygons',
+                type: 'fill',
+                source: 'vector',
+                'source-layer': 'out',
+                filter: ["==", "$type", "Polygon"],
+                layout: {},
+                paint: {
+                    'fill-opacity': 0.1,
+                    'fill-color': '#FF0000',
+                }
+            });
+
+            map.addLayer({
                 id: 'polygons-outline',
                 type: 'line',
                 source: 'vector',
@@ -91,6 +104,36 @@ export default {
                     'line-color': '#FF0000',
                     'line-width': 1,
                     'line-opacity': 0.75
+                }
+            });
+
+            map.addLayer({
+                'id': '<%= layer.id %>-lines',
+                'type': 'line',
+                'source': 'vector',
+                'source-layer': 'out',
+                'filter': ["==", "$type", "LineString"],
+                'layout': {
+                    'line-join': 'round',
+                    'line-cap': 'round'
+                },
+                'paint': {
+                    'line-color': '#FF0000',
+                    'line-width': 1,
+                    'line-opacity': 0.75
+                }
+            });
+
+            map.addLayer({
+                'id': '-pts',
+                'type': 'circle',
+                'source': 'vector',
+                'source-layer': 'out',
+                'filter': ["==", "$type", "Point"],
+                'paint': {
+                    'circle-color': '#FF0000',
+                    'circle-radius': 2.5,
+                    'circle-opacity': 0.75
                 }
             });
         }

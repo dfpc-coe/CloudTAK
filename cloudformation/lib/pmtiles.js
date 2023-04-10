@@ -13,7 +13,7 @@ export default {
                 Environment: {
                     Variables: {
                         BUCKET: cf.ref('AssetBucket'),
-                        APIROOT: cf.join(['http://', cf.ref('PMTilesLambdaAPI'), '.execute-api.', cf.region, '.amazonaws.com']),
+                        APIROOT: cf.join(['https://', cf.ref('PMTilesLambdaAPI'), '.execute-api.', cf.region, '.amazonaws.com']),
                     }
                 },
                 Role: cf.getAtt('PMTilesLambdaRole', 'Arn'),
@@ -174,7 +174,7 @@ export default {
     Outputs: {
         PMTilesAPI: {
             Description: 'PMTiles API',
-            Value: cf.join(['http://', cf.ref('PMTilesLambdaAPI'), '.execute-api.', cf.region, '.amazonaws.com']),
+            Value: cf.join(['https://', cf.ref('PMTilesLambdaAPI'), '.execute-api.', cf.region, '.amazonaws.com']),
             Export: {
                 Name: cf.join([cf.stackName, '-pmtiles-api'])
             }
