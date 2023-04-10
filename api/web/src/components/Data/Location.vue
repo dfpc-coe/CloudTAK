@@ -13,6 +13,8 @@ import * as pmtiles from 'pmtiles';
 import mapgl from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css';
 
+let map;
+
 export default {
     name: 'LocationCard',
     props: {
@@ -23,9 +25,8 @@ export default {
     },
     data: function() {
         return {
-            map: null,
             pmtiles: [],
-            mounted: false,
+            tilejson: false,
             asset: null
         }
     },
@@ -38,7 +39,7 @@ export default {
             if (!this.asset) this.asset = this.pmtiles[0];
         },
         asset: function() {
-            if (!this.map) return;
+            if (!map) return;
             this.mountPMTiles();
         }
     },
@@ -47,7 +48,10 @@ export default {
     },
     methods: {
         mountMap: function() {
-            this.map = new mapgl.Map({
+            const protocol = new pmtiles.Protocol();
+            mapgl.addProtocol('pmtiles', protocol.tile);
+
+            map = new mapgl.Map({
                 container: 'map',
                 hash: "map",
                 zoom: 0,
@@ -59,19 +63,36 @@ export default {
                 },
             });
 
-            this.map.addControl(new mapgl.NavigationControl({}), "bottom-left");
-
-            const protocol = new pmtiles.Protocol();
-            mapgl.addProtocol('pmtiles', protocol.tile);
+            map.addControl(new mapgl.NavigationControl({}), "bottom-left");
 
             this.mountPMTiles();
         },
         mountPMTiles: async function() {
-            const res = await window.std(`/api/data/${this.$route.params.dataid}/asset/${this.asset.name}/tile`, {
-                redirect: 'follow'
+            if (!this.asset) return;
+
+            const url = window.stdurl(`/api/data/${this.$route.params.dataid}/asset/${this.asset.name}/tile`);
+            url.searchParams.append('token', localStorage.token);
+            map.addSource('vector', {
+                type: 'vector',
+                url: String(url)
             });
 
-            console.error(res);
+            map.addLayer({
+                id: 'polygons-outline',
+                type: 'line',
+                source: 'vector',
+                'source-layer': 'out',
+                filter: ["==", "$type", "Polygon"],
+                layout: {
+                    'line-join': 'round',
+                    'line-cap': 'round'
+                },
+                paint: {
+                    'line-color': '#FF0000',
+                    'line-width': 1,
+                    'line-opacity': 0.75
+                }
+            });
         }
     }
 }
