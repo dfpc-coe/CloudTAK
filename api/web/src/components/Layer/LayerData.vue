@@ -58,21 +58,40 @@
                 <div v-if='errors.task' v-text='errors.task' class="invalid-feedback"></div>
             </div>
             <div class="col-md-6">
-                <ConnectionSelect
-                    :disabled='disabled'
-                    v-model='layer.connection'
+                <div class='row'>
+                    <label>Layer Data Destination</label>
+                    <div class='col-2'>
+                        <div class="btn-group" role="group">
+                          <input :disabled='disabled' v-model='destination' value='connection' type="radio" class="btn-check" name="connection-toolbar" id="connection-toolbar-connection" autocomplete="off">
+                          <label for="connection-toolbar-connection" class="btn btn-icon"><BuildingBroadcastTowerIcon/></label>
 
-                />
+                          <input :disabled='disabled' v-model='destination' value='data' type="radio" class="btn-check" name="connection-toolbar" id="connection-toolbar-data" autocomplete="off">
+                          <label for="connection-toolbar-data" class="btn btn-icon"><DatabaseIcon/></label>
+                        </div>
+                    </div>
+                    <div v-if='destination === "connection"' class='col-10'>
+                        <ConnectionSelect
+                            :disabled='disabled'
+                            v-model='layer.connection'
+                        />
+                    </div>
+                    <div v-else class='col-10'>
+                        <DataSelect
+                            :disabled='disabled'
+                            v-model='layer.data'
+                        />
+                    </div>
+                </div>
             </div>
             <div class="col-md-6">
                 <label>Stale Value (ms)</label>
                 <TablerInput v-model='layer.stale' :disabled='disabled' type='number' min='1' step='1'/>
             </div>
-            <div class="col-md-6">
+            <div class="col-md-6 mt-3">
                 <label>Memory (Mb)</label>
                 <TablerInput v-model='layer.memory' :disabled='disabled' type='number' min='1' step='1'/>
             </div>
-            <div class="col-md-6">
+            <div class="col-md-6 mt-3">
                 <label>Timeout (s)</label>
                 <TablerInput v-model='layer.timeout' :disabled='disabled' type='number' min='1' step='1'/>
             </div>
@@ -88,6 +107,7 @@
 <script>
 import LayerEnvironment from './LayerEnvironent.vue';
 import ConnectionSelect from '../util/ConnectionSelect.vue';
+import DataSelect from '../util/DataSelect.vue';
 import cronstrue from 'cronstrue';
 import TaskModal from './TaskModal.vue';
 import {
@@ -96,7 +116,9 @@ import {
 } from '@tak-ps/vue-tabler';
 import {
     RefreshIcon,
-    SettingsIcon
+    SettingsIcon,
+    BuildingBroadcastTowerIcon,
+    DatabaseIcon,
 } from 'vue-tabler-icons'
 
 export default {
@@ -125,8 +147,10 @@ export default {
                 main: false,
                 version: false
             },
+            destination: 'connection',
             layer: {
                 connection: null,
+                data: null,
                 task: '',
                 timeout: 60,
                 memory: 512,
@@ -147,12 +171,23 @@ export default {
             deep: true,
             handler: function() {
                 const layer = Object.assign(this.modelValue, this.layer);
+
+                if (this.destination === 'connection') {
+                    layer.data = undefined;
+                } else if (this.destination === 'data') {
+                    layer.connection = undefined;
+                }
+
                 this.$emit('update:modelValue', layer);
             }
         }
     },
     mounted: function() {
         this.layer = Object.assign(this.layer, this.modelValue);
+
+        if (this.layer.connection) this.destination = 'connection';
+        else this.destination = 'data';
+
         this.$nextTick(() => {
             this.loading.main = false;
         });
@@ -192,7 +227,10 @@ export default {
         TablerLoading,
         RefreshIcon,
         SettingsIcon,
+        DataSelect,
         ConnectionSelect,
+        BuildingBroadcastTowerIcon,
+        DatabaseIcon,
         TaskModal,
         TablerInput
     }
