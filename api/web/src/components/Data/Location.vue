@@ -1,5 +1,5 @@
 <template>
-<div class="card">
+<div v-if='pmtiles.length' class="card">
     <div class="card-body">
         <div class="row">
             <div id="map" style='height: 350px;'></div>
