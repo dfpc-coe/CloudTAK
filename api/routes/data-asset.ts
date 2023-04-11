@@ -184,7 +184,7 @@ export default async function router(schema: any, config: Config) {
 
             const data = await Data.from(config.pool, req.params.dataid);
 
-            return res.redirect(String(new URL(`${config.PMTILES_URL}/data/${data.id}/${req.params.asset}`)));
+            return res.redirect(String(new URL(`${config.PMTILES_URL}/tiles/data/${data.id}/${req.params.asset}`)));
         } catch (err) {
             return Err.respond(err, res);
         }

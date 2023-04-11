@@ -51,7 +51,7 @@ export default {
             const protocol = new pmtiles.Protocol();
             mapgl.addProtocol('pmtiles', protocol.tile);
 
-            map = new mapgl.Map({
+            const tmpmap = new mapgl.Map({
                 container: 'map',
                 hash: "map",
                 zoom: 0,
@@ -63,12 +63,16 @@ export default {
                 },
             });
 
-            map.addControl(new mapgl.NavigationControl({}), "bottom-left");
+            tmpmap.addControl(new mapgl.NavigationControl({}), "bottom-left");
 
-            this.mountPMTiles();
+            tmpmap.once('load', () => {
+                map = tmpmap;
+
+                this.mountPMTiles();
+            });
         },
         mountPMTiles: async function() {
-            if (!this.asset) return;
+            if (!this.asset || !map) return;
 
             const url = window.stdurl(`/api/data/${this.$route.params.dataid}/asset/${this.asset.name}/tile`);
             url.searchParams.append('token', localStorage.token);
@@ -108,7 +112,7 @@ export default {
             });
 
             map.addLayer({
-                'id': '<%= layer.id %>-lines',
+                'id': 'lines',
                 'type': 'line',
                 'source': 'vector',
                 'source-layer': 'out',
@@ -125,7 +129,7 @@ export default {
             });
 
             map.addLayer({
-                'id': '-pts',
+                'id': 'pts',
                 'type': 'circle',
                 'source': 'vector',
                 'source-layer': 'out',
@@ -136,6 +140,14 @@ export default {
                     'circle-opacity': 0.75
                 }
             });
+
+            map.once('idle', () => {
+                const source = map.getSource('vector');
+
+                map.fitBounds(source.bounds, {
+                    padding: 20
+                });
+            })
         }
     }
 }
