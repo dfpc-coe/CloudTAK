@@ -247,7 +247,7 @@ export default async function router(schema: any, config: Config) {
 
             const pooledClient = await config.conns.get(layer.connection);
 
-            if (!pooledClient.conn.enabled) {
+            if (!pooledClient.conn || !pooledClient.conn.enabled) {
                 return res.json({
                     status: 200,
                     message: 'Recieved but Connection Paused'
