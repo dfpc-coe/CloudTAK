@@ -6,11 +6,10 @@
     <template v-else>
         <div class='d-flex'>
             <template v-if='selected.id'>
-                <ConnectionStatus :connection='selected'/>
                 <span class='mt-2' v-text='selected.name'/>
             </template>
             <template v-else>
-                <span class='mt-2'>No Connection Selected!</span>
+                <span class='mt-2'>No Data Repo Selected</span>
             </template>
 
             <div v-if='!disabled' class='ms-auto'>
@@ -30,11 +29,10 @@
                                         </tr>
                                     </thead>
                                     <tbody class='table-tbody'>
-                                        <tr @click='selected = connection' :key='connection.id' v-for='connection of connections.connections' class='cursor-pointer'>
+                                        <tr @click='selected = data' :key='data.id' v-for='data of data.data' class='cursor-pointer'>
                                             <td>
                                                 <div class='d-flex'>
-                                                    <ConnectionStatus :connection='connection'/>
-                                                    <span class='mt-2' v-text='connection.name'/>
+                                                    <span class='mt-2' v-text='data.name'/>
                                                 </div>
                                             </td>
                                         </tr>
@@ -57,10 +55,9 @@ import {
 import {
     TablerLoading
 } from '@tak-ps/vue-tabler';
-import ConnectionStatus from '../Connection/Status.vue';
 
 export default {
-    name: 'ConnectionSelect',
+    name: 'DataSelect',
     props: {
         modelValue: Number,
         disabled: {
@@ -73,12 +70,11 @@ export default {
             loading: true,
             selected: {
                 id: '',
-                status: 'dead',
                 name: ''
             },
-            connections: {
+            data: {
                 total: 0,
-                connections: []
+                data: []
             }
         }
     },
@@ -92,20 +88,19 @@ export default {
     },
     mounted: async function() {
         if (this.modelValue) await this.fetch();
-        await this.listConnections();
+        await this.listData();
         this.loading = false;
     },
     methods: {
         fetch: async function() {
-            this.selected = await window.std(`/api/connection/${this.modelValue}`);
+            this.selected = await window.std(`/api/data/${this.modelValue}`);
         },
-        listConnections: async function() {
-            this.connections = await window.std('/api/connection');
+        listData: async function() {
+            this.data = await window.std('/api/data');
         },
     },
     components: {
         SettingsIcon,
-        ConnectionStatus,
         TablerLoading
     }
 };

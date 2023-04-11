@@ -85,6 +85,10 @@ export default async function router(schema: any, config: Config) {
 
             if ((!req.body.connection && !req.body.data) || (req.body.connection && req.body.data)) {
                 throw new Err(400, null, 'Either connection or data must be set');
+            } else if (req.body.connection) {
+                req.body.data = null;
+            } else if (req.body.data) {
+                req.body.connection = null;
             }
 
             Schedule.is_valid(req.body.cron);
@@ -143,6 +147,10 @@ export default async function router(schema: any, config: Config) {
 
             if ((!req.body.connection && !req.body.data) || (req.body.connection && req.body.data)) {
                 throw new Err(400, null, 'Either connection or data must be set');
+            } else if (req.body.connection) {
+                req.body.data = null;
+            } else if (req.body.data) {
+                req.body.connection = null;
             }
 
             if (req.body.cron) Schedule.is_valid(req.body.cron);
