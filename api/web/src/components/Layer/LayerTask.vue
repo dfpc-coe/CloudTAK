@@ -125,7 +125,7 @@ export default {
         },
         invoke: async function() {
             this.loading.full = true;
-            await window.std(`/api/layer/${this.$route.params.layerid}/task`, {
+            await window.std(`/api/layer/${this.$route.params.layerid}/task/invoke`, {
                 method: 'POST'
             });
             this.loading.full = false;
