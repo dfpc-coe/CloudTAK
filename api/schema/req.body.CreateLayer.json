@@ -8,7 +8,6 @@
         "enabled_styles",
         "styles",
         "task",
-        "connection",
         "cron",
         "environment",
         "memory",
@@ -41,6 +40,9 @@
         },
         "connection": {
             "$ref": "./layers/connection.json"
+        },
+        "data": {
+            "$ref": "./layers/data.json"
         },
         "cron": {
             "$ref": "./layers/cron.json"

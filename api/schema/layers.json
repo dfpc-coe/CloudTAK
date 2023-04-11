@@ -49,6 +49,9 @@
         },
         "timeout": {
             "$ref": "./layers/timeout.json"
+        },
+        "data": {
+            "$ref": "./layers/data.json"
         }
     },
     "required": [
@@ -67,6 +70,7 @@
         "cron",
         "environment",
         "memory",
-        "timeout"
+        "timeout",
+        "data"
     ]
 }
