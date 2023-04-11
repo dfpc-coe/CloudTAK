@@ -128,8 +128,8 @@ export default {
             layer: {
                 connection: null,
                 task: '',
-                timeout: '60',
-                memory: '512',
+                timeout: 60,
+                memory: 512,
                 cron: '0/15 * * * ? *',
                 stale: 60 * 1000,
                 environment: {}
