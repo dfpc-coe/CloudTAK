@@ -23,14 +23,8 @@
         "enabled_styles": {
             "$ref": "./layers/enabled_styles.json"
         },
-        "connection": {
-            "$ref": "./layers/connection.json"
-        },
         "task": {
             "$ref": "./layers/task.json"
-        },
-        "stale": {
-            "$ref": "./layers/stale.json"
         },
         "styles": {
             "$ref": "./util/styles.json"
@@ -41,23 +35,14 @@
         "stale": {
             "$ref": "./layers/stale.json"
         },
-        "task": {
-            "$ref": "./layers/task.json"
-        },
         "connection": {
             "$ref": "./layers/connection.json"
         },
-        "cron": {
-            "$ref": "./layers/cron.json"
+        "data": {
+            "$ref": "./layers/data.json"
         },
         "environment": {
             "$ref": "./layers/environment.json"
-        },
-        "memory": {
-            "$ref": "./layers/memory.json"
-        },
-        "timeout": {
-            "$ref": "./layers/timeout.json"
         }
     }
 }
