@@ -2,6 +2,8 @@ import { check } from '@placemarkio/check-geojson';
 import Err from '@openaddresses/batch-error';
 // @ts-ignore
 import Layer from '../lib/types/layer.js';
+// @ts-ignore
+import Data from '../lib/types/data.js';
 import { XML as COT } from '@tak-ps/node-cot';
 import Cacher from '../lib/cacher.js';
 import { sql } from 'slonik';
@@ -14,6 +16,7 @@ import DDBQueue from '../lib/queue.js';
 import { Request, Response } from 'express';
 import Config from '../lib/config.js';
 import Schedule from '../lib/schedule.js';
+import S3 from '../lib/aws/s3.js';
 
 export default async function router(schema: any, config: Config) {
     const alarm = new Alarm(config.StackName);
@@ -80,6 +83,10 @@ export default async function router(schema: any, config: Config) {
                 };
             }
 
+            if ((!req.body.connection && !req.body.data) || (req.body.connection && req.body.data)) {
+                throw new Err(400, null, 'Either connection or data must be set');
+            }
+
             Schedule.is_valid(req.body.cron);
             let layer = await Layer.generate(config.pool, req.body);
 
@@ -132,6 +139,10 @@ export default async function router(schema: any, config: Config) {
                     line: req.body.styles.line,
                     polygon: req.body.styles.polygon
                 };
+            }
+
+            if ((!req.body.connection && !req.body.data) || (req.body.connection && req.body.data)) {
+                throw new Err(400, null, 'Either connection or data must be set');
             }
 
             if (req.body.cron) Schedule.is_valid(req.body.cron);
@@ -245,17 +256,7 @@ export default async function router(schema: any, config: Config) {
                 return (await Layer.from(config.pool, req.params.layerid)).serialize();
             });
 
-            const pooledClient = await config.conns.get(layer.connection);
-
-            if (!pooledClient || !pooledClient.conn || !pooledClient.conn.enabled) {
-                return res.json({
-                    status: 200,
-                    message: 'Recieved but Connection Paused'
-                });
-            }
-
             const style = new Style(layer);
-
             if (req.headers['content-type'] === 'application/json') {
                 try {
                     // https://github.com/placemark/check-geojson/issues/17
@@ -264,19 +265,45 @@ export default async function router(schema: any, config: Config) {
                     throw new Err(400, null, err.message);
                 }
 
-                const cots = [];
-                for (const feat of req.body.features) {
-                    feat.layer = layer.id;
-                    cots.push(COT.from_geojson(await style.feat(feat)))
+                for (let i = 0; i < req.body.features; i++) {
+                    req.body.features[i] = await style.feat(req.body.features[i])
+                    req.body.features[i].layer = layer.id;
                 }
-                pooledClient.tak.write(cots);
+            }
 
-                // TODO Only GeoJSON Features go to Dynamo, this should also store CoT XML
-                if (layer.logging) ddb.queue(req.body.features);
-            } else if (req.headers['content-type'] === 'application/xml') {
-                pooledClient.tak.write_xml(new COT(req.body));
+            if (layer.connection) {
+                const pooledClient = await config.conns.get(layer.connection);
+
+                if (!pooledClient || !pooledClient.conn || !pooledClient.conn.enabled) {
+                    return res.json({
+                        status: 200,
+                        message: 'Recieved but Connection Paused'
+                    });
+                }
+
+                if (req.headers['content-type'] === 'application/json') {
+                    const cots = [];
+                    for (const feat of req.body.features) {
+                        cots.push(COT.from_geojson(feat))
+                    }
+                    pooledClient.tak.write(cots);
+
+                    // TODO Only GeoJSON Features go to Dynamo, this should also store CoT XML
+                    if (layer.logging) ddb.queue(req.body.features);
+                } else if (req.headers['content-type'] === 'application/xml') {
+                    pooledClient.tak.write_xml(new COT(req.body));
+                } else {
+                    throw new Err(400, null, 'Unsupported Content-Type');
+                }
+            } else if (layer.data) {
+                if (req.headers['content-type'] === 'application/json') {
+                    const data = await Data.from(config.pool, layer.data);
+                    S3.put(`data/${data.id}/layer-${layer.id}.geojson`, JSON.stringify(req.body));
+                } else {
+                    throw new Err(400, null, 'Only Content-Type application/json is currently supported');
+                }
             } else {
-                throw new Err(400, null, 'Unsupported Content-Type');
+                throw new Err(400, null, 'Either connection or data must be set');
             }
 
             res.json({
