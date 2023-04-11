@@ -67,7 +67,6 @@
         "sinon": "^15.0.1",
         "slonik": "^32.0.0",
         "swagger-ui-express": "^4.6.2",
-        "tilebase": "^4.0.0",
         "ws": "^8.11.0"
     },
     "devDependencies": {

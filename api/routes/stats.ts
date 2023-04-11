@@ -10,18 +10,8 @@ import Field from '../lib/types/field.js';
 // @ts-ignore
 import Total from '../lib/types/total.js';
 import { Request, Response } from 'express';
-// @ts-ignore
-import TileBase from 'tilebase';
 
 export default async function router(schema: any, config: Config) {
-    const tb = new TileBase(config.TileBaseURL);
-
-    try {
-        await tb.open();
-    } catch (err) {
-        console.error(err);
-    }
-
     await schema.get('/aggregate/:aggregate', {
         name: 'Get Aggregates',
         group: 'Aggregate',
@@ -98,55 +88,6 @@ export default async function router(schema: any, config: Config) {
         } catch (err) {
             return Err.respond(err, res);
         }
-    });
-
-    await schema.get('/zipcodes', {
-        name: 'TileJSON',
-        group: 'Zipcodes',
-        auth: 'public',
-        description: 'Retrieve TileJSON for zipcode MVTs',
-        res: 'res.TileJSON.json'
-    }, async (req: Request, res: Response) => {
-        try {
-            await Auth.is_auth(req);
-
-            if (!tb.isopen) throw new Err(400, null, 'Map Backend has not initiated');
-
-            return res.json(tb.tilejson());
-        } catch (err) {
-            return Err.respond(err, res);
-        }
-    });
-
-    await schema.get('/zipcodes/:z/:x/:y', {
-        name: 'Get Tile',
-        group: 'Zipcodes',
-        auth: 'public',
-        description: 'Get MVT for a given tile',
-        ':z': 'integer',
-        ':x': 'integer',
-        ':y': 'integer'
-    }, async (req: Request, res: Response) => {
-        try {
-            await Auth.is_auth(req);
-
-            if (!tb.isopen) throw new Err(400, null, 'Map Backend has not initiated');
-
-            const encodings = String(req.headers['accept-encoding']).split(',').map((e) => e.trim());
-            if (!encodings.includes('gzip')) throw new Err(400, null, 'Accept-Encoding must include gzip');
-
-            const tile = await tb.tile(req.params.z, req.params.x, req.params.y);
-
-            res.writeHead(200, {
-                'Content-Type': 'application/vnd.mapbox-vector-tile',
-                'Content-Encoding': 'gzip',
-                'cache-control': 'no-transform'
-            });
-            res.end(tile);
-        } catch (err) {
-            return Err.respond(err, res);
-        }
-
     });
 
     await schema.post('/record', {
