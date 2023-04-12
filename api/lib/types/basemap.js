@@ -5,7 +5,7 @@ import { sql } from 'slonik';
  * @class
  */
 export default class BaseMap extends Generic {
-    static _table = 'connections';
+    static _table = 'basemaps';
 
     static async list(pool, query={}) {
         query.limit = Params.integer(query.limit, { default: 100 });

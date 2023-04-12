@@ -33,6 +33,8 @@ const router = new VueRouter.createRouter({
         { path: '/connection/:connectionid', name: 'connection', component: () => import('./components/Connection.vue') },
         { path: '/connection/:connectionid/edit', name: 'connection-edit', component: () => import('./components/ConnectionEdit.vue') },
 
+        { path: '/basemap', name: 'basemaps', component: () => import('./components/BaseMaps.vue') },
+
         { path: '/icon', name: 'icons', component: () => import('./components/Icons.vue') },
 
         { path: '/login', name: 'login', component: () => import('./components/Login.vue') },
