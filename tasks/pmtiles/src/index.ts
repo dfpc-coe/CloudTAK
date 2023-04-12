@@ -2,6 +2,8 @@ import Lambda from "aws-lambda";
 import S3 from "@aws-sdk/client-s3";
 import pmtiles from 'pmtiles';
 import zlib from "zlib";
+// @ts-ignore
+import query from '@mapbox/vtquery'; 
 import TB from '@mapbox/tilebelt';
 import { NodeHttpHandler } from "@aws-sdk/node-http-handler";
 
@@ -138,27 +140,32 @@ export const handlerRaw = async (
         }
 
         if (meta && event.queryStringParameters && event.queryStringParameters.query) {
-            const query = {
+            const query: {
+                lnglat: number[],
+                zoom: number
+            } = {
                 lnglat: [],
                 zoom: event.queryStringParameters.zoom ? parseInt(event.queryStringParameters.zoom) : header.maxZoom
             }
 
-            const lnglat = event.queryStringParameters.query
+            const lnglat: number[] = event.queryStringParameters.query
                 .split(',')
                 .map((comp) => { return Number(comp) });
 
             if (lnglat.length !== 2) return apiResp(400, "Invalid LngLat", false, headers);
             if (isNaN(lnglat[0]) || isNaN(lnglat[1])) return apiResp(400, "Invalid LngLat (Non-Numeric)", false, headers);
+            query.lnglat = lnglat;
             if (isNaN(query.zoom)) return apiResp(400, "Invalid Integer Zoom", false, headers);
             if (query.zoom > header.maxZoom) return apiResp(400, "Above Layer MaxZoom", false, headers);
             if (query.zoom < header.minZoom) return apiResp(400, "Below Layer MinZoom", false, headers);
 
-            const tile = TB.pointToTile(query.lnglat[0], query.lnglat[1], query.zoom)
+            const zxy = TB.pointToTile(query.lnglat[0], query.lnglat[1], query.zoom)
+            const tile = await p.getZxy(zxy[2], zxy[0], zxy[1]);
 
             return apiResp(200, JSON.stringify({
                 type: 'Feature',
                 query,
-                tile,
+                meta: { zxy },
                 properties: {},
                 geometry: {}
             }), false, headers);
