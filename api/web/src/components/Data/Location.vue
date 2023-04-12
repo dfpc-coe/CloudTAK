@@ -16,10 +16,10 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 let map;
 
 export default {
-    name: 'LocationCard',
+    name: 'DataLocationCard',
     props: {
         assets: {
-            type: Array,
+            type: Object,
             required: true
         },
     },
@@ -39,37 +39,39 @@ export default {
             if (!this.asset) this.asset = this.pmtiles[0];
         },
         asset: function() {
-            if (!map) return;
-            this.mountPMTiles();
+            this.mountMap();
         }
-    },
-    mounted: async function() {
-        this.$nextTick(() => { this.mountMap(); });
     },
     methods: {
         mountMap: function() {
-            const protocol = new pmtiles.Protocol();
-            mapgl.addProtocol('pmtiles', protocol.tile);
+            if (!map) {
+                this.$nextTick(() => {
+                    const protocol = new pmtiles.Protocol();
+                    mapgl.addProtocol('pmtiles', protocol.tile);
 
-            const tmpmap = new mapgl.Map({
-                container: 'map',
-                hash: "map",
-                zoom: 0,
-                center: [0, 0],
-                style: {
-                    version: 8,
-                    sources: {},
-                    layers: [],
-                },
-            });
+                    const tmpmap = new mapgl.Map({
+                        container: 'map',
+                        hash: "map",
+                        zoom: 0,
+                        center: [0, 0],
+                        style: {
+                            version: 8,
+                            sources: {},
+                            layers: [],
+                        },
+                    });
 
-            tmpmap.addControl(new mapgl.NavigationControl({}), "bottom-left");
+                    tmpmap.addControl(new mapgl.NavigationControl({}), "bottom-left");
 
-            tmpmap.once('load', () => {
-                map = tmpmap;
+                    tmpmap.once('load', () => {
+                        map = tmpmap;
 
+                        this.mountPMTiles();
+                    });
+                });
+            } else {
                 this.mountPMTiles();
-            });
+            }
         },
         mountPMTiles: async function() {
             if (!this.asset || !map) return;
