@@ -63,6 +63,7 @@
                                     </div>
                                 </div>
                                 <div class="card-body">
+                                    <BaseMapLocation :basemap='basemap'/>
                                 </div>
                                 <div class="card-footer">
                                     <span v-text='`Last Updated: ${timeDiff(basemap.updated)}`'/>
@@ -84,6 +85,7 @@
 
 <script>
 import PageFooter from './PageFooter.vue';
+import BaseMapLocation from './BaseMap/Location.vue';
 import Pager from './util/Pager.vue';
 import None from './cards/None.vue';
 import {
@@ -146,7 +148,8 @@ export default {
         SearchIcon,
         PageFooter,
         TablerBreadCrumb,
-        TablerLoading
+        TablerLoading,
+        BaseMapLocation
     }
 }
 </script>
