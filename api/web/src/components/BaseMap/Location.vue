@@ -27,14 +27,28 @@ export default {
         mountMap: function() {
             const tmpmap = new mapgl.Map({
                 container: 'map',
-                hash: "map",
                 zoom: 0,
                 center: [0, 0],
                 style: {
                     version: 8,
-                    sources: {},
-                    layers: [],
-                },
+                    sources: {
+                        basemap: {
+                            type: 'raster',
+                            url: this.basemap.url
+                        }
+                    },
+                    layers: [{
+                        id: 'background',
+                        type: 'background',
+                        paint: {
+                            'background-color': 'rgb(4,7,14)'
+                        }
+                    },{
+                        'id': 'basemap',
+                        'type': 'raster',
+                        'source': 'basemap'
+                    }]
+                }
             });
 
             tmpmap.addControl(new mapgl.NavigationControl({}), "bottom-left");
