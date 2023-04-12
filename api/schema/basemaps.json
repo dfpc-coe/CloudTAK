@@ -1,0 +1,28 @@
+{
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+        "id": {
+            "$ref": "./basemaps/id.json"
+        },
+        "created": {
+            "$ref": "./basemaps/created.json"
+        },
+        "updated": {
+            "$ref": "./basemaps/updated.json"
+        },
+        "name": {
+            "$ref": "./basemaps/name.json"
+        },
+        "url": {
+            "$ref": "./basemaps/url.json"
+        }
+    },
+    "required": [
+        "id",
+        "created",
+        "updated",
+        "name",
+        "url"
+    ]
+}
