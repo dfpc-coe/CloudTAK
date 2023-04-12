@@ -22,6 +22,7 @@
         "@aws-sdk/client-s3": "^3.213.0",
         "@aws-sdk/node-http-handler": "^3.212.0",
         "@mapbox/tilebelt": "^1.0.2",
+        "@mapbox/vtquery": "^0.6.0",
         "pmtiles": "^2.7.1"
     }
 }
