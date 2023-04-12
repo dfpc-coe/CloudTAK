@@ -32,7 +32,7 @@
                         <div class="card-body" v-text='connection.description'>
                         </div>
                         <div class="card-footer">
-                            Last updated <span v-text='timeDiff(data.updated)'/>
+                            Last updated <span v-text='timeDiff(connection.updated)'/>
                         </div>
                     </div>
                 </div>
