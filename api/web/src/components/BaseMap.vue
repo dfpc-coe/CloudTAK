@@ -31,6 +31,7 @@
                                 </div>
                             </div>
                             <div class="card-body">
+                                <BaseMapLocation :basemap='basemap'/>
                             </div>
                             <div class="card-footer">
                                 <span v-text='`Last Updated: ${timeDiff(basemap.updated)}`'/>
@@ -51,6 +52,7 @@ import {
     TablerBreadCrumb,
     TablerLoading
 } from '@tak-ps/vue-tabler';
+import BaseMapLocation from './BaseMap/Location.vue';
 import timeDiff from '../timediff.js';
 import {
     SettingsIcon,
@@ -81,6 +83,7 @@ export default {
         SettingsIcon,
         PageFooter,
         TablerBreadCrumb,
+        BaseMapLocation,
         TablerLoading
     }
 }
