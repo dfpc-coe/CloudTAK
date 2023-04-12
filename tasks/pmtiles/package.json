@@ -4,6 +4,7 @@
     "type": "module",
     "devDependencies": {
         "@types/aws-lambda": "^8.10.108",
+        "@types/mapbox__tilebelt": "^1.0.0",
         "@types/node": "^18.11.2",
         "@typescript-eslint/eslint-plugin": "^5.57.1",
         "@typescript-eslint/parser": "^5.57.1",
@@ -20,6 +21,7 @@
     "dependencies": {
         "@aws-sdk/client-s3": "^3.213.0",
         "@aws-sdk/node-http-handler": "^3.212.0",
+        "@mapbox/tilebelt": "^1.0.2",
         "pmtiles": "^2.7.1"
     }
 }

@@ -2,6 +2,7 @@ import Lambda from "aws-lambda";
 import S3 from "@aws-sdk/client-s3";
 import pmtiles from 'pmtiles';
 import zlib from "zlib";
+import TB from '@mapbox/tilebelt';
 import { NodeHttpHandler } from "@aws-sdk/node-http-handler";
 
 // the region should default to the same one as the function
@@ -136,7 +137,32 @@ export const handlerRaw = async (
             return apiResp(404, "", false, headers);
         }
 
-        if (meta) {
+        if (meta && event.queryStringParameters && event.queryStringParameters.query) {
+            const query = {
+                lnglat: [],
+                zoom: event.queryStringParameters.zoom ? parseInt(event.queryStringParameters.zoom) : header.maxZoom
+            }
+
+            const lnglat = event.queryStringParameters.query
+                .split(',')
+                .map((comp) => { return Number(comp) });
+
+            if (lnglat.length !== 2) return apiResp(400, "Invalid LngLat", false, headers);
+            if (isNaN(lnglat[0]) || isNaN(lnglat[1])) return apiResp(400, "Invalid LngLat (Non-Numeric)", false, headers);
+            if (isNaN(query.zoom)) return apiResp(400, "Invalid Integer Zoom", false, headers);
+            if (query.zoom > header.maxZoom) return apiResp(400, "Above Layer MaxZoom", false, headers);
+            if (query.zoom < header.minZoom) return apiResp(400, "Below Layer MinZoom", false, headers);
+
+            const tile = TB.pointToTile(query.lnglat[0], query.lnglat[1], query.zoom)
+
+            return apiResp(200, JSON.stringify({
+                type: 'Feature',
+                query,
+                tile,
+                properties: {},
+                geometry: {}
+            }), false, headers);
+        } else if (meta) {
             headers["Content-Type"] = "application/json";
             return apiResp(200, JSON.stringify({
                 "tilejson": "2.2.0",
