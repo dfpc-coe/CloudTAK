@@ -58,6 +58,14 @@
                                 <span class="nav-link-title">Data</span>
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link cursor-pointer" @click='$router.push("/basemap")'>
+                                <span class="nav-link-icon d-md-none d-lg-inline-block">
+                                    <MapIcon/>
+                                </span>
+                                <span class="nav-link-title">BaseMaps</span>
+                            </a>
+                        </li>
                         <li class="nav-item dropdown">
                             <a id='util-dropdown' class="nav-link dropdown-toggle cursor-pointer" data-bs-toggle="dropdown" aria-expanded="false">
                                 <span class="nav-link-icon d-md-none d-lg-inline-block">
@@ -104,6 +112,7 @@ import '@tabler/core/dist/css/tabler.min.css';
 import {
     CodeIcon,
     HomeIcon,
+    MapIcon,
     NetworkIcon,
     DatabaseIcon,
     BuildingBroadcastTowerIcon,
@@ -172,6 +181,7 @@ export default {
     components: {
         HomeIcon,
         CodeIcon,
+        MapIcon,
         NetworkIcon,
         DatabaseIcon,
         TablerError,
