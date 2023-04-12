@@ -36,7 +36,7 @@
                         <div class="card-body" v-text='connection.description'>
                         </div>
                         <div class="card-footer">
-                            Last updated 3 mins ago
+                            Last updated <span v-text='timeDiff(data.updated)'/>
                         </div>
                     </div>
                 </div>
@@ -60,6 +60,7 @@ import PageFooter from './PageFooter.vue';
 import ConnectionStatus from './Connection/Status.vue';
 import ConnectionLayers from './Connection/Layers.vue';
 import ConnectionEvents from './Connection/Events.vue';
+import timeDiff from '../timediff.js';
 import {
     RefreshIcon,
     SettingsIcon
@@ -82,6 +83,9 @@ export default {
         await this.fetch();
     },
     methods: {
+        timeDiff(update) {
+            return timeDiff(update);
+        },
         fetch: async function() {
             this.connection = await window.std(`/api/connection/${this.$route.params.connectionid}`);
         },

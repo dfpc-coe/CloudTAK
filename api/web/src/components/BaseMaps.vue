@@ -68,7 +68,7 @@
                                 <div class="card-body">
                                 </div>
                                 <div class="card-footer">
-                                    Last updated 3 mins ago
+                                    <span v-text='`Last Updated: ${timeDiff(basemap.updated)}`'/>
                                 </div>
                             </div>
                         </div>
@@ -92,6 +92,7 @@ import None from './cards/None.vue';
 import {
     TablerLoading
 } from '@tak-ps/vue-tabler';
+import timeDiff from '../timediff.js';
 import {
     SettingsIcon,
     SearchIcon
@@ -127,6 +128,9 @@ export default {
        },
     },
     methods: {
+        timeDiff(update) {
+            return timeDiff(update);
+        },
         fetchList: async function() {
             this.loading = true;
             const url = window.stdurl('/api/basemap');

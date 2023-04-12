@@ -70,7 +70,7 @@
                                 <div class="card-body" v-text='connection.description'>
                                 </div>
                                 <div class="card-footer">
-                                    Last updated 3 mins ago
+                                    Last updated <span v-text='timeDiff(data.updated)'/>
                                 </div>
                             </div>
                         </div>
@@ -92,6 +92,7 @@ import PageFooter from './PageFooter.vue';
 import Pager from './util/Pager.vue';
 import ConnectionStatus from './Connection/Status.vue';
 import None from './cards/None.vue';
+import timeDiff from '../timediff.js';
 import {
     TablerLoading
 } from '@tak-ps/vue-tabler';
@@ -130,6 +131,9 @@ export default {
        },
     },
     methods: {
+        timeDiff(update) {
+            return timeDiff(update);
+        },
         fetchList: async function() {
             this.loading = true;
             const url = window.stdurl('/api/connection');
