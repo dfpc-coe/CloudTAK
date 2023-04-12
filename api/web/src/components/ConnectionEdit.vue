@@ -5,11 +5,7 @@
             <div class="container-xl">
                 <div class="row g-2 align-items-center">
                     <div class="col d-flex">
-                        <ol class="breadcrumb" aria-label="breadcrumbs">
-                            <li class="breadcrumb-item"><a @click='$router.push("/")' class="cursor-pointer">Home</a></li>
-                            <li class="breadcrumb-item" aria-current="page"><a  @click='$router.push("/connection")' class="cursor-pointer">Connection</a></li>
-                            <li class="breadcrumb-item active" aria-current="page"><a href="#">New</a></li>
-                        </ol>
+                        <TablerBreadCrumb/>
                     </div>
                 </div>
             </div>
@@ -120,7 +116,10 @@
 <script>
 import PageFooter from './PageFooter.vue';
 import Upload from './util/UploadP12.vue';
-import { TablerInput } from '@tak-ps/vue-tabler';
+import {
+    TablerBreadCrumb,
+    TablerInput
+} from '@tak-ps/vue-tabler';
 
 export default {
     name: 'ConnectionNew',
@@ -204,6 +203,7 @@ export default {
     },
     components: {
         Upload,
+        TablerBreadCrumb,
         TablerInput,
         PageFooter,
     }

@@ -5,10 +5,7 @@
             <div class="container-xl">
                 <div class="row g-2 align-items-center">
                     <div class="col d-flex">
-                        <ol class="breadcrumb" aria-label="breadcrumbs">
-                            <li class="breadcrumb-item" aria-current="page"><a @click='$router.push("/")' class='cursor-pointer'>Home</a></li>
-                            <li class="breadcrumb-item active" aria-current="page"><a href="#">Admin</a></li>
-                        </ol>
+                        <TablerBreadCrumb/>
                     </div>
                 </div>
             </div>
@@ -77,6 +74,7 @@
 <script>
 import PageFooter from './PageFooter.vue';
 import {
+    TablerBreadCrumb,
     TablerLoading,
     TablerInput
 } from '@tak-ps/vue-tabler';
@@ -160,6 +158,7 @@ export default {
     components: {
         PageFooter,
         SettingsIcon,
+        TablerBreadCrumb,
         TablerLoading,
         TablerInput
     }

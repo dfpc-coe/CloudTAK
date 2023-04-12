@@ -5,11 +5,7 @@
             <div class="container-xl">
                 <div class="row g-2 align-items-center">
                     <div class="col d-flex">
-                        <ol class="breadcrumb" aria-label="breadcrumbs">
-                            <li class="breadcrumb-item" aria-current="page"><a @click='$router.push("/")' class='cursor-pointer'>Home</a></li>
-                            <li class="breadcrumb-item" aria-current="page"><a @click='$router.push("/layer")' class='cursor-pointer'>Layers</a></li>
-                            <li class="breadcrumb-item active" aria-current="page"><a href="#" v-text='layer.id'></a></li>
-                        </ol>
+                        <TablerBreadCrumb/>
                     </div>
                 </div>
             </div>
@@ -70,6 +66,7 @@ import LayerTask from './Layer/LayerTask.vue';
 import Styles from './Layer/Styles.vue';
 import timeDiff from '../timediff.js';
 import {
+    TablerBreadCrumb, 
     TablerLoading
 } from '@tak-ps/vue-tabler'
 import {
@@ -116,6 +113,7 @@ export default {
         SettingsIcon,
         LayerData,
         PageFooter,
+        TablerBreadCrumb, 
         TablerLoading,
         DatabaseIcon,
         LayerTask,

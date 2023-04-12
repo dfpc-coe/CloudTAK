@@ -5,10 +5,7 @@
             <div class="container-xl">
                 <div class="row g-2 align-items-center">
                     <div class="col d-flex">
-                        <ol class="breadcrumb" aria-label="breadcrumbs">
-                            <li class="breadcrumb-item" aria-current="page"><a @click='$router.push("/")' class='cursor-pointer'>Home</a></li>
-                            <li class="breadcrumb-item active" aria-current="page"><a href="#">Connections</a></li>
-                        </ol>
+                        <TablerBreadCrumb/>
 
                         <div class='ms-auto'>
                             <div class='btn-list'>
@@ -94,6 +91,7 @@ import ConnectionStatus from './Connection/Status.vue';
 import None from './cards/None.vue';
 import timeDiff from '../timediff.js';
 import {
+    TablerBreadCrumb,
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import {
@@ -150,6 +148,7 @@ export default {
         SettingsIcon,
         SearchIcon,
         PageFooter,
+        TablerBreadCrumb,
         ConnectionStatus,
         TablerLoading
     }

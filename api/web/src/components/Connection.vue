@@ -5,11 +5,7 @@
             <div class="container-xl">
                 <div class="row g-2 align-items-center">
                     <div class="col d-flex">
-                        <ol class="breadcrumb" aria-label="breadcrumbs">
-                            <li class="breadcrumb-item" aria-current="page"><a @click='$router.push("/")' class='cursor-pointer'>Home</a></li>
-                            <li class="breadcrumb-item" aria-current="page"><a @click='$router.push("/connection")' class='cursor-pointer'>Connections</a></li>
-                            <li class="breadcrumb-item active" aria-current="page"><a href="#" v-text='connection.id'></a></li>
-                        </ol>
+                        <TablerBreadCrumb/>
                     </div>
                 </div>
             </div>
@@ -65,6 +61,9 @@ import {
     RefreshIcon,
     SettingsIcon
 } from 'vue-tabler-icons'
+import {
+    TablerBreadCrumb,
+} from '@tak-ps/vue-tabler';
 
 export default {
     name: 'Connection',
@@ -99,6 +98,7 @@ export default {
         SettingsIcon,
         RefreshIcon,
         PageFooter,
+        TablerBreadCrumb,
         ConnectionStatus,
         ConnectionLayers,
         ConnectionEvents
