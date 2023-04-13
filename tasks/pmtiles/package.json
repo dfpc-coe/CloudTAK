@@ -8,15 +8,15 @@
         "@types/node": "^18.11.2",
         "@typescript-eslint/eslint-plugin": "^5.57.1",
         "@typescript-eslint/parser": "^5.57.1",
-        "esbuild": "^0.17.0",
         "eslint": "^8.37.0",
+        "tsup": "^6.7.0",
         "typescript": "^5.0.0"
     },
     "private": true,
     "scripts": {
         "tsc": "tsc --noEmit --watch",
         "lint": "eslint src/index.ts",
-        "build": "esbuild src/index.ts --target=es2020 --outfile=dist/index.mjs --format=esm --bundle --platform=node --target=node18 --external:@aws-sdk/client-s3 --external:@aws-sdk/node-http-handler --banner:js=//$(git describe --always)"
+        "build": "tsup --target es2022 --format esm src/index.ts"
     },
     "dependencies": {
         "@aws-sdk/client-s3": "^3.213.0",
