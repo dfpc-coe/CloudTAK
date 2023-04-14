@@ -1,6 +1,7 @@
 <template>
 <div v-if='pmtiles.length' class="card">
-    <div class="card-body">
+    <TablerLoading v-if='loading'/>
+    <div v-else class="card-body">
         <div class="row">
             <div id="map" style='height: 350px;'></div>
         </div>
@@ -12,6 +13,9 @@
 import * as pmtiles from 'pmtiles';
 import mapgl from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css';
+import {
+    TablerLoading
+} from '@tak-ps/vue-tabler';
 
 let map;
 
@@ -25,9 +29,15 @@ export default {
     },
     data: function() {
         return {
+            loading: false,
             pmtiles: [],
             tilejson: false,
-            asset: null
+            asset: null,
+            style: {
+                version: 8,
+                sources: { },
+                layers: []
+            }
         }
     },
     watch: {
@@ -43,8 +53,33 @@ export default {
         }
     },
     methods: {
-        mountMap: function() {
+        basemap: async function() {
+            const list = await window.std('/api/basemap?limit=1');
+            if (list.basemaps.length) {
+                this.style.sources = {
+                    basemap: {
+                        type: 'raster',
+                        url: list.basemaps[0].url
+                    }
+                }
+
+                this.style.layers = [{
+                    id: 'background',
+                    type: 'background',
+                    paint: {
+                        'background-color': 'rgb(4,7,14)'
+                    }
+                },{
+                    'id': 'basemap',
+                    'type': 'raster',
+                    'source': 'basemap'
+                }]
+            }
+        },
+        mountMap: async function() {
             if (!map) {
+                await this.basemap();
+
                 this.$nextTick(() => {
                     const protocol = new pmtiles.Protocol();
                     mapgl.addProtocol('pmtiles', protocol.tile);
@@ -54,11 +89,7 @@ export default {
                         hash: "map",
                         zoom: 0,
                         center: [0, 0],
-                        style: {
-                            version: 8,
-                            sources: {},
-                            layers: [],
-                        },
+                        style: this.style
                     });
 
                     tmpmap.addControl(new mapgl.NavigationControl({}), "bottom-left");
@@ -151,6 +182,9 @@ export default {
                 });
             })
         }
+    },
+    components: {
+        TablerLoading
     }
 }
 </script>
