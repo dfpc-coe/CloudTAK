@@ -165,7 +165,7 @@ export const handlerRaw = async (
             if (query.zoom < header.minZoom) return apiResp(400, "Below Layer MinZoom", false, headers);
 
             const xyz = TB.pointToTile(query.lnglat[0], query.lnglat[1], query.zoom)
-            const tile = await p.getZxy(zxy[2], zxy[0], zxy[1]);
+            const tile = await p.getZxy(xyz[2], xyz[0], xyz[1]);
 
             const meta = {
                 x: xyz[0],
