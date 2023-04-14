@@ -184,7 +184,7 @@ export const handlerRaw = async (
 
             const fc: any = await new Promise((resolve, reject) => {
                 vtquery([
-                    { buffer: tile.data, z: zxy[0], x: zxy[1], y: zxy[2] }
+                    { buffer: tile.data, z: xyz[2], x: xyz[0], y: xyz[1] }
                 ], query.lnglat, {
                     limit: query.limit
                 }, (err: Error, fc: {
