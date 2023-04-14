@@ -266,11 +266,22 @@ export const handlerRaw = async (
         } else {
             return apiResp(204, "", false, headers);
         }
-    } catch (e) {
-        if ((e as Error).name === "AccessDenied") {
+    } catch (err: any) {
+        if ((err as Error).name === "AccessDenied") {
             return apiResp(403, "Bucket access unauthorized", false, headers);
         }
-        throw e;
+
+        console.error(err);
+
+        if ((err as Error) && err.message) {
+            headers["Content-Type"] = 'application/json';
+            return apiResp(500, JSON.stringify({
+                status: 500,
+                message: err.message
+            }), false, headers);
+        } else {
+            throw err;
+        }
     }
     return apiResp(404, "Invalid URL", false, headers);
 };
