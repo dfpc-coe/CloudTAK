@@ -140,6 +140,8 @@ export const handlerRaw = async (
         }
 
         if (meta && event.queryStringParameters && event.queryStringParameters.query) {
+            headers["Content-Type"] = "application/json";
+
             const query: {
                 lnglat: number[],
                 zoom: number,
@@ -165,9 +167,18 @@ export const handlerRaw = async (
             const zxy = TB.pointToTile(query.lnglat[0], query.lnglat[1], query.zoom)
             const tile = await p.getZxy(zxy[2], zxy[0], zxy[1]);
 
+            if (!tile) {
+                return apiResp(200, JSON.stringify({
+                    type: 'FeatureCollection',
+                    query: query,
+                    meta: { zxy },
+                    features: []
+                }), false, headers);
+            }
+
             const fc: any = await new Promise((resolve, reject) => {
                 vtquery([
-                    { buffer: tile, z: zxy[0], x: zxy[1], y: zxy[2] }
+                    { buffer: tile.data, z: zxy[0], x: zxy[1], y: zxy[2] }
                 ], query.lnglat, {
                     limit: query.limit
                 }, (err: Error, fc: {
