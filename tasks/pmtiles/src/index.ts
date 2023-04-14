@@ -164,14 +164,20 @@ export const handlerRaw = async (
             if (query.zoom > header.maxZoom) return apiResp(400, "Above Layer MaxZoom", false, headers);
             if (query.zoom < header.minZoom) return apiResp(400, "Below Layer MinZoom", false, headers);
 
-            const zxy = TB.pointToTile(query.lnglat[0], query.lnglat[1], query.zoom)
+            const xyz = TB.pointToTile(query.lnglat[0], query.lnglat[1], query.zoom)
             const tile = await p.getZxy(zxy[2], zxy[0], zxy[1]);
+
+            const meta = {
+                x: xyz[0],
+                y: xyz[1],
+                z: xyz[2]
+            };
 
             if (!tile) {
                 return apiResp(200, JSON.stringify({
                     type: 'FeatureCollection',
-                    query: query,
-                    meta: { zxy },
+                    query,
+                    meta,
                     features: []
                 }), false, headers);
             }
@@ -191,7 +197,7 @@ export const handlerRaw = async (
             });
 
             fc.query = query;
-            fc.meta = { zxy };
+            fc.meta = meta;
 
             return apiResp(200, JSON.stringify(fc), false, headers);
         } else if (meta) {
