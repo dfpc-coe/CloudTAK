@@ -18,8 +18,7 @@ COPY ./ $HOME/api
 
 RUN cd web \
     && npm install \
-    && npm install -g yarn \
-    && yarn prod \
+    && npm run build \
     && cd ..
 
 COPY ./nginx.conf /etc/nginx/nginx.conf
