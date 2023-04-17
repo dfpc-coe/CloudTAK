@@ -28,7 +28,7 @@
                         <TablerEpoch :date='asset.updated'/>
                         <div class='ms-auto btn-list'>
                             <TrashIcon @click='deleteAsset(asset)' class='cursor-pointer'/>
-                            <TransformIcon @click='initTransform(asset)' class='cursor-pointer'/>
+                            <TransformIcon v-if='!asset.name.endsWith(".pmtiles")' @click='initTransform(asset)' class='cursor-pointer'/>
                             <DownloadIcon @click='downloadAsset(asset)' class='cursor-pointer'/>
                         </div>
                     </td>

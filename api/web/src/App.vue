@@ -63,7 +63,7 @@
                                 <span class="nav-link-icon d-md-none d-lg-inline-block">
                                     <MapIcon/>
                                 </span>
-                                <span class="nav-link-title">BaseMaps</span>
+                                <span class="nav-link-title">Basemaps</span>
                             </a>
                         </li>
                         <li class="nav-item dropdown">
