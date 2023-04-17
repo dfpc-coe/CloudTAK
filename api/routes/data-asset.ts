@@ -30,6 +30,9 @@ export default async function router(schema: any, config: Config) {
 
             return res.json({
                 total: list.length,
+                tiles: {
+                    url: String(new URL(`${config.PMTILES_URL}/tiles/data/${data.id}/`))
+                },
                 assets: list.map((asset) => {
                     return {
                         name: asset.Key.replace(`data/${data.id}/`, ''),

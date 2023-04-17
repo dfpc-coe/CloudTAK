@@ -5,6 +5,13 @@
         <div class="row">
             <div id="map" style='height: 350px;'></div>
         </div>
+
+        <div v-if='geocode.loading' class="row">
+            <TablerLoading desc='Geocoding Feature...'/>
+        </div>
+        <div v-else-if='geocode.result' class="row py-2">
+            <pre v-text='geocode.result'/>
+        </div>
     </div>
 </div>
 </template>
@@ -31,8 +38,12 @@ export default {
         return {
             loading: false,
             pmtiles: [],
-            tilejson: false,
             asset: null,
+            geocode: {
+                loading: false,
+                url: null,
+                result: null
+            },
             style: {
                 version: 8,
                 sources: { },
@@ -41,6 +52,11 @@ export default {
         }
     },
     watch: {
+        'geocode.url': async function() {
+            this.geocode.loading = true;
+            this.geocode.result = await window.std(this.geocode.url);
+            this.geocode.loading = false;
+        },
         assets: function() {
             this.pmtiles = this.assets.assets.filter((asset) => {
                 return asset.name.endsWith('.pmtiles');
@@ -96,6 +112,12 @@ export default {
 
                     tmpmap.once('load', () => {
                         map = tmpmap;
+
+                        map.on('click', (e) => {
+                            const url = new URL(this.assets.tiles.url + this.asset.name.replace(/.pmtiles$/, ''))
+                            url.searchParams.append('query', `${e.lngLat.lng},${e.lngLat.lat}`);
+                            this.geocode.url = url;
+                        });
 
                         this.mountPMTiles();
                     });
