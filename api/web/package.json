@@ -22,6 +22,7 @@
         "sass": "^1.49.7",
         "sass-loader": "^13.0.0",
         "semver-sort": "^1.0.0",
+        "showdown": "^2.1.0",
         "vue": "^3.2.31",
         "vue-router": "^4.0.14",
         "vue-tabler-icons": "^2.16.0",
