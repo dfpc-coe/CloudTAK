@@ -61,7 +61,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="card-body" v-text='data.description'>
+                            <div class="card-body" v-html='description(data.description)'>
                             </div>
                             <div class="card-footer">
                                 Last updated <span v-text='timeDiff(data.updated)'/>
@@ -78,6 +78,7 @@
 </template>
 
 <script>
+import showdown from 'showdown';
 import None from './cards/None.vue';
 import PageFooter from './PageFooter.vue';
 import {
@@ -113,6 +114,10 @@ export default {
         await this.fetchList();
     },
     methods: {
+        description: function(description) {
+            const converter = new showdown.Converter();
+            return converter.makeHtml(description);
+        },
         timeDiff: function(updated) {
             const msPerMinute = 60 * 1000;
             const msPerHour = msPerMinute * 60;

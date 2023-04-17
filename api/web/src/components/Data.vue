@@ -27,7 +27,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="card-body" v-text='data.description'>
+                        <div class="card-body" v-html='description'>
                         </div>
                         <div class="card-footer">
                             Last updated <span v-text='timeDiff(data.updated)'/>
@@ -52,6 +52,7 @@
 </template>
 
 <script>
+import showdown from 'showdown';
 import PageFooter from './PageFooter.vue';
 import DataAsset from './Data/Assets.vue';
 import DataLocation from './Data/Location.vue';
@@ -75,6 +76,12 @@ export default {
             },
             assets: {},
             data: {}
+        }
+    },
+    computed: {
+        description: function() {
+            const converter = new showdown.Converter();
+            return converter.makeHtml(this.data.description);
         }
     },
     mounted: async function() {
