@@ -2,6 +2,7 @@
     "type": "object",
     "required": [
         "total",
+        "tiles",
         "assets"
     ],
     "additionalProperties": false,
@@ -9,8 +10,19 @@
         "total": {
             "$ref": "./util/total.json"
         },
+        "tiles": {
+            "type": "object",
+            "required": [ "url" ],
+            "additionalProperties": false,
+            "properties": {
+                "url": {
+                    "type": "string"
+                }
+            }
+        },
         "assets": {
             "type": "object",
+            "additionalProperties": false,
             "required": [
                 "name",
                 "updated",
