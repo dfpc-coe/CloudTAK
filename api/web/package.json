@@ -3,10 +3,9 @@
     "version": "0.1.0",
     "private": true,
     "scripts": {
-        "serve": "vue-cli-service serve",
-        "prod": "vue-cli-service build",
-        "dev": "vue-cli-service build --watch --mode development",
-        "lint": "vue-cli-service lint"
+        "serve": "vite serve --port 8080",
+        "build": "vite build",
+        "lint": "vite lint"
     },
     "dependencies": {
         "@tabler/core": "^1.0.0-beta16",
@@ -31,11 +30,13 @@
     },
     "devDependencies": {
         "@babel/eslint-parser": "^7.17.0",
+        "@vitejs/plugin-vue": "^4.1.0",
         "@vue/cli-plugin-babel": "^5.0.3",
         "@vue/cli-plugin-eslint": "^5.0.3",
         "@vue/cli-service": "^5.0.3",
         "eslint": "^8.11.0",
         "eslint-plugin-vue": "^9.0.0",
+        "vite": "^4.2.1",
         "vue-template-compiler": "^2.6.11"
     },
     "eslintConfig": {
