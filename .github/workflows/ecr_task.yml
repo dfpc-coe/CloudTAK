@@ -19,6 +19,9 @@ jobs:
   build:
     runs-on: ubuntu-latest
     if: github.event.pull_request.draft == false
+    strategy:
+      matrix:
+        task: [task, pmtiles, stats]
     steps:
       - uses: actions/checkout@v3
         with:
@@ -32,14 +35,14 @@ jobs:
           aws-region: ${{secrets.AWS_REGION}}
 
       - name: Docker Build Task
-        run: docker-compose build task
+        run: docker-compose build ${{ matrix.task }}
 
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
 
       - name: Docker Tag Task
-        run: docker tag etl_task:latest ${{secrets.AWS_ACCOUNT_ID}}.dkr.ecr.${{secrets.AWS_REGION}}.amazonaws.com/coe-ecr-etl:task-${{github.event.pull_request.head.sha || github.sha}}
+        run: docker tag etl_${{matrix.task}}:latest ${{secrets.AWS_ACCOUNT_ID}}.dkr.ecr.${{secrets.AWS_REGION}}.amazonaws.com/coe-ecr-etl:${{matrix.task}}-${{github.event.pull_request.head.sha || github.sha}}
 
       - name: Docker Push task
-        run: docker push ${{secrets.AWS_ACCOUNT_ID}}.dkr.ecr.${{secrets.AWS_REGION}}.amazonaws.com/coe-ecr-etl:task-${{github.event.pull_request.head.sha || github.sha}}
+        run: docker push ${{secrets.AWS_ACCOUNT_ID}}.dkr.ecr.${{secrets.AWS_REGION}}.amazonaws.com/coe-ecr-etl:${{matrix.task}}-${{github.event.pull_request.head.sha || github.sha}}

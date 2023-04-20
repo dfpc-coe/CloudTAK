@@ -28,7 +28,7 @@
                         <TablerEpoch :date='asset.updated'/>
                         <div class='ms-auto btn-list'>
                             <TrashIcon @click='deleteAsset(asset)' class='cursor-pointer'/>
-                            <TransformIcon @click='initTransform(asset)' class='cursor-pointer'/>
+                            <TransformIcon v-if='!asset.name.endsWith(".pmtiles")' @click='initTransform(asset)' class='cursor-pointer'/>
                             <DownloadIcon @click='downloadAsset(asset)' class='cursor-pointer'/>
                         </div>
                     </td>
@@ -129,6 +129,8 @@ export default {
             this.loading.list = true;
             this.list = await window.std(`/api/data/${this.$route.params.dataid}/asset`);
             this.loading.list = false;
+
+            this.$emit('assets', this.list);
         }
     },
     components: {

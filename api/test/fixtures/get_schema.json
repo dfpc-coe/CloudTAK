@@ -4,12 +4,42 @@
         "query": true,
         "res": true
     },
+    "GET /openapi": {
+        "body": false,
+        "query": false,
+        "res": false
+    },
     "POST /login": {
         "body": false,
         "query": false,
         "res": true
     },
     "GET /login": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /basemap": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "POST /basemap": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "PATCH /basemap/:basemapid": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "GET /basemap/:basemapid": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "DELETE /basemap/:basemapid": {
         "body": false,
         "query": false,
         "res": true
@@ -65,6 +95,11 @@
         "res": true
     },
     "GET /data/:dataid/asset/:asset.:ext": {
+        "body": false,
+        "query": false,
+        "res": false
+    },
+    "GET /data/:dataid/asset/:asset.pmtiles/tile": {
         "body": false,
         "query": false,
         "res": false
@@ -179,6 +214,36 @@
         "query": false,
         "res": true
     },
+    "GET /aggregate/:aggregate": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /field": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /field/export": {
+        "body": false,
+        "query": true,
+        "res": false
+    },
+    "POST /record": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "GET /total": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /total/export": {
+        "body": false,
+        "query": true,
+        "res": false
+    },
     "GET /task": {
         "body": false,
         "query": false,
@@ -194,7 +259,7 @@
         "query": false,
         "res": true
     },
-    "POST /layer/:layerid/task": {
+    "POST /layer/:layerid/task/invoke": {
         "body": false,
         "query": false,
         "res": true
@@ -205,6 +270,11 @@
         "res": true
     },
     "GET /layer/:layerid/task/schema": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "POST /layer/:layerid/task": {
         "body": false,
         "query": false,
         "res": true

@@ -34,7 +34,7 @@
     </div>
     <div v-else class='card-body'>
         <TablerLoading v-if='loading.list'/>
-        <None v-else-if='!list.jobs.length' :create='false'/>
+        <None v-else-if='!list.list.length' :create='false'/>
     </div>
 </div>
 </template>

@@ -1,0 +1,32 @@
+{
+    "type": "object",
+    "required": [
+        "fields"
+    ],
+    "additionalProperties": false,
+    "properties": {
+        "totals": {
+            "type": "array",
+            "items":  {
+                "type": "object",
+                "required": [
+                    "dt",
+                    "dim",
+                    "stats"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                    "dt": {
+                        "type": "string"
+                    },
+                    "dim": {
+                        "type": "string"
+                    },
+                    "stats": {
+                        "type": "object"
+                    }
+                }
+            }
+        }
+    }
+}

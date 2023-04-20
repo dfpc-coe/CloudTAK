@@ -5,11 +5,7 @@
             <div class="container-xl">
                 <div class="row g-2 align-items-center">
                     <div class="col d-flex">
-                        <ol class="breadcrumb" aria-label="breadcrumbs">
-                            <li class="breadcrumb-item" aria-current="page"><a @click='$router.push("/")' class='cursor-pointer'>Home</a></li>
-                            <li class="breadcrumb-item" aria-current="page"><a @click='$router.push("/connection")' class='cursor-pointer'>Connections</a></li>
-                            <li class="breadcrumb-item active" aria-current="page"><a href="#" v-text='connection.id'></a></li>
-                        </ol>
+                        <TablerBreadCrumb/>
                     </div>
                 </div>
             </div>
@@ -36,7 +32,7 @@
                         <div class="card-body" v-text='connection.description'>
                         </div>
                         <div class="card-footer">
-                            Last updated 3 mins ago
+                            Last updated <span v-text='timeDiff(connection.updated)'/>
                         </div>
                     </div>
                 </div>
@@ -60,10 +56,14 @@ import PageFooter from './PageFooter.vue';
 import ConnectionStatus from './Connection/Status.vue';
 import ConnectionLayers from './Connection/Layers.vue';
 import ConnectionEvents from './Connection/Events.vue';
+import timeDiff from '../timediff.js';
 import {
     RefreshIcon,
     SettingsIcon
 } from 'vue-tabler-icons'
+import {
+    TablerBreadCrumb,
+} from '@tak-ps/vue-tabler';
 
 export default {
     name: 'Connection',
@@ -82,6 +82,9 @@ export default {
         await this.fetch();
     },
     methods: {
+        timeDiff(update) {
+            return timeDiff(update);
+        },
         fetch: async function() {
             this.connection = await window.std(`/api/connection/${this.$route.params.connectionid}`);
         },
@@ -95,6 +98,7 @@ export default {
         SettingsIcon,
         RefreshIcon,
         PageFooter,
+        TablerBreadCrumb,
         ConnectionStatus,
         ConnectionLayers,
         ConnectionEvents

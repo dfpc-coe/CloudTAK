@@ -22,7 +22,8 @@ export default class Tippecanoe {
      * @param {Stream} feats Stream of GeoJSON features to vectorize
      * @param {String} output_path Path to write mbtiles to
      * @param {Object} options Optional Options
-     * @param {boolean} options.std Don't squelch tippecanoe stderr/stdout [default: false]
+     * @param {boolean} options.std Squelch tippecanoe stderr/stdout [default: false]
+     * @param {boolean} options.quiet Don't print progress messages [default: false]
      * @param {String} options.name Human-readable name for the tileset
      * @param {String} options.attribution Attribution (HTML) to be shown with maps that use data from this tileset
      * @param {String} options.description Description for the tileset
@@ -59,6 +60,8 @@ export default class Tippecanoe {
             if (options.zoom.min) base = base.concat(['--minimum-zoom', options.zoom.min]);
             if (options.limit.features === false) base.concat(['--no-feature-limit']);
             if (options.limit.size === false) base.concat(['--no-tile-size-limit']);
+            if (options.quiet) base.concat(['--quiet']);
+
 
             const tippecanoe = CP.spawn('tippecanoe', base, {
                 env: process.env

@@ -1,0 +1,63 @@
+{
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+        "count",
+        "businesscategory",
+        "o",
+        "ou",
+        "title",
+        "postalcode"
+    ],
+    "properties": {
+        "count": {
+            "type": "integer",
+            "description": "Total number of users in the system"
+        },
+        "date": {
+            "type": ["string", "null"],
+            "description": "Optionally specify an ISO date string - useful for backfilling data",
+            "default": null
+        },
+        "businesscategory": {
+            "type": "object",
+            "patternProperties": {
+                ".*": {
+                    "type": "integer"
+                }
+            }
+        },
+        "o": {
+            "type": "object",
+            "patternProperties": {
+                ".*": {
+                    "type": "integer"
+                }
+            }
+        },
+        "ou": {
+            "type": "object",
+            "patternProperties": {
+                ".*": {
+                    "type": "integer"
+                }
+            }
+        },
+        "title": {
+            "type": "object",
+            "patternProperties": {
+                ".*": {
+                    "type": "integer"
+                }
+            }
+        },
+        "postalcode": {
+            "type": "object",
+            "patternProperties": {
+                ".*": {
+                    "type": "integer"
+                }
+            }
+        }
+    }
+}

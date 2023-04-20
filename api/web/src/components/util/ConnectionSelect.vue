@@ -1,7 +1,5 @@
 <template>
-<div class="col-md-12">
-    <label>Connection</label>
-
+<div class="col-md-12 mt-1">
     <template v-if='loading'>
         <TablerLoading/>
     </template>
@@ -12,7 +10,7 @@
                 <span class='mt-2' v-text='selected.name'/>
             </template>
             <template v-else>
-                Select A Connection Using the Gear Icon on the right
+                <span class='mt-2'>No Connection Selected!</span>
             </template>
 
             <div v-if='!disabled' class='ms-auto'>

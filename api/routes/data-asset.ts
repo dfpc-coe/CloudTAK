@@ -30,6 +30,9 @@ export default async function router(schema: any, config: Config) {
 
             return res.json({
                 total: list.length,
+                tiles: {
+                    url: String(new URL(`${config.PMTILES_URL}/tiles/data/${data.id}/`))
+                },
                 assets: list.map((asset) => {
                     return {
                         name: asset.Key.replace(`data/${data.id}/`, ''),
@@ -171,4 +174,22 @@ export default async function router(schema: any, config: Config) {
         }
     });
 
+    await schema.get('/data/:dataid/asset/:asset.pmtiles/tile', {
+        name: 'PMTiles TileJSON',
+        auth: 'user',
+        group: 'DataAssets',
+        description: 'Get TileJSON ',
+        ':dataid': 'integer',
+        ':asset': 'string'
+    }, async (req: Request, res: Response) => {
+        try {
+            await Auth.is_auth(req, true);
+
+            const data = await Data.from(config.pool, req.params.dataid);
+
+            return res.redirect(String(new URL(`${config.PMTILES_URL}/tiles/data/${data.id}/${req.params.asset}`)));
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
 }

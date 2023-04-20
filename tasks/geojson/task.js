@@ -84,7 +84,8 @@ export default class Task {
             await tp.tile(
                 fs.createReadStream(path.resolve(os.tmpdir(), this.etl.task.asset)),
                 path.resolve(os.tmpdir(), asset), {
-                    std: false,
+                    std: true,
+                    quiet: true,
                     name: asset,
                     description: 'Automatically Converted by @tak-ps/etl',
                     layer: 'out',

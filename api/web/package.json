@@ -3,10 +3,9 @@
     "version": "0.1.0",
     "private": true,
     "scripts": {
-        "serve": "vue-cli-service serve",
-        "prod": "vue-cli-service build",
-        "dev": "vue-cli-service build --watch --mode development",
-        "lint": "vue-cli-service lint"
+        "serve": "vite serve --port 8080",
+        "build": "vite build",
+        "lint": "vite lint"
     },
     "dependencies": {
         "@tabler/core": "^1.0.0-beta16",
@@ -16,12 +15,14 @@
         "dropzone": "^6.0.0-beta.2",
         "floating-vue": "^2.0.0-beta.17",
         "jsonata": "^2.0.1",
-        "mapbox-gl": "^2.11.0",
+        "maplibre-gl": "^2.4.0",
         "moment": "^2.29.3",
         "p12-pem": "^1.0.5",
+        "pmtiles": "^2.7.1",
         "sass": "^1.49.7",
         "sass-loader": "^13.0.0",
         "semver-sort": "^1.0.0",
+        "showdown": "^2.1.0",
         "vue": "^3.2.31",
         "vue-router": "^4.0.14",
         "vue-tabler-icons": "^2.16.0",
@@ -30,11 +31,13 @@
     },
     "devDependencies": {
         "@babel/eslint-parser": "^7.17.0",
+        "@vitejs/plugin-vue": "^4.1.0",
         "@vue/cli-plugin-babel": "^5.0.3",
         "@vue/cli-plugin-eslint": "^5.0.3",
         "@vue/cli-service": "^5.0.3",
         "eslint": "^8.11.0",
         "eslint-plugin-vue": "^9.0.0",
+        "vite": "^4.2.1",
         "vue-template-compiler": "^2.6.11"
     },
     "eslintConfig": {

@@ -20,6 +20,8 @@ export default class Config {
     Username: string;
     Password: string;
     API_URL: string;
+    PMTILES_URL: string;
+    TileBaseURL: URL;
     DynamoDB: string;
     wsClients: any[];
     Bucket?: string;
@@ -50,6 +52,10 @@ export default class Config {
             config.UnsafeSigningSecret = 'coe-wildland-fire';
             config.unsafe = args.unsafe;
 
+            config.TileBaseURL = process.env.TileBaseURL ? new URL(process.env.TileBaseURL) : new URL('./data-dev/zipcodes.tilebase', import.meta.url);
+            config.PMTILES_URL = process.env.PMTILES_URL || 'http://localhost:5001';
+            if (!config.silent) console.log(`ok - PMTiles: ${config.PMTILES_URL}`);
+
             if (!process.env.StackName || process.env.StackName === 'test') {
                 if (!config.silent) console.error('ok - set env StackName: test');
                 process.env.StackName = 'test';
@@ -67,6 +73,7 @@ export default class Config {
                 if (!process.env.TAK_USERNAME) throw new Error('TAK_USERNAME env must be set');
                 if (!process.env.TAK_PASSWORD) throw new Error('TAK_PASSWORD env must be set');
                 if (!process.env.API_URL) throw new Error('API_URL env must be set');
+                if (!process.env.PMTILES_URL) throw new Error('PMTILES_URL env must be set');
                 if (!process.env.ASSET_BUCKET) throw new Error('ASSET_BUCKET env must be set');
 
                 config.StackName = process.env.StackName;

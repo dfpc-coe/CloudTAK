@@ -27,7 +27,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="card-body" v-text='data.description'>
+                        <div class="card-body" v-html='description'>
                         </div>
                         <div class="card-footer">
                             Last updated <span v-text='timeDiff(data.updated)'/>
@@ -35,7 +35,10 @@
                     </div>
                 </div>
                 <div class="col-lg-12">
-                    <DataAsset/>
+                    <DataAsset @assets='assets = $event'/>
+                </div>
+                <div class="col-lg-12">
+                    <DataLocation :assets='assets'/>
                 </div>
                 <div class="col-lg-12">
                     <DataTransforms/>
@@ -49,8 +52,10 @@
 </template>
 
 <script>
+import showdown from 'showdown';
 import PageFooter from './PageFooter.vue';
 import DataAsset from './Data/Assets.vue';
+import DataLocation from './Data/Location.vue';
 import DataTransforms from './Data/Transforms.vue';
 import timeDiff from '../timediff.js';
 import {
@@ -69,7 +74,14 @@ export default {
             loading: {
                 data: true
             },
+            assets: {},
             data: {}
+        }
+    },
+    computed: {
+        description: function() {
+            const converter = new showdown.Converter();
+            return converter.makeHtml(this.data.description);
         }
     },
     mounted: async function() {
@@ -87,6 +99,7 @@ export default {
     },
     components: {
         SettingsIcon,
+        DataLocation,
         PageFooter,
         TablerLoading,
         DataAsset,

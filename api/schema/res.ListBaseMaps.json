@@ -1,0 +1,21 @@
+{
+    "type": "object",
+    "required": [
+        "total",
+        "basemaps"
+    ],
+    "additionalProperties": false,
+    "properties": {
+        "total": {
+            "type": "integer",
+            "description": "Total number of basemaps related to the query"
+        },
+        "basemaps": {
+            "type": "array",
+            "description": "Array of basemap objects",
+            "items":  {
+                "$ref": "./basemaps.json"
+            }
+        }
+    }
+}
