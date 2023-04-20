@@ -1,0 +1,20 @@
+{
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+        "dt": {
+            "$ref": "./fields/dt.json"
+        },
+        "dim": {
+            "$ref": "./fields/dim.json"
+        },
+        "stats": {
+            "$ref": "./fields/stats.json"
+        }
+    },
+    "required": [
+        "dt",
+        "dim",
+        "stats"
+    ]
+}

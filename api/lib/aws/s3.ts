@@ -24,7 +24,7 @@ export default class S3 {
         }
     }
 
-    static async put(key: string, stream: Readable) {
+    static async put(key: string, body: Readable | string) {
         try {
             if (!process.env.ASSET_BUCKET) throw new Err(400, null, 'ASSET_BUCKET not set');
 
@@ -35,7 +35,7 @@ export default class S3 {
                 params: {
                     Bucket: process.env.ASSET_BUCKET,
                     Key: key,
-                    Body: stream
+                    Body: body
                 }
             });
 

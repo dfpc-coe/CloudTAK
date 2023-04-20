@@ -1,34 +1,29 @@
-FROM ubuntu:22.04
+FROM nginx:stable-alpine3.17
 
 EXPOSE 5000
 
 ENV HOME=/home/etl
 WORKDIR $HOME
 
-RUN apt-get update \
-    && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends apt-utils tzdata python3 \
-    && apt-get install -y nginx memcached curl build-essential
+RUN apk add nodejs-current npm memcached python3 make bash g++
 
-RUN export NODEV='19.8.1' \
-    && curl "https://nodejs.org/dist/v${NODEV}/node-v${NODEV}-linux-x64.tar.gz" | tar -xzv > /dev/null \
-    && cp ./node-v${NODEV}-linux-x64/bin/node /usr/bin/ \
-    && ./node-v${NODEV}-linux-x64/bin/npm install -g npm
-
-COPY ./ $HOME/api
 WORKDIR $HOME/api
 
-RUN cp ./nginx.conf /etc/nginx/sites-enabled/default
+COPY package.json ./
+COPY package-lock.json ./
 
-RUN npm install \
-    && npm run doc
+RUN npm install
+
+COPY ./ $HOME/api
 
 RUN cd web \
     && npm install \
-    && npm install -g yarn \
-    && yarn prod \
+    && npm run build \
     && cd ..
 
-CMD service nginx restart \
-    && service memcached restart \
+COPY ./nginx.conf /etc/nginx/nginx.conf
+
+CMD memcached -d -u root \
+    && nginx \
     && npx knex migrate:latest \
     && npm run prod

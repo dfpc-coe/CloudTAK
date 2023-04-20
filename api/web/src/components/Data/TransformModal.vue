@@ -57,10 +57,12 @@ export default {
             this.loading = false;
         },
         submit: async function() {
+            this.loading = true;
             await window.std(`/api/data/${this.$route.params.dataid}/asset/${this.asset.name}`, {
                 method: 'POST',
                 body: this.transform
             });
+            this.loading = false;
             this.close();
         },
         close: function() {

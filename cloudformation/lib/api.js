@@ -315,10 +315,12 @@ export default {
                                 ':5432/tak_ps_etl'
                             ])
                         },
+                        { Name: 'TileBaseURL', Value: cf.join(['s3://', cf.ref('AssetBucket'), '/zipcodes.tilebase']) },
                         { Name: 'SigningSecret', Value: cf.sub('{{resolve:secretsmanager:${AWS::StackName}/api/secret:SecretString::AWSCURRENT}}') },
                         { Name: 'StackName', Value: cf.stackName },
                         { Name: 'ASSET_BUCKET', Value: cf.ref('AssetBucket') },
                         { Name: 'API_URL', Value: cf.ref('HostedURL') },
+                        { Name: 'PMTILES_URL', Value: cf.join(['https://', cf.ref('PMTilesLambdaAPI'), '.execute-api.', cf.region, '.amazonaws.com']) },
                         { Name: 'TAK_USERNAME', Value: cf.ref('Username') },
                         { Name: 'TAK_PASSWORD', Value: cf.ref('Password') },
                         { Name: 'AWS_DEFAULT_REGION', Value: cf.region }

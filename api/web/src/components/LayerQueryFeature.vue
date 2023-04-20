@@ -5,13 +5,7 @@
             <div class="container-xl">
                 <div class="row g-2 align-items-center">
                     <div class="col d-flex">
-                        <ol class="breadcrumb" aria-label="breadcrumbs">
-                            <li class="breadcrumb-item" aria-current="page"><a @click='$router.push("/")' class='cursor-pointer'>Home</a></li>
-                            <li class="breadcrumb-item" aria-current="page"><a @click='$router.push("/layer")' class='cursor-pointer'>Layers</a></li>
-                            <li class="breadcrumb-item" aria-current="page"><a @click='$router.push(`/layer/${$route.params.layerid}`)' class='cursor-pointer' v-text='$route.params.layerid'></a></li>
-                            <li class="breadcrumb-item" aria-current="page"><a @click='$router.push(`/layer/${$route.params.layerid}/query`)' class='cursor-pointer'>Query</a></li>
-                            <li class="breadcrumb-item active" aria-current="page" v-text='$route.params.featid'></li>
-                        </ol>
+                        <TablerBreadCrumb/>
                     </div>
                 </div>
             </div>
@@ -54,6 +48,7 @@ import {
     AlertCircleIcon
 } from 'vue-tabler-icons';
 import {
+    TablerBreadCrumb, 
     TablerLoading
 } from '@tak-ps/vue-tabler'
 
@@ -86,6 +81,7 @@ export default {
     },
     components: {
         PageFooter,
+        TablerBreadCrumb, 
         TablerLoading,
         AlertCircleIcon
     }

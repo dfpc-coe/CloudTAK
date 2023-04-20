@@ -1,0 +1,16 @@
+{
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+        "name": {
+            "$ref": "./basemaps/name.json"
+        },
+        "url": {
+            "$ref": "./basemaps/url.json"
+        }
+    },
+    "required": [
+        "name",
+        "url"
+    ]
+}
