@@ -1,12 +1,28 @@
 {
     "type": "object",
-    "required": [
-        "version"
-    ],
     "additionalProperties": false,
     "properties": {
-        "version": {
-            "type": "string"
+        "id": {
+            "$ref": "./server/id.json"
+        },
+        "created": {
+            "$ref": "./server/created.json"
+        },
+        "updated": {
+            "$ref": "./server/updated.json"
+        },
+        "name": {
+            "$ref": "./server/name.json"
+        },
+        "url": {
+            "$ref": "./server/url.json"
         }
-    }
+    },
+    "required": [
+        "id",
+        "created",
+        "updated",
+        "name",
+        "url"
+    ]
 }
