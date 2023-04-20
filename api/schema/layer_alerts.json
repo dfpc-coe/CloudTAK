@@ -1,0 +1,44 @@
+{
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+        "id": {
+            "$ref": "./layer_alerts/id.json"
+        },
+        "created": {
+            "$ref": "./layer_alerts/created.json"
+        },
+        "updated": {
+            "$ref": "./layer_alerts/updated.json"
+        },
+        "layer": {
+            "$ref": "./layer_alerts/layer.json"
+        },
+        "icon": {
+            "$ref": "./layer_alerts/icon.json"
+        },
+        "priority": {
+            "$ref": "./layer_alerts/priority.json"
+        },
+        "title": {
+            "$ref": "./layer_alerts/title.json"
+        },
+        "description": {
+            "$ref": "./layer_alerts/description.json"
+        },
+        "hidden": {
+            "$ref": "./layer_alerts/hidden.json"
+        }
+    },
+    "required": [
+        "id",
+        "created",
+        "updated",
+        "layer",
+        "icon",
+        "priority",
+        "title",
+        "description",
+        "hidden"
+    ]
+}
