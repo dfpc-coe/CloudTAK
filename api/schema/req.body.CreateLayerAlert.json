@@ -1,0 +1,24 @@
+{
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+        "icon": {
+            "$ref": "./layer_alerts/icon.json"
+        },
+        "priority": {
+            "$ref": "./layer_alerts/priority.json"
+        },
+        "title": {
+            "$ref": "./layer_alerts/title.json"
+        },
+        "description": {
+            "$ref": "./layer_alerts/description.json"
+        }
+    },
+    "required": [
+        "icon",
+        "priority",
+        "title",
+        "description"
+    ]
+}

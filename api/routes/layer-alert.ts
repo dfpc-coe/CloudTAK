@@ -15,6 +15,7 @@ export default async function router(schema: any, config: Config) {
         group: 'Layer Alerts',
         auth: 'user',
         description: 'List layer alerts',
+        ':layerid': 'integer',
         query: 'req.query.ListLayerAlerts.json',
         res: 'res.ListLayerAlerts.json'
     }, async (req: Request, res: Response) => {
@@ -26,6 +27,33 @@ export default async function router(schema: any, config: Config) {
             });
 
             const list = await LayerAlert.list(config.pool, layer.id, req.query);
+
+            res.json(list);
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
+
+    await schema.post('/layer/:layerid/alert', {
+        name: 'Create Alert',
+        group: 'Layer Alerts',
+        auth: 'user',
+        description: 'Create a new layer alert',
+        ':layerid': 'integer',
+        body: 'req.body.CreateLayerAlert.json',
+        res: 'layer_alerts.json'
+    }, async (req: Request, res: Response) => {
+        try {
+            await Auth.is_layer(req, parseInt(req.params.layerid));
+
+            const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
+                return (await Layer.from(config.pool, req.params.layerid)).serialize();
+            });
+
+            const list = await LayerAlert.generate(config.pool, {
+                ...req.body,
+                layer: layer.id
+            });
 
             res.json(list);
         } catch (err) {

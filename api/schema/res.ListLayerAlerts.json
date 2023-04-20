@@ -1,0 +1,21 @@
+{
+    "type": "object",
+    "required": [
+        "total",
+        "alerts"
+    ],
+    "additionalProperties": false,
+    "properties": {
+        "total": {
+            "type": "integer",
+            "description": "Total number of layers related to the query"
+        },
+        "alerts": {
+            "type": "array",
+            "description": "Array of alert objects",
+            "items":  {
+                "$ref": "layer_alerts.json"
+            }
+        }
+    }
+}
