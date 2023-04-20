@@ -4,7 +4,7 @@ import test from 'node:test';
 import assert from 'assert';
 
 import glob from 'glob';
-import $RefParser from 'json-schema-ref-parser';
+import $RefParser from '@apidevtools/json-schema-ref-parser';
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
 
