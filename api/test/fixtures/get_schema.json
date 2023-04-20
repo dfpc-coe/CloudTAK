@@ -19,6 +19,31 @@
         "query": false,
         "res": true
     },
+    "GET /basemap": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "POST /basemap": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "PATCH /basemap/:basemapid": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "GET /basemap/:basemapid": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "DELETE /basemap/:basemapid": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
     "GET /connection": {
         "body": false,
         "query": true,
@@ -188,6 +213,36 @@
         "body": true,
         "query": false,
         "res": true
+    },
+    "GET /aggregate/:aggregate": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /field": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /field/export": {
+        "body": false,
+        "query": true,
+        "res": false
+    },
+    "POST /record": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "GET /total": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /total/export": {
+        "body": false,
+        "query": true,
+        "res": false
     },
     "GET /task": {
         "body": false,
