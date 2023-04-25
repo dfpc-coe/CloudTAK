@@ -21,15 +21,30 @@
                             <h1 class='card-title'>Layer Alerts</h1>
                             <div class='ms-auto btn-list'>
                                 <TrashIcon @click='deleteAlerts' class='cursor-pointer'/>
+                                <RefreshIcon @click='query' class='cursor-pointer'/>
                             </div>
                         </div>
 
-                        <TablerLoading v-if='loading.query' desc='Loading Query'/>
+                        <TablerLoading v-if='loading.alerts' desc='Loading Alerts'/>
                         <None v-else-if='!list.total' :create='false'/>
-                        <div v-else class='row'>
-                            <div :key='alert.id' v-for='alert in list.alerts'>
-                                <span  v-text='alert.title'/>
-                                <span  v-text='alert.description'/>
+                        <div v-else>
+                            <div :key='alert.id' v-for='alert in list.alerts' class='row'>
+                                <div class='col-11 row py-2 d-flex'>
+                                    <div class='col-auto d-flex' style='margin-left: 20px;'>
+                                        <AlertCircleIcon class='mx-auto my-auto'/>
+                                    </div>
+                                    <div class='col-auto row'>
+                                        <span class='subheader col-12' v-text='alert.title'/>
+                                        <span v-text='alert.description'/>
+                                    </div>
+                                </div>
+                                <div class='col-1 d-flex'>
+                                    <div class='ms-auto'>
+                                        <div class='btn-list mt-2'>
+                                            <TrashIcon @click='deleteAlerts(alert.id)' class='cursor-pointer'/>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -47,11 +62,12 @@ import PageFooter from './PageFooter.vue';
 import None from './cards/None.vue';
 import {
     TrashIcon,
-    AlertCircleIcon
+    RefreshIcon,
+    AlertCircleIcon,
 } from 'vue-tabler-icons';
 import {
+    TablerLoading,
     TablerBreadCrumb,
-    TablerLoading
 } from '@tak-ps/vue-tabler'
 
 export default {
@@ -80,11 +96,17 @@ export default {
             this.list = await window.std(url);
             this.loading.alerts = false;
         },
-        deleteAlerts: async function() {
+        deleteAlerts: async function(id) {
             this.loading.alerts = true;
-            window.std(`/api/layer/${this.$route.params.layerid}/alert`, {
-                method: 'DELETE'
-            });
+            if (id) {
+                await window.std(`/api/layer/${this.$route.params.layerid}/alert/${id}`, {
+                    method: 'DELETE'
+                });
+            } else {
+                await window.std(`/api/layer/${this.$route.params.layerid}/alert`, {
+                    method: 'DELETE'
+                });
+            }
             await this.query();
         }
     },
@@ -92,9 +114,10 @@ export default {
         None,
         PageFooter,
         TrashIcon,
+        RefreshIcon,
         TablerBreadCrumb,
         TablerLoading,
-        AlertCircleIcon
+        AlertCircleIcon,
     }
 }
 </script>
