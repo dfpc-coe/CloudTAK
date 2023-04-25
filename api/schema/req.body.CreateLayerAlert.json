@@ -15,10 +15,5 @@
             "$ref": "./layer_alerts/description.json"
         }
     },
-    "required": [
-        "icon",
-        "priority",
-        "title",
-        "description"
-    ]
+    "required": [ "title" ]
 }
