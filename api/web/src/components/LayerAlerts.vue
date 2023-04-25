@@ -20,7 +20,7 @@
                         <div class='card-header d-flex'>
                             <h1 class='card-title'>Layer Alerts</h1>
                             <div class='ms-auto btn-list'>
-                                <TrashIcon @click='deleteAlerts' class='cursor-pointer'/>
+                                <TrashIcon @click='deleteAlerts()' class='cursor-pointer'/>
                                 <RefreshIcon @click='query' class='cursor-pointer'/>
                             </div>
                         </div>
