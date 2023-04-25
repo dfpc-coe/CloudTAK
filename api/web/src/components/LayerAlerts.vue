@@ -18,35 +18,11 @@
                 <div class="col-lg-12">
                     <div class="card">
                         <TablerLoading v-if='loading.query' desc='Loading Query'/>
-                        <div v-else-if='error'>
-                            <div class="text-center py-4">
-                                <AlertCircleIcon height='48' width='48'/>
-                                <h3 class='pt-3'>Query Error</h3>
-                                <div class="text-muted" v-text='error.message'></div>
-
-                                <div class="d-flex justify-content-center my-3">
-                                    <div @click='query' class='btn btn-secondary'>Refresh</div>
-                                </div>
-                            </div>
-                        </div>
                         <None v-else-if='!list.total' :create='false'/>
-                        <div v-else class='table-responsive'>
-                            <table class="table card-table table-vcenter">
-                                <thead>
-                                    <tr>
-                                        <th>ID</th>
-                                        <th>Type</th>
-                                        <th>Properties</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr :key='alert.id' v-for='alert in list.alerts'>
-                                        <td><a @click='$router.push(`/layer/${$route.params.layerid}/query/${feature.id}`)' class='cursor-pointer' v-text='feature.id'></a></td>
-                                        <td v-text='feature.geometry.type'></td>
-                                        <td v-text='JSON.stringify(feature.properties)'></td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                        <div v-else class='row'>
+                            <div :key='alert.id' v-for='alert in list.alerts'>
+                                <span  v-text='alert.title'/>
+                            </div>
                         </div>
                     </div>
                 </div>
