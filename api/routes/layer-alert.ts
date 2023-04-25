@@ -88,4 +88,35 @@ export default async function router(schema: any, config: Config) {
             return Err.respond(err, res);
         }
     });
+
+    await schema.delete('/layer/:layerid/alert/:alertid', {
+        name: 'Delete Alerts',
+        group: 'Layer Alerts',
+        auth: 'user',
+        description: 'Delete all alerts for the layer',
+        ':layerid': 'integer',
+        ':alertid': 'integer',
+        res: 'res.Standard.json'
+    }, async (req: Request, res: Response) => {
+        try {
+            await Auth.is_auth(req);
+
+            const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
+                return (await Layer.from(config.pool, req.params.layerid)).serialize();
+            });
+
+            const alert = await LayerAlert.from(config.pool, req.params.alertid);
+
+            if (alert.layer !== layer.id) throw new Err(400, null, 'Alert does not belong to this layer');
+
+            await alert.delete();
+
+            res.json({
+                status: 200,
+                message: 'Alert Removed'
+            });
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
 }
