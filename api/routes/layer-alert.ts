@@ -60,4 +60,32 @@ export default async function router(schema: any, config: Config) {
             return Err.respond(err, res);
         }
     });
+
+    await schema.delete('/layer/:layerid/alert', {
+        name: 'Delete Alerts',
+        group: 'Layer Alerts',
+        auth: 'user',
+        description: 'Delete all alerts for the layer',
+        ':layerid': 'integer',
+        res: 'res.Standard.json'
+    }, async (req: Request, res: Response) => {
+        try {
+            await Auth.is_auth(req);
+
+            const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
+                return (await Layer.from(config.pool, req.params.layerid)).serialize();
+            });
+
+            const list = await LayerAlert.delete(config.pool, layer.id, {
+                column: 'layer'
+            });
+
+            res.json({
+                status: 200,
+                message: 'Alerts Removed'
+            });
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
 }

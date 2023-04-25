@@ -97,6 +97,7 @@ export default {
     },
     mounted: async function() {
         await this.fetch();
+        await this.fetchAlerts();
     },
     methods: {
         timeDiff(update) {
