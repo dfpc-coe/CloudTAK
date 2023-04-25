@@ -5,6 +5,7 @@ import Layer from '../lib/types/layer.js';
 // @ts-ignore
 import Data from '../lib/types/data.js';
 import { XML as COT } from '@tak-ps/node-cot';
+import { Item as QueueItem } from '../lib/queue.js'
 import Cacher from '../lib/cacher.js';
 import { sql } from 'slonik';
 import Auth from '../lib/auth.js';
@@ -17,6 +18,7 @@ import { Request, Response } from 'express';
 import Config from '../lib/config.js';
 import Schedule from '../lib/schedule.js';
 import S3 from '../lib/aws/s3.js';
+import { Feature } from 'geojson';
 
 export default async function router(schema: any, config: Config) {
     const alarm = new Alarm(config.StackName);
@@ -275,7 +277,6 @@ export default async function router(schema: any, config: Config) {
 
                 for (let i = 0; i < req.body.features; i++) {
                     req.body.features[i] = await style.feat(req.body.features[i])
-                    req.body.features[i].layer = layer.id;
                 }
             }
 
@@ -297,7 +298,17 @@ export default async function router(schema: any, config: Config) {
                     pooledClient.tak.write(cots);
 
                     // TODO Only GeoJSON Features go to Dynamo, this should also store CoT XML
-                    if (layer.logging) ddb.queue(req.body.features);
+                    if (layer.logging) ddb.queue(req.body.features.map((feat: Feature) => {
+                        const item: QueueItem = {
+                            id: String(feat.id),
+                            layer: layer.id,
+                            type: feat.type,
+                            properties: feat.properties,
+                            geometry: feat.geometry
+                        }
+
+                        return item;
+                    }));
                 } else if (req.headers['content-type'] === 'application/xml') {
                     pooledClient.tak.write_xml(new COT(req.body));
                 } else {
