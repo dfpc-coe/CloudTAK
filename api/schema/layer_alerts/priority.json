@@ -1,5 +1,10 @@
 {
     "type": "string",
     "description": "",
-    "$comment": "text"
+    "$comment": "text",
+    "enum": [
+        "green",
+        "yellow",
+        "red"
+    ]
 }

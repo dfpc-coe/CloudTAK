@@ -30,7 +30,11 @@
                         <div v-else>
                             <div :key='alert.id' v-for='alert in list.alerts' class='row'>
                                 <div class='col-11 row py-2 d-flex'>
-                                    <div class='col-auto d-flex' style='margin-left: 20px;'>
+                                    <div class='col-auto d-flex' style='margin-left: 20px;' :class='{
+                                        "text-green": alert.priority === "green",
+                                        "text-yellow": alert.priority === "yellow",
+                                        "text-red": alert.priority === "red"
+                                    }'>
                                         <AlertCircleIcon class='mx-auto my-auto'/>
                                     </div>
                                     <div class='col-auto row'>
