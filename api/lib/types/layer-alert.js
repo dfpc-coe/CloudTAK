@@ -61,6 +61,7 @@ export default class Layer extends Generic {
                             priority = ${body.priority},
                             title = ${body.title},
                             description = ${body.description}
+                RETURNING *
             `);
 
             return this.deserialize(pool, pgres);
