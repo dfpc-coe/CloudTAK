@@ -321,8 +321,7 @@ export default {
                         { Name: 'ASSET_BUCKET', Value: cf.ref('AssetBucket') },
                         { Name: 'API_URL', Value: cf.ref('HostedURL') },
                         { Name: 'PMTILES_URL', Value: cf.join(['https://', cf.ref('PMTilesLambdaAPI'), '.execute-api.', cf.region, '.amazonaws.com']) },
-                        { Name: 'TAK_USERNAME', Value: cf.ref('Username') },
-                        { Name: 'TAK_PASSWORD', Value: cf.ref('Password') },
+                        { Name: 'MartiAPI', Value: cf.ref('MartiAPI') },
                         { Name: 'AWS_DEFAULT_REGION', Value: cf.region }
                     ],
                     LogConfiguration: {

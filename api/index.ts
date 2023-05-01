@@ -131,8 +131,8 @@ export default async function server(config: Config) {
     await schema.blueprint(new BlueprintLogin({
         secret: config.SigningSecret,
         unsafe: config.unsafe ? config.UnsafeSigningSecret : undefined,
-        username: config.Username,
-        password: config.Password
+        group: config.AuthGroup,
+        api: config.MartiAPI
     }));
 
     await schema.load(
