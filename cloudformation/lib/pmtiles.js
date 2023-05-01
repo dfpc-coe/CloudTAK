@@ -13,7 +13,8 @@ export default {
                 Environment: {
                     Variables: {
                         BUCKET: cf.ref('AssetBucket'),
-                        APIROOT: cf.join(['https://', cf.ref('PMTilesLambdaAPI'), '.execute-api.', cf.region, '.amazonaws.com'])
+                        APIROOT: cf.join(['https://', cf.ref('PMTilesLambdaAPI'), '.execute-api.', cf.region, '.amazonaws.com']),
+                        SigningSecret: cf.sub('{{resolve:secretsmanager:${AWS::StackName}/api/secret:SecretString::AWSCURRENT}}')
                     }
                 },
                 Role: cf.getAtt('PMTilesLambdaRole', 'Arn'),

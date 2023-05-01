@@ -2,7 +2,7 @@
 import Dynamo from './aws/dynamo.js';
 import { EventEmitter } from 'node:events';
 
-interface Item {
+export interface Item {
     id: string;
     layer: number;
     type: string;
