@@ -25,6 +25,14 @@
 
                             <div class='ms-auto'>
                                 <div class='btn-list'>
+
+                                    <AlertTriangleIcon 
+                                        class='cursor-pointer'
+                                        :class='{
+                                            "text-red": alerts.total
+                                        }'
+                                        @click='$router.push(`/layer/${layer.id}/alert`)'
+                                    />
                                     <DatabaseIcon class='cursor-pointer' @click='$router.push(`/layer/${layer.id}/query`)'/>
                                     <SettingsIcon class='cursor-pointer' @click='$router.push(`/layer/${layer.id}/edit`)'/>
                                 </div>
@@ -66,12 +74,13 @@ import LayerTask from './Layer/LayerTask.vue';
 import Styles from './Layer/Styles.vue';
 import timeDiff from '../timediff.js';
 import {
-    TablerBreadCrumb, 
+    TablerBreadCrumb,
     TablerLoading
 } from '@tak-ps/vue-tabler'
 import {
     SettingsIcon,
     DatabaseIcon,
+    AlertTriangleIcon,
 } from 'vue-tabler-icons'
 
 export default {
@@ -82,11 +91,13 @@ export default {
             loading: {
                 layer: true
             },
-            layer: {}
+            layer: {},
+            alerts: {}
         }
     },
     mounted: async function() {
         await this.fetch();
+        await this.fetchAlerts();
     },
     methods: {
         timeDiff(update) {
@@ -106,6 +117,9 @@ export default {
             this.loading.layer = true;
             this.layer = await window.std(`/api/layer/${this.$route.params.layerid}`);
             this.loading.layer = false;
+        },
+        fetchAlerts: async function() {
+            this.alerts = await window.std(`/api/layer/${this.$route.params.layerid}/alert`);
         }
     },
     components: {
@@ -113,9 +127,10 @@ export default {
         SettingsIcon,
         LayerData,
         PageFooter,
-        TablerBreadCrumb, 
+        TablerBreadCrumb,
         TablerLoading,
         DatabaseIcon,
+        AlertTriangleIcon,
         LayerTask,
         Styles
     }
