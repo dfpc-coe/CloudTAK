@@ -1,4 +1,6 @@
 process.env.StackName = 'test';
+process.env.MartiAPI = 'https://example.com';
+process.env.AuthGroup = 'Admins';
 
 import assert from 'assert';
 import fs from 'fs';
@@ -31,7 +33,6 @@ class FlightResponse {
  * @class
  */
 export default class Flight {
-
     constructor() {
         this.srv;
         this.config;
