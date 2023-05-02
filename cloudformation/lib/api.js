@@ -322,6 +322,7 @@ export default {
                         { Name: 'API_URL', Value: cf.ref('HostedURL') },
                         { Name: 'PMTILES_URL', Value: cf.join(['https://', cf.ref('PMTilesLambdaAPI'), '.execute-api.', cf.region, '.amazonaws.com']) },
                         { Name: 'MartiAPI', Value: cf.ref('MartiAPI') },
+                        { Name: 'AuthGroup', Value: cf.ref('AuthGroup') },
                         { Name: 'AWS_DEFAULT_REGION', Value: cf.region }
                     ],
                     LogConfiguration: {
