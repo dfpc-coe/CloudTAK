@@ -19,6 +19,16 @@ import BlueprintLogin from '@tak-ps/blueprint-login';
 import Server from './lib/types/server.js';
 import Config from './lib/config.js';
 
+try {
+    const dotfile = new URL('.env', import.meta.url);
+
+    fs.accessSync(dotfile);
+
+    Object.assign(process.env, JSON.parse(String(fs.readFileSync(dotfile))));
+} catch (err) {
+    console.log('ok - no .env file loaded');
+}
+
 const pkg = JSON.parse(String(fs.readFileSync(new URL('./package.json', import.meta.url))));
 
 const args = minimist(process.argv, {
