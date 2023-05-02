@@ -255,6 +255,7 @@ export default async function router(schema: any, config: Config) {
         auth: 'admin',
         description: 'Post CoT data to a given layer',
         ':layerid': 'integer',
+        query: 'req.query.PostCoT.json',
         res: 'res.Standard.json'
     }, async (req: Request, res: Response) => {
         try {
@@ -303,7 +304,7 @@ export default async function router(schema: any, config: Config) {
                     pooledClient.tak.write(cots);
 
                     // TODO Only GeoJSON Features go to Dynamo, this should also store CoT XML
-                    if (layer.logging) ddb.queue(req.body.features.map((feat: Feature) => {
+                    if (layer.logging && req.query.logging !== false) ddb.queue(req.body.features.map((feat: Feature) => {
                         const item: QueueItem = {
                             id: String(feat.id),
                             layer: layer.id,

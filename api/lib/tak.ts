@@ -1,6 +1,5 @@
 import EventEmitter from 'node:events';
 import tls from 'node:tls';
-import TAKAPI from './tak-api.js';
 import { XML as COT } from '@tak-ps/node-cot';
 
 export interface TAKAuth {
@@ -26,7 +25,6 @@ export default class TAK extends EventEmitter {
     writing: boolean;
 
     version: string;
-    api: TAKAPI;
 
     constructor(
         id: number,
@@ -49,8 +47,6 @@ export default class TAK extends EventEmitter {
         this.queue = [];
 
         this.version; // Server Version
-
-        this.api = new TAKAPI(type, url, auth);
     }
 
     static async connect(id: number, url: URL, auth: TAKAuth) {

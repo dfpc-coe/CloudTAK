@@ -1,30 +1,29 @@
 import MissionData from './api/mission-data.js';
+import { CookieJar, Cookie } from 'tough-cookie';
+import { CookieAgent } from 'http-cookie-agent/undici';
 import Err from '@openaddresses/batch-error';
-import https from 'https';
-import { TAKAuth } from './tak.js';
+
+export interface APIAuthInput {
+    username: string;
+    password: string;
+}
 
 /**
  * Handle TAK HTTP API Operations
  * @class
  */
 export default class TAKAPI {
-    type: string;
-    auth: TAKAuth;
+    auth: APIAuthInput;
+    authorized?: {
+        jwt: string;
+    };
     url: URL;
-    agent: https.Agent;
     MissionData: MissionData;
 
-    constructor(type: string, url: URL, auth: TAKAuth) {
-        this.type = type;
+    constructor(url: URL, auth: APIAuthInput) {
         this.auth = auth;
 
         this.url = new URL(`https://${url.hostname}:8080`);
-
-        this.agent = new https.Agent({
-            cert: this.auth.cert,
-            key: this.auth.key,
-            keepAlive: false
-        });
 
         this.MissionData = new MissionData(this);
     }
@@ -37,6 +36,18 @@ export default class TAKAPI {
         }
 
         return url;
+    }
+
+    async login() {
+        const url = new URL('/oauth/token', this.api);
+        url.searchParams.append('grant_type', 'password');
+        url.searchParams.append('username', req.body.username);
+        url.searchParams.append('password', req.body.password);
+
+        const authres = await fetch(url);
+
+        if (!authres.ok) throw new Err(400, new Error(await authres.text()), 'Non-200 Response from Auth Server - Token');
+
     }
 
     /**
