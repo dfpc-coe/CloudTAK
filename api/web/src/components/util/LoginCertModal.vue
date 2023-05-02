@@ -43,7 +43,7 @@ export default {
     },
     methods: {
         generate: function() {
-
+            await window.std('/api/marti/signClient');
         },
         close: function() {
             this.$emit('close');
