@@ -34,6 +34,10 @@ export default cf.merge(
                 Type: 'String',
                 Description: 'Base URL of Marti API'
             },
+            AuthGroup: {
+                Type: 'String',
+                Description: 'LDAP Authentication Group'
+            },
             HostedURL: {
                 Description: 'URL of domain/subdomain at which the API is hosted',
                 Type: 'String'
