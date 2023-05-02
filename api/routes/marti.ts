@@ -5,7 +5,7 @@ import { Request, Response } from 'express';
 import TAKAPI from '../lib/tak-api.js';
 
 export default async function router(schema: any, config: Config) {
-    await schema.get('/marti/signClient', {
+    await schema.post('/marti/signClient', {
         name: 'Sign Client',
         group: 'Marti',
         auth: 'user',
@@ -16,7 +16,7 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            const api = new TAKAPI(config.MartiAPI, req.body);
+            const api = new TAKAPI(new URL(config.MartiAPI), req.body);
             await api.login();
 
             return res.json({});
