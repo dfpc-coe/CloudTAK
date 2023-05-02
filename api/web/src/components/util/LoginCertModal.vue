@@ -16,6 +16,7 @@
             <div class='col-12 mt-3'>
                 <TablerInput
                     label='Connection Password'
+                    type='password'
                     v-model='password'
                     v-on:keyup.enter='generate'
                 />
@@ -43,7 +44,13 @@ export default {
     },
     methods: {
         generate: async function() {
-            await window.std('/api/marti/signClient');
+            await window.std('/api/marti/signClient', {
+                method: 'POST',
+                body: {
+                    username: this.username,
+                    password: this.password
+                }
+            });
         },
         close: function() {
             this.$emit('close');

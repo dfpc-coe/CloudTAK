@@ -266,7 +266,7 @@ export default async function router(schema: any, config: Config) {
             const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
                 return (await Layer.from(config.pool, req.params.layerid)).serialize();
             });
-
+    
             const style = new Style(layer);
             if (req.headers['content-type'] === 'application/json') {
                 try {
@@ -304,6 +304,7 @@ export default async function router(schema: any, config: Config) {
                     pooledClient.tak.write(cots);
 
                     // TODO Only GeoJSON Features go to Dynamo, this should also store CoT XML
+                    // @ts-ignore
                     if (layer.logging && req.query.logging !== false) ddb.queue(req.body.features.map((feat: Feature) => {
                         const item: QueueItem = {
                             id: String(feat.id),

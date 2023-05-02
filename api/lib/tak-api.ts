@@ -23,7 +23,7 @@ export default class TAKAPI {
     constructor(url: URL, auth: APIAuthInput) {
         this.auth = auth;
 
-        this.url = new URL(`https://${url.hostname}:8080`);
+        this.url = url;
 
         this.MissionData = new MissionData(this);
     }
@@ -38,16 +38,25 @@ export default class TAKAPI {
         return url;
     }
 
+    logout() {
+        delete this.authorized;
+    }
+
     async login() {
-        const url = new URL('/oauth/token', this.api);
+        const url = new URL('/oauth/token', this.url);
         url.searchParams.append('grant_type', 'password');
-        url.searchParams.append('username', req.body.username);
-        url.searchParams.append('password', req.body.password);
+        url.searchParams.append('username', this.auth.username);
+        url.searchParams.append('password', this.auth.password);
 
         const authres = await fetch(url);
 
         if (!authres.ok) throw new Err(400, new Error(await authres.text()), 'Non-200 Response from Auth Server - Token');
 
+        const body = await authres.json();
+
+        this.authorized = {
+            jwt: body.access_token
+        };
     }
 
     /**
@@ -69,11 +78,19 @@ export default class TAKAPI {
                 opts.headers['Content-Type'] = 'application/json';
             }
 
-            if (!opts.headers.Authorization) {
-                console.error('NEED TO SET AUTH');
+            const jar = new CookieJar();
+
+            if (this.authorized) {
+                await jar.setCookie(new Cookie({
+                    key: 'access_token',
+                    value: this.authorized.jwt
+                }), String(this.url));
             }
 
-            opts.agent = this.agent;
+            const agent = new CookieAgent({ cookies: { jar } });
+
+            opts.credentials = 'include';
+            opts.dispatcher = agent;
 
             const res = await fetch(url, opts);
 
