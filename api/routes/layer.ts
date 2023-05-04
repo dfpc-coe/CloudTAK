@@ -276,7 +276,7 @@ export default async function router(schema: any, config: Config) {
                     throw new Err(400, null, err.message);
                 }
 
-                for (let i = 0; i < req.body.features; i++) {
+                for (let i = 0; i < req.body.features.length; i++) {
                     req.body.features[i] = await style.feat(req.body.features[i])
                 }
             }
