@@ -1,4 +1,5 @@
 import MissionData from './api/mission-data.js';
+import Credentials from './api/credentials.js';
 import { CookieJar, Cookie } from 'tough-cookie';
 import { CookieAgent } from 'http-cookie-agent/undici';
 import Err from '@openaddresses/batch-error';
@@ -19,6 +20,7 @@ export default class TAKAPI {
     };
     url: URL;
     MissionData: MissionData;
+    Credentials: Credentials;
 
     constructor(url: URL, auth: APIAuthInput) {
         this.auth = auth;
@@ -26,6 +28,7 @@ export default class TAKAPI {
         this.url = url;
 
         this.MissionData = new MissionData(this);
+        this.Credentials = new Credentials(this);
     }
 
     stdurl(url: any) {
@@ -68,8 +71,6 @@ export default class TAKAPI {
     async fetch(url: URL, opts: any = {}) {
         url = this.stdurl(url);
 
-        console.error('TAK API', url);
-
         try {
             if (!opts.headers) opts.headers = {};
 
@@ -97,15 +98,19 @@ export default class TAKAPI {
             let bdy: any = {};
             if ((res.status < 200 || res.status >= 400) && ![401].includes(res.status)) {
                 try {
-                    bdy = await res.json();
+                    bdy = await res.text();
                 } catch (err) {
                     throw new Error(`Status Code: ${res.status}`);
                 }
 
-                throw  new Error(bdy.message || `Status Code: ${res.status}`);
+                throw  new Error(bdy || `Status Code: ${res.status}`);
             }
 
-            return await res.json();
+            if (res.headers.get('Content-Type') === 'application/json') {
+                return await res.json();
+            } else {
+                return await res.text();
+            }
         } catch (err) {
             throw new Err(400, null, err.message);
         }

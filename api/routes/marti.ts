@@ -19,6 +19,8 @@ export default async function router(schema: any, config: Config) {
             const api = new TAKAPI(new URL(config.MartiAPI), req.body);
             await api.login();
 
+            await api.Credentials.generate();
+
             return res.json({});
         } catch (err) {
             return Err.respond(err, res);
