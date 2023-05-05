@@ -27,7 +27,7 @@
                                 </div>
                             </div>
                         </div>
-                        <TablerMarkdown class='card-body' :html='data.description'/>
+                        <TablerMarkdown class='card-body' :markdown='data.description'/>
                         <div class="card-footer">
                             Last updated <span v-text='timeDiff(data.updated)'/>
                         </div>
