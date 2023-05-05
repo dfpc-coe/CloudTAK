@@ -36,7 +36,13 @@
                     <div class='ms-auto'>
                         <div class='btn-list'>
                             <div>
-                                <RefreshIcon v-if='!newTaskVersion && !loading.version' @click='latestVersion' width='16' height='16' class='cursor-pointer'/>
+                                <RefreshIcon
+                                    v-if='!newTaskVersion && !loading.version'
+                                    @click='latestVersion'
+                                    v-tooltip='"Check for new version"'
+                                    width='16' height='16'
+                                    class='cursor-pointer'
+                                />
                                 <div v-else-if='loading.version' class='d-flex justify-content-center'>
                                     <div class="spinner-border" role="status"></div>
                                 </div>
