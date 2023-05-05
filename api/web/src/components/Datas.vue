@@ -61,8 +61,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="card-body" v-html='description(data.description)'>
-                            </div>
+                            <TablerMarkdown class='card-body' :markdown='data.description'/>
                             <div class="card-footer">
                                 Last updated <span v-text='timeDiff(data.updated)'/>
                             </div>
@@ -78,11 +77,11 @@
 </template>
 
 <script>
-import showdown from 'showdown';
 import None from './cards/None.vue';
 import PageFooter from './PageFooter.vue';
 import {
     TablerBreadCrumb,
+    TablerMarkdown,
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import {
@@ -114,10 +113,6 @@ export default {
         await this.fetchList();
     },
     methods: {
-        description: function(description) {
-            const converter = new showdown.Converter();
-            return converter.makeHtml(description);
-        },
         timeDiff: function(updated) {
             const msPerMinute = 60 * 1000;
             const msPerHour = msPerMinute * 60;
@@ -147,6 +142,7 @@ export default {
         SearchIcon,
         PageFooter,
         TablerBreadCrumb,
+        TablerMarkdown,
         TablerLoading,
     }
 }

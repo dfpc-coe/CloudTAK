@@ -64,8 +64,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="card-body" v-text='connection.description'>
-                                </div>
+                                <TablerMarkdown class="card-body" :markdown='connection.description'/>
                                 <div class="card-footer">
                                     Last updated <span v-text='timeDiff(connection.updated)'/>
                                 </div>
@@ -92,6 +91,7 @@ import None from './cards/None.vue';
 import timeDiff from '../timediff.js';
 import {
     TablerBreadCrumb,
+    TablerMarkdown,
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import {
@@ -150,6 +150,7 @@ export default {
         PageFooter,
         TablerBreadCrumb,
         ConnectionStatus,
+        TablerMarkdown,
         TablerLoading
     }
 }

@@ -38,7 +38,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="card-body" v-text='layer.description'>
+                        <TablerMarkdown class='card-body' :markdown='layer.description'/>
                         </div>
                         <div class="card-footer">
                             Last updated <span v-text='timeDiff(layer.updated)'/>
@@ -75,6 +75,7 @@ import Styles from './Layer/Styles.vue';
 import timeDiff from '../timediff.js';
 import {
     TablerBreadCrumb,
+    TablerMarkdown,
     TablerLoading
 } from '@tak-ps/vue-tabler'
 import {
@@ -128,6 +129,7 @@ export default {
         LayerData,
         PageFooter,
         TablerBreadCrumb,
+        TablerMarkdown,
         TablerLoading,
         DatabaseIcon,
         AlertTriangleIcon,

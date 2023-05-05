@@ -64,8 +64,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="card-body" v-text='layer.description'>
-                                </div>
+                                <TablerMarkdown class="card-body" :markdown='layer.description'/>
                                 <div class="card-footer">
                                     Last updated <span v-text='timeDiff(layer.updated)'/>
                                 </div>
@@ -91,6 +90,7 @@ import PageFooter from './PageFooter.vue';
 import LayerStatus from './Layer/Status.vue';
 import {
     TablerBreadCrumb, 
+    TablerMarkdown,
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import {
@@ -161,6 +161,7 @@ export default {
         PageFooter,
         TablerBreadCrumb, 
         TablerLoading,
+        TablerMarkdown,
         LayerStatus
     }
 }
