@@ -60,7 +60,11 @@
 
                                     <div class='ms-auto'>
                                         <div class='btn-list'>
-                                            <SettingsIcon class='cursor-pointer' @click='$router.push(`/layer/${layer.id}/edit`)'/>
+                                            <SettingsIcon
+                                                class='cursor-pointer'
+                                                v-tooltip='"Edit Layer"' 
+                                                @click='$router.push(`/layer/${layer.id}/edit`)'
+                                            />
                                         </div>
                                     </div>
                                 </div>

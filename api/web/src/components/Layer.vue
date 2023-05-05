@@ -28,13 +28,20 @@
 
                                     <AlertTriangleIcon 
                                         class='cursor-pointer'
-                                        :class='{
-                                            "text-red": alerts.total
-                                        }'
+                                        :class='{ "text-red": alerts.total }'
+                                        v-tooltip='"Layer Alerts"'
                                         @click='$router.push(`/layer/${layer.id}/alert`)'
                                     />
-                                    <DatabaseIcon class='cursor-pointer' @click='$router.push(`/layer/${layer.id}/query`)'/>
-                                    <SettingsIcon class='cursor-pointer' @click='$router.push(`/layer/${layer.id}/edit`)'/>
+                                    <DatabaseIcon 
+                                        class='cursor-pointer'
+                                        v-tooltip='"CoT Logging"'
+                                        @click='$router.push(`/layer/${layer.id}/query`)'
+                                    />
+                                    <SettingsIcon
+                                        class='cursor-pointer'
+                                        v-tooltip='"Edit Layer"'
+                                        @click='$router.push(`/layer/${layer.id}/edit`)'
+                                    />
                                 </div>
                             </div>
                         </div>
