@@ -39,7 +39,6 @@
                             </div>
                         </div>
                         <TablerMarkdown class='card-body' :markdown='layer.description'/>
-                        </div>
                         <div class="card-footer">
                             Last updated <span v-text='timeDiff(layer.updated)'/>
                         </div>

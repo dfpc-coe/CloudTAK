@@ -2,7 +2,13 @@
 <div class='px-2 py-2'>
     <div :key='key' v-for='key in Object.keys(schema.properties)' class='py-2 floating-input'>
         <template v-if='schema.properties[key].enum'>
-            SELECT
+            <TablerEnum
+                :label='key'
+                :disabled='disabled'
+                v-model='data[key]'
+                :options='schema.properties[key].enum'
+                :default='schema.properties[key].default'
+            />
         </template>
         <template v-else-if='schema.properties[key].type === "string"'>
             <TablerInput :label='key' :disabled='disabled' v-model='data[key]'/>
@@ -37,8 +43,11 @@
                                     <template v-if='edit[key].has(arr)'>
                                         <template v-if='prop_it === Object.keys(schema.properties[key].items.properties).length - 1'>
                                             <div class='d-flex'>
-                                                <TablerInput v-model='arr[prop]' class='w-full'/>
-                                                <div class='ms-auto' style='padding-left: 12px;'>
+                                                <div clas='w-full'>
+                                                    <TablerInput v-model='arr[prop]' class='w-full'/>
+                                                </div>
+                                                <div class='ms-auto btn-list' style='padding-left: 12px;'>
+                                                    <CheckIcon @click='removeEdit(key, arr, i)' class='my-1 cursor-pointer'/>
                                                     <TrashIcon @click='remove(key, arr, i)' class='my-1 cursor-pointer'/>
                                                 </div>
                                             </div>
@@ -93,12 +102,14 @@
 <script>
 import {
     TablerInput,
-    TablerToggle
+    TablerToggle,
+    TablerEnum
 } from '@tak-ps/vue-tabler';
 import UploadCSV from '../util/UploadCSV.vue';
 import {
     PlusIcon,
     TrashIcon,
+    CheckIcon,
     PencilIcon,
     DatabaseImportIcon,
 } from 'vue-tabler-icons'
@@ -173,6 +184,9 @@ export default {
                 this.upload.data.push(obj);
             }
         },
+        removeEdit: function(key, arr) {
+            this.edit[key].delete(arr);
+        },
         remove: function(key, arr, i) {
             this.edit[key].delete(arr);
             this.data[key].splice(i, 1)
@@ -180,7 +194,9 @@ export default {
         push: function(key) {
             if (!this.schema.properties[key].items) this.data[key].push('');
             if (this.schema.properties[key].items.type === 'object') {
-                this.data[key].push({});
+                const obj = {};
+                this.data[key].push(obj);
+                this.edit[key].set(obj, true);
             } else if (this.schema.properties[key].items.type === 'array') {
                 this.data[key].push([]);
             } else if (this.schema.properties[key].items.type === 'boolean') {
@@ -195,8 +211,10 @@ export default {
         PencilIcon,
         DatabaseImportIcon,
         TrashIcon,
+        CheckIcon,
         TablerInput,
         TablerToggle,
+        TablerEnum,
         UploadCSV
     }
 }
