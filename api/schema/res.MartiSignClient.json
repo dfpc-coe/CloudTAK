@@ -1,0 +1,16 @@
+{
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+        "key",
+        "cert"
+    ],
+    "properties": {
+        "key": {
+            "type": "string"
+        },
+        "cert": {
+            "type": "string"
+        }
+    }
+}

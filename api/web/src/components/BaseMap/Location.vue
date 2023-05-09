@@ -1,6 +1,6 @@
 <template>
 <div class="row">
-    <div id="map" style='height: 350px;'></div>
+    <div ref="map" style='height: 350px;'></div>
 </div>
 </template>
 
@@ -26,7 +26,7 @@ export default {
     methods: {
         mountMap: function() {
             const tmpmap = new mapgl.Map({
-                container: 'map',
+                container: this.$refs.map,
                 zoom: 0,
                 center: [0, 0],
                 style: {

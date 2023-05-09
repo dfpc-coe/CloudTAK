@@ -5,6 +5,9 @@ export default defineConfig({
     plugins: [
         vue()
     ],
+    optimizeDeps: {
+        include: ["showdown"],
+    },
     server: {
         port: 8080,
     }

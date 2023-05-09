@@ -16,6 +16,12 @@
         "name": {
             "$ref": "./connections/name.json"
         },
+        "created": {
+            "$ref": "./connections/created.json"
+        },
+        "updated": {
+            "$ref": "./connections/updated.json"
+        },
         "description": {
             "$ref": "./connections/description.json"
         },
@@ -25,6 +31,8 @@
     },
     "required": [
         "id",
+        "created",
+        "updated",
         "name",
         "description",
         "enabled",

@@ -60,12 +60,15 @@
 
                                     <div class='ms-auto'>
                                         <div class='btn-list'>
-                                            <SettingsIcon class='cursor-pointer' @click='$router.push(`/layer/${layer.id}/edit`)'/>
+                                            <SettingsIcon
+                                                class='cursor-pointer'
+                                                v-tooltip='"Edit Layer"' 
+                                                @click='$router.push(`/layer/${layer.id}/edit`)'
+                                            />
                                         </div>
                                     </div>
                                 </div>
-                                <div class="card-body" v-text='layer.description'>
-                                </div>
+                                <TablerMarkdown class="card-body" :markdown='layer.description'/>
                                 <div class="card-footer">
                                     Last updated <span v-text='timeDiff(layer.updated)'/>
                                 </div>
@@ -91,6 +94,7 @@ import PageFooter from './PageFooter.vue';
 import LayerStatus from './Layer/Status.vue';
 import {
     TablerBreadCrumb, 
+    TablerMarkdown,
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import {
@@ -161,6 +165,7 @@ export default {
         PageFooter,
         TablerBreadCrumb, 
         TablerLoading,
+        TablerMarkdown,
         LayerStatus
     }
 }

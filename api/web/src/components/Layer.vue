@@ -28,18 +28,24 @@
 
                                     <AlertTriangleIcon 
                                         class='cursor-pointer'
-                                        :class='{
-                                            "text-red": alerts.total
-                                        }'
+                                        :class='{ "text-red": alerts.total }'
+                                        v-tooltip='"Layer Alerts"'
                                         @click='$router.push(`/layer/${layer.id}/alert`)'
                                     />
-                                    <DatabaseIcon class='cursor-pointer' @click='$router.push(`/layer/${layer.id}/query`)'/>
-                                    <SettingsIcon class='cursor-pointer' @click='$router.push(`/layer/${layer.id}/edit`)'/>
+                                    <DatabaseIcon 
+                                        class='cursor-pointer'
+                                        v-tooltip='"CoT Logging"'
+                                        @click='$router.push(`/layer/${layer.id}/query`)'
+                                    />
+                                    <SettingsIcon
+                                        class='cursor-pointer'
+                                        v-tooltip='"Edit Layer"'
+                                        @click='$router.push(`/layer/${layer.id}/edit`)'
+                                    />
                                 </div>
                             </div>
                         </div>
-                        <div class="card-body" v-text='layer.description'>
-                        </div>
+                        <TablerMarkdown class='card-body' :markdown='layer.description'/>
                         <div class="card-footer">
                             Last updated <span v-text='timeDiff(layer.updated)'/>
                         </div>
@@ -75,6 +81,7 @@ import Styles from './Layer/Styles.vue';
 import timeDiff from '../timediff.js';
 import {
     TablerBreadCrumb,
+    TablerMarkdown,
     TablerLoading
 } from '@tak-ps/vue-tabler'
 import {
@@ -128,6 +135,7 @@ export default {
         LayerData,
         PageFooter,
         TablerBreadCrumb,
+        TablerMarkdown,
         TablerLoading,
         DatabaseIcon,
         AlertTriangleIcon,

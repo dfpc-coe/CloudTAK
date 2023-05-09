@@ -30,6 +30,14 @@ export default cf.merge(
                 Description: 'GitSha that is currently being deployed',
                 Type: 'String'
             },
+            MartiAPI: {
+                Type: 'String',
+                Description: 'Base URL of Marti API'
+            },
+            AuthGroup: {
+                Type: 'String',
+                Description: 'LDAP Authentication Group'
+            },
             HostedURL: {
                 Description: 'URL of domain/subdomain at which the API is hosted',
                 Type: 'String'
@@ -41,14 +49,6 @@ export default cf.merge(
             AlarmEmail: {
                 Description: 'Email to send alarms to',
                 Type: 'String'
-            },
-            Username: {
-                Type: 'String',
-                Description: 'Temporary Username until LDAP lands'
-            },
-            Password: {
-                Type: 'String',
-                Description: 'Temporary Password until LDAP lands'
             }
         }
     },

@@ -2,7 +2,8 @@
 <div class="card">
     <div class='card-header'>Layers</div>
 
-    <div class='table-resposive'>
+    <None v-if='!list.layers.length' :create='false' label='Layers'/>
+    <div v-else class='table-resposive'>
         <table class='table card-table table-vcenter datatable table-hover'>
             <thead>
                 <tr>
@@ -27,6 +28,7 @@
 
 <script>
 import TableFooter from '../util/TableFooter.vue';
+import None from '../cards/None.vue';
 
 export default {
     name: 'ConnectionLayers',
@@ -71,7 +73,8 @@ export default {
         }
     },
     components: {
-        TableFooter
+        None,
+        TableFooter,
     }
 }
 </script>
