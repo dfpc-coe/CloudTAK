@@ -95,6 +95,13 @@
                                         :rows='6'
                                     />
                                 </div>
+                                <div class="col-md-12 mt-3">
+                                    <div class='d-flex'>
+                                        <div class='ms-auto'>
+                                            <a @click='create' class="cursor-pointer btn btn-primary">Create Connection</a>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
