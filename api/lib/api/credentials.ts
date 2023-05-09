@@ -17,21 +17,34 @@ export default class {
     }
 
     async generate() {
-        const url = new URL(`/Marti/api/tls/signClient/v2`, this.api.url);
+        const url = new URL(`/Marti/api/tls/signClient`, this.api.url);
         url.searchParams.append('clientUid', this.api.auth.username + ' (ETL)');
 
-        const config = xml2js.parseStringPromise(await this.config());
+        const config = await xml2js.parseStringPromise(await this.config());
 
-        console.error(config);
+        let organization = null;
+        let organizationUnit = null;
+        for (const nameEntry of config['ns2:certificateConfig'].nameEntries) {
+            for (const ne of nameEntry.nameEntry) {
+                if (ne['$'].name === 'O') organization = ne['$'].value;
+                if (ne['$'].name === 'OU') organizationUnit = ne['$'].value;
+            }
+        }
 
         //@ts-ignore The type defs don't have promisified
-        const keys = await pem.promisified.createCertificate({ days: 356, selfSigned: true });
-
-        const res = await this.api.fetch(url, {
-            method: 'POST',
-            body: keys.csr
+        const keys = await pem.promisified.createCSR({
+            organization, organizationUnit
         });
 
-        //console.error(res);
+        console.error(url);
+        const res = await this.api.fetch(url, {
+            method: 'POST',
+            headers: {
+                //Accept: 'application/json'
+            },
+            body: btoa(keys.csr)
+        }, true);
+
+        console.error('RESULT', res, res.headers);
     }
 }
