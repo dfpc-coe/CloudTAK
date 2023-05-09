@@ -53,7 +53,7 @@ export default class {
         });
 
         return {
-            cert: res.signedCert,
+            cert: '-----BEGIN CERTIFICATE-----\n' + res.signedCert + '\n-----END CERTIFICATE-----',
             key: keys.clientKey
         }
     }
