@@ -4,11 +4,35 @@
         <h3 class='card-title'>Task Status</h3>
         <div class='ms-auto'>
             <div class='btn-list'>
-                <PlayerPlayIcon v-if='mode !== "logs"' @click='invoke' width='24' height='24' class='cursor-pointer'/>
-                <ArticleIcon v-if='mode !== "logs"' @click='mode = "logs"' width='24' height='24' class='cursor-pointer'/>
-                <CircleDotIcon v-if='mode !== "status"' @click='mode = "status"' width='24' height='24' class='cursor-pointer'/>
+                <PlayerPlayIcon
+                    v-if='mode !== "logs"'
+                    @click='invoke'
+                    v-tooltip='"Manually Run"'
+                    width='24' height='24'
+                    class='cursor-pointer'
+                />
+                <ArticleIcon
+                    v-if='mode !== "logs"'
+                    @click='mode = "logs"'
+                    v-tooltip='"View Logs"'
+                    width='24' height='24'
+                    class='cursor-pointer'
+                />
+                <CircleDotIcon
+                    v-if='mode !== "status"'
+                    @click='mode = "status"'
+                    v-tooltip='"View Stack"'
+                    width='24' height='24'
+                    class='cursor-pointer'
+                />
 
-                <RefreshIcon v-if='!loading.small' @click='refresh' width='24' height='24' class='cursor-pointer'/>
+                <RefreshIcon
+                    v-if='!loading.small'
+                    @click='refresh'
+                    v-tooltip='"Refresh"'
+                    width='24' height='24'
+                    class='cursor-pointer'
+                />
                 <div v-else class='d-flex justify-content-center'>
                     <div class="spinner-border" role="status"></div>
                 </div>

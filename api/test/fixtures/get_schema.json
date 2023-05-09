@@ -154,6 +154,26 @@
         "query": false,
         "res": true
     },
+    "GET /layer/:layerid/alert": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "POST /layer/:layerid/alert": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "DELETE /layer/:layerid/alert": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "DELETE /layer/:layerid/alert/:alertid": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
     "GET /layer/:layerid/query": {
         "body": false,
         "query": true,

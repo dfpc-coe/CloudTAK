@@ -17,8 +17,8 @@ export default class Config {
     StackName: string;
     SigningSecret: string;
     UnsafeSigningSecret: string;
-    Username: string;
-    Password: string;
+    MartiAPI: string;
+    AuthGroup: string;
     API_URL: string;
     PMTILES_URL: string;
     TileBaseURL: URL;
@@ -54,7 +54,13 @@ export default class Config {
 
             config.TileBaseURL = process.env.TileBaseURL ? new URL(process.env.TileBaseURL) : new URL('./data-dev/zipcodes.tilebase', import.meta.url);
             config.PMTILES_URL = process.env.PMTILES_URL || 'http://localhost:5001';
+            config.MartiAPI = process.env.MartiAPI;
+            config.AuthGroup = process.env.AuthGroup;
+
             if (!config.silent) console.log(`ok - PMTiles: ${config.PMTILES_URL}`);
+
+            if (!config.MartiAPI) throw new Error('MartiAPI env must be set');
+            if (!config.AuthGroup) throw new Error('AuthGroup env must be set');
 
             if (!process.env.StackName || process.env.StackName === 'test') {
                 if (!config.silent) console.error('ok - set env StackName: test');
@@ -62,23 +68,17 @@ export default class Config {
 
                 config.SigningSecret = config.UnsafeSigningSecret;
                 config.StackName = 'test';
-                config.Username = 'admin';
-                config.Password = 'admin';
                 config.API_URL = 'http://localhost:5001';
                 config.DynamoDB = '';
                 config.Bucket = process.env.ASSET_BUCKET;
             } else {
                 if (!config.silent) console.error(`ok - StackName: ${config.StackName}`);
                 if (!process.env.StackName) throw new Error('StackName env must be set');
-                if (!process.env.TAK_USERNAME) throw new Error('TAK_USERNAME env must be set');
-                if (!process.env.TAK_PASSWORD) throw new Error('TAK_PASSWORD env must be set');
                 if (!process.env.API_URL) throw new Error('API_URL env must be set');
                 if (!process.env.PMTILES_URL) throw new Error('PMTILES_URL env must be set');
                 if (!process.env.ASSET_BUCKET) throw new Error('ASSET_BUCKET env must be set');
 
                 config.StackName = process.env.StackName;
-                config.Username = process.env.TAK_USERNAME;
-                config.Password = process.env.TAK_PASSWORD;
                 config.API_URL = process.env.API_URL;
                 config.Bucket = process.env.ASSET_BUCKET;
 

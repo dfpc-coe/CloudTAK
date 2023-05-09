@@ -27,8 +27,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="card-body" v-html='description'>
-                        </div>
+                        <TablerMarkdown class='card-body' :markdown='data.description'/>
                         <div class="card-footer">
                             Last updated <span v-text='timeDiff(data.updated)'/>
                         </div>
@@ -52,7 +51,6 @@
 </template>
 
 <script>
-import showdown from 'showdown';
 import PageFooter from './PageFooter.vue';
 import DataAsset from './Data/Assets.vue';
 import DataLocation from './Data/Location.vue';
@@ -60,7 +58,8 @@ import DataTransforms from './Data/Transforms.vue';
 import timeDiff from '../timediff.js';
 import {
     TablerLoading,
-    TablerBreadCrumb
+    TablerMarkdown,
+    TablerBreadCrumb,
 } from '@tak-ps/vue-tabler'
 import {
     SettingsIcon,
@@ -76,12 +75,6 @@ export default {
             },
             assets: {},
             data: {}
-        }
-    },
-    computed: {
-        description: function() {
-            const converter = new showdown.Converter();
-            return converter.makeHtml(this.data.description);
         }
     },
     mounted: async function() {
@@ -104,7 +97,8 @@ export default {
         TablerLoading,
         DataAsset,
         DataTransforms,
-        TablerBreadCrumb
+        TablerBreadCrumb,
+        TablerMarkdown,
     }
 }
 </script>

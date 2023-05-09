@@ -52,40 +52,9 @@
                                     />
                                 </div>
 
-                                <div v-if='!$route.params.connectionid' class='col-md-12'>
+                                <div v-if='$route.params.connectionid' class="col-md-12 mt-3">
                                     <div class='d-flex'>
-                                        <h3>Authentication</h3>
-
-                                        <div class='ms-auto'>
-                                            <a @click='upload = true' class="cursor-pointer btn btn-outline-secondary">
-                                                Upload .p12
-                                            </a>
-                                        </div>
-                                    </div>
-
-                                    <div class='row mt-3'>
-                                        <div class="col-md-6">
-                                            <TablerInput
-                                                label='Connection Cert'
-                                                v-model='connection.auth.cert'
-                                                :error='errors.cert'
-                                                :rows='6'
-                                            />
-                                        </div>
-                                        <div class="col-md-6">
-                                            <TablerInput
-                                                label='Connection Key'
-                                                v-model='connection.auth.key'
-                                                :error='errors.key'
-                                                :rows='6'
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="col-md-12 mt-3">
-                                    <div class='d-flex'>
-                                        <a v-if='$route.params.connectionid' @click='del' class="cursor-pointer btn btn-outline-danger">
+                                        <a @click='del' class="cursor-pointer btn btn-outline-danger">
                                             Delete Connection
                                         </a>
 
@@ -98,14 +67,60 @@
                         </div>
                     </div>
                 </div>
+
+                <div v-if='!$route.params.connectionid' class="col-lg-12">
+                    <div class="card">
+                        <div class='card-header d-flex'>
+                            <h3 class='card-title'>Connection Authentication</h3>
+                            <div class='ms-auto btn-list'>
+                                <LoginIcon @click='modal.login = true' class='cursor-pointer'/>
+                                <PlusIcon @click='modal.upload = true' class='cursor-pointer'/>
+                            </div>
+                        </div>
+                        <div class='card-body'>
+                            <div class='row mt-3'>
+                                <div class="col-md-6">
+                                    <TablerInput
+                                        label='Connection Cert'
+                                        v-model='connection.auth.cert'
+                                        :error='errors.cert'
+                                        :rows='6'
+                                    />
+                                </div>
+                                <div class="col-md-6">
+                                    <TablerInput
+                                        label='Connection Key'
+                                        v-model='connection.auth.key'
+                                        :error='errors.key'
+                                        :rows='6'
+                                    />
+                                </div>
+                                <div class="col-md-12 mt-3">
+                                    <div class='d-flex'>
+                                        <div class='ms-auto'>
+                                            <a @click='create' class="cursor-pointer btn btn-primary">Create Connection</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
     <Upload
-        v-if='upload'
+        v-if='modal.upload'
         @certs='p12upload($event)'
-        @close='upload = false'
+        @close='modal.upload = false'
+        @err='err = $event'
+    />
+
+    <LoginCertModal
+        v-if='modal.login'
+        @certs='marti($event)'
+        @close='modal.login = false'
         @err='err = $event'
     />
 
@@ -116,6 +131,11 @@
 <script>
 import PageFooter from './PageFooter.vue';
 import Upload from './util/UploadP12.vue';
+import LoginCertModal from './util/LoginCertModal.vue';
+import {
+    PlusIcon,
+    LoginIcon,
+} from 'vue-tabler-icons';
 import {
     TablerBreadCrumb,
     TablerInput
@@ -125,7 +145,10 @@ export default {
     name: 'ConnectionNew',
     data: function() {
         return {
-            upload: false,
+            modal: {
+                login: false,
+                upload: false,
+            },
             errors: {
                 name: '',
                 description: '',
@@ -150,8 +173,13 @@ export default {
         fetch: async function() {
             this.connection = await window.std(`/api/connection/${this.$route.params.connectionid}`);
         },
+        marti: function(certs) {
+            console.error(certs);
+            this.connection.auth.cert = certs.cert;
+            this.connection.auth.key = certs.key;
+        },
         p12upload: function(certs) {
-            this.upload = false;
+            this.modal.upload = false;
             this.connection.auth.cert = certs.pemCertificate
                 .split('-----BEGIN CERTIFICATE-----')
                 .join('-----BEGIN CERTIFICATE-----\n')
@@ -203,7 +231,10 @@ export default {
     },
     components: {
         Upload,
+        PlusIcon,
+        LoginIcon,
         TablerBreadCrumb,
+        LoginCertModal,
         TablerInput,
         PageFooter,
     }
