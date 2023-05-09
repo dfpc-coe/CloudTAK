@@ -79,19 +79,18 @@ export default class TAKAPI {
                 opts.headers['Content-Type'] = 'application/json';
             }
 
-            const jar = new CookieJar();
+            if (!opts.headers['Authorization'] && this.authorized) {
+                const jar = new CookieJar();
 
-            if (this.authorized) {
-                await jar.setCookie(new Cookie({
-                    key: 'access_token',
-                    value: this.authorized.jwt
-                }), String(this.url));
+                if (this.authorized) {
+                    await jar.setCookie(new Cookie({ key: 'access_token', value: this.authorized.jwt }), String(this.url));
+                }
+
+                const agent = new CookieAgent({ cookies: { jar } });
+
+                opts.credentials = 'include';
+                opts.dispatcher = agent;
             }
-
-            const agent = new CookieAgent({ cookies: { jar } });
-
-            opts.credentials = 'include';
-            opts.dispatcher = agent;
 
             const res = await fetch(url, opts);
 

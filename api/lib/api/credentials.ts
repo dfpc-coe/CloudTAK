@@ -17,9 +17,6 @@ export default class {
     }
 
     async generate() {
-        const url = new URL(`/Marti/api/tls/signClient`, this.api.url);
-        url.searchParams.append('clientUid', this.api.auth.username + ' (ETL)');
-
         const config = await xml2js.parseStringPromise(await this.config());
 
         let organization = null;
@@ -31,20 +28,33 @@ export default class {
             }
         }
 
-        //@ts-ignore The type defs don't have promisified
-        const keys = await pem.promisified.createCSR({
-            organization, organizationUnit
+        //@ts-ignore
+        const createCSR = pem.promisified.createCSR;
+
+        const keys: {
+            csr: string,
+            clientKey: string
+        } = await createCSR({
+            organization,
+            organizationUnit,
+            commonName: this.api.auth.username
         });
 
-        console.error(url);
+        const url = new URL(`/Marti/api/tls/signClient/v2`, this.api.url);
+        url.searchParams.append('clientUid', this.api.auth.username + ' (ETL)');
+
         const res = await this.api.fetch(url, {
             method: 'POST',
             headers: {
-                //Accept: 'application/json'
+                Accept: 'application/json',
+                Authorization: 'Basic ' + btoa(this.api.auth.username + ":" + this.api.auth.password)
             },
-            body: btoa(keys.csr)
-        }, true);
+            body: keys.csr
+        });
 
-        console.error('RESULT', res, res.headers);
+        return {
+            cert: res.signedCert,
+            key: keys.clientKey
+        }
     }
 }

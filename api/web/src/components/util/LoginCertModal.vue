@@ -6,24 +6,27 @@
             <div class='modal-title'>Connection Login</div>
         </div>
         <div class="modal-body row">
-            <div class='col-12'>
-                <TablerInput
-                    label='Connection Username'
-                    v-model='username'
-                    v-on:keyup.enter='generate'
-                />
-            </div>
-            <div class='col-12 mt-3'>
-                <TablerInput
-                    label='Connection Password'
-                    type='password'
-                    v-model='password'
-                    v-on:keyup.enter='generate'
-                />
-            </div>
-            <div class="col-12 mt-3">
-                <div class="col"><a @click='generate' class="cursor-pointer btn w-100">Generate Certificate</a></div>
-            </div>
+            <TablerLoading v-if='loading.generate'  desc='Generating Certificate'/>
+            <template v-else>
+                <div class='col-12'>
+                    <TablerInput
+                        label='Connection Username'
+                        v-model='body.username'
+                        v-on:keyup.enter='generate'
+                    />
+                </div>
+                <div class='col-12 mt-3'>
+                    <TablerInput
+                        label='Connection Password'
+                        type='password'
+                        v-model='body.password'
+                        v-on:keyup.enter='generate'
+                    />
+                </div>
+                <div class="col-12 mt-3">
+                    <div class="col"><a @click='generate' class="cursor-pointer btn w-100">Generate Certificate</a></div>
+                </div>
+            </template>
         </div>
     </TablerModal>
 </template>
@@ -31,26 +34,33 @@
 <script>
 import {
     TablerModal,
-    TablerInput
+    TablerInput,
+    TablerLoading
 } from '@tak-ps/vue-tabler';
 
 export default {
     name: 'LoginCertModal',
     data: function() {
         return {
-            username: '',
-            password: '',
+            loading: {
+                generate: false
+            },
+            body: {
+                username: '',
+                password: '',
+            }
         }
     },
     methods: {
         generate: async function() {
-            await window.std('/api/marti/signClient', {
+            this.loading.generate = true;
+            const res = await window.std('/api/marti/signClient', {
                 method: 'POST',
-                body: {
-                    username: this.username,
-                    password: this.password
-                }
+                body: this.body
             });
+
+            this.$emit('certs', res);
+            this.$emit('close');
         },
         close: function() {
             this.$emit('close');
@@ -58,7 +68,8 @@ export default {
     },
     components: {
         TablerModal,
-        TablerInput
+        TablerInput,
+        TablerLoading
     }
 }
 </script>
