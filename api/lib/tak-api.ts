@@ -68,7 +68,7 @@ export default class TAKAPI {
      * @param {URL|String} url      - Full URL or API fragment to request
      * @param {Object} [opts={}]    - Options
      */
-    async fetch(url: URL, opts: any = {}) {
+    async fetch(url: URL, opts: any = {}, raw=false) {
         url = this.stdurl(url);
 
         try {
@@ -95,6 +95,8 @@ export default class TAKAPI {
 
             const res = await fetch(url, opts);
 
+            if (raw) return res;
+
             let bdy: any = {};
             if ((res.status < 200 || res.status >= 400) && ![401].includes(res.status)) {
                 try {
@@ -103,7 +105,7 @@ export default class TAKAPI {
                     throw new Error(`Status Code: ${res.status}`);
                 }
 
-                throw  new Error(bdy || `Status Code: ${res.status}`);
+                throw new Error(bdy || `Status Code: ${res.status}`);
             }
 
             if (res.headers.get('Content-Type') === 'application/json') {
