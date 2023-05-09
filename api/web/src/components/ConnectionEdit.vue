@@ -112,7 +112,7 @@
 
     <LoginCertModal
         v-if='modal.login'
-        @certs='p12upload($event)'
+        @certs='marti($event)'
         @close='modal.login = false'
         @err='err = $event'
     />
@@ -165,6 +165,11 @@ export default {
     methods: {
         fetch: async function() {
             this.connection = await window.std(`/api/connection/${this.$route.params.connectionid}`);
+        },
+        marti: function(certs) {
+            console.error(certs);
+            this.connection.auth.cert = certs.cert;
+            this.connection.auth.key = certs.key;
         },
         p12upload: function(certs) {
             this.modal.upload = false;
