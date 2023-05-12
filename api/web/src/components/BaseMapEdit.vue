@@ -20,74 +20,84 @@
                         <div class='card-header'>
                             <h3 v-if='$route.params.basemapid' class='card-title'>BaseMap <span v-text='basemap.id'/></h3>
                             <h3 v-else class='card-title'>New BaseMap</h3>
+
+                            <div class='ms-auto btn-list'>
+                                <FileUploadIcon @click='upload = true' v-tooltip='"XML Upload"' class='cursor-pointer'/>
+                                <FileImportIcon v-tooltip='"TileJSON Import"' class='cursor-pointer'/>
+                            </div>
                         </div>
                         <div class="card-body">
-                            <div class='row row-cards'>
-                                <div class="col-md-12 mt-3">
-                                    <TablerInput
-                                        label='BaseMap Name'
-                                        v-model='basemap.name'
-                                        :error='errors.name'
-                                    />
-                                </div>
-                                <div class="col-md-12">
-                                    <TablerInput
-                                        label='BaseMap Url'
-                                        v-model='basemap.url'
-                                        :error='errors.url'
-                                    />
-                                </div>
-                                <div class="col-md-4">
-                                    <TablerInput
-                                        label='BaseMap MinZoom'
-                                        v-model='basemap.minzoom'
-                                    />
-                                </div>
-                                <div class="col-md-4">
-                                    <TablerInput
-                                        label='BaseMap MaxZoom'
-                                        v-model='basemap.maxzoom'
-                                    />
-                                </div>
-                                <div class="col-md-4">
-                                    <TablerInput
-                                        label='BaseMap Format'
-                                        v-model='basemap.format'
-                                    />
-                                </div>
-                                <div class="col-md-12 mt-3">
-                                    <div class='d-flex'>
-                                        <a v-if='$route.params.basemapid' @click='del' class="cursor-pointer btn btn-outline-danger">
-                                            Delete BaseMap
-                                        </a>
+                            <template v-if='upload'>
+                                <Upload
+                                    v-if='upload'
+                                    @cancel='upload = false'
+                                    @err='err = $event'
+                                />
+                            </template>
+                            <template v-else>
+                                <div class='row row-cards'>
+                                    <div class="col-md-12 mt-3">
+                                        <TablerInput
+                                            label='BaseMap Name'
+                                            v-model='basemap.name'
+                                            :error='errors.name'
+                                        />
+                                    </div>
+                                    <div class="col-md-12">
+                                        <TablerInput
+                                            label='BaseMap Url'
+                                            v-model='basemap.url'
+                                            :error='errors.url'
+                                        />
+                                    </div>
+                                    <div class="col-md-4">
+                                        <TablerInput
+                                            label='BaseMap MinZoom'
+                                            v-model='basemap.minzoom'
+                                        />
+                                    </div>
+                                    <div class="col-md-4">
+                                        <TablerInput
+                                            label='BaseMap MaxZoom'
+                                            v-model='basemap.maxzoom'
+                                        />
+                                    </div>
+                                    <div class="col-md-4">
+                                        <TablerInput
+                                            label='BaseMap Format'
+                                            v-model='basemap.format'
+                                        />
+                                    </div>
+                                    <div class="col-md-12 mt-3">
+                                        <div class='d-flex'>
+                                            <a v-if='$route.params.basemapid' @click='del' class="cursor-pointer btn btn-outline-danger">
+                                                Delete BaseMap
+                                            </a>
 
-                                        <div class='ms-auto'>
-                                            <a @click='create' class="cursor-pointer btn btn-primary">Save BaseMap</a>
+                                            <div class='ms-auto'>
+                                                <a @click='create' class="cursor-pointer btn btn-primary">Save BaseMap</a>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
+                            </template>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-
-    <Upload
-        v-if='upload'
-        @certs='p12upload($event)'
-        @close='upload = false'
-        @err='err = $event'
-    />
-
     <PageFooter/>
 </div>
 </template>
 
 <script>
 import PageFooter from './PageFooter.vue';
-import Upload from './util/UploadP12.vue';
+import Upload from './util/Upload.vue';
+import {
+    FileImportIcon,
+    FileUploadIcon
+} from 'vue-tabler-icons';
 import {
     TablerBreadCrumb,
     TablerInput
@@ -155,6 +165,8 @@ export default {
     },
     components: {
         Upload,
+        FileUploadIcon,
+        FileImportIcon,
         TablerBreadCrumb,
         TablerInput,
         PageFooter,
