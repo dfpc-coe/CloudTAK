@@ -28,13 +28,14 @@ export default {
             const tmpmap = new mapgl.Map({
                 container: this.$refs.map,
                 zoom: 0,
-                center: [0, 0],
+                center: this.basemap.center ? this.basemap.center : [0, 0],
                 style: {
                     version: 8,
                     sources: {
                         basemap: {
                             type: 'raster',
-                            url: this.basemap.url
+                            tileSize: 256,
+                            tiles: [ this.basemap.url ]
                         }
                     },
                     layers: [{
@@ -44,9 +45,11 @@ export default {
                             'background-color': 'rgb(4,7,14)'
                         }
                     },{
-                        'id': 'basemap',
-                        'type': 'raster',
-                        'source': 'basemap'
+                        id: 'basemap',
+                        type: 'raster',
+                        source: 'basemap',
+                        minzoom: this.basemap.minzoom,
+                        maxzoom: this.basemap.maxzoom
                     }]
                 }
             });

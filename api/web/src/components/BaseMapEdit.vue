@@ -37,7 +37,24 @@
                                         :error='errors.url'
                                     />
                                 </div>
-
+                                <div class="col-md-4">
+                                    <TablerInput
+                                        label='BaseMap MinZoom'
+                                        v-model='basemap.minzoom'
+                                    />
+                                </div>
+                                <div class="col-md-4">
+                                    <TablerInput
+                                        label='BaseMap MaxZoom'
+                                        v-model='basemap.maxzoom'
+                                    />
+                                </div>
+                                <div class="col-md-4">
+                                    <TablerInput
+                                        label='BaseMap Format'
+                                        v-model='basemap.format'
+                                    />
+                                </div>
                                 <div class="col-md-12 mt-3">
                                     <div class='d-flex'>
                                         <a v-if='$route.params.basemapid' @click='del' class="cursor-pointer btn btn-outline-danger">
@@ -85,9 +102,16 @@ export default {
                 name: '',
                 url: '',
             },
+            bounds: '',
+            center: '',
             basemap: {
                 name: '',
-                url: ''
+                url: '',
+                minzoom: 0,
+                maxzoom: 16,
+                format: 'png',
+                bounds: [],
+                center: []
             }
         }
     },
