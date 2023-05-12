@@ -1,0 +1,36 @@
+{
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+        "f_table_catalog": {
+            "$ref": "./geography_columns/f_table_catalog.json"
+        },
+        "f_table_schema": {
+            "$ref": "./geography_columns/f_table_schema.json"
+        },
+        "f_table_name": {
+            "$ref": "./geography_columns/f_table_name.json"
+        },
+        "f_geography_column": {
+            "$ref": "./geography_columns/f_geography_column.json"
+        },
+        "coord_dimension": {
+            "$ref": "./geography_columns/coord_dimension.json"
+        },
+        "srid": {
+            "$ref": "./geography_columns/srid.json"
+        },
+        "type": {
+            "$ref": "./geography_columns/type.json"
+        }
+    },
+    "required": [
+        "f_table_catalog",
+        "f_table_schema",
+        "f_table_name",
+        "f_geography_column",
+        "coord_dimension",
+        "srid",
+        "type"
+    ]
+}
