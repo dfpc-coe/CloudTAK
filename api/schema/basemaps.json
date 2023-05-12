@@ -16,6 +16,21 @@
         },
         "url": {
             "$ref": "./basemaps/url.json"
+        },
+        "bounds": {
+            "$ref": "./basemaps/bounds.json"
+        },
+        "center": {
+            "$ref": "./basemaps/center.json"
+        },
+        "minzoom": {
+            "$ref": "./basemaps/minzoom.json"
+        },
+        "maxzoom": {
+            "$ref": "./basemaps/maxzoom.json"
+        },
+        "format": {
+            "$ref": "./basemaps/format.json"
         }
     },
     "required": [
@@ -23,6 +38,11 @@
         "created",
         "updated",
         "name",
-        "url"
+        "url",
+        "bounds",
+        "center",
+        "minzoom",
+        "maxzoom",
+        "format"
     ]
 }
