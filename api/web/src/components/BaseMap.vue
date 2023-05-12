@@ -76,7 +76,7 @@ export default {
             return timeDiff(update);
         },
         download: async function() {
-            this.basemap = await window.std(`api/basemap/${this.$route.params.basemapid}?format=xml&download=true`);
+            window.location.href = window.stdurl(`api/basemap/${this.$route.params.basemapid}?format=xml&download=true&token=${localStorage.token}`);
         },
         fetch: async function() {
             this.loading = true;

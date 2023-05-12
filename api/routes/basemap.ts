@@ -78,16 +78,22 @@ export default async function router(schema: any, config: Config) {
         res: 'basemaps.json'
     }, async (req: Request, res: Response) => {
         try {
-            await Auth.is_auth(req);
+            await Auth.is_auth(req, true);
 
             const basemap = await BaseMap.from(config.pool, req.params.basemapid);
 
+            if (req.query.download) {
+                res.setHeader('Content-Disposition', `attachment; filename="${basemap.name}.${req.query.format}"`);
+            }
+
             if (req.query.format === 'xml') {
-                const builder = xml2js.Builder();
+                const builder = new xml2js.Builder();
+
+                res.setHeader('Content-Type', 'text/xml');
 
                 const xml = builder.buildObject({
                     customMapSource: {
-                        name: { _: '' },
+                        name: { _: basemap.name },
                         minZoom: { _: '' },
                         maxZoom: { _: '' },
                         tileType: { _: '' },
