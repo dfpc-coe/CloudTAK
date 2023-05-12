@@ -26,6 +26,7 @@
 
                                 <div class='ms-auto'>
                                     <div class='btn-list'>
+                                        <DownloadIcon class='cursor-pointer' @click='download'/>
                                         <SettingsIcon class='cursor-pointer' @click='$router.push(`/basemap/${basemap.id}/edit`)'/>
                                     </div>
                                 </div>
@@ -55,6 +56,7 @@ import {
 import BaseMapLocation from './BaseMap/Location.vue';
 import timeDiff from '../timediff.js';
 import {
+    DownloadIcon,
     SettingsIcon,
 } from 'vue-tabler-icons'
 
@@ -73,6 +75,9 @@ export default {
         timeDiff(update) {
             return timeDiff(update);
         },
+        download: async function() {
+            this.basemap = await window.std(`api/basemap/${this.$route.params.basemapid}?format=xml&download=true`);
+        },
         fetch: async function() {
             this.loading = true;
             this.basemap = await window.std(`api/basemap/${this.$route.params.basemapid}`);
@@ -81,6 +86,7 @@ export default {
     },
     components: {
         SettingsIcon,
+        DownloadIcon,
         PageFooter,
         TablerBreadCrumb,
         BaseMapLocation,

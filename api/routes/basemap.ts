@@ -5,6 +5,7 @@ import Auth from '../lib/auth.js';
 import { sql } from 'slonik';
 import Config from '../lib/config.js';
 import { Request, Response } from 'express';
+import xml2js from 'xml2js';
 
 export default async function router(schema: any, config: Config) {
     await schema.get('/basemap', {
@@ -73,6 +74,7 @@ export default async function router(schema: any, config: Config) {
         auth: 'user',
         description: 'Get a basemap',
         ':basemapid': 'integer',
+        query: 'req.query.BaseMap.json',
         res: 'basemaps.json'
     }, async (req: Request, res: Response) => {
         try {
@@ -80,7 +82,25 @@ export default async function router(schema: any, config: Config) {
 
             const basemap = await BaseMap.from(config.pool, req.params.basemapid);
 
-            return res.json(basemap);
+            if (req.query.format === 'xml') {
+                const builder = xml2js.Builder();
+
+                const xml = builder.buildObject({
+                    customMapSource: {
+                        name: { _: '' },
+                        minZoom: { _: '' },
+                        maxZoom: { _: '' },
+                        tileType: { _: '' },
+                        tileUpdate: { _: 'None' },
+                        url: { _: 'None' },
+                        backgroundColor: { _: '#000000' },
+                    }
+                });
+
+                return res.send(xml);
+            } else {
+                return res.json(basemap);
+            }
         } catch (err) {
             return Err.respond(err, res);
         }
