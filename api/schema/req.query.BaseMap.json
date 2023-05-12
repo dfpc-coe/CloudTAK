@@ -1,0 +1,15 @@
+{
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+        "format": {
+            "type": "string",
+            "default": "json",
+            "description": "Format with which to respond",
+            "enum": [
+                "json",
+                "xml"
+            ]
+        }
+    }
+}
