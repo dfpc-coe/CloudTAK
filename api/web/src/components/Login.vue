@@ -31,7 +31,7 @@
                         </div>
                     </div>
                     <div class="text-center text-muted mt-3">
-                        Don't have account yet? <a href='mailto:rescue@ingalls.ca'>Contact Us</a>
+                        Don't have account yet? <a href='mailto:nicholas.ingalls@state.co.us'>Contact Us</a>
                     </div>
                 </div>
             </div>
