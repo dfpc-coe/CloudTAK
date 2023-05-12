@@ -1,0 +1,28 @@
+{
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+        "srid": {
+            "$ref": "./spatial_ref_sys/srid.json"
+        },
+        "auth_name": {
+            "$ref": "./spatial_ref_sys/auth_name.json"
+        },
+        "auth_srid": {
+            "$ref": "./spatial_ref_sys/auth_srid.json"
+        },
+        "srtext": {
+            "$ref": "./spatial_ref_sys/srtext.json"
+        },
+        "proj4text": {
+            "$ref": "./spatial_ref_sys/proj4text.json"
+        }
+    },
+    "required": [
+        "srid",
+        "auth_name",
+        "auth_srid",
+        "srtext",
+        "proj4text"
+    ]
+}

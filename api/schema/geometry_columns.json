@@ -1,0 +1,36 @@
+{
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+        "f_table_catalog": {
+            "$ref": "./geometry_columns/f_table_catalog.json"
+        },
+        "f_table_schema": {
+            "$ref": "./geometry_columns/f_table_schema.json"
+        },
+        "f_table_name": {
+            "$ref": "./geometry_columns/f_table_name.json"
+        },
+        "f_geometry_column": {
+            "$ref": "./geometry_columns/f_geometry_column.json"
+        },
+        "coord_dimension": {
+            "$ref": "./geometry_columns/coord_dimension.json"
+        },
+        "srid": {
+            "$ref": "./geometry_columns/srid.json"
+        },
+        "type": {
+            "$ref": "./geometry_columns/type.json"
+        }
+    },
+    "required": [
+        "f_table_catalog",
+        "f_table_schema",
+        "f_table_name",
+        "f_geometry_column",
+        "coord_dimension",
+        "srid",
+        "type"
+    ]
+}

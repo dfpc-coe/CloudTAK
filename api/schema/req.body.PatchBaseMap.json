@@ -7,6 +7,27 @@
         },
         "url": {
             "$ref": "./basemaps/url.json"
+        },
+        "minzoom": {
+            "type": "integer"
+        },
+        "maxzoom": {
+            "type": "integer"
+        },
+        "format": {
+            "type": "text"
+        },
+        "bounds": {
+            "type": "array",
+            "items": {
+                "type": "number"
+            }
+        },
+        "center": {
+            "type": "array",
+            "items": {
+                "type": "number"
+            }
         }
     }
 }
