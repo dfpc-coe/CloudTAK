@@ -6,6 +6,9 @@
                 <div class="container-tight">
                     <div class="card card-md">
                         <div class="card-body">
+                            <div class='text-center' style='margin-bottom: 24px;'>
+                                <img src='/logo.png' height='150'/>
+                            </div>
                             <h2 class="h2 text-center mb-4">Login to your account</h2>
                             <div class="mb-3">
                                 <label class="form-label">Username or Email</label>
@@ -15,7 +18,7 @@
                                 <label class="form-label">
                                     Password
                                     <span class="form-label-description">
-                                        <!--<a href="./forgot-password.html">Forgot Password</a>-->
+                                        <a @click='external("https://cotak.gov/forgot-password")' class='cursor-pointer'>Forgot Password</a>
                                     </span>
                                 </label>
                                 <div class="input-group input-group-flat">
@@ -28,7 +31,7 @@
                         </div>
                     </div>
                     <div class="text-center text-muted mt-3">
-                        <!--Don't have account yet? <a href='mailto:rescue@ingalls.ca'>Contact Us</a>-->
+                        Don't have account yet? <a href='mailto:rescue@ingalls.ca'>Contact Us</a>
                     </div>
                 </div>
             </div>
@@ -47,6 +50,9 @@ export default {
         }
     },
     methods: {
+        external: function(url) {
+            window.location = new URL(url);
+        },
         createLogin: async function() {
             const login = await window.std('/api/login', {
                 method: 'POST',
@@ -58,6 +64,7 @@ export default {
 
             localStorage.token = login.token;
 
+            this.$emit('login');
             this.$router.push("/");
         }
     }
