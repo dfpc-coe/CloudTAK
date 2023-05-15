@@ -2,5 +2,5 @@
     "type": "string",
     "format": "date-time",
     "description": "",
-    "$comment": "timestamp"
+    "$comment": "timestamptz"
 }
