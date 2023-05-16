@@ -53,7 +53,7 @@ export default cf.merge(
         }
     },
     ELBAlarms({
-        prefix: 'Batch',
+        prefix: 'BatchELB',
         email: cf.ref('AlarmEmail'),
         apache: cf.stackName,
         cluster: cf.ref('ECSCluster'),
