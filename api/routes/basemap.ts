@@ -27,7 +27,12 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            const imported = {};
+            const imported: {
+                name?: string;
+                minzoom?: Number;
+                maxzoom?: Number;
+                format?: string;
+            } = {};
 
             if (req.headers['content-type'].startsWith('multipart/form-data')) {
                 const bb = busboy({
@@ -46,7 +51,24 @@ export default async function router(schema: any, config: Config) {
                     }
                 }).on('finish', async () => {
                     try {
-                        console.error(String(buffer));
+                        const xml = await xml2js.parseStringPromise(String(buffer));
+                        if (!xml.customMapSource) return res.json(imported);
+                        const map = xml.customMapSource;
+
+                        if (map.name && map.name.length) {
+                            imported.name = xml.customMapSource.name[0];
+                        }
+                        if (map.minZoom && map.minZoom.length) {
+                            imported.minzoom = parseInt(xml.customMapSource.minZoom[0]);
+                        }
+                        if (map.maxZoom && map.maxZoom.length) {
+                            imported.maxzoom = parseInt(xml.customMapSource.maxZoom[0]);
+                        }
+                        if (map.format && map.format.length) {
+                            imported.format = xml.customMapSource.format[0];
+                        }
+
+                        return res.json(imported);
                     } catch (err) {
                         Err.respond(err, res);
                     }
