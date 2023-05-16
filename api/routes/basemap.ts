@@ -1,3 +1,4 @@
+import path from 'node:path';
 import Err from '@openaddresses/batch-error';
 // @ts-ignore
 import BaseMap from '../lib/types/basemap.js';
@@ -80,6 +81,25 @@ export default async function router(schema: any, config: Config) {
 
                 return req.pipe(bb);
             } else if (req.headers['content-type'].startsWith('text/plain')) {
+                const url = new URL(String(await stream2buffer(req)));
+                const tjres = await fetch(url);
+                const tjbody = await tjres.json();
+
+                if (tjbody.name) imported.name = tjbody.name;
+                if (tjbody.maxzoom !== undefined) imported.maxzoom = tjbody.maxzoom;
+                if (tjbody.minzoom !== undefined) imported.minzoom = tjbody.minzoom;
+                if (tjbody.tiles.length) {
+                    imported.url = tjbody.tiles[0]
+                        .replace('{z}', '{$z}')
+                        .replace('{x}', '{$x}')
+                        .replace('{y}', '{$y}')
+                }
+
+                if (imported.url) {
+                    const url = new URL(imported.url)
+                    imported.format = path.parse(url.pathname).ext.replace('.', '');
+                }
+
                 return res.json(imported);
             } else {
                 throw new Err(400, null, 'Unsupported Content-Type');
