@@ -32,6 +32,7 @@ export default async function router(schema: any, config: Config) {
                 minzoom?: Number;
                 maxzoom?: Number;
                 format?: string;
+                url?: string;
             } = {};
 
             if (req.headers['content-type'].startsWith('multipart/form-data')) {
@@ -64,8 +65,11 @@ export default async function router(schema: any, config: Config) {
                         if (map.maxZoom && map.maxZoom.length) {
                             imported.maxzoom = parseInt(xml.customMapSource.maxZoom[0]);
                         }
-                        if (map.format && map.format.length) {
-                            imported.format = xml.customMapSource.format[0];
+                        if (map.tileType && map.tileType.length) {
+                            imported.format = xml.customMapSource.tileType[0];
+                        }
+                        if (map.url && map.url.length) {
+                            imported.url = xml.customMapSource.url[0];
                         }
 
                         return res.json(imported);

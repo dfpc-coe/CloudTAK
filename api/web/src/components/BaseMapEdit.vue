@@ -33,6 +33,7 @@
                                     method='PUT'
                                     :url='uploadURL()'
                                     :headers='uploadHeaders()'
+                                    @done='processUpload($event)'
                                     @cancel='upload = false'
                                     @err='err = $event'
                                 />
@@ -132,6 +133,10 @@ export default {
         if (this.$route.params.basemapid) await this.fetch();
     },
     methods: {
+        processUpload: function(body) {
+            this.upload = false;
+            this.basemap = JSON.parse(body);
+        },
         uploadHeaders: function() {
             return {
                 Authorization: `Bearer ${localStorage.token}`
