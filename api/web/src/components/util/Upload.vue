@@ -96,7 +96,9 @@ export default {
                     if (xhr.readyState == 4 && xhr.status == 200) {
                         this.progress = 100;
                     } else if (xhr.readyState == 4 && xhr.status != 200) {
-                        return reject(new Error('Failed to upload file'));
+                        const err = new Error('Failed to upload file');
+                        this.$emit('cancel')
+                        return reject(err);
                     }
 
                     this.progress = 101;
