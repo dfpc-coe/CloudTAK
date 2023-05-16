@@ -101,9 +101,10 @@ export default {
                         return reject(err);
                     }
 
-                    this.progress = 101;
-
-                    this.$emit('done');
+                    if (xhr.readyState === 4) {
+                        this.progress = 101;
+                        this.$emit('done', xhr.response);
+                    }
                 });
 
                 formData.append('file', file)
