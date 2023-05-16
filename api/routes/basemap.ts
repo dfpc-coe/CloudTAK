@@ -29,33 +29,23 @@ export default async function router(schema: any, config: Config) {
             const imported = {};
 
             if (req.headers['content-type'].startsWith('multipart/form-data')) {
-                let bb;
-                let data: Data;
-                try {
-                    await Auth.is_auth(req);
+                const bb = busboy({
+                    headers: req.headers,
+                    limits: {
+                        files: 1
+                    }
+                });
 
-                    data = await Data.from(config.pool, req.params.dataid);
-
-                    if (!req.headers['content-type']) throw new Err(400, null, 'Missing Content-Type Header');
-
-                    bb = busboy({
-                        headers: req.headers,
-                        limits: {
-                            files: 1
-                        }
-                    });
-                } catch (err) {
-                    return Err.respond(err, res);
-                }
-
-                const assets: Promise<void>[] = [];
+                let asset: any;
                 bb.on('file', async (fieldname, file, blob) => {
                     try {
+                        asset = file;
                     } catch (err) {
                         return Err.respond(err, res);
                     }
                 }).on('finish', async () => {
                     try {
+                        console.error(asset);
                     } catch (err) {
                         Err.respond(err, res);
                     }
