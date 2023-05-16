@@ -9,6 +9,7 @@ import { sql } from 'slonik';
 import Config from '../lib/config.js';
 import { Request, Response } from 'express';
 import xml2js from 'xml2js';
+import { Stream } from 'node:stream';
 
 export default async function router(schema: any, config: Config) {
     await schema.put('/basemap', {
@@ -36,16 +37,16 @@ export default async function router(schema: any, config: Config) {
                     }
                 });
 
-                let asset: any;
+                let buffer: Buffer;
                 bb.on('file', async (fieldname, file, blob) => {
                     try {
-                        asset = file;
+                        buffer = await stream2buffer(file);
                     } catch (err) {
                         return Err.respond(err, res);
                     }
                 }).on('finish', async () => {
                     try {
-                        console.error(asset);
+                        console.error(String(buffer));
                     } catch (err) {
                         Err.respond(err, res);
                     }
@@ -188,3 +189,13 @@ export default async function router(schema: any, config: Config) {
         }
     });
 }
+
+async function stream2buffer(stream: Stream): Promise<Buffer> {
+    return new Promise < Buffer > ((resolve, reject) => {
+        const _buf = Array < any > ();
+        stream.on("data", chunk => _buf.push(chunk));
+        stream.on("end", () => resolve(Buffer.concat(_buf)));
+        stream.on("error", (err: Error) => reject(`error converting stream - ${err}`));
+    });
+}
+
