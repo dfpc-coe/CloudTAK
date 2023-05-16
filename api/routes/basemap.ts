@@ -175,11 +175,11 @@ export default async function router(schema: any, config: Config) {
                 const xml = builder.buildObject({
                     customMapSource: {
                         name: { _: basemap.name },
-                        minZoom: { _: '' },
-                        maxZoom: { _: '' },
-                        tileType: { _: '' },
+                        minZoom: { _: basemap.minzoom },
+                        maxZoom: { _: basemap.maxzoom },
+                        tileType: { _: basemap.format },
                         tileUpdate: { _: 'None' },
-                        url: { _: 'None' },
+                        url: { _: basemap.url },
                         backgroundColor: { _: '#000000' },
                     }
                 });
