@@ -21,22 +21,38 @@
                             <h3 v-if='$route.params.basemapid' class='card-title'>BaseMap <span v-text='basemap.id'/></h3>
                             <h3 v-else class='card-title'>New BaseMap</h3>
 
-                            <div class='ms-auto btn-list'>
-                                <FileUploadIcon @click='upload = true' v-tooltip='"XML Upload"' class='cursor-pointer'/>
-                                <FileImportIcon v-tooltip='"TileJSON Import"' class='cursor-pointer'/>
+                            <div v-if='!mode.upload && !mode.tilejson' class='ms-auto btn-list'>
+                                <FileUploadIcon @click='mode.upload = true' v-tooltip='"XML Upload"' class='cursor-pointer'/>
+                                <FileImportIcon @click='mode.tilejson = true' v-tooltip='"TileJSON Import"' class='cursor-pointer'/>
                             </div>
                         </div>
                         <div class="card-body">
-                            <template v-if='upload'>
+                            <template v-if='mode.upload'>
                                 <Upload
-                                    v-if='upload'
                                     method='PUT'
                                     :url='uploadURL()'
                                     :headers='uploadHeaders()'
                                     @done='processUpload($event)'
-                                    @cancel='upload = false'
+                                    @cancel='mode.upload = false'
                                     @err='err = $event'
                                 />
+                            </template>
+                            <template v-else-if='mode.tilejson'>
+                                <div class='row row-cards'>
+                                    <div class="col-md-12 mt-3">
+                                        <TablerInput
+                                            label='TileJSON URL'
+                                            v-model='tilejson.url'
+                                        />
+                                    </div>
+                                    <div class="col-md-12 mt-3">
+                                        <div class='d-flex'>
+                                            <div class='ms-auto'>
+                                                <a @click='fetchTileJSON' class="cursor-pointer btn btn-primary">Fetch TileJSON</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </template>
                             <template v-else>
                                 <div class='row row-cards'>
@@ -111,7 +127,13 @@ export default {
     name: 'BaseMapNew',
     data: function() {
         return {
-            upload: false,
+            mode: {
+                upload: false,
+                tilejson: false,
+            },
+            tilejson: {
+                url: ''
+            },
             errors: {
                 name: '',
                 url: '',
@@ -133,8 +155,11 @@ export default {
         if (this.$route.params.basemapid) await this.fetch();
     },
     methods: {
+        fetchTileJSON: async function() {
+            console.error('TILEJSON');
+        },
         processUpload: function(body) {
-            this.upload = false;
+            this.mode.upload = false;
             this.basemap = JSON.parse(body);
         },
         uploadHeaders: function() {
