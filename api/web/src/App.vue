@@ -10,11 +10,13 @@
                 <h2 class="page-title">ETL Data Layers</h2>
             </div>
 
-            <div class='ms-auto'>
+            <div v-if='user' class='ms-auto'>
                 <div class='btn-list'>
                     <a href="/docs/" class="btn btn-dark" target="_blank" rel="noreferrer">
-                        <CodeIcon/>
-                        Docs
+                        <CodeIcon/>Docs
+                    </a>
+                    <a @click='logout' class='btn btn-dark cursor-pointer'>
+                        <LogoutIcon/>
                     </a>
                 </div>
             </div>
@@ -112,6 +114,7 @@ import '@tabler/core/dist/css/tabler.min.css';
 import {
     CodeIcon,
     HomeIcon,
+    LogoutIcon,
     MapIcon,
     NetworkIcon,
     DatabaseIcon,
@@ -162,6 +165,11 @@ export default {
         await this.getServer();
     },
     methods: {
+        logout: function() {
+            this.user = null;
+            delete localStorage.token;
+            this.$router.push("/login");
+        },
         getLogin: async function() {
             try {
                 this.user = await window.std('/api/login');
@@ -181,6 +189,7 @@ export default {
     components: {
         HomeIcon,
         CodeIcon,
+        LogoutIcon,
         MapIcon,
         NetworkIcon,
         DatabaseIcon,
