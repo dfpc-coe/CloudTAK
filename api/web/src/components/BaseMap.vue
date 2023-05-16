@@ -35,15 +35,15 @@
                                 <div class="datagrid pb-3">
                                     <div class="datagrid-item">
                                         <div class="datagrid-title">MinZoom</div>
-                                        <div class="datagrid-content" v-text='basemap.minzoom || "Unknown"'></div>
+                                        <div class="datagrid-content" v-text='basemap.minzoom'></div>
                                     </div>
                                     <div class="datagrid-item">
                                         <div class="datagrid-title">MaxZoom</div>
-                                        <div class="datagrid-content" v-text='basemap.maxzoom || "Unknown"'></div>
+                                        <div class="datagrid-content" v-text='basemap.maxzoom'></div>
                                     </div>
                                     <div class="datagrid-item">
                                         <div class="datagrid-title">Format</div>
-                                        <div class="datagrid-content" v-text='basemap.format || "Unknown"'></div>
+                                        <div class="datagrid-content" v-text='basemap.format'></div>
                                     </div>
                                     <div class="datagrid-item">
                                         <div class="datagrid-title">Center</div>
