@@ -46,6 +46,10 @@ export default {
                 return {};
             }
         },
+        method: {
+            type: String,
+            default: 'POST'
+        },
         label: {
             type: String,
             default: 'Select a file to upload'
@@ -77,7 +81,7 @@ export default {
                 const xhr = new XMLHttpRequest()
                 const formData = new FormData()
 
-                xhr.open('POST', this.url, true)
+                xhr.open(this.method, this.url, true)
                 xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
 
                 for (const header of Object.keys(this.headers)) {
