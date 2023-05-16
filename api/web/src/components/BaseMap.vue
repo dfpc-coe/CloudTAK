@@ -26,8 +26,8 @@
 
                                 <div class='ms-auto'>
                                     <div class='btn-list'>
-                                        <DownloadIcon class='cursor-pointer' @click='download'/>
-                                        <SettingsIcon class='cursor-pointer' @click='$router.push(`/basemap/${basemap.id}/edit`)'/>
+                                        <DownloadIcon v-tooltip='"Download TAK XML"' class='cursor-pointer' @click='download'/>
+                                        <SettingsIcon v-tooltip='"Edit Basemap"' class='cursor-pointer' @click='$router.push(`/basemap/${basemap.id}/edit`)'/>
                                     </div>
                                 </div>
                             </div>
