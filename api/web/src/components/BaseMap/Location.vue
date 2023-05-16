@@ -35,7 +35,12 @@ export default {
                         basemap: {
                             type: 'raster',
                             tileSize: 256,
-                            tiles: [ this.basemap.url ]
+                            tiles: [
+                                this.basemap.url
+                                    .replace('{$z}', '{z}')
+                                    .replace('{$x}', '{x}')
+                                    .replace('{$y}', '{y}')
+                            ]
                         }
                     },
                     layers: [{
