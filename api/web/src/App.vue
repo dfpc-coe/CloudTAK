@@ -1,6 +1,6 @@
 <template>
 <div class='page'>
-    <header class='navbar navbar-expand-md navbar-dark d-print-none'>
+    <header class='navbar navbar-expand-md d-print-none' data-bs-theme="dark">
         <div class="container-xl">
             <div class="col-auto">
                 <img @click='$router.push("/")' class='cursor-pointer' height='50' width='50' src='/logo.png'>
