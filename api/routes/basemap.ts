@@ -28,43 +28,45 @@ export default async function router(schema: any, config: Config) {
 
             const imported = {};
 
-            console.error(req.headers);
-
-            let bb;
-            let data: Data;
-            try {
-                await Auth.is_auth(req);
-
-                data = await Data.from(config.pool, req.params.dataid);
-
-                if (!req.headers['content-type']) throw new Err(400, null, 'Missing Content-Type Header');
-
-                bb = busboy({
-                    headers: req.headers,
-                    limits: {
-                        files: 1
-                    }
-                });
-            } catch (err) {
-                return Err.respond(err, res);
-            }
-
-            const assets: Promise<void>[] = [];
-            bb.on('file', async (fieldname, file, blob) => {
+            if (req.headers['content-type'].startsWith('multipart/form-data')) {
+                let bb;
+                let data: Data;
                 try {
+                    await Auth.is_auth(req);
+
+                    data = await Data.from(config.pool, req.params.dataid);
+
+                    if (!req.headers['content-type']) throw new Err(400, null, 'Missing Content-Type Header');
+
+                    bb = busboy({
+                        headers: req.headers,
+                        limits: {
+                            files: 1
+                        }
+                    });
                 } catch (err) {
                     return Err.respond(err, res);
                 }
-            }).on('finish', async () => {
-                try {
-                } catch (err) {
-                    Err.respond(err, res);
-                }
-            });
 
-            return req.pipe(bb);
+                const assets: Promise<void>[] = [];
+                bb.on('file', async (fieldname, file, blob) => {
+                    try {
+                    } catch (err) {
+                        return Err.respond(err, res);
+                    }
+                }).on('finish', async () => {
+                    try {
+                    } catch (err) {
+                        Err.respond(err, res);
+                    }
+                });
 
-            return res.json(imported);
+                return req.pipe(bb);
+            } else if (req.headers['content-type'].startsWith('text/plain')) {
+                return res.json(imported);
+            } else {
+                throw new Err(400, null, 'Unsupported Content-Type');
+            }
         } catch (err) {
             return Err.respond(err, res);
         }

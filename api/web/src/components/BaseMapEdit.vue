@@ -30,6 +30,9 @@
                             <template v-if='upload'>
                                 <Upload
                                     v-if='upload'
+                                    method='PUT'
+                                    :url='uploadURL()'
+                                    :headers='uploadHeaders()'
                                     @cancel='upload = false'
                                     @err='err = $event'
                                 />
@@ -129,6 +132,14 @@ export default {
         if (this.$route.params.basemapid) await this.fetch();
     },
     methods: {
+        uploadHeaders: function() {
+            return {
+                Authorization: `Bearer ${localStorage.token}`
+            };
+        },
+        uploadURL: function() {
+            return window.stdurl(`/api/basemap`);
+        },
         fetch: async function() {
             this.basemap = await window.std(`/api/basemap/${this.$route.params.basemapid}`);
         },
