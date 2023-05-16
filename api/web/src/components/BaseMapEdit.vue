@@ -21,13 +21,14 @@
                             <h3 v-if='$route.params.basemapid' class='card-title'>BaseMap <span v-text='basemap.id'/></h3>
                             <h3 v-else class='card-title'>New BaseMap</h3>
 
-                            <div v-if='!mode.upload && !mode.tilejson' class='ms-auto btn-list'>
+                            <div v-if='!loading && !mode.upload && !mode.tilejson' class='ms-auto btn-list'>
                                 <FileUploadIcon @click='mode.upload = true' v-tooltip='"XML Upload"' class='cursor-pointer'/>
                                 <FileImportIcon @click='mode.tilejson = true' v-tooltip='"TileJSON Import"' class='cursor-pointer'/>
                             </div>
                         </div>
                         <div class="card-body">
-                            <template v-if='mode.upload'>
+                            <TablerLoading v-if='loading'/>
+                            <template v-else-if='mode.upload'>
                                 <Upload
                                     method='PUT'
                                     :url='uploadURL()'
@@ -120,6 +121,7 @@ import {
 } from 'vue-tabler-icons';
 import {
     TablerBreadCrumb,
+    TablerLoading,
     TablerInput
 } from '@tak-ps/vue-tabler';
 
@@ -127,6 +129,7 @@ export default {
     name: 'BaseMapNew',
     data: function() {
         return {
+            loading: false,
             mode: {
                 upload: false,
                 tilejson: false,
@@ -156,7 +159,21 @@ export default {
     },
     methods: {
         fetchTileJSON: async function() {
-            console.error('TILEJSON');
+            this.loading = true;
+            try {
+                this.basemap = await window.std('/api/basemap', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'text/plain'
+                    },
+                    body: this.tilejson.url
+                });
+                this.mode.tilejson = false;
+                this.loading = false;
+            } catch (err) {
+                this.loading = false;
+                throw err;
+            }
         },
         processUpload: function(body) {
             this.mode.upload = false;
@@ -171,7 +188,9 @@ export default {
             return window.stdurl(`/api/basemap`);
         },
         fetch: async function() {
+            this.loading = true;
             this.basemap = await window.std(`/api/basemap/${this.$route.params.basemapid}`);
+            this.loading = false;
         },
         create: async function() {
             for (const field of ['name', 'url' ]) {
@@ -183,31 +202,45 @@ export default {
                 if (this.errors[e]) return;
             }
 
-            if (this.$route.params.basemapid) {
-                const create = await window.std(`/api/basemap/${this.$route.params.basemapid}`, {
-                    method: 'PATCH',
-                    body: this.basemap
-                });
-                this.$router.push(`/basemap/${create.id}`);
-            } else {
-                const create = await window.std('/api/basemap', {
-                    method: 'POST',
-                    body: this.basemap
-                });
-                this.$router.push(`/basemap/${create.id}`);
+            this.loading = true;
+            try {
+                if (this.$route.params.basemapid) {
+                    const create = await window.std(`/api/basemap/${this.$route.params.basemapid}`, {
+                        method: 'PATCH',
+                        body: this.basemap
+                    });
+                    this.$router.push(`/basemap/${create.id}`);
+                } else {
+                    const create = await window.std('/api/basemap', {
+                        method: 'POST',
+                        body: this.basemap
+                    });
+                    this.$router.push(`/basemap/${create.id}`);
+                }
+                this.loading = false;
+            } catch (err) {
+                this.loading = false;
+                throw err;
             }
         },
         del: async function() {
-            await window.std(`/api/basemap/${this.$route.params.basemapid}`, {
-                method: 'DELETE'
-            });
-            this.$router.push('/basemap');
+            this.loading = true;
+            try {
+                await window.std(`/api/basemap/${this.$route.params.basemapid}`, {
+                    method: 'DELETE'
+                });
+                this.$router.push('/basemap');
+            } catch (err) {
+                this.loading = false;
+                throw err;
+            }
         }
     },
     components: {
         Upload,
         FileUploadIcon,
         FileImportIcon,
+        TablerLoading,
         TablerBreadCrumb,
         TablerInput,
         PageFooter,

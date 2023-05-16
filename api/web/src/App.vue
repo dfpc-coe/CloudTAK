@@ -174,6 +174,7 @@ export default {
             try {
                 this.user = await window.std('/api/login');
             } catch (err) {
+                this.user = null;
                 delete localStorage.token;
                 this.$router.push("/login");
             }
