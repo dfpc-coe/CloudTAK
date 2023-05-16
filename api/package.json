@@ -36,7 +36,7 @@
         "@openaddresses/batch-schema": "^9.0.0",
         "@openaddresses/cloudfriend": "^7.0.0",
         "@placemarkio/check-geojson": "^0.1.12",
-        "@tak-ps/blueprint-login": "^1.0.0",
+        "@tak-ps/blueprint-login": "^1.1.0",
         "@tak-ps/node-cot": "^3.3.0",
         "@turf/meta": "^6.5.0",
         "ajv": "^8.11.2",

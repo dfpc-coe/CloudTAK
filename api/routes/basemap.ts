@@ -28,7 +28,7 @@ export default async function router(schema: any, config: Config) {
 
             const imported = {};
 
-            console.error(req.header);
+            console.error(req.headers);
 
             let bb;
             let data: Data;
