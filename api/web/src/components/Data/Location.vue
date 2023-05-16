@@ -76,6 +76,9 @@ export default {
                     basemap: {
                         type: 'raster',
                         url: list.basemaps[0].url
+                            .replace('{$z}', '{z}')
+                            .replace('{$x}', '{x}')
+                            .replace('{$y}', '{y}')
                     }
                 }
 
