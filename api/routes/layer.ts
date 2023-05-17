@@ -1,4 +1,5 @@
 import { check } from '@placemarkio/check-geojson';
+import bodyparser from 'body-parser';
 import Err from '@openaddresses/batch-error';
 // @ts-ignore
 import Layer from '../lib/types/layer.js';
@@ -257,7 +258,7 @@ export default async function router(schema: any, config: Config) {
         ':layerid': 'integer',
         query: 'req.query.PostCoT.json',
         res: 'res.Standard.json'
-    }, async (req: Request, res: Response) => {
+    }, bodyparser.raw({ type: '*/*' }), async (req: Request, res: Response) => {
         try {
             await Auth.is_layer(req, parseInt(req.params.layerid));
 
@@ -266,12 +267,13 @@ export default async function router(schema: any, config: Config) {
             const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
                 return (await Layer.from(config.pool, req.params.layerid)).serialize();
             });
-    
+
             const style = new Style(layer);
+            req.body = String(req.body);
+
             if (req.headers['content-type'] === 'application/json') {
                 try {
-                    // https://github.com/placemark/check-geojson/issues/17
-                    req.body = check(JSON.stringify(req.body));
+                    req.body = check(req.body);
                 } catch (err) {
                     throw new Err(400, null, err.message);
                 }
