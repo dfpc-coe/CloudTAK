@@ -1,4 +1,5 @@
 import Lambda from "aws-lambda";
+import jwt from 'jsonwebtoken';
 import S3 from "@aws-sdk/client-s3";
 import pmtiles from 'pmtiles';
 import zlib from "zlib";
@@ -125,6 +126,22 @@ export const handlerRaw = async (
         "Access-Control-Allow-Origin": '*',
         "Access-Control-Allow-Credentials": 'true'
     };
+
+    if (!event.queryStringParameters || !event.queryStringParameters.token) {
+        return apiResp(400, JSON.stringify({
+            status: 400,
+            message: 'token query param required'
+        }));
+    }
+
+    try {
+        jwt.verify(event.queryStringParameters.token, process.env.SigningSecret);
+    } catch (err) {
+        return apiResp(401, JSON.stringify({
+            status: 401,
+            message: 'Invalid token'
+        }));
+    }
 
     const { ok, name, tile, ext, meta } = tile_path(path);
 
