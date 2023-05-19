@@ -8,6 +8,7 @@ import Auth from '../lib/auth.js';
 import S3 from '../lib/aws/s3.js';
 import Stream from 'node:stream';
 import Batch from '../lib/aws/batch.js';
+import jwt from 'jsonwebtoken';
 
 import { Request, Response } from 'express';
 import Config from '../lib/config.js';
@@ -187,7 +188,11 @@ export default async function router(schema: any, config: Config) {
 
             const data = await Data.from(config.pool, req.params.dataid);
 
-            return res.redirect(String(new URL(`${config.PMTILES_URL}/tiles/data/${data.id}/${req.params.asset}`)));
+            const token = jwt.sign({ access: 'user' }, config.SigningSecret)
+            const url = new URL(`${config.PMTILES_URL}/tiles/data/${data.id}/${req.params.asset}`);
+            url.searchParams.append('token', token);
+
+            return res.redirect(String(url));
         } catch (err) {
             return Err.respond(err, res);
         }
