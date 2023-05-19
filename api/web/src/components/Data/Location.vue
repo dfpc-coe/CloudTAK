@@ -128,6 +128,7 @@ export default {
                         map.on('click', (e) => {
                             const url = new URL(this.assets.tiles.url + this.asset.name.replace(/.pmtiles$/, ''))
                             url.searchParams.append('query', `${e.lngLat.lng},${e.lngLat.lat}`);
+                            url.searchParams.append('token', localStorage.token);
                             this.geocode.url = url;
                         });
 
