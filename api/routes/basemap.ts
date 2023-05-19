@@ -5,6 +5,7 @@ import BaseMap from '../lib/types/basemap.js';
 // @ts-ignore
 import Data from '../lib/types/data.js';
 import Auth from '../lib/auth.js';
+import Cacher from '../lib/cacher.js';
 import busboy from 'busboy';
 import { sql } from 'slonik';
 import Config from '../lib/config.js';
@@ -163,6 +164,8 @@ export default async function router(schema: any, config: Config) {
                 ...req.body
             });
 
+            await config.cacher.del(`basemap-${req.params.basemapid}`);
+
             return res.json(basemap);
         } catch (err) {
             return Err.respond(err, res);
@@ -181,7 +184,9 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req, true);
 
-            const basemap = await BaseMap.from(config.pool, req.params.basemapid);
+            const basemap = await config.cacher.get(Cacher.Miss(req.query, `basemap-${req.params.basemapid}`), async () => {
+                return (await BaseMap.from(config.pool, req.params.basemapid)).serialize();
+            });
 
             if (req.query.download) {
                 res.setHeader('Content-Disposition', `attachment; filename="${basemap.name}.${req.query.format}"`);
@@ -213,6 +218,37 @@ export default async function router(schema: any, config: Config) {
         }
     });
 
+    await schema.get('/basemap/:basemapid/tiles/:z/:x/:y', {
+        name: 'Get BaseMap Tile',
+        group: 'BaseMap',
+        auth: 'user',
+        description: 'Get a basemap tile',
+        ':basemapid': 'integer',
+        ':z': 'integer',
+        ':x': 'integer',
+        ':y': 'integer',
+    }, async (req: Request, res: Response) => {
+        try {
+            await Auth.is_auth(req, true);
+
+            const basemap = await config.cacher.get(Cacher.Miss(req.query, `basemap-${req.params.basemapid}`), async () => {
+                return (await BaseMap.from(config.pool, req.params.basemapid)).serialize();
+            });
+
+            const url = new URL(basemap.url
+                .replace('{$z}', req.params.z)
+                .replace('{$x}', req.params.x)
+                .replace('{$y}', req.params.y)
+            );
+
+            const proxy = await fetch(url)
+
+            return proxy.pipe(res);
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
+
     await schema.delete('/basemap/:basemapid', {
         name: 'Delete BaseMap',
         group: 'BaseMap',
@@ -225,6 +261,8 @@ export default async function router(schema: any, config: Config) {
             await Auth.is_auth(req);
 
             await BaseMap.delete(config.pool, req.params.basemapid);
+
+            await config.cacher.del(`basemap-${req.params.basemapid}`);
 
             return res.json({
                 status: 200,
