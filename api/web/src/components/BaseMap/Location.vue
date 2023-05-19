@@ -31,6 +31,8 @@ export default {
     },
     methods: {
         mountMap: function() {
+            const url = String(window.stdurl(`/api/basemap/${this.basemap.id}/tiles/`)) + `{z}/{x}/{y}?token=${localStorage.token}`;
+
             const tmpmap = new mapgl.Map({
                 container: this.$refs.map,
                 zoom: 0,
@@ -41,12 +43,7 @@ export default {
                         basemap: {
                             type: 'raster',
                             tileSize: 256,
-                            tiles: [
-                                this.basemap.url
-                                    .replace('{$z}', '{z}')
-                                    .replace('{$x}', '{x}')
-                                    .replace('{$y}', '{y}')
-                            ]
+                            tiles: [ url ]
                         }
                     },
                     layers: [{

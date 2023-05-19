@@ -25,7 +25,7 @@ export default class BaseMap extends Generic {
                 WHERE
                     name ~* ${query.filter}
                 ORDER BY
-                    id DESC
+                    ${sql.identifier([this._table, query.sort])} ${query.order}
                 LIMIT
                     ${query.limit}
                 OFFSET

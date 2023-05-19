@@ -76,18 +76,14 @@ export default {
     },
     methods: {
         basemap: async function() {
-            const list = await window.std('/api/basemap?limit=1');
+            const list = await window.std('/api/basemap?limit=1&order=asc&sort=created');
             if (list.basemaps.length) {
+                const url = String(window.stdurl(`/api/basemap/${list.basemaps[0].id}/tiles/`)) + `{z}/{x}/{y}?token=${localStorage.token}`;
                 this.style.sources = {
                     basemap: {
                         type: 'raster',
                         tileSize: 256,
-                        tiles: [
-                            list.basemaps[0].url
-                                .replace('{$z}', '{z}')
-                                .replace('{$x}', '{x}')
-                                .replace('{$y}', '{y}')
-                        ]
+                        tiles: [ url ]
                     }
                 }
 

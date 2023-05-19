@@ -11,7 +11,7 @@ import { sql } from 'slonik';
 import Config from '../lib/config.js';
 import { Request, Response } from 'express';
 import xml2js from 'xml2js';
-import { Stream } from 'node:stream';
+import { Stream, Readable } from 'node:stream';
 
 export default async function router(schema: any, config: Config) {
     await schema.put('/basemap', {
@@ -243,7 +243,14 @@ export default async function router(schema: any, config: Config) {
 
             const proxy = await fetch(url)
 
-            return proxy.pipe(res);
+            res.status(proxy.status);
+            for (const h of ['content-type', 'content-length', 'content-encoding']) {
+                if (proxy.headers.get(h)) res.append(h, proxy.headers.get(h));
+            }
+
+
+            // @ts-ignore
+            return Readable.fromWeb(proxy.body).pipe(res);
         } catch (err) {
             return Err.respond(err, res);
         }
