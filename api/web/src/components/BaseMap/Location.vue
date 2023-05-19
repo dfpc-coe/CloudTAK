@@ -23,6 +23,12 @@ export default {
             return this.mountMap();
         });
     },
+    beforeUnmount: function() {
+        if (map) {
+            map.remove();
+            map = null;
+        }
+    },
     methods: {
         mountMap: function() {
             const tmpmap = new mapgl.Map({

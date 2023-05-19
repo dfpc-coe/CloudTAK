@@ -68,6 +68,12 @@ export default {
             this.mountMap();
         }
     },
+    beforeUnmount: function() {
+        if (map) {
+            map.remove();
+            map = null;
+        }
+    },
     methods: {
         basemap: async function() {
             const list = await window.std('/api/basemap?limit=1');
@@ -75,10 +81,13 @@ export default {
                 this.style.sources = {
                     basemap: {
                         type: 'raster',
-                        url: list.basemaps[0].url
-                            .replace('{$z}', '{z}')
-                            .replace('{$x}', '{x}')
-                            .replace('{$y}', '{y}')
+                        tileSize: 256,
+                        tiles: [
+                            list.basemaps[0].url
+                                .replace('{$z}', '{z}')
+                                .replace('{$x}', '{x}')
+                                .replace('{$y}', '{y}')
+                        ]
                     }
                 }
 
