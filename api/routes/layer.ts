@@ -258,7 +258,10 @@ export default async function router(schema: any, config: Config) {
         ':layerid': 'integer',
         query: 'req.query.PostCoT.json',
         res: 'res.Standard.json'
-    }, bodyparser.raw({ type: '*/*' }), async (req: Request, res: Response) => {
+    }, bodyparser.raw({
+        type: '*/*',
+        limit: '50mb'
+    }), async (req: Request, res: Response) => {
         try {
             await Auth.is_layer(req, parseInt(req.params.layerid));
 

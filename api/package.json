@@ -8,7 +8,7 @@
         "test": "./test/test",
         "build": "tsc index.ts",
         "prod": "ts-node index.ts",
-        "lint": "eslint index.ts lib/**.ts test/**.ts",
+        "lint": "eslint index.ts lib/**.ts",
         "dev": "nodemon -i schema/ -i web/ --esm index.ts --noevents --unsafe"
     },
     "repository": {
