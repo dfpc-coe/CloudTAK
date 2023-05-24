@@ -24,7 +24,7 @@ try {
 
     fs.accessSync(dotfile);
 
-    Object.assign(process.env, JSON.parse(String(fs.readFileSync(dotfile))));
+    process.env = Object.assign(JSON.parse(String(fs.readFileSync(dotfile))), process.env);
 } catch (err) {
     console.log('ok - no .env file loaded');
 }
@@ -40,17 +40,6 @@ const args = minimist(process.argv, {
     ],
     string: ['postgres'],
 });
-
-try {
-    const dotfile = new URL('.env', import.meta.url);
-
-    fs.accessSync(dotfile);
-
-    Object.assign(process.env, JSON.parse(String(fs.readFileSync(dotfile))));
-    console.log('ok - .env file loaded');
-} catch (err) {
-    console.log('ok - no .env file loaded');
-}
 
 if (import.meta.url === `file://${process.argv[1]}`) {
     const config = await Config.env({
