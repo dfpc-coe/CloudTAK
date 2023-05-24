@@ -39,9 +39,9 @@
                                     />
                                 </div>
                                 <div class='d-flex'>
-                                    <a v-if='$route.params.dataid' @click='deleteLayer' class="cursor-pointer btn btn-outline-danger">
-                                        Delete Data
-                                    </a>
+                                    <div v-if='$route.params.dataid'>
+                                        <TablerDelete @delete='deleteLayer' label='Delete Data'/>
+                                    </div>
                                     <div class='ms-auto'>
                                         <a v-if='$route.params.dataid' @click='create' class="cursor-pointer btn btn-primary">Update Data</a>
                                         <a v-else @click='create' class="cursor-pointer btn btn-primary">Create Data</a>

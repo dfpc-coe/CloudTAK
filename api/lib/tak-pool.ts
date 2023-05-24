@@ -1,7 +1,11 @@
 import TAK from './tak.js';
 // @ts-ignore
 import Connection from './types/connection.js';
+// @ts-ignore
+import Server from './types/server.js';
 import Metrics from './aws/metric.js';
+// @ts-ignore
+import { Pool } from '@openaddresses/batch-generic';
 
 class TAKPoolClient {
     conn: Connection;
@@ -21,16 +25,16 @@ class TAKPoolClient {
  * Maintain a pool of TAK Connections, reconnecting as necessary
  * @class
  *
- * @param {Server}  server      Server Connection Object
+ * @param server      Server Connection Object
  * @param {Array}   clients     WSS Clients Array
  */
 export default class TAKPool extends Map<number, TAKPoolClient> {
-    #server: any;
+    #server: Server;
     clients: any[];
     metrics: Metrics;
     stackName: string;
 
-    constructor(server: any, clients: any[] = [], stackName: string) {
+    constructor(server: Server, clients: any[] = [], stackName: string) {
         super();
         this.#server = server;
         this.clients = clients;
@@ -38,7 +42,7 @@ export default class TAKPool extends Map<number, TAKPoolClient> {
         this.metrics = new Metrics(stackName);
     }
 
-    async refresh(pool: any, server: any) {
+    async refresh(pool: Pool, server: any) {
         this.#server = server;
 
         for (const conn of this.keys()) {
@@ -51,15 +55,15 @@ export default class TAKPool extends Map<number, TAKPoolClient> {
     /**
      * Page through connections and start a connection for each one
      *
-     * @param {Pool}    pool        Postgres Pol
+     * @param pool        Postgres Pol
      */
-    async init(pool: any): Promise<void> {
-        const conns: any = [];
+    async init(pool: Pool): Promise<void> {
+        const conns: Connection[] = [];
 
         const stream = await Connection.stream(pool);
 
         return new Promise((resolve) => {
-            stream.on('data', (conn: any) => {
+            stream.on('data', (conn: Connection) => {
                 if (conn.enabled) {
                     conns.push(async () => {
                         await this.add(conn);

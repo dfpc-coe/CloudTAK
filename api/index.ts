@@ -88,7 +88,7 @@ export default async function server(config: Config) {
     try {
         config.server = await Server.from(config.pool, 1);
     } catch (err) {
-        console.error(err);
+        console.log(`ok - no server config found: ${err.message}`);
         config.server = null;
     }
 
