@@ -1,16 +1,18 @@
 import jsonata from 'jsonata';
 import { Feature } from 'geojson';
+// @ts-ignore
+import Layer from './types/layer.js';
 
 /**
  * Apply layer styling to CoT Messages
  * @class
  *
- * @prop {Layer} layer  Layer object
+ * @prop layer - Layer object
  */
 export default class Style {
-    layer: any;
+    layer: Layer;
 
-    constructor(layer: any) {
+    constructor(layer: Layer) {
         this.layer = layer;
     }
 

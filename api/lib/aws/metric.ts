@@ -6,16 +6,17 @@ import CloudWatch from '@aws-sdk/client-cloudwatch';
  */
 export default class Metric {
     stack: string;
+    cw: CloudWatch.CloudWatchClient;
 
     constructor(stack: string) {
         this.stack = stack;
+        this.cw = new CloudWatch.CloudWatchClient({ region: process.env.AWS_DEFAULT_REGION });
+
     }
 
     async post(connid: number) {
-        const cw = new CloudWatch.CloudWatchClient({ region: process.env.AWS_DEFAULT_REGION });
-
         try {
-            await cw.send(new CloudWatch.PutMetricDataCommand({
+            await this.cw.send(new CloudWatch.PutMetricDataCommand({
                 Namespace: 'TAKETL',
                 MetricData: [{
                     MetricName: `ConnectionHealth`,
