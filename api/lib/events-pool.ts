@@ -1,6 +1,8 @@
 // @ts-ignore
 import Layer from './types/layer.js';
 import Schedule from './schedule.js';
+// @ts-ignore
+import { Pool } from '@openaddresses/batch-schema';
 import Bree from 'bree';
 
 /**
@@ -34,17 +36,17 @@ export default class EventsPool {
     /**
      * Page through layers and add events as needed
      *
-     * @param {Pool}    pool        Postgres Pol
+     * @param pool        Postgres Pol
      */
-    async init(pool: any): Promise<void> {
-        const layers: any[] = [];
+    async init(pool: Pool): Promise<void> {
+        const layers: Layer[] = [];
 
         const stream = await Layer.stream(pool);
 
         await this.bree.start();
 
         return new Promise((resolve) => {
-            stream.on('data', (layer: any) => {
+            stream.on('data', (layer: Layer) => {
                 if (Schedule.is_aws(layer.cron)) return;
 
                 if (!layer.enabled) return;

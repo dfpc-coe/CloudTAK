@@ -1,5 +1,7 @@
 import SecretsManager from '@aws-sdk/client-secrets-manager';
 import type EventsPool from './events-pool.js';
+import TAKPool from './tak-pool.js'
+import { WebSocket } from 'ws';
 // @ts-ignore
 import Server from './types/Server.js';
 // @ts-ignore
@@ -28,11 +30,11 @@ export default class Config {
     PMTILES_URL: string;
     TileBaseURL: URL;
     DynamoDB: string;
-    wsClients: any[];
+    wsClients: WebSocket[];
     Bucket?: string;
     pool?: Pool;
     cacher?: Cacher;
-    conns: any;
+    conns?: TAKPool;
     server?: Server;
     events?: EventsPool;
 
@@ -41,9 +43,7 @@ export default class Config {
 
         config.silent = (args.silent || false);
         config.noevents = (args.noevents || false);
-
         config.wsClients = []
-        config.conns = null;
 
         try {
             if (!process.env.AWS_DEFAULT_REGION) {

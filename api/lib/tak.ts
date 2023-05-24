@@ -1,6 +1,7 @@
 import EventEmitter from 'node:events';
 import tls from 'node:tls';
 import { XML as COT } from '@tak-ps/node-cot';
+import type { TLSSocket } from 'node:tls'
 
 export interface TAKAuth {
     cert: string;
@@ -20,7 +21,7 @@ export default class TAK extends EventEmitter {
     auth: TAKAuth;
     open: boolean;
     destroyed: boolean;
-    client: any;
+    client?: TLSSocket;
     queue: string[];
     writing: boolean;
 
@@ -43,7 +44,6 @@ export default class TAK extends EventEmitter {
         this.open = false;
         this.destroyed = false;
 
-        this.client = null;
         this.queue = [];
 
         this.version; // Server Version
@@ -86,7 +86,7 @@ export default class TAK extends EventEmitter {
                 // Eventually Parse ProtoBuf
                 buff = buff + data.toString();
 
-                let result: any = TAK.findCoT(buff);
+                let result = TAK.findCoT(buff);
                 while (result && result.event) {
                     const cot = new COT(result.event);
 
@@ -139,7 +139,7 @@ export default class TAK extends EventEmitter {
 
     writer(body: string): Promise<boolean> {
         return new Promise((resolve) => {
-            const res = this.client.write(body + '\n', () => {
+            const res: boolean = this.client.write(body + '\n', () => {
                 return resolve(res)
             });
         });
