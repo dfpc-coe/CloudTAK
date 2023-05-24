@@ -11,16 +11,21 @@ import Knex from 'knex';
 import KnexConfig from '../knexfile.js';
 import drop from './drop.js';
 import { pathToRegexp } from 'path-to-regexp';
+import test from 'tape';
 import Ajv from 'ajv';
-const ajv = new Ajv({
-    allErrors: true
-});
+const ajv = new Ajv({ allErrors: true });
 
 /**
  * @class
  */
 class FlightResponse {
-    constructor(res, body) {
+    res: any;
+    ok: boolean;
+    headers: Map<string, string>;
+    status: number;
+    body: any;
+
+    constructor(res: any, body: any) {
         this.res = res;
 
         this.ok = res.ok;
@@ -34,20 +39,29 @@ class FlightResponse {
  * @class
  */
 export default class Flight {
+    config?: Config;
+    srv?: any; // TODO: HTTP Server
+    base: string;
+    schema?: object;
+    routes: {
+        [k: string]: RegExp;
+    }
+    token: {
+        [k: string]: string;
+    }
+
     constructor() {
-        this.srv;
-        this.config;
         this.base = 'http://localhost:5001';
         this.token = {};
+        this.routes = {};
     }
 
     /**
      * Clear and restore an empty database schema
      *
-     * @param {Tape} test Tape test instance
      * @param {boolean} dropdb Should the database be dropped
      */
-    init(test, dropdb = true) {
+    init(dropdb = true) {
         test('start: database', async (t) => {
             try {
                 if (dropdb) {
@@ -60,8 +74,7 @@ export default class Flight {
                 t.error(err);
             }
 
-            this.schema = JSON.parse(fs.readFileSync(new URL('./fixtures/get_schema.json', import.meta.url)));
-            this.routes = {};
+            this.schema = JSON.parse(String(fs.readFileSync(new URL('./fixtures/get_schema.json', import.meta.url))));
 
             for (const route of Object.keys(this.schema)) {
                 this.routes[route] = new RegExp(pathToRegexp(route.split(' ').join(' /api')));
@@ -74,19 +87,18 @@ export default class Flight {
     /**
      * Make a fetch using a JSON fixture
      *
-     * @param {Tape} test Tape Instance
      * @param {String} name Name of fixture present in the ./fixtures folder (Should be JSON)
      * @param {String} auth Name of the token that will be used to make the fetch
      */
-    fixture(test, name, auth) {
+    fixture(name: string, auth: string) {
         test(`Fixture: ${name}`, async (t) => {
-            const req = JSON.parse(fs.readFileSync(new URL('./fixtures/' + name, import.meta.url)));
+            const req = JSON.parse(String(fs.readFileSync(new URL('./fixtures/' + name, import.meta.url))));
             if (auth) req.auth = {
                 bearer: this.token[auth]
             };
 
             try {
-                await this.fetch(req.url, req, t);
+                await this.fetch(req.url, req, true);
             } catch (err) {
                 t.error(err, 'no errors');
             }
@@ -104,7 +116,10 @@ export default class Flight {
      * @param {boolean} [t.verify] Verify Schema Validation
      * @param {boolean} [t.json=true] Expect JSON in response
      */
-    async fetch(url, req, t) {
+    async fetch(url: string, req: any, t: boolean | {
+        verify: boolean;
+        json: true;
+    }) {
         if (t === undefined) throw new Error('flight.fetch requires two arguments - pass (<url>, <req>, false) to disable schema testing');
 
         const defs = {
@@ -120,7 +135,7 @@ export default class Flight {
             Object.assign(defs, t);
         }
 
-        url = new URL(url, this.base);
+        const parsedurl = new URL(url, this.base);
 
         if (!req.headers) req.headers = {};
         if (req.body && req.body.constructor === Object) {
@@ -136,7 +151,7 @@ export default class Flight {
         delete req.auth;
 
         if (!defs.verify) {
-            const _res = await fetch(url, req);
+            const _res = await fetch(parsedurl, req);
             const body = defs.json ? await _res.json() : await _res.text();
             const res = new FlightResponse(_res, body);
             return res;
@@ -145,9 +160,8 @@ export default class Flight {
 
         if (!req.method) req.method = 'GET';
 
-        let match = false;
-        const spath = `${req.method.toUpperCase()} ${url.pathname}/`;
-
+        let match: string;
+        const spath = `${req.method.toUpperCase()} ${parsedurl.pathname}/`;
         const matches = [];
         for (const r of Object.keys(this.routes)) {
             if (spath.match(this.routes[r])) {
@@ -174,7 +188,7 @@ export default class Flight {
         if (!rawschema.res) throw new Error('Cannot validate resultant schema - no result schema defined');
 
         const schema = ajv.compile(rawschema.res);
-        const _res = await fetch(url, req);
+        const _res = await fetch(parsedurl, req);
         const res = new FlightResponse(_res, await _res.json());
 
         if (res.ok) {
@@ -197,18 +211,14 @@ export default class Flight {
     /**
      * Bootstrap a new server test instance
      *
-     * @param {Tape} test tape instance to run takeoff action on
      * @param {Object} custom custom config options
      */
-    takeoff(test, custom = {}) {
+    takeoff(custom = {}) {
         test('test server takeoff', async (t) => {
             this.config = await Config.env({
                 silent: true,
                 unsafe: true,
-                validate: false,
-                meta: {
-                    'user::registration': true
-                }
+                noevents: true
             });
 
             Object.assign(this.config, custom);
@@ -221,11 +231,9 @@ export default class Flight {
 
     /**
      * Create a new user and return an API token for that user
-     *
-     * @param {Object} test Tape runner
      */
-    user(test) {
-        test.test('Create Token: admin', async (t) => {
+    user() {
+        test('Create Token: admin', async (t) => {
             this.token.admin = jwt.sign({ access: 'user' }, 'coe-wildland-fire')
             t.end();
         });
@@ -233,10 +241,8 @@ export default class Flight {
 
     /**
      * Shutdown an existing server test instance
-     *
-     * @param {Tape} test tape instance to run landing action on
      */
-    landing(test) {
+    landing() {
         test('test server landing - api', (t) => {
             this.srv.close(async () => {
                 await this.config.pool.end();

@@ -7,13 +7,13 @@ import {
 
 const flight = new Flight();
 
-flight.init(test);
-flight.takeoff(test);
-flight.user(test);
+flight.init();
+flight.takeoff();
+flight.user();
 
 test('GET: api/task - empty', async (t) => {
     try {
-        Sinon.stub(ECRClient.prototype, 'send').callsFake((command) => {
+        Sinon.stub(ECRClient.prototype, 'send').callsFake((command: any) => {
             t.deepEquals(command.input, {
                 repositoryName: 'coe-ecr-etl-tasks'
             });
@@ -41,7 +41,7 @@ test('GET: api/task - empty', async (t) => {
 
 test('GET: api/task - empty', async (t) => {
     try {
-        Sinon.stub(ECRClient.prototype, 'send').callsFake((command) => {
+        Sinon.stub(ECRClient.prototype, 'send').callsFake((command: any) => {
             t.deepEquals(command.input, {
                 repositoryName: 'coe-ecr-etl-tasks'
             });
@@ -83,4 +83,4 @@ test('GET: api/task - empty', async (t) => {
     t.end();
 });
 
-flight.landing(test);
+flight.landing();

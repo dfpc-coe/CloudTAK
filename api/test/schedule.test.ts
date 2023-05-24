@@ -1,5 +1,5 @@
 import test from 'tape';
-import Schedule from '../lib/schedule.ts';
+import Schedule from '../lib/schedule.js';
 
 test('Schedule#is_rate', async (t) => {
     try {

@@ -3,9 +3,9 @@ import Flight from './flight.js';
 
 const flight = new Flight();
 
-flight.init(test);
-flight.takeoff(test);
-flight.user(test);
+flight.init();
+flight.takeoff();
+flight.user();
 
 test('GET: api/icon', async (t) => {
     try {
@@ -105,4 +105,4 @@ test('GET: api/icon/unknown', async (t) => {
     t.end();
 });
 
-flight.landing(test);
+flight.landing();

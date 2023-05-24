@@ -322,7 +322,7 @@ export default async function router(schema: any, config: Config) {
                         return item;
                     }));
                 } else if (req.headers['content-type'] === 'application/xml') {
-                    pooledClient.tak.write_xml(new COT(req.body));
+                    pooledClient.tak.write_xml(req.body);
                 } else {
                     throw new Err(400, null, 'Unsupported Content-Type');
                 }

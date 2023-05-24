@@ -31,7 +31,7 @@ export default class TAKAPI {
         this.Credentials = new Credentials(this);
     }
 
-    stdurl(url: any) {
+    stdurl(url: string | URL) {
         try {
             url = new URL(url);
         } catch (err) {

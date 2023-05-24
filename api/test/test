@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-for TEST in $(ls $(basename $0)/*.test.js)
+for TEST in $(ls $(basename $0)/*.test.ts)
 do
-   npx ts-node --esm $TEST
+   npx ts-node $TEST
 done
