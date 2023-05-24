@@ -54,9 +54,7 @@
 
                                 <div v-if='$route.params.connectionid' class="col-md-12 mt-3">
                                     <div class='d-flex'>
-                                        <a @click='del' class="cursor-pointer btn btn-outline-danger">
-                                            Delete Connection
-                                        </a>
+                                        <TablerDelete @delete='del' label='Delete Connection'/>
 
                                         <div class='ms-auto'>
                                             <a @click='create' class="cursor-pointer btn btn-primary">Save Connection</a>
@@ -138,6 +136,7 @@ import {
 } from 'vue-tabler-icons';
 import {
     TablerBreadCrumb,
+    TablerDelete,
     TablerInput
 } from '@tak-ps/vue-tabler';
 
@@ -233,6 +232,7 @@ export default {
         Upload,
         PlusIcon,
         LoginIcon,
+        TablerDelete,
         TablerBreadCrumb,
         LoginCertModal,
         TablerInput,

@@ -91,9 +91,9 @@
                                     </div>
                                     <div class="col-md-12 mt-3">
                                         <div class='d-flex'>
-                                            <a v-if='$route.params.basemapid' @click='del' class="cursor-pointer btn btn-outline-danger">
-                                                Delete BaseMap
-                                            </a>
+                                            <div v-if='$route.params.basemapid'>
+                                                <TablerDelete @delete='del' label='Delete Layer'/>
+                                            </div>
 
                                             <div class='ms-auto'>
                                                 <a @click='create' class="cursor-pointer btn btn-primary">Save BaseMap</a>
@@ -121,6 +121,7 @@ import {
 } from 'vue-tabler-icons';
 import {
     TablerBreadCrumb,
+    TablerDelete,
     TablerLoading,
     TablerInput
 } from '@tak-ps/vue-tabler';
@@ -242,6 +243,7 @@ export default {
         FileImportIcon,
         TablerLoading,
         TablerBreadCrumb,
+        TablerDelete,
         TablerInput,
         PageFooter,
     }

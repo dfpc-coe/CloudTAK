@@ -3,9 +3,9 @@ import Flight from './flight.js';
 
 const flight = new Flight();
 
-flight.init(test);
-flight.takeoff(test);
-flight.user(test);
+flight.init();
+flight.takeoff();
+flight.user();
 
 test('GET: api/connection', async (t) => {
     try {
@@ -79,6 +79,6 @@ test('POST: api/connection', async (t) => {
     t.end();
 });
 
-flight.fixture(test, 'server.json', 'admin');
+flight.fixture('server.json', 'admin');
 
-flight.landing(test);
+flight.landing();

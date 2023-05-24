@@ -74,9 +74,9 @@
                     <div class='card'>
                         <div class="card-body">
                             <div class='d-flex'>
-                                <a v-if='$route.params.layerid' @click='deleteLayer' class="cursor-pointer btn btn-outline-danger">
-                                    Delete Layer
-                                </a>
+                                <div v-if='$route.params.layerid'>
+                                    <TablerDelete @delete='deleteLayer' label='Delete Layer'/>
+                                </div>
                                 <div class='ms-auto'>
                                     <a v-if='$route.params.layerid' @click='create' class="cursor-pointer btn btn-primary">Update Layer</a>
                                     <a v-else @click='create' class="cursor-pointer btn btn-primary">Create Layer</a>
@@ -98,7 +98,8 @@ import PageFooter from './PageFooter.vue';
 import StyleUtil from './Layer/Styles.vue';
 import LayerData from './Layer/LayerData.vue';
 import {
-    TablerBreadCrumb, 
+    TablerBreadCrumb,
+    TablerDelete,
     TablerInput,
     TablerLoading
 } from '@tak-ps/vue-tabler';
@@ -182,8 +183,9 @@ export default {
     },
     components: {
         PageFooter,
-        TablerBreadCrumb, 
+        TablerBreadCrumb,
         TablerInput,
+        TablerDelete,
         StyleUtil,
         LayerData,
         TablerLoading

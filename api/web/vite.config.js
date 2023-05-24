@@ -6,7 +6,7 @@ export default defineConfig({
         vue()
     ],
     optimizeDeps: {
-        include: ["showdown"],
+        include: ["showdown", "@tak-ps/vue-tabler"],
     },
     server: {
         port: 8080,

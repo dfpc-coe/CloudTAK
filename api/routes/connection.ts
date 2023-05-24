@@ -152,7 +152,7 @@ export default async function router(schema: any, config: Config) {
 
             await Connection.delete(config.pool, req.params.connectionid);
 
-            config.conns.delete(req.params.connectionid);
+            config.conns.delete(parseInt(req.params.connectionid));
 
             return res.json({
                 status: 200,

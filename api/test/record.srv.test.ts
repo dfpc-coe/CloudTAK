@@ -5,8 +5,8 @@ import jwt from 'jsonwebtoken';
 
 const flight = new Flight();
 
-flight.init(test);
-flight.takeoff(test);
+flight.init();
+flight.takeoff();
 
 test('POST: api/record - no auth', async (t) => {
     try {
@@ -50,7 +50,7 @@ test('POST: api/record - no auth', async (t) => {
     t.end();
 });
 
-const teams = {
+const teams: any = {
     'Mesa County SAR': {
         type: 'SAR',
         percent: 0.50,
@@ -88,7 +88,7 @@ test('POST: api/record - success', async (t) => {
         for (let i = 0; i < 30; i++) {
             const count = 500 - (i * 2) - Math.floor(Math.random() * 20);
 
-            const body = {
+            const body: any = {
                 count,
                 date: moment().add(i * -1, 'd').format('YYYY-MM-DD'),
                 businesscategory: {},
@@ -129,4 +129,4 @@ test('POST: api/record - success', async (t) => {
     t.end();
 });
 
-flight.landing(test);
+flight.landing();

@@ -1,9 +1,8 @@
 {
     "type": [
-        "string",
+        "integer",
         "null"
     ],
-    "format": "date-time",
     "description": "",
     "$comment": "timestamptz"
 }

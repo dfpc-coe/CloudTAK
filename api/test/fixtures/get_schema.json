@@ -10,7 +10,7 @@
         "res": false
     },
     "POST /login": {
-        "body": false,
+        "body": true,
         "query": false,
         "res": true
     },
@@ -19,57 +19,7 @@
         "query": false,
         "res": true
     },
-    "GET /basemap": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "POST /basemap": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "PATCH /basemap/:basemapid": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "GET /basemap/:basemapid": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "DELETE /basemap/:basemapid": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /connection": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "POST /connection": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "PATCH /connection/:connectionid": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "GET /connection/:connectionid": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "POST /connection/:connectionid/refresh": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "DELETE /connection/:connectionid": {
+    "PUT /basemap": {
         "body": false,
         "query": false,
         "res": true
@@ -79,7 +29,32 @@
         "query": false,
         "res": true
     },
+    "GET /data/:dataid/job": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /connection": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
     "POST /data/:dataid/asset": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /basemap": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "GET /data/:dataid/job/:jobid": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /data/:dataid/job/:jobid/logs": {
         "body": false,
         "query": false,
         "res": true
@@ -104,18 +79,8 @@
         "query": false,
         "res": false
     },
-    "GET /data/:dataid/job": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /data/:dataid/job/:jobid": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /data/:dataid/job/:jobid/logs": {
-        "body": false,
+    "POST /connection": {
+        "body": true,
         "query": false,
         "res": true
     },
@@ -124,27 +89,17 @@
         "query": true,
         "res": true
     },
-    "POST /data": {
+    "POST /basemap": {
         "body": true,
-        "query": false,
-        "res": true
-    },
-    "PATCH /data/:dataid": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "GET /data/:dataid": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "DELETE /data/:dataid": {
-        "body": false,
         "query": false,
         "res": true
     },
     "GET /icon": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "GET /layer/:layerid/query": {
         "body": false,
         "query": true,
         "res": true
@@ -159,12 +114,82 @@
         "query": true,
         "res": true
     },
+    "GET /layer/:layerid/query/:featid": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "PATCH /connection/:connectionid": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "POST /data": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "PATCH /basemap/:basemapid": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "GET /connection/:connectionid": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
     "POST /layer/:layerid/alert": {
         "body": true,
         "query": false,
         "res": true
     },
+    "GET /basemap/:basemapid": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "GET /basemap/:basemapid/tiles/:z/:x/:y": {
+        "body": false,
+        "query": false,
+        "res": false
+    },
+    "POST /connection/:connectionid/refresh": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
     "DELETE /layer/:layerid/alert": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "POST /marti/signClient": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "GET /layer": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "PATCH /data/:dataid": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "DELETE /basemap/:basemapid": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "DELETE /connection/:connectionid": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /server": {
         "body": false,
         "query": false,
         "res": true
@@ -174,52 +199,17 @@
         "query": false,
         "res": true
     },
-    "GET /layer/:layerid/query": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "GET /layer/:layerid/query/:featid": {
+    "GET /data/:dataid": {
         "body": false,
         "query": false,
         "res": true
     },
-    "GET /layer": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "POST /layer": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "PATCH /layer/:layerid": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "GET /layer/:layerid": {
+    "DELETE /data/:dataid": {
         "body": false,
         "query": false,
         "res": true
     },
-    "DELETE /layer/:layerid": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "POST /layer/:layerid/cot": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /connection/:connectionid/mission": {
-        "body": false,
-        "query": false,
-        "res": false
-    },
-    "GET /server": {
+    "GET /aggregate/:aggregate": {
         "body": false,
         "query": false,
         "res": true
@@ -229,17 +219,17 @@
         "query": false,
         "res": true
     },
-    "PATCH /server": {
+    "POST /layer": {
         "body": true,
         "query": false,
         "res": true
     },
-    "GET /aggregate/:aggregate": {
+    "GET /field": {
         "body": false,
         "query": false,
         "res": true
     },
-    "GET /field": {
+    "GET /task": {
         "body": false,
         "query": false,
         "res": true
@@ -249,28 +239,13 @@
         "query": true,
         "res": false
     },
-    "POST /record": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "GET /total": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /total/export": {
-        "body": false,
-        "query": true,
-        "res": false
-    },
-    "GET /task": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
     "GET /task/:task": {
         "body": false,
+        "query": false,
+        "res": true
+    },
+    "PATCH /server": {
+        "body": true,
         "query": false,
         "res": true
     },
@@ -279,7 +254,22 @@
         "query": false,
         "res": true
     },
+    "POST /record": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "PATCH /layer/:layerid": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
     "POST /layer/:layerid/task/invoke": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /total": {
         "body": false,
         "query": false,
         "res": true
@@ -289,7 +279,22 @@
         "query": false,
         "res": true
     },
+    "GET /layer/:layerid": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /total/export": {
+        "body": false,
+        "query": true,
+        "res": false
+    },
     "GET /layer/:layerid/task/schema": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "DELETE /layer/:layerid": {
         "body": false,
         "query": false,
         "res": true
@@ -297,6 +302,11 @@
     "POST /layer/:layerid/task": {
         "body": false,
         "query": false,
+        "res": true
+    },
+    "POST /layer/:layerid/cot": {
+        "body": false,
+        "query": true,
         "res": true
     }
 }

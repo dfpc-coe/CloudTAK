@@ -5,8 +5,8 @@ import Flight from './flight.js';
 
 const flight = new Flight();
 
-flight.init(test);
-flight.takeoff(test);
+flight.init();
+flight.takeoff();
 
 const UPDATE = process.env.UPDATE;
 
@@ -22,9 +22,9 @@ test('GET: api/schema', async () => {
             fs.writeFileSync(fixture, JSON.stringify(res.body, null, 4));
         }
 
-        assert.deepEqual(res.body, JSON.parse(fs.readFileSync(fixture)));
+        assert.deepEqual(res.body, JSON.parse(String(fs.readFileSync(fixture))));
     } catch (err) {
-        assert.ifError(err, 'no error');
+        assert.ifError(err);
     }
 });
 
@@ -50,7 +50,7 @@ test('GET: api/schema?method=FAKE', async () => {
             }]
         });
     } catch (err) {
-        assert.ifError(err, 'no error');
+        assert.ifError(err);
     }
 });
 
@@ -68,7 +68,7 @@ test('GET: api/schema?method=GET', async () => {
         });
 
     } catch (err) {
-        assert.ifError(err, 'no error');
+        assert.ifError(err);
     }
 });
 
@@ -85,8 +85,8 @@ test('GET: api/schema?url=123', async () => {
             messages: []
         });
     } catch (err) {
-        assert.ifError(err, 'no error');
+        assert.ifError(err);
     }
 });
 
-flight.landing(test);
+flight.landing();

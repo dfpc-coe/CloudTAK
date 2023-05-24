@@ -1,6 +1,6 @@
 function up(knex) {
     return knex.schema.raw(`
-        CREATE EXTENSION postgis;
+        CREATE EXTENSION IF NOT EXISTS postgis;
 
         ALTER TABLE basemaps
             ADD COLUMN bounds GEOMETRY(POLYGON, 4326);

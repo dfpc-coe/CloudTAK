@@ -3,7 +3,7 @@ import path from 'path';
 import cors from 'cors';
 import express from 'express';
 import SwaggerUI from 'swagger-ui-express';
-import history from 'connect-history-api-fallback';
+import history, {Context} from 'connect-history-api-fallback';
 // @ts-ignore
 import Schema from '@openaddresses/batch-schema';
 // @ts-ignore
@@ -11,7 +11,7 @@ import { Pool } from '@openaddresses/batch-generic';
 import minimist from 'minimist';
 import TAKPool from './lib/tak-pool.js';
 import EventsPool from './lib/events-pool.js';
-import { WebSocketServer } from 'ws';
+import { WebSocket, WebSocketServer } from 'ws';
 import Cacher from './lib/cacher.js';
 // @ts-ignore
 import BlueprintLogin from '@tak-ps/blueprint-login';
@@ -24,7 +24,7 @@ try {
 
     fs.accessSync(dotfile);
 
-    Object.assign(process.env, JSON.parse(String(fs.readFileSync(dotfile))));
+    process.env = Object.assign(JSON.parse(String(fs.readFileSync(dotfile))), process.env);
 } catch (err) {
     console.log('ok - no .env file loaded');
 }
@@ -40,17 +40,6 @@ const args = minimist(process.argv, {
     ],
     string: ['postgres'],
 });
-
-try {
-    const dotfile = new URL('.env', import.meta.url);
-
-    fs.accessSync(dotfile);
-
-    Object.assign(process.env, JSON.parse(String(fs.readFileSync(dotfile))));
-    console.log('ok - .env file loaded');
-} catch (err) {
-    console.log('ok - no .env file loaded');
-}
 
 if (import.meta.url === `file://${process.argv[1]}`) {
     const config = await Config.env({
@@ -88,7 +77,7 @@ export default async function server(config: Config) {
     try {
         config.server = await Server.from(config.pool, 1);
     } catch (err) {
-        console.error(err);
+        console.log(`ok - no server config found: ${err.message}`);
         config.server = null;
     }
 
@@ -161,12 +150,12 @@ export default async function server(config: Config) {
     app.use(history({
         rewrites: [{
             from: /.*\/js\/.*$/,
-            to(context: any) {
+            to(context: Context) {
                 return context.parsedUrl.pathname.replace(/.*\/js\//, '/js/');
             }
         },{
             from: /.*$/,
-            to(context: any) {
+            to(context: Context) {
                 const parse = path.parse(context.parsedUrl.path);
                 if (parse.ext) {
                     return context.parsedUrl.pathname;
@@ -181,7 +170,8 @@ export default async function server(config: Config) {
 
     const wss = new WebSocketServer({
         noServer: true
-    }).on('connection', (ws) => {
+    }).on('connection', (ws: WebSocket) => {
+        // TODO: Remove connections
         config.wsClients.push(ws);
     });
 

@@ -1,9 +1,19 @@
 {
     "type": "object",
     "additionalProperties": false,
+    "required": [
+        "status"
+    ],
     "properties": {
         "id": {
             "$ref": "./server/id.json"
+        },
+        "status": {
+            "type": "string",
+            "enum": [
+                "configured",
+                "unconfigured"
+            ]
         },
         "created": {
             "$ref": "./server/created.json"
@@ -17,12 +27,5 @@
         "url": {
             "$ref": "./server/url.json"
         }
-    },
-    "required": [
-        "id",
-        "created",
-        "updated",
-        "name",
-        "url"
-    ]
+    }
 }
