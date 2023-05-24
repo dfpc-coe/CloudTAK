@@ -6,6 +6,7 @@ import Server from './types/server.js';
 import Metrics from './aws/metric.js';
 // @ts-ignore
 import { Pool } from '@openaddresses/batch-generic';
+import { WebSocket } from 'ws';
 
 class TAKPoolClient {
     conn: Connection;
@@ -26,15 +27,15 @@ class TAKPoolClient {
  * @class
  *
  * @param server      Server Connection Object
- * @param {Array}   clients     WSS Clients Array
+ * @param clients     WSS Clients Array
  */
 export default class TAKPool extends Map<number, TAKPoolClient> {
     #server: Server;
-    clients: any[];
+    clients: WebSocket[];
     metrics: Metrics;
     stackName: string;
 
-    constructor(server: Server, clients: any[] = [], stackName: string) {
+    constructor(server: Server, clients: WebSocket[] = [], stackName: string) {
         super();
         this.#server = server;
         this.clients = clients;
@@ -42,7 +43,7 @@ export default class TAKPool extends Map<number, TAKPoolClient> {
         this.metrics = new Metrics(stackName);
     }
 
-    async refresh(pool: Pool, server: any) {
+    async refresh(pool: Pool, server: Server) {
         this.#server = server;
 
         for (const conn of this.keys()) {

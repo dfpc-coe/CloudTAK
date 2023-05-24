@@ -3,7 +3,7 @@ import path from 'path';
 import cors from 'cors';
 import express from 'express';
 import SwaggerUI from 'swagger-ui-express';
-import history from 'connect-history-api-fallback';
+import history, {Context} from 'connect-history-api-fallback';
 // @ts-ignore
 import Schema from '@openaddresses/batch-schema';
 // @ts-ignore
@@ -11,7 +11,7 @@ import { Pool } from '@openaddresses/batch-generic';
 import minimist from 'minimist';
 import TAKPool from './lib/tak-pool.js';
 import EventsPool from './lib/events-pool.js';
-import { WebSocketServer } from 'ws';
+import { WebSocket, WebSocketServer } from 'ws';
 import Cacher from './lib/cacher.js';
 // @ts-ignore
 import BlueprintLogin from '@tak-ps/blueprint-login';
@@ -150,12 +150,12 @@ export default async function server(config: Config) {
     app.use(history({
         rewrites: [{
             from: /.*\/js\/.*$/,
-            to(context: any) {
+            to(context: Context) {
                 return context.parsedUrl.pathname.replace(/.*\/js\//, '/js/');
             }
         },{
             from: /.*$/,
-            to(context: any) {
+            to(context: Context) {
                 const parse = path.parse(context.parsedUrl.path);
                 if (parse.ext) {
                     return context.parsedUrl.pathname;
@@ -170,7 +170,8 @@ export default async function server(config: Config) {
 
     const wss = new WebSocketServer({
         noServer: true
-    }).on('connection', (ws) => {
+    }).on('connection', (ws: WebSocket) => {
+        // TODO: Remove connections
         config.wsClients.push(ws);
     });
 
