@@ -20,10 +20,10 @@
                             <UserIcon/>
                             </div>
                                 <ul class="dropdown-menu" aria-labelledby='userProfileButton'>
-                                    <div class='d-flex mx-2'>
+                                    <div class='d-flex mx-2 cursor-pointer'>
                                         <UserIcon class='my-2'/><a @click='$router.push("/profile")' class="cursor-pointer dropdown-item">Profile</a>
                                     </div>
-                                    <div class='d-flex mx-2'>
+                                    <div class='d-flex mx-2 cursor-pointer'>
                                         <LogoutIcon class='my-2'/><a @click='logout' class="curdor-pointer dropdown-item">Logout</a>
                                     </div>
                                 </ul>
