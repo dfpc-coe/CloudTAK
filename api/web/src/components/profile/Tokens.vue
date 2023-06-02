@@ -2,7 +2,7 @@
 <div class="card">
     <div class="card-body">
         <div class="d-flex">
-            <h3 class="card-title"><a @click='$router.push("/issue")' class='cursor-pointer'>API Tokens</a></h3>
+            <h3 class="card-title">API Tokens</h3>
 
             <div class='ms-auto btn-list'>
                 <PlusIcon @click='push()' class='cursor-pointer'/>
