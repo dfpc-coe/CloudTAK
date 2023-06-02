@@ -5,7 +5,8 @@ import Cacher from '../lib/cacher.js';
 import Auth from '../lib/auth.js';
 // @ts-ignore
 import Layer from '../lib/types/layer.js';
-import { Request, Response } from 'express';
+import { Response } from 'express';
+import { AuthRequest } from '@tak-ps/blueprint-login';
 
 export default async function router(schema: any, config: Config) {
     const ddb = new Dynamo(config.StackName);

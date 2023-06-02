@@ -9,7 +9,8 @@ import moment from 'moment';
 import Field from '../lib/types/field.js';
 // @ts-ignore
 import Total from '../lib/types/total.js';
-import { Request, Response } from 'express';
+import { Response } from 'express';
+import { AuthRequest } from '@tak-ps/blueprint-login';
 
 export default async function router(schema: any, config: Config) {
     await schema.get('/aggregate/:aggregate', {

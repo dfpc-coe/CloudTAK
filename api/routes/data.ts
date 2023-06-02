@@ -3,7 +3,8 @@ import Err from '@openaddresses/batch-error';
 import Data from '../lib/types/data.js';
 import { sql } from 'slonik';
 import Auth from '../lib/auth.js';
-import { Request, Response } from 'express';
+import { Response } from 'express';
+import { AuthRequest } from '@tak-ps/blueprint-login';
 import Config from '../lib/config.js';
 
 export default async function router(schema: any, config: Config) {

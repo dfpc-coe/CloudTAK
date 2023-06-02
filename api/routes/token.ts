@@ -1,7 +1,9 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
+import { AuthRequest } from '@tak-ps/blueprint-login';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import Token from '../lib/token.js';
+import Config from '../lib/config.js';
 
 export default async function router(schema: any, config: Config) {
     const token = new Token(config.pool);

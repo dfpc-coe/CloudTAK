@@ -4,7 +4,8 @@ import Connection from '../lib/types/connection.js';
 import Auth from '../lib/auth.js';
 import { sql } from 'slonik';
 import Config from '../lib/config.js';
-import { Request, Response } from 'express';
+import { Response } from 'express';
+import { AuthRequest } from '@tak-ps/blueprint-login';
 
 export default async function router(schema: any, config: Config) {
     await schema.get('/connection', {
