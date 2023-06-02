@@ -17,7 +17,7 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            return res.json(await token.list(req.auth));
+            return res.json(await Token.list(config.pool));
         } catch (err) {
             return Err.respond(err, res);
         }
@@ -34,7 +34,7 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            return res.json(await token.generate(req.auth, req.body.name));
+            return res.json(await Token.generate(config.pool, req.body));
         } catch (err) {
             return Err.respond(err, res);
         }
@@ -51,7 +51,7 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            return res.json(await token.delete(req.auth, req.params.id));
+            return res.json(await Token.delete(config.pool, req.params.id));
         } catch (err) {
             return Err.respond(err, res);
         }

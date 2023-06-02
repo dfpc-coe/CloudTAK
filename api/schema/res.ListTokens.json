@@ -1,0 +1,42 @@
+{
+    "type": "object",
+    "required": [
+        "total",
+        "tokens"
+    ],
+    "additionalProperties": false,
+    "properties": {
+        "total": {
+            "type": "integer",
+            "description": "Total number of layers related to the query"
+        },
+        "tokens": {
+            "type": "array",
+            "description": "Array of objects",
+            "items":  {
+                "type": "object",
+                "required": [
+                    "id",
+                    "name",
+                    "created",
+                    "updated"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                    "id": {
+                        "$ref": "./tokens/id.json"
+                    },
+                    "name": {
+                        "$ref": "./tokens/name.json"
+                    },
+                    "created": {
+                        "$ref": "./tokens/created.json"
+                    },
+                    "updated": {
+                        "$ref": "./tokens/updated.json"
+                    }
+                }
+            }
+        }
+    }
+}

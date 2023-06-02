@@ -1,0 +1,28 @@
+{
+    "type": "object",
+    "required": [
+        "id",
+        "name",
+        "created",
+        "updated",
+        "token"
+    ],
+    "additionalProperties": false,
+    "properties": {
+        "id": {
+            "$ref": "./tokens/id.json"
+        },
+        "name": {
+            "$ref": "./tokens/name.json"
+        },
+        "created": {
+            "$ref": "./tokens/created.json"
+        },
+        "updated": {
+            "$ref": "./tokens/updated.json"
+        },
+        "token": {
+            "$ref": "./tokens/token.json"
+        }
+    }
+}
