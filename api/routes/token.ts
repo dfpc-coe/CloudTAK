@@ -2,12 +2,11 @@ import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
-import Token from '../lib/token.js';
+// @ts-ignore
+import Token from '../lib/types/token.js';
 import Config from '../lib/config.js';
 
 export default async function router(schema: any, config: Config) {
-    const token = new Token(config.pool);
-
     await schema.get('/token', {
         name: 'List Tokens',
         group: 'Token',
