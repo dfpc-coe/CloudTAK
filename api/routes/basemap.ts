@@ -9,7 +9,8 @@ import Cacher from '../lib/cacher.js';
 import busboy from 'busboy';
 import { sql } from 'slonik';
 import Config from '../lib/config.js';
-import { Request, Response } from 'express';
+import { Response } from 'express';
+import { AuthRequest } from '@tak-ps/blueprint-login';
 import xml2js from 'xml2js';
 import { Stream, Readable } from 'node:stream';
 
@@ -25,7 +26,7 @@ export default async function router(schema: any, config: Config) {
             Both return as many BaseMap fields as possible to use in the creation of a new BaseMap
         `,
         res: 'res.ImportBaseMap.json'
-    }, async (req: Request, res: Response) => {
+    }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(req);
 
@@ -117,7 +118,7 @@ export default async function router(schema: any, config: Config) {
         description: 'List BaseMaps',
         query: 'req.query.ListBaseMaps.json',
         res: 'res.ListBaseMaps.json'
-    }, async (req: Request, res: Response) => {
+    }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(req);
 
@@ -136,7 +137,7 @@ export default async function router(schema: any, config: Config) {
         description: 'Register a new basemap',
         body: 'req.body.CreateBaseMap.json',
         res: 'basemaps.json'
-    }, async (req: Request, res: Response) => {
+    }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(req);
 
@@ -156,7 +157,7 @@ export default async function router(schema: any, config: Config) {
         ':basemapid': 'integer',
         body: 'req.body.PatchBaseMap.json',
         res: 'basemaps.json'
-    }, async (req: Request, res: Response) => {
+    }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(req);
             const basemap = await BaseMap.commit(config.pool, req.params.basemapid, {
@@ -180,7 +181,7 @@ export default async function router(schema: any, config: Config) {
         ':basemapid': 'integer',
         query: 'req.query.BaseMap.json',
         res: 'basemaps.json'
-    }, async (req: Request, res: Response) => {
+    }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(req, true);
 
@@ -227,7 +228,7 @@ export default async function router(schema: any, config: Config) {
         ':z': 'integer',
         ':x': 'integer',
         ':y': 'integer',
-    }, async (req: Request, res: Response) => {
+    }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(req, true);
 
@@ -263,7 +264,7 @@ export default async function router(schema: any, config: Config) {
         description: 'Delete a basemap',
         ':basemapid': 'integer',
         res: 'res.Standard.json'
-    }, async (req: Request, res: Response) => {
+    }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(req);
 

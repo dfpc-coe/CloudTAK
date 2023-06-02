@@ -12,7 +12,7 @@ export default async function router(schema: any, config: Config) {
         description: 'Helper API for obtaining a signed Certificate pair given LDAP Credentials',
         body: 'req.body.MartiSignClient.json',
         res: 'res.MartiSignClient.json'
-    }, async (req: Request, res: Response) => {
+    }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(req);
 

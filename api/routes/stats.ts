@@ -19,7 +19,7 @@ export default async function router(schema: any, config: Config) {
         description: 'Retrieve aggregates for a given time range',
         ':aggregate': 'string',
         res: 'res.Aggregate.json'
-    }, async (req: Request, res: Response) => {
+    }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(req);
 
@@ -37,7 +37,7 @@ export default async function router(schema: any, config: Config) {
         auth: 'public',
         description: 'Retrieve all fields for a given time range',
         res: 'res.ListField.json'
-    }, async (req: Request, res: Response) => {
+    }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(req);
 
@@ -54,7 +54,7 @@ export default async function router(schema: any, config: Config) {
         auth: 'public',
         description: 'Export all fields for a given time range to a CSV',
         query: 'req.query.ExportField.json'
-    }, async (req: Request, res: Response) => {
+    }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(req);
 
@@ -97,7 +97,7 @@ export default async function router(schema: any, config: Config) {
         description: 'The daily ETL process will push updates to this endpoint',
         body: 'req.body.Record.json',
         res: 'res.Standard.json'
-    }, async (req: Request, res: Response) => {
+    }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(req);
 
@@ -139,7 +139,7 @@ export default async function router(schema: any, config: Config) {
         auth: 'public',
         description: 'Retrieve total users across time',
         res: 'res.ListTotal.json'
-    }, async (req: Request, res: Response) => {
+    }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(req);
             const list = await Total.list(config.pool, req.query);
@@ -155,7 +155,7 @@ export default async function router(schema: any, config: Config) {
         auth: 'public',
         description: 'Export total users across time to a CSV',
         query: 'req.query.ExportTotal.json'
-    }, async (req: Request, res: Response) => {
+    }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(req);
             const cols = Object.keys(Schema.from(config.pool, Total).properties);

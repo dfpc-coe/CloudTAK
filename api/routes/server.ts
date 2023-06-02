@@ -13,7 +13,7 @@ export default async function router(schema: any, config: Config) {
         auth: 'user',
         description: 'Get Server',
         res: 'res.Server.json'
-    }, async (req: Request, res: Response) => {
+    }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(req);
 
@@ -39,7 +39,7 @@ export default async function router(schema: any, config: Config) {
         description: 'Post Server',
         body: 'req.body.Server.json',
         res: 'res.Server.json'
-    }, async (req: Request, res: Response) => {
+    }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(req);
 
@@ -64,7 +64,7 @@ export default async function router(schema: any, config: Config) {
         description: 'Patch Server',
         body: 'req.body.Server.json',
         res: 'res.Server.json'
-    }, async (req: Request, res: Response) => {
+    }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(req);
 

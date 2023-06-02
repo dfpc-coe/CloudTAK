@@ -12,7 +12,7 @@ export default async function router(schema: any, config: Config) {
         auth: 'user',
         description: 'List all tokens associated with the requester\'s account',
         res: 'res.ListTokens.json'
-    }, async (req: Request, res: Response) => {
+    }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(req);
 
@@ -29,7 +29,7 @@ export default async function router(schema: any, config: Config) {
         description: 'Create a new API token for programatic access',
         body: 'req.body.CreateToken.json',
         res: 'res.CreateToken.json'
-    }, async (req: Request, res: Response) => {
+    }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(req);
 
@@ -46,7 +46,7 @@ export default async function router(schema: any, config: Config) {
         description: 'Delete a user\'s API Token',
         ':id': 'integer',
         res: 'res.Standard.json'
-    }, async (req: Request, res: Response) => {
+    }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(req);
 

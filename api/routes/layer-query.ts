@@ -18,7 +18,7 @@ export default async function router(schema: any, config: Config) {
         ':layerid': 'integer',
         query: 'req.query.LayerQuery.json',
         res: 'res.LayerQuery.json'
-    }, async (req: Request, res: Response) => {
+    }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(req);
 
@@ -54,7 +54,7 @@ export default async function router(schema: any, config: Config) {
         ':layerid': 'integer',
         ':featid': 'string',
         res: 'res.LayerQueryFeature.json'
-    }, async (req: Request, res: Response) => {
+    }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(req);
 
