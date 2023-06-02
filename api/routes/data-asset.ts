@@ -10,7 +10,8 @@ import Stream from 'node:stream';
 import Batch from '../lib/aws/batch.js';
 import jwt from 'jsonwebtoken';
 
-import { Request, Response } from 'express';
+import { Response } from 'express';
+import { AuthRequest } from '@tak-ps/blueprint-login';
 import Config from '../lib/config.js';
 
 export default async function router(schema: any, config: Config) {

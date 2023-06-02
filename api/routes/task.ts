@@ -11,7 +11,8 @@ import Layer from '../lib/types/layer.js';
 import semver from 'semver-sort';
 import Cacher from '../lib/cacher.js';
 import Config from '../lib/config.js';
-import { Request, Response } from 'express';
+import { Response } from 'express';
+import { AuthRequest } from '@tak-ps/blueprint-login';
 
 export default async function router(schema: any, config: Config) {
     await schema.get('/task', {

@@ -5,7 +5,8 @@ import Auth from '../lib/auth.js';
 import Batch from '../lib/aws/batch.js';
 import Logs from '../lib/aws/batch-logs.js';
 
-import { Request, Response } from 'express';
+import { Response } from 'express';
+import { AuthRequest } from '@tak-ps/blueprint-login';
 import Config from '../lib/config.js';
 
 export default async function router(schema: any, config: Config) {

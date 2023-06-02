@@ -6,7 +6,8 @@ import LayerAlert from '../lib/types/layer-alert.js';
 import Cacher from '../lib/cacher.js';
 import { sql } from 'slonik';
 import Auth from '../lib/auth.js';
-import { Request, Response } from 'express';
+import { Response } from 'express';
+import { AuthRequest } from '@tak-ps/blueprint-login';
 import Config from '../lib/config.js';
 
 export default async function router(schema: any, config: Config) {

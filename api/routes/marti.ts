@@ -1,7 +1,8 @@
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
-import { Request, Response } from 'express';
+import { Response } from 'express';
+import { AuthRequest } from '@tak-ps/blueprint-login';
 import TAKAPI from '../lib/tak-api.js';
 
 export default async function router(schema: any, config: Config) {
