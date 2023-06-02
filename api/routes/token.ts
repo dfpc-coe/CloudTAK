@@ -61,7 +61,17 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            return res.json(await Token.delete(config.pool, req.params.id));
+            if (!req.auth.email) throw new Err(400, null, 'Tokens can only be deleted by an authenticated user');
+
+            const token = await Token.from(config.pool, req.params.id, {
+                column: 'id'
+            });
+
+            if (req.auth.email !== token.email) throw new Err(400, null, 'Cannot delete another\'s token');
+
+            return res.json(await token.delete(config.pool, {
+                column: 'id'
+            }));
         } catch (err) {
             return Err.respond(err, res);
         }
