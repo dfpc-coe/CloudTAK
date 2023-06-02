@@ -1,0 +1,12 @@
+{
+    "type": "object",
+    "required": [
+        "name"
+    ],
+    "additionalProperties": false,
+    "properties": {
+        "name": {
+            "$ref": "./tokens/name.json"
+        }
+    }
+}
