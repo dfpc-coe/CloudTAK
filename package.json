@@ -23,7 +23,7 @@
     "dependencies": {
         "@openaddresses/batch-alarms": "^4.0.0",
         "@openaddresses/cloudfriend": "^7.0.0",
-        "@openaddresses/deploy": "^7.5.0"
+        "@openaddresses/deploy": "^8.0.0"
     },
     "devDependencies": {
         "@types/xml2js": "^0.4.11",
