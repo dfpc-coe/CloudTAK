@@ -16,7 +16,7 @@ export default async function router(schema: any, config: Config) {
         description: 'List Data Jobs',
         ':dataid': 'integer',
         res: 'res.ListDataJobs.json'
-    }, async (req: Request, res: Response) => {
+    }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(req);
 
@@ -41,7 +41,7 @@ export default async function router(schema: any, config: Config) {
         ':dataid': 'integer',
         ':jobid': 'string',
         res: 'res.DataJob.json'
-    }, async (req: Request, res: Response) => {
+    }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(req);
 
@@ -63,7 +63,7 @@ export default async function router(schema: any, config: Config) {
         ':dataid': 'integer',
         ':jobid': 'string',
         res: 'res.DataJobLogs.json'
-    }, async (req: Request, res: Response) => {
+    }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(req);
 

@@ -33,7 +33,7 @@ export default async function router(schema: any, config: Config) {
         description: 'List layers',
         query: 'req.query.ListLayers.json',
         res: 'res.ListLayers.json'
-    }, async (req: Request, res: Response) => {
+    }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(req);
 
@@ -70,7 +70,7 @@ export default async function router(schema: any, config: Config) {
         description: 'Register a new layer',
         body: 'req.body.CreateLayer.json',
         res: 'res.Layer.json'
-    }, async (req: Request, res: Response) => {
+    }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(req);
 
@@ -132,7 +132,7 @@ export default async function router(schema: any, config: Config) {
         ':layerid': 'integer',
         body: 'req.body.PatchLayer.json',
         res: 'res.Layer.json'
-    }, async (req: Request, res: Response) => {
+    }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(req);
 
@@ -202,7 +202,7 @@ export default async function router(schema: any, config: Config) {
         description: 'Get a layer',
         ':layerid': 'integer',
         res: 'res.Layer.json'
-    }, async (req: Request, res: Response) => {
+    }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(req);
 
@@ -229,7 +229,7 @@ export default async function router(schema: any, config: Config) {
         description: 'Delete a layer',
         ':layerid': 'integer',
         res: 'res.Standard.json'
-    }, async (req: Request, res: Response) => {
+    }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(req);
 
@@ -261,7 +261,7 @@ export default async function router(schema: any, config: Config) {
     }, bodyparser.raw({
         type: '*/*',
         limit: '50mb'
-    }), async (req: Request, res: Response) => {
+    }), async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_layer(req, parseInt(req.params.layerid));
 

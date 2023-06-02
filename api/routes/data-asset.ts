@@ -21,7 +21,7 @@ export default async function router(schema: any, config: Config) {
         description: 'List Assets',
         ':dataid': 'integer',
         res: 'res.ListAssets.json'
-    }, async (req: Request, res: Response) => {
+    }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(req);
 
@@ -55,7 +55,7 @@ export default async function router(schema: any, config: Config) {
         description: 'Create a new asset',
         ':dataid': 'integer',
         res: 'res.Standard.json'
-    }, async (req: Request, res: Response) => {
+    }, async (req: AuthRequest, res: Response) => {
 
         let bb;
         let data: any;
@@ -114,7 +114,7 @@ export default async function router(schema: any, config: Config) {
         ':ext': 'string',
         body: 'req.ConvertAsset.json',
         res: 'res.Standard.json'
-    }, async (req: Request, res: Response) => {
+    }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(req);
 
@@ -140,7 +140,7 @@ export default async function router(schema: any, config: Config) {
         ':asset': 'string',
         ':ext': 'string',
         res: 'res.Standard.json'
-    }, async (req: Request, res: Response) => {
+    }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(req);
 
@@ -163,7 +163,7 @@ export default async function router(schema: any, config: Config) {
         ':dataid': 'integer',
         ':asset': 'string',
         ':ext': 'string'
-    }, async (req: Request, res: Response) => {
+    }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(req, true);
 
@@ -182,7 +182,7 @@ export default async function router(schema: any, config: Config) {
         description: 'Get TileJSON ',
         ':dataid': 'integer',
         ':asset': 'string'
-    }, async (req: Request, res: Response) => {
+    }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(req, true);
 

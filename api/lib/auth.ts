@@ -1,5 +1,5 @@
 import Err from '@openaddresses/batch-error';
-import { Request } from 'express';
+import { AuthRequest } from '@tak-ps/blueprint-login';
 
 /**
  * @class
@@ -11,8 +11,7 @@ export default class Auth {
      * @param {Object} req Express Request
      * @param {boolean} token Should URL query tokens be allowed (usually only for downloads)
      */
-    static async is_auth(req: Request, token = false) {
-        // @ts-ignore
+    static async is_auth(req: AuthRequest, token = false) {
         if (token && req.token) req.auth = req.token;
 
         // @ts-ignore
@@ -34,7 +33,7 @@ export default class Auth {
      * @param {Object} req Express Request
      * @param {Number} layer Expected Layer
      */
-    static async is_layer(req: Request, layer: number) {
+    static async is_layer(req: AuthRequest, layer: number) {
         await this.is_auth(req);
 
         // @ts-ignore
@@ -51,7 +50,7 @@ export default class Auth {
      * @param {Object} req Express Request
      * @param {Number} data Expected Data
      */
-    static async is_data(req: Request, data: number) {
+    static async is_data(req: AuthRequest, data: number) {
         await this.is_auth(req);
 
         // @ts-ignore
