@@ -10,7 +10,7 @@
         </div>
     </div>
 
-    <None v-if='!list.tokens.length' :create='false' label='Roles'/>
+    <None v-if='!list.tokens.length' :create='false' label='Tokens'/>
     <TablerLoading v-else-if='loading'/>
     <table v-else class="table card-table table-vcenter">
         <thead>
@@ -80,7 +80,7 @@ export default {
     methods: {
         fetch: async function() {
             this.loading = true;
-            this.list = await window.std('/api/tokens');
+            this.list = await window.std('/api/token');
             this.loading = false;
         },
         saveToken: async function(token, tokenit) {
