@@ -24,7 +24,7 @@
             <tr :key='token.id' v-for='(token, tokenit) in list.tokens'>
                 <td>
                     <template v-if='token._edit'>
-                        <TablerInput v-on:keyup.enter='saveTokem(token, tokenit)' v-model='token.name'/>
+                        <TablerInput v-on:keyup.enter='saveToken(token, tokenit)' v-model='token.name'/>
                     </template>
                     <template v-else>
                         <span v-text='token.name'/>
@@ -36,7 +36,7 @@
                         <TablerEpoch :date='token.updated'/>
                         <div v-if='token._edit' class='ms-auto btn-list'>
                             <CheckIcon @click='saveToken(token, tokenit)' class='cursor-pointer'/>
-                            <TrashIcon @click='deleteRole(token, tokenit)' class='cursor-pointer'/>
+                            <TrashIcon @click='deleteToken(token, tokenit)' class='cursor-pointer'/>
                         </div>
                         <div v-else class='ms-auto btn-list'>
                             <PencilIcon @click='token._edit = true' class='cursor-pointer'/>
@@ -98,7 +98,7 @@ export default {
                 this.list.tokens.splice(tokenit, 1, newtoken);
             }
         },
-        deleteRole: async function(token, tokenit) {
+        deleteToken: async function(token, tokenit) {
             if (token.id) {
                 const newtoken = await window.std(`/api/token/${token.id}`, {
                     method: 'DELETE',
