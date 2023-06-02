@@ -13,7 +13,6 @@ import TAKPool from './lib/tak-pool.js';
 import EventsPool from './lib/events-pool.js';
 import { WebSocket, WebSocketServer } from 'ws';
 import Cacher from './lib/cacher.js';
-// @ts-ignore
 import BlueprintLogin from '@tak-ps/blueprint-login';
 // @ts-ignore
 import Server from './lib/types/server.js';
