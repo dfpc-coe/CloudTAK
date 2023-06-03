@@ -1,5 +1,6 @@
 import MissionData from './api/mission-data.js';
 import Credentials from './api/credentials.js';
+import Groups from './api/groups.js';
 import { CookieJar, Cookie } from 'tough-cookie';
 import { CookieAgent } from 'http-cookie-agent/undici';
 import Err from '@openaddresses/batch-error';
@@ -14,21 +15,29 @@ export interface APIAuthInput {
  * @class
  */
 export default class TAKAPI {
-    auth: APIAuthInput;
+    auth?: APIAuthInput;
     authorized?: {
         jwt: string;
     };
     url: URL;
     MissionData: MissionData;
     Credentials: Credentials;
+    Groups: Groups;
 
-    constructor(url: URL, auth: APIAuthInput) {
-        this.auth = auth;
+    constructor(url: URL, auth: APIAuthInput | string) {
+        if (typeof auth === 'string') {
+            this.authorized = {
+                jwt: auth
+            }
+        } else {
+            this.auth = auth;
+        }
 
         this.url = url;
 
         this.MissionData = new MissionData(this);
         this.Credentials = new Credentials(this);
+        this.Groups = new Groups(this);
     }
 
     stdurl(url: string | URL) {
@@ -46,6 +55,8 @@ export default class TAKAPI {
     }
 
     async login() {
+        if (!this.auth) throw new Err(400, null, 'Username or Password not provided')
+
         const url = new URL('/oauth/token', this.url);
         url.searchParams.append('grant_type', 'password');
         url.searchParams.append('username', this.auth.username);

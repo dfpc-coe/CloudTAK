@@ -1,8 +1,12 @@
 <template>
 <div class="card">
+    <div class="card-header">
+        <h3 class="card-title">User Groups</h3>
+    </div>
     <div class="card-body">
-        <div class="d-flex">
-            <h3 class="card-title">User Groups</h3>
+        <div :key='data.name' v-for='data in list.data'>
+            <span v-text='data.name'/>
+            <span v-text='data.description'/>
         </div>
     </div>
 
@@ -20,7 +24,7 @@ export default {
     data: function() {
         return {
             loading: true,
-            groups: []
+            list: {}
         }
     },
     mounted: async function() {
@@ -29,7 +33,7 @@ export default {
     methods: {
         fetch: async function() {
             this.loading = true;
-            this.list = await window.std('/api/token');
+            this.list = await window.std('/api/marti/group');
             this.loading = false;
         },
     },
