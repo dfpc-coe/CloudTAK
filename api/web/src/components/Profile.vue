@@ -3,13 +3,11 @@
     <div class='page-body'>
         <div class='container-xl'>
             <div class='row row-deck row-cards'>
-                <div class='col-md-6'>
-                    <ProfileGroups/>
-                </div>
-                <div class='col-md-6'>
-                </div>
                 <div class='col-12'>
                     <ProfileTokens/>
+                </div>
+                <div class='col-12'>
+                    <ProfileGroups/>
                 </div>
             </div>
         </div>
