@@ -3,13 +3,22 @@
     <div class="card-header">
         <h3 class="card-title">User Groups</h3>
     </div>
-    <div class="card-body">
-        <div :key='data.name' v-for='data in list.data'>
-            <span v-text='data.name'/>
-            <span v-text='data.description'/>
-        </div>
-    </div>
-
+    <TablerLoading v-if='loading'/>
+    <None v-else-if='!list.data.length' :create='false'/>
+    <table v-else class="table card-table table-vcenter">
+        <thead>
+            <tr>
+                <th>Group Name</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr :key='group.name' v-for='group in list.data'>
+                <td v-text='group.name'></td>
+                <td v-text='group.description'></td>
+            </tr>
+        </tbody>
+    </table>
 </div>
 </template>
 
@@ -24,7 +33,9 @@ export default {
     data: function() {
         return {
             loading: true,
-            list: {}
+            list: {
+                data: []
+            }
         }
     },
     mounted: async function() {
@@ -38,6 +49,7 @@ export default {
         },
     },
     components: {
+        None,
         TablerLoading
     }
 }
