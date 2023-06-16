@@ -4,6 +4,7 @@ import API from './lib/api.js';
 import KMS from './lib/kms.js';
 import Batch from './lib/batch.js';
 import DB from './lib/db.js';
+import Hooks from './lib/hooks.js';
 import Signing from './lib/signing.js';
 import PMTiles from './lib/pmtiles.js';
 import Stats from './lib/stats.js';
@@ -19,6 +20,7 @@ export default cf.merge(
     API,
     KMS,
     Batch,
+    Hooks,
     Signing,
     Dynamo,
     PMTiles,
@@ -29,6 +31,11 @@ export default cf.merge(
             GitSha: {
                 Description: 'GitSha that is currently being deployed',
                 Type: 'String'
+            },
+            Environment: {
+                Description: 'VPC/ECS Stack to deploy into',
+                Type: 'String',
+                Default: 'prod'
             },
             MartiAPI: {
                 Type: 'String',
@@ -56,7 +63,7 @@ export default cf.merge(
         prefix: 'BatchELB',
         email: cf.ref('AlarmEmail'),
         apache: cf.stackName,
-        cluster: cf.ref('ECSCluster'),
+        cluster: cf.join(['coe-ecs-', cf.ref('Environment')]),
         service: cf.getAtt('Service', 'Name'),
         loadbalancer: cf.getAtt('ELB', 'LoadBalancerFullName'),
         targetgroup: cf.getAtt('TargetGroup', 'TargetGroupFullName')
