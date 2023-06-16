@@ -5,7 +5,7 @@
     </div>
     <TablerLoading v-if='loading'/>
     <None v-else-if='!list.data.length' :create='false'/>
-    <table v-else class="table card-table table-vcenter">
+    <table v-else class="table card-table table-hover table-vcenter">
         <thead>
             <tr>
                 <th>Group Name</th>
