@@ -37,11 +37,10 @@ test('POST: api/record - no auth', async (t) => {
             }
         }, false);
 
-        t.equal(res.status, 403, 'http: 401');
+        t.equal(res.status, 401, 'http: 401');
         t.deepEqual(res.body, {
-            status: 403,
-            message: 'Authentication Required',
-            messages: []
+            status: 401,
+            message: 'Only "Bearer" authorization header is allowed'
         });
     } catch (err) {
         t.error(err, 'no error');
