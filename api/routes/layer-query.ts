@@ -5,7 +5,8 @@ import Cacher from '../lib/cacher.js';
 import Auth from '../lib/auth.js';
 // @ts-ignore
 import Layer from '../lib/types/layer.js';
-import { Request, Response } from 'express';
+import { Response } from 'express';
+import { AuthRequest } from '@tak-ps/blueprint-login';
 
 export default async function router(schema: any, config: Config) {
     const ddb = new Dynamo(config.StackName);
@@ -18,7 +19,7 @@ export default async function router(schema: any, config: Config) {
         ':layerid': 'integer',
         query: 'req.query.LayerQuery.json',
         res: 'res.LayerQuery.json'
-    }, async (req: Request, res: Response) => {
+    }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(req);
 
@@ -54,7 +55,7 @@ export default async function router(schema: any, config: Config) {
         ':layerid': 'integer',
         ':featid': 'string',
         res: 'res.LayerQueryFeature.json'
-    }, async (req: Request, res: Response) => {
+    }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(req);
 

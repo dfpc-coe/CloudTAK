@@ -15,9 +15,21 @@
                     <a href="/docs/" class="btn btn-dark" target="_blank" rel="noreferrer">
                         <CodeIcon/>Docs
                     </a>
-                    <a @click='logout' class='btn btn-dark cursor-pointer'>
-                        <LogoutIcon/>
-                    </a>
+                    <div class='dropdown'>
+                        <div type="button" id="userProfileButton" data-bs-toggle="dropdown" aria-expanded="false" class='btn btn-dark'>
+                            <UserIcon/>
+                            </div>
+                                <ul class="dropdown-menu" aria-labelledby='userProfileButton'>
+                                    <div class='d-flex mx-2 cursor-pointer'>
+                                        <UserIcon class='my-2'/><a @click='$router.push("/profile")' class="cursor-pointer dropdown-item">Profile</a>
+                                    </div>
+                                    <div class='d-flex mx-2 cursor-pointer'>
+                                        <LogoutIcon class='my-2'/><a @click='logout' class="curdor-pointer dropdown-item">Logout</a>
+                                    </div>
+                                </ul>
+                            </div>
+                        <div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -115,6 +127,7 @@ import {
     CodeIcon,
     HomeIcon,
     LogoutIcon,
+    UserIcon,
     MapIcon,
     NetworkIcon,
     DatabaseIcon,
@@ -191,6 +204,7 @@ export default {
         HomeIcon,
         CodeIcon,
         LogoutIcon,
+        UserIcon,
         MapIcon,
         NetworkIcon,
         DatabaseIcon,

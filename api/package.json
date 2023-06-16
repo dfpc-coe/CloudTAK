@@ -36,8 +36,8 @@
         "@openaddresses/batch-schema": "^9.0.0",
         "@openaddresses/cloudfriend": "^7.0.0",
         "@placemarkio/check-geojson": "^0.1.12",
-        "@tak-ps/blueprint-login": "^1.1.0",
-        "@tak-ps/node-cot": "^3.3.0",
+        "@tak-ps/blueprint-login": "^2.2.0",
+        "@tak-ps/node-cot": "^3.5.1",
         "@turf/meta": "^6.5.0",
         "ajv": "^8.11.2",
         "ajv-formats": "^2.1.1",
@@ -64,7 +64,7 @@
         "tough-cookie": "^4.1.2",
         "undici": "^5.22.0",
         "ws": "^8.11.0",
-        "xml2js": "^0.5.0"
+        "xml2js": "^0.6.0"
     },
     "devDependencies": {
         "@types/busboy": "^1.5.0",

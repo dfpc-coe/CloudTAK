@@ -39,6 +39,8 @@ const router = new VueRouter.createRouter({
         { path: '/basemap/:basemapid', name: 'basemap', component: () => import('./components/BaseMap.vue') },
         { path: '/basemap/:basemapid/edit', name: 'basemap-edit', component: () => import('./components/BaseMapEdit.vue') },
 
+        { path: '/profile', name: 'profile', component: () => import('./components/Profile.vue') },
+
         { path: '/icon', name: 'icons', component: () => import('./components/Icons.vue') },
 
         { path: '/login', name: 'login', component: () => import('./components/Login.vue') },

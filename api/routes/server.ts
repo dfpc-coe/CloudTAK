@@ -4,7 +4,8 @@ import Server from '../lib/types/server.js';
 import Auth from '../lib/auth.js';
 import { sql } from 'slonik';
 import Config from '../lib/config.js';
-import { Request, Response } from 'express';
+import { Response } from 'express';
+import { AuthRequest } from '@tak-ps/blueprint-login';
 
 export default async function router(schema: any, config: Config) {
     await schema.get('/server', {
@@ -13,7 +14,7 @@ export default async function router(schema: any, config: Config) {
         auth: 'user',
         description: 'Get Server',
         res: 'res.Server.json'
-    }, async (req: Request, res: Response) => {
+    }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(req);
 
@@ -39,7 +40,7 @@ export default async function router(schema: any, config: Config) {
         description: 'Post Server',
         body: 'req.body.Server.json',
         res: 'res.Server.json'
-    }, async (req: Request, res: Response) => {
+    }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(req);
 
@@ -64,7 +65,7 @@ export default async function router(schema: any, config: Config) {
         description: 'Patch Server',
         body: 'req.body.Server.json',
         res: 'res.Server.json'
-    }, async (req: Request, res: Response) => {
+    }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(req);
 

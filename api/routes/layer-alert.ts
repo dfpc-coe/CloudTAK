@@ -6,7 +6,8 @@ import LayerAlert from '../lib/types/layer-alert.js';
 import Cacher from '../lib/cacher.js';
 import { sql } from 'slonik';
 import Auth from '../lib/auth.js';
-import { Request, Response } from 'express';
+import { Response } from 'express';
+import { AuthRequest } from '@tak-ps/blueprint-login';
 import Config from '../lib/config.js';
 
 export default async function router(schema: any, config: Config) {
@@ -18,7 +19,7 @@ export default async function router(schema: any, config: Config) {
         ':layerid': 'integer',
         query: 'req.query.ListLayerAlerts.json',
         res: 'res.ListLayerAlerts.json'
-    }, async (req: Request, res: Response) => {
+    }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(req);
 
@@ -42,7 +43,7 @@ export default async function router(schema: any, config: Config) {
         ':layerid': 'integer',
         body: 'req.body.CreateLayerAlert.json',
         res: 'layer_alerts.json'
-    }, async (req: Request, res: Response) => {
+    }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_layer(req, parseInt(req.params.layerid));
 
@@ -68,7 +69,7 @@ export default async function router(schema: any, config: Config) {
         description: 'Delete all alerts for the layer',
         ':layerid': 'integer',
         res: 'res.Standard.json'
-    }, async (req: Request, res: Response) => {
+    }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(req);
 
@@ -97,7 +98,7 @@ export default async function router(schema: any, config: Config) {
         ':layerid': 'integer',
         ':alertid': 'integer',
         res: 'res.Standard.json'
-    }, async (req: Request, res: Response) => {
+    }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(req);
 
