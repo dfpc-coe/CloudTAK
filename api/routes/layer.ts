@@ -15,7 +15,8 @@ import CloudFormation from '../lib/aws/cloudformation.js';
 import Style from '../lib/style.js';
 import Alarm from '../lib/aws/alarm.js';
 import DDBQueue from '../lib/queue.js';
-import { Request, Response } from 'express';
+import { Response } from 'express';
+import { AuthRequest } from '@tak-ps/blueprint-login';
 import Config from '../lib/config.js';
 import Schedule from '../lib/schedule.js';
 import S3 from '../lib/aws/s3.js';
@@ -33,7 +34,7 @@ export default async function router(schema: any, config: Config) {
         description: 'List layers',
         query: 'req.query.ListLayers.json',
         res: 'res.ListLayers.json'
-    }, async (req: Request, res: Response) => {
+    }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(req);
 
@@ -70,7 +71,7 @@ export default async function router(schema: any, config: Config) {
         description: 'Register a new layer',
         body: 'req.body.CreateLayer.json',
         res: 'res.Layer.json'
-    }, async (req: Request, res: Response) => {
+    }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(req);
 
@@ -132,7 +133,7 @@ export default async function router(schema: any, config: Config) {
         ':layerid': 'integer',
         body: 'req.body.PatchLayer.json',
         res: 'res.Layer.json'
-    }, async (req: Request, res: Response) => {
+    }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(req);
 
@@ -202,7 +203,7 @@ export default async function router(schema: any, config: Config) {
         description: 'Get a layer',
         ':layerid': 'integer',
         res: 'res.Layer.json'
-    }, async (req: Request, res: Response) => {
+    }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(req);
 
@@ -229,7 +230,7 @@ export default async function router(schema: any, config: Config) {
         description: 'Delete a layer',
         ':layerid': 'integer',
         res: 'res.Standard.json'
-    }, async (req: Request, res: Response) => {
+    }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(req);
 
@@ -261,7 +262,7 @@ export default async function router(schema: any, config: Config) {
     }, bodyparser.raw({
         type: '*/*',
         limit: '50mb'
-    }), async (req: Request, res: Response) => {
+    }), async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_layer(req, parseInt(req.params.layerid));
 

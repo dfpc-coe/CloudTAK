@@ -3,7 +3,8 @@ import Err from '@openaddresses/batch-error';
 import Data from '../lib/types/data.js';
 import { sql } from 'slonik';
 import Auth from '../lib/auth.js';
-import { Request, Response } from 'express';
+import { Response } from 'express';
+import { AuthRequest } from '@tak-ps/blueprint-login';
 import Config from '../lib/config.js';
 
 export default async function router(schema: any, config: Config) {
@@ -14,7 +15,7 @@ export default async function router(schema: any, config: Config) {
         description: 'List data',
         query: 'req.query.ListData.json',
         res: 'res.ListData.json'
-    }, async (req: Request, res: Response) => {
+    }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(req);
 
@@ -33,7 +34,7 @@ export default async function router(schema: any, config: Config) {
         description: 'Register a new data source',
         body: 'req.body.CreateData.json',
         res: 'data.json'
-    }, async (req: Request, res: Response) => {
+    }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(req);
             let data = await Data.generate(config.pool, req.body);
@@ -51,7 +52,7 @@ export default async function router(schema: any, config: Config) {
         ':dataid': 'integer',
         body: 'req.body.PatchData.json',
         res: 'data.json'
-    }, async (req: Request, res: Response) => {
+    }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(req);
 
@@ -73,7 +74,7 @@ export default async function router(schema: any, config: Config) {
         description: 'Get a data source',
         ':dataid': 'integer',
         res: 'data.json'
-    }, async (req: Request, res: Response) => {
+    }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(req);
 
@@ -92,7 +93,7 @@ export default async function router(schema: any, config: Config) {
         description: 'Delete a data source',
         ':dataid': 'integer',
         res: 'res.Standard.json'
-    }, async (req: Request, res: Response) => {
+    }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(req);
 

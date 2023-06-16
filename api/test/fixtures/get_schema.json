@@ -44,14 +44,14 @@
         "query": false,
         "res": true
     },
-    "GET /basemap": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
     "GET /data/:dataid/job/:jobid": {
         "body": false,
         "query": false,
+        "res": true
+    },
+    "GET /basemap": {
+        "body": false,
+        "query": true,
         "res": true
     },
     "GET /data/:dataid/job/:jobid/logs": {
@@ -144,6 +144,16 @@
         "query": false,
         "res": true
     },
+    "GET /marti/group": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "POST /connection/:connectionid/refresh": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
     "GET /basemap/:basemapid": {
         "body": false,
         "query": true,
@@ -154,17 +164,12 @@
         "query": false,
         "res": false
     },
-    "POST /connection/:connectionid/refresh": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
     "DELETE /layer/:layerid/alert": {
         "body": false,
         "query": false,
         "res": true
     },
-    "POST /marti/signClient": {
+    "PATCH /data/:dataid": {
         "body": true,
         "query": false,
         "res": true
@@ -174,17 +179,12 @@
         "query": true,
         "res": true
     },
-    "PATCH /data/:dataid": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "DELETE /basemap/:basemapid": {
+    "DELETE /connection/:connectionid": {
         "body": false,
         "query": false,
         "res": true
     },
-    "DELETE /connection/:connectionid": {
+    "DELETE /basemap/:basemapid": {
         "body": false,
         "query": false,
         "res": true
@@ -196,6 +196,11 @@
     },
     "DELETE /layer/:layerid/alert/:alertid": {
         "body": false,
+        "query": false,
+        "res": true
+    },
+    "POST /marti/signClient": {
+        "body": true,
         "query": false,
         "res": true
     },
@@ -254,6 +259,11 @@
         "query": false,
         "res": true
     },
+    "GET /token": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
     "POST /record": {
         "body": true,
         "query": false,
@@ -300,6 +310,16 @@
         "res": true
     },
     "POST /layer/:layerid/task": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "POST /token": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "DELETE /token/:id": {
         "body": false,
         "query": false,
         "res": true
