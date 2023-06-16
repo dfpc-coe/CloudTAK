@@ -107,8 +107,8 @@ export default {
                     MaxvCpus: 128,
                     SecurityGroupIds: [cf.ref('BatchSecurityGroup')],
                     Subnets: [
-                        cf.importValue('coe-vpc-prod-subnet-private-a'),
-                        cf.importValue('coe-vpc-prod-subnet-private-b')
+                        cf.importValue(cf.join(['coe-vpc-', cf.ref('Environment'), '-subnet-private-a'])),
+                        cf.importValue(cf.join(['coe-vpc-', cf.ref('Environment'), '-subnet-private-b']))
                     ]
                 },
                 'State': 'ENABLED'
@@ -134,7 +134,7 @@ export default {
         BatchSecurityGroup: {
             Type: 'AWS::EC2::SecurityGroup',
             Properties: {
-                VpcId: cf.importValue('coe-vpc-prod-vpc'),
+                VpcId: cf.importValue(cf.join(['coe-vpc-', cf.ref('Environment'), '-vpc'])),
                 GroupDescription: cf.join([cf.stackName, ' Batch Security Group']),
                 SecurityGroupIngress: []
             }
