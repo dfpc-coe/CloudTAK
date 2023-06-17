@@ -6,7 +6,7 @@ export default {
             Type: 'AWS::SQS::Queue',
             Properties: {
                 QueueName: cf.join('-', [cf.stackName, 'hooks.fifo']),
-                FifoQueue: true,
+                FifoQueue: true
             }
         },
         HookLambda: {
@@ -49,6 +49,6 @@ export default {
                     cf.join(['arn:', cf.partition, ':iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'])
                 ]
             }
-        },
+        }
     }
 };
