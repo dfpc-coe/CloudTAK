@@ -112,9 +112,7 @@
         </div>
     </div>
 
-    <router-view
-        :ws='ws'
-    />
+    <router-view/>
 
     <TablerError v-if='err' :err='err' @close='err = null'/>
 </div>
@@ -145,7 +143,6 @@ export default {
         return {
             mounted: false,
             user: null,
-            ws: null,
             err: null,
             server: null,
         }
@@ -156,7 +153,11 @@ export default {
     watch: {
         async $route() {
             if (!this.mounted) return;
-            if (localStorage.token) return await this.getLogin();
+            if (localStorage.token) {
+                await this.getLogin();
+                if (!this.server) await this.getServer();
+                return;
+            }
             if (this.$route.name !== 'login') this.$router.push("/login");
         }
     },
