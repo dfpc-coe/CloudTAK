@@ -123,6 +123,18 @@ export default {
                         },{
                             Effect: 'Allow',
                             Action: [
+                                'sqs:PurgeQueue',
+                                'sqs:SendMessage',
+                                'sqs:ChangeMessageVisibility',
+                                'sqs:GetQueueUrl',
+                                'sqs:GetQueueAttributes'
+                            ],
+                            Resource: [
+                                cf.join(['arn:aws:sqs:', cf.region, ':', cf.accountId, ':', cf.getAtt('HookQueue', 'QueueName')])
+                            ]
+                        },{
+                            Effect: 'Allow',
+                            Action: [
                                 'kms:Decrypt',
                                 'kms:GenerateDataKey'
                             ],
