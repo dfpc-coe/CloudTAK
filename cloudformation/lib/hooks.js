@@ -5,6 +5,7 @@ export default {
         HookQueue: {
             Type: 'AWS::SQS::Queue',
             Properties: {
+                ContentBasedDeduplication: true,
                 QueueName: cf.join('-', [cf.stackName, 'hooks.fifo']),
                 FifoQueue: true
             }

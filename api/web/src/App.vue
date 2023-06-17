@@ -140,9 +140,10 @@ import {
 } from '@tak-ps/vue-tabler';
 
 export default {
-    name: 'Tak-PS-Stats',
+    name: 'Tak-PS-ETL',
     data: function() {
         return {
+            mounted: false,
             user: null,
             ws: null,
             err: null,
@@ -154,6 +155,7 @@ export default {
     },
     watch: {
         async $route() {
+            if (!this.mounted) return;
             if (localStorage.token) return await this.getLogin();
             if (this.$route.name !== 'login') this.$router.push("/login");
         }
@@ -161,21 +163,14 @@ export default {
     mounted: async function() {
         const url = window.stdurl('/api');
 
-        if (window.location.hostname === 'localhost') {
-            url.protocol = 'ws:';
-        } else {
-            url.protocol = 'wss:';
+        if (localStorage.token) {
+            await this.getLogin();
+            await this.getServer();
+        } else if (this.$route.name !== 'login') {
+            this.$router.push("/login");
         }
 
-        this.ws = new WebSocket(url);
-        this.ws.addEventListener('error', (err) => {
-            this.err = err;
-        });
-
-        if (localStorage.token) return await this.getServer();
-        if (this.$route.name !== 'login') this.$router.push("/login");
-
-        await this.getServer();
+        this.mounted = true;
     },
     methods: {
         logout: function() {
@@ -189,7 +184,7 @@ export default {
             } catch (err) {
                 this.user = null;
                 delete localStorage.token;
-                this.$router.push("/login");
+                if (this.$route.name !== 'login') this.$router.push("/login");
             }
         },
         getServer: async function() {
