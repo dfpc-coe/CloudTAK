@@ -69,20 +69,34 @@ import {
 
 export default {
     name: 'Connection',
-    props: {
-        ws: {
-            type: Object,
-            required: true
-        }
-    },
     data: function() {
         return {
             loading: true,
+            err: null,
+            ws: null,
             connection: {}
+        }
+    },
+    watch: {
+        err: async function() {
+            if (!this.err) return;
+            const err = this.err;
+            this.err = null;
+            throw err;
         }
     },
     mounted: async function() {
         await this.fetch();
+
+        const url = window.stdurl('/api');
+        if (window.location.hostname === 'localhost') {
+            url.protocol = 'ws:';
+        } else {
+            url.protocol = 'wss:';
+        }
+
+        this.ws = new WebSocket(url);
+        this.ws.addEventListener('error', (err) => { this.$emit('err') });
     },
     methods: {
         timeDiff(update) {
