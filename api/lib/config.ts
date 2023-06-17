@@ -22,6 +22,7 @@ export default class Config {
     unsafe: boolean;
     noevents: boolean;
     StackName: string;
+    HookURL?: string;
     SigningSecret: string;
     UnsafeSigningSecret: string;
     MartiAPI: string;
