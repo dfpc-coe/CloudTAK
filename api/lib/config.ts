@@ -80,6 +80,7 @@ export default class Config {
                 if (!process.env.PMTILES_URL) throw new Error('PMTILES_URL env must be set');
                 if (!process.env.ASSET_BUCKET) throw new Error('ASSET_BUCKET env must be set');
 
+                config.HookURL = process.env.HookURL;
                 config.StackName = process.env.StackName;
                 config.API_URL = process.env.API_URL;
                 config.Bucket = process.env.ASSET_BUCKET;

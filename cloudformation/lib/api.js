@@ -130,7 +130,7 @@ export default {
                                 'sqs:GetQueueAttributes'
                             ],
                             Resource: [
-                                cf.join(['arn:aws:sqs:', cf.region, ':', cf.accountId, ':', cf.getAtt('HookQueue', 'QueueName')])
+                                cf.join(['arn:', cf.partition, ':sqs:', cf.region, ':', cf.accountId, ':', cf.getAtt('HookQueue', 'QueueName')])
                             ]
                         },{
                             Effect: 'Allow',
@@ -321,6 +321,7 @@ export default {
                                 ':5432/tak_ps_etl?sslmode=no-verify'
                             ])
                         },
+                        { Name: 'HookURL', Value: cf.ref('HookQueue') },
                         { Name: 'TileBaseURL', Value: cf.join(['s3://', cf.ref('AssetBucket'), '/zipcodes.tilebase']) },
                         { Name: 'SigningSecret', Value: cf.sub('{{resolve:secretsmanager:${AWS::StackName}/api/secret:SecretString::AWSCURRENT}}') },
                         { Name: 'StackName', Value: cf.stackName },
