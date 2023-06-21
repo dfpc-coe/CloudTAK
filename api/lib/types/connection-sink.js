@@ -6,7 +6,7 @@ import { sql } from 'slonik';
  * @class
  */
 export default class Connection extends Generic {
-    static _table = 'connection_sink';
+    static _table = 'connection_sinks';
 
     static async list(pool, query={}) {
         query.limit = Params.integer(query.limit, { default: 100 });

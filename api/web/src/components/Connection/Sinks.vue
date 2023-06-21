@@ -1,8 +1,8 @@
 <template>
 <div class="card">
-    <div class='card-header'>Connection Links</div>
+    <div class='card-header'>Connection Sinks</div>
 
-    <None v-if='!list.sinks.length' :create='false' label='Layers'/>
+    <None v-if='!list.sinks.length' :create='false' label='Sinks'/>
     <div v-else class='table-resposive'>
         <table class='table card-table table-vcenter datatable table-hover'>
             <thead>
@@ -31,7 +31,7 @@ import TableFooter from '../util/TableFooter.vue';
 import None from '../cards/None.vue';
 
 export default {
-    name: 'ConnectionLayers',
+    name: 'ConnectionSinks',
     props: {
         connection: {
             type: Object,
@@ -63,7 +63,7 @@ export default {
        },
     },
     methods: {
-        listLayers: async function() {
+        listSinks: async function() {
             const url = window.stdurl(`/api/connection/${this.connection.id}/sink`);
             url.searchParams.append('limit', this.paging.limit);
             url.searchParams.append('page', this.paging.page);
