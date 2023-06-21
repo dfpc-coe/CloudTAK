@@ -42,13 +42,12 @@
                 </div>
 
                 <div class="col-lg-12">
-                    <ConnectionEvents :ws='ws' v-if='connection.id' :connection='connection'/>
-                </div>
-
-                <div class="col-lg-12">
                     <ConnectionSinks v-if='connection.id' :connection='connection'/>
                 </div>
 
+                <div class="col-lg-12">
+                    <ConnectionEvents :ws='ws' v-if='connection.id' :connection='connection'/>
+                </div>
             </div>
         </div>
     </div>
