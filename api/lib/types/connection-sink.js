@@ -15,6 +15,7 @@ export default class Connection extends Generic {
         query.order = Params.order(query.order);
         query.filter = Params.string(query.filter, { default: '' });
         query.connection = Params.integer(query.connection);
+        query.enabled = Params.boolean(query.enabled);
 
         try {
             const pgres = await pool.query(sql`
@@ -26,6 +27,7 @@ export default class Connection extends Generic {
                 WHERE
                     name ~* ${query.filter}
                     AND connection = ${query.connection}
+                    AND (${query.enabled}::BOOLEAN IS NULL OR enabled = ${query.enabled}::BOOLEAN)
                 ORDER BY
                     id DESC
                 LIMIT
