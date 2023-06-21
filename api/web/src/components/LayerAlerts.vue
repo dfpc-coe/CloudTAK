@@ -29,22 +29,23 @@
                         <None v-else-if='!list.total' :create='false'/>
                         <div v-else>
                             <div :key='alert.id' v-for='alert in list.alerts' class='row'>
-                                <div class='col-11 row py-2 d-flex'>
-                                    <div class='col-auto d-flex' style='margin-left: 20px;' :class='{
-                                        "text-green": alert.priority === "green",
-                                        "text-yellow": alert.priority === "yellow",
-                                        "text-red": alert.priority === "red"
-                                    }'>
-                                        <AlertCircleIcon class='mx-auto my-auto'/>
+                                <div class='row px-3 py-2'>
+                                    <div class='d-flex'>
+                                        <span class='subheader' v-text='alert.title'/>
+                                        <div class='ms-auto'>
+                                            <span class='subheader' v-text='alert.updated'/>
+                                        </div>
                                     </div>
-                                    <div class='col-auto row'>
-                                        <span class='subheader col-12' v-text='alert.title'/>
+                                    <div class='d-flex'>
+                                        <div class='mx-2' :class='{
+                                            "text-green": alert.priority === "green",
+                                            "text-yellow": alert.priority === "yellow",
+                                            "text-red": alert.priority === "red"
+                                        }'>
+                                            <AlertCircleIcon class='mx-auto my-auto'/>
+                                        </div>
                                         <span v-text='alert.description'/>
-                                    </div>
-                                </div>
-                                <div class='col-1 d-flex'>
-                                    <div class='ms-auto'>
-                                        <div class='btn-list mt-2'>
+                                        <div class='ms-auto my-1'>
                                             <TrashIcon @click='deleteAlerts(alert.id)' class='cursor-pointer'/>
                                         </div>
                                     </div>
