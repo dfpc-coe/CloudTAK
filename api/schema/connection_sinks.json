@@ -1,0 +1,32 @@
+{
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+        "id": {
+            "$ref": "./connection_sinks/id.json"
+        },
+        "created": {
+            "$ref": "./connection_sinks/created.json"
+        },
+        "updated": {
+            "$ref": "./connection_sinks/updated.json"
+        },
+        "connection": {
+            "$ref": "./connection_sinks/connection.json"
+        },
+        "type": {
+            "$ref": "./connection_sinks/type.json"
+        },
+        "body": {
+            "$ref": "./connection_sinks/body.json"
+        }
+    },
+    "required": [
+        "id",
+        "created",
+        "updated",
+        "connection",
+        "type",
+        "body"
+    ]
+}
