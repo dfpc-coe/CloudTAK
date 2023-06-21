@@ -2,6 +2,8 @@ import TAK from './tak.js';
 // @ts-ignore
 import Connection from './types/connection.js';
 // @ts-ignore
+import ConnectionSink from './types/connection-sink.js';
+// @ts-ignore
 import Server from './types/server.js';
 import Metrics from './aws/metric.js';
 // @ts-ignore
@@ -10,15 +12,17 @@ import { WebSocket } from 'ws';
 
 class TAKPoolClient {
     conn: Connection;
+    sinks: ConnectionSink[];
     tak: TAK;
     retry: number;
     initial: boolean;
 
-    constructor(conn: Connection, tak: TAK) {
+    constructor(conn: Connection, sinks: ConnectionSink[], tak: TAK) {
         this.tak = tak;
         this.conn = conn;
         this.retry = 0;
         this.initial = true;
+        this.sinks = sinks;
     }
 }
 
@@ -69,7 +73,10 @@ export default class TAKPool extends Map<number, TAKPoolClient> {
             stream.on('data', (conn: Connection) => {
                 if (conn.enabled && !this.local) {
                     conns.push(async () => {
-                        await this.add(conn);
+                        const sinks = (await ConnectionSink.list(pool, {
+                            enabled: true
+                        })).sinks
+                        await this.add(conn, sinks);
                     });
                 }
             }).on('end', async () => {
@@ -94,9 +101,9 @@ export default class TAKPool extends Map<number, TAKPoolClient> {
         }
     }
 
-    async add(conn: Connection) {
+    async add(conn: Connection, sinks: ConnectionSink[] = []) {
         const tak = await TAK.connect(conn.id, new URL(this.#server.url), conn.auth);
-        const pooledClient = new TAKPoolClient(conn, tak);
+        const pooledClient = new TAKPoolClient(conn, sinks, tak);
         this.set(conn.id, pooledClient);
 
         tak.on('cot', (cot) => {
