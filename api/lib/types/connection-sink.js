@@ -34,7 +34,7 @@ export default class Connection extends Generic {
                     ${query.limit * query.page}
             `);
 
-            return this.deserialize_list(pgres);
+            return this.deserialize_list(pgres, 'sinks');
         } catch (err) {
             throw new Err(500, err, 'Failed to list connection sink');
         }

@@ -4,6 +4,7 @@ function up(knex) {
             id          BIGSERIAL PRIMARY KEY,
             created     TIMESTAMP NOT NULL DEFAULT Now(),
             updated     TIMESTAMP NOT NULL DEFAULT Now(),
+            enabled     BOOLEAN NOT NULL DEFAULT True,
             connection  BIGINT NOT NULL REFERENCES connections(id),
             name        TEXT NOT NULL,
             type        TEXT NOT NULL,
