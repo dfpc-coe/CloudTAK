@@ -5,6 +5,7 @@ function up(knex) {
             created     TIMESTAMP NOT NULL DEFAULT Now(),
             updated     TIMESTAMP NOT NULL DEFAULT Now(),
             connection  BIGINT NOT NULL REFERENCES connections(id),
+            name        TEXT NOT NULL,
             type        TEXT NOT NULL,
             body        JSON NOT NULL DEFAULT '{}'::JSON
         )
