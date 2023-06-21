@@ -34,12 +34,14 @@ export default class TAKPool extends Map<number, TAKPoolClient> {
     clients: WebSocket[];
     metrics: Metrics;
     stackName: string;
+    local: boolean;
 
-    constructor(server: Server, clients: WebSocket[] = [], stackName: string) {
+    constructor(server: Server, clients: WebSocket[] = [], stackName: string, local=false) {
         super();
         this.#server = server;
         this.clients = clients;
         this.stackName = stackName,
+        this.local = local,
         this.metrics = new Metrics(stackName);
     }
 
@@ -65,7 +67,7 @@ export default class TAKPool extends Map<number, TAKPoolClient> {
 
         return new Promise((resolve) => {
             stream.on('data', (conn: Connection) => {
-                if (conn.enabled) {
+                if (conn.enabled && !this.local) {
                     conns.push(async () => {
                         await this.add(conn);
                     });
