@@ -4,6 +4,7 @@
 *.key
 *.crt
 *.dump
+.env-*
 api/assets/*
 
 # Logs

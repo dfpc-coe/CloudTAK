@@ -18,8 +18,23 @@ import BlueprintLogin from '@tak-ps/blueprint-login';
 import Server from './lib/types/server.js';
 import Config from './lib/config.js';
 
+const args = minimist(process.argv, {
+    boolean: [
+        'silent',   // Turn off logging as much as possible
+        'nocache',  // Ignore MemCached
+        'unsafe',   // Allow unsecure local dev creds
+        'noevents', // Disable Initialization of Second Level Events
+        'local'     // (experimental) Disable external calls on startup (for developing in low connectivity)
+                    // Note this is the min for serving requests - it doesn't make it particularly functional
+    ],
+    string: [
+        'postgres', // Postgres Connection String
+        'env'       // Load a non-default .env file --env local would read .env-local
+    ],
+});
+
 try {
-    const dotfile = new URL('.env', import.meta.url);
+    const dotfile = new URL(`.env${args.env ? '-' + args.env : ''}`, import.meta.url);
 
     fs.accessSync(dotfile);
 
@@ -30,21 +45,12 @@ try {
 
 const pkg = JSON.parse(String(fs.readFileSync(new URL('./package.json', import.meta.url))));
 
-const args = minimist(process.argv, {
-    boolean: [
-        'silent',   // Turn off logging as much as possible
-        'nocache',  // Ignore MemCached
-        'unsafe',   // Allow unsecure local dev creds
-        'noevents'  // Disable Initialization of Second Level Events
-    ],
-    string: ['postgres'],
-});
-
 if (import.meta.url === `file://${process.argv[1]}`) {
     const config = await Config.env({
         silent: args.silent || false,
         unsafe: args.unsafe || false,
         noevents: args.noevents || false,
+        local: args.local || false,
     });
     await server(config);
 }
@@ -60,6 +66,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
 
 export default async function server(config: Config) {
     config.cacher = new Cacher(args.nocache, config.silent);
+
     try {
         await config.cacher.flush();
     } catch (err) {
@@ -80,7 +87,7 @@ export default async function server(config: Config) {
         config.server = null;
     }
 
-    config.conns = new TAKPool(config.server, config.wsClients, config.StackName);
+    config.conns = new TAKPool(config.server, config.wsClients, config.StackName, config.local);
     await config.conns.init(config.pool);
     config.events = new EventsPool(config.StackName);
     if (!config.noevents) await config.events.init(config.pool);

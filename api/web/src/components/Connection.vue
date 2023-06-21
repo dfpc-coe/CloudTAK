@@ -86,8 +86,6 @@ export default {
         }
     },
     mounted: async function() {
-        await this.fetch();
-
         const url = window.stdurl('/api');
         if (window.location.hostname === 'localhost') {
             url.protocol = 'ws:';
@@ -97,6 +95,9 @@ export default {
 
         this.ws = new WebSocket(url);
         this.ws.addEventListener('error', (err) => { this.$emit('err') });
+
+        await this.fetch();
+
     },
     methods: {
         timeDiff(update) {

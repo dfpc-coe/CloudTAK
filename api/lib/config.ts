@@ -11,13 +11,15 @@ import Cacher from './cacher.js';
 interface ConfigArgs {
     silent: boolean,
     unsafe: boolean,
-    noevents: boolean
+    noevents: boolean,
+    local: boolean
 }
 
 /**
  * @class
  */
 export default class Config {
+    local: boolean;
     silent: boolean;
     unsafe: boolean;
     noevents: boolean;
@@ -43,6 +45,7 @@ export default class Config {
         const config = new Config();
 
         config.silent = (args.silent || false);
+        config.local = (args.local || false);
         config.noevents = (args.noevents || false);
         config.wsClients = []
 
@@ -76,6 +79,7 @@ export default class Config {
                 config.Bucket = process.env.ASSET_BUCKET;
             } else {
                 if (!config.silent) console.error(`ok - StackName: ${config.StackName}`);
+                if (config.local) throw new Error('local option cannot be used in production mode - Set StackName=test');
                 if (!process.env.StackName) throw new Error('StackName env must be set');
                 if (!process.env.API_URL) throw new Error('API_URL env must be set');
                 if (!process.env.PMTILES_URL) throw new Error('PMTILES_URL env must be set');
