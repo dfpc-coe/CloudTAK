@@ -7,11 +7,12 @@ import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
 
 export default async function router(schema: any, config: Config) {
-    await schema.get('/connection/:connectionid', {
+    await schema.get('/connection/:connectionid/sink', {
         name: 'List Sinks',
         group: 'ConnectionSink',
         auth: 'user',
         description: 'List Sinks',
+        ':connectionid': 'integer',
         query: 'req.query.ListConnectionSinks.json',
         res: 'res.ListConnectionSinks.json'
     }, async (req: AuthRequest, res: Response) => {

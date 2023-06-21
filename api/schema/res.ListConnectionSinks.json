@@ -1,0 +1,21 @@
+{
+    "type": "object",
+    "required": [
+        "total",
+        "sinks"
+    ],
+    "additionalProperties": false,
+    "properties": {
+        "total": {
+            "type": "integer",
+            "description": "Total number of sinks related to the query"
+        },
+        "sinks": {
+            "type": "array",
+            "description": "Array of sink objects",
+            "items":  {
+                "$ref": "./connection_sinks.json"
+            }
+        }
+    }
+}
