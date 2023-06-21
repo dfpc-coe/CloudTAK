@@ -1,6 +1,23 @@
 <template>
 <div class="card">
-    <div class='card-header'>Connection Sinks</div>
+    <div class='card-header d-flex'>
+        Connection Sinks
+
+        <div class='ms-auto'>
+            <div class='dropdown'>
+                <div type="button" id="connectionSinkButton" data-bs-toggle="dropdown" aria-expanded="false">
+                    <PlusIcon/>
+                    </div>
+                        <ul class="dropdown-menu" aria-labelledby='connectionSinkButton'>
+                            <div @click='$router.push(`/connection/${$route.params.connectionid}/sink/new`)' class='d-flex mx-2 my-2 cursor-pointer'>
+                                ArcGIS Server
+                            </div>
+                        </ul>
+                    </div>
+                <div>
+            </div>
+        </div>
+    </div>
 
     <None v-if='!list.sinks.length' :create='false' label='Sinks'/>
     <div v-else class='table-resposive'>
@@ -29,6 +46,9 @@
 <script>
 import TableFooter from '../util/TableFooter.vue';
 import None from '../cards/None.vue';
+import {
+    PlusIcon
+} from 'vue-tabler-icons';
 
 export default {
     name: 'ConnectionSinks',
@@ -73,6 +93,7 @@ export default {
     },
     components: {
         None,
+        PlusIcon,
         TableFooter,
     }
 }
