@@ -11,6 +11,9 @@
         "updated": {
             "$ref": "./connection_sinks/updated.json"
         },
+        "enabled": {
+            "$ref": "./connection_sinks/enabled.json"
+        },
         "connection": {
             "$ref": "./connection_sinks/connection.json"
         },
@@ -28,6 +31,7 @@
         "id",
         "created",
         "updated",
+        "enabled",
         "connection",
         "name",
         "type",
