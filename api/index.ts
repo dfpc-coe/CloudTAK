@@ -1,7 +1,8 @@
 import fs from 'fs';
 import path from 'path';
 import cors from 'cors';
-import express from 'express';
+import jwt from 'jsonwebtoken';
+import express, { Request, Response } from 'express';
 import SwaggerUI from 'swagger-ui-express';
 import history, {Context} from 'connect-history-api-fallback';
 // @ts-ignore
@@ -137,8 +138,25 @@ export default async function server(config: Config) {
         secret: config.SigningSecret,
         unsafe: config.unsafe ? config.UnsafeSigningSecret : undefined,
         group: config.AuthGroup,
-        api: config.MartiAPI
+        api: config.local ? 'http://localhost:5001' : config.MartiAPI
     }));
+
+    if (config.local) {
+        // Mock WebTAK API to allow any username & Password
+        app.get('/oauth/token', (req: Request, res: Response) => {
+            return res.json({
+                access_token: jwt.sign({
+                    user_name: req.params.username
+                }, config.SigningSecret)
+            });
+        });
+
+        app.get('/Marti/api/groups/all', (req: Request, res: Response) => {
+            return res.json({
+                data: [{ name: config.AuthGroup}]
+            });
+        });
+    }
 
     await schema.load(
         new URL('./routes/', import.meta.url),
@@ -151,7 +169,6 @@ export default async function server(config: Config) {
     schema.error();
 
     app.use('/docs', SwaggerUI.serve, SwaggerUI.setup(schema.docs.base));
-
 
     app.use(history({
         rewrites: [{
