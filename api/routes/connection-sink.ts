@@ -21,7 +21,10 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            const list = await ConnectionSink.list(config.pool, req.query);
+            const list = await ConnectionSink.list(config.pool, {
+                ...req.query,
+                connection: req.params.connectionid
+            });
 
             return res.json(list);
         } catch (err) {
