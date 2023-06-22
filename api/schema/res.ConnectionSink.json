@@ -3,12 +3,24 @@
     "additionalProperties": false,
     "required": [
         "name",
+        "created",
+        "updated",
+        "connection",
         "enabled",
         "type"
     ],
     "properties": {
         "name": {
             "$ref": "./connection_sinks/name.json"
+        },
+        "created": {
+            "$ref": "./connection_sinks/created.json"
+        },
+        "updated": {
+            "$ref": "./connection_sinks/updated.json"
+        },
+        "connection": {
+            "$ref": "./connection_sinks/connection.json"
         },
         "type": {
             "$ref": "./connection_sinks/type.json"
