@@ -1,0 +1,20 @@
+{
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+        "name",
+        "enabled",
+        "type"
+    ],
+    "properties": {
+        "name": {
+            "$ref": "./connection_sinks/name.json"
+        },
+        "type": {
+            "$ref": "./connection_sinks/type.json"
+        },
+        "enabled": {
+            "$ref": "./connection_sinks/enabled.json"
+        }
+    }
+}
