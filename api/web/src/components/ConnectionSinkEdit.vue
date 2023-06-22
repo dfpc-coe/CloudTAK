@@ -36,13 +36,43 @@
                         </div>
                         <div class="card-body">
                             <div class='row row-cards'>
-                                <div class="col-md-12 mt-3">
+                                <div class="col-12 col-md-8 mt-3">
                                     <TablerInput
                                         label='Sink Name'
                                         v-model='sink.name'
                                         :error='errors.name'
                                     />
                                 </div>
+                                <div class="col-12 col-md-4 mt-3">
+                                    <TablerEnum
+                                        label='Sink Type'
+                                        :options='["ArcGIS"]'
+                                        default='ArcGIS'
+                                        v-model='sink.type'
+                                        :error='errors.name'
+                                    />
+                                </div>
+
+                                <template v-if='sink.type === "ArcGIS"'>
+                                    <div class="col-12 mt-3">
+                                        <TablerInput
+                                            label='ArcGIS FeatureServer URL'
+                                            v-model='sink.body.url'
+                                        />
+                                    </div>
+                                    <div class="col-12 col-md-6 mt-3">
+                                        <TablerInput
+                                            label='ArcGIS Username'
+                                            v-model='sink.body.username'
+                                        />
+                                    </div>
+                                    <div class="col-12 col-md-6 mt-3">
+                                        <TablerInput
+                                            label='ArcGIS Password'
+                                            v-model='sink.body.password'
+                                        />
+                                    </div>
+                                </template>
 
                                 <div class="col-md-12 mt-3">
                                     <div class='d-flex'>
@@ -74,6 +104,7 @@ import {
 } from 'vue-tabler-icons';
 import {
     TablerBreadCrumb,
+    TablerEnum,
     TablerDelete,
     TablerInput
 } from '@tak-ps/vue-tabler';
@@ -87,12 +118,14 @@ export default {
             },
             sink: {
                 name: '',
+                type: 'ArcGIS',
+                body: {},
                 enabled: true,
             }
         }
     },
     mounted: async function() {
-        if (this.$route.params.sinkid) await this.fetch();
+        if (!isNaN(parseInt(this.$route.params.sinkid))) await this.fetch();
     },
     methods: {
         fetch: async function() {
@@ -133,6 +166,7 @@ export default {
         PlusIcon,
         TablerDelete,
         TablerBreadCrumb,
+        TablerEnum,
         TablerInput,
         PageFooter,
     }

@@ -1,5 +1,7 @@
 import Err from '@openaddresses/batch-error';
 // @ts-ignore
+import Connection from '../lib/types/connection.js';
+// @ts-ignore
 import ConnectionSink from '../lib/types/connection-sink.js';
 import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
@@ -22,6 +24,31 @@ export default async function router(schema: any, config: Config) {
             const list = await ConnectionSink.list(config.pool, req.query);
 
             return res.json(list);
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
+
+    await schema.post('/connection/:connectionid/sink', {
+        name: 'Create Sink',
+        group: 'ConnectionSink',
+        auth: 'admin',
+        description: 'Register a new connection sink',
+        ':connectionid': 'integer',
+        body: 'req.body.CreateConnectionSink.json',
+        res: 'res.ConnectionSink.json'
+    }, async (req: AuthRequest, res: Response) => {
+        try {
+            await Auth.is_auth(req);
+
+            const conn = await Connection.from(config.pool, req.params.connectionid);
+
+            const sink = await ConnectionSink.generate(config.pool, {
+                connection: conn.id,
+                ...req.body
+            });
+
+            return res.json(conn);
         } catch (err) {
             return Err.respond(err, res);
         }
