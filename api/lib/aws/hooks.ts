@@ -6,14 +6,18 @@ import { XML as COT } from '@tak-ps/node-cot';
  * @class
  */
 export default class HookQueue {
-    static async submit(connectionid: number, cot: COT) {
-        const sqs = new SQS.SQSClient({ region: process.env.AWS_DEFAULT_REGION });
+    sqs: SQS.SQSClient;
 
+    constructor() {
+        this.sqs = new SQS.SQSClient({ region: process.env.AWS_DEFAULT_REGION });
+    }
+
+    async submit(connectionid: number, MessageBody: string) {
         try {
-            const res = await sqs.send(new SQS.SendMessageCommand({
+            const res = await this.sqs.send(new SQS.SendMessageCommand({
                 QueueUrl: process.env.HookURL,
-                MessageBody: JSON.stringify(cot),
-                MessageGroupId: connectionid
+                MessageBody,
+                MessageGroupId: String(connectionid)
             }));
 
             return res;

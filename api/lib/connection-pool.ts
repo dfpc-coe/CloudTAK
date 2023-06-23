@@ -67,7 +67,6 @@ export default class ConnectionPool extends Map<number, ConnectionClient> {
      * Page through connections and start a connection for each one
      */
     async init(): Promise<void> {
-        await this.sinks.init();
         const conns: Connection[] = [];
 
         const stream = await Connection.stream(this.pool);
