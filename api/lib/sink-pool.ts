@@ -4,27 +4,9 @@ import Connection from './types/connection.js';
 // @ts-ignore
 import ConnectionSink from './types/connection-sink.js';
 // @ts-ignore
-import Server from './types/server.js';
-import Metrics from './aws/metric.js';
-// @ts-ignore
 import { Pool } from '@openaddresses/batch-generic';
+import SinkPool from './sink-pool.js';
 import { WebSocket } from 'ws';
-
-class TAKPoolClient {
-    conn: Connection;
-    sinks: ConnectionSink[];
-    tak: TAK;
-    retry: number;
-    initial: boolean;
-
-    constructor(conn: Connection, sinks: ConnectionSink[], tak: TAK) {
-        this.tak = tak;
-        this.conn = conn;
-        this.retry = 0;
-        this.initial = true;
-        this.sinks = sinks;
-    }
-}
 
 /**
  * Maintain a pool of TAK Connections, reconnecting as necessary
@@ -33,75 +15,49 @@ class TAKPoolClient {
  * @param server      Server Connection Object
  * @param clients     WSS Clients Array
  */
-export default class TAKPool extends Map<number, TAKPoolClient> {
-    #server: Server;
-    clients: WebSocket[];
-    metrics: Metrics;
-    stackName: string;
+export default class TAKPool extends Map<number, ConnectionSink> {
     local: boolean;
 
-    constructor(server: Server, clients: WebSocket[] = [], stackName: string, local=false) {
+    constructor(local=false) {
         super();
-        this.#server = server;
-        this.clients = clients;
-        this.stackName = stackName,
         this.local = local,
-        this.metrics = new Metrics(stackName);
     }
 
-    async refresh(pool: Pool, server: Server) {
-        this.#server = server;
-
-        for (const conn of this.keys()) {
-            this.delete(conn);
+    async refresh(pool: Pool) {
+        for (const sink of this.keys()) {
+            this.delete(sink);
         }
 
         await this.init(pool);
     }
 
     /**
-     * Page through connections and start a connection for each one
+     * Page through sinks and populate the map
      *
-     * @param pool        Postgres Pol
+     * @param pool        Postgres Pool
      */
     async init(pool: Pool): Promise<void> {
-        const conns: Connection[] = [];
+        const sinks: ConnectionSink[] = [];
 
-        const stream = await Connection.stream(pool);
+        const stream = await ConnectionSink.stream(pool);
 
         return new Promise((resolve) => {
-            stream.on('data', (conn: Connection) => {
+            stream.on('data', (sink: ConnectionSink) => {
                 if (conn.enabled && !this.local) {
-                    conns.push(async () => {
-                        const sinks = (await ConnectionSink.list(pool, {
-                            enabled: true
-                        })).sinks
-                        await this.add(conn, sinks);
-                    });
+                    sinks.push(this.add(sink))
                 }
             }).on('end', async () => {
-                for (const conn of conns) {
-                    try {
-                        await conn();
-                    } catch (err) {
-                        console.error(err);
-                    }
+                try {
+                    await Promise.all(sinks);
+                    return resolve();
+                } catch (err) {
+                    return reject(err);
                 }
-
-                return resolve();
             });
         });
     }
 
-    status(id: number): string {
-        if (this.has(id)) {
-            return this.get(id).tak.open ? 'live' : 'dead';
-        } else {
-            return 'unknown';
-        }
-    }
-
-    async add(conn: Connection, sinks: ConnectionSink[] = []) {
+    async add(sink: ConnectionSink) {
         const tak = await TAK.connect(conn.id, new URL(this.#server.url), conn.auth);
         const pooledClient = new TAKPoolClient(conn, sinks, tak);
         this.set(conn.id, pooledClient);

@@ -1,6 +1,6 @@
 import SecretsManager from '@aws-sdk/client-secrets-manager';
 import type EventsPool from './events-pool.js';
-import TAKPool from './tak-pool.js'
+import ConnectionPool from './connection-pool.js'
 import { WebSocket } from 'ws';
 // @ts-ignore
 import Server from './types/Server.js';
@@ -37,7 +37,7 @@ export default class Config {
     Bucket?: string;
     pool?: Pool;
     cacher?: Cacher;
-    conns?: TAKPool;
+    conns?: ConnectionPool;
     server?: Server;
     events?: EventsPool;
 
