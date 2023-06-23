@@ -4,8 +4,6 @@ import ConnectionSink from '../types/connection-sink.js';
 import Err from '@openaddresses/batch-error';
 
 export default class ESRI extends SinkInterface {
-    static type = 'ArcGIS';
-
     parsed: {
         base: string;
         type: string;
@@ -18,6 +16,11 @@ export default class ESRI extends SinkInterface {
 
         ESRI.parseurl(sink.body.url);
     }
+
+    static sink_name(): string {
+        return 'ArcGIS';
+    }
+
 
     static parseurl(urlstr: string): boolean {
         let url: URL;

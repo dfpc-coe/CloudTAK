@@ -6,25 +6,39 @@ import path from 'node:path';
 import { Pool } from '@openaddresses/batch-generic';
 import { XML as COT } from '@tak-ps/node-cot';
 import Sink from './sink.js';
+//@ts-ignore
+import ConnectionSink from './types/connection-sink.js';
+import ESRISink from './sinks/esri.js';
+import HookQueue from './aws/hooks.js';
 
-export default class Sinks extends Map<string, Sink> {
+export default class Sinks extends Map<string, any> {
     pool: Pool;
+    queue: HookQueue;
 
     constructor(pool: Pool) {
         super();
         this.pool = pool;
+        this.queue = new HookQueue();
 
+        // Include Supported Sink Types Here
+        this.set('ArcGIS', ESRISink);
     }
 
-    async init() {
-        for (const r of await fsp.readdir(new URL('./sinks/', import.meta.url))) {
-            const sink: Sink = await import(path.resolve('./lib/sinks/', r))
-            console.error(sink);
-            //this.set(sink.type, sink);
+    async cot(conn: Connection, cot: COT): Promise<boolean> {
+        const sinks = (await ConnectionSink.list(this.pool, {
+            connection: conn.id,
+            enabled: true
+        })).sinks;
+
+        const queue = [];
+        for (const sink of sinks) {
+            this.queue.submit(conn.id, JSON.stringify({
+                type: sink.type,
+                body: sink.body,
+                feat: cot.to_geojson()
+            }));
         }
-    }
 
-    async cot(conn: Connection, cot: COT) {
         return true;
     }
 }

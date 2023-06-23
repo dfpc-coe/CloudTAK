@@ -3,11 +3,14 @@ import ConnectionSink from './types/connection-sink.js';
 import Err from '@openaddresses/batch-error';
 
 export default class SinkInterface {
-    static type = 'generic';
     sink: ConnectionSink;
 
     constructor(sink: ConnectionSink) {
         this.sink = sink
+    }
+
+    static sink_name(): string {
+        return 'generic';
     }
 
     /**
