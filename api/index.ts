@@ -88,8 +88,8 @@ export default async function server(config: Config) {
         config.server = null;
     }
 
-    config.conns = new ConnectionPool(config.server, config.wsClients, config.StackName, config.local);
-    await config.conns.init(config.pool);
+    config.conns = new ConnectionPool(config.pool, config.server, config.wsClients, config.StackName, config.local);
+    await config.conns.init();
     config.events = new EventsPool(config.StackName);
     if (!config.noevents) await config.events.init(config.pool);
 

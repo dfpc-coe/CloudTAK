@@ -5,10 +5,12 @@ import Connection from './types/connection.js';
 import ConnectionSink from './types/connection-sink.js';
 // @ts-ignore
 import Server from './types/server.js';
+import Sinks from './sinks.js';
 import Metrics from './aws/metric.js';
 // @ts-ignore
 import { Pool } from '@openaddresses/batch-generic';
 import { WebSocket } from 'ws';
+import { XML as COT } from '@tak-ps/node-cot';
 
 class ConnectionClient {
     conn: Connection;
@@ -33,18 +35,22 @@ class ConnectionClient {
  */
 export default class ConnectionPool extends Map<number, ConnectionClient> {
     #server: Server;
+    pool: Pool;
     clients: WebSocket[];
     metrics: Metrics;
+    sinks: Sinks;
     stackName: string;
     local: boolean;
 
-    constructor(server: Server, clients: WebSocket[] = [], stackName: string, local=false) {
+    constructor(pool: Pool, server: Server, clients: WebSocket[] = [], stackName: string, local=false) {
         super();
         this.#server = server;
         this.clients = clients;
         this.stackName = stackName,
         this.local = local,
         this.metrics = new Metrics(stackName);
+        this.pool = pool;
+        this.sinks = new Sinks(pool);
     }
 
     async refresh(pool: Pool, server: Server) {
@@ -54,18 +60,17 @@ export default class ConnectionPool extends Map<number, ConnectionClient> {
             this.delete(conn);
         }
 
-        await this.init(pool);
+        await this.init();
     }
 
     /**
      * Page through connections and start a connection for each one
-     *
-     * @param pool        Postgres Pol
      */
-    async init(pool: Pool): Promise<void> {
+    async init(): Promise<void> {
+        await this.sinks.init();
         const conns: Connection[] = [];
 
-        const stream = await Connection.stream(pool);
+        const stream = await Connection.stream(this.pool);
 
         return new Promise((resolve, reject) => {
             stream.on('data', (conn: Connection) => {
@@ -95,12 +100,12 @@ export default class ConnectionPool extends Map<number, ConnectionClient> {
 
     async add(conn: Connection) {
         const tak = await TAK.connect(conn.id, new URL(this.#server.url), conn.auth);
-        const pooledClient = new ConnectionClient(conn, tak);
-        this.set(conn.id, pooledClient);
+        const connClient = new ConnectionClient(conn, tak);
+        this.set(conn.id, connClient);
 
-        tak.on('cot', (cot) => {
-            pooledClient.retry = 0;
-            pooledClient.initial = false;
+        tak.on('cot', async (cot: COT) => {
+            connClient.retry = 0;
+            connClient.initial = false;
 
             for (const client of this.clients) {
                 client.send(JSON.stringify({
@@ -109,12 +114,14 @@ export default class ConnectionPool extends Map<number, ConnectionClient> {
                     data: cot.raw
                 }));
             }
+
+            await this.sinks.cot(conn, cot);
         }).on('end', async () => {
             console.error(`not ok - ${conn.id} @ end`);
-            this.retry(pooledClient);
+            this.retry(connClient);
         }).on('timeout', async () => {
             console.error(`not ok - ${conn.id} @ timeout`);
-            this.retry(pooledClient);
+            this.retry(connClient);
         }).on('ping', async () => {
             if (this.stackName !== 'test') {
                 try {
@@ -125,23 +132,23 @@ export default class ConnectionPool extends Map<number, ConnectionClient> {
             }
         }).on('error', async (err) => {
             console.error(`not ok - ${conn.id} @ error:${err}`);
-            this.retry(pooledClient);
+            this.retry(connClient);
         });
     }
 
-    async retry(pooledClient: ConnectionClient) {
-        if (pooledClient.initial) {
-            if (pooledClient.retry >= 5) return; // These are considered stalled connecitons
-            pooledClient.retry++
-            console.log(`not ok - ${pooledClient.conn.id} - retrying in ${pooledClient.retry * 1000}ms`)
-            await sleep(pooledClient.retry * 1000);
-            await pooledClient.tak.reconnect();
+    async retry(connClient: ConnectionClient) {
+        if (connClient.initial) {
+            if (connClient.retry >= 5) return; // These are considered stalled connecitons
+            connClient.retry++
+            console.log(`not ok - ${connClient.conn.id} - retrying in ${connClient.retry * 1000}ms`)
+            await sleep(connClient.retry * 1000);
+            await connClient.tak.reconnect();
         } else {
             // For now allow infinite retry if a client has connected once
-            const retryms = Math.min(pooledClient.retry * 1000, 15000);
-            console.log(`not ok - ${pooledClient.conn.id} - retrying in ${retryms}ms`)
+            const retryms = Math.min(connClient.retry * 1000, 15000);
+            console.log(`not ok - ${connClient.conn.id} - retrying in ${retryms}ms`)
             await sleep(retryms);
-            await pooledClient.tak.reconnect();
+            await connClient.tak.reconnect();
         }
     }
 
