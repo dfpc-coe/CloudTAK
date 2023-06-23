@@ -10,7 +10,7 @@ import Schema from '@openaddresses/batch-schema';
 // @ts-ignore
 import { Pool } from '@openaddresses/batch-generic';
 import minimist from 'minimist';
-import TAKPool from './lib/tak-pool.js';
+import ConnectionPool from './lib/connection-pool.js';
 import EventsPool from './lib/events-pool.js';
 import { WebSocket, WebSocketServer } from 'ws';
 import Cacher from './lib/cacher.js';
@@ -88,7 +88,7 @@ export default async function server(config: Config) {
         config.server = null;
     }
 
-    config.conns = new TAKPool(config.server, config.wsClients, config.StackName, config.local);
+    config.conns = new ConnectionPool(config.server, config.wsClients, config.StackName, config.local);
     await config.conns.init(config.pool);
     config.events = new EventsPool(config.StackName);
     if (!config.noevents) await config.events.init(config.pool);
