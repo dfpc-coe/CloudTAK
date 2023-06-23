@@ -2,14 +2,15 @@ import TAK from './tak.js';
 // @ts-ignore
 import Connection from './types/connection.js';
 // @ts-ignore
+import ConnectionSink from './types/connection-sink.js';
+// @ts-ignore
 import Server from './types/server.js';
 import Metrics from './aws/metric.js';
 // @ts-ignore
 import { Pool } from '@openaddresses/batch-generic';
-import SinkPool from './sink-pool.js';
 import { WebSocket } from 'ws';
 
-class TAKPoolClient {
+class ConnectionClient {
     conn: Connection;
     tak: TAK;
     retry: number;
@@ -30,7 +31,7 @@ class TAKPoolClient {
  * @param server      Server Connection Object
  * @param clients     WSS Clients Array
  */
-export default class TAKPool extends Map<number, TAKPoolClient> {
+export default class ConnectionPool extends Map<number, ConnectionClient> {
     #server: Server;
     clients: WebSocket[];
     metrics: Metrics;
@@ -66,7 +67,7 @@ export default class TAKPool extends Map<number, TAKPoolClient> {
 
         const stream = await Connection.stream(pool);
 
-        return new Promise((resolve) => {
+        return new Promise((resolve, reject) => {
             stream.on('data', (conn: Connection) => {
                 if (conn.enabled && !this.local) {
                     conns.push(this.add(conn));
@@ -94,7 +95,7 @@ export default class TAKPool extends Map<number, TAKPoolClient> {
 
     async add(conn: Connection) {
         const tak = await TAK.connect(conn.id, new URL(this.#server.url), conn.auth);
-        const pooledClient = new TAKPoolClient(conn, tak);
+        const pooledClient = new ConnectionClient(conn, tak);
         this.set(conn.id, pooledClient);
 
         tak.on('cot', (cot) => {
@@ -128,7 +129,7 @@ export default class TAKPool extends Map<number, TAKPoolClient> {
         });
     }
 
-    async retry(pooledClient: TAKPoolClient) {
+    async retry(pooledClient: ConnectionClient) {
         if (pooledClient.initial) {
             if (pooledClient.retry >= 5) return; // These are considered stalled connecitons
             pooledClient.retry++
