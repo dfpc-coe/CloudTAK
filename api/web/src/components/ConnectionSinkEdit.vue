@@ -91,6 +91,7 @@
                                                 :url='sink.body.url'
                                                 :username='sink.body.username'
                                                 :password='sink.body.password'
+                                                @close='esriView.view = false'
                                             />
                                         </template>
                                     </div>
