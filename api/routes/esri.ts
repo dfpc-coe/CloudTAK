@@ -19,15 +19,56 @@ export default async function router(schema: any, config: Config) {
 
             const esri = await EsriProxy.generateToken(
                 new URL(req.body.url),
+                config.API_URL,
                 req.body.username,
                 req.body.password
             );
 
-            console.error(esri);
+            const servers = await esri.getServers();
 
             return res.json({
-                token: esri.token
+                token: esri.token,
+                servers: servers.servers
             });
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
+
+    await schema.get('/sink/esri', {
+        name: 'Validate & Auth',
+        group: 'SinkEsri',
+        auth: 'user',
+        description: 'Helper API to configure ESRI MapServers - Get Layer',
+        query: {
+            type: 'object',
+            required: ['url', 'token'],
+            properties: {
+                url: {
+                    type: 'string'
+                },
+                token: {
+                    type: 'string'
+                }
+            }
+        },
+        res: {
+            type: 'object',
+            required: ['folders', 'services'],
+            properties: {
+                folders: { type: "array" },
+                services: { type: "array" },
+            }
+        }
+    }, async (req: AuthRequest, res: Response) => {
+        try {
+            await Auth.is_auth(req);
+
+            const esri = new EsriProxy(String(req.query.token), 0, this.query.url, config.API_URL);
+
+            const list = await esri.getList();
+
+            return res.json(list);
         } catch (err) {
             return Err.respond(err, res);
         }
