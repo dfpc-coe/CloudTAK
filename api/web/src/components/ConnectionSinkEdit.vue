@@ -58,7 +58,7 @@
                                 <template v-if='sink.type === "ArcGIS"'>
                                     <div class="col-12 mt-3">
                                         <TablerInput
-                                            label='ArcGIS FeatureServer URL'
+                                            label='ArcGIS Portal URL (Example: https://example.com/portal/sharing/rest)'
                                             :disabled='disabled'
                                             v-model='sink.body.url'
                                         />
