@@ -39,6 +39,7 @@
                                 <div class="col-12 col-md-8 mt-3">
                                     <TablerInput
                                         label='Sink Name'
+                                        :disabled='disabled'
                                         v-model='sink.name'
                                         :error='errors.name'
                                     />
@@ -47,6 +48,7 @@
                                     <TablerEnum
                                         label='Sink Type'
                                         :options='["ArcGIS"]'
+                                        :disabled='disabled'
                                         default='ArcGIS'
                                         v-model='sink.type'
                                         :error='errors.name'
@@ -57,34 +59,55 @@
                                     <div class="col-12 mt-3">
                                         <TablerInput
                                             label='ArcGIS FeatureServer URL'
+                                            :disabled='disabled'
                                             v-model='sink.body.url'
                                         />
                                     </div>
                                     <div class="col-12 col-md-6 mt-3">
                                         <TablerInput
                                             label='ArcGIS Username'
+                                            :disabled='disabled'
                                             v-model='sink.body.username'
                                         />
                                     </div>
                                     <div class="col-12 col-md-6 mt-3">
                                         <TablerInput
                                             label='ArcGIS Password'
+                                            :disabled='disabled'
                                             v-model='sink.body.password'
                                         />
                                     </div>
-                                </template>
 
-                                <div class="col-md-12 mt-3">
-                                    <div class='d-flex'>
-                                        <template v-if='$route.params.sinkid'>
-                                            <TablerDelete @delete='del' label='Delete Sink'/>
+                                    <div class="col-md-12 mt-3">
+                                        <template v-if='!esriView.view'>
+                                            <div class='d-flex'>
+                                                <div class='ms-auto'>
+                                                    <a @click='esriView.view = true' class="cursor-pointer btn btn-primary">Connect</a>
+                                                </div>
+                                            </div>
                                         </template>
+                                        <template v-else>
+                                            <EsriView
+                                                :url='sink.body.url'
+                                                :username='sink.body.username'
+                                                :password='sink.body.password'
+                                            />
+                                        </template>
+                                    </div>
+                                </template>
+                                <template v-else>
+                                    <div class="col-md-12 mt-3">
+                                        <div class='d-flex'>
+                                            <template v-if='$route.params.sinkid'>
+                                                <TablerDelete @delete='del' label='Delete Sink'/>
+                                            </template>
 
-                                        <div class='ms-auto'>
-                                            <a @click='create' class="cursor-pointer btn btn-primary">Save Sink</a>
+                                            <div class='ms-auto'>
+                                                <a @click='create' class="cursor-pointer btn btn-primary">Save Sink</a>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
+                                </template>
                             </div>
                         </div>
                     </div>
@@ -99,6 +122,7 @@
 
 <script>
 import PageFooter from './PageFooter.vue';
+import EsriView from './util/EsriView.vue';
 import {
     PlusIcon,
 } from 'vue-tabler-icons';
@@ -116,12 +140,22 @@ export default {
             errors: {
                 name: '',
             },
+            esriView: {
+                view: false
+            },
+            disabled: false,
+            save: false,
             sink: {
                 name: '',
                 type: 'ArcGIS',
                 body: {},
                 enabled: true,
             }
+        }
+    },
+    watch: {
+        'esriView.view': function() {
+            this.disabled = this.esriView.view;
         }
     },
     mounted: async function() {
@@ -169,6 +203,7 @@ export default {
         TablerEnum,
         TablerInput,
         PageFooter,
+        EsriView,
     }
 }
 </script>
