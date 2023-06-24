@@ -2,6 +2,13 @@
 <div class='card-body'>
     <template v-if='err'>
         <Alert title='ESRI Connection Error' :err='err.message' :compact='true'/>
+        <div class="col-md-12 mt-3">
+            <div class='d-flex'>
+                <div class='ms-auto'>
+                    <a @click='$emit("close")' class="cursor-pointer btn btn-primary">Close Viewer</a>
+                </div>
+            </div>
+        </div>
     </template>
     <template v-else-if='loading'>
         <TablerLoading desc='Connecting to ESRI Server'/>
@@ -43,7 +50,7 @@ export default {
     methods: {
         generateToken: async function() {
             try {
-                await window.std('/api/proxy/esri', {
+                await window.std('/api/sink/esri', {
                     method: 'POST',
                     body: {
                         username: this.username,
@@ -54,6 +61,8 @@ export default {
             } catch (err) {
                 this.err = err;
             }
+
+            this.loading = false;
         }
     },
     components: {

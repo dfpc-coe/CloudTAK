@@ -6,7 +6,7 @@ import { AuthRequest } from '@tak-ps/blueprint-login';
 import EsriProxy from '../lib/esri.js';
 
 export default async function router(schema: any, config: Config) {
-    await schema.get('/sink/esri', {
+    await schema.post('/sink/esri', {
         name: 'Validate & Auth',
         group: 'SinkEsri',
         auth: 'user',
@@ -22,6 +22,8 @@ export default async function router(schema: any, config: Config) {
                 req.body.username,
                 req.body.password
             );
+
+            console.error(esri);
 
             return res.json({
                 token: esri.token
