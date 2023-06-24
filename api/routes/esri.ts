@@ -64,7 +64,7 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            const esri = new EsriProxy(String(req.query.token), 0, this.query.url, config.API_URL);
+            const esri = new EsriProxy(String(req.query.token), 0, String(req.query.url), config.API_URL);
 
             const list = await esri.getList();
 
