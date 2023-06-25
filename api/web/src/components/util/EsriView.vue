@@ -38,7 +38,7 @@
         <div class='table-responsive'>
             <table class="table table-hover card-table table-vcenter cursor-pointer">
                 <thead><tr><th>Name</th></tr></thead>
-                <tbody><tr :key='l.id' v-for='l in list'>
+                <tbody><tr @click='listpath.push(l.name)' :key='l.id' v-for='l in list'>
                     <td>
                         <template v-if='l.type === "folder"'>
                             <FolderIcon/>
@@ -97,6 +97,13 @@ export default {
     watch: {
         server: async function() {
             if (this.server) await this.getList()
+        },
+        listpath: {
+            deep: true,
+            handler: async function() {
+                console.error('LISTPATH');
+                await this.getList();
+            }
         }
     },
     mounted: async function() {
@@ -115,7 +122,12 @@ export default {
             try {
                 const url = window.stdurl('/api/sink/esri');
                 url.searchParams.append('token', this.token);
-                url.searchParams.append('url', this.server.url + '/rest');
+                if (this.listpath.length) {
+                    url.searchParams.append('url', this.server.url + '/rest/services/' + this.listpath.join('/'));
+                } else {
+                    url.searchParams.append('url', this.server.url + '/rest');
+                }
+
                 const res = await window.std(url, {
                     method: 'GET',
                 });
