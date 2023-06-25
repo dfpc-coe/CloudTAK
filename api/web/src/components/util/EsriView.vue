@@ -34,7 +34,7 @@
             </table>
         </div>
     </template>
-    <template v-else>
+    <template v-else-if='server && !container'>
         <div class='table-responsive'>
             <table class="table table-hover card-table table-vcenter cursor-pointer">
                 <thead><tr><th>Name</th></tr></thead>
@@ -49,6 +49,32 @@
                             <span v-text='l.name' class='mx-3'/>
                         </template>
                     </td>
+                </tr></tbody>
+            </table>
+        </div>
+    </template>
+    <template v-else>
+        <div class='datagrid mx-4'>
+            <template v-for='ele in ["description", "currentVersion", "spatialReference"]'>
+                <div class='datagrid-item'>
+                    <div class="datagrid-title" v-text='ele'></div>
+                    <template v-if='ele === "spatialReference"'>
+                        <div class="datagrid-content"
+                            v-text='`${container[ele].wkid} ${container[ele].latestWkid ? "(" + container[ele].latestWkid + ")" : ""}`'
+                        ></div>
+                    </template>
+                    <template v-else>
+                        <div class="datagrid-content" v-text='container[ele] || "Unknown"'></div>
+                    </template>
+                </div>
+            </template>
+        </div>
+
+        <div class='table-responsive'>
+            <table class="table table-hover card-table table-vcenter cursor-pointer">
+                <thead><tr><th>Name</th></tr></thead>
+                <tbody><tr :key='layer.id' v-for='layer in container.layers'>
+                    <td><MapIcon/><span v-text='layer.name' class='mx-3'/></td>
                 </tr></tbody>
             </table>
         </div>
@@ -90,8 +116,8 @@ export default {
             token: null,
             server: null,
             listpath: [],
-            list: [],
-            servers: []
+            servers: [],
+            container: null
         }
     },
     watch: {
@@ -135,7 +161,10 @@ export default {
                     method: 'GET',
                 });
 
-                this.list = [].concat(res.folders.map((folder) => {
+                if (Array.isArray(res.layers)) {
+                    this.container = res;
+                } else {
+                    this.list = [].concat(res.folders.map((folder) => {
                         return { name: folder, type: 'folder' };
                     }), res.services.map((service) => {
                         return { name: service.name.split('/')[service.name.split('/').length -1], type: service.type };
@@ -143,6 +172,7 @@ export default {
                         e.id = `${e.type}-${e.name}`;
                         return e;
                     });
+                }
             } catch (err) {
                 this.err = err;
             }
