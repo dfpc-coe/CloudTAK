@@ -1,6 +1,13 @@
 <template>
 <div class='border py-2'>
-    <h1 class='subheader px-3'>ESRI Server Explorer</h1>
+    <div class='d-flex'>
+        <h1 class='subheader px-3'>ESRI Server Explorer</h1>
+
+        <div class='ms-auto btn-list mx-3'>
+            <ArrowBackIcon v-if='!err && !loading && server' @click='back' v-tooltip='"Back"' class='cursor-pointer'/>
+            <XIcon @click='$emit("close")' v-tooltip='"Close Explorer"' class='cursor-pointer'/>
+        </div>
+    </div>
 
     <template v-if='err'>
         <Alert title='ESRI Connection Error' :err='err.message' :compact='true'/>
@@ -55,7 +62,9 @@ import {
 } from '@tak-ps/vue-tabler';
 import {
     MapIcon,
-    FolderIcon
+    XIcon,
+    FolderIcon,
+    ArrowBackIcon,
 } from 'vue-tabler-icons';
 import Alert from './Alert.vue';
 
@@ -80,19 +89,27 @@ export default {
             err: null,
             token: null,
             server: null,
+            listpath: [],
             list: [],
             servers: []
         }
     },
     watch: {
         server: async function() {
-            await this.getList()
+            if (this.server) await this.getList()
         }
     },
     mounted: async function() {
         await this.generateToken();
     },
     methods: {
+        back: function() {
+            if (this.listpath.length) {
+                this.listpath.pop();
+            } else if (this.server) {
+                this.server = null;
+            }
+        },
         getList: async function() {
             this.loading = true;
             try {
@@ -138,8 +155,10 @@ export default {
     },
     components: {
         Alert,
+        XIcon,
         MapIcon,
         FolderIcon,
+        ArrowBackIcon,
         TablerLoading
     }
 }
