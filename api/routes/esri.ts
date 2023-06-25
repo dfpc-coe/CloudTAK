@@ -71,6 +71,8 @@ export default async function router(schema: any, config: Config) {
             );
 
             const list = await esri.getList();
+            if (!list.folders) list.folders = [];
+            if (!list.services) list.services = [];
 
             return res.json(list);
         } catch (err) {
