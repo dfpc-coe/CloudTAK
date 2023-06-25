@@ -3,13 +3,11 @@ import Err from '@openaddresses/batch-error';
 export default class EsriProxy {
     token: string;
     base: URL;
-    expires: number;
     referer: string;
 
-    constructor(token: string, expires: number, base: URL, referer: string) {
+    constructor(token: string, base: URL, referer: string) {
         this.token = token;
         this.base = base;
-        this.expires = expires;
         this.referer = referer;
     }
 
@@ -79,7 +77,6 @@ export default class EsriProxy {
 
         return new EsriProxy(
             json.token,
-            json.expires,
             this.parser(url),
             referer
         );

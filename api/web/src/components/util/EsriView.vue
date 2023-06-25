@@ -4,7 +4,7 @@
 
     <template v-if='err'>
         <Alert title='ESRI Connection Error' :err='err.message' :compact='true'/>
-        <div class="col-md-12 mt-3">
+        <div class="col-md-12 mt-3 pb-2 px-3">
             <div class='d-flex'>
                 <div class='ms-auto'>
                     <a @click='$emit("close")' class="cursor-pointer btn btn-primary">Close Viewer</a>
@@ -27,6 +27,25 @@
             </table>
         </div>
     </template>
+    <template v-else>
+        <div class='table-responsive'>
+            <table class="table table-hover card-table table-vcenter cursor-pointer">
+                <thead><tr><th>Name</th></tr></thead>
+                <tbody><tr :key='l.id' v-for='l in list'>
+                    <td>
+                        <template v-if='l.type === "folder"'>
+                            <FolderIcon/>
+                            <span v-text='l.name' class='mx-3'/>
+                        </template>
+                        <template v-else>
+                            <MapIcon/>
+                            <span v-text='l.name' class='mx-3'/>
+                        </template>
+                    </td>
+                </tr></tbody>
+            </table>
+        </div>
+    </template>
 </div>
 </template>
 
@@ -34,6 +53,10 @@
 import {
     TablerLoading
 } from '@tak-ps/vue-tabler';
+import {
+    MapIcon,
+    FolderIcon
+} from 'vue-tabler-icons';
 import Alert from './Alert.vue';
 
 export default {
@@ -57,7 +80,7 @@ export default {
             err: null,
             token: null,
             server: null,
-            list: {},
+            list: [],
             servers: []
         }
     },
@@ -71,6 +94,7 @@ export default {
     },
     methods: {
         getList: async function() {
+            this.loading = true;
             try {
                 const url = window.stdurl('/api/sink/esri');
                 url.searchParams.append('token', this.token);
@@ -79,13 +103,21 @@ export default {
                     method: 'GET',
                 });
 
-                this.list = res;
+                this.list = [].concat(res.folders.map((folder) => {
+                        return { name: folder, type: 'folder' };
+                    }), res.services.map((service) => {
+                        return { name: service.name, type: 'service' };
+                    })).map((e) => {
+                        e.id = `${e.type}-${e.name}`;
+                        return e;
+                    });
             } catch (err) {
                 this.err = err;
             }
             this.loading = false;
         },
         generateToken: async function() {
+            this.loading = true;
             try {
                 const res = await window.std('/api/sink/esri', {
                     method: 'POST',
@@ -106,6 +138,8 @@ export default {
     },
     components: {
         Alert,
+        MapIcon,
+        FolderIcon,
         TablerLoading
     }
 }
