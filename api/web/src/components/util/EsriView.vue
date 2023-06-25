@@ -38,7 +38,7 @@
         <div class='table-responsive'>
             <table class="table table-hover card-table table-vcenter cursor-pointer">
                 <thead><tr><th>Name</th></tr></thead>
-                <tbody><tr @click='listpath.push(l.name)' :key='l.id' v-for='l in list'>
+                <tbody><tr @click='listpath.push(l)' :key='l.id' v-for='l in list'>
                     <td>
                         <template v-if='l.type === "folder"'>
                             <FolderIcon/>
@@ -72,7 +72,7 @@ export default {
     name: 'EsriProxy',
     props: {
         url: {
-            type: URL
+            type: [URL, String]
         },
         username: {
             type: String,
@@ -101,7 +101,6 @@ export default {
         listpath: {
             deep: true,
             handler: async function() {
-                console.error('LISTPATH');
                 await this.getList();
             }
         }
@@ -123,7 +122,11 @@ export default {
                 const url = window.stdurl('/api/sink/esri');
                 url.searchParams.append('token', this.token);
                 if (this.listpath.length) {
-                    url.searchParams.append('url', this.server.url + '/rest/services/' + this.listpath.join('/'));
+                    const listpath = this.listpath.map((pth) => {
+                        if (pth.type === 'folder') return pth.name;
+                        return pth.name + '/' + pth.type;
+                    }).join('/');
+                    url.searchParams.append('url', this.server.url + '/rest/services/' + listpath);
                 } else {
                     url.searchParams.append('url', this.server.url + '/rest');
                 }
@@ -135,7 +138,7 @@ export default {
                 this.list = [].concat(res.folders.map((folder) => {
                         return { name: folder, type: 'folder' };
                     }), res.services.map((service) => {
-                        return { name: service.name, type: 'service' };
+                        return { name: service.name.split('/')[service.name.split('/').length -1], type: service.type };
                     })).map((e) => {
                         e.id = `${e.type}-${e.name}`;
                         return e;
