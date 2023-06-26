@@ -86,9 +86,17 @@
                                         </div>
                                     </template>
                                     <template v-else>
-                                        Once Certificates are generated they cannot be viewed
-
-                                        <button @click='regen=true' class='btn btn-secondary'>Regenerate Certificate</button>
+                                        <div class='border px-3 py-3'>
+                                            <div class='d-flex justify-content-center'>
+                                                <LockIcon width='50' height='50'/>
+                                            </div>
+                                            <div class='d-flex justify-content-center my-3'>
+                                                Once Certificates are generated they cannot be viewed
+                                            </div>
+                                            <div class='d-flex justify-content-center'>
+                                                <button @click='regen=true' class='btn btn-secondary'>Regenerate Certificate</button>
+                                            </div>
+                                        </div>
                                     </template>
 
                                     <div class="col-md-12 mt-3">
@@ -133,6 +141,7 @@ import Upload from './util/UploadP12.vue';
 import LoginCertModal from './util/LoginCertModal.vue';
 import {
     PlusIcon,
+    LockIcon,
     LoginIcon,
 } from 'vue-tabler-icons';
 import {
@@ -200,7 +209,7 @@ export default {
                 else this.errors[field] = '';
             }
 
-            if (!this.$route.params.connectionid) {
+            if (!this.$route.params.connectionid || this.regen) {
                 for (const field of Object.keys(this.connection.auth)) {
                     if (!this.connection.auth[field]) this.errors[field] = 'Cannot be empty';
                     else this.errors[field] = '';
@@ -212,9 +221,12 @@ export default {
             }
 
             if (this.$route.params.connectionid) {
+                const connection = JSON.parse(JSON.stringify(this.connection));
+                if (!this.regen) delete connection.auth;
+
                 const create = await window.std(`/api/connection/${this.$route.params.connectionid}`, {
                     method: 'PATCH',
-                    body: this.connection
+                    body: connection
                 });
                 this.$router.push(`/connection/${create.id}`);
             } else {
@@ -235,6 +247,7 @@ export default {
     components: {
         Upload,
         PlusIcon,
+        LockIcon,
         LoginIcon,
         TablerDelete,
         TablerBreadCrumb,
