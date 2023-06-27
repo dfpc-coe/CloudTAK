@@ -104,6 +104,9 @@ export default {
         await this.fetch();
 
     },
+    unmounted: function() {
+        this.ws.close();
+    },
     methods: {
         timeDiff(update) {
             return timeDiff(update);
