@@ -23,35 +23,45 @@
         <TablerLoading desc='Connecting to ESRI Server'/>
     </template>
     <template v-else-if='!server'>
-        <div class='table-responsive'>
-            <table class="table table-hover card-table table-vcenter cursor-pointer">
-                <thead><tr><th>ID</th><th>Name</th><th>Url</th></tr></thead>
-                <tbody><tr @click='server = serv' :key='serv.id' v-for='serv in servers'>
-                    <td v-text='serv.id'></td>
-                    <td v-text='serv.name'></td>
-                    <td v-text='serv.url'></td>
-                </tr></tbody>
-            </table>
-        </div>
+        <template v-if='servers.length === 0'>
+            <None :compact='true' :create='false' label='ArcGIS Servers'/>
+        </template>
+        <template v-else>
+            <div class='table-responsive'>
+                <table class="table table-hover card-table table-vcenter cursor-pointer">
+                    <thead><tr><th>ID</th><th>Name</th><th>Url</th></tr></thead>
+                    <tbody><tr @click='server = serv' :key='serv.id' v-for='serv in servers'>
+                        <td v-text='serv.id'></td>
+                        <td v-text='serv.name'></td>
+                        <td v-text='serv.url'></td>
+                    </tr></tbody>
+                </table>
+            </div>
+        </template>
     </template>
     <template v-else-if='server && !container'>
-        <div class='table-responsive'>
-            <table class="table table-hover card-table table-vcenter cursor-pointer">
-                <thead><tr><th>Name</th></tr></thead>
-                <tbody><tr @click='listpath.push(l)' :key='l.id' v-for='l in list'>
-                    <td>
-                        <template v-if='l.type === "folder"'>
-                            <FolderIcon/>
-                            <span v-text='l.name' class='mx-3'/>
-                        </template>
-                        <template v-else>
-                            <MapIcon/>
-                            <span v-text='l.name' class='mx-3'/>
-                        </template>
-                    </td>
-                </tr></tbody>
-            </table>
-        </div>
+        <template v-if='list.length === 0'>
+            <None :compact='true' :create='false' label='Services'/>
+        </template>
+        <template v-else>
+            <div class='table-responsive'>
+                <table class="table table-hover card-table table-vcenter cursor-pointer">
+                    <thead><tr><th>Name</th></tr></thead>
+                    <tbody><tr @click='listpath.push(l)' :key='l.id' v-for='l in list'>
+                        <td>
+                            <template v-if='l.type === "folder"'>
+                                <FolderIcon/>
+                                <span v-text='l.name' class='mx-3'/>
+                            </template>
+                            <template v-else>
+                                <MapIcon/>
+                                <span v-text='l.name' class='mx-3'/>
+                            </template>
+                        </td>
+                    </tr></tbody>
+                </table>
+            </div>
+        </template>
     </template>
     <template v-else>
         <div class='datagrid mx-4'>
@@ -70,14 +80,19 @@
             </template>
         </div>
 
-        <div class='table-responsive'>
-            <table class="table table-hover card-table table-vcenter cursor-pointer">
-                <thead><tr><th>Name</th></tr></thead>
-                <tbody><tr :key='layer.id' v-for='layer in container.layers'>
-                    <td><MapIcon/><span v-text='layer.name' class='mx-3'/></td>
-                </tr></tbody>
-            </table>
-        </div>
+        <template v-if='container.layers.length === 0'>
+            <None :compact='true' :create='true' label='Layers'/>
+        </template>
+        <template v-else>
+            <div class='table-responsive'>
+                <table class="table table-hover card-table table-vcenter cursor-pointer">
+                    <thead><tr><th>Name</th></tr></thead>
+                    <tbody><tr :key='layer.id' v-for='layer in container.layers'>
+                        <td><MapIcon/><span v-text='layer.name' class='mx-3'/></td>
+                    </tr></tbody>
+                </table>
+            </div>
+        </template>
     </template>
 </div>
 </template>
@@ -86,6 +101,7 @@
 import {
     TablerLoading
 } from '@tak-ps/vue-tabler';
+import None from '../cards/None.vue';
 import {
     MapIcon,
     XIcon,
@@ -201,6 +217,7 @@ export default {
     components: {
         Alert,
         XIcon,
+        None,
         MapIcon,
         FolderIcon,
         ArrowBackIcon,
