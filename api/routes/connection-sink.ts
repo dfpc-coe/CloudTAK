@@ -56,4 +56,28 @@ export default async function router(schema: any, config: Config) {
             return Err.respond(err, res);
         }
     });
+
+    await schema.get('/connection/:connectionid/sink/:sinkid', {
+        name: 'Get Sink',
+        group: 'ConnectionSink',
+        auth: 'admin',
+        description: 'Get a connection sink',
+        ':connectionid': 'integer',
+        ':sinkid': 'integer',
+        res: 'res.ConnectionSink.json'
+    }, async (req: AuthRequest, res: Response) => {
+        try {
+            await Auth.is_auth(req);
+
+            const conn = await Connection.from(config.pool, req.params.connectionid);
+
+            const sink = await ConnectionSink.from(config.pool, req.params.sinkid);
+
+            if (sink.connection !== conn.id) throw new Err(400, null, 'Sink must belong to parent connection');
+
+            return res.json(sink);
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
 }
