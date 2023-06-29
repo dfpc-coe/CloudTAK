@@ -25,7 +25,7 @@ export default class Sinks extends Map<string, any> {
     }
 
     async cot(conn: Connection, cot: COT): Promise<boolean> {
-        const sinks = await config.cacher.get(Cacher.Miss(req.query, `connection-${conn.id}-sinks`), async () => {
+        const sinks = await this.config.cacher.get(Cacher.Miss({}, `connection-${conn.id}-sinks`), async () => {
             return await ConnectionSink.list(this.config.pool, { connection: conn.id, enabled: true })
         });
 
