@@ -18,7 +18,7 @@ export default {
             Type: 'AWS::SQS::Queue',
             Properties: {
                 FifoQueue: true,
-                QueueName: cf.join('-', [cf.stackName, 'hooks-dead.fifo']),
+                QueueName: cf.join('-', [cf.stackName, 'hooks-dead.fifo'])
             }
         },
         HookLambdaSource: {
@@ -81,7 +81,7 @@ export default {
                             ],
                             Resource: [
                                 cf.getAtt('HookQueue', 'Arn'),
-                                cf.getAtt('HookDeadQueue', 'Arn'),
+                                cf.getAtt('HookDeadQueue', 'Arn')
                             ]
                         }]
                     }
