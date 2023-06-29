@@ -81,7 +81,7 @@
         </div>
 
         <template v-if='container.layers.length === 0'>
-            <None :compact='true' :create='true' label='Layers'/>
+            <None @create='createLayer' :compact='true' :create='true' label='Layers'/>
         </template>
         <template v-else>
             <div class='table-responsive'>
@@ -156,6 +156,28 @@ export default {
                 this.listpath.pop();
             } else if (this.server) {
                 this.server = null;
+            }
+        },
+        createLayer: async function() {
+            this.loading = true;
+            try {
+                const url = window.stdurl('/api/sink/esri/layer');
+                url.searchParams.append('token', this.token);
+                if (this.listpath.length) {
+                    const listpath = this.listpath.map((pth) => {
+                        if (pth.type === 'folder') return pth.name;
+                        return pth.name + '/' + pth.type;
+                    }).join('/');
+                    url.searchParams.append('url', this.server.url + '/rest/services/' + listpath);
+                } else {
+                    url.searchParams.append('url', this.server.url + '/rest');
+                }
+
+                await window.std(url, { method: 'POST' });
+
+                await this.getList();
+            } catch (err) {
+                this.err = err;
             }
         },
         getList: async function() {
