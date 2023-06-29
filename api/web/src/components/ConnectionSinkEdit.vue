@@ -55,7 +55,7 @@
                                     />
                                 </div>
 
-                                <template v-if='sink.type === "ArcGIS"'>
+                                <template v-if='!$route.params.sinkid && sink.type === "ArcGIS"'>
                                     <div class="col-12 mt-3">
                                         <TablerInput
                                             label='ArcGIS Portal URL (Example: https://example.com/portal/sharing/rest)'
