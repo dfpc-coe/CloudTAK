@@ -7,7 +7,18 @@ export default {
             Properties: {
                 ContentBasedDeduplication: true,
                 QueueName: cf.join('-', [cf.stackName, 'hooks.fifo']),
-                FifoQueue: true
+                FifoQueue: true,
+                RedrivePolicy: {
+                    deadLetterTargetArn: cf.getAtt('HookDeadQueue', 'Arn'),
+                    maxReceiveCount: 3
+                }
+            }
+        },
+        HookDeadQueue: {
+            Type: 'AWS::SQS::Queue',
+            Properties: {
+                FifoQueue: true,
+                QueueName: cf.join('-', [cf.stackName, 'hooks-dead.fifo']),
             }
         },
         HookLambdaSource: {
@@ -54,7 +65,27 @@ export default {
                     }]
                 },
                 Path: '/',
-                Policies: [],
+                Policies: [{
+                    PolicyName: cf.join([cf.stackName, '-hook-queue']),
+                    PolicyDocument: {
+                        Version: '2012-10-17',
+                        Statement: [{
+                            Effect: 'Allow',
+                            Action: [
+                                'sqs:SendMessage',
+                                'sqs:ReceiveMessage',
+                                'sqs:ChangeMessageVisibility',
+                                'sqs:DeleteMessage',
+                                'sqs:GetQueueUrl',
+                                'sqs:GetQueueAttributes'
+                            ],
+                            Resource: [
+                                cf.getAtt('HookQueue', 'Arn'),
+                                cf.getAtt('HookDeadQueue', 'Arn'),
+                            ]
+                        }]
+                    }
+                }],
                 ManagedPolicyArns: [
                     cf.join(['arn:', cf.partition, ':iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'])
                 ]
