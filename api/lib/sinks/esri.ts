@@ -12,11 +12,21 @@ export default class ESRI extends SinkInterface {
     }
 
     static async secrets(config: Config, sink: ConnectionSink): Promise<any> {
-        const secrets = await config.cacher.get(Cacher.Miss({}, `connection-${sink.connection}-sink-${sink.id}-secrets`), async () => {
-            const esri = await EsriProxy.generateToken(new URL(sink.body.url), config.API_URL, sink.body.username, sink.body.password);
+        let secrets: any = {};
+        do {
+            secrets = await config.cacher.get(Cacher.Miss({}, `connection-${sink.connection}-sink-${sink.id}-secrets`), async () => {
+                const esri = await EsriProxy.generateToken(new URL(sink.body.url), config.API_URL, sink.body.username, sink.body.password);
+                return {
+                    token: esri.token,
+                    expires: esri.expires
+                }
+            });
 
-            return { token: esri.token }
-        });
+            if (secrets.expires < +new Date()  + 1000 * 60 * 60) {
+                await config.cacher.del(`connection-${sink.connection}-sink-${sink.id}-secrets`);
+            }
+        // Expire if less than an hour away
+        } while (secrets.expires < +new Date()  + 1000 * 60 * 60)
 
         return secrets;
     }
