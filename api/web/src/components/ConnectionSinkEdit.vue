@@ -77,7 +77,6 @@
                                             v-model='sink.body.password'
                                         />
                                     </div>
-
                                     <div class="col-md-12 mt-3">
                                         <template v-if='!esriView.view'>
                                             <div class='d-flex'>
@@ -91,9 +90,17 @@
                                                 :url='sink.body.url'
                                                 :username='sink.body.username'
                                                 :password='sink.body.password'
+                                                @layer='sink.body.layer = $event'
                                                 @close='esriView.view = false'
                                             />
                                         </template>
+                                    </div>
+                                    <div class="col-md-12 mt-3">
+                                        <div class='d-flex'>
+                                            <div class='ms-auto'>
+                                                <button @click='create' :disabled='!sink.body.layer' class="cursor-pointer btn btn-primary">Save Sink</button>
+                                            </div>
+                                        </div>
                                     </div>
                                 </template>
                                 <template v-else>
