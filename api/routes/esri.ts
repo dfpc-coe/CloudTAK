@@ -66,6 +66,7 @@ export default async function router(schema: any, config: Config) {
 
             const esri = new EsriProxy(
                 String(req.query.token),
+                +new Date() + 10000,
                 new URL(String(req.query.url)),
                 config.API_URL
             );
@@ -104,6 +105,7 @@ export default async function router(schema: any, config: Config) {
 
             const esri = new EsriProxy(
                 String(req.query.token),
+                +new Date() + 10000,
                 new URL(String(req.query.url)),
                 config.API_URL
             );

@@ -33,7 +33,7 @@ export default class Sinks extends Map<string, any> {
         for (const sink of sinks.sinks) {
             const handler = this.get(sink.type);
 
-            const secrets = await handler.secrets();
+            const secrets = await handler.secrets(this.config, sink);
             const feat = cot.to_geojson();
 
             console.error(secrets);
