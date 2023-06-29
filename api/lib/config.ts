@@ -12,6 +12,7 @@ interface ConfigArgs {
     silent: boolean,
     unsafe: boolean,
     noevents: boolean,
+    nosinks: boolean,
     local: boolean
 }
 
@@ -23,6 +24,7 @@ export default class Config {
     silent: boolean;
     unsafe: boolean;
     noevents: boolean;
+    nosinks: boolean;
     StackName: string;
     HookURL?: string;
     SigningSecret: string;
@@ -47,6 +49,7 @@ export default class Config {
         config.silent = (args.silent || false);
         config.local = (args.local || false);
         config.noevents = (args.noevents || false);
+        config.nosinks = (args.nosinks || false);
         config.wsClients = []
 
         try {
