@@ -25,6 +25,7 @@ const args = minimist(process.argv, {
         'nocache',  // Ignore MemCached
         'unsafe',   // Allow unsecure local dev creds
         'noevents', // Disable Initialization of Second Level Events
+        'nosinks',  // Disable Push to Sinks
         'local'     // (experimental) Disable external calls on startup (for developing in low connectivity)
                     // Note this is the min for serving requests - it doesn't make it particularly functional
     ],
@@ -51,6 +52,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
         silent: args.silent || false,
         unsafe: args.unsafe || false,
         noevents: args.noevents || false,
+        nosinks: args.nosinks || false,
         local: args.local || false,
     });
     await server(config);

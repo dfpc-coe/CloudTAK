@@ -40,6 +40,7 @@ export default class ConnectionPool extends Map<number, ConnectionClient> {
     clients: WebSocket[];
     metrics: Metrics;
     sinks: Sinks;
+    nosinks: boolean;
     stackName: string;
     local: boolean;
 
@@ -52,6 +53,7 @@ export default class ConnectionPool extends Map<number, ConnectionClient> {
         this.metrics = new Metrics(stackName);
         this.pool = config.pool;
         this.sinks = new Sinks(config);
+        this.nosinks = config.nosinks;
     }
 
     async refresh(pool: Pool, server: Server) {
@@ -115,7 +117,9 @@ export default class ConnectionPool extends Map<number, ConnectionClient> {
                 }));
             }
 
-            await this.sinks.cot(conn, cot);
+            if (!this.nosinks) {
+                await this.sinks.cot(conn, cot);
+            }
         }).on('end', async () => {
             console.error(`not ok - ${conn.id} @ end`);
             this.retry(connClient);
