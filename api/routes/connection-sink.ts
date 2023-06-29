@@ -51,7 +51,34 @@ export default async function router(schema: any, config: Config) {
                 ...req.body
             });
 
-            return res.json(conn);
+            return res.json(sink);
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
+
+    await schema.patch('/connection/:connectionid/sink/:sinkid', {
+        name: 'Update Sink',
+        group: 'ConnectionSink',
+        auth: 'admin',
+        description: 'Update a connection sink',
+        ':connectionid': 'integer',
+        ':sinkid': 'integer',
+        body: 'req.body.PatchConnectionSink.json'
+        res: 'res.ConnectionSink.json'
+    }, async (req: AuthRequest, res: Response) => {
+        try {
+            await Auth.is_auth(req);
+
+            const conn = await Connection.from(config.pool, req.params.connectionid);
+
+            const sink = await ConnectionSink.from(config.pool, req.params.sinkid);
+
+            if (sink.connection !== conn.id) throw new Err(400, null, 'Sink must belong to parent connection');
+            
+            await sink.commit(req.body);
+
+            return res.json(sink);
         } catch (err) {
             return Err.respond(err, res);
         }
