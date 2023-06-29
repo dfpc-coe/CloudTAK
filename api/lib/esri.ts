@@ -37,12 +37,18 @@ export default class EsriProxy {
                         description: 'CoT message Points',
                         type: 'Feature Layer',
                         displayField: 'callsign',
+                        supportedQueryFormats: 'JSON',
+                        capabilities: "Create,Delete,Query,Update,Editing,Extract,Sync",
                         geometryType: 'esriGeometryPoint',
                         allowGeometryUpdates: true,
                         hasAttachments: false,
                         hasM: false,
                         hasZ: false,
-                        objectIdField: 'FID',
+                        objectIdField: 'OBJECTID',
+                        uniqueIdField: {
+                            name: "OBJECTID",
+                            isSystemMaintained: true
+                        },
                         extent: {
                             xmin: -20037508.34,
                             ymin: -20048966.1,
@@ -51,8 +57,8 @@ export default class EsriProxy {
                             spatialReference: { wkid: 102100, latestWkid: 3857 }
                         },
                         fields: [{
-                            "name": "FID",
-                            "type": "esriFieldTypeInteger",
+                            "name": "OBJECTID",
+                            "type": "esriFieldTypeOID",
                             "actualType": "int",
                             "alias": "FID",
                             "sqlType": "sqlTypeInteger",
