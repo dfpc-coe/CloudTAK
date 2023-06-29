@@ -72,6 +72,7 @@
                                     </div>
                                     <div class="col-12 col-md-6 mt-3">
                                         <TablerInput
+                                            type='password'
                                             label='ArcGIS Password'
                                             :disabled='disabled'
                                             v-model='sink.body.password'

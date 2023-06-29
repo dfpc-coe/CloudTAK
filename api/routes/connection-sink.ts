@@ -64,7 +64,7 @@ export default async function router(schema: any, config: Config) {
         description: 'Update a connection sink',
         ':connectionid': 'integer',
         ':sinkid': 'integer',
-        body: 'req.body.PatchConnectionSink.json'
+        body: 'req.body.PatchConnectionSink.json',
         res: 'res.ConnectionSink.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
