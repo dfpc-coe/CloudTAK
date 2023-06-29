@@ -189,7 +189,7 @@ export default {
                     method: 'PATCH',
                     body: this.sink
                 });
-                this.$router.push(`/connection/${this.$route.params.sinkid}/sink/${create.id}`);
+                this.$router.push(`/connection/${this.$route.params.connectionid}/sink/${create.id}`);
             } else {
                 const create = await window.std(`/api/connection/${this.$route.params.connectionid}/sink`, {
                     method: 'POST',
