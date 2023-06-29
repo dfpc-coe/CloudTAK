@@ -35,6 +35,7 @@ const router = new VueRouter.createRouter({
         { path: '/connection/:connectionid/sink', name: 'connection-sinks', component: () => import('./components/ConnectionSinks.vue') },
         { path: '/connection/:connectionid/sink/new', name: 'connection-sink-new', component: () => import('./components/ConnectionSinkEdit.vue') },
         { path: '/connection/:connectionid/sink/:sinkid', name: 'connection-sink', component: () => import('./components/ConnectionSink.vue') },
+        { path: '/connection/:connectionid/sink/:sinkid/edit', name: 'connection-sink-edit', component: () => import('./components/ConnectionSinkEdit.vue') },
 
         { path: '/connection/:connectionid', name: 'connection', component: () => import('./components/Connection.vue') },
         { path: '/connection/:connectionid/edit', name: 'connection-edit', component: () => import('./components/ConnectionEdit.vue') },
