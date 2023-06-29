@@ -19,15 +19,68 @@ export default class EsriProxy {
     }
 
     async createLayer() {
-        const res = await fetch(this.base + `?f=json`, {
-            method: 'GET',
+        const url = new URL(this.base);
+        url.pathname = url.pathname.replace('/rest/', '/rest/admin/') + '/addToDefinition';
+        const res = await fetch(url, {
+            method: 'POST',
             headers: {
                 'Referer': this.referer,
+                'Content-Type': 'application/x-www-form-urlencoded',
                 'X-Esri-Authorization': `Bearer ${this.token}`
             },
+            body: new URLSearchParams({
+                'f': 'json',
+                'addToDefinition': JSON.stringify({
+                    layers: [{
+                        id: 0,
+                        name: 'TAK ETL Points',
+                        description: 'CoT message Points',
+                        type: 'Feature Layer',
+                        displayField: 'callsign',
+                        geometryType: 'esriGeometryPoint',
+                        allowGeometryUpdates: true,
+                        hasAttachments: false,
+                        hasM: false,
+                        hasZ: false,
+                        objectIdField: 'FID',
+                        extent: {
+                            xmin: -20037508.34,
+                            ymin: -20048966.1,
+                            xmax: 20037508.34,
+                            ymax: 20048966.1,
+                            spatialReference: { wkid: 102100, latestWkid: 3857 }
+                        },
+                        fields: [{
+                            "name": "FID",
+                            "type": "esriFieldTypeInteger",
+                            "actualType": "int",
+                            "alias": "FID",
+                            "sqlType": "sqlTypeInteger",
+                            "length": 4,
+                            "nullable": false,
+                            "editable": false,
+                            "domain": null,
+                            "defaultValue": null
+                        },{
+                            "name": "CallSign",
+                            "type": "esriFieldTypeString",
+                            "actualType": "nvarchar",
+                            "alias": "CallSign",
+                            "sqlType": "sqlTypeNVarchar",
+                            "length": 100,
+                            "nullable": true,
+                            "editable": true,
+                            "domain": null,
+                            "defaultValue": null
+                        }]
+                    }]
+                })
+            })
         });
 
         const json = await res.json()
+
+        console.error(json);
 
         if (json.error) throw new Err(400, null, 'ESRI Server Error: ' + json.error.message);
 

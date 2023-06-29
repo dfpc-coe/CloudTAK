@@ -152,7 +152,10 @@ export default {
     },
     methods: {
         back: function() {
-            if (this.listpath.length) {
+            if (this.container) {
+                this.container = null;
+                this.listpath.pop();
+            } else if (this.listpath.length) {
                 this.listpath.pop();
             } else if (this.server) {
                 this.server = null;
