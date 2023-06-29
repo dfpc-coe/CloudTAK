@@ -108,7 +108,7 @@ export default async function router(schema: any, config: Config) {
                 config.API_URL
             );
 
-            await esri.createLayerList();
+            await esri.createLayer();
 
             return res.json({
                 status: 200,

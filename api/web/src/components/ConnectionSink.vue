@@ -24,6 +24,7 @@
                             <div class='ms-auto'>
                                 <div class='btn-list'>
                                     <RefreshIcon class='cursor-pointer' @click='refresh'/>
+                                    <SettingsIcon class='cursor-pointer' @click='$router.push(`/connection/${$route.params.connectionid}/sink/${$route.params.sinkid}/edit`)'/>
                                 </div>
                             </div>
                         </div>
@@ -75,6 +76,7 @@ export default {
     },
     components: {
         RefreshIcon,
+        SettingsIcon,
         PageFooter,
         TablerBreadCrumb,
         TablerLoading,
