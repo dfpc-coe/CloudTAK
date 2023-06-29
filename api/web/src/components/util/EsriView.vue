@@ -92,7 +92,7 @@
                             <div class='d-flex'>
                                 <MapIcon/><span v-text='lyr.name' class='mx-3'/>
                                 <div class='ms-auto'>
-                                    <CheckIcon v-if='layer.id === lyr.id'/>
+                                    <CheckIcon v-if='layer && layer.id === lyr.id'/>
                                 </div>
                             </div>
                         </td>
@@ -150,7 +150,7 @@ export default {
             if (this.server) await this.getList()
         },
         layer: function() {
-            this.emit('layer', this.layer);
+            this.$emit('layer', this.layer);
         },
         listpath: {
             deep: true,
