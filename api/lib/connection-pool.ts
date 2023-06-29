@@ -6,6 +6,7 @@ import ConnectionSink from './types/connection-sink.js';
 // @ts-ignore
 import Server from './types/server.js';
 import Sinks from './sinks.js';
+import Config from './config.js';
 import Metrics from './aws/metric.js';
 // @ts-ignore
 import { Pool } from '@openaddresses/batch-generic';
@@ -42,15 +43,15 @@ export default class ConnectionPool extends Map<number, ConnectionClient> {
     stackName: string;
     local: boolean;
 
-    constructor(pool: Pool, server: Server, clients: WebSocket[] = [], stackName: string, local=false) {
+    constructor(config: Config, server: Server, clients: WebSocket[] = [], stackName: string, local=false) {
         super();
         this.#server = server;
         this.clients = clients;
         this.stackName = stackName,
         this.local = local,
         this.metrics = new Metrics(stackName);
-        this.pool = pool;
-        this.sinks = new Sinks(pool);
+        this.pool = config.pool;
+        this.sinks = new Sinks(config);
     }
 
     async refresh(pool: Pool, server: Server) {

@@ -242,6 +242,8 @@ export default async function router(schema: any, config: Config) {
 
             await layer.delete();
 
+            await config.cacher.del(`layer-${req.params.layerid}`);
+
             return res.json({
                 status: 200,
                 message: 'Layer Deleted'

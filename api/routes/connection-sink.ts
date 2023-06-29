@@ -51,6 +51,8 @@ export default async function router(schema: any, config: Config) {
                 ...req.body
             });
 
+            await config.cacher.del(`connection-${req.params.connectionid}-sinks`);
+
             return res.json(sink);
         } catch (err) {
             return Err.respond(err, res);
@@ -75,8 +77,10 @@ export default async function router(schema: any, config: Config) {
             const sink = await ConnectionSink.from(config.pool, req.params.sinkid);
 
             if (sink.connection !== conn.id) throw new Err(400, null, 'Sink must belong to parent connection');
-            
+
             await sink.commit(req.body);
+
+            await config.cacher.del(`connection-${req.params.connectionid}-sinks`);
 
             return res.json(sink);
         } catch (err) {
@@ -127,6 +131,8 @@ export default async function router(schema: any, config: Config) {
             if (sink.connection !== conn.id) throw new Err(400, null, 'Sink must belong to parent connection');
 
             await sink.delete();
+
+            await config.cacher.del(`connection-${req.params.connectionid}-sinks`);
 
             return res.json({
                 status: 200,
