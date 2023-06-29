@@ -18,6 +18,22 @@ export default class EsriProxy {
         return base;
     }
 
+    async createLayer() {
+        const res = await fetch(this.base + `?f=json`, {
+            method: 'GET',
+            headers: {
+                'Referer': this.referer,
+                'X-Esri-Authorization': `Bearer ${this.token}`
+            },
+        });
+
+        const json = await res.json()
+
+        if (json.error) throw new Err(400, null, 'ESRI Server Error: ' + json.error.message);
+
+        return json;
+    }
+
     async getList() {
         const res = await fetch(this.base + `?f=json`, {
             method: 'GET',
