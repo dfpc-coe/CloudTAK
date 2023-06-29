@@ -150,7 +150,8 @@ export default {
             if (this.server) await this.getList()
         },
         layer: function() {
-            this.$emit('layer', this.layer);
+            if (!this.layer) return this.$emit('layer', '');
+            this.$emit('layer', this.stdurl());
         },
         listpath: {
             deep: true,
@@ -174,20 +175,29 @@ export default {
                 this.server = null;
             }
         },
+        stdurl: function() {
+            if (this.listpath.length) {
+                const listpath = this.listpath.map((pth) => {
+                    if (pth.type === 'folder') return pth.name;
+                    return pth.name + '/' + pth.type;
+                }).join('/');
+
+                if (!this.layer) {
+                    return this.server.url + '/rest/services/' + listpath;
+                } else {
+                    return this.server.url + '/rest/services/' + listpath + '/' + this.layer.id;
+                }
+            } else {
+                return this.server.url + '/rest';
+            }
+
+        },
         createLayer: async function() {
             this.loading = true;
             try {
                 const url = window.stdurl('/api/sink/esri/layer');
                 url.searchParams.append('token', this.token);
-                if (this.listpath.length) {
-                    const listpath = this.listpath.map((pth) => {
-                        if (pth.type === 'folder') return pth.name;
-                        return pth.name + '/' + pth.type;
-                    }).join('/');
-                    url.searchParams.append('url', this.server.url + '/rest/services/' + listpath);
-                } else {
-                    url.searchParams.append('url', this.server.url + '/rest');
-                }
+                url.searchParams.append('url', this.stdurl());
 
                 await window.std(url, { method: 'POST' });
 
@@ -201,15 +211,7 @@ export default {
             try {
                 const url = window.stdurl('/api/sink/esri');
                 url.searchParams.append('token', this.token);
-                if (this.listpath.length) {
-                    const listpath = this.listpath.map((pth) => {
-                        if (pth.type === 'folder') return pth.name;
-                        return pth.name + '/' + pth.type;
-                    }).join('/');
-                    url.searchParams.append('url', this.server.url + '/rest/services/' + listpath);
-                } else {
-                    url.searchParams.append('url', this.server.url + '/rest');
-                }
+                url.searchParams.append('url', this.stdurl());
 
                 const res = await window.std(url, {
                     method: 'GET',
