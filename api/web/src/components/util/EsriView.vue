@@ -87,8 +87,15 @@
             <div class='table-responsive'>
                 <table class="table table-hover card-table table-vcenter cursor-pointer">
                     <thead><tr><th>Name</th></tr></thead>
-                    <tbody><tr :key='layer.id' v-for='layer in container.layers'>
-                        <td><MapIcon/><span v-text='layer.name' class='mx-3'/></td>
+                    <tbody><tr @click='layer=lyr' :key='lyr.id' v-for='lyr in container.layers'>
+                        <td>
+                            <div class='d-flex'>
+                                <MapIcon/><span v-text='lyr.name' class='mx-3'/>
+                                <div class='ms-auto'>
+                                    <CheckIcon v-if='layer.id === lyr.id'/>
+                                </div>
+                            </div>
+                        </td>
                     </tr></tbody>
                 </table>
             </div>
@@ -107,6 +114,7 @@ import {
     XIcon,
     FolderIcon,
     ArrowBackIcon,
+    CheckIcon
 } from 'vue-tabler-icons';
 import Alert from './Alert.vue';
 
@@ -133,12 +141,16 @@ export default {
             server: null,
             listpath: [],
             servers: [],
-            container: null
+            container: null,
+            layer: null
         }
     },
     watch: {
         server: async function() {
             if (this.server) await this.getList()
+        },
+        layer: function() {
+            this.emit('layer', this.layer);
         },
         listpath: {
             deep: true,
@@ -153,6 +165,7 @@ export default {
     methods: {
         back: function() {
             if (this.container) {
+                this.layer = null;
                 this.container = null;
                 this.listpath.pop();
             } else if (this.listpath.length) {
@@ -245,6 +258,7 @@ export default {
         None,
         MapIcon,
         FolderIcon,
+        CheckIcon,
         ArrowBackIcon,
         TablerLoading
     }
