@@ -137,6 +137,7 @@ export default class EsriProxy {
         body.append('username', username);
         body.append('password', password);
         body.append('referer', referer);
+        body.append('expiration', String(21600));
 
         const base = this.parser(url);
 
