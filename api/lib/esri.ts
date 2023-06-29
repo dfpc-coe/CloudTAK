@@ -79,22 +79,26 @@ export default class EsriProxy {
 
         const base = this.parser(url);
 
-        const res = await fetch(base + '/generateToken?f=json', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded'
-            },
-            body: String(body)
-        });
+        try {
+            const res = await fetch(base + '/generateToken?f=json', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: String(body)
+            });
 
-        const json = await res.json()
+            const json = await res.json()
 
-        if (json.error) throw new Err(400, null, 'ESRI Server Error: ' + json.error.message);
+            if (json.error) throw new Err(400, null, 'ESRI Server Error: ' + json.error.message);
 
-        return new EsriProxy(
-            json.token,
-            this.parser(url),
-            referer
-        );
+            return new EsriProxy(
+                json.token,
+                this.parser(url),
+                referer
+            );
+        } catch (err) {
+            throw new Err(400, err, err.message);
+        }
     }
 }
