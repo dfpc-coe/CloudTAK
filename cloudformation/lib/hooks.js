@@ -10,6 +10,14 @@ export default {
                 FifoQueue: true
             }
         },
+        HookLambdaSource: {
+            Type: 'AWS::Lambda::EventSourceMapping',
+            Properties: {
+                Enabled: 'True',
+                EventSourceArn:  cf.getAtt('HookQueue', 'Arn'),
+                FunctionName: cf.ref('HookLambda')
+            }
+        },
         HookLambda: {
             Type: 'AWS::Lambda::Function',
             Properties: {
@@ -17,6 +25,7 @@ export default {
                 MemorySize: 512,
                 Timeout: 15,
                 Description: 'Push/Convert CoT events to external storage formats',
+                ReservedConcurrentExecutions: 20,
                 PackageType: 'Image',
                 Environment: {
                     Variables: {
