@@ -79,4 +79,43 @@ export default async function router(schema: any, config: Config) {
             return Err.respond(err, res);
         }
     });
+
+    await schema.post('/sink/esri/layer', {
+        name: 'Create Layer',
+        group: 'SinkEsri',
+        auth: 'user',
+        description: 'Create Layer necessary to push CoT data',
+        query: {
+            type: 'object',
+            required: ['url', 'token'],
+            properties: {
+                url: {
+                    type: 'string'
+                },
+                token: {
+                    type: 'string'
+                }
+            }
+        },
+        res: 'res.Standard.json'
+    }, async (req: AuthRequest, res: Response) => {
+        try {
+            await Auth.is_auth(req);
+
+            const esri = new EsriProxy(
+                String(req.query.token),
+                new URL(String(req.query.url)),
+                config.API_URL
+            );
+
+            await esri.createLayerList();
+
+            return res.json({
+                status: 200,
+                message: 'Layer Created'
+            });
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
 }
