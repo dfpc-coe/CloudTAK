@@ -10,7 +10,7 @@ export async function handler(
         const req = JSON.parse(record.body);
 
         if (req.type === 'ArcGIS') {
-            await arcgis(req.body);
+            await arcgis(req);
         } else {
             throw new Error('Unknown Event Type');
         }
