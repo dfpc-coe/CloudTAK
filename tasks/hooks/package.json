@@ -16,6 +16,7 @@
     "devDependencies": {
         "@types/aws-lambda": "^8.10.108",
         "@types/node": "^20.0.0",
+        "@types/terraformer__arcgis": "^2.0.2",
         "@typescript-eslint/eslint-plugin": "^5.57.1",
         "@typescript-eslint/parser": "^5.57.1",
         "eslint": "^8.37.0",

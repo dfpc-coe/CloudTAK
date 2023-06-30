@@ -13,10 +13,12 @@ export async function handler(
             throw new Error('Unknown Event Type');
         }
     }
+
+    return true;
 }
 
-async function arcgis(data: any) {
-    if (data.feat.geometry.type !== 'Point') return;
+async function arcgis(data: any): Promise<boolean> {
+    if (data.feat.geometry.type !== 'Point') return false;
 
     const geometry = geojsonToArcGIS(data.feat.geometry);
 
@@ -26,18 +28,23 @@ async function arcgis(data: any) {
         method: 'POST',
         headers: {
             'Referer': data.secrets.referer,
-            'Content-Type': 'application/json',
+            'Content-Type': 'application/x-www-form-urlencoded',
             'X-Esri-Authorization': `Bearer ${data.secrets.token}`
         },
-        body: JSON.stringify([{
-            attributes: {
-                CallSign: data.feat.properties.callsign
-            },
-            geometry
-        }])
+        body: new URLSearchParams({
+            'f': 'json',
+            'features': JSON.stringify([{
+                attributes: {
+                    CallSign: data.feat.properties.callsign
+                },
+                geometry
+            }])
+        })
     });
 
     if (!res.ok) throw new Error(await res.text());
 
     console.error(await res.text());
+
+    return true;
 }
