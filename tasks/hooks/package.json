@@ -11,12 +11,10 @@
     "dependencies": {
         "@aws-sdk/client-s3": "^3.213.0",
         "@aws-sdk/node-http-handler": "^3.212.0",
-        "@terraformer/arcgis": "^2.1.2",
-        "jsonwebtoken": "^9.0.0"
+        "@terraformer/arcgis": "^2.1.2"
     },
     "devDependencies": {
         "@types/aws-lambda": "^8.10.108",
-        "@types/jsonwebtoken": "^9.0.2",
         "@types/node": "^20.0.0",
         "@typescript-eslint/eslint-plugin": "^5.57.1",
         "@typescript-eslint/parser": "^5.57.1",
