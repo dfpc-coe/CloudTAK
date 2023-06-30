@@ -1,10 +1,8 @@
 import Lambda from "aws-lambda";
-import jwt from 'jsonwebtoken';
-import { arcgisToGeoJSON, geojsonToArcGIS } from '@terraformer/arcgis'
+import { geojsonToArcGIS } from '@terraformer/arcgis'
 
 export async function handler(
-    event: Lambda.SQSEvent,
-    context: Lambda.Context,
+    event: Lambda.SQSEvent
 ): Promise<boolean> {
     for (const record of event.Records) {
         const req = JSON.parse(record.body);
@@ -15,7 +13,7 @@ export async function handler(
             throw new Error('Unknown Event Type');
         }
     }
-};
+}
 
 async function arcgis(data: any) {
     if (data.feat.geometry.type !== 'Point') return;
