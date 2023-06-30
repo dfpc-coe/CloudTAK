@@ -24,7 +24,7 @@ async function arcgis(data: any) {
 
     console.error(data, geometry)
 
-    await fetch(data.layer + '/addFeatures', {
+    await fetch(data.body.layer + '/addFeatures', {
         method: 'POST',
         headers: {
             'Referer': data.secrets.referer,

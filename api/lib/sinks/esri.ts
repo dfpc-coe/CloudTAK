@@ -18,7 +18,8 @@ export default class ESRI extends SinkInterface {
                 const esri = await EsriProxy.generateToken(new URL(sink.body.url), config.API_URL, sink.body.username, sink.body.password);
                 return {
                     token: esri.token,
-                    expires: esri.expires
+                    expires: esri.expires,
+                    referer: esri.referer
                 }
             });
 
