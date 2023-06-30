@@ -40,4 +40,6 @@ async function arcgis(data: any) {
     });
 
     if (!res.ok) throw new Error(await res.text());
+
+    console.error(await res.text());
 }
