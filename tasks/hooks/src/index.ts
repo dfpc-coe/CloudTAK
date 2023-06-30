@@ -33,7 +33,7 @@ async function arcgis(data: any) {
         },
         body: JSON.stringify([{
             attributes: {
-                CallSign: data.properties.callsign
+                CallSign: data.feat.properties.callsign
             },
             geometry
         }])
