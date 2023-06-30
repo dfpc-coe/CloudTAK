@@ -80,6 +80,61 @@ export default class EsriProxy {
                             "editable": true,
                             "domain": null,
                             "defaultValue": null
+                        },{
+                            "name": "Type",
+                            "type": "esriFieldTypeString",
+                            "actualType": "nvarchar",
+                            "alias": "Type",
+                            "sqlType": "sqlTypeNVarchar",
+                            "length": 100,
+                            "nullable": true,
+                            "editable": true,
+                            "domain": null,
+                            "defaultValue": null
+                        },{
+                            "name": "How",
+                            "type": "esriFieldTypeString",
+                            "actualType": "nvarchar",
+                            "alias": "How",
+                            "sqlType": "sqlTypeNVarchar",
+                            "length": 100,
+                            "nullable": true,
+                            "editable": true,
+                            "domain": null,
+                            "defaultValue": null
+                        },{
+                            "name": "Time",
+                            "type": "esriFieldTypeString",
+                            "actualType": "nvarchar",
+                            "alias": "Time",
+                            "sqlType": "sqlTypeNVarchar",
+                            "length": 100,
+                            "nullable": true,
+                            "editable": true,
+                            "domain": null,
+                            "defaultValue": null
+                        },{
+                            "name": "Start",
+                            "type": "esriFieldTypeString",
+                            "actualType": "nvarchar",
+                            "alias": "Start",
+                            "sqlType": "sqlTypeNVarchar",
+                            "length": 100,
+                            "nullable": true,
+                            "editable": true,
+                            "domain": null,
+                            "defaultValue": null
+                        },{
+                            "name": "Stale",
+                            "type": "esriFieldTypeString",
+                            "actualType": "nvarchar",
+                            "alias": "Stale",
+                            "sqlType": "sqlTypeNVarchar",
+                            "length": 100,
+                            "nullable": true,
+                            "editable": true,
+                            "domain": null,
+                            "defaultValue": null
                         }]
                     }]
                 })
