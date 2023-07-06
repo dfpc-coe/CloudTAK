@@ -9,7 +9,7 @@
     },
     "dependencies": {
         "@tabler/core": "^1.0.0-beta16",
-        "@tak-ps/vue-tabler": "^3.0.0",
+        "@tak-ps/vue-tabler": "^3.1.1",
         "core-js": "^3.6.4",
         "cronstrue": "^2.19.0",
         "dropzone": "^6.0.0-beta.2",
