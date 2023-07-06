@@ -120,4 +120,49 @@ export default async function router(schema: any, config: Config) {
             return Err.respond(err, res);
         }
     });
+
+    await schema.delete('/sink/esri/layer', {
+        name: 'Delete Layer',
+        group: 'SinkEsri',
+        auth: 'user',
+        description: 'Delete an ESRI Layer',
+        query: {
+            type: 'object',
+            required: ['url', 'token'],
+            properties: {
+                url: {
+                    type: 'string'
+                },
+                token: {
+                    type: 'string'
+                }
+            }
+        },
+        res: 'res.Standard.json'
+    }, async (req: AuthRequest, res: Response) => {
+        try {
+            await Auth.is_auth(req);
+
+            if (!String(req.query.url).match(/\/\d+$/)) throw new Err(400, null, 'Could not parse layer ID');
+
+            const url = String(req.query.url).replace(/\/\d+$/, '');
+            const layer_id = parseInt(String(req.query.url).match(/\/\d+$/)[0]);
+
+            const esri = new EsriProxy(
+                String(req.query.token),
+                +new Date() + 10000,
+                new URL(String(url)),
+                config.API_URL
+            );
+
+            await esri.deleteLayer(layer_id);
+
+            return res.json({
+                status: 200,
+                message: 'Layer Deleted'
+            });
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
 }

@@ -91,8 +91,9 @@
                         <td>
                             <div class='d-flex'>
                                 <MapIcon/><span v-text='lyr.name' class='mx-3'/>
-                                <div class='ms-auto'>
+                                <div class='ms-auto btn-list'>
                                     <CheckIcon v-if='layer && layer.id === lyr.id'/>
+                                    <TablerDelete @delete='del' displaytype='icon' label='Delete Layer'/>
                                 </div>
                             </div>
                         </td>
@@ -106,7 +107,8 @@
 
 <script>
 import {
-    TablerLoading
+    TablerLoading,
+    TablerDelete
 } from '@tak-ps/vue-tabler';
 import None from '../cards/None.vue';
 import {
@@ -262,7 +264,8 @@ export default {
         FolderIcon,
         CheckIcon,
         ArrowBackIcon,
-        TablerLoading
+        TablerLoading,
+        TablerDelete
     }
 }
 </script>

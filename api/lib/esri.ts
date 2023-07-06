@@ -20,6 +20,31 @@ export default class EsriProxy {
         return base;
     }
 
+    async deleteLayer(id: number) {
+        const url = new URL(this.base);
+        url.pathname = url.pathname.replace('/rest/', '/rest/admin/') + '/deleteFromDefinition';
+        const res = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Referer': this.referer,
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-Esri-Authorization': `Bearer ${this.token}`
+            },
+            body: new URLSearchParams({
+                'f': 'json',
+                'deleteFromDefinition': JSON.stringify({
+                    layers: [{ "id": id }]
+                })
+            })
+        });
+
+        const json = await res.json()
+
+        if (json.error) throw new Err(400, null, 'ESRI Server Error: ' + json.error.message);
+
+        return json;
+    }
+
     async createLayer() {
         const url = new URL(this.base);
         url.pathname = url.pathname.replace('/rest/', '/rest/admin/') + '/addToDefinition';
@@ -142,8 +167,6 @@ export default class EsriProxy {
         });
 
         const json = await res.json()
-
-        console.error(json);
 
         if (json.error) throw new Err(400, null, 'ESRI Server Error: ' + json.error.message);
 
