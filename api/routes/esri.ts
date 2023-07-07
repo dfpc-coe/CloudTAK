@@ -39,7 +39,7 @@ export default async function router(schema: any, config: Config) {
         name: 'Validate & Auth',
         group: 'SinkEsri',
         auth: 'user',
-        description: 'Helper API to configure ESRI MapServers - Get Layer',
+        description: 'Helper API to configure ESRI MapServers - Get Services',
         query: {
             type: 'object',
             required: ['url', 'token'],
@@ -76,6 +76,55 @@ export default async function router(schema: any, config: Config) {
             if (!list.services) list.services = [];
 
             return res.json(list);
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
+
+    await schema.post('/sink/esri/service', {
+        name: 'Create Service',
+        group: 'SinkEsri',
+        auth: 'user',
+        description: 'Create Service to store Feature Layers',
+        query: {
+            type: 'object',
+            required: ['url', 'token'],
+            properties: {
+                url: {
+                    type: 'string'
+                },
+                token: {
+                    type: 'string'
+                }
+            }
+        },
+        body: {
+            type: 'object',
+            required: ['name'],
+            properties: {
+                name: {
+                    type: 'string'
+                }
+            }
+        },
+        res: 'res.Standard.json'
+    }, async (req: AuthRequest, res: Response) => {
+        try {
+            await Auth.is_auth(req);
+
+            const esri = new EsriProxy(
+                String(req.query.token),
+                +new Date() + 10000,
+                new URL(String(req.query.url)),
+                config.API_URL
+            );
+
+            await esri.createService(req.body.name);
+
+            return res.json({
+                status: 200,
+                message: 'Service Created'
+            });
         } catch (err) {
             return Err.respond(err, res);
         }

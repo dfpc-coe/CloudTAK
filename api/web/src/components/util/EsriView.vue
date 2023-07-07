@@ -4,6 +4,7 @@
         <h1 class='subheader px-3'>ESRI Server Explorer</h1>
 
         <div class='ms-auto btn-list mx-3'>
+            <PlusIcon v-if='!err && !loading && server && !container' @click='createService' v-tooltip='"Create Service"' class='cursor-pointer'/>
             <ArrowBackIcon v-if='!err && !loading && server' @click='back' v-tooltip='"Back"' class='cursor-pointer'/>
             <XIcon @click='$emit("close")' v-tooltip='"Close Explorer"' class='cursor-pointer'/>
         </div>
@@ -114,6 +115,7 @@ import None from '../cards/None.vue';
 import {
     MapIcon,
     XIcon,
+    PlusIcon,
     FolderIcon,
     ArrowBackIcon,
     CheckIcon
@@ -193,6 +195,25 @@ export default {
                 return this.server.url + '/rest';
             }
 
+        },
+        createService: async function() {
+            this.loading = true;
+            try {
+                const url = window.stdurl('/api/sink/esri/service');
+                url.searchParams.append('token', this.token);
+                url.searchParams.append('url', this.stdurl());
+
+                await window.std(url, {
+                    method: 'POST',
+                    body: {
+                        name: 'TestService'
+                    }
+                });
+
+                await this.getList();
+            } catch (err) {
+                this.err = err;
+            }
         },
         createLayer: async function() {
             this.loading = true;
@@ -275,6 +296,7 @@ export default {
     components: {
         Alert,
         XIcon,
+        PlusIcon,
         None,
         MapIcon,
         FolderIcon,

@@ -45,6 +45,36 @@ export default class EsriProxy {
         return json;
     }
 
+    async createService(name) {
+        const url = new URL(this.base);
+        url.pathname = url.pathname.replace('/rest/', '/rest/admin/') + '/addToDefinition';
+        const res = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Referer': this.referer,
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-Esri-Authorization': `Bearer ${this.token}`
+            },
+            body: new URLSearchParams({
+                'f': 'json',
+                'createParameters': JSON.stringify({
+                    name,
+                    spatialReference: { wkid: 4326 },
+                    allowGeometryUpdates: true,
+
+                }),
+                'outputType': 'featureService',
+                'description': 'Automatically Created via the TAK ETL Service',
+            })
+        });
+
+        const json = await res.json()
+
+        if (json.error) throw new Err(400, null, 'ESRI Server Error: ' + json.error.message);
+
+        return json;
+    }
+
     async createLayer() {
         const url = new URL(this.base);
         url.pathname = url.pathname.replace('/rest/', '/rest/admin/') + '/addToDefinition';
