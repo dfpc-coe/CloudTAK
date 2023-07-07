@@ -45,9 +45,34 @@ export default class EsriProxy {
         return json;
     }
 
-    async createService(name) {
+    async getSelf(): Promise<{
+        username: string
+    }> {
         const url = new URL(this.base);
-        url.pathname = url.pathname.replace('/rest/', '/rest/admin/') + '/addToDefinition';
+        url.pathname = url.pathname.replace(/server\/rest.*$/, 'portal/sharing/rest/community/self');
+        url.searchParams.append('f', 'json');
+
+        const res = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Referer': this.referer,
+                'X-Esri-Authorization': `Bearer ${this.token}`
+            },
+        });
+
+        const json = await res.json()
+
+        if (json.error) throw new Err(400, null, 'ESRI Server Error: ' + json.error.message);
+
+        return json;
+    }
+
+    async createService(name: string): Promise<object> {
+        const meta = await this.getSelf();
+
+        const url = new URL(this.base);
+        url.pathname = url.pathname.replace(/server\/rest.*$/, `portal/sharing/rest/content/users/${meta.username}`) + '/createService';
+
         const res = await fetch(url, {
             method: 'POST',
             headers: {
@@ -72,7 +97,7 @@ export default class EsriProxy {
 
         if (json.error) throw new Err(400, null, 'ESRI Server Error: ' + json.error.message);
 
-        return json;
+        return {};
     }
 
     async createLayer() {

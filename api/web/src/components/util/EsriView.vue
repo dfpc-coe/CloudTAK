@@ -206,7 +206,7 @@ export default {
                 await window.std(url, {
                     method: 'POST',
                     body: {
-                        name: 'TestService'
+                        name: 'TAK_ETL_Service'
                     }
                 });
 
