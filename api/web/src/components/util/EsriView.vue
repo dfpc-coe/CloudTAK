@@ -93,7 +93,7 @@
                                 <MapIcon/><span v-text='lyr.name' class='mx-3'/>
                                 <div class='ms-auto btn-list'>
                                     <CheckIcon v-if='layer && layer.id === lyr.id'/>
-                                    <TablerDelete @delete='del' displaytype='icon' label='Delete Layer'/>
+                                    <TablerDelete @delete='deleteLayer' displaytype='icon' label='Delete Layer'/>
                                 </div>
                             </div>
                         </td>
@@ -202,6 +202,20 @@ export default {
                 url.searchParams.append('url', this.stdurl());
 
                 await window.std(url, { method: 'POST' });
+
+                await this.getList();
+            } catch (err) {
+                this.err = err;
+            }
+        },
+        deleteLayer: async function() {
+            this.loading = true;
+            try {
+                const url = window.stdurl('/api/sink/esri/layer');
+                url.searchParams.append('token', this.token);
+                url.searchParams.append('url', this.stdurl());
+
+                await window.std(url, { method: 'DELETE' });
 
                 await this.getList();
             } catch (err) {
