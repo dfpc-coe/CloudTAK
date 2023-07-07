@@ -128,8 +128,8 @@ export default class EsriProxy {
                         hasZ: false,
                         objectIdField: 'OBJECTID',
                         uniqueIdField: {
-                            name: "OBJECTID",
-                            isSystemMaintained: true
+                            name: "uid",
+                            isSystemMaintained: false
                         },
                         extent: {
                             xmin: -20037508.34,
@@ -145,6 +145,17 @@ export default class EsriProxy {
                             "alias": "FID",
                             "sqlType": "sqlTypeInteger",
                             "length": 4,
+                            "nullable": false,
+                            "editable": false,
+                            "domain": null,
+                            "defaultValue": null
+                        },{
+                            "name": "uid",
+                            "type": "esriFieldTypeString",
+                            "actualType": "nvarchar",
+                            "alias": "uid",
+                            "sqlType": "sqlTypeNVarchar",
+                            "length": 100,
                             "nullable": false,
                             "editable": false,
                             "domain": null,
