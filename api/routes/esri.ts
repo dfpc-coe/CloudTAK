@@ -146,7 +146,7 @@ export default async function router(schema: any, config: Config) {
             if (!String(req.query.url).match(/\/\d+$/)) throw new Err(400, null, 'Could not parse layer ID');
 
             const url = String(req.query.url).replace(/\/\d+$/, '');
-            const layer_id = parseInt(String(req.query.url).match(/\/\d+$/)[0]);
+            const layer_id = parseInt(String(req.query.url).match(/\/\d+$/)[0].replace('/', ''));
 
             const esri = new EsriProxy(
                 String(req.query.token),
