@@ -217,6 +217,8 @@ export default {
 
                 await window.std(url, { method: 'DELETE' });
 
+                this.layer = null;
+
                 await this.getList();
             } catch (err) {
                 this.err = err;
