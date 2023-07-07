@@ -35,6 +35,7 @@ async function arcgis(data: any): Promise<boolean> {
             'f': 'json',
             'features': JSON.stringify([{
                 attributes: {
+                    uid: data.feat.id,
                     callsign: data.feat.properties.callsign,
                     type: data.feat.properties.type,
                     how: data.feat.properties.how,
