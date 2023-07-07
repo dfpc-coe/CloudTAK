@@ -95,7 +95,7 @@ export default class EsriProxy {
                             "domain": null,
                             "defaultValue": null
                         },{
-                            "name": "CallSign",
+                            "name": "callsign",
                             "type": "esriFieldTypeString",
                             "actualType": "nvarchar",
                             "alias": "CallSign",
@@ -106,7 +106,7 @@ export default class EsriProxy {
                             "domain": null,
                             "defaultValue": null
                         },{
-                            "name": "Type",
+                            "name": "type",
                             "type": "esriFieldTypeString",
                             "actualType": "nvarchar",
                             "alias": "Type",
@@ -117,7 +117,7 @@ export default class EsriProxy {
                             "domain": null,
                             "defaultValue": null
                         },{
-                            "name": "How",
+                            "name": "how",
                             "type": "esriFieldTypeString",
                             "actualType": "nvarchar",
                             "alias": "How",
@@ -128,7 +128,7 @@ export default class EsriProxy {
                             "domain": null,
                             "defaultValue": null
                         },{
-                            "name": "Time",
+                            "name": "time",
                             "type": "esriFieldTypeString",
                             "actualType": "nvarchar",
                             "alias": "Time",
@@ -139,7 +139,7 @@ export default class EsriProxy {
                             "domain": null,
                             "defaultValue": null
                         },{
-                            "name": "Start",
+                            "name": "start",
                             "type": "esriFieldTypeString",
                             "actualType": "nvarchar",
                             "alias": "Start",
@@ -150,7 +150,7 @@ export default class EsriProxy {
                             "domain": null,
                             "defaultValue": null
                         },{
-                            "name": "Stale",
+                            "name": "stale",
                             "type": "esriFieldTypeString",
                             "actualType": "nvarchar",
                             "alias": "Stale",
