@@ -136,7 +136,7 @@ export default class EsriProxy {
                             ymin: -20048966.1,
                             xmax: 20037508.34,
                             ymax: 20048966.1,
-                            spatialReference: { wkid: 102100, latestWkid: 3857 }
+                            spatialReference: { wkid: 4326 }
                         },
                         fields: [{
                             "name": "OBJECTID",
