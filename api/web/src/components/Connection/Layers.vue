@@ -2,7 +2,9 @@
 <div class="card">
     <div class='card-header'>Layers</div>
 
-    <None v-if='!list.layers.length' :create='false' label='Layers'/>
+    <Alert v-if='err' title='ETL Server Error' :err='err.message' :compact='true'/>
+    <TablerLoading v-else-if='loading'/>
+    <None v-else-if='!list.layers.length' :create='false' label='Layers'/>
     <div v-else class='table-resposive'>
         <table class='table card-table table-vcenter datatable table-hover'>
             <thead>
@@ -28,6 +30,10 @@
 
 <script>
 import TableFooter from '../util/TableFooter.vue';
+import Alert from '../util/Alert.vue';
+import {
+    TablerLoading
+} from '@tak-ps/vue-tabler'
 import None from '../cards/None.vue';
 
 export default {
@@ -40,6 +46,8 @@ export default {
     },
     data: function() {
         return {
+            loading: true,
+            err: null,
             paging: {
                 filter: '',
                 limit: 10,
@@ -64,16 +72,24 @@ export default {
     },
     methods: {
         listLayers: async function() {
-            const url = window.stdurl('/api/layer');
-            url.searchParams.append('connection', this.connection.id);
-            url.searchParams.append('limit', this.paging.limit);
-            url.searchParams.append('page', this.paging.page);
-            url.searchParams.append('filter', this.paging.filter);
-            this.list = await window.std(url);
+            this.loading = true;
+            try {
+                const url = window.stdurl('/api/layer');
+                url.searchParams.append('connection', this.connection.id);
+                url.searchParams.append('limit', this.paging.limit);
+                url.searchParams.append('page', this.paging.page);
+                url.searchParams.append('filter', this.paging.filter);
+                this.list = await window.std(url);
+            } catch (err) {
+                this.err = err;
+            }
+            this.loading = false
         }
     },
     components: {
         None,
+        Alert,
+        TablerLoading,
         TableFooter,
     }
 }
