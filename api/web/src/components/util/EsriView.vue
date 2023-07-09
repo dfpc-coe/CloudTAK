@@ -286,6 +286,7 @@ export default {
                 });
 
                 this.token = res.token;
+                if (!res.servers) throw new Error('No Servers Present');
                 this.servers = res.servers;
             } catch (err) {
                 this.err = err;

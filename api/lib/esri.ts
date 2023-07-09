@@ -128,8 +128,8 @@ export default class EsriProxy {
                         hasZ: false,
                         objectIdField: 'OBJECTID',
                         uniqueIdField: {
-                            name: "uid",
-                            isSystemMaintained: false
+                            name: "OBJECTID",
+                            isSystemMaintained: true
                         },
                         extent: {
                             xmin: -20037508.34,
