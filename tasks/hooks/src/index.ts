@@ -22,9 +22,7 @@ async function arcgis(data: any): Promise<boolean> {
 
     const geometry = geojsonToArcGIS(data.feat.geometry);
 
-    console.error(data, geometry)
-
-    const res = await fetch(data.body.layer + '/addFeatures', {
+    const res = await fetch(data.body.layer + '/append', {
         method: 'POST',
         headers: {
             'Referer': data.secrets.referer,
@@ -33,17 +31,26 @@ async function arcgis(data: any): Promise<boolean> {
         },
         body: new URLSearchParams({
             'f': 'json',
-            'features': JSON.stringify([{
-                attributes: {
-                    uid: data.feat.id,
-                    callsign: data.feat.properties.callsign,
-                    type: data.feat.properties.type,
-                    how: data.feat.properties.how,
-                    time: data.feat.properties.time,
-                    start: data.feat.properties.start,
-                    stale: data.feat.properties.stale
-                },
-                geometry
+            'upsert': 'true',
+            'edits': JSON.stringify([{
+                featureSet: {
+                    geometryType: "esriGeometryPoint",
+                    spatialReference: {
+                        wkid: 4326
+                    },
+                    features: [{
+                        attributes: {
+                            uid: data.feat.id,
+                            callsign: data.feat.properties.callsign,
+                            type: data.feat.properties.type,
+                            how: data.feat.properties.how,
+                            time: data.feat.properties.time,
+                            start: data.feat.properties.start,
+                            stale: data.feat.properties.stale
+                        },
+                        geometry
+                    }]
+                }
             }])
         })
     });
