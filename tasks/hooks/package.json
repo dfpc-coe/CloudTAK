@@ -11,7 +11,9 @@
     "dependencies": {
         "@aws-sdk/client-s3": "^3.213.0",
         "@aws-sdk/node-http-handler": "^3.212.0",
-        "@terraformer/arcgis": "^2.1.2"
+        "@terraformer/arcgis": "^2.1.2",
+        "@types/tape": "^5.6.0",
+        "tape": "^5.6.4"
     },
     "devDependencies": {
         "@types/aws-lambda": "^8.10.108",
