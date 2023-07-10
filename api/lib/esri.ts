@@ -149,14 +149,14 @@ export default class EsriProxy {
                             "domain": null,
                             "defaultValue": null
                         },{
-                            "name": "uid",
+                            "name": "cotuid",
                             "type": "esriFieldTypeString",
                             "actualType": "nvarchar",
-                            "alias": "uid",
+                            "alias": "cotuid1",
                             "sqlType": "sqlTypeNVarchar",
                             "length": 100,
                             "nullable": false,
-                            "editable": false,
+                            "editable": true,
                             "domain": null,
                             "defaultValue": null
                         },{

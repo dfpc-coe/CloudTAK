@@ -99,7 +99,7 @@
                                     <div class="col-md-12 mt-3">
                                         <div class='d-flex'>
                                             <div class='ms-auto'>
-                                                <button @click='create' :disabled='!sink.body.layer' class="cursor-pointer btn btn-primary">Save Sink</button>
+                                                <button @click='create' v-if='sink.body.layer' class="cursor-pointer btn btn-primary">Save Sink</button>
                                             </div>
                                         </div>
                                     </div>
