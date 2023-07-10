@@ -20,9 +20,13 @@ export default async function arcgis(data: any): Promise<boolean> {
     if (!res_query.ok) throw new Error(await res_query.text());
     const query = await res_query.json();
 
+    if (query.error) throw new Error(query.error.message);
+
+    console.error(query);
     if (!query.features.length) {
         const geometry = geojsonToArcGIS(data.feat.geometry);
-        const res = await fetch(data.body.layer + '/addFeatures', {
+
+        const res = await fetch(new URL(data.body.layer + '/addFeatures'), {
             method: 'POST',
             headers: {
                 'Referer': data.secrets.referer,
@@ -47,7 +51,12 @@ export default async function arcgis(data: any): Promise<boolean> {
         });
 
         if (!res.ok) throw new Error(await res.text());
-        console.error(await res.text());
+
+        const body = await res.json();
+
+        if (body.error) throw new Error(body.error.message);
+
+        console.error(JSON.stringify(body));
 
         return true;
     } else {
