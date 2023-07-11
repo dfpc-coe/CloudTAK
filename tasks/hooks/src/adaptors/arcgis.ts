@@ -1,5 +1,6 @@
 import Lambda from "aws-lambda";
 import { geojsonToArcGIS } from '@terraformer/arcgis'
+import proj4 from 'proj4';
 
 export default async function arcgis(data: any): Promise<boolean> {
     if (data.feat.geometry.type !== 'Point') return false;
@@ -23,7 +24,19 @@ export default async function arcgis(data: any): Promise<boolean> {
 
     if (query.error) throw new Error(query.error.message);
 
-    const geometry = geojsonToArcGIS(data.feat.geometry);
+    let geometry: any = geojsonToArcGIS(data.feat.geometry);
+    if (!geometry.x || !geometry.y) throw new Error('Incompatible Geometry');
+
+    const proj = proj4('EPSG:4326', 'EPSG:3857', [ geometry.x, geometry.y ]);
+
+    geometry = {
+        x: proj[0],
+        y: proj[1],
+        spatialReference: {
+            wkid: 102100,
+            latestWkid: 3857
+        }
+    }
 
     if (!query.features.length) {
         const res = await fetch(new URL(data.body.layer + '/addFeatures'), {
