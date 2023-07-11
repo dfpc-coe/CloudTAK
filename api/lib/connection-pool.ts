@@ -117,9 +117,10 @@ export default class ConnectionPool extends Map<number, ConnectionClient> {
                 }));
             }
 
-            if (!this.nosinks) {
+            //if (!this.nosinks) {
+                console.error(cot.to_geojson());
                 await this.sinks.cot(conn, cot);
-            }
+            //}
         }).on('end', async () => {
             console.error(`not ok - ${conn.id} @ end`);
             this.retry(connClient);
