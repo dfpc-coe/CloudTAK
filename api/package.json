@@ -9,7 +9,7 @@
         "build": "tsc index.ts",
         "prod": "ts-node index.ts",
         "lint": "eslint index.ts lib/**.ts test/**.ts",
-        "loaddb": "echo 'DROP DATABASE tak_ps_etl' | psql && echo 'CREATE DATABASE tak_ps_etl' | psql && psql tak_ps_etl < coe-latest.dump && knex migrate:latest",
+        "loaddb": "echo 'DROP DATABASE tak_ps_etl' | psql && echo 'CREATE DATABASE tak_ps_etl' | psql && psql tak_ps_etl < coe-etl-latest.dump && knex migrate:latest",
         "dev": "nodemon -i schema/ -i web/ --esm index.ts --noevents --nosinks --unsafe"
     },
     "repository": {
@@ -39,7 +39,7 @@
         "@openaddresses/cloudfriend": "^7.0.0",
         "@placemarkio/check-geojson": "^0.1.12",
         "@tak-ps/blueprint-login": "^2.2.2",
-        "@tak-ps/node-cot": "^3.5.1",
+        "@tak-ps/node-cot": "^3.5.4",
         "@turf/meta": "^6.5.0",
         "ajv": "^8.11.2",
         "ajv-formats": "^2.1.1",
