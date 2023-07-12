@@ -2,8 +2,6 @@ import TAK from './tak.js';
 // @ts-ignore
 import Connection from './types/connection.js';
 // @ts-ignore
-import ConnectionSink from './types/connection-sink.js';
-// @ts-ignore
 import Server from './types/server.js';
 import Sinks from './sinks.js';
 import Config from './config.js';
@@ -11,7 +9,7 @@ import Metrics from './aws/metric.js';
 // @ts-ignore
 import { Pool } from '@openaddresses/batch-generic';
 import { WebSocket } from 'ws';
-import { XML as COT } from '@tak-ps/node-cot';
+import CoT from '@tak-ps/node-cot';
 
 class ConnectionClient {
     conn: Connection;
@@ -105,7 +103,7 @@ export default class ConnectionPool extends Map<number, ConnectionClient> {
         const connClient = new ConnectionClient(conn, tak);
         this.set(conn.id, connClient);
 
-        tak.on('cot', async (cot: COT) => {
+        tak.on('cot', async (cot: CoT) => {
             connClient.retry = 0;
             connClient.initial = false;
 
@@ -117,10 +115,9 @@ export default class ConnectionPool extends Map<number, ConnectionClient> {
                 }));
             }
 
-            //if (!this.nosinks) {
-                console.error(cot.to_geojson());
+            if (!this.nosinks && cot.is_atom()) {
                 await this.sinks.cot(conn, cot);
-            //}
+            }
         }).on('end', async () => {
             console.error(`not ok - ${conn.id} @ end`);
             this.retry(connClient);
