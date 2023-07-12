@@ -1,6 +1,6 @@
 import EventEmitter from 'node:events';
 import tls from 'node:tls';
-import { XML as COT } from '@tak-ps/node-cot';
+import CoT from '@tak-ps/node-cot';
 import type { TLSSocket } from 'node:tls'
 
 export interface TAKAuth {
@@ -88,7 +88,7 @@ export default class TAK extends EventEmitter {
 
                 let result = TAK.findCoT(buff);
                 while (result && result.event) {
-                    const cot = new COT(result.event);
+                    const cot = new CoT(result.event);
 
                     try {
                         if (cot.raw.event._attributes.type === 't-x-c-t-r') {
@@ -134,7 +134,7 @@ export default class TAK extends EventEmitter {
     }
 
     async ping() {
-        this.write([COT.ping()]);
+        this.write([CoT.ping()]);
     }
 
     writer(body: string): Promise<boolean> {
@@ -164,11 +164,11 @@ export default class TAK extends EventEmitter {
     }
 
     /**
-     * Write a COT to the TAK Connection
+     * Write a CoT to the TAK Connection
      *
-     * @param {COT} cot COT Object
+     * @param {CoT} cot CoT Object
      */
-    write(cots: COT[]) {
+    write(cots: CoT[]) {
         for (const cot of cots) {
             this.queue.push(cot.to_xml());
         }
@@ -184,9 +184,9 @@ export default class TAK extends EventEmitter {
 
     // https://github.com/vidterra/multitak/blob/main/app/lib/helper.js#L4
     static findCoT(str: string): null | PartialCoT {
-        let match = str.match(/(<event.*?<\/event>)(.*)/); // find first COT
+        let match = str.match(/(<event.*?<\/event>)(.*)/); // find first CoT
         if (!match) {
-            match = str.match(/(<event[^>]*\/>)(.*)/); // find first COT
+            match = str.match(/(<event[^>]*\/>)(.*)/); // find first CoT
             if (!match) return null;
         }
 

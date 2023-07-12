@@ -1,6 +1,5 @@
 import SQS from '@aws-sdk/client-sqs';
 import Err from '@openaddresses/batch-error';
-import { XML as COT } from '@tak-ps/node-cot';
 
 /**
  * @class
