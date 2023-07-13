@@ -20,6 +20,32 @@ export default class EsriProxy {
         return base;
     }
 
+    async getContent(): Promise<{
+        username: string
+    }> {
+        const url = new URL(this.base + `/search?f=json`);
+        url.searchParams.append('f', 'json');
+        url.searchParams.append('num', '20');
+        url.searchParams.append('start', '1');
+        url.searchParams.append('sortField', 'modified');
+        url.searchParams.append('sortOrder', 'desc');
+        url.searchParams.append('filter', 'type:"Feature Service"');
+
+        const res = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Referer': this.referer,
+                'X-Esri-Authorization': `Bearer ${this.token}`
+            },
+        });
+
+        const json = await res.json()
+
+        if (json.error) throw new Err(400, null, 'ESRI Server Error: ' + json.error.message);
+
+        return json;
+    }
+
     async deleteLayer(id: number) {
         const url = new URL(this.base);
         url.pathname = url.pathname.replace('/rest/', '/rest/admin/') + '/deleteFromDefinition';
