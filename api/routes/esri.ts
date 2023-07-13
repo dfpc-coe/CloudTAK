@@ -26,9 +26,12 @@ export default async function router(schema: any, config: Config) {
 
             const servers = await esri.getServers();
 
+            console.error(await esri.getContent());
+
             return res.json({
                 token: esri.token,
-                servers: servers.servers
+                servers: servers.servers,
+                content: []
             });
         } catch (err) {
             return Err.respond(err, res);
