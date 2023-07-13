@@ -146,7 +146,9 @@ export default async function router(schema: any, config: Config) {
                 name: { type: 'string' }
             }
         },
-        res: 'res.Standard.json'
+        res: {
+            type: 'object'
+        }
     }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(req);
@@ -165,12 +167,9 @@ export default async function router(schema: any, config: Config) {
                 config.API_URL,
             );
 
-            await esri.createService(req.body.name);
+            const service = await esri.createService(req.body.name);
 
-            return res.json({
-                status: 200,
-                message: 'Service Created'
-            });
+            return res.json(service);
         } catch (err) {
             return Err.respond(err, res);
         }
