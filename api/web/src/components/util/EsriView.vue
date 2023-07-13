@@ -290,6 +290,22 @@ export default {
                 });
 
                 this.token = res.token;
+
+                await this.fetchServers();
+            } catch (err) {
+                this.err = err;
+            }
+            this.loading = false;
+        },
+        fetchServers: async function() {
+            this.loading = true;
+            try {
+                const url = window.stdurl('/api/sink/esri/portal/server');
+                url.searchParams.append('token', this.token);
+                url.searchParams.append('portal', this.url);
+
+                const res = await window.std(url);
+
                 if (!res.servers) throw new Error('No Servers Present');
                 this.servers = res.servers;
             } catch (err) {
@@ -297,6 +313,7 @@ export default {
             }
             this.loading = false;
         }
+
     },
     components: {
         Alert,

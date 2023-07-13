@@ -3,21 +3,58 @@ import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
-import EsriProxy from '../lib/esri.js';
+import {
+    EsriProxyPortal,
+    EsriProxyServer
+} from '../lib/esri.js';
 
 export default async function router(schema: any, config: Config) {
     await schema.post('/sink/esri', {
         name: 'Validate & Auth',
         group: 'SinkEsri',
         auth: 'user',
-        description: 'Helper API to configure ESRI MapServers - Validate and Authenticate Server',
-        body: 'req.body.SinkEsriToken.json',
-        res: 'res.SinkEsriToken.json'
+        description: `
+            Helper API to configure ESRI MapServers
+
+            An ESRI portal URL should be submitted along with the username & password.
+            The portal will be verified and if it passes a TOKEN and portal type will be returned
+        `,
+        body: {
+            type: "object",
+            additionalProperties: false,
+            required: [ "url", "username", "password" ],
+            properties: {
+                url: { "type": "string" },
+                username: { "type": "string" },
+                password: { "type": "string" }
+            }
+        },
+        res: {
+            type: "object",
+            additionalProperties: false,
+            properties: {
+                type: {
+                    type: 'string',
+                    enum: [ 'AGOL', 'SERVER' ]
+                },
+                token: { type: "string" },
+                referer: { type: "string" },
+                expires: { type: "integer" },
+                servers: {
+                    type: "array",
+                    items: { type: "object" }
+                },
+                content: {
+                    type: "array",
+                    items: { type: "object" }
+                }
+            }
+        }
     }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(req);
 
-            const esri = await EsriProxy.generateToken(
+            const esri = await EsriProxyPortal.init(
                 new URL(req.body.url),
                 config.API_URL,
                 req.body.username,
@@ -29,7 +66,10 @@ export default async function router(schema: any, config: Config) {
             console.error(await esri.getContent());
 
             return res.json({
+                type: esri.type,
                 token: esri.token,
+                referer: esri.referer,
+                expires: esri.expires,
                 servers: servers.servers,
                 content: []
             });
@@ -38,6 +78,55 @@ export default async function router(schema: any, config: Config) {
         }
     });
 
+    await schema.get('/sink/esri/portal/server', {
+        name: 'List Servers',
+        group: 'SinkEsri',
+        auth: 'user',
+        description: `
+            Helper API to configure ESRI MapServers
+            List Servers associates with a given portal
+        `,
+        query: {
+            type: "object",
+            additionalProperties: false,
+            required: [ "portal", "token" ],
+            properties: {
+                portal: { "type": "string" },
+                token: { "type": "string" },
+            }
+        },
+        res: {
+            type: "object",
+            additionalProperties: false,
+            properties: {
+                servers: {
+                    type: "array",
+                    items: { type: "object" }
+                },
+            }
+        }
+    }, async (req: AuthRequest, res: Response) => {
+        try {
+            await Auth.is_auth(req);
+
+            const esri = new EsriProxyPortal(
+                String(req.query.token),
+                +new Date() + 1000,
+                new URL(String(req.query.portal)),
+                config.API_URL,
+            );
+
+            const servers = await esri.getServers();
+
+            return res.json({
+                servers: servers.servers
+            });
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
+
+    /*
     await schema.get('/sink/esri', {
         name: 'Validate & Auth',
         group: 'SinkEsri',
@@ -217,4 +306,5 @@ export default async function router(schema: any, config: Config) {
             return Err.respond(err, res);
         }
     });
+    */
 }

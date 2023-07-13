@@ -1,6 +1,12 @@
 import Err from '@openaddresses/batch-error';
 
-export default class EsriProxy {
+export enum EsriPortalType {
+    AGOL = 'AGOL',
+    SERVER = 'SERVER'
+}
+
+class EsriProxyPortal {
+    type: EsriPortalType;
     token: string;
     expires: number;
     base: URL;
@@ -11,6 +17,12 @@ export default class EsriProxy {
         this.expires = expires;
         this.base = base;
         this.referer = referer;
+
+        this.type = EsriProxyPortal.isAGOL(base) ? EsriPortalType.AGOL : EsriPortalType.SERVER;
+    }
+
+    static isAGOL(url: URL): boolean {
+        return !!url.hostname.match(/\maps\.arcgis\.com$/)
     }
 
     static parser(url: URL): URL {
@@ -18,6 +30,93 @@ export default class EsriProxy {
         const path = url.pathname.replace(/\/rest.*/, '') + '/rest';
         base.pathname = path;
         return base;
+    }
+
+    /** 
+     * The root of any portal REST endpoint should return
+     * a version string that can be parsed and verified
+     */
+    static async isPortalBase(base: URL): Promise<boolean> {
+        try {
+            const url = new URL(base);
+            url.searchParams.append('f', 'json');
+            const res = await fetch(url);
+
+            const json = await res.json()
+
+            if (json.error) throw new Err(400, null, 'ESRI Server Error: ' + json.error.message);
+
+            if (!json.currentVersion || typeof json.currentVersion !== 'string') throw new Err(400, null, 'Could not determine ESRI Server Version, is this an ESRI Portal URL?');
+
+            // ArcGIS Online uses a <year>.<month?> format - assume it's alawys at the bleeding edge
+            if (!EsriProxyPortal.isAGOL(url)) {
+                if (json.currentVersion.split('.').length < 2) throw new Err(400, null, 'Could not parse ESRI Server Version - this version may not be supported');
+
+                const major = parseInt(json.currentVersion.split('.')[0])
+                if (isNaN(major)) throw new Err(400, null, 'Could not parse ESRI Server Version - non-integer - this version may not be supported');
+                if (major < 8) throw new Err(400, null, 'ESRI Server version is too old - Update to at least version 8.x')
+            }
+
+            return true;
+        } catch (err) {
+            throw new Err(400, err, err.message);
+        }
+    }
+
+    /**
+     * Generates a token but first verifies the server information
+     * Used for User facing functions - if the server has already been
+     * ensured to be correct, call generateToken directly
+     */
+    static async init(
+        url: URL,
+        referer: string,
+        username: string,
+        password: string
+    ): Promise<EsriProxyPortal> {
+        const base = this.parser(url);
+
+        await this.isPortalBase(base);
+
+        return await this.generateToken(base, referer, username, password)
+    }
+
+    static async generateToken(
+        url: URL,
+        referer: string,
+        username: string,
+        password: string
+    ): Promise<EsriProxyPortal> {
+        const body = new URLSearchParams();
+        body.append('username', username);
+        body.append('password', password);
+        body.append('referer', referer);
+        body.append('expiration', String(21600));
+
+        const base = this.parser(url);
+
+        try {
+            const res = await fetch(base + '/generateToken?f=json', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: String(body)
+            });
+
+            const json = await res.json()
+
+            if (json.error) throw new Err(400, null, 'ESRI Server Error: ' + json.error.message);
+
+            return new EsriProxyPortal(
+                json.token,
+                json.expires,
+                this.parser(url),
+                referer
+            );
+        } catch (err) {
+            throw new Err(400, err, err.message);
+        }
     }
 
     async getContent(): Promise<{
@@ -46,22 +145,19 @@ export default class EsriProxy {
         return json;
     }
 
-    async deleteLayer(id: number) {
+    async getSelf(): Promise<{
+        username: string
+    }> {
         const url = new URL(this.base);
-        url.pathname = url.pathname.replace('/rest/', '/rest/admin/') + '/deleteFromDefinition';
+        url.pathname = url.pathname.replace(/server\/rest.*$/, 'portal/sharing/rest/community/self');
+        url.searchParams.append('f', 'json');
+
         const res = await fetch(url, {
-            method: 'POST',
+            method: 'GET',
             headers: {
                 'Referer': this.referer,
-                'Content-Type': 'application/x-www-form-urlencoded',
                 'X-Esri-Authorization': `Bearer ${this.token}`
             },
-            body: new URLSearchParams({
-                'f': 'json',
-                'deleteFromDefinition': JSON.stringify({
-                    layers: [{ "id": id }]
-                })
-            })
         });
 
         const json = await res.json()
@@ -71,14 +167,8 @@ export default class EsriProxy {
         return json;
     }
 
-    async getSelf(): Promise<{
-        username: string
-    }> {
-        const url = new URL(this.base);
-        url.pathname = url.pathname.replace(/server\/rest.*$/, 'portal/sharing/rest/community/self');
-        url.searchParams.append('f', 'json');
-
-        const res = await fetch(url, {
+    async getServers() {
+        const res = await fetch(this.base + `/portals/self/servers?f=json`, {
             method: 'GET',
             headers: {
                 'Referer': this.referer,
@@ -125,15 +215,51 @@ export default class EsriProxy {
         return {};
     }
 
+}
+
+class EsriProxyServer {
+    portal: EsriProxyPortal;
+    base: URL;
+
+    constructor(portal: EsriProxyPortal, url: URL) {
+        this.portal = portal;
+        this.base = url;
+    }
+
+    async deleteLayer(id: number) {
+        const url = new URL(this.base);
+        url.pathname = url.pathname.replace('/rest/', '/rest/admin/') + '/deleteFromDefinition';
+        const res = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Referer': this.portal.referer,
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-Esri-Authorization': `Bearer ${this.portal.token}`
+            },
+            body: new URLSearchParams({
+                'f': 'json',
+                'deleteFromDefinition': JSON.stringify({
+                    layers: [{ "id": id }]
+                })
+            })
+        });
+
+        const json = await res.json()
+
+        if (json.error) throw new Err(400, null, 'ESRI Server Error: ' + json.error.message);
+
+        return json;
+    }
+
     async createLayer() {
         const url = new URL(this.base);
         url.pathname = url.pathname.replace('/rest/', '/rest/admin/') + '/addToDefinition';
         const res = await fetch(url, {
             method: 'POST',
             headers: {
-                'Referer': this.referer,
+                'Referer': this.portal.referer,
                 'Content-Type': 'application/x-www-form-urlencoded',
-                'X-Esri-Authorization': `Bearer ${this.token}`
+                'X-Esri-Authorization': `Bearer ${this.portal.token}`
             },
             body: new URLSearchParams({
                 'f': 'json',
@@ -268,8 +394,8 @@ export default class EsriProxy {
         const res = await fetch(this.base + `?f=json`, {
             method: 'GET',
             headers: {
-                'Referer': this.referer,
-                'X-Esri-Authorization': `Bearer ${this.token}`
+                'Referer': this.portal.referer,
+                'X-Esri-Authorization': `Bearer ${this.portal.token}`
             },
         });
 
@@ -279,58 +405,9 @@ export default class EsriProxy {
 
         return json;
     }
+}
 
-    async getServers() {
-        const res = await fetch(this.base + `/portals/self/servers?f=json`, {
-            method: 'GET',
-            headers: {
-                'Referer': this.referer,
-                'X-Esri-Authorization': `Bearer ${this.token}`
-            },
-        });
-
-        const json = await res.json()
-
-        if (json.error) throw new Err(400, null, 'ESRI Server Error: ' + json.error.message);
-
-        return json;
-    }
-
-    static async generateToken(
-        url: URL,
-        referer: string,
-        username: string,
-        password: string
-    ): Promise<EsriProxy> {
-        const body = new URLSearchParams();
-        body.append('username', username);
-        body.append('password', password);
-        body.append('referer', referer);
-        body.append('expiration', String(21600));
-
-        const base = this.parser(url);
-
-        try {
-            const res = await fetch(base + '/generateToken?f=json', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                },
-                body: String(body)
-            });
-
-            const json = await res.json()
-
-            if (json.error) throw new Err(400, null, 'ESRI Server Error: ' + json.error.message);
-
-            return new EsriProxy(
-                json.token,
-                json.expires,
-                this.parser(url),
-                referer
-            );
-        } catch (err) {
-            throw new Err(400, err, err.message);
-        }
-    }
+export {
+    EsriProxyPortal,
+    EsriProxyServer
 }
