@@ -1,26 +1,18 @@
 <template>
-<div class='border py-2'>
+<div class='border py-2 mx-2'>
     <div class='d-flex'>
-        <h1 class='subheader px-3'>ESRI Server Explorer</h1>
+        <h1 class='subheader px-3' v-text='server.url'></h1>
 
         <div class='ms-auto btn-list mx-3'>
-            <RefreshIcon v-if='!err && !loading && server' @click='getList' v-tooltip='"Refresh"' class='cursor-pointer'/>
-            <RefreshIcon v-else-if='!err && !loading' @click='generateToken' v-tooltip='"Refresh"' class='cursor-pointer'/>
+            <RefreshIcon v-if='!err && !loading' @click='getList' v-tooltip='"Refresh"' class='cursor-pointer'/>
 
-            <PlusIcon v-if='!err && !loading && server && !container' @click='createService' v-tooltip='"Create Service"' class='cursor-pointer'/>
             <ArrowBackIcon v-if='!err && !loading && server' @click='back' v-tooltip='"Back"' class='cursor-pointer'/>
-            <XIcon @click='$emit("close")' v-tooltip='"Close Explorer"' class='cursor-pointer'/>
         </div>
     </div>
 
     <template v-if='err'>
         <Alert title='ESRI Connection Error' :err='err.message' :compact='true'/>
         <div class="col-md-12 mt-3 pb-2 px-3">
-            <div class='d-flex'>
-                <div class='ms-auto'>
-                    <a @click='$emit("close")' class="cursor-pointer btn btn-primary">Close Viewer</a>
-                </div>
-            </div>
         </div>
     </template>
     <template v-else-if='loading'>
@@ -127,16 +119,17 @@ import {
 import Alert from './Alert.vue';
 
 export default {
-    name: 'EsriProxy',
+    name: 'EsriServer',
     props: {
-        url: {
-            type: [URL, String]
+        portal: {
+            type: URL,
+            required: true,
         },
-        username: {
+        token: {
             type: String,
             required: true
         },
-        password: {
+        server: {
             type: String,
             required: true
         },
@@ -145,19 +138,12 @@ export default {
         return {
             loading: true,
             err: null,
-            portal: null,
-            token: null,
-            server: null,
             listpath: [],
-            servers: [],
             container: null,
             layer: null
         }
     },
     watch: {
-        server: async function() {
-            if (this.server) await this.getList()
-        },
         layer: function() {
             if (!this.layer) return this.$emit('layer', '');
             this.$emit('layer', this.stdurl());
@@ -170,7 +156,7 @@ export default {
         }
     },
     mounted: async function() {
-        await this.generateToken();
+        await this.getList();
     },
     methods: {
         back: function() {
@@ -180,8 +166,6 @@ export default {
                 this.listpath.pop();
             } else if (this.listpath.length) {
                 this.listpath.pop();
-            } else if (this.server) {
-                this.server = null;
             }
         },
         stdurl: function() {
@@ -200,25 +184,6 @@ export default {
                 return this.server.url + '/rest';
             }
 
-        },
-        createService: async function() {
-            this.loading = true;
-            try {
-                const url = window.stdurl('/api/sink/esri/service');
-                url.searchParams.append('token', this.token);
-                url.searchParams.append('url', this.stdurl());
-
-                await window.std(url, {
-                    method: 'POST',
-                    body: {
-                        name: 'TAK_ETL_Service'
-                    }
-                });
-
-                await this.getList();
-            } catch (err) {
-                this.err = err;
-            }
         },
         createLayer: async function() {
             this.loading = true;
@@ -253,13 +218,12 @@ export default {
         getList: async function() {
             this.loading = true;
             try {
-                const url = window.stdurl('/api/sink/esri');
+                const url = window.stdurl('/api/sink/esri/server');
                 url.searchParams.append('token', this.token);
-                url.searchParams.append('url', this.stdurl());
+                url.searchParams.append('server', this.stdurl());
+                url.searchParams.append('portal', this.portal);
 
-                const res = await window.std(url, {
-                    method: 'GET',
-                });
+                const res = await window.std(url);
 
                 if (Array.isArray(res.layers)) {
                     this.container = res;
@@ -278,61 +242,6 @@ export default {
             }
             this.loading = false;
         },
-        generateToken: async function() {
-            this.loading = true;
-            try {
-                const res = await window.std('/api/sink/esri', {
-                    method: 'POST',
-                    body: {
-                        username: this.username,
-                        password: this.password,
-                        url: this.url
-                    }
-                });
-
-                this.token = res.token;
-
-                await this.fetchPortal();
-                await this.fetchServers();
-            } catch (err) {
-                this.err = err;
-            }
-            this.loading = false;
-        },
-        fetchPortal: async function() {
-            this.loading = true;
-            try {
-                const url = window.stdurl('/api/sink/esri/portal');
-                url.searchParams.append('token', this.token);
-                url.searchParams.append('portal', this.url);
-
-                const res = await window.std(url);
-
-                this.portal = res;
-
-                if (this.portal.isReadOnly) throw new Error('Portal is Read Only');
-            } catch (err) {
-                this.err = err;
-            }
-            this.loading = false;
-        },
-        fetchServers: async function() {
-            this.loading = true;
-            try {
-                const url = window.stdurl('/api/sink/esri/portal/server');
-                url.searchParams.append('token', this.token);
-                url.searchParams.append('portal', this.url);
-
-                const res = await window.std(url);
-
-                if (!res.servers) throw new Error('No Servers Present');
-                this.servers = res.servers;
-            } catch (err) {
-                this.err = err;
-            }
-            this.loading = false;
-        }
-
     },
     components: {
         Alert,
