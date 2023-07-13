@@ -96,7 +96,9 @@ class EsriProxyPortal {
         const base = this.parser(url);
 
         try {
-            const res = await fetch(base + '/generateToken?f=json', {
+            const url = new URL(base + '/generateToken');
+            url.searchParams.append('f', 'json');
+            const res = await fetch(url, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded'
@@ -122,7 +124,7 @@ class EsriProxyPortal {
     async getContent(): Promise<{
         username: string
     }> {
-        const url = new URL(this.base + `/search?f=json`);
+        const url = new URL(this.base + `/search`);
         url.searchParams.append('f', 'json');
         url.searchParams.append('num', '20');
         url.searchParams.append('start', '1');
@@ -149,7 +151,6 @@ class EsriProxyPortal {
         try {
             const url = new URL(this.base + '/portals/self');
             url.searchParams.append('f', 'json');
-            console.error(url);
             const res = await fetch(url);
 
             const json = await res.json()
@@ -165,8 +166,7 @@ class EsriProxyPortal {
     async getSelf(): Promise<{
         username: string
     }> {
-        const url = new URL(this.base);
-        url.pathname = url.pathname.replace(/server\/rest.*$/, 'portal/sharing/rest/community/self');
+        const url = new URL(this.base + `/community/self`);
         url.searchParams.append('f', 'json');
 
         const res = await fetch(url, {
@@ -185,7 +185,9 @@ class EsriProxyPortal {
     }
 
     async getServers() {
-        const res = await fetch(this.base + `/portals/self/servers?f=json`, {
+        const url = new URL(this.base + '/portals/self/servers');
+        url.searchParams.append('f', 'json');
+        const res = await fetch(url, {
             method: 'GET',
             headers: {
                 'Referer': this.referer,
@@ -203,8 +205,10 @@ class EsriProxyPortal {
     async createService(name: string): Promise<object> {
         const meta = await this.getSelf();
 
-        const url = new URL(this.base);
-        url.pathname = url.pathname.replace(/server\/rest.*$/, `portal/sharing/rest/content/users/${meta.username}`) + '/createService';
+        // TODO: Check if meta allows Service Creation
+
+        const url = new URL(this.base + `/content/users/${meta.username}/createService`);
+        url.searchParams.append('f', 'json');
 
         const res = await fetch(url, {
             method: 'POST',

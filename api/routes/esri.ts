@@ -126,6 +126,57 @@ export default async function router(schema: any, config: Config) {
         }
     });
 
+    await schema.post('/sink/esri/portal/service', {
+        name: 'Create Service',
+        group: 'SinkEsri',
+        auth: 'user',
+        description: 'Create Service to store Feature Layers',
+        query: {
+            type: 'object',
+            required: ['portal', 'token'],
+            properties: {
+                portal: { type: 'string' },
+                token: { type: 'string' }
+            }
+        },
+        body: {
+            type: 'object',
+            required: ['name'],
+            properties: {
+                name: { type: 'string' }
+            }
+        },
+        res: 'res.Standard.json'
+    }, async (req: AuthRequest, res: Response) => {
+        try {
+            await Auth.is_auth(req);
+
+            let portal_url;
+            try {
+                portal_url = new URL(String(req.query.portal));
+            } catch (err) {
+                throw new Err(400, null, err.message);
+            }
+
+            const esri = new EsriProxyPortal(
+                String(req.query.token),
+                +new Date() + 1000,
+                portal_url,
+                config.API_URL,
+            );
+
+            await esri.createService(req.body.name);
+
+            return res.json({
+                status: 200,
+                message: 'Service Created'
+            });
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
+
+
     await schema.get('/sink/esri/portal/server', {
         name: 'List Servers',
         group: 'SinkEsri',
@@ -234,51 +285,8 @@ export default async function router(schema: any, config: Config) {
             return Err.respond(err, res);
         }
     });
-/*
 
-    await schema.post('/sink/esri/service', {
-        name: 'Create Service',
-        group: 'SinkEsri',
-        auth: 'user',
-        description: 'Create Service to store Feature Layers',
-        query: {
-            type: 'object',
-            required: ['url', 'token'],
-            properties: {
-                url: { type: 'string' },
-                token: { type: 'string' }
-            }
-        },
-        body: {
-            type: 'object',
-            required: ['name'],
-            properties: {
-                name: { type: 'string' }
-            }
-        },
-        res: 'res.Standard.json'
-    }, async (req: AuthRequest, res: Response) => {
-        try {
-            await Auth.is_auth(req);
-
-            const esri = new EsriProxy(
-                String(req.query.token),
-                +new Date() + 10000,
-                new URL(String(req.query.url)),
-                config.API_URL
-            );
-
-            await esri.createService(req.body.name);
-
-            return res.json({
-                status: 200,
-                message: 'Service Created'
-            });
-        } catch (err) {
-            return Err.respond(err, res);
-        }
-    });
-
+    /*
     await schema.post('/sink/esri/layer', {
         name: 'Create Layer',
         group: 'SinkEsri',
