@@ -4,7 +4,9 @@
         <h1 class='subheader px-3'>ESRI Server Explorer</h1>
 
         <div class='ms-auto btn-list mx-3'>
-            <RefreshIcon v-if='!err && !loading' @click='getList' v-tooltip='"Refresh"' class='cursor-pointer'/>
+            <RefreshIcon v-if='!err && !loading && server' @click='getList' v-tooltip='"Refresh"' class='cursor-pointer'/>
+            <RefreshIcon v-else-if='!err && !loading' @click='generateToken' v-tooltip='"Refresh"' class='cursor-pointer'/>
+
             <PlusIcon v-if='!err && !loading && server && !container' @click='createService' v-tooltip='"Create Service"' class='cursor-pointer'/>
             <ArrowBackIcon v-if='!err && !loading && server' @click='back' v-tooltip='"Back"' class='cursor-pointer'/>
             <XIcon @click='$emit("close")' v-tooltip='"Close Explorer"' class='cursor-pointer'/>
