@@ -309,6 +309,8 @@ export default {
                 const res = await window.std(url);
 
                 this.portal = res;
+
+                if (this.portal.isReadOnly) throw new Error('Portal is Read Only');
             } catch (err) {
                 this.err = err;
             }
