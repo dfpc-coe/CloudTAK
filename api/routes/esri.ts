@@ -78,6 +78,43 @@ export default async function router(schema: any, config: Config) {
         }
     });
 
+    await schema.get('/sink/esri/portal', {
+        name: 'List Servers',
+        group: 'SinkEsri',
+        auth: 'user',
+        description: `
+            Helper API to configure ESRI MapServers
+            Return Portal Data
+        `,
+        query: {
+            type: "object",
+            additionalProperties: false,
+            required: [ "portal", "token" ],
+            properties: {
+                portal: { "type": "string" },
+                token: { "type": "string" },
+            }
+        },
+        res: { type: "object" }
+    }, async (req: AuthRequest, res: Response) => {
+        try {
+            await Auth.is_auth(req);
+
+            const esri = new EsriProxyPortal(
+                String(req.query.token),
+                +new Date() + 1000,
+                new URL(String(req.query.portal)),
+                config.API_URL,
+            );
+
+            const portal = await esri.getPortal();
+
+            return res.json(portal);
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
+
     await schema.get('/sink/esri/portal/server', {
         name: 'List Servers',
         group: 'SinkEsri',
