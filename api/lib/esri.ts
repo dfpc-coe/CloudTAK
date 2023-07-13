@@ -233,7 +233,7 @@ class EsriProxyPortal {
 
         if (json.error) throw new Err(400, null, 'ESRI Server Error: ' + json.error.message);
 
-        return {};
+        return json;
     }
 
 }
