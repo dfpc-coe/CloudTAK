@@ -177,6 +177,7 @@ export default {
     },
     mounted: async function() {
         if (this.$route.params.connectionid) await this.fetch();
+        else this.loading = false;
     },
     methods: {
         fetch: async function() {
@@ -253,6 +254,7 @@ export default {
         TablerBreadCrumb,
         LoginCertModal,
         TablerInput,
+        TablerLoading,
         PageFooter,
     }
 }
