@@ -193,7 +193,8 @@ export default {
             try {
                 const url = window.stdurl('/api/sink/esri/layer');
                 url.searchParams.append('token', this.token);
-                url.searchParams.append('url', this.stdurl());
+                url.searchParams.append('portal', this.portal);
+                url.searchParams.append('server', this.stdurl());
 
                 await window.std(url, { method: 'DELETE' });
 
