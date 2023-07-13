@@ -145,6 +145,7 @@ export default {
         return {
             loading: true,
             err: null,
+            portal: null,
             token: null,
             server: null,
             listpath: [],
@@ -291,7 +292,23 @@ export default {
 
                 this.token = res.token;
 
+                await this.fetchPortal();
                 await this.fetchServers();
+            } catch (err) {
+                this.err = err;
+            }
+            this.loading = false;
+        },
+        fetchPortal: async function() {
+            this.loading = true;
+            try {
+                const url = window.stdurl('/api/sink/esri/portal');
+                url.searchParams.append('token', this.token);
+                url.searchParams.append('portal', this.url);
+
+                const res = await window.std(url);
+
+                this.portal = res;
             } catch (err) {
                 this.err = err;
             }

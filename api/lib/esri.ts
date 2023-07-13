@@ -32,7 +32,7 @@ class EsriProxyPortal {
         return base;
     }
 
-    /** 
+    /**
      * The root of any portal REST endpoint should return
      * a version string that can be parsed and verified
      */
@@ -143,6 +143,23 @@ class EsriProxyPortal {
         if (json.error) throw new Err(400, null, 'ESRI Server Error: ' + json.error.message);
 
         return json;
+    }
+
+    async getPortal(): Promise<object> {
+        try {
+            const url = new URL(this.base + '/portals/self');
+            url.searchParams.append('f', 'json');
+            console.error(url);
+            const res = await fetch(url);
+
+            const json = await res.json()
+
+            if (json.error) throw new Err(400, null, 'ESRI Server Error: ' + json.error.message);
+
+            return json;
+        } catch (err) {
+            throw new Err(400, err, err.message);
+        }
     }
 
     async getSelf(): Promise<{
