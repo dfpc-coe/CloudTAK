@@ -275,7 +275,7 @@ export default async function router(schema: any, config: Config) {
                 server_url
             );
 
-            const list = await server.getList();
+            const list: any = await server.getList();
             if (!list.folders) list.folders = [];
             if (!list.services) list.services = [];
 
@@ -285,7 +285,6 @@ export default async function router(schema: any, config: Config) {
         }
     });
 
-    /*
     await schema.post('/sink/esri/layer', {
         name: 'Create Layer',
         group: 'SinkEsri',
@@ -293,39 +292,47 @@ export default async function router(schema: any, config: Config) {
         description: 'Create Layer necessary to push CoT data',
         query: {
             type: 'object',
-            required: ['url', 'token'],
+            required: ['server', 'portal', 'token'],
             properties: {
-                url: {
-                    type: 'string'
-                },
-                token: {
-                    type: 'string'
-                }
+                server: { type: 'string' },
+                portal: { type: 'string' },
+                token: { type: 'string' }
             }
         },
-        res: 'res.Standard.json'
+        res: {
+            type: 'object'
+        }
     }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(req);
 
-            const esri = new EsriProxy(
-                String(req.query.token),
-                +new Date() + 10000,
-                new URL(String(req.query.url)),
-                config.API_URL
+            let portal_url, server_url;
+            try {
+                portal_url = new URL(String(req.query.portal));
+                server_url = new URL(String(req.query.server));
+            } catch (err) {
+                throw new Err(400, null, err.message);
+            }
+
+            const server = new EsriProxyServer(
+                new EsriProxyPortal(
+                    String(req.query.token),
+                    +new Date() + 10000,
+                    portal_url,
+                    config.API_URL
+                ),
+                server_url
             );
 
-            await esri.createLayer();
+            const layer = await server.createLayer();
 
-            return res.json({
-                status: 200,
-                message: 'Layer Created'
-            });
+            return res.json(layer)
         } catch (err) {
             return Err.respond(err, res);
         }
     });
 
+    /*
     await schema.delete('/sink/esri/layer', {
         name: 'Delete Layer',
         group: 'SinkEsri',

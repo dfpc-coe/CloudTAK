@@ -247,7 +247,7 @@ class EsriProxyServer {
         this.base = url;
     }
 
-    async deleteLayer(id: number) {
+    async deleteLayer(id: number): Promise<object> {
         const url = new URL(this.base);
         url.pathname = url.pathname.replace('/rest/', '/rest/admin/') + '/deleteFromDefinition';
         const res = await fetch(url, {
@@ -272,7 +272,7 @@ class EsriProxyServer {
         return json;
     }
 
-    async createLayer() {
+    async createLayer(): Promise<object> {
         const url = new URL(this.base);
         url.pathname = url.pathname.replace('/rest/', '/rest/admin/') + '/addToDefinition';
         const res = await fetch(url, {
@@ -411,7 +411,7 @@ class EsriProxyServer {
         return json;
     }
 
-    async getList() {
+    async getList(): Promise<object> {
         const res = await fetch(this.base + `?f=json`, {
             method: 'GET',
             headers: {

@@ -1,12 +1,12 @@
 <template>
 <div class='border py-2 mx-2'>
     <div class='d-flex'>
-        <h1 class='subheader px-3' v-text='server.url'></h1>
+        <h1 class='subheader px-3' v-text='server'></h1>
 
         <div class='ms-auto btn-list mx-3'>
             <RefreshIcon v-if='!err && !loading' @click='getList' v-tooltip='"Refresh"' class='cursor-pointer'/>
 
-            <ArrowBackIcon v-if='!err && !loading && server' @click='back' v-tooltip='"Back"' class='cursor-pointer'/>
+            <ArrowBackIcon v-if='!err && !loading' @click='back' v-tooltip='"Back"' class='cursor-pointer'/>
         </div>
     </div>
 
@@ -18,24 +18,7 @@
     <template v-else-if='loading'>
         <TablerLoading desc='Connecting to ESRI Server'/>
     </template>
-    <template v-else-if='!server'>
-        <template v-if='servers.length === 0'>
-            <None :compact='true' :create='false' label='ArcGIS Servers'/>
-        </template>
-        <template v-else>
-            <div class='table-responsive'>
-                <table class="table table-hover card-table table-vcenter cursor-pointer">
-                    <thead><tr><th>ID</th><th>Name</th><th>Url</th></tr></thead>
-                    <tbody><tr @click='server = serv' :key='serv.id' v-for='serv in servers'>
-                        <td v-text='serv.id'></td>
-                        <td v-text='serv.name'></td>
-                        <td v-text='serv.url'></td>
-                    </tr></tbody>
-                </table>
-            </div>
-        </template>
-    </template>
-    <template v-else-if='server && !container'>
+    <template v-else-if='!container'>
         <template v-if='list.length === 0'>
             <None :compact='true' :create='false' label='Services'/>
         </template>
@@ -121,8 +104,11 @@ import Alert from './Alert.vue';
 export default {
     name: 'EsriServer',
     props: {
+        init: {
+            type: String
+        },
         portal: {
-            type: URL,
+            type: String,
             required: true,
         },
         token: {
@@ -156,6 +142,8 @@ export default {
         }
     },
     mounted: async function() {
+        if (this.init) this.listpath = this.init;
+
         await this.getList();
     },
     methods: {
@@ -176,12 +164,12 @@ export default {
                 }).join('/');
 
                 if (!this.layer) {
-                    return this.server.url + '/rest/services/' + listpath;
+                    return this.server + '/rest/services/' + listpath;
                 } else {
-                    return this.server.url + '/rest/services/' + listpath + '/' + this.layer.id;
+                    return this.server + '/rest/services/' + listpath + '/' + this.layer.id;
                 }
             } else {
-                return this.server.url + '/rest';
+                return this.server + '/rest';
             }
 
         },
@@ -190,7 +178,8 @@ export default {
             try {
                 const url = window.stdurl('/api/sink/esri/layer');
                 url.searchParams.append('token', this.token);
-                url.searchParams.append('url', this.stdurl());
+                url.searchParams.append('portal', this.portal);
+                url.searchParams.append('server', this.stdurl());
 
                 await window.std(url, { method: 'POST' });
 

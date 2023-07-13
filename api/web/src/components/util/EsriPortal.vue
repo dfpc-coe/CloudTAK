@@ -43,7 +43,7 @@
     </template>
     <template v-else>
         <EsriServer
-            :server='server'
+            :server='server.url'
             :portal='url'
             :token='token'
         />
@@ -51,6 +51,8 @@
 
     <EsriPortalCreate
         v-if='createModal'
+        :portal='url'
+        :token='token'
         @close='createModal = false'
         @create='createService($event)'
     />
@@ -169,7 +171,11 @@ export default {
 
                 const res = await window.std(url, { method: 'POST', body });
 
-                console.error(res);
+                const service = res.encodedServiceURL;
+
+                this.server = {
+                    url: service.replace(/\/rest\/services\/.*/, '/rest/services')
+                };
             } catch (err) {
                 this.err = err;
             }
