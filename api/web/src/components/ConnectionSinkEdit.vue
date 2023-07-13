@@ -87,7 +87,7 @@
                                             </div>
                                         </template>
                                         <template v-else>
-                                            <EsriView
+                                            <EsriPortal
                                                 :url='sink.body.url'
                                                 :username='sink.body.username'
                                                 :password='sink.body.password'
@@ -131,7 +131,7 @@
 
 <script>
 import PageFooter from './PageFooter.vue';
-import EsriView from './util/EsriView.vue';
+import EsriPortal from './util/EsriPortal.vue';
 import {
     PlusIcon,
 } from 'vue-tabler-icons';
@@ -212,7 +212,7 @@ export default {
         TablerEnum,
         TablerInput,
         PageFooter,
-        EsriView,
+        EsriPortal,
     }
 }
 </script>
