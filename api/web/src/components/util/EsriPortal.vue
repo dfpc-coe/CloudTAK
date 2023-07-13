@@ -6,7 +6,7 @@
         <div class='ms-auto btn-list mx-3'>
             <RefreshIcon v-if='!err && !loading' @click='generateToken' v-tooltip='"Refresh"' class='cursor-pointer'/>
 
-            <PlusIcon v-if='!err && !loading' @click='createService' v-tooltip='"Create Service"' class='cursor-pointer'/>
+            <PlusIcon v-if='!err && !loading' @click='createModal = true' v-tooltip='"Create Hosted Service"' class='cursor-pointer'/>
             <XIcon @click='$emit("close")' v-tooltip='"Close Explorer"' class='cursor-pointer'/>
         </div>
     </div>
@@ -48,6 +48,12 @@
             :token='token'
         />
     </template>
+
+    <EsriPortalCreate
+        v-if='createModal'
+        @close='createModal = false'
+        @create='createService($event)'
+    />
 </div>
 </template>
 
@@ -67,6 +73,7 @@ import {
     CheckIcon
 } from 'vue-tabler-icons';
 import EsriServer from './EsriServer.vue';
+import EsriPortalCreate from './EsriPortalCreate.vue';
 import Alert from './Alert.vue';
 
 export default {
@@ -87,6 +94,7 @@ export default {
     data: function() {
         return {
             loading: true,
+            createModal: false,
             err: null,
             portal: null,
             token: null,
@@ -151,7 +159,22 @@ export default {
                 this.err = err;
             }
             this.loading = false;
-        }
+        },
+        createService: async function(body) {
+            this.loading = true;
+            try {
+                const url = window.stdurl('/api/sink/esri/portal/service');
+                url.searchParams.append('token', this.token);
+                url.searchParams.append('portal', this.url);
+
+                const res = await window.std(url, { method: 'POST', body });
+
+                console.error(res);
+            } catch (err) {
+                this.err = err;
+            }
+            this.loading = false;
+        },
 
     },
     components: {
@@ -166,7 +189,8 @@ export default {
         ArrowBackIcon,
         TablerLoading,
         TablerDelete,
-        EsriServer
+        EsriServer,
+        EsriPortalCreate
     }
 }
 </script>
