@@ -24,7 +24,7 @@
     <template v-else-if='loading'>
         <TablerLoading desc='Connecting to ESRI Portal'/>
     </template>
-    <template v-else-if='type === "SERVER"'>
+    <template v-else-if='type === "SERVER" || server'>
         <template v-if='!server'>
             <template v-if='servers.length === 0'>
                 <None :compact='true' :create='false' label='ArcGIS Servers'/>
@@ -61,8 +61,31 @@
         </template>
     </template>
     <template v-else-if="type === 'AGOL'">
-        AGOL
+        <TablerInput placeholder='Filter by title' v-model='contentFilter.title'/>
 
+        <div class='table-responsive'>
+            <table class="table table-hover card-table table-vcenter cursor-pointer">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Attributes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr @click='fmtserver(res)' :key='res.id' v-for='res in content.results'>
+                        <td>
+                            <MapIcon/>
+                            <span v-text='res.title' class='mx-1'/>
+                        </td>
+                        <td>
+                            <span v-text='res.access' class='badge mx-1 mb-1' :class='{
+                                 "bg-green": res.access === "public"
+                            }'/>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
     </template>
 
     <EsriPortalCreate
@@ -78,6 +101,7 @@
 <script>
 import {
     TablerLoading,
+    TablerInput,
     TablerDelete
 } from '@tak-ps/vue-tabler';
 import None from '../cards/None.vue';
@@ -119,13 +143,27 @@ export default {
             token: null,
             server: null,
             servers: [],
-            content: []
+            content: [],
+            contentFilter: {
+                title: ''
+            }
+        }
+    },
+    watch: {
+        contentFilter: {
+            deep: true,
+            handler: async function() {
+                await this.fetchContent();
+            }
         }
     },
     mounted: async function() {
         await this.generateToken();
     },
     methods: {
+        fmtserver: function(content) {
+            this.server = content;
+        },
         generateToken: async function() {
             this.loading = true;
             try {
@@ -176,6 +214,7 @@ export default {
                 const url = window.stdurl('/api/sink/esri/portal/content');
                 url.searchParams.append('token', this.token);
                 url.searchParams.append('portal', this.url);
+                url.searchParams.append('title', this.contentFilter.title);
 
                 const res = await window.std(url);
 
@@ -234,6 +273,7 @@ export default {
         ArrowBackIcon,
         TablerLoading,
         TablerDelete,
+        TablerInput,
         EsriServer,
         EsriPortalCreate
     }

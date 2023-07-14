@@ -66,7 +66,7 @@
             <div class='table-responsive'>
                 <table class="table table-hover card-table table-vcenter cursor-pointer">
                     <thead><tr><th>Name</th></tr></thead>
-                    <tbody><tr @click='layer=lyr' :key='lyr.id' v-for='lyr in container.layers'>
+                    <tbody><tr @click='(layer && layer.id === lyr.id) ? layer = nulll : layer = lyr' :key='lyr.id' v-for='lyr in container.layers'>
                         <td>
                             <div class='d-flex'>
                                 <MapIcon/><span v-text='lyr.name' class='mx-3'/>
@@ -104,9 +104,6 @@ import Alert from './Alert.vue';
 export default {
     name: 'EsriServer',
     props: {
-        init: {
-            type: String
-        },
         portal: {
             type: String,
             required: true,
@@ -122,11 +119,12 @@ export default {
     },
     data: function() {
         return {
+            base: this.server,
             loading: true,
             err: null,
             listpath: [],
             container: null,
-            layer: null
+            layer: null,
         }
     },
     watch: {
@@ -142,8 +140,7 @@ export default {
         }
     },
     mounted: async function() {
-        if (this.init) this.listpath = this.init;
-
+        this.base = this.base.replace(/\/rest\/services.*/, '');
         await this.getList();
     },
     methods: {
@@ -166,12 +163,12 @@ export default {
                 }).join('/');
 
                 if (!this.layer) {
-                    return this.server + '/rest/services/' + listpath;
+                    return this.base + '/rest/services/' + listpath;
                 } else {
-                    return this.server + '/rest/services/' + listpath + '/' + this.layer.id;
+                    return this.base + '/rest/services/' + listpath + '/' + this.layer.id;
                 }
             } else {
-                return this.server + '/rest';
+                return this.base + '/rest/services';
             }
 
         },
