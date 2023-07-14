@@ -24,29 +24,44 @@
     <template v-else-if='loading'>
         <TablerLoading desc='Connecting to ESRI Portal'/>
     </template>
-    <template v-else-if='!server'>
-        <template v-if='servers.length === 0'>
-            <None :compact='true' :create='false' label='ArcGIS Servers'/>
+    <template v-else-if='type === "SERVER"'>
+        <template v-if='!server'>
+            <template v-if='servers.length === 0'>
+                <None :compact='true' :create='false' label='ArcGIS Servers'/>
+            </template>
+            <template v-else>
+                <div class='table-responsive'>
+                    <table class="table table-hover card-table table-vcenter cursor-pointer">
+                        <thead><tr><th>ID</th><th>Name</th><th>Url</th></tr></thead>
+                        <tbody><tr @click='server = serv' :key='serv.id' v-for='serv in servers'>
+                            <td v-text='serv.id'></td>
+                            <td v-text='serv.name'></td>
+                            <td v-text='serv.url'></td>
+                        </tr></tbody>
+                    </table>
+                </div>
+            </template>
         </template>
         <template v-else>
-            <div class='table-responsive'>
-                <table class="table table-hover card-table table-vcenter cursor-pointer">
-                    <thead><tr><th>ID</th><th>Name</th><th>Url</th></tr></thead>
-                    <tbody><tr @click='server = serv' :key='serv.id' v-for='serv in servers'>
-                        <td v-text='serv.id'></td>
-                        <td v-text='serv.name'></td>
-                        <td v-text='serv.url'></td>
-                    </tr></tbody>
-                </table>
+            <div class='datagrid mx-4 my-4'>
+                <template v-for='ele in ["id", "name", "adminUrl"]'>
+                    <div class='datagrid-item'>
+                        <div class="datagrid-title" v-text='ele'></div>
+                        <div class="datagrid-content" v-text='server[ele] || "Unknown"'></div>
+                    </div>
+                </template>
             </div>
+
+            <EsriServer
+                :server='server.url'
+                :portal='url'
+                :token='token'
+            />
         </template>
     </template>
-    <template v-else>
-        <EsriServer
-            :server='server.url'
-            :portal='url'
-            :token='token'
-        />
+    <template v-else-if="type === 'AGOL'">
+        AGOL
+
     </template>
 
     <EsriPortalCreate
@@ -97,6 +112,7 @@ export default {
         return {
             loading: true,
             createModal: false,
+            type: null,
             err: null,
             portal: null,
             token: null,
@@ -121,6 +137,7 @@ export default {
                 });
 
                 this.token = res.token;
+                this.type = res.type;
 
                 await this.fetchPortal();
                 await this.fetchServers();
