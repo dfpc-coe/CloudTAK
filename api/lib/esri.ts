@@ -126,7 +126,7 @@ class EsriProxyPortal {
     }): Promise<{
         username: string
     }> {
-        if (opts.title) opts.title = opts.title.replace(/"/g, '');
+        if (opts.title) opts.title = `(${opts.title.replace(/"/g, '')})`;
         else opts.title = '';
 
         const url = new URL(this.base + `/search`);
@@ -137,7 +137,16 @@ class EsriProxyPortal {
         url.searchParams.append('sortOrder', 'desc');
         // User could technically XSSish us but since this is a query parameter
         // the onus to protect the query is on ESRI as the input is already untrusted
-        url.searchParams.append('q', `(${opts.title}) (type:("Feature Collection" OR "Feature Service" OR "Stream Service" OR "WFS" OR "Feed" OR "OGCFeatureServer")`);
+
+        const query = [];
+        if (opts.title) query.push(opts.title);
+        query.push('orgid:KaDI8JW2y384fmrZ')
+        query.push('-type:("Feature Service" OR "Stream Service" OR "WFS" OR "Feed" OR "OGCFeatureServer")');
+
+        console.error(query)
+        url.searchParams.append('q', query.join(' '));
+
+        console.error(url);
 
         const res = await fetch(url, {
             method: 'GET',

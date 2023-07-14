@@ -7,9 +7,9 @@
         </h1>
 
         <div class='ms-auto btn-list mx-3'>
-            <RefreshIcon v-if='!err && !loading' @click='generateToken' v-tooltip='"Refresh"' class='cursor-pointer'/>
+            <RefreshIcon v-if='!err && !loading.main' @click='generateToken' v-tooltip='"Refresh"' class='cursor-pointer'/>
 
-            <PlusIcon v-if='!err && !loading' @click='createModal = true' v-tooltip='"Create Hosted Service"' class='cursor-pointer'/>
+            <PlusIcon v-if='!err && !loading.main' @click='createModal = true' v-tooltip='"Create Hosted Service"' class='cursor-pointer'/>
             <XIcon @click='$emit("close")' v-tooltip='"Close Explorer"' class='cursor-pointer'/>
         </div>
     </div>
@@ -24,7 +24,7 @@
             </div>
         </div>
     </template>
-    <template v-else-if='loading'>
+    <template v-else-if='loading.main'>
         <TablerLoading desc='Connecting to ESRI Portal'/>
     </template>
     <template v-else-if='type === "SERVER" || server'>
@@ -66,7 +66,10 @@
     <template v-else-if="type === 'AGOL'">
         <TablerInput placeholder='Filter by title' v-model='contentFilter.title'/>
 
-        <div class='table-responsive'>
+        <template v-if='loading.content'>
+            <TablerLoading desc='Searching Content'/>
+        </template>
+        <div v-else class='table-responsive'>
             <table class="table table-hover card-table table-vcenter cursor-pointer">
                 <thead>
                     <tr>
@@ -138,7 +141,10 @@ export default {
     },
     data: function() {
         return {
-            loading: true,
+            loading: {
+                main: true,
+                content: true
+            },
             createModal: false,
             type: null,
             err: null,
@@ -168,7 +174,7 @@ export default {
             this.server = content;
         },
         generateToken: async function() {
-            this.loading = true;
+            this.loading.main = true;
             try {
                 const res = await window.std('/api/sink/esri', {
                     method: 'POST',
@@ -192,10 +198,10 @@ export default {
             } catch (err) {
                 this.err = err;
             }
-            this.loading = false;
+            this.loading.main = false;
         },
         fetchPortal: async function() {
-            this.loading = true;
+            this.loading.main = true;
             try {
                 const url = window.stdurl('/api/sink/esri/portal');
                 url.searchParams.append('token', this.token);
@@ -209,10 +215,10 @@ export default {
             } catch (err) {
                 this.err = err;
             }
-            this.loading = false;
+            this.loading.main = false;
         },
         fetchContent: async function() {
-            this.loading = true;
+            this.loading.content = true;
             try {
                 const url = window.stdurl('/api/sink/esri/portal/content');
                 url.searchParams.append('token', this.token);
@@ -225,10 +231,10 @@ export default {
             } catch (err) {
                 this.err = err;
             }
-            this.loading = false;
+            this.loading.content = false;
         },
         fetchServers: async function() {
-            this.loading = true;
+            this.loading.main = true;
             try {
                 const url = window.stdurl('/api/sink/esri/portal/server');
                 url.searchParams.append('token', this.token);
@@ -241,10 +247,10 @@ export default {
             } catch (err) {
                 this.err = err;
             }
-            this.loading = false;
+            this.loading.main = false;
         },
         createService: async function(body) {
-            this.loading = true;
+            this.loading.main = true;
             try {
                 const url = window.stdurl('/api/sink/esri/portal/service');
                 url.searchParams.append('token', this.token);
@@ -260,7 +266,7 @@ export default {
             } catch (err) {
                 this.err = err;
             }
-            this.loading = false;
+            this.loading.main = false;
         },
 
     },
