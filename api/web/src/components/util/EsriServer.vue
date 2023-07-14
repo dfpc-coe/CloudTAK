@@ -7,6 +7,7 @@
             <RefreshIcon v-if='!err && !loading' @click='getList' v-tooltip='"Refresh"' class='cursor-pointer'/>
 
             <ArrowBackIcon v-if='!err && !loading' @click='back' v-tooltip='"Back"' class='cursor-pointer'/>
+            <XIcon @click='$emit("close")' v-tooltip='"Close Explorer"' class='cursor-pointer'/>
         </div>
     </div>
 
