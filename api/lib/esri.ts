@@ -141,7 +141,7 @@ class EsriProxyPortal {
         const query = [];
         if (opts.title) query.push(opts.title);
         query.push('orgid:KaDI8JW2y384fmrZ')
-        query.push('-type:("Feature Service" OR "Stream Service" OR "WFS" OR "Feed" OR "OGCFeatureServer")');
+        query.push('type:("Feature Service")');
 
         console.error(query)
         url.searchParams.append('q', query.join(' '));
