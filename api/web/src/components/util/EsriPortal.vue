@@ -56,6 +56,7 @@
                 :server='server.url'
                 :portal='url'
                 :token='token'
+                @close='server = null'
             />
         </template>
     </template>
