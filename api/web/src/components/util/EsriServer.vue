@@ -142,7 +142,19 @@ export default {
     },
     mounted: async function() {
         this.base = this.base.replace(/\/rest\/services.*/, '');
-        await this.getList();
+
+        let postfix = this.server.replace(/^.*\/services\//, '');
+        if (postfix.length) {
+            // TODO Support Directories / Layer Parsing
+            postfix = postfix.split('/');
+
+            this.listpath = [{
+                name: postfix[0],
+                type: postfix[1]
+            }]
+        } else {
+            await this.getList();
+        }
     },
     methods: {
         back: function() {
