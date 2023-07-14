@@ -154,6 +154,8 @@ export default {
                 this.listpath.pop();
             } else if (this.listpath.length) {
                 this.listpath.pop();
+            } else {
+                this.$emit('close');
             }
         },
         stdurl: function() {
