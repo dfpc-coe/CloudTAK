@@ -176,7 +176,7 @@ export default {
         createLayer: async function() {
             this.loading = true;
             try {
-                const url = window.stdurl('/api/sink/esri/layer');
+                const url = window.stdurl('/api/sink/esri/server/layer');
                 url.searchParams.append('token', this.token);
                 url.searchParams.append('portal', this.portal);
                 url.searchParams.append('server', this.stdurl());
@@ -191,7 +191,7 @@ export default {
         deleteLayer: async function() {
             this.loading = true;
             try {
-                const url = window.stdurl('/api/sink/esri/layer');
+                const url = window.stdurl('/api/sink/esri/server/layer');
                 url.searchParams.append('token', this.token);
                 url.searchParams.append('portal', this.portal);
                 url.searchParams.append('server', this.stdurl());

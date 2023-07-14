@@ -285,7 +285,7 @@ export default async function router(schema: any, config: Config) {
         }
     });
 
-    await schema.post('/sink/esri/layer', {
+    await schema.post('/sink/esri/server/layer', {
         name: 'Create Layer',
         group: 'SinkEsri',
         auth: 'user',
@@ -332,7 +332,7 @@ export default async function router(schema: any, config: Config) {
         }
     });
 
-    await schema.delete('/sink/esri/layer', {
+    await schema.delete('/sink/esri/server/layer', {
         name: 'Delete Layer',
         group: 'SinkEsri',
         auth: 'user',
@@ -355,7 +355,7 @@ export default async function router(schema: any, config: Config) {
 
             if (!String(req.query.server).match(/\/\d+$/)) throw new Err(400, null, 'Could not parse layer ID');
 
-            const url = String(req.query.server).replace(/\/\d+$/, '');
+            const url = new URL(String(req.query.server).replace(/\/\d+$/, ''));
             const layer_id = parseInt(String(req.query.server).match(/\/\d+$/)[0].replace('/', ''));
 
             let portal_url, server_url;
@@ -373,7 +373,7 @@ export default async function router(schema: any, config: Config) {
                     portal_url,
                     config.API_URL
                 ),
-                server_url
+                url
             );
 
             const layer = await server.deleteLayer(layer_id);
