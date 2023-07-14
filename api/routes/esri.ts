@@ -40,14 +40,6 @@ export default async function router(schema: any, config: Config) {
                 token: { type: "string" },
                 referer: { type: "string" },
                 expires: { type: "integer" },
-                servers: {
-                    type: "array",
-                    items: { type: "object" }
-                },
-                content: {
-                    type: "array",
-                    items: { type: "object" }
-                }
             }
         }
     }, async (req: AuthRequest, res: Response) => {
@@ -67,15 +59,11 @@ export default async function router(schema: any, config: Config) {
                 req.body.password
             );
 
-            const servers = await esri.getServers();
-
             return res.json({
                 type: esri.type,
                 token: esri.token,
                 referer: esri.referer,
                 expires: esri.expires,
-                servers: servers.servers,
-                content: []
             });
         } catch (err) {
             return Err.respond(err, res);
@@ -83,7 +71,7 @@ export default async function router(schema: any, config: Config) {
     });
 
     await schema.get('/sink/esri/portal', {
-        name: 'List Servers',
+        name: 'Portal Meta',
         group: 'SinkEsri',
         auth: 'user',
         description: `
@@ -121,6 +109,50 @@ export default async function router(schema: any, config: Config) {
             const portal = await esri.getPortal();
 
             return res.json(portal);
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
+
+    await schema.get('/sink/esri/portal/content', {
+        name: 'Portal Content',
+        group: 'SinkEsri',
+        auth: 'user',
+        description: `
+            Helper API to configure ESRI MapServers
+            Return Portal Content
+        `,
+        query: {
+            type: "object",
+            additionalProperties: false,
+            required: [ "portal", "token" ],
+            properties: {
+                portal: { "type": "string" },
+                token: { "type": "string" },
+            }
+        },
+        res: { type: "object" }
+    }, async (req: AuthRequest, res: Response) => {
+        try {
+            await Auth.is_auth(req);
+
+            let portal_url;
+            try {
+                portal_url = new URL(String(req.query.portal));
+            } catch (err) {
+                throw new Err(400, null, err.message);
+            }
+
+            const esri = new EsriProxyPortal(
+                String(req.query.token),
+                +new Date() + 1000,
+                portal_url,
+                config.API_URL,
+            );
+
+            const content = await esri.getContent();
+
+            return res.json(content);
         } catch (err) {
             return Err.respond(err, res);
         }
