@@ -137,7 +137,7 @@ class EsriProxyPortal {
         url.searchParams.append('sortOrder', 'desc');
         // User could technically XSSish us but since this is a query parameter
         // the onus to protect the query is on ESRI as the input is already untrusted
-        url.searchParams.append('filter', `type:"Feature Service" AND title:"${opts.title}"`);
+        url.searchParams.append('q', `(${opts.title}) (type:("Feature Collection" OR "Feature Service" OR "Stream Service" OR "WFS" OR "Feed" OR "OGCFeatureServer")`);
 
         const res = await fetch(url, {
             method: 'GET',

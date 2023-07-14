@@ -1,7 +1,10 @@
 <template>
 <div class='border py-2'>
     <div class='d-flex'>
-        <h1 class='subheader px-3'>ESRI Server Explorer</h1>
+        <h1 class='subheader px-3'>
+            ESRI Server Explorer
+            <span v-if='portal && portal.name' v-text='" - " + portal.name'/>
+        </h1>
 
         <div class='ms-auto btn-list mx-3'>
             <RefreshIcon v-if='!err && !loading' @click='generateToken' v-tooltip='"Refresh"' class='cursor-pointer'/>
