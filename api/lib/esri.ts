@@ -121,7 +121,9 @@ class EsriProxyPortal {
         }
     }
 
-    async getContent(): Promise<{
+    async getContent(opts: {
+        title?: string
+    }): Promise<{
         username: string
     }> {
         const url = new URL(this.base + `/search`);

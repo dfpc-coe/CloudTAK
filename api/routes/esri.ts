@@ -129,6 +129,7 @@ export default async function router(schema: any, config: Config) {
             properties: {
                 portal: { "type": "string" },
                 token: { "type": "string" },
+                title: { "type": "string" },
             }
         },
         res: { type: "object" }
@@ -150,7 +151,9 @@ export default async function router(schema: any, config: Config) {
                 config.API_URL,
             );
 
-            const content = await esri.getContent();
+            const content = await esri.getContent({
+                title: req.query.title ? String(req.query.title) : undefined
+            });
 
             return res.json(content);
         } catch (err) {

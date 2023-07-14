@@ -157,7 +157,13 @@ export default {
             sink: {
                 name: '',
                 type: 'ArcGIS',
-                body: {},
+                body: {
+                    // TODO Dynamically change these via above type
+                    url: '',
+                    username: '',
+                    password: '',
+                    layer: ''
+                },
                 enabled: true,
             }
         }
