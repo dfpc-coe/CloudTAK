@@ -126,13 +126,18 @@ class EsriProxyPortal {
     }): Promise<{
         username: string
     }> {
+        if (opts.title) opts.title = opts.title.replace(/"/g, '');
+        else opts.title = '';
+
         const url = new URL(this.base + `/search`);
         url.searchParams.append('f', 'json');
         url.searchParams.append('num', '20');
         url.searchParams.append('start', '1');
         url.searchParams.append('sortField', 'modified');
         url.searchParams.append('sortOrder', 'desc');
-        url.searchParams.append('filter', 'type:"Feature Service"');
+        // User could technically XSSish us but since this is a query parameter
+        // the onus to protect the query is on ESRI as the input is already untrusted
+        url.searchParams.append('filter', `type:"Feature Service" AND title:"${opts.title}"`);
 
         const res = await fetch(url, {
             method: 'GET',
