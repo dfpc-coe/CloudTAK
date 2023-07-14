@@ -118,7 +118,8 @@ export default {
             portal: null,
             token: null,
             server: null,
-            servers: []
+            servers: [],
+            content: []
         }
     },
     mounted: async function() {
@@ -141,7 +142,12 @@ export default {
                 this.type = res.type;
 
                 await this.fetchPortal();
-                await this.fetchServers();
+
+                if (this.type === 'AGOL') {
+                    await this.fetchContent();
+                } else {
+                    await this.fetchServers();
+                }
             } catch (err) {
                 this.err = err;
             }
@@ -159,6 +165,21 @@ export default {
                 this.portal = res;
 
                 if (this.portal.isReadOnly) throw new Error('Portal is Read Only');
+            } catch (err) {
+                this.err = err;
+            }
+            this.loading = false;
+        },
+        fetchContent: async function() {
+            this.loading = true;
+            try {
+                const url = window.stdurl('/api/sink/esri/portal/content');
+                url.searchParams.append('token', this.token);
+                url.searchParams.append('portal', this.url);
+
+                const res = await window.std(url);
+
+                this.content = res;
             } catch (err) {
                 this.err = err;
             }
