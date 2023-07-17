@@ -59,6 +59,7 @@
                 :server='server.url'
                 :portal='url'
                 :token='token'
+                @layer='$emit("layer", $event)'
                 @close='server = null'
             />
         </template>
