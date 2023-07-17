@@ -161,6 +161,13 @@ export default {
         }
     },
     watch: {
+        server: async function() {
+            if (this.type === 'AGOL') {
+                await this.fetchContent();
+            } else {
+                await this.fetchServers();
+            }
+        },
         contentFilter: {
             deep: true,
             handler: async function() {
@@ -260,10 +267,8 @@ export default {
 
                 const res = await window.std(url, { method: 'POST', body });
 
-                const service = res.encodedServiceURL;
-
                 this.server = {
-                    url: service.replace(/\/rest\/services\/.*/, '/rest/services')
+                    url: res.encodedServiceURL
                 };
             } catch (err) {
                 this.err = err;
