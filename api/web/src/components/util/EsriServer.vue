@@ -144,7 +144,8 @@ export default {
         this.base = this.base.replace(/\/rest\/services.*/, '');
 
         let postfix = this.server.replace(/^.*\/services\//, '');
-        if (postfix.length) {
+
+        if (postfix.length && !postfix.startsWith('http')) {
             // TODO Support Directories / Layer Parsing
             postfix = postfix.split('/');
 
