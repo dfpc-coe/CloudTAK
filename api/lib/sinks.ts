@@ -33,6 +33,7 @@ export default class Sinks extends Map<string, any> {
             const feat = cot.to_geojson();
 
             this.queue.submit(conn.id, JSON.stringify({
+                id: sink.id,
                 type: sink.type,
                 body: sink.body,
                 feat, secrets
