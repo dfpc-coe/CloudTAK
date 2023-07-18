@@ -41,6 +41,7 @@ export default {
                 Environment: {
                     Variables: {
                         TAK_ETL_API: cf.ref('HostedURL'),
+                        StackName: cf.stackName,
                         SigningSecret: cf.sub('{{resolve:secretsmanager:${AWS::StackName}/api/secret:SecretString::AWSCURRENT}}')
                     }
                 },
@@ -70,6 +71,14 @@ export default {
                     PolicyDocument: {
                         Version: '2012-10-17',
                         Statement: [{
+                            Effect: 'Allow',
+                            Action: [
+                                'cloudwatch:PutMetricData'
+                            ],
+                            Resource: [
+                                '*'
+                            ]
+                        },{
                             Effect: 'Allow',
                             Action: [
                                 'sqs:SendMessage',

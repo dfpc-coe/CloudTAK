@@ -27,6 +27,14 @@
         },
         "enabled": {
             "$ref": "./connection_sinks/enabled.json"
+        },
+        "body": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "layer": { "type": "string" },
+                "url": { "type": "string" }
+            }
         }
     }
 }
