@@ -45,25 +45,17 @@
             <TablerLoading/>
         </template>
         <template v-else-if='mode === "status" && errors.cloudformation'>
-            <div class="text-center py-4">
-                <AlertCircleIcon height='48' width='48'/>
-                <h3 class='pt-3'>AWS Cloudformation Error</h3>
-                <div class="text-muted" v-text='errors.cloudformation.message'></div>
+            <Alert title='AWS CloudFormation Error' :err='errors.cloudformation.message' :compact='true'/>
 
-                <div class="d-flex justify-content-center my-3">
-                    <div @click='refresh' class='btn btn-secondary'>Refresh</div>
-                </div>
+            <div class="d-flex justify-content-center my-3">
+                <div @click='refresh' class='btn btn-secondary'>Refresh</div>
             </div>
         </template>
         <template v-else-if='mode === "logs" && errors.cloudwatch'>
-            <div class="text-center py-4">
-                <AlertCircleIcon height='48' width='48'/>
-                <h3 class='pt-3'>AWS CloudWatch Error</h3>
-                <div class="text-muted" v-text='errors.cloudwatch.message'></div>
+            <Alert title='AWS CloudWatch Error' :err='errors.cloudwatch.message' :compact='true'/>
 
-                <div class="d-flex justify-content-center my-3">
-                    <div @click='refresh' class='btn btn-secondary'>Refresh</div>
-                </div>
+            <div class="d-flex justify-content-center my-3">
+                <div @click='refresh' class='btn btn-secondary'>Refresh</div>
             </div>
         </template>
         <template v-else-if='stack.status === "destroyed"'>
@@ -88,12 +80,12 @@
 import {
     TablerLoading
 } from '@tak-ps/vue-tabler';
+import Alert from '../util/Alert.vue';
 import {
     ArticleIcon,
     PlayerPlayIcon,
     CircleDotIcon,
     RefreshIcon,
-    AlertCircleIcon
 } from 'vue-tabler-icons';
 
 export default {
@@ -202,12 +194,12 @@ export default {
         }
     },
     components: {
+        Alert,
         ArticleIcon,
         PlayerPlayIcon,
         CircleDotIcon,
         RefreshIcon,
         TablerLoading,
-        AlertCircleIcon
     }
 }
 </script>

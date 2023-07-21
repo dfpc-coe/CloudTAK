@@ -1,6 +1,6 @@
 import SecretsManager from '@aws-sdk/client-secrets-manager';
 import type EventsPool from './events-pool.js';
-import TAKPool from './tak-pool.js'
+import ConnectionPool from './connection-pool.js'
 import { WebSocket } from 'ws';
 // @ts-ignore
 import Server from './types/Server.js';
@@ -11,17 +11,22 @@ import Cacher from './cacher.js';
 interface ConfigArgs {
     silent: boolean,
     unsafe: boolean,
-    noevents: boolean
+    noevents: boolean,
+    nosinks: boolean,
+    local: boolean
 }
 
 /**
  * @class
  */
 export default class Config {
+    local: boolean;
     silent: boolean;
     unsafe: boolean;
     noevents: boolean;
+    nosinks: boolean;
     StackName: string;
+    HookURL?: string;
     SigningSecret: string;
     UnsafeSigningSecret: string;
     MartiAPI: string;
@@ -34,7 +39,7 @@ export default class Config {
     Bucket?: string;
     pool?: Pool;
     cacher?: Cacher;
-    conns?: TAKPool;
+    conns?: ConnectionPool;
     server?: Server;
     events?: EventsPool;
 
@@ -42,7 +47,9 @@ export default class Config {
         const config = new Config();
 
         config.silent = (args.silent || false);
+        config.local = (args.local || false);
         config.noevents = (args.noevents || false);
+        config.nosinks = (args.nosinks || false);
         config.wsClients = []
 
         try {
@@ -75,11 +82,13 @@ export default class Config {
                 config.Bucket = process.env.ASSET_BUCKET;
             } else {
                 if (!config.silent) console.error(`ok - StackName: ${config.StackName}`);
+                if (config.local) throw new Error('local option cannot be used in production mode - Set StackName=test');
                 if (!process.env.StackName) throw new Error('StackName env must be set');
                 if (!process.env.API_URL) throw new Error('API_URL env must be set');
                 if (!process.env.PMTILES_URL) throw new Error('PMTILES_URL env must be set');
                 if (!process.env.ASSET_BUCKET) throw new Error('ASSET_BUCKET env must be set');
 
+                config.HookURL = process.env.HookURL;
                 config.StackName = process.env.StackName;
                 config.API_URL = process.env.API_URL;
                 config.Bucket = process.env.ASSET_BUCKET;

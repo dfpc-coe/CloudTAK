@@ -16,8 +16,8 @@ export default {
                 Type: 'application',
                 SecurityGroups: [cf.ref('ELBSecurityGroup')],
                 Subnets:  [
-                    cf.importValue('coe-vpc-prod-subnet-public-a'),
-                    cf.importValue('coe-vpc-prod-subnet-public-b')
+                    cf.importValue(cf.join(['coe-vpc-', cf.ref('Environment'), '-subnet-public-a'])),
+                    cf.importValue(cf.join(['coe-vpc-', cf.ref('Environment'), '-subnet-public-b']))
                 ]
             }
 
@@ -37,7 +37,7 @@ export default {
                     FromPort: 80,
                     ToPort: 80
                 }],
-                VpcId: cf.importValue('coe-vpc-prod-vpc')
+                VpcId: cf.importValue(cf.join(['coe-vpc-', cf.ref('Environment'), '-vpc']))
             }
         },
         HttpsListener: {
@@ -81,16 +81,10 @@ export default {
                 Port: 5000,
                 Protocol: 'HTTP',
                 TargetType: 'ip',
-                VpcId: cf.importValue('coe-vpc-prod-vpc'),
+                VpcId: cf.importValue(cf.join(['coe-vpc-', cf.ref('Environment'), '-vpc'])),
                 Matcher: {
                     HttpCode: '200,202,302,304'
                 }
-            }
-        },
-        ECSCluster: {
-            Type: 'AWS::ECS::Cluster',
-            Properties: {
-                ClusterName: cf.join('-', [cf.stackName, 'cluster'])
             }
         },
         TaskRole: {
@@ -125,6 +119,18 @@ export default {
                             ],
                             Resource: [
                                 cf.join(['arn:', cf.partition, ':ecr:', cf.region, ':', cf.accountId, ':repository/coe-ecr-etl-tasks'])
+                            ]
+                        },{
+                            Effect: 'Allow',
+                            Action: [
+                                'sqs:PurgeQueue',
+                                'sqs:SendMessage',
+                                'sqs:ChangeMessageVisibility',
+                                'sqs:GetQueueUrl',
+                                'sqs:GetQueueAttributes'
+                            ],
+                            Resource: [
+                                cf.join(['arn:', cf.partition, ':sqs:', cf.region, ':', cf.accountId, ':', cf.getAtt('HookQueue', 'QueueName')])
                             ]
                         },{
                             Effect: 'Allow',
@@ -315,6 +321,7 @@ export default {
                                 ':5432/tak_ps_etl?sslmode=no-verify'
                             ])
                         },
+                        { Name: 'HookURL', Value: cf.ref('HookQueue') },
                         { Name: 'TileBaseURL', Value: cf.join(['s3://', cf.ref('AssetBucket'), '/zipcodes.tilebase']) },
                         { Name: 'SigningSecret', Value: cf.sub('{{resolve:secretsmanager:${AWS::StackName}/api/secret:SecretString::AWSCURRENT}}') },
                         { Name: 'StackName', Value: cf.stackName },
@@ -342,7 +349,7 @@ export default {
             Type: 'AWS::ECS::Service',
             Properties: {
                 ServiceName: cf.join('-', [cf.stackName, 'Service']),
-                Cluster: cf.ref('ECSCluster'),
+                Cluster: cf.join(['coe-ecs-', cf.ref('Environment')]),
                 TaskDefinition: cf.ref('TaskDefinition'),
                 LaunchType: 'FARGATE',
                 HealthCheckGracePeriodSeconds: 300,
@@ -352,8 +359,8 @@ export default {
                         AssignPublicIp: 'ENABLED',
                         SecurityGroups: [cf.ref('ServiceSecurityGroup')],
                         Subnets:  [
-                            cf.importValue('coe-vpc-prod-subnet-public-a'),
-                            cf.importValue('coe-vpc-prod-subnet-public-b')
+                            cf.importValue(cf.join(['coe-vpc-', cf.ref('Environment'), '-subnet-public-a'])),
+                            cf.importValue(cf.join(['coe-vpc-', cf.ref('Environment'), '-subnet-public-b']))
                         ]
                     }
                 },
@@ -368,7 +375,7 @@ export default {
             Type: 'AWS::EC2::SecurityGroup',
             Properties: {
                 GroupDescription: cf.join('-', [cf.stackName, 'ec2-sg']),
-                VpcId: cf.importValue('coe-vpc-prod-vpc'),
+                VpcId: cf.importValue(cf.join(['coe-vpc-', cf.ref('Environment'), '-vpc'])),
                 SecurityGroupIngress: [{
                     CidrIp: '0.0.0.0/0',
                     IpProtocol: 'tcp',

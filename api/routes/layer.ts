@@ -5,7 +5,7 @@ import Err from '@openaddresses/batch-error';
 import Layer from '../lib/types/layer.js';
 // @ts-ignore
 import Data from '../lib/types/data.js';
-import { XML as COT } from '@tak-ps/node-cot';
+import CoT from '@tak-ps/node-cot';
 import { Item as QueueItem } from '../lib/queue.js'
 import Cacher from '../lib/cacher.js';
 import { sql } from 'slonik';
@@ -242,6 +242,8 @@ export default async function router(schema: any, config: Config) {
 
             await layer.delete();
 
+            await config.cacher.del(`layer-${req.params.layerid}`);
+
             return res.json({
                 status: 200,
                 message: 'Layer Deleted'
@@ -300,7 +302,7 @@ export default async function router(schema: any, config: Config) {
                 if (req.headers['content-type'] === 'application/json') {
                     const cots = [];
                     for (const feat of req.body.features) {
-                        cots.push(COT.from_geojson(feat))
+                        cots.push(CoT.from_geojson(feat))
                     }
 
                     if (cots.length === 0) {

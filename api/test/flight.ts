@@ -218,7 +218,9 @@ export default class Flight {
             this.config = await Config.env({
                 silent: true,
                 unsafe: true,
-                noevents: true
+                noevents: true,
+                nosinks: true,
+                local: true
             });
 
             Object.assign(this.config, custom);

@@ -42,6 +42,10 @@
                 </div>
 
                 <div class="col-lg-12">
+                    <ConnectionSinks v-if='connection.id' :connection='connection'/>
+                </div>
+
+                <div class="col-lg-12">
                     <ConnectionEvents :ws='ws' v-if='connection.id' :connection='connection'/>
                 </div>
             </div>
@@ -55,6 +59,7 @@
 import PageFooter from './PageFooter.vue';
 import ConnectionStatus from './Connection/Status.vue';
 import ConnectionLayers from './Connection/Layers.vue';
+import ConnectionSinks from './Connection/Sinks.vue';
 import ConnectionEvents from './Connection/Events.vue';
 import timeDiff from '../timediff.js';
 import {
@@ -69,20 +74,38 @@ import {
 
 export default {
     name: 'Connection',
-    props: {
-        ws: {
-            type: Object,
-            required: true
-        }
-    },
     data: function() {
         return {
             loading: true,
+            err: null,
+            ws: null,
             connection: {}
         }
     },
+    watch: {
+        err: async function() {
+            if (!this.err) return;
+            const err = this.err;
+            this.err = null;
+            throw err;
+        }
+    },
     mounted: async function() {
+        const url = window.stdurl('/api');
+        if (window.location.hostname === 'localhost') {
+            url.protocol = 'ws:';
+        } else {
+            url.protocol = 'wss:';
+        }
+
+        this.ws = new WebSocket(url);
+        this.ws.addEventListener('error', (err) => { this.$emit('err') });
+
         await this.fetch();
+
+    },
+    unmounted: function() {
+        this.ws.close();
     },
     methods: {
         timeDiff(update) {
@@ -108,6 +131,7 @@ export default {
         TablerLoading,
         ConnectionStatus,
         ConnectionLayers,
+        ConnectionSinks,
         ConnectionEvents
     }
 }

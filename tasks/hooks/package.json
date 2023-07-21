@@ -1,0 +1,31 @@
+{
+    "name": "etl-tooks",
+    "version": "0.0.0",
+    "type": "module",
+    "private": true,
+    "scripts": {
+        "tsc": "tsc --noEmit --watch",
+        "lint": "eslint src/index.ts",
+        "build": "tsup --target es2022 --format esm src/index.ts"
+    },
+    "dependencies": {
+        "@aws-sdk/client-cloudwatch": "^3.370.0",
+        "@aws-sdk/client-s3": "^3.213.0",
+        "@aws-sdk/node-http-handler": "^3.212.0",
+        "@terraformer/arcgis": "^2.1.2",
+        "@types/tape": "^5.6.0",
+        "proj4": "^2.9.0",
+        "tape": "^5.6.4"
+    },
+    "devDependencies": {
+        "@types/aws-lambda": "^8.10.108",
+        "@types/node": "^20.0.0",
+        "@types/proj4": "^2.5.2",
+        "@types/terraformer__arcgis": "^2.0.2",
+        "@typescript-eslint/eslint-plugin": "^5.57.1",
+        "@typescript-eslint/parser": "^5.57.1",
+        "eslint": "^8.37.0",
+        "tsup": "^7.0.0",
+        "typescript": "^5.0.0"
+    }
+}

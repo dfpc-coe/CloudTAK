@@ -1,5 +1,7 @@
 <template>
-<div class='card'>
+<div :class='{
+    "card": !compact
+}'>
     <div class='card-body'>
         <div class='d-flex justify-content-center mt-4 mb-2'>
             <NotesOffIcon
@@ -30,6 +32,10 @@ export default {
         create: {
             type: Boolean,
             default: true
+        },
+        compact: {
+            type: Boolean,
+            default: false
         },
         label: {
             type: String,
