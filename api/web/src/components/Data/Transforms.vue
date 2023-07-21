@@ -33,7 +33,10 @@
         </table>
     </div>
     <div v-else class='card-body'>
-        <TablerLoading v-if='loading.list'/>
+        <template v-if='err'>
+            <Alert title='Transforms Error' :err='err.message' :compact='true'/>
+        </template>
+        <TablerLoading v-else-if='loading.list'/>
         <None v-else-if='!list.list.length' :create='false'/>
     </div>
 </div>
@@ -41,6 +44,7 @@
 
 <script>
 import None from '../cards/None.vue';
+import Alert from '../util/Alert.vue';
 import {
     RefreshIcon
 } from 'vue-tabler-icons';
@@ -53,6 +57,7 @@ export default {
     name: 'DataTransforms',
     data: function() {
         return {
+            err: null,
             loading: {
                 list: true
             },
@@ -67,13 +72,19 @@ export default {
     },
     methods: {
         fetchList: async function() {
-            this.loading.list = true;
-            this.list = await window.std(`/api/data/${this.$route.params.dataid}/job`);
-            this.loading.list = false;
+            try {
+                this.loading.list = true;
+                this.err = null;
+                this.list = await window.std(`/api/data/${this.$route.params.dataid}/job`);
+                this.loading.list = false;
+            } catch (err) {
+                this.err = err;
+            }
         }
     },
     components: {
         None,
+        Alert,
         RefreshIcon,
         TablerLoading,
         TablerEpoch,

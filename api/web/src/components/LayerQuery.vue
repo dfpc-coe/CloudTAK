@@ -40,10 +40,7 @@
                         <TablerLoading v-if='loading.query' desc='Loading Query'/>
                         <div v-else-if='error'>
                             <div class="text-center py-4">
-                                <AlertCircleIcon height='48' width='48'/>
-                                <h3 class='pt-3'>Query Error</h3>
-                                <div class="text-muted" v-text='error.message'></div>
-
+                                <Alert title='Query Error' :err='error.message' :compact='true'/>
                                 <div class="d-flex justify-content-center my-3">
                                     <div @click='query' class='btn btn-secondary'>Refresh</div>
                                 </div>
@@ -80,10 +77,11 @@
 
 <script>
 import PageFooter from './PageFooter.vue';
-import None from './cards/None.vue';
+import Alert from './util/Alert.vue';
 import {
-    AlertCircleIcon
+    SearchIcon
 } from 'vue-tabler-icons';
+import None from './cards/None.vue';
 import {
     TablerBreadCrumb, 
     TablerLoading
@@ -125,10 +123,11 @@ export default {
     },
     components: {
         None,
+        Alert,
         PageFooter,
+        SearchIcon,
         TablerBreadCrumb, 
         TablerLoading,
-        AlertCircleIcon
     }
 }
 </script>

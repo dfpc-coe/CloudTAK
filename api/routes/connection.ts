@@ -80,6 +80,7 @@ export default async function router(schema: any, config: Config) {
                 await config.conns.add(conn);
             } else if (!conn.enabled && config.conns.has(conn.id)) {
                 await config.conns.delete(conn.id);
+                await config.conns.add(conn);
             }
 
             conn.status = config.conns.status(conn.id);

@@ -9,7 +9,7 @@
         </div>
     </div>
 
-    <div v-if='!upload && !loading.list && list.assets.length'>
+    <div v-if='!err && !upload && !loading.list && list.assets.length'>
         <table class="table table-vcenter card-table">
             <thead>
                 <tr>
@@ -37,7 +37,10 @@
         </table>
     </div>
     <div v-else class='card-body'>
-        <TablerLoading v-if='loading.list'/>
+        <template v-if='err'>
+            <Alert title='Asset Error' :err='err.message' :compact='true'/>
+        </template>
+        <TablerLoading v-else-if='loading.list'/>
         <Upload
             v-else-if='upload'
             :url='uploadURL()'
@@ -60,6 +63,7 @@ import {
     DownloadIcon,
     TransformIcon,
 } from 'vue-tabler-icons'
+import Alert from '../util/Alert.vue';
 import None from '../cards/None.vue';
 import TransformModal from './TransformModal.vue';
 import Upload from '../util/Upload.vue';
@@ -71,10 +75,9 @@ import {
 
 export default {
     name: 'DataAssets',
-    props: {
-    },
     data: function() {
         return {
+            err: null,
             upload: false,
             loading: {
                 list: true
@@ -121,21 +124,26 @@ export default {
                 method: 'DELETE'
             });
 
-            this.fetchList();
+            await this.fetchList();
         },
         fetchList: async function() {
             this.upload = false;
 
-            this.loading.list = true;
-            this.list = await window.std(`/api/data/${this.$route.params.dataid}/asset`);
-            this.loading.list = false;
-
-            this.$emit('assets', this.list);
+            try {
+                this.loading.list = true;
+                this.err = false;
+                this.list = await window.std(`/api/data/${this.$route.params.dataid}/asset`);
+                this.loading.list = false;
+                this.$emit('assets', this.list);
+            } catch (err) {
+                this.err = err;
+            }
         }
     },
     components: {
         None,
         Upload,
+        Alert,
         PlusIcon,
         TrashIcon,
         RefreshIcon,

@@ -26,6 +26,10 @@ services:
         platform: linux/amd64
         build: ./tasks/stats/
 
+    hooks:
+        platform: linux/amd64
+        build: ./tasks/hooks/
+
     postgis:
         platform: linux/amd64
         image: postgis/postgis:15-3.3-alpine

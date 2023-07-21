@@ -7,9 +7,9 @@
             <div class='ms-auto'>
                 <div class="btn-list">
                     <TablerSelect
-                        :default='current'
-                        :values='["Last 30 Days", "Month To Date", "Current Quarter", "Year To Date", "All Time"]'
-                        @select='current = $event'
+                        v-model='current'
+                        default='Last 30 Days'
+                        :options='["Last 30 Days", "Month To Date", "Current Quarter", "Year To Date", "All Time"]'
                     />
 
                     <button data-bs-toggle="dropdown" type="button" class="btn dropdown-toggle dropdown-toggle-split" aria-expanded="false"></button>

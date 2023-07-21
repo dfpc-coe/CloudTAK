@@ -19,14 +19,10 @@
                     <div class="card">
                         <TablerLoading v-if='loading.feature' desc='Loading Feature'/>
                         <div v-else-if='error'>
-                            <div class="text-center py-4">
-                                <AlertCircleIcon height='48' width='48'/>
-                                <h3 class='pt-3'>Query Error</h3>
-                                <div class="text-muted" v-text='error.message'></div>
+                            <Alert title='Query Error' :err='error.message' :compact='true'/>
 
-                                <div class="d-flex justify-content-center my-3">
-                                    <div @click='query' class='btn btn-secondary'>Refresh</div>
-                                </div>
+                            <div class="d-flex justify-content-center my-3">
+                                <div @click='query' class='btn btn-secondary'>Refresh</div>
                             </div>
                         </div>
                         <div v-else>
@@ -44,9 +40,7 @@
 
 <script>
 import PageFooter from './PageFooter.vue';
-import {
-    AlertCircleIcon
-} from 'vue-tabler-icons';
+import Alert from './util/Alert.vue';
 import {
     TablerBreadCrumb, 
     TablerLoading
@@ -80,10 +74,10 @@ export default {
         }
     },
     components: {
+        Alert,
         PageFooter,
         TablerBreadCrumb, 
         TablerLoading,
-        AlertCircleIcon
     }
 }
 </script>

@@ -3,12 +3,15 @@ import TAK from './tak.js';
 import Connection from './types/connection.js';
 // @ts-ignore
 import Server from './types/server.js';
+import Sinks from './sinks.js';
+import Config from './config.js';
 import Metrics from './aws/metric.js';
 // @ts-ignore
 import { Pool } from '@openaddresses/batch-generic';
 import { WebSocket } from 'ws';
+import CoT from '@tak-ps/node-cot';
 
-class TAKPoolClient {
+class ConnectionClient {
     conn: Connection;
     tak: TAK;
     retry: number;
@@ -29,18 +32,26 @@ class TAKPoolClient {
  * @param server      Server Connection Object
  * @param clients     WSS Clients Array
  */
-export default class TAKPool extends Map<number, TAKPoolClient> {
+export default class ConnectionPool extends Map<number, ConnectionClient> {
     #server: Server;
+    pool: Pool;
     clients: WebSocket[];
     metrics: Metrics;
+    sinks: Sinks;
+    nosinks: boolean;
     stackName: string;
+    local: boolean;
 
-    constructor(server: Server, clients: WebSocket[] = [], stackName: string) {
+    constructor(config: Config, server: Server, clients: WebSocket[] = [], stackName: string, local=false) {
         super();
         this.#server = server;
         this.clients = clients;
         this.stackName = stackName,
+        this.local = local,
         this.metrics = new Metrics(stackName);
+        this.pool = config.pool;
+        this.sinks = new Sinks(config);
+        this.nosinks = config.nosinks;
     }
 
     async refresh(pool: Pool, server: Server) {
@@ -50,36 +61,31 @@ export default class TAKPool extends Map<number, TAKPoolClient> {
             this.delete(conn);
         }
 
-        await this.init(pool);
+        await this.init();
     }
 
     /**
      * Page through connections and start a connection for each one
-     *
-     * @param pool        Postgres Pol
      */
-    async init(pool: Pool): Promise<void> {
+    async init(): Promise<void> {
         const conns: Connection[] = [];
 
-        const stream = await Connection.stream(pool);
+        const stream = await Connection.stream(this.pool);
 
-        return new Promise((resolve) => {
+        return new Promise((resolve, reject) => {
             stream.on('data', (conn: Connection) => {
-                if (conn.enabled) {
-                    conns.push(async () => {
-                        await this.add(conn);
-                    });
+                if (conn.enabled && !this.local) {
+                    conns.push(this.add(conn));
                 }
             }).on('end', async () => {
-                for (const conn of conns) {
-                    try {
-                        await conn();
-                    } catch (err) {
-                        console.error(err);
-                    }
+                try {
+                    await Promise.all(conns);
+                    return resolve();
+                } catch (err) {
+                    console.error(err);
+                    return reject(err);
                 }
 
-                return resolve();
             });
         });
     }
@@ -94,12 +100,12 @@ export default class TAKPool extends Map<number, TAKPoolClient> {
 
     async add(conn: Connection) {
         const tak = await TAK.connect(conn.id, new URL(this.#server.url), conn.auth);
-        const pooledClient = new TAKPoolClient(conn, tak);
-        this.set(conn.id, pooledClient);
+        const connClient = new ConnectionClient(conn, tak);
+        this.set(conn.id, connClient);
 
-        tak.on('cot', (cot) => {
-            pooledClient.retry = 0;
-            pooledClient.initial = false;
+        tak.on('cot', async (cot: CoT) => {
+            connClient.retry = 0;
+            connClient.initial = false;
 
             for (const client of this.clients) {
                 client.send(JSON.stringify({
@@ -108,12 +114,16 @@ export default class TAKPool extends Map<number, TAKPoolClient> {
                     data: cot.raw
                 }));
             }
+
+            if (!this.nosinks && cot.is_atom()) {
+                await this.sinks.cot(conn, cot);
+            }
         }).on('end', async () => {
             console.error(`not ok - ${conn.id} @ end`);
-            this.retry(pooledClient);
+            this.retry(connClient);
         }).on('timeout', async () => {
             console.error(`not ok - ${conn.id} @ timeout`);
-            this.retry(pooledClient);
+            this.retry(connClient);
         }).on('ping', async () => {
             if (this.stackName !== 'test') {
                 try {
@@ -124,23 +134,23 @@ export default class TAKPool extends Map<number, TAKPoolClient> {
             }
         }).on('error', async (err) => {
             console.error(`not ok - ${conn.id} @ error:${err}`);
-            this.retry(pooledClient);
+            this.retry(connClient);
         });
     }
 
-    async retry(pooledClient: TAKPoolClient) {
-        if (pooledClient.initial) {
-            if (pooledClient.retry >= 5) return; // These are considered stalled connecitons
-            pooledClient.retry++
-            console.log(`not ok - ${pooledClient.conn.id} - retrying in ${pooledClient.retry * 1000}ms`)
-            await sleep(pooledClient.retry * 1000);
-            await pooledClient.tak.reconnect();
+    async retry(connClient: ConnectionClient) {
+        if (connClient.initial) {
+            if (connClient.retry >= 5) return; // These are considered stalled connecitons
+            connClient.retry++
+            console.log(`not ok - ${connClient.conn.id} - retrying in ${connClient.retry * 1000}ms`)
+            await sleep(connClient.retry * 1000);
+            await connClient.tak.reconnect();
         } else {
             // For now allow infinite retry if a client has connected once
-            const retryms = Math.min(pooledClient.retry * 1000, 15000);
-            console.log(`not ok - ${pooledClient.conn.id} - retrying in ${retryms}ms`)
+            const retryms = Math.min(connClient.retry * 1000, 15000);
+            console.log(`not ok - ${connClient.conn.id} - retrying in ${retryms}ms`)
             await sleep(retryms);
-            await pooledClient.tak.reconnect();
+            await connClient.tak.reconnect();
         }
     }
 
