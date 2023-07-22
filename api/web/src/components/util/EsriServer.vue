@@ -67,7 +67,7 @@
             <div class='table-responsive'>
                 <table class="table table-hover card-table table-vcenter cursor-pointer">
                     <thead><tr><th>Name</th></tr></thead>
-                    <tbody><tr @click='(layer && layer.id === lyr.id) ? layer = nulll : layer = lyr' :key='lyr.id' v-for='lyr in container.layers'>
+                    <tbody><tr @click='!disabled && (layer && layer.id === lyr.id) ? layer = nulll : layer = lyr' :key='lyr.id' v-for='lyr in container.layers'>
                         <td>
                             <div class='d-flex'>
                                 <MapIcon/><span v-text='lyr.name' class='mx-3'/>
@@ -105,6 +105,11 @@ import Alert from './Alert.vue';
 export default {
     name: 'EsriServer',
     props: {
+        disabled: {
+            type: Boolean,
+            required: false,
+            default: false
+        },
         portal: {
             type: String,
             required: true,

@@ -58,6 +58,7 @@
             </div>
 
             <EsriServer
+                :disabled='disabled'
                 :server='server.url'
                 :portal='url'
                 :token='token'
@@ -132,20 +133,28 @@ import Alert from './Alert.vue';
 export default {
     name: 'EsriProxy',
     props: {
+        disabled: {
+            type: Boolean,
+            required: false,
+            default: false
+        },
         url: {
             type: [URL, String]
         },
+        layer: {
+            type: [URL, String]
+        },
+        sinkid: {
+            type: Number
+        },
         username: {
             type: String,
-            required: true
         },
         password: {
             type: String,
-            required: true
         },
         pane: {
             type: Boolean,
-            required: false,
             default: true
         }
     },
@@ -185,6 +194,10 @@ export default {
     },
     mounted: async function() {
         await this.generateToken();
+
+        if (this.layer) this.server = {
+            url: this.layer
+        }
     },
     methods: {
         fmtserver: function(content) {
@@ -193,13 +206,16 @@ export default {
         generateToken: async function() {
             this.loading.main = true;
             try {
+                const body = {
+                    username: this.username,
+                    password: this.password,
+                    sinkid: this.sinkid,
+                    url: this.url
+                }
+
                 const res = await window.std('/api/sink/esri', {
                     method: 'POST',
-                    body: {
-                        username: this.username,
-                        password: this.password,
-                        url: this.url
-                    }
+                    body
                 });
 
                 this.token = res.token;

@@ -30,8 +30,10 @@
                         </div>
                         <div class='card-body'>
                             <EsriPortal
+                                :disabled='true'
                                 :pane='false'
                                 :url='sink.body.url'
+                                :sinkid='parseInt($route.params.sinkid)'
                                 :layer='sink.body.layer'
                             />
                         </div>
