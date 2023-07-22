@@ -1,6 +1,8 @@
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
+// @ts-ignore
+import ConnectionSink from '../lib/types/connection-sink.js';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
 import {
@@ -22,11 +24,12 @@ export default async function router(schema: any, config: Config) {
         body: {
             type: "object",
             additionalProperties: false,
-            required: [ "url", "username", "password" ],
+            required: [ "url" ],
             properties: {
                 url: { "type": "string" },
                 username: { "type": "string" },
-                password: { "type": "string" }
+                password: { "type": "string" },
+                sinkid: { "type": "integer" },
             }
         },
         res: {
@@ -50,6 +53,16 @@ export default async function router(schema: any, config: Config) {
                 req.body.url = new URL(req.body.url);
             } catch (err) {
                 throw new Err(400, null, err.message);
+            }
+
+            if (!req.body.username && !req.body.password && !req.body.sinkid) throw new Err(400, null, 'Either SinkId or Username/Password Combo Required');
+            if (req.body.username && req.body.password && req.body.sinkid) throw new Err(400, null, 'Either SinkId or Username/Password Combo Required');
+
+            if (req.body.sinkid) {
+                const sink = await ConnectionSink.from(config.pool, req.body.sinkid);
+
+                req.body.username = sink.body.username;
+                req.body.password = sink.body.password;
             }
 
             const esri = await EsriProxyPortal.init(
