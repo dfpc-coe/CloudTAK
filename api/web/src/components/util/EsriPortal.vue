@@ -1,5 +1,7 @@
 <template>
-<div class='border py-2'>
+<div class='py-2' :class='{
+    "border": pane
+}'>
     <div class='d-flex'>
         <h1 class='subheader px-3'>
             ESRI Server Explorer
@@ -10,7 +12,7 @@
             <RefreshIcon v-if='!err && !loading.main' @click='generateToken' v-tooltip='"Refresh"' class='cursor-pointer'/>
 
             <PlusIcon v-if='!err && !loading.main' @click='createModal = true' v-tooltip='"Create Hosted Service"' class='cursor-pointer'/>
-            <XIcon @click='$emit("close")' v-tooltip='"Close Explorer"' class='cursor-pointer'/>
+            <XIcon v-if='pane' @click='$emit("close")' v-tooltip='"Close Explorer"' class='cursor-pointer'/>
         </div>
     </div>
 
@@ -19,7 +21,7 @@
         <div class="col-md-12 mt-3 pb-2 px-3">
             <div class='d-flex'>
                 <div class='ms-auto'>
-                    <a @click='$emit("close")' class="cursor-pointer btn btn-primary">Close Viewer</a>
+                    <a v-if='pane' @click='$emit("close")' class="cursor-pointer btn btn-primary">Close Viewer</a>
                 </div>
             </div>
         </div>
@@ -141,6 +143,11 @@ export default {
             type: String,
             required: true
         },
+        pane: {
+            type: Boolean,
+            required: false,
+            default: true
+        }
     },
     data: function() {
         return {

@@ -23,10 +23,17 @@
 
                             <div class='ms-auto'>
                                 <div class='btn-list'>
-                                    <RefreshIcon class='cursor-pointer' @click='refresh'/>
+                                    <RefreshIcon class='cursor-pointer' @click='fetch'/>
                                     <SettingsIcon class='cursor-pointer' @click='$router.push(`/connection/${$route.params.connectionid}/sink/${$route.params.sinkid}/edit`)'/>
                                 </div>
                             </div>
+                        </div>
+                        <div class='card-body'>
+                            <EsriPortal
+                                :pane='false'
+                                :url='sink.body.url'
+                                :layer='sink.body.layer'
+                            />
                         </div>
                         <div class="card-footer">
                             Last updated <span v-text='timeDiff(sink.updated)'/>
@@ -47,13 +54,14 @@ import {
     RefreshIcon,
     SettingsIcon
 } from 'vue-tabler-icons'
+import EsriPortal from './util/EsriPortal.vue';
 import {
     TablerBreadCrumb,
     TablerLoading
 } from '@tak-ps/vue-tabler';
 
 export default {
-    name: 'Connection',
+    name: 'ConnectionSink',
     data: function() {
         return {
             loading: true,
@@ -62,7 +70,6 @@ export default {
     },
     mounted: async function() {
         await this.fetch();
-
     },
     methods: {
         timeDiff(update) {
@@ -78,6 +85,7 @@ export default {
         RefreshIcon,
         SettingsIcon,
         PageFooter,
+        EsriPortal,
         TablerBreadCrumb,
         TablerLoading,
     }
