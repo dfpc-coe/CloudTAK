@@ -1,6 +1,12 @@
 <template>
 <div class="card">
-    <div class='card-header'>Layers</div>
+    <div class='card-header d-flex'>
+        <h2 class='card-title'>Layers</h2>
+
+        <div class='ms-auto btn-list'>
+            <PlusIcon @click='$router.push("/layer/new")' class='cursor-pointer'/>
+        </div>
+    </div>
 
     <Alert v-if='err' title='ETL Server Error' :err='err.message' :compact='true'/>
     <TablerLoading v-else-if='loading'/>
@@ -31,6 +37,9 @@
 <script>
 import TableFooter from '../util/TableFooter.vue';
 import Alert from '../util/Alert.vue';
+import {
+    PlusIcon
+} from 'vue-tabler-icons';
 import {
     TablerLoading
 } from '@tak-ps/vue-tabler'
@@ -89,6 +98,7 @@ export default {
     components: {
         None,
         Alert,
+        PlusIcon,
         TablerLoading,
         TableFooter,
     }

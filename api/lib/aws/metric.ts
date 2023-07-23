@@ -38,6 +38,36 @@ export default class Metric {
         }
     }
 
+    async connection(connid: number) {
+        try {
+            return await this.cw.send(new CloudWatch.GetMetricDataCommand({
+                EndTime: moment().toDate(),
+                StartTime: moment().subtract(12, 'hours').toDate(),
+                MetricDataQueries: [{
+                    Id: 'defaultSuccess',
+                    MetricStat: {
+                        Stat: 'Sum',
+                        Period: 60 * 5, // 5 Minute Period
+                        Metric: {
+                            Namespace: 'TAKETL',
+                            MetricName: 'ConnectionHealth',
+                            Dimensions: [{
+                                Name: 'StackName',
+                                Value: this.stack
+                            },{
+                                Name: 'ConnectionId',
+                                Value: String(connid)
+                            }]
+                        }
+                    },
+                    ReturnData: true
+                }]
+            }));
+        } catch (err) {
+            throw new Err(500, new Error(err), `Failed to retrieve metric data for Connection: ${connid}`);
+        }
+    }
+
     async sink(sinkid: number) {
         try {
             return await this.cw.send(new CloudWatch.GetMetricDataCommand({
