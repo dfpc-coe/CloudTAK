@@ -1,5 +1,6 @@
 import Err from '@openaddresses/batch-error';
 import CloudWatch from '@aws-sdk/client-cloudwatch';
+import moment from 'moment';
 
 /**
  * @class
@@ -34,6 +35,54 @@ export default class Metric {
             }));
         } catch (err) {
             throw new Err(500, new Error(err), 'Failed to push metric data');
+        }
+    }
+
+    async sink(sinkid: number) {
+        try {
+            return await this.cw.send(new CloudWatch.GetMetricDataCommand({
+                EndTime: moment().toDate(),
+                StartTime: moment().subtract(12, 'hours').toDate(),
+                MetricDataQueries: [{
+                    Id: 'defaultSuccess',
+                    MetricStat: {
+                        Stat: 'Average',
+                        Period: 60 * 5, // 5 Minute Period
+                        Metric: {
+                            Namespace: 'TAKETL',
+                            MetricName: 'ConnectionSinkSuccess',
+                            Dimensions: [{
+                                Name: 'StackName',
+                                Value: this.stack
+                            },{
+                                Name: 'ConnectionSinkId',
+                                Value: String(sinkid)
+                            }]
+                        }
+                    },
+                    ReturnData: true
+                },{
+                    Id: 'defaultFailure',
+                    MetricStat: {
+                        Stat: 'Average',
+                        Period: 60 * 5, // 5 Minute Period
+                        Metric: {
+                            Namespace: 'TAKETL',
+                            MetricName: 'ConnectionSinkFailure',
+                            Dimensions: [{
+                                Name: 'StackName',
+                                Value: this.stack
+                            },{
+                                Name: 'ConnectionSinkId',
+                                Value: String(sinkid)
+                            }]
+                        }
+                    },
+                    ReturnData: true
+                }]
+            }));
+        } catch (err) {
+            throw new Err(500, new Error(err), `Failed to retrieve metric data for ConnectionSink: ${sinkid}`);
         }
     }
 }
