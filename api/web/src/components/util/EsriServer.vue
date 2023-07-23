@@ -65,7 +65,9 @@
         </template>
         <template v-else>
             <div class='table-responsive'>
-                <table class="table table-hover card-table table-vcenter cursor-pointer">
+                <table class="table card-table table-vcenter" :class='{
+                    "table-hover cursor-pointer": !disabled
+                }'>
                     <thead><tr><th>Name</th></tr></thead>
                     <tbody><tr @click='!disabled && (layer && layer.id === lyr.id) ? layer = nulll : layer = lyr' :key='lyr.id' v-for='lyr in container.layers'>
                         <td>
