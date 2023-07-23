@@ -64,7 +64,7 @@ export default class Metric {
                 },{
                     Id: 'defaultFailure',
                     MetricStat: {
-                        Stat: 'Average',
+                        Stat: 'Sum',
                         Period: 60 * 5, // 5 Minute Period
                         Metric: {
                             Namespace: 'TAKETL',
