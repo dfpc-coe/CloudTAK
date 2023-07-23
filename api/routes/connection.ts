@@ -6,8 +6,11 @@ import { sql } from 'slonik';
 import Config from '../lib/config.js';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
+import CW from '../lib/aws/metric.js';
 
 export default async function router(schema: any, config: Config) {
+    const cw = new CW(config.StackName);
+
     await schema.get('/connection', {
         name: 'List Connections',
         group: 'Connection',
@@ -160,6 +163,68 @@ export default async function router(schema: any, config: Config) {
                 status: 200,
                 message: 'Connection Deleted'
             });
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
+
+    await schema.get('/connection/:connectionid/stats', {
+        name: 'Get Stats',
+        group: 'Connection',
+        auth: 'admin',
+        description: 'Return Conn Success/Failure Stats',
+        ':connectionid': 'integer',
+        res: {
+            type: 'object',
+            required: ['stats'],
+            additionalProperties: false,
+            properties: {
+                stats: {
+                    type: 'array',
+                    items: {
+                        type: 'object',
+                        required: ['label', 'success', 'failure'],
+                        properties: {
+                            label: { type: 'string' },
+                            success: { type: 'integer' },
+                        }
+                    }
+                }
+            }
+        }
+    }, async (req: AuthRequest, res: Response) => {
+        try {
+            await Auth.is_auth(req);
+
+            const conn = await Connection.from(config.pool, req.params.connectionid);
+
+            const stats = await cw.connection(conn.id);
+
+            const timestamps: Set<Date> = new Set();
+            const map: Map<string, number> = new Map();
+            const stat = stats.MetricDataResults[0];
+
+            for (let i = 0; i < stat.Timestamps.length; i++) {
+                timestamps.add(stat.Timestamps[i]);
+                map.set(String(stat.Timestamps[i]), Number(stat.Values[i]));
+            }
+
+            let ts_arr = Array.from(timestamps).sort((d1, d2) => {
+                return d1.getTime() - d2.getTime();
+            }).map((d) => {
+                return String(d);
+            });
+
+            const statsres: any = { stats: [] }
+
+            for (const ts of ts_arr) {
+                statsres.stats.push({
+                    label: ts,
+                    success: map.get(ts) || 0,
+                });
+            }
+
+            return res.json(statsres);
         } catch (err) {
             return Err.respond(err, res);
         }

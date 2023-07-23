@@ -37,12 +37,16 @@
                     </div>
                 </div>
 
-                <div class="col-lg-12">
+                <div class="col-lg-6 col-12">
                     <ConnectionLayers v-if='connection.id' :connection='connection'/>
                 </div>
 
-                <div class="col-lg-12">
+                <div class="col-lg-6 col-12">
                     <ConnectionSinks v-if='connection.id' :connection='connection'/>
+                </div>
+
+                <div class="col-lg-12">
+                    <ConnectionChart v-if='connection.id' :connection='connection'/>
                 </div>
 
                 <div class="col-lg-12">
@@ -60,6 +64,7 @@ import PageFooter from './PageFooter.vue';
 import ConnectionStatus from './Connection/Status.vue';
 import ConnectionLayers from './Connection/Layers.vue';
 import ConnectionSinks from './Connection/Sinks.vue';
+import ConnectionChart from './Connection/Chart.vue';
 import ConnectionEvents from './Connection/Events.vue';
 import timeDiff from '../timediff.js';
 import {
@@ -132,6 +137,7 @@ export default {
         ConnectionStatus,
         ConnectionLayers,
         ConnectionSinks,
+        ConnectionChart,
         ConnectionEvents
     }
 }
