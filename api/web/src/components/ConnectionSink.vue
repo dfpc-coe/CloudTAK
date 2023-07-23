@@ -23,14 +23,24 @@
 
                             <div class='ms-auto'>
                                 <div class='btn-list'>
+                                    <div class='d-flex'>
+                                        <span class='px-2'>Logging</span>
+                                        <label class="form-check form-switch">
+                                            <input disabled v-model='sink.logging' class="form-check-input" type="checkbox">
+                                        </label>
+                                    </div>
+                                    <div class='d-flex'>
+                                        <span class='px-2'>Enabled</span>
+                                        <label class="form-check form-switch">
+                                            <input disabled v-model='sink.enabled' class="form-check-input" type="checkbox">
+                                        </label>
+                                    </div>
                                     <RefreshIcon class='cursor-pointer' @click='fetch'/>
                                     <SettingsIcon class='cursor-pointer' @click='$router.push(`/connection/${$route.params.connectionid}/sink/${$route.params.sinkid}/edit`)'/>
                                 </div>
                             </div>
                         </div>
                         <div class='card-body'>
-                            <ConnectionSinkChart/>
-
                             <EsriPortal
                                 :disabled='true'
                                 :pane='false'
@@ -41,6 +51,17 @@
                         </div>
                         <div class="card-footer">
                             Last updated <span v-text='timeDiff(sink.updated)'/>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h1 class='card-title'>Sink Logging</h1>
+                        </div>
+                        <div class='card-body'>
+                            <ConnectionSinkChart v-if='sink.logging'/>
+                            <Alert v-else title='Logging Disabled' err='Turn on Sink Logging to get CoT Delivery Logs'/>
                         </div>
                     </div>
                 </div>
@@ -64,6 +85,7 @@ import {
     TablerBreadCrumb,
     TablerLoading
 } from '@tak-ps/vue-tabler';
+import Alert from './util/Alert.vue';
 
 export default {
     name: 'ConnectionSink',
@@ -90,6 +112,7 @@ export default {
         RefreshIcon,
         SettingsIcon,
         PageFooter,
+        Alert,
         EsriPortal,
         ConnectionSinkChart,
         TablerBreadCrumb,

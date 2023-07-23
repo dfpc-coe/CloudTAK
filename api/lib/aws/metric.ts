@@ -46,7 +46,7 @@ export default class Metric {
                 MetricDataQueries: [{
                     Id: 'defaultSuccess',
                     MetricStat: {
-                        Stat: 'Average',
+                        Stat: 'Sum',
                         Period: 60 * 5, // 5 Minute Period
                         Metric: {
                             Namespace: 'TAKETL',

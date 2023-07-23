@@ -4,10 +4,10 @@
         <h1 class='subheader px-3' v-text='server'></h1>
 
         <div class='ms-auto btn-list mx-3'>
-            <RefreshIcon v-if='!err && !loading' @click='getList' v-tooltip='"Refresh"' class='cursor-pointer'/>
+            <RefreshIcon v-if='!disabled && !err && !loading' @click='getList' v-tooltip='"Refresh"' class='cursor-pointer'/>
 
-            <ArrowBackIcon v-if='!err && !loading' @click='back' v-tooltip='"Back"' class='cursor-pointer'/>
-            <XIcon @click='$emit("close")' v-tooltip='"Close Explorer"' class='cursor-pointer'/>
+            <ArrowBackIcon v-if='!disabled && !err && !loading' @click='back' v-tooltip='"Back"' class='cursor-pointer'/>
+            <XIcon v-if='!disabled' @click='$emit("close")' v-tooltip='"Close Explorer"' class='cursor-pointer'/>
         </div>
     </div>
 
@@ -61,11 +61,13 @@
         </div>
 
         <template v-if='container.layers.length === 0'>
-            <None @create='createLayer' :compact='true' :create='true' label='Layers'/>
+            <None @create='createLayer' :compact='true' :create='!disabled' label='Layers'/>
         </template>
         <template v-else>
             <div class='table-responsive'>
-                <table class="table table-hover card-table table-vcenter cursor-pointer">
+                <table class="table card-table table-vcenter" :class='{
+                    "table-hover cursor-pointer": !disabled
+                }'>
                     <thead><tr><th>Name</th></tr></thead>
                     <tbody><tr @click='!disabled && (layer && layer.id === lyr.id) ? layer = nulll : layer = lyr' :key='lyr.id' v-for='lyr in container.layers'>
                         <td>
@@ -73,7 +75,7 @@
                                 <MapIcon/><span v-text='lyr.name' class='mx-3'/>
                                 <div class='ms-auto btn-list'>
                                     <CheckIcon v-if='layer && layer.id === lyr.id'/>
-                                    <TablerDelete @delete='deleteLayer' displaytype='icon' label='Delete Layer'/>
+                                    <TablerDelete v-if='!disabled' @delete='deleteLayer' displaytype='icon' label='Delete Layer'/>
                                 </div>
                             </div>
                         </td>
@@ -95,7 +97,6 @@ import {
     MapIcon,
     RefreshIcon,
     XIcon,
-    PlusIcon,
     FolderIcon,
     ArrowBackIcon,
     CheckIcon
@@ -254,7 +255,6 @@ export default {
     components: {
         Alert,
         XIcon,
-        PlusIcon,
         None,
         MapIcon,
         FolderIcon,

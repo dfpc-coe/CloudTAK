@@ -35,7 +35,9 @@ export async function handler(
         const cw = new CW.CloudWatchClient({});
         await cw.send(new CW.PutMetricDataCommand({
             Namespace: 'TAKETL',
-            MetricData: event.Records.map((record: Lambda.SQSRecord) => {
+            MetricData: event.Records.filter((record: Lamda.SQSrecord) => {
+                return JSON.parse(record.body).options.logging;
+            }).map((record: Lambda.SQSRecord) => {
                 const m = meta.get(record.messageId);
                 if (!m) throw new Error('Indeterminant Meta');
 
