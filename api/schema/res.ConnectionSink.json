@@ -28,6 +28,9 @@
         "enabled": {
             "$ref": "./connection_sinks/enabled.json"
         },
+        "logging": {
+            "$ref": "./connection_sinks/logging.json"
+        },
         "body": {
             "type": "object",
             "additionalProperties": false,

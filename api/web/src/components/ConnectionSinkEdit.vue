@@ -25,6 +25,12 @@
                                 <div class='d-flex'>
                                     <div class='btn-list'>
                                         <div class='d-flex'>
+                                            <span class='px-2'>Logging</span>
+                                            <label class="form-check form-switch">
+                                                <input v-model='sink.logging' class="form-check-input" type="checkbox">
+                                            </label>
+                                        </div>
+                                        <div class='d-flex'>
                                             <span class='px-2'>Enabled</span>
                                             <label class="form-check form-switch">
                                                 <input v-model='sink.enabled' class="form-check-input" type="checkbox">
@@ -164,6 +170,7 @@ export default {
                     password: '',
                     layer: ''
                 },
+                logging: false,
                 enabled: true,
             }
         }
@@ -195,7 +202,7 @@ export default {
                     method: 'PATCH',
                     body: this.sink
                 });
-                this.$router.push(`/connection/${this.$route.params.connectionid}/sink/${create.id}`);
+                this.$router.push(`/connection/${this.$route.params.connectionid}/sink/${this.$route.params.sinkid}`);
             } else {
                 const create = await window.std(`/api/connection/${this.$route.params.connectionid}/sink`, {
                     method: 'POST',
