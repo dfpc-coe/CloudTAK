@@ -6,8 +6,10 @@
     <template v-else>
         <div class='d-flex'>
             <template v-if='selected.id'>
-                <ConnectionStatus :connection='selected'/>
-                <span class='mt-2' v-text='selected.name'/>
+                <div @click='$router.push(`/connection/${selected.id}`)' class='d-flex cursor-pointer'>
+                    <ConnectionStatus :connection='selected'/>
+                    <span class='mt-2' v-text='selected.name'/>
+                </div>
             </template>
             <template v-else>
                 <span class='mt-2'>No Connection Selected!</span>
