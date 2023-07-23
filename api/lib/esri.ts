@@ -437,6 +437,7 @@ class EsriProxyServer {
         const json = await res.json()
 
         if (json.error) throw new Err(400, null, 'ESRI Server Error: ' + json.error.message);
+        else if (json.status === 'error') throw new Err(400, null, 'ESRI Server Error: ' + json.messages[0]);
 
         return json;
     }
