@@ -6,7 +6,7 @@
         <div class='ms-auto'>
             <div class='dropdown'>
                 <div type="button" id="connectionSinkButton" data-bs-toggle="dropdown" aria-expanded="false">
-                    <PlusIcon/>
+                    <PlusIcon v-tooltip='"Create Sink"' class='cursor-pointer'/>
                     </div>
                         <ul class="dropdown-menu" aria-labelledby='connectionSinkButton'>
                             <div @click='$router.push(`/connection/${$route.params.connectionid}/sink/new`)' class='d-flex mx-2 my-2 cursor-pointer'>

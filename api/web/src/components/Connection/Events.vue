@@ -5,10 +5,10 @@
 
         <div class='ms-auto'>
             <div class='btn-list'>
-                <TrashIcon @click='events = []' class='cursor-pointer'/>
+                <TrashIcon v-tooltip='"Clear Events"'  @click='events = []' class='cursor-pointer'/>
 
-                <PlayerPlayIcon @click='paused = false' class='cursor-pointer' v-if='paused'/>
-                <PlayerPauseIcon @click='paused = true' class='cursor-pointer' v-else/>
+                <PlayerPlayIcon v-tooltip='"Play Events"' @click='paused = false' class='cursor-pointer' v-if='paused'/>
+                <PlayerPauseIcon v-tooltip='"Pause Events"' @click='paused = true' class='cursor-pointer' v-else/>
             </div>
         </div>
     </div>
