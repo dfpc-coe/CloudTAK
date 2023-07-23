@@ -23,7 +23,7 @@
                                 <h3 class='card-title'>TAK Server Configuration</h3>
                                 <div class='ms-auto'>
                                     <div class='btn-list'>
-                                        <SettingsIcon class='cursor-pointer' @click='edit = true'/>
+                                        <SettingsIcon v-tooltip='"Configure Server"' class='cursor-pointer' @click='edit = true'/>
                                     </div>
                                 </div>
                             </div>
