@@ -25,6 +25,12 @@
                                 <div class='d-flex'>
                                     <div class='btn-list'>
                                         <div class='d-flex'>
+                                            <span class='px-2'>Logging</span>
+                                            <label class="form-check form-switch">
+                                                <input v-model='sink.logging' class="form-check-input" type="checkbox">
+                                            </label>
+                                        </div>
+                                        <div class='d-flex'>
                                             <span class='px-2'>Enabled</span>
                                             <label class="form-check form-switch">
                                                 <input v-model='sink.enabled' class="form-check-input" type="checkbox">
