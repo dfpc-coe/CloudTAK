@@ -48,7 +48,7 @@
             @cancel='upload = false'
             @done='fetchList'
         />
-        <None v-else-if='!list.assets.length' :create='false'/>
+        <None v-else-if='!list.assets.length' :create='false' :compact='true'/>
     </div>
 
     <TransformModal v-if='transform.shown' :asset='transform.asset' @close='initTransform'/>

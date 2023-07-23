@@ -21,7 +21,7 @@
 
     <Alert v-if='err' title='ETL Server Error' :err='err.message' :compact='true'/>
     <TablerLoading v-else-if='loading'/>
-    <None v-else-if='!list.sinks.length' :create='false' label='Sinks'/>
+    <None v-else-if='!list.sinks.length' :create='false' label='Sinks' :compact='true'/>
     <div v-else class='table-resposive'>
         <table class='table card-table table-vcenter datatable table-hover'>
             <thead>

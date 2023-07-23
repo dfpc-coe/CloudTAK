@@ -37,7 +37,7 @@
             <Alert title='Transforms Error' :err='err.message' :compact='true'/>
         </template>
         <TablerLoading v-else-if='loading.list'/>
-        <None v-else-if='!list.list.length' :create='false'/>
+        <None v-else-if='!list.list.length' :create='false' :compact='true'/>
     </div>
 </div>
 </template>
