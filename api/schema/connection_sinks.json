@@ -25,6 +25,9 @@
         },
         "body": {
             "$ref": "./connection_sinks/body.json"
+        },
+        "logging": {
+            "$ref": "./connection_sinks/logging.json"
         }
     },
     "required": [
@@ -35,6 +38,7 @@
         "connection",
         "name",
         "type",
-        "body"
+        "body",
+        "logging"
     ]
 }

@@ -170,6 +170,7 @@ export default {
                     password: '',
                     layer: ''
                 },
+                logging: false,
                 enabled: true,
             }
         }
