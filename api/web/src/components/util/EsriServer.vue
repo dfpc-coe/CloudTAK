@@ -4,7 +4,7 @@
         <h1 class='subheader px-3' v-text='server'></h1>
 
         <div class='ms-auto btn-list mx-3'>
-            <RefreshIcon v-if='!err && !loading' @click='getList' v-tooltip='"Refresh"' class='cursor-pointer'/>
+            <RefreshIcon v-if='!disabled && !err && !loading' @click='getList' v-tooltip='"Refresh"' class='cursor-pointer'/>
 
             <ArrowBackIcon v-if='!disabled && !err && !loading' @click='back' v-tooltip='"Back"' class='cursor-pointer'/>
             <XIcon v-if='!disabled' @click='$emit("close")' v-tooltip='"Close Explorer"' class='cursor-pointer'/>
