@@ -4,11 +4,14 @@ import Connection from '../lib/types/connection.js';
 // @ts-ignore
 import ConnectionSink from '../lib/types/connection-sink.js';
 import Auth from '../lib/auth.js';
+import CW from '../lib/aws/metric.js';
 import Config from '../lib/config.js';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
 
 export default async function router(schema: any, config: Config) {
+    const cw = new CW(config.StackName);
+
     await schema.get('/connection/:connectionid/sink', {
         name: 'List Sinks',
         group: 'ConnectionSink',
@@ -107,6 +110,78 @@ export default async function router(schema: any, config: Config) {
             if (sink.connection !== conn.id) throw new Err(400, null, 'Sink must belong to parent connection');
 
             return res.json(sink);
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
+
+    await schema.get('/connection/:connectionid/sink/:sinkid/stats', {
+        name: 'Get Stats',
+        group: 'ConnectionSink',
+        auth: 'admin',
+        description: 'Return Sink Success/Failure Stats',
+        ':connectionid': 'integer',
+        ':sinkid': 'integer',
+        res: {
+            type: 'object',
+            required: ['stats'],
+            additionalProperties: false,
+            properties: {
+                stats: {
+                    type: 'array',
+                    items: {
+                        type: 'object',
+                        required: ['label', 'success', 'failure'],
+                        properties: {
+                            label: { type: 'string' },
+                            success: { type: 'integer' },
+                            failure: { type: 'integer' }
+                        }
+                    }
+                }
+            }
+        }
+    }, async (req: AuthRequest, res: Response) => {
+        try {
+            await Auth.is_auth(req);
+
+            const conn = await Connection.from(config.pool, req.params.connectionid);
+            const sink = await ConnectionSink.from(config.pool, req.params.sinkid);
+            if (sink.connection !== conn.id) throw new Err(400, null, 'Sink must belong to parent connection');
+
+            const stats = await cw.sink(sink.id);
+
+            const timestamps: Set<Date> = new Set();
+            const successMap: Map<string, number> = new Map();
+            const failureMap: Map<string, number> = new Map();
+            for (const stat of stats.MetricDataResults) {
+                let map;
+                if (stat.Label === 'ConnectionSinkSuccess') map = successMap;
+                else if (stat.Label === 'ConnectionSinkFailure') map = failureMap;
+
+                for (let i = 0; i < stat.Timestamps.length; i++) {
+                    timestamps.add(stat.Timestamps[i]);
+                    map.set(String(stat.Timestamps[i]), Number(stat.Values[i]));
+                }
+            }
+
+            let ts_arr = Array.from(timestamps).sort((d1, d2) => {
+                return d1.getTime() - d2.getTime();
+            }).map((d) => {
+                return String(d);
+            });
+
+            const statsres: any = { stats: [] }
+
+            for (const ts of ts_arr) {
+                statsres.stats.push({
+                    label: ts,
+                    success: successMap.get(ts) || 0,
+                    failure: failureMap.get(ts) || 0
+                });
+            }
+
+            return res.json(statsres);
         } catch (err) {
             return Err.respond(err, res);
         }

@@ -29,6 +29,8 @@
                             </div>
                         </div>
                         <div class='card-body'>
+                            <ConnectionSinkChart/>
+
                             <EsriPortal
                                 :disabled='true'
                                 :pane='false'
@@ -57,6 +59,7 @@ import {
     SettingsIcon
 } from 'vue-tabler-icons'
 import EsriPortal from './util/EsriPortal.vue';
+import ConnectionSinkChart from './ConnectionSink/Chart.vue';
 import {
     TablerBreadCrumb,
     TablerLoading
@@ -88,6 +91,7 @@ export default {
         SettingsIcon,
         PageFooter,
         EsriPortal,
+        ConnectionSinkChart,
         TablerBreadCrumb,
         TablerLoading,
     }
