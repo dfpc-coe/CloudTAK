@@ -14,6 +14,9 @@
         "type": {
             "$ref": "./connection_sinks/type.json"
         },
+        "logging": {
+            "$ref": "./connection_sinks/logging.json"
+        },
         "enabled": {
             "$ref": "./connection_sinks/enabled.json"
         },

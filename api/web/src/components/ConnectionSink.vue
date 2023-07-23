@@ -23,6 +23,18 @@
 
                             <div class='ms-auto'>
                                 <div class='btn-list'>
+                                    <div class='d-flex'>
+                                        <span class='px-2'>Logging</span>
+                                        <label class="form-check form-switch">
+                                            <input disabled v-model='sink.logging' class="form-check-input" type="checkbox">
+                                        </label>
+                                    </div>
+                                    <div class='d-flex'>
+                                        <span class='px-2'>Enabled</span>
+                                        <label class="form-check form-switch">
+                                            <input disabled v-model='sink.enabled' class="form-check-input" type="checkbox">
+                                        </label>
+                                    </div>
                                     <RefreshIcon class='cursor-pointer' @click='fetch'/>
                                     <SettingsIcon class='cursor-pointer' @click='$router.push(`/connection/${$route.params.connectionid}/sink/${$route.params.sinkid}/edit`)'/>
                                 </div>
