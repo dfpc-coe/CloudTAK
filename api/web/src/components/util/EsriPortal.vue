@@ -9,7 +9,7 @@
         </h1>
 
         <div class='ms-auto btn-list mx-3'>
-            <RefreshIcon v-if='!err && !loading.main' @click='generateToken' v-tooltip='"Refresh"' class='cursor-pointer'/>
+            <RefreshIcon v-if='!disabled && !err && !loading.main' @click='generateToken' v-tooltip='"Refresh"' class='cursor-pointer'/>
 
             <PlusIcon v-if='!disabled && !err && !loading.main' @click='createModal = true' v-tooltip='"Create Hosted Service"' class='cursor-pointer'/>
             <XIcon v-if='pane && !disabled' @click='$emit("close")' v-tooltip='"Close Explorer"' class='cursor-pointer'/>
