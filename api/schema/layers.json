@@ -52,6 +52,9 @@
         },
         "data": {
             "$ref": "./layers/data.json"
+        },
+        "schema": {
+            "$ref": "./layers/schema.json"
         }
     },
     "required": [
@@ -71,6 +74,7 @@
         "environment",
         "memory",
         "timeout",
-        "data"
+        "data",
+        "schema"
     ]
 }
