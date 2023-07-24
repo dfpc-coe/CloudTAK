@@ -185,7 +185,8 @@ export default {
                         },{
                             Effect: 'Allow',
                             Action: [
-                                'cloudwatch:PutMetricData'
+                                'cloudwatch:PutMetricData',
+                                'cloudwatch:GetMetricData'
                             ],
                             Resource: [
                                 '*'
