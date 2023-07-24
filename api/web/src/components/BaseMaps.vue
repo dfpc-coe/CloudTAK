@@ -58,6 +58,7 @@
 
                                     <div class='ms-auto'>
                                         <div class='btn-list'>
+                                            <Share2Icon v-tooltip='"Share BaseMap"' class='cursor-pointer' @click='share(basemap)'/>
                                             <DownloadIcon v-tooltip='"Download TAK XML"' class='cursor-pointer' @click='download(basemap)'/>
                                             <SettingsIcon v-tooltip='"Edit Basemap"' class='cursor-pointer' @click='$router.push(`/basemap/${basemap.id}/edit`)'/>
                                         </div>
@@ -81,6 +82,12 @@
         </div>
     </div>
     <PageFooter/>
+
+    <ShareModal
+        v-if='shareModal.shown'
+        @close='share = false'
+        :item='shareModal.basemap'
+    />
 </div>
 </template>
 
@@ -94,7 +101,9 @@ import {
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import timeDiff from '../timediff.js';
+import ShareModal from './util/ShareModal.vue';
 import {
+    Share2Icon,
     SettingsIcon,
     DownloadIcon,
     SearchIcon
@@ -107,6 +116,10 @@ export default {
             err: false,
             loading: true,
             query: false,
+            shareModal: {
+                shown: false,
+                basemap: null
+            },
             paging: {
                 filter: '',
                 limit: 10,
@@ -130,6 +143,10 @@ export default {
        },
     },
     methods: {
+        share: function(basemap) {
+            this.shareModal.basemap = basemap;
+            this.shareModal.shown = true;
+        },
         timeDiff(update) {
             return timeDiff(update);
         },
@@ -149,11 +166,13 @@ export default {
     components: {
         None,
         Pager,
+        Share2Icon,
         SettingsIcon,
         SearchIcon,
         PageFooter,
         DownloadIcon,
         TablerBreadCrumb,
+        ShareModal,
         TablerLoading,
         BaseMapLocation
     }
