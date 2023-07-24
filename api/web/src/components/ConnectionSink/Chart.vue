@@ -1,8 +1,17 @@
 <template>
-    <div>
+<div class="card">
+    <div class="card-header">
+        <h1 class='card-title'>Sink Logging</h1>
+
+        <div class='ms-auto btn-list'>
+            <RefreshIcon @click='fetchData' class='cursor-pointer'/>
+        </div>
+    </div>
+    <div class='card-body'>
         <TablerLoading v-if='loading'/>
         <div v-else id="chart" class="chart-lg"></div>
     </div>
+</div>
 </template>
 
 <script>
@@ -10,6 +19,9 @@ import ApexCharts from 'apexcharts';
 import {
     TablerLoading
 } from '@tak-ps/vue-tabler';
+import {
+    RefreshIcon
+} from 'vue-tabler-icons';
 
 export default {
     name: 'ConnectionSinkChart',
@@ -23,63 +35,64 @@ export default {
     },
     mounted: async function() {
         await this.fetchData();
-
-        this.$nextTick(() => {
-            new ApexCharts(document.getElementById('chart'), {
-                chart: {
-                    type: "line",
-                    fontFamily: 'inherit',
-                    height: 240,
-                    parentHeightOffset: 0,
-                    toolbar: {
-                        show: false,
-                    },
-                    animations: {
-                        enabled: false
-                    },
-                },
-                fill: {
-                    opacity: 1,
-                },
-                stroke: {
-                    width: 2,
-                    lineCap: "round",
-                    curve: "smooth",
-                },
-                series: [{
-                    name: "Success",
-                    data: this.success
-                },{
-                    name: "Failure",
-                    data: this.failure
-                }],
-                tooltip: { theme: 'dark' },
-                colors: [
-                    '#008000',
-                    '#FF0000'
-                ],
-                legend: {
-                    show: false
-                },
-                xaxis: {
-                    labels: {
-                        padding: 0,
-                    },
-                    tooltip: {
-                        enabled: false
-                    },
-                    type: 'datetime',
-                },
-                yaxis: {
-                    labels: {
-                        padding: 4
-                    },
-                },
-                labels: this.labels
-            }).render();
-        });
     },
     methods: {
+        mountChart: function() {
+            this.$nextTick(() => {
+                new ApexCharts(document.getElementById('chart'), {
+                    chart: {
+                        type: "line",
+                        fontFamily: 'inherit',
+                        height: 240,
+                        parentHeightOffset: 0,
+                        toolbar: {
+                            show: false,
+                        },
+                        animations: {
+                            enabled: false
+                        },
+                    },
+                    fill: {
+                        opacity: 1,
+                    },
+                    stroke: {
+                        width: 2,
+                        lineCap: "round",
+                        curve: "smooth",
+                    },
+                    series: [{
+                        name: "Success",
+                        data: this.success
+                    },{
+                        name: "Failure",
+                        data: this.failure
+                    }],
+                    tooltip: { theme: 'dark' },
+                    colors: [
+                        '#008000',
+                        '#FF0000'
+                    ],
+                    legend: {
+                        show: false
+                    },
+                    xaxis: {
+                        labels: {
+                            padding: 0,
+                        },
+                        tooltip: {
+                            enabled: false
+                        },
+                        type: 'datetime',
+                    },
+                    yaxis: {
+                        labels: {
+                            padding: 4
+                        },
+                    },
+                    labels: this.labels
+                }).render();
+            });
+        },
         fetchData: async function() {
             this.loading = true;
             const list = await window.std(`/api/connection/${this.$route.params.connectionid}/sink/${this.$route.params.sinkid}/stats`);
@@ -89,9 +102,12 @@ export default {
             this.failure = list.stats.map(s => s.failure);
 
             this.loading = false;
+
+            this.mountChart();
         }
     },
     components: {
+        RefreshIcon,
         TablerLoading
     }
 }

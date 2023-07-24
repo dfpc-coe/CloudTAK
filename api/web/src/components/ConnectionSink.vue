@@ -55,13 +55,13 @@
                     </div>
                 </div>
                 <div class="col-lg-12">
-                    <div class="card">
+                    <ConnectionSinkChart v-if='sink.logging'/>
+                    <div v-else class="card">
                         <div class="card-header">
                             <h1 class='card-title'>Sink Logging</h1>
                         </div>
                         <div class='card-body'>
-                            <ConnectionSinkChart v-if='sink.logging'/>
-                            <Alert v-else title='Logging Disabled' err='Turn on Sink Logging to get CoT Delivery Logs'/>
+                            <Alert title='Logging Disabled' err='Turn on Sink Logging to get CoT Delivery Logs'/>
                         </div>
                     </div>
                 </div>
