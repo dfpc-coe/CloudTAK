@@ -6,7 +6,7 @@
     "main": "index.js",
     "scripts": {
         "test": "./test/test",
-        "build": "tsc",
+        "build": "tsc && rsync -av progress . dist/ --exclude web/ --exclude node_modules/ || true && rm dist/routes/*.ts",
         "prod": "ts-node index.ts",
         "lint": "eslint index.ts lib/**.ts test/**.ts",
         "loaddb": "echo 'DROP DATABASE tak_ps_etl' | psql && echo 'CREATE DATABASE tak_ps_etl' | psql && psql tak_ps_etl < coe-etl-latest.dump && knex migrate:latest",

@@ -19,6 +19,7 @@
     },
     "include": [
         "index.ts",
+        "routes/**/*",
         "lib/**/*"
     ]
 }
