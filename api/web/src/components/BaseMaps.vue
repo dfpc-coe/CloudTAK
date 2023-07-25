@@ -85,7 +85,7 @@
 
     <ShareModal
         v-if='shareModal.shown'
-        @close='share = false'
+        @close='shareModal.shown = false'
         :item='shareModal.basemap'
     />
 </div>
