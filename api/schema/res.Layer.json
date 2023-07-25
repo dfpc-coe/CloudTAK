@@ -16,7 +16,8 @@
         "cron",
         "environment",
         "memory",
-        "timeout"
+        "timeout",
+        "schema"
     ],
     "properties": {
         "id": {
@@ -77,6 +78,9 @@
         },
         "timeout": {
             "$ref": "./layers/timeout.json"
+        },
+        "schema": {
+            "$ref": "./layers/schema.json"
         }
     }
 }
