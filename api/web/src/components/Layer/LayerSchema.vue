@@ -19,7 +19,7 @@
                 </tr>
             </thead>
             <tbody>
-                <tr @click='edit(field)' :key='field.name' v-for='field in schema'>
+                <tr @click='edit(field)' :key='field.name' v-for='(field, field_it) in schema'>
                     <td>
                         <span class='mx-3'>
                             <template v-if='field.type === "string"'>
@@ -41,9 +41,11 @@
                         <span v-text='field.type'/>
                     </td>
                     <td>
-                        <span v-if='field.required' class='badge mx-1 mb-1 bg-red'>Required</span>
-                        <div class='ms-auto'>
-                            <TrashIcon/>
+                        <div class='d-flex'>
+                            <span v-if='field.required' class='badge mx-1 mb-1 bg-red'>Required</span>
+                            <div class='ms-auto'>
+                                <TrashIcon @click.stop='schema.splice(field_it, 1)' class='cursor-pointer'/>
+                            </div>
                         </div>
                     </td>
                 </tr>
@@ -57,6 +59,7 @@
         :key='JSON.stringify(editField)'
         v-if='create'
         :edit='editField'
+        :schema='schema'
         @done='push($event)'
         @close='create = false'
     />
