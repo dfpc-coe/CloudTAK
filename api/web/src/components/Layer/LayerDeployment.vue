@@ -1,7 +1,7 @@
 <template>
 <div class='card'>
     <div class='card-header'>
-        <h3 class='card-title'>Task Status</h3>
+        <h3 class='card-title'>Layer Deployment</h3>
         <div class='ms-auto'>
             <div class='btn-list'>
                 <PlayerPlayIcon
@@ -89,7 +89,7 @@ import {
 } from 'vue-tabler-icons';
 
 export default {
-    name: 'LayerTask',
+    name: 'LayerDeployment',
     data: function() {
         return {
             mode: 'status',

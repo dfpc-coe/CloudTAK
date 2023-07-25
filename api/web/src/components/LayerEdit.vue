@@ -67,6 +67,10 @@
                 </div>
 
                 <div class="col-lg-12">
+                    <LayerSchema v-model='layer.schema' :disabled='false'/>
+                </div>
+
+                <div class="col-lg-12">
                     <StyleUtil v-model='layer.styles' :enabled='layer.enabled_styles' @enabled='layer.enabled_styles = $event'/>
                 </div>
 
@@ -97,6 +101,7 @@
 import PageFooter from './PageFooter.vue';
 import StyleUtil from './Layer/Styles.vue';
 import LayerData from './Layer/LayerData.vue';
+import LayerSchema from './Layer/LayerSchema.vue';
 import {
     TablerBreadCrumb,
     TablerDelete,
@@ -188,6 +193,7 @@ export default {
         TablerDelete,
         StyleUtil,
         LayerData,
+        LayerSchema,
         TablerLoading
     }
 }
