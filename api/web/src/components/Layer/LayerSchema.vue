@@ -42,6 +42,9 @@
                     </td>
                     <td>
                         <span v-if='field.required' class='badge mx-1 mb-1 bg-red'>Required</span>
+                        <div class='ms-auto'>
+                            <TrashIcon/>
+                        </div>
                     </td>
                 </tr>
             </tbody>
@@ -51,6 +54,7 @@
     </div>
 
     <LayerSchemaModal
+        :key='JSON.stringify(editField)'
         v-if='create'
         :edit='editField'
         @done='push($event)'
@@ -74,7 +78,8 @@ import {
     RefreshIcon,
     SettingsIcon,
     DecimalIcon,
-    BinaryIcon
+    BinaryIcon,
+    TrashIcon,
 } from 'vue-tabler-icons'
 
 export default {
@@ -109,8 +114,6 @@ export default {
                 //this.$emit('update:modelValue', this.schema);
             }
         }
-    },
-    mounted: function() {
     },
     methods: {
         edit: function(field) {
@@ -151,7 +154,8 @@ export default {
         RefreshIcon,
         SettingsIcon,
         BinaryIcon,
-        LayerSchemaModal
+        LayerSchemaModal,
+        TrashIcon,
     }
 }
 </script>
