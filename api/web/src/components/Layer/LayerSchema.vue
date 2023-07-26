@@ -56,7 +56,6 @@
     </div>
 
     <LayerSchemaModal
-        :key='JSON.stringify(editField)'
         v-if='create'
         :edit='editField'
         :schema='schema'
@@ -108,15 +107,9 @@ export default {
         modelValue: {
             deep: true,
             handler: function() {
-                this.processModalValue();
+                this.processModelValue();
             }
         },
-        schema: {
-            deep: true,
-            handler: function() {
-                //this.$emit('update:modelValue', this.schema);
-            }
-        }
     },
     methods: {
         edit: function(field) {
@@ -124,23 +117,48 @@ export default {
             this.create = true;
         },
         push: function(field) {
+            this.create = false;
             if (this.editField) {
                 this.editField = Object.assign(this.editField, field);
             } else {
                 this.schema.push(field);
             }
-            this.create = false;
             this.editField = null;
+
+            this.update();
         },
-        processModalValue: function() {
+        update: function() {
+            const required = []
+            const properties = {};
+
+            for (const field of this.schema) {
+                const name = field.name;
+                delete field.name;
+
+                if (field.required) required.push(name);
+                delete field.required;
+
+                properties[name] = {
+                    ...field
+                }
+            }
+
+            this.$emit('update:modelValue', {
+                type: 'object',
+                required,
+                additionalProperties: false,
+                properties
+            });
+        },
+        processModelValue: function() {
             this.schema.splice(0, this.schema.length);
 
             if (!this.modelValue) return;
-            for (const name in this.modalValue.properties) {
+            for (const name in this.modelValue.properties) {
                 this.schema.push({
                     name,
-                    required: this.modalValue.required.includes(key),
-                    ...this.modalValue.properties.type
+                    required: this.modelValue.required.includes(name),
+                    ...this.modelValue.properties[name]
                 });
             }
         }
