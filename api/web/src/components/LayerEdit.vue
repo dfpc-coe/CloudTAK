@@ -133,7 +133,13 @@ export default {
                 enabled: true,
                 logging: true,
                 enabled_styles: false,
-                styles: {}
+                styles: {},
+                schema: {
+                    type: 'object',
+                    additionalProperties: false,
+                    required: [],
+                    properties: {}
+                }
             }
         }
     },
