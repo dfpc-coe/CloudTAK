@@ -73,7 +73,7 @@ export default class EventsPool {
         await this.delete(layerid);
         await this.bree.add({
             name,
-            path: (new URL('../jobs/lambda.js', import.meta.url)).pathname,
+            path: (new URL('./jobs/lambda.js', import.meta.url)).pathname,
             interval: `${parsed.freq} ${parsed.unit}`,
             worker: {
                 workerData: {

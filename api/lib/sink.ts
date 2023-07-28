@@ -8,6 +8,9 @@ export default class SinkInterface {
     }
 
     static async secrets(config: Config, sink: ConnectionSink): Promise<any> {
-        return {};
+        return {
+            SinkId: sink.id,
+            StackName: config.StackName
+        };
     }
 }

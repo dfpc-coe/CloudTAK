@@ -158,20 +158,33 @@ export default async function router(schema: any, config: Config) {
             }
 
             if (req.body.cron) Schedule.is_valid(req.body.cron);
-            let layer = await Layer.commit(config.pool, parseInt(req.params.layerid), {
-                updated: sql`Now()`,
-                ...req.body
-            });
 
-            try {
-                const lambda = await Lambda.generate(config, layer);
-                if (await CloudFormation.exists(config, layer.id)) {
-                    await CloudFormation.update(config, layer.id, lambda);
-                } else {
-                    await CloudFormation.create(config, layer.id, lambda);
+            let layer = await Layer.from(config.pool, parseInt(req.params.layerid));
+
+            let changed = false;
+            // Avoid Updating CF unless necessary as it blocks further updates until deployed
+            for (const prop of ['cron', 'task', 'memory', 'timeout', 'enabled']) {
+                if (req.body[prop] !== undefined && req.body[prop] !== layer[prop]) changed = true;
+            }
+
+            if (changed) {
+                const status = (await CloudFormation.status(config, parseInt(req.params.layerid))).status;
+                if (!status.endsWith('_COMPLETE')) throw new Err(400, null, 'Layer is still Deploying, Wait for Deploy to succeed before updating')
+            }
+
+            await layer.commit({ updated: sql`Now()`, ...req.body });
+
+            if (changed) {
+                try {
+                    const lambda = await Lambda.generate(config, layer);
+                    if (await CloudFormation.exists(config, layer.id)) {
+                        await CloudFormation.update(config, layer.id, lambda);
+                    } else {
+                        await CloudFormation.create(config, layer.id, lambda);
+                    }
+                } catch (err) {
+                    console.error(err);
                 }
-            } catch (err) {
-                console.error(err);
             }
 
             if (!Schedule.is_aws(layer.cron) && layer.enabled) {
