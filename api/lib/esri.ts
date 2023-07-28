@@ -22,7 +22,7 @@ class EsriProxyPortal {
     }
 
     static isAGOL(url: URL): boolean {
-        return !!url.hostname.match(/\maps\.arcgis\.com$/)
+        return !!url.hostname.match(/maps\.arcgis\.com$/)
     }
 
     static parser(url: URL): URL {

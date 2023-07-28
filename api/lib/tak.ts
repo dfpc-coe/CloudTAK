@@ -184,6 +184,7 @@ export default class TAK extends EventEmitter {
 
     // https://github.com/vidterra/multitak/blob/main/app/lib/helper.js#L4
     static findCoT(str: string): null | PartialCoT {
+        /* eslint-disable no-control-regex */
         str = str.replace(/[\u0000-\u001F\u007F-\u009F]/g, "");
 
         let match = str.match(/(<event.*?<\/event>)(.*)/); // find first CoT
