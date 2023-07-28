@@ -9,6 +9,7 @@ import Signing from './lib/signing.js';
 import PMTiles from './lib/pmtiles.js';
 import Stats from './lib/stats.js';
 import Dynamo from './lib/dynamo.js';
+import Alarms from './lib/alarms.js';
 import {
     ELB as ELBAlarms,
     RDS as RDSAlarms
@@ -23,6 +24,7 @@ export default cf.merge(
     Hooks,
     Signing,
     Dynamo,
+    Alarms,
     PMTiles,
     Stats,
     {
@@ -53,15 +55,11 @@ export default cf.merge(
                 Description: 'ACM SSL Certificate for HTTP Protocol',
                 Type: 'String'
             },
-            AlarmEmail: {
-                Description: 'Email to send alarms to',
-                Type: 'String'
-            }
         }
     },
     ELBAlarms({
         prefix: 'BatchELB',
-        email: cf.ref('AlarmEmail'),
+        topic: cf.ref('AlarmTopic'),
         apache: cf.stackName,
         cluster: cf.join(['coe-ecs-', cf.ref('Environment')]),
         service: cf.getAtt('Service', 'Name'),
@@ -71,7 +69,7 @@ export default cf.merge(
     }),
     RDSAlarms({
         prefix: 'Batch',
-        email: cf.ref('AlarmEmail'),
+        topic: cf.ref('AlarmTopic'),
         instance: cf.ref('DBInstance')
 
     })
