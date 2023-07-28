@@ -11,10 +11,10 @@
             />
         </template>
         <template v-else-if='schema.properties[key].type === "string"'>
-            <TablerInput :label='key' :disabled='disabled' v-model='data[key]'/>
+            <TablerInput :label='key' :disabled='disabled' v-model='data[key]' :default='schema.properties[key].default'/>
         </template>
         <template v-else-if='schema.properties[key].type === "boolean"'>
-            <TablerToggle :label='key' :disabled='disabled' v-model='data[key]'/>
+            <TablerToggle :label='key' :disabled='disabled' v-model='data[key]' :default='schema.properties[key].default'/>
         </template>
         <template v-else-if='schema.properties[key].type === "array"'>
             <div class='d-flex'>
@@ -160,8 +160,14 @@ export default {
 
         if (this.schema.type === 'object' && this.schema.properties) {
             for (const key in this.schema.properties) {
-                if (!this.data[key] && this.schema.properties[key].type === 'array') {
-                    this.data[key] = [];
+                if (!this.schema.properties[key].default) {
+                    if (!this.data[key] && this.schema.properties[key].type === 'array') {
+                        this.data[key] = [];
+                    } else if (!this.data[key] && this.schema.properties[key].type === 'boolean') {
+                        this.data[key] = false;
+                    } else if (!this.data[key] && this.schema.properties[key].type === 'string') {
+                        this.data[key] = '';
+                    }
                 }
             }
         }

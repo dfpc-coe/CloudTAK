@@ -53,11 +53,15 @@
                 </div>
 
                 <div class="col-lg-12">
-                    <LayerTask/>
+                    <LayerDeployment/>
                 </div>
 
                 <div class="col-lg-12">
                     <LayerData v-model='layer' :disabled='true'/>
+                </div>
+
+                <div class="col-lg-12">
+                    <LayerSchema v-model='layer.schema' :disabled='true'/>
                 </div>
 
                 <div class="col-lg-12">
@@ -76,7 +80,8 @@ import PageFooter from './PageFooter.vue';
 import LayerStatus from './Layer/Status.vue';
 import cronstrue from 'cronstrue';
 import LayerData from './Layer/LayerData.vue';
-import LayerTask from './Layer/LayerTask.vue';
+import LayerDeployment from './Layer/LayerDeployment.vue';
+import LayerSchema from './Layer/LayerSchema.vue';
 import Styles from './Layer/Styles.vue';
 import timeDiff from '../timediff.js';
 import {
@@ -139,7 +144,8 @@ export default {
         TablerLoading,
         DatabaseIcon,
         AlertTriangleIcon,
-        LayerTask,
+        LayerDeployment,
+        LayerSchema,
         Styles
     }
 }

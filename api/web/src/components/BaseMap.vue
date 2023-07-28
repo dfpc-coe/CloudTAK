@@ -26,6 +26,7 @@
 
                                 <div class='ms-auto'>
                                     <div class='btn-list'>
+                                        <Share2Icon v-tooltip='"Share BaseMap"' class='cursor-pointer' @click='share = true'/>
                                         <DownloadIcon v-tooltip='"Download TAK XML"' class='cursor-pointer' @click='download'/>
                                         <SettingsIcon v-tooltip='"Edit Basemap"' class='cursor-pointer' @click='$router.push(`/basemap/${basemap.id}/edit`)'/>
                                     </div>
@@ -67,11 +68,18 @@
         </div>
     </div>
     <PageFooter/>
+
+    <ShareModal
+        v-if='share'
+        @close='share = false'
+        :item='basemap'
+    />
 </div>
 </template>
 
 <script>
 import PageFooter from './PageFooter.vue';
+import ShareModal from './util/ShareModal.vue';
 import {
     TablerBreadCrumb,
     TablerLoading
@@ -79,6 +87,7 @@ import {
 import BaseMapLocation from './BaseMap/Location.vue';
 import timeDiff from '../timediff.js';
 import {
+    Share2Icon,
     DownloadIcon,
     SettingsIcon,
 } from 'vue-tabler-icons'
@@ -88,6 +97,7 @@ export default {
     data: function() {
         return {
             loading: true,
+            share: false,
             basemap: {}
         }
     },
@@ -108,12 +118,14 @@ export default {
         }
     },
     components: {
+        Share2Icon,
         SettingsIcon,
         DownloadIcon,
         PageFooter,
         TablerBreadCrumb,
         BaseMapLocation,
-        TablerLoading
+        TablerLoading,
+        ShareModal
     }
 }
 </script>

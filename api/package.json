@@ -6,7 +6,7 @@
     "main": "index.js",
     "scripts": {
         "test": "./test/test",
-        "build": "tsc index.ts",
+        "build": "tsc && rsync -av progress . dist/ --exclude web/ --exclude node_modules/ || true && rm dist/routes/*.ts",
         "prod": "ts-node index.ts",
         "lint": "eslint index.ts lib/**.ts test/**.ts",
         "loaddb": "echo 'DROP DATABASE tak_ps_etl' | psql && echo 'CREATE DATABASE tak_ps_etl' | psql && psql tak_ps_etl < coe-etl-latest.dump && knex migrate:latest",
@@ -48,6 +48,7 @@
         "connect-history-api-fallback": "^2.0.0",
         "cors": "^2.8.5",
         "csv-stringify": "^6.3.0",
+        "esri-dump": "^4.0.0",
         "express": "^4.18.2",
         "express-minify": "^1.0.0",
         "http-cookie-agent": "^5.0.2",

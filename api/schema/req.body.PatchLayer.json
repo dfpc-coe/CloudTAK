@@ -43,6 +43,9 @@
         },
         "environment": {
             "$ref": "./layers/environment.json"
+        },
+        "schema": {
+            "$ref": "./layers/schema.json"
         }
     }
 }
