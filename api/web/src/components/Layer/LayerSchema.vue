@@ -10,7 +10,9 @@
 
     <None v-if='!schema.length' :compact='true' label='Schema' :create='false'/>
     <div v-else class='table-responsive'>
-        <table class="table table-hover card-table table-vcenter cursor-pointer">
+        <table class="table table-hover card-table table-vcenter" :class='{
+            "cursor-pointer": !disabled
+        }'>
             <thead>
                 <tr>
                     <th>Property Name</th>
@@ -44,7 +46,7 @@
                         <div class='d-flex'>
                             <span v-if='field.required' class='badge mx-1 mb-1 bg-red'>Required</span>
                             <div class='ms-auto'>
-                                <TrashIcon @click.stop='schema.splice(field_it, 1)' class='cursor-pointer'/>
+                                <TrashIcon v-if='!disabled' @click.stop='schema.splice(field_it, 1)' class='cursor-pointer'/>
                             </div>
                         </div>
                     </td>
@@ -111,8 +113,12 @@ export default {
             }
         },
     },
+    mounted: function() {
+        this.processModelValue();
+    },
     methods: {
         edit: function(field) {
+            if (this.disabled) return;
             this.editField = field;
             this.create = true;
         },
@@ -154,6 +160,7 @@ export default {
             this.schema.splice(0, this.schema.length);
 
             if (!this.modelValue) return;
+
             for (const name in this.modelValue.properties) {
                 this.schema.push({
                     name,
