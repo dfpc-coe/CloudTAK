@@ -55,6 +55,9 @@
         },
         "timeout": {
             "$ref": "./layers/timeout.json"
+        },
+        "schema": {
+            "$ref": "./layers/schema.json"
         }
     }
 }
