@@ -5,7 +5,7 @@ import proj4 from 'proj4';
 export default async function arcgis(data: any): Promise<boolean> {
     if (data.feat.geometry.type !== 'Point') return false;
 
-    const res_query = await fetch(data.body.layer + '/query', {
+    const res_query: any = await fetch(data.body.layer + '/query', {
         method: 'POST',
         headers: {
             'Referer': data.secrets.referer,
@@ -39,7 +39,7 @@ export default async function arcgis(data: any): Promise<boolean> {
     }
 
     if (!query.features.length) {
-        const res = await fetch(new URL(data.body.layer + '/addFeatures'), {
+        const res: any = await fetch(new URL(data.body.layer + '/addFeatures'), {
             method: 'POST',
             headers: {
                 'Referer': data.secrets.referer,
@@ -75,7 +75,7 @@ export default async function arcgis(data: any): Promise<boolean> {
     } else {
         const oid = query.features[0].attributes.objectid;
 
-        const res = await fetch(new URL(data.body.layer + '/updateFeatures'), {
+        const res: any = await fetch(new URL(data.body.layer + '/updateFeatures'), {
             method: 'POST',
             headers: {
                 'Referer': data.secrets.referer,
