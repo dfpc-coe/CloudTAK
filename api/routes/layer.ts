@@ -125,7 +125,7 @@ export default async function router(schema: any, config: Config) {
         }
     });
 
-    await schema.patch('/layer/redeploy', {
+    await schema.post('/layer/redeploy', {
         name: 'Redeploy Layers',
         group: 'Layer',
         auth: 'admin',
@@ -273,7 +273,7 @@ export default async function router(schema: any, config: Config) {
         }
     });
 
-    await schema.patch('/layer/:layerid/redeploy', {
+    await schema.post('/layer/:layerid/redeploy', {
         name: 'Redeploy Layers',
         group: 'Layer',
         auth: 'admin',
