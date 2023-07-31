@@ -5,7 +5,7 @@ export default {
         AlarmTopic: {
             Type: 'AWS::SNS::Topic',
             Properties: {
-                TopicName: cf.stackName,
+                TopicName: cf.stackName
             }
         },
 
