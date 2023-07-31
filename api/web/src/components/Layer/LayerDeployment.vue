@@ -11,6 +11,7 @@
                     width='24' height='24'
                     class='cursor-pointer'
                 />
+
                 <ArticleIcon
                     v-if='mode !== "logs"'
                     @click='mode = "logs"'
@@ -18,6 +19,15 @@
                     width='24' height='24'
                     class='cursor-pointer'
                 />
+
+                <CloudUploadIcon
+                    v-if='mode !== "logs"'
+                    @click='redeploy'
+                    v-tooltip='"Redeploy"'
+                    width='24' height='24'
+                    class='cursor-pointer'
+                />
+
                 <CircleDotIcon
                     v-if='mode !== "status"'
                     @click='mode = "status"'
@@ -86,6 +96,7 @@ import {
     PlayerPlayIcon,
     CircleDotIcon,
     RefreshIcon,
+    CloudUploadIcon,
 } from 'vue-tabler-icons';
 
 export default {
@@ -146,6 +157,26 @@ export default {
             });
             this.loading.full = false;
         },
+        redeploy: async function(showLoading=true) {
+            if (showLoading) {
+                this.loading.full = true;
+            } else {
+                this.loading.small = true;
+            }
+
+            this.errors.cloudformation = false;
+
+            try {
+                this.stack = await window.std(`/api/layer/${this.$route.params.layerid}/redeploy`, {
+                    method: 'POST'
+                });
+            } catch (err) {
+                this.errors.cloudformation = err;
+            }
+
+            this.loading.full = false;
+            this.loading.small = false;
+        },
         fetchStatus: async function(showLoading=true) {
             if (showLoading) {
                 this.loading.full = true;
@@ -200,6 +231,7 @@ export default {
         CircleDotIcon,
         RefreshIcon,
         TablerLoading,
+        CloudUploadIcon,
     }
 }
 </script>

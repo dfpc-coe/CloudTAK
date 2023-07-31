@@ -39,6 +39,7 @@ export default class Lambda {
         const StackName = `${config.StackName}-layer-${layer.id}`;
 
         const stack: any = {
+            Description: `${layer.name} @ v1.0.0`,
             Parameters: {
                 Task: {
                     Type: 'String',
