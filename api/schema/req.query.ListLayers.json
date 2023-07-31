@@ -8,6 +8,34 @@
         "page": {
             "$ref": "./util/page.json"
         },
+        "order": {
+            "$ref": "./util/order.json"
+        },
+        "sort": {
+            "type": "string",
+            "default": "created",
+            "enum": [
+                "id",
+                "name",
+                "created",
+                "updated",
+                "description",
+                "enabled",
+                "enabled_styles",
+                "styles",
+                "logging",
+                "stale",
+                "task",
+                "connection",
+                "cron",
+                "environment",
+                "memory",
+                "timeout",
+                "data",
+                "schema"
+            ],
+            "description": "Field to sort order by"
+        },
         "connection": {
             "type": "integer"
         },
