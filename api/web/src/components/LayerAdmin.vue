@@ -35,6 +35,13 @@
                                     width='24' height='24'
                                     class='cursor-pointer'
                                 />
+
+                                <RefreshIcon
+                                    @click='fetchList'
+                                    v-tooltip='"Refresh"'
+                                    width='24' height='24'
+                                    class='cursor-pointer'
+                                />
                             </div>
                         </div>
                         <template v-if='loading'>
@@ -97,6 +104,7 @@ import {
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import {
+    RefreshIcon,
     CloudUploadIcon,
 } from 'vue-tabler-icons'
 
@@ -170,6 +178,7 @@ export default {
     },
     components: {
         None,
+        RefreshIcon,
         CloudUploadIcon,
         PageFooter,
         TablerBreadCrumb,
