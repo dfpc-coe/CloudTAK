@@ -138,7 +138,7 @@ export default async function router(schema: any, config: Config) {
             const list = await Layer.list(config.pool);
 
             for (const layer of list.layers) {
-                const status = (await CloudFormation.status(config, parseInt(req.params.layerid))).status;
+                const status = (await CloudFormation.status(config, layer.id)).status;
                 if (!status.endsWith('_COMPLETE')) continue;
 
                 try {
