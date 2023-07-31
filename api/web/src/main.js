@@ -16,6 +16,7 @@ const router = new VueRouter.createRouter({
 
         { path: '/layer', name: 'layers', component: () => import('./components/Layers.vue') },
         { path: '/layer/new', name: 'layer-new', component: () => import('./components/LayerEdit.vue') },
+        { path: '/layer/admin', name: 'layer-admin', component: () => import('./components/LayerAdmin.vue') },
         { path: '/layer/:layerid', name: 'layer', component: () => import('./components/Layer.vue') },
         { path: '/layer/:layerid/edit', name: 'layer-edit', component: () => import('./components/LayerEdit.vue') },
         { path: '/layer/:layerid/query', name: 'layer-query', component: () => import('./components/LayerQuery.vue') },
