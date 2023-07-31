@@ -54,7 +54,7 @@ export default cf.merge(
             SSLCertificateIdentifier: {
                 Description: 'ACM SSL Certificate for HTTP Protocol',
                 Type: 'String'
-            },
+            }
         }
     },
     ELBAlarms({
