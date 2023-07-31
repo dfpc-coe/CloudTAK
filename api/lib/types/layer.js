@@ -25,7 +25,7 @@ export default class Layer extends Generic {
                     name ~* ${query.filter}
                     AND (${query.connection}::BIGINT IS NULL OR ${query.connection}::BIGINT = layers.connection)
                 ORDER BY
-                    id DESC
+                    ${sql.identifier([this._table, query.sort])} ${query.order}
                 LIMIT
                     ${query.limit}
                 OFFSET
