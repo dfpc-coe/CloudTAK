@@ -27,31 +27,55 @@
                     <div class="card">
                         <div class="card-header">
                             <h1 class='card-title'>Layer Admin</h1>
-                        </div>
-                        <div class='card-body'>
-                            <template v-if='loading'>
-                                <TablerLoading/>
-                            </template>
-                            <template v-else>
-                                <None
-                                    v-if='!list.layers.length'
-                                    label='Layers'
-                                    @create='$router.push("/layer/new")'
+
+                            <div class='ms-auto btn-list'>
+                                <CloudUploadIcon
+                                    @click='redeploy'
+                                    v-tooltip='"Redeploy"'
+                                    width='24' height='24'
+                                    class='cursor-pointer'
                                 />
-                                <template v-else>
-                                    <TableHeader
-                                        v-model:sort='paging.sort'
-                                        v-model:order='paging.order'
-                                        v-model:header='header'
-                                    />
-                                    <TableFooter
-                                        :limit='paging.limit'
-                                        :total='list.total'
-                                        @page='paging.page = $event'
-                                    />
-                                </template>
-                            </template>
+                            </div>
                         </div>
+                        <template v-if='loading'>
+                            <div class='card-body'>
+                                <TablerLoading/>
+                            </div>
+                        </template>
+                        <template v-else>
+                            <None
+                                v-if='!list.layers.length'
+                                label='Layers'
+                                @create='$router.push("/layer/new")'
+                            />
+                            <template v-else>
+                                <div class='table-responsive'>
+                                    <table class="table card-table table-hover table-vcenter datatable">
+                                        <TableHeader
+                                            v-model:sort='paging.sort'
+                                            v-model:order='paging.order'
+                                            v-model:header='header'
+                                        />
+                                        <tbody>
+                                            <tr @click='$router.push(`/layer/${layer.id}`)' :key='layer.id' v-for='(layer, layer_it) in list.layers' class='cursor-pointer'>
+                                                <template v-for='h in header'>
+                                                    <template v-if='h.display'>
+                                                        <td>
+                                                            <span v-text='layer[h.name]'/>
+                                                        </td>
+                                                    </template>
+                                                </template>
+                                            </tr>
+                                        </tbody>
+                                        <TableFooter
+                                            :limit='paging.limit'
+                                            :total='list.total'
+                                            @page='paging.page = $event'
+                                        />
+                                    </table>
+                                </div>
+                            </template>
+                        </template>
                     </div>
                 </div>
             </div>
@@ -64,11 +88,9 @@
 
 <script>
 import None from './cards/None.vue';
-import Pager from './util/Pager.vue'
 import TableHeader from './util/TableHeader.vue'
 import TableFooter from './util/TableFooter.vue'
 import PageFooter from './PageFooter.vue';
-import LayerStatus from './Layer/Status.vue';
 import {
     TablerBreadCrumb,
     TablerMarkdown,
@@ -84,13 +106,12 @@ export default {
         return {
             err: false,
             loading: true,
-            query: false,
             header: [],
             paging: {
                 filter: '',
                 sort: 'name',
                 order: 'asc',
-                limit: 10,
+                limit: 100,
                 page: 0
             },
             list: {
@@ -100,18 +121,25 @@ export default {
         }
     },
     watch: {
-       'paging.page': async function() {
-           await this.fetchList();
-       },
-       'paging.filter': async function() {
-           await this.fetchList();
-       },
+       paging: {
+            deep: true,
+            handler: async function() {
+                await this.fetchList();
+            }
+        }
     },
     mounted: async function() {
         await this.listLayerSchema();
         await this.fetchList();
     },
     methods: {
+        redeploy: async function(showLoading=true) {
+            this.loading = true;
+            this.stack = await window.std(`/api/layer/redeploy`, {
+                method: 'POST'
+            });
+            this.loading = false;
+        },
         listLayerSchema: async function() {
             const schema = await window.std('/api/schema?method=GET&url=/layer');
             this.header = ['name', 'cron', 'task'].map((h) => {
@@ -130,21 +158,6 @@ export default {
                 return true;
             }));
         },
-        timeDiff: function(updated) {
-            const msPerMinute = 60 * 1000;
-            const msPerHour = msPerMinute * 60;
-            const msPerDay = msPerHour * 24;
-            const msPerMonth = msPerDay * 30;
-            const msPerYear = msPerDay * 365;
-            const elapsed = +(new Date()) - updated;
-
-            if (elapsed < msPerMinute) return Math.round(elapsed/1000) + ' seconds ago';
-            if (elapsed < msPerHour) return Math.round(elapsed/msPerMinute) + ' minutes ago';
-            if (elapsed < msPerDay ) return Math.round(elapsed/msPerHour ) + ' hours ago';
-            if (elapsed < msPerMonth) return '~' + Math.round(elapsed/msPerDay) + ' days ago';
-            if (elapsed < msPerYear) return '~' + Math.round(elapsed/msPerMonth) + ' months ago';
-            return '~' + Math.round(elapsed/msPerYear ) + ' years ago';
-        },
         fetchList: async function() {
             this.loading = true;
             const url = window.stdurl('/api/layer');
@@ -157,7 +170,6 @@ export default {
     },
     components: {
         None,
-        Pager,
         CloudUploadIcon,
         PageFooter,
         TablerBreadCrumb,
@@ -165,7 +177,6 @@ export default {
         TablerMarkdown,
         TableHeader,
         TableFooter,
-        LayerStatus
     }
 }
 </script>
