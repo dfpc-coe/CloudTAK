@@ -273,6 +273,42 @@ export default async function router(schema: any, config: Config) {
         }
     });
 
+    await schema.patch('/layer/:layerid/redeploy', {
+        name: 'Redeploy Layers',
+        group: 'Layer',
+        auth: 'admin',
+        description: 'Redeploy a specific Layer with latest CloudFormation output',
+        ':layerid': 'integer',
+        res: 'res.Standard.json'
+    }, async (req: AuthRequest, res: Response) => {
+        try {
+            await Auth.is_auth(req);
+
+            const layer = await Layer.from(config.pool, req.params.layerid);
+
+            const status = (await CloudFormation.status(config, parseInt(req.params.layerid))).status;
+            if (!status.endsWith('_COMPLETE')) throw new Err(400, null, 'Layer is still Deploying, Wait for Deploy to succeed before updating')
+
+            try {
+                const lambda = await Lambda.generate(config, layer);
+                if (await CloudFormation.exists(config, layer.id)) {
+                    await CloudFormation.update(config, layer.id, lambda);
+                } else {
+                    await CloudFormation.create(config, layer.id, lambda);
+                }
+            } catch (err) {
+                console.error(err);
+            }
+
+            return res.json({
+                status: 200,
+                message: 'Layer Redeploying'
+            });
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
+
     await schema.delete('/layer/:layerid', {
         name: 'Delete Layer',
         group: 'Layer',
