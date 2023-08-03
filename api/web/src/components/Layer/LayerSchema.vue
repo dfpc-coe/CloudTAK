@@ -4,7 +4,9 @@
         <h3 class='card-title'>Layer Schema</h3>
 
         <div class='ms-auto btn-list'>
-            <PlusIcon v-if='!disabled' @click='create = true' class='cursor-pointer'/>
+            <PlusIcon v-if='!disabled' v-tooltip='"Manual Addition"' @click='create = true' class='cursor-pointer'/>
+            <WorldDownloadIcon v-if='!disabled' v-tooltip='"Automated Schema"' @click='fetchSchema' class='cursor-pointer' />
+
         </div>
     </div>
 
@@ -84,6 +86,7 @@ import {
     DecimalIcon,
     BinaryIcon,
     TrashIcon,
+    WorldDownloadIcon,
 } from 'vue-tabler-icons'
 
 export default {
@@ -109,12 +112,12 @@ export default {
         modelValue: {
             deep: true,
             handler: function() {
-                this.processModelValue();
+                this.processModelValue(this.modelValue);
             }
         },
     },
     mounted: function() {
-        this.processModelValue();
+        this.processModelValue(this.modelValue);
     },
     methods: {
         edit: function(field) {
@@ -156,16 +159,23 @@ export default {
                 properties
             });
         },
-        processModelValue: function() {
+        fetchSchema: async function() {
+            const url = window.stdurl(`/api/layer/${this.$route.params.layerid}/task/schema`);
+            url.searchParams.append('type', 'schema:output');
+            const schema = await window.std(url);
+
+            this.processModelValue(schema.schema)
+        },
+        processModelValue: function(modelValue) {
             this.schema.splice(0, this.schema.length);
 
-            if (!this.modelValue) return;
+            if (!modelValue) return;
 
-            for (const name in this.modelValue.properties) {
+            for (const name in modelValue.properties) {
                 this.schema.push({
                     name,
-                    required: this.modelValue.required.includes(name),
-                    ...this.modelValue.properties[name]
+                    required: modelValue.required.includes(name),
+                    ...modelValue.properties[name]
                 });
             }
         }
@@ -184,6 +194,7 @@ export default {
         BinaryIcon,
         LayerSchemaModal,
         TrashIcon,
+        WorldDownloadIcon,
     }
 }
 </script>

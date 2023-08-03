@@ -162,6 +162,7 @@ export default async function router(schema: any, config: Config) {
         auth: 'user',
         ':layerid': 'integer',
         description: 'Get the JSONSchema for the expected environment variables',
+        query: 'req.query.TaskSchema.json',
         res: 'res.TaskSchema.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
@@ -172,7 +173,7 @@ export default async function router(schema: any, config: Config) {
             });
 
             return res.json({
-                schema: await Lambda.schema(config, layer.id)
+                schema: await Lambda.schema(config, layer.id, String(req.query.type))
             });
         } catch (err) {
             return Err.respond(err, res);

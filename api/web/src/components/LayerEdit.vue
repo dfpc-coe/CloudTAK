@@ -66,7 +66,7 @@
                     <LayerData :errors='errors' v-model='layer'/>
                 </div>
 
-                <div class="col-lg-12">
+                <div v-if='layer.id' class="col-lg-12">
                     <LayerSchema v-model='layer.schema' :disabled='false'/>
                 </div>
 
