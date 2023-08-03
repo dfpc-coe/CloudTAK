@@ -26,13 +26,13 @@
                             <div class='ms-auto'>
                                 <div class='btn-list'>
 
-                                    <AlertTriangleIcon 
+                                    <AlertTriangleIcon
                                         class='cursor-pointer'
                                         :class='{ "text-red": alerts.total }'
                                         v-tooltip='"Layer Alerts"'
                                         @click='$router.push(`/layer/${layer.id}/alert`)'
                                     />
-                                    <DatabaseIcon 
+                                    <DatabaseIcon
                                         class='cursor-pointer'
                                         v-tooltip='"CoT Logging"'
                                         @click='$router.push(`/layer/${layer.id}/query`)'
