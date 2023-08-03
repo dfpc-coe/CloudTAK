@@ -1,0 +1,14 @@
+{
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+        "type": {
+            "type": "string",
+            "default": "schema:input",
+            "enum": [
+                "schema:input",
+                "schema:output"
+            ]
+        }
+    }
+}
