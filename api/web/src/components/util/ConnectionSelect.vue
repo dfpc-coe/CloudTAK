@@ -1,5 +1,5 @@
 <template>
-<div class="col-md-12 mt-1">
+<div class='w-100'>
     <template v-if='loading'>
         <TablerLoading/>
     </template>
