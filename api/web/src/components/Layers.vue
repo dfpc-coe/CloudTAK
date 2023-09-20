@@ -93,7 +93,7 @@
 import None from './cards/None.vue';
 import Pager from './util/Pager.vue'
 import PageFooter from './PageFooter.vue';
-import LayerStatus from './Layer/Status.vue';
+import LayerStatus from './Layer/utils/Status.vue';
 import {
     TablerBreadCrumb, 
     TablerMarkdown,

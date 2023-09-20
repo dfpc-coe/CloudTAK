@@ -1,5 +1,5 @@
 <template>
-<div class='card'>
+<div>
     <div class='card-header'>
         <h3 class='card-title'>Layer Schema</h3>
 
@@ -71,7 +71,7 @@
 
 <script>
 import None from '../cards/None.vue';
-import LayerSchemaModal from './LayerSchemaModal.vue';
+import LayerSchemaModal from './utils/LayerSchemaModal.vue';
 import {
     TablerInput,
     TablerLoading,
