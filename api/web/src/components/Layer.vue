@@ -52,20 +52,39 @@
                     </div>
                 </div>
 
-                <div class="col-lg-12">
-                    <LayerDeployment/>
-                </div>
-
-                <div class="col-lg-12">
-                    <LayerData v-model='layer' :disabled='true'/>
-                </div>
-
-                <div class="col-lg-12">
-                    <LayerSchema v-model='layer.schema' :disabled='true'/>
-                </div>
-
-                <div class="col-lg-12">
-                    <Styles v-model='layer.styles' :enabled='layer.enabled_styles' :disabled='true' />
+                <div class='col-lg-12'>
+                    <div class='card'>
+                        <div class='row g-0'>
+                            <div class="col-12 col-md-3 border-end">
+                                <div class="card-body">
+                                    <h4 class="subheader">Layer Settings</h4>
+                                    <div class="list-group list-group-transparent">
+                                        <span @click='$router.push(`/layer/${$route.params.layerid}/deployment`)' class="list-group-item list-group-item-action d-flex align-items-center" :class='{
+                                            "active": $route.name === "layer-deployment",
+                                            "cursor-pointer": $route.name !== "layer-deployment"
+                                        }'>Deployment</span>
+                                        <span @click='$router.push(`/layer/${$route.params.layerid}/data`)' class="list-group-item list-group-item-action d-flex align-items-center" :class='{
+                                            "active": $route.name === "layer-data",
+                                            "cursor-pointer": $route.name !== "layer-data"
+                                        }'>Config</span>
+                                        <span @click='$router.push(`/layer/${$route.params.layerid}/schema`)' class="list-group-item list-group-item-action d-flex align-items-center" :class='{
+                                            "active": $route.name === "layer-schema",
+                                            "cursor-pointer": $route.name !== "layer-schema"
+                                        }'>Schema</span>
+                                        <span @click='$router.push(`/layer/${$route.params.layerid}/styles`)' class="list-group-item list-group-item-action d-flex align-items-center" :class='{
+                                            "active": $route.name === "layer-styles",
+                                            "cursor-pointer": $route.name !== "layer-styles"
+                                        }'>Styling</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-9">
+                                <router-view
+                                    :layer='layer'
+                                />
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -77,12 +96,8 @@
 
 <script>
 import PageFooter from './PageFooter.vue';
-import LayerStatus from './Layer/Status.vue';
+import LayerStatus from './Layer/utils/Status.vue';
 import cronstrue from 'cronstrue';
-import LayerData from './Layer/LayerData.vue';
-import LayerDeployment from './Layer/LayerDeployment.vue';
-import LayerSchema from './Layer/LayerSchema.vue';
-import Styles from './Layer/Styles.vue';
 import timeDiff from '../timediff.js';
 import {
     TablerBreadCrumb,
@@ -137,16 +152,12 @@ export default {
     components: {
         LayerStatus,
         SettingsIcon,
-        LayerData,
         PageFooter,
         TablerBreadCrumb,
         TablerMarkdown,
         TablerLoading,
         DatabaseIcon,
-        AlertTriangleIcon,
-        LayerDeployment,
-        LayerSchema,
-        Styles
+        AlertTriangleIcon
     }
 }
 </script>

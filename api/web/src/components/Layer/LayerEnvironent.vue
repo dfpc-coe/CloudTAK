@@ -64,7 +64,7 @@ import {
     TablerInput,
     TablerLoading,
 } from '@tak-ps/vue-tabler';
-import Schema from './Schema.vue';
+import Schema from './utils/Schema.vue';
 import {
     PlusIcon,
     RefreshIcon

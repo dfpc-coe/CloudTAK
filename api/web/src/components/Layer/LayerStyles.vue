@@ -1,5 +1,5 @@
 <template>
-<div class='card'>
+<div>
     <div class='card-header'>
         <div class='row row-cards'>
             <div class='col-md-4'>
@@ -48,7 +48,7 @@
         </div>
     </div>
 
-    <div v-if='!global_enabled' class='card-body'>
+    <div v-if='!global_enabled' class='card-body text-center'>
         Style Overrides are disabled
     </div>
     <template v-else-if='mode === "query"'>
@@ -104,7 +104,7 @@ import {
 import {
     TablerInput
 } from '@tak-ps/vue-tabler';
-import StylesSingle from './Styles/Single.vue';
+import StylesSingle from './utils/SingleStyle.vue';
 import None from '../cards/None.vue';
 
 export default {

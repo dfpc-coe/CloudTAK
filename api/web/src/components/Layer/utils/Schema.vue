@@ -105,7 +105,7 @@ import {
     TablerToggle,
     TablerEnum
 } from '@tak-ps/vue-tabler';
-import UploadCSV from '../util/UploadCSV.vue';
+import UploadCSV from '../../util/UploadCSV.vue';
 import {
     PlusIcon,
     TrashIcon,

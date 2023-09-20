@@ -115,7 +115,7 @@ import LayerEnvironment from './LayerEnvironent.vue';
 import ConnectionSelect from '../util/ConnectionSelect.vue';
 import DataSelect from '../util/DataSelect.vue';
 import cronstrue from 'cronstrue';
-import TaskModal from './TaskModal.vue';
+import TaskModal from './utils/TaskModal.vue';
 import {
     TablerInput,
     TablerLoading
@@ -130,7 +130,7 @@ import {
 export default {
     name: 'LayerData',
     props: {
-        modelValue: {
+        layer: {
             type: Object,
             required: true
         },

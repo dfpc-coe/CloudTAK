@@ -17,7 +17,36 @@ const router = new VueRouter.createRouter({
         { path: '/layer', name: 'layers', component: () => import('./components/Layers.vue') },
         { path: '/layer/new', name: 'layer-new', component: () => import('./components/LayerEdit.vue') },
         { path: '/layer/admin', name: 'layer-admin', component: () => import('./components/LayerAdmin.vue') },
-        { path: '/layer/:layerid', name: 'layer', component: () => import('./components/Layer.vue') },
+
+        {
+            path: '/layer/:layerid',
+            name: 'layer',
+            component: () => import('./components/Layer.vue'),
+            children: [{
+                path: '',
+                redirect: to => {
+                    return { name: 'layer-deployment' };
+                }
+            },{
+                path: 'deployment',
+                name: 'layer-deployment',
+                component: () => import('./components/Layer/LayerDeployment.vue')
+            },{
+                path: 'data',
+                name: 'layer-data',
+                component: () => import('./components/Layer/LayerData.vue')
+            },{
+                path: 'schema',
+                name: 'layer-schema',
+                component: () => import('./components/Layer/LayerSchema.vue')
+            },{
+                path: 'styles',
+                name: 'layer-styles',
+                component: () => import('./components/Layer/LayerStyles.vue')
+            }]
+        },
+
+
         { path: '/layer/:layerid/edit', name: 'layer-edit', component: () => import('./components/LayerEdit.vue') },
         { path: '/layer/:layerid/query', name: 'layer-query', component: () => import('./components/LayerQuery.vue') },
         { path: '/layer/:layerid/query/:featid', name: 'layer-query-feat', component: () => import('./components/LayerQueryFeature.vue') },
