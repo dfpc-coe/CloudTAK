@@ -1,7 +1,7 @@
 <template>
-<div class='col-md-12 my-3'>
-    <div class='d-flex'>
-        <h3>Environment</h3>
+<div>
+    <div class='card-header'>
+        <h3 class='card-title'>Environment</h3>
         <div class='ms-auto'>
             <div v-if='mode === "list"' class='btn-list'>
                 <PlusIcon v-if='!disabled' @click='environment.push({key: "", value: ""})' class='cursor-pointer'/>

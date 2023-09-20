@@ -57,33 +57,14 @@
                                         :error='errors.description'
                                     />
                                 </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-lg-12">
-                    <LayerData :errors='errors' v-model='layer'/>
-                </div>
-
-                <div v-if='layer.id' class="col-lg-12">
-                    <LayerSchema v-model='layer.schema' :disabled='false'/>
-                </div>
-
-                <div class="col-lg-12">
-                    <StyleUtil v-model='layer.styles' :enabled='layer.enabled_styles' @enabled='layer.enabled_styles = $event'/>
-                </div>
-
-                <div class="col-lg-12">
-                    <div class='card'>
-                        <div class="card-body">
-                            <div class='d-flex'>
-                                <div v-if='$route.params.layerid'>
-                                    <TablerDelete @delete='deleteLayer' label='Delete Layer'/>
-                                </div>
-                                <div class='ms-auto'>
-                                    <a v-if='$route.params.layerid' @click='create' class="cursor-pointer btn btn-primary">Update Layer</a>
-                                    <a v-else @click='create' class="cursor-pointer btn btn-primary">Create Layer</a>
+                                <div class="col-lg-12 d-flex">
+                                    <div v-if='$route.params.layerid'>
+                                        <TablerDelete @delete='deleteLayer' label='Delete Layer'/>
+                                    </div>
+                                    <div class='ms-auto'>
+                                        <a v-if='$route.params.layerid' @click='create' class="cursor-pointer btn btn-primary">Update Layer</a>
+                                        <a v-else @click='create' class="cursor-pointer btn btn-primary">Create Layer</a>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -99,9 +80,6 @@
 
 <script>
 import PageFooter from './PageFooter.vue';
-import StyleUtil from './Layer/Styles.vue';
-import LayerData from './Layer/LayerData.vue';
-import LayerSchema from './Layer/LayerSchema.vue';
 import {
     TablerBreadCrumb,
     TablerDelete,
@@ -119,27 +97,12 @@ export default {
             errors: {
                 name: '',
                 description: '',
-                cron: '',
-                task: ''
-            },
-            conn: {
-                id: null,
-                status: '',
-                name: ''
             },
             layer: {
                 name: '',
                 description: '',
                 enabled: true,
                 logging: true,
-                enabled_styles: false,
-                styles: {},
-                schema: {
-                    type: 'object',
-                    additionalProperties: false,
-                    required: [],
-                    properties: {}
-                }
             }
         }
     },
@@ -164,7 +127,7 @@ export default {
             this.$router.push('/layer');
         },
         create: async function() {
-            for (const field of ['name', 'description', 'cron', 'task', 'timeout', 'memory']) {
+            for (const field of ['name', 'description']) {
                 this.errors[field] = !this.layer[field] ? 'Cannot be empty' : '';
             }
             for (const e in this.errors) if (this.errors[e]) return;
@@ -197,9 +160,6 @@ export default {
         TablerBreadCrumb,
         TablerInput,
         TablerDelete,
-        StyleUtil,
-        LayerData,
-        LayerSchema,
         TablerLoading
     }
 }

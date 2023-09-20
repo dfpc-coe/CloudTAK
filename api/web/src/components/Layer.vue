@@ -63,10 +63,14 @@
                                             "active": $route.name === "layer-deployment",
                                             "cursor-pointer": $route.name !== "layer-deployment"
                                         }'>Deployment</span>
-                                        <span @click='$router.push(`/layer/${$route.params.layerid}/data`)' class="list-group-item list-group-item-action d-flex align-items-center" :class='{
-                                            "active": $route.name === "layer-data",
-                                            "cursor-pointer": $route.name !== "layer-data"
+                                        <span @click='$router.push(`/layer/${$route.params.layerid}/config`)' class="list-group-item list-group-item-action d-flex align-items-center" :class='{
+                                            "active": $route.name === "layer-config",
+                                            "cursor-pointer": $route.name !== "layer-config"
                                         }'>Config</span>
+                                        <span @click='$router.push(`/layer/${$route.params.layerid}/environment`)' class="list-group-item list-group-item-action d-flex align-items-center" :class='{
+                                            "active": $route.name === "layer-environment",
+                                            "cursor-pointer": $route.name !== "layer-environment"
+                                        }'>Environment</span>
                                         <span @click='$router.push(`/layer/${$route.params.layerid}/schema`)' class="list-group-item list-group-item-action d-flex align-items-center" :class='{
                                             "active": $route.name === "layer-schema",
                                             "cursor-pointer": $route.name !== "layer-schema"

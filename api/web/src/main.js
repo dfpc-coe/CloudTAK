@@ -32,9 +32,13 @@ const router = new VueRouter.createRouter({
                 name: 'layer-deployment',
                 component: () => import('./components/Layer/LayerDeployment.vue')
             },{
-                path: 'data',
-                name: 'layer-data',
-                component: () => import('./components/Layer/LayerData.vue')
+                path: 'config',
+                name: 'layer-config',
+                component: () => import('./components/Layer/LayerConfig.vue')
+            },{
+                path: 'environment',
+                name: 'layer-environment',
+                component: () => import('./components/Layer/LayerEnvironment.vue')
             },{
                 path: 'schema',
                 name: 'layer-schema',
