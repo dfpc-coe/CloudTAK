@@ -1,13 +1,16 @@
 <template>
-<div class='card'>
+<div>
     <div class='card-header'>
-        <h3 class='card-title'>Layer Data</h3>
+        <h3 class='card-title'>Layer Config</h3>
+        <div class='ms-auto btn-list'>
+            <RefreshIcon class='cursor-pointer'/>
+            <SettingsIcon v-if='disabled' @click='disabled = false' class='cursor-pointer'/>
+        </div>
     </div>
 
     <div class='card-body'>
-        <TablerLoading v-if='loading.main'/>
-        <div v-else class='row'>
-            <div class="col-md-6 mb-3">
+        <div class='row g-4'>
+            <div class="col-md-6">
                 <div class='d-flex'>
                     <label class='form-label'>Cron Expression</label>
                     <div v-if='!disabled' class='ms-auto'>
@@ -16,21 +19,21 @@
                                 <SettingsIcon width='16' height='16' class='cursor-pointer dropdown-toggle'/>
                             </div>
                             <ul class="dropdown-menu px-1 py-1" aria-labelledby="dropdownCron">
-                                <li class='py-1' @click='layer.cron = "rate(1 minute)"'>rate(1 minute)</li>
-                                <li class='py-1' @click='layer.cron = "rate(5 minutes)"'>rate(5 minutes)</li>
-                                <li class='py-1' @click='layer.cron = "cron(15 10 * * ? *)"'>cron(15 10 * * ? *)</li>
-                                <li class='py-1' @click='layer.cron = "cron(0/5 8-17 ? * MON-FRI *)"'>cron(0/5 8-17 ? * MON-FRI *)</li>
+                                <li class='py-1' @click='config.cron = "rate(1 minute)"'>rate(1 minute)</li>
+                                <li class='py-1' @click='config.cron = "rate(5 minutes)"'>rate(5 minutes)</li>
+                                <li class='py-1' @click='config.cron = "cron(15 10 * * ? *)"'>cron(15 10 * * ? *)</li>
+                                <li class='py-1' @click='config.cron = "cron(0/5 8-17 ? * MON-FRI *)"'>cron(0/5 8-17 ? * MON-FRI *)</li>
                             </ul>
                         </div>
                     </div>
                 </div>
-                <input :disabled='disabled' v-model='layer.cron' :class='{
+                <input :disabled='disabled' v-model='config.cron' :class='{
                     "is-invalid": errors.cron
                 }' class="form-control" placeholder='Cron Expression'/>
                 <div v-if='errors.cron' v-text='errors.cron' class="invalid-feedback"></div>
-                <label v-if='layer.cron' v-text='cronstr(layer.cron)'/>
+                <label v-if='config.cron' v-text='cronstr(config.cron)'/>
             </div>
-            <div class="col-md-6 mb-3">
+            <div class="col-md-6">
                 <div class='d-flex'>
                     <label class='form-label'>Schedule Task</label>
                     <div class='ms-auto'>
@@ -58,7 +61,7 @@
                         </div>
                     </div>
                 </div>
-                <input :disabled='disabled' v-model='layer.task' :class='{
+                <input :disabled='disabled' v-model='config.task' :class='{
                     "is-invalid": errors.task
                 }' class="form-control" placeholder='Schedule Task'/>
                 <div v-if='errors.task' v-text='errors.task' class="invalid-feedback"></div>
@@ -78,40 +81,43 @@
                     <div v-if='destination === "connection"' class='col-10'>
                         <ConnectionSelect
                             :disabled='disabled'
-                            v-model='layer.connection'
+                            v-model='config.connection'
                         />
                     </div>
                     <div v-else class='col-10'>
                         <DataSelect
                             :disabled='disabled'
-                            v-model='layer.data'
+                            v-model='config.data'
                         />
                     </div>
                 </div>
             </div>
             <div class="col-md-6">
                 <label>Stale Value (ms)</label>
-                <TablerInput v-model='layer.stale' :disabled='disabled' type='number' min='1' step='1'/>
+                <TablerInput v-model='config.stale' :disabled='disabled' type='number' min='1' step='1'/>
             </div>
-            <div class="col-md-6 mt-3">
+            <div class="col-md-6">
                 <label>Memory (Mb)</label>
-                <TablerInput v-model='layer.memory' :disabled='disabled' type='number' min='1' step='1'/>
+                <TablerInput v-model='config.memory' :disabled='disabled' type='number' min='1' step='1'/>
             </div>
-            <div class="col-md-6 mt-3">
+            <div class="col-md-6">
                 <label>Timeout (s)</label>
-                <TablerInput v-model='layer.timeout' :disabled='disabled' type='number' min='1' step='1'/>
+                <TablerInput v-model='config.timeout' :disabled='disabled' type='number' min='1' step='1'/>
             </div>
-
-            <LayerEnvironment v-if='$route.params.layerid' v-model='layer.environment' :disabled='disabled'/>
+            <div v-if='!disabled' class="col-12 d-flex">
+                <button @click='reload' class='btn'>Cancel</button>
+                <div class='ms-auto'>
+                    <button @click='saveLayer' class='btn btn-primary'>Save</button>
+                </div>
+            </div>
         </div>
     </div>
 
-    <TaskModal v-if='taskmodal' :task='layer.task' @close='taskmodal = false' @task='taskmodal = false; layer.task = $event'/>
+    <TaskModal v-if='taskmodal' :task='config.task' @close='taskmodal = false' @task='taskmodal = false; config.task = $event'/>
 </div>
 </template>
 
 <script>
-import LayerEnvironment from './LayerEnvironent.vue';
 import ConnectionSelect from '../util/ConnectionSelect.vue';
 import DataSelect from '../util/DataSelect.vue';
 import cronstrue from 'cronstrue';
@@ -128,7 +134,7 @@ import {
 } from 'vue-tabler-icons'
 
 export default {
-    name: 'LayerData',
+    name: 'LayerConfig',
     props: {
         layer: {
             type: Object,
@@ -140,21 +146,17 @@ export default {
                 return {}
             }
         },
-        disabled: {
-            type: Boolean,
-            default: false
-        }
     },
     data: function() {
         return {
+            disabled: true,
             taskmodal: false,
             newTaskVersion: false,
             loading: {
-                main: false,
                 version: false
             },
             destination: 'connection',
-            layer: {
+            config: {
                 connection: null,
                 data: null,
                 task: '',
@@ -162,45 +164,41 @@ export default {
                 memory: 512,
                 cron: '0/15 * * * ? *',
                 stale: 60 * 1000,
-                environment: {}
             }
         };
     },
     watch: {
-        modelValue: {
+        config: {
             deep: true,
             handler: function() {
-                this.layer = Object.assign(this.layer, this.modelValue);
-            }
-        },
-        layer: {
-            deep: true,
-            handler: function() {
-                const layer = Object.assign(this.modelValue, this.layer);
-
                 if (this.destination === 'connection') {
-                    layer.data = undefined;
+                    this.config.data = undefined;
                 } else if (this.destination === 'data') {
-                    layer.connection = undefined;
+                    this.config.connection = undefined;
                 }
-
-                this.$emit('update:modelValue', layer);
             }
         }
     },
     mounted: function() {
-        this.layer = Object.assign(this.layer, this.modelValue);
-
-        if (this.layer.connection) this.destination = 'connection';
-        else this.destination = 'data';
-
-        this.$nextTick(() => {
-            this.loading.main = false;
-        });
+        this.reload();
     },
     methods: {
+        reload: function() {
+            this.config.connection = this.layer.connection;
+            this.config.data = this.layer.data;
+            this.config.task = this.layer.task;
+            this.config.timeout = this.layer.timeout;
+            this.config.memory = this.layer.memory;
+            this.config.cron = this.layer.cron;
+            this.config.stale = this.layer.stale;
+
+            if (this.layer.connection) this.destination = 'connection';
+            else this.destination = 'data';
+
+            this.disabled = true;
+        },
         updateTask: function() {
-            this.layer.task = this.layer.task.replace(/-v[0-9]+\.[0-9]+\.[0-9]+$/, `-v${this.newTaskVersion}`);
+            this.config.task = this.config.task.replace(/-v[0-9]+\.[0-9]+\.[0-9]+$/, `-v${this.newTaskVersion}`);
             this.newTaskVersion = null;
         },
         cronstr: function(cron) {
@@ -215,7 +213,7 @@ export default {
         },
         latestVersion: async function() {
             this.loading.version = true;
-            const match = this.layer.task.match(/^(.*)-v([0-9]+\.[0-9]+\.[0-9]+)$/)
+            const match = this.config.task.match(/^(.*)-v([0-9]+\.[0-9]+\.[0-9]+)$/)
             if (!match) return;
             const task = match[1];
             const version = match[2];
@@ -229,7 +227,6 @@ export default {
         }
     },
     components: {
-        LayerEnvironment,
         TablerLoading,
         RefreshIcon,
         SettingsIcon,
