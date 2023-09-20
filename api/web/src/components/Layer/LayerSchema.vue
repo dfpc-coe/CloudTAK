@@ -46,7 +46,7 @@
                     </td>
                     <td>
                         <div class='d-flex'>
-                            <span v-if='field.required' class='badge mx-1 mb-1 bg-red'>Required</span>
+                            <span v-if='field.required' class='badge mx-1 mb-1 bg-red text-white'>Required</span>
                             <div class='ms-auto'>
                                 <TrashIcon v-if='!disabled' @click.stop='schema.splice(field_it, 1)' class='cursor-pointer'/>
                             </div>

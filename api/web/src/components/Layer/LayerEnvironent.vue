@@ -15,7 +15,7 @@
     <TablerLoading v-if='loading.schema' desc='Loading Environment'/>
     <div v-else-if='mode === "list"' class="table-responsive">
         <table class="table table-vcenter card-table">
-            <thead>
+            <thead class='sticky-top'>
                 <tr>
                     <th>Name</th>
                     <th>Value</th>
