@@ -68,24 +68,26 @@
             </div>
             <div class="col-md-6">
                 <div class='row'>
-                    <label>Layer Data Destination</label>
-                    <div class='col-2'>
-                        <div class="btn-group" role="group">
-                          <input :disabled='disabled' v-model='destination' value='connection' type="radio" class="btn-check" name="connection-toolbar" id="connection-toolbar-connection" autocomplete="off">
-                          <label for="connection-toolbar-connection" class="btn btn-icon"><BuildingBroadcastTowerIcon/></label>
-
-                          <input :disabled='disabled' v-model='destination' value='data' type="radio" class="btn-check" name="connection-toolbar" id="connection-toolbar-data" autocomplete="off">
-                          <label for="connection-toolbar-data" class="btn btn-icon"><DatabaseIcon/></label>
-                        </div>
+                    <div class='col-12'>
+                        <label>Data Destination</label>
                     </div>
-                    <div v-if='destination === "connection"' class='col-10'>
+                    <div class='col-12 d-flex'>
+                        <div class='btn-group' role="group">
+                            <input :disabled='disabled' v-model='destination' value='connection' type="radio" class="btn-check" name="connection-toolbar" id="connection-toolbar-connection" autocomplete="off">
+                            <label for="connection-toolbar-connection" class="btn btn-icon"><BuildingBroadcastTowerIcon/></label>
+
+                            <input :disabled='disabled' v-model='destination' value='data' type="radio" class="btn-check" name="connection-toolbar" id="connection-toolbar-data" autocomplete="off">
+                            <label for="connection-toolbar-data" class="btn btn-icon"><DatabaseIcon/></label>
+                        </div>
                         <ConnectionSelect
+                            v-if='destination === "connection"'
+                            class='mx-2'
                             :disabled='disabled'
                             v-model='config.connection'
                         />
-                    </div>
-                    <div v-else class='col-10'>
                         <DataSelect
+                            v-else
+                            class='mx-2'
                             :disabled='disabled'
                             v-model='config.data'
                         />
