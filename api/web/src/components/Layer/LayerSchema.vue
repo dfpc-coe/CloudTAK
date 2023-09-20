@@ -5,12 +5,12 @@
 
         <div class='ms-auto btn-list'>
             <PlusIcon v-if='!disabled' v-tooltip='"Manual Addition"' @click='create = true' class='cursor-pointer'/>
-            <WorldDownloadIcon v-if='!disabled' v-tooltip='"Automated Schema"' @click='fetchSchema' class='cursor-pointer' />
-
+            <WorldDownloadIcon v-if='!disabled' v-tooltip='"Automated Schema"' @click='fetchSchema' class='cursor-pointer'/>
         </div>
     </div>
 
-    <None v-if='!schema.length' :compact='true' label='Schema' :create='false'/>
+    <TablerLoading v-if='loading.schema' desc='Retrieving Schema'/>
+    <None v-else-if='!schema.length' :compact='true' label='Schema' :create='false'/>
     <div v-else class='table-responsive'>
         <table class="table table-hover card-table table-vcenter" :class='{
             "cursor-pointer": !disabled
@@ -74,6 +74,7 @@ import None from '../cards/None.vue';
 import LayerSchemaModal from './LayerSchemaModal.vue';
 import {
     TablerInput,
+    TablerLoading,
     TablerToggle,
     TablerEnum,
 } from '@tak-ps/vue-tabler';
@@ -103,6 +104,9 @@ export default {
     },
     data: function() {
         return {
+            loading: {
+                schema: false
+            },
             create: false,
             editField: null,
             schema: []
@@ -160,11 +164,13 @@ export default {
             });
         },
         fetchSchema: async function() {
+            this.loading.schema = true;
             const url = window.stdurl(`/api/layer/${this.$route.params.layerid}/task/schema`);
             url.searchParams.append('type', 'schema:output');
             const schema = await window.std(url);
 
             this.processModelValue(schema.schema)
+            this.loading.schema = false;
         },
         processModelValue: function(modelValue) {
             this.schema.splice(0, this.schema.length);
@@ -178,6 +184,8 @@ export default {
                     ...modelValue.properties[name]
                 });
             }
+
+            this.update();
         }
     },
     components: {
@@ -188,6 +196,7 @@ export default {
         TablerInput,
         TablerToggle,
         TablerEnum,
+        TablerLoading,
         PlusIcon,
         RefreshIcon,
         SettingsIcon,
