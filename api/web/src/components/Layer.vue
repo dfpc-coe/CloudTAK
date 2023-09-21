@@ -85,6 +85,7 @@
                             <div class="col-12 col-md-9">
                                 <router-view
                                     :layer='layer'
+                                    @layer='layer = $event'
                                 />
                             </div>
                         </div>

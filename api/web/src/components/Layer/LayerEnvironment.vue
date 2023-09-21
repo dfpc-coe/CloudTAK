@@ -2,9 +2,6 @@
 <div>
     <div class='card-header d-flex'>
         <h3 class='card-title'>Environment</h3>
-        <div class='ms-auto btn-list'>
-            <RefreshIcon @click='fetchSchema' class='cursor-pointer'/>
-        </div>
     </div>
 
     <TablerLoading v-if='loading.schema' desc='Loading Environment'/>
@@ -29,7 +26,6 @@ import {
 import Schema from './utils/Schema.vue';
 import {
     PlusIcon,
-    RefreshIcon
 } from 'vue-tabler-icons'
 
 export default {
@@ -73,7 +69,6 @@ export default {
     components: {
         Schema,
         PlusIcon,
-        RefreshIcon,
         TablerInput,
         TablerLoading,
     }

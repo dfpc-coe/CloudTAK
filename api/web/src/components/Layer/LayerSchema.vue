@@ -162,6 +162,8 @@ export default {
             });
 
             this.loading.save = false;
+
+            this.$emit('layer', layer);
         },
         fetchSchema: async function() {
             this.loading.schema = true;
