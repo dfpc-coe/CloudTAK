@@ -24,6 +24,7 @@ const router = new VueRouter.createRouter({
             component: () => import('./components/Layer.vue'),
             children: [{
                 path: '',
+                name: 'layer-default',
                 redirect: to => {
                     return { name: 'layer-deployment' };
                 }
