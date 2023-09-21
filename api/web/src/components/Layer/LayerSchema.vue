@@ -6,6 +6,7 @@
         <div class='ms-auto btn-list'>
             <PlusIcon v-if='!disabled' v-tooltip='"Manual Addition"' @click='create = true' class='cursor-pointer'/>
             <WorldDownloadIcon v-if='!disabled' v-tooltip='"Automated Schema"' @click='fetchSchema' class='cursor-pointer'/>
+            <SettingsIcon @click='disabled = false' class='cursor-pointer'/>
         </div>
     </div>
 
@@ -57,6 +58,7 @@
             </tbody>
         </table>
         <div v-if='!disabled' class="col-12 px-2 py-2 d-flex">
+            <button @click='processModelValue(layer.schema)' class='btn'>Cancel</button>
             <div class='ms-auto'>
                 <button @click='saveLayer' class='btn btn-primary'>Save</button>
             </div>
@@ -104,7 +106,7 @@ export default {
     },
     data: function() {
         return {
-            disabled: false,
+            disabled: true,
             loading: {
                 schema: false
             },
