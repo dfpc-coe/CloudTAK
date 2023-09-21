@@ -75,11 +75,11 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            if (req.body.styles.queries) {
+            if (req.body.styles && req.body.styles.queries) {
                 req.body.styles = {
                     queries: req.body.styles.queries
                 };
-            } else {
+            } else if (req.body.styles) {
                 req.body.styles = {
                     point: req.body.styles.point,
                     line: req.body.styles.line,
