@@ -24,6 +24,7 @@
         "sass-loader": "^13.0.0",
         "semver-sort": "^1.0.0",
         "vue": "^3.2.31",
+        "vue-mention": "^2.0.0-alpha.3",
         "vue-router": "^4.0.14",
         "vue-tabler-icons": "^2.16.0",
         "vue3-apexcharts": "^1.4.1",
