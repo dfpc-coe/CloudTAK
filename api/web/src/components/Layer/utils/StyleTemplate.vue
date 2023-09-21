@@ -13,7 +13,6 @@
       <template #item-{="{ item }">
         <div class="subheader mx-2 my-2 text-center cursor-pointer" v-text='item.label'></div>
       </template>
-
 </Mentionable>
 </template>
 
@@ -54,6 +53,9 @@ export default {
         }
     },
     watch: {
+        modelValue: function() {
+            this.template = this.modelValue;
+        },
         template: function() {
             this.$emit('update:modelValue', this.template);
         }
