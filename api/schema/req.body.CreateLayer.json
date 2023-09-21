@@ -5,13 +5,8 @@
         "name",
         "description",
         "enabled",
-        "enabled_styles",
-        "styles",
         "task",
-        "cron",
-        "environment",
-        "memory",
-        "timeout"
+        "cron"
     ],
     "properties": {
         "name": {
@@ -22,12 +17,6 @@
         },
         "enabled": {
             "$ref": "./layers/enabled.json"
-        },
-        "enabled_styles": {
-            "$ref": "./layers/enabled_styles.json"
-        },
-        "styles": {
-            "$ref": "./util/styles.json"
         },
         "logging": {
             "$ref": "./layers/logging.json"
@@ -46,15 +35,6 @@
         },
         "cron": {
             "$ref": "./layers/cron.json"
-        },
-        "environment": {
-            "$ref": "./layers/environment.json"
-        },
-        "memory": {
-            "$ref": "./layers/memory.json"
-        },
-        "timeout": {
-            "$ref": "./layers/timeout.json"
         },
         "schema": {
             "$ref": "./layers/schema.json"
