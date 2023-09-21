@@ -104,6 +104,8 @@
     </div>
 
     <PageFooter/>
+
+    <TaskModal v-if='taskmodal' :task='layer.task' @close='taskmodal = false' @task='taskmodal = false; layer.task = $event'/>
 </div>
 </template>
 
@@ -119,6 +121,7 @@ import {
 import {
     SettingsIcon
 } from 'vue-tabler-icons';
+import TaskModal from './Layer/utils/TaskModal.vue';
 
 export default {
     name: 'LayerEdit',
@@ -129,6 +132,8 @@ export default {
             },
             errors: {
                 name: '',
+                cron: '',
+                task: '',
                 description: '',
             },
             taskmodal: false,
@@ -136,6 +141,7 @@ export default {
                 name: '',
                 description: '',
                 cron: '',
+                task: '',
                 enabled: true,
                 logging: true,
             }
@@ -176,6 +182,9 @@ export default {
             this.$router.push('/layer');
         },
         create: async function() {
+            let fields =  ['name', 'description']
+            if (!this.$route.params.connectionid) fields.push('task', 'cron');
+
             for (const field of ['name', 'description']) {
                 this.errors[field] = !this.layer[field] ? 'Cannot be empty' : '';
             }
@@ -188,12 +197,16 @@ export default {
                 if (this.$route.params.layerid) {
                     url = window.stdurl(`/api/layer/${this.$route.params.layerid}`);
                     method = 'PATCH'
+                    const create = await window.std(url, { method, body: {
+                        name: this.layer.name,
+                        description: this.layer.description
+                    } });
                 } else {
                     url = window.stdurl(`/api/layer`);
                     method = 'POST'
+                    const create = await window.std(url, { method, body: this.layer });
                 }
 
-                const create = await window.std(url, { method, body: this.layer });
 
                 this.loading.layer = false;
 
@@ -210,7 +223,8 @@ export default {
         TablerInput,
         TablerDelete,
         TablerLoading,
-        SettingsIcon
+        SettingsIcon,
+        TaskModal,
     }
 }
 </script>
