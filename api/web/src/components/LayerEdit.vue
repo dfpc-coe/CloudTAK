@@ -57,6 +57,35 @@
                                         :error='errors.description'
                                     />
                                 </div>
+                                <div v-if='!$route.params.layerid' class="col-md-6">
+                                    <div class='d-flex'>
+                                        <label class='form-label'>Cron Expression</label>
+                                        <div class='ms-auto'>
+                                            <div class='dropdown'>
+                                                <div class="dropdown-toggle" type="button" id="dropdownCron" data-bs-toggle="dropdown" aria-expanded="false">
+                                                    <SettingsIcon width='16' height='16' class='cursor-pointer dropdown-toggle'/>
+                                                </div>
+                                                <ul class="dropdown-menu px-1 py-1" aria-labelledby="dropdownCron">
+                                                    <li class='py-1 cursor-pointer' @click='layer.cron = "rate(1 minute)"'>rate(1 minute)</li>
+                                                    <li class='py-1 cursor-pointer' @click='layer.cron = "rate(5 minutes)"'>rate(5 minutes)</li>
+                                                    <li class='py-1 cursor-pointer' @click='layer.cron = "cron(15 10 * * ? *)"'>cron(15 10 * * ? *)</li>
+                                                    <li class='py-1 cursor-pointer' @click='layer.cron = "cron(0/5 8-17 ? * MON-FRI *)"'>cron(0/5 8-17 ? * MON-FRI *)</li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <TablerInput v-model='layer.cron' :error='errors.cron' placeholder='Cron Expression'/>
+                                    <label v-if='layer.cron' v-text='cronstr(layer.cron)'/>
+                                </div>
+                                <div v-if='!$route.params.layerid' class="col-md-6">
+                                    <div class='d-flex'>
+                                        <label class='form-label'>Schedule Task</label>
+                                        <div class='ms-auto btn-list'>
+                                            <SettingsIcon @click='taskmodal = true' width='16' height='16' class='cursor-pointer'/>
+                                        </div>
+                                    </div>
+                                    <TablerInput v-model='layer.task' :error='errors.task' placeholder='Schedule Task'/>
+                                </div>
                                 <div class="col-lg-12 d-flex">
                                     <div v-if='$route.params.layerid'>
                                         <TablerDelete @delete='deleteLayer' label='Delete Layer'/>
@@ -80,12 +109,16 @@
 
 <script>
 import PageFooter from './PageFooter.vue';
+import cronstrue from 'cronstrue';
 import {
     TablerBreadCrumb,
     TablerDelete,
     TablerInput,
     TablerLoading
 } from '@tak-ps/vue-tabler';
+import {
+    SettingsIcon
+} from 'vue-tabler-icons';
 
 export default {
     name: 'LayerEdit',
@@ -98,9 +131,11 @@ export default {
                 name: '',
                 description: '',
             },
+            taskmodal: false,
             layer: {
                 name: '',
                 description: '',
+                cron: '',
                 enabled: true,
                 logging: true,
             }
@@ -114,6 +149,20 @@ export default {
         }
     },
     methods: {
+        updateTask: function() {
+            this.config.task = this.config.task.replace(/-v[0-9]+\.[0-9]+\.[0-9]+$/, `-v${this.newTaskVersion}`);
+            this.newTaskVersion = null;
+        },
+        cronstr: function(cron) {
+            if (!cron) return;
+
+            if (cron.includes('cron(')) {
+                return cronstrue.toString(cron.replace('cron(', '').replace(')', ''));
+            } else {
+                const rate = cron.replace('rate(', '').replace(')', '');
+                return `Once every ${rate}`;
+            }
+        },
         fetch: async function() {
             this.loading.layer = true;
             this.layer = await window.std(`/api/layer/${this.$route.params.layerid}`);
@@ -160,7 +209,8 @@ export default {
         TablerBreadCrumb,
         TablerInput,
         TablerDelete,
-        TablerLoading
+        TablerLoading,
+        SettingsIcon
     }
 }
 </script>
