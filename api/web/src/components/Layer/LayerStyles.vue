@@ -1,59 +1,48 @@
 <template>
 <div>
     <div class='card-header'>
-        <div class='row row-cards'>
-            <div class='col-md-4'>
-                <h3 class='card-title'>Style Overrides</h3>
-                <div class='ms-auto'>
-                    <div class='d-flex my-2'>
-                        <span class='px-2'>Enabled</span>
-                        <label class="form-check form-switch">
-                        </label>
-                    </div>
-                </div>
-            </div>
+        <h3 class='card-title'>Style Overrides</h3>
+        <div class='ms-auto btn-list'>
+            <SettingsIcon v-if='disabled' @click='disabled = false' class='cursor-pointer'/>
         </div>
     </div>
 
     <TablerLoading v-if='loading.save' desc='Saving Styles'/>
+    <TablerLoading v-else-if='loading.init' desc='Loading Styles'/>
     <div v-else-if='!enabled' class='card-body text-center'>
         <TablerToggle label='Styles Enabled' :disabled='disabled' v-model='enabled'/>
         Style Overrides are disabled
     </div>
     <template v-else>
-        <TablerToggle label='Styles Enabled' :disabled='disabled' v-model='enabled'/>
-        <div v-if='!loading.save' class='col-md-12'>
-            <div v-if='enabled' class="d-flex justify-content-center">
-                <div class="btn-list">
-                    <div class="btn-group" role="group">
-                        <input v-model='mode' type="radio" class="btn-check" name="type-toolbar" value='basic'>
-                        <label @click='mode="basic"' class="btn btn-icon px-3">
-                            <AbcIcon/> Basic
-                        </label>
-                        <input v-model='mode' type="radio" class="btn-check" name="type-toolbar" value='query'>
-                        <label @click='mode="query"' class="btn btn-icon px-3">
-                            <CodeIcon/> Query
-                        </label>
+        <template v-if='!disabled'>
+            <TablerToggle label='Styles Enabled' :disabled='disabled' v-model='enabled'/>
+            <div class='col-md-12'>
+                <div class='row d-flex mx-2'>
+                    <div v-if='enabled' class="d-flex">
+                        <div class="btn-group" role="group">
+                            <input v-model='mode' type="radio" class="btn-check" name="type-toolbar" value='basic'>
+                            <label @click='mode="basic"' class="btn btn-icon px-3">
+                                <AbcIcon/> Basic
+                            </label>
+                            <input v-model='mode' type="radio" class="btn-check" name="type-toolbar" value='query'>
+                            <label @click='mode="query"' class="btn btn-icon px-3">
+                                <CodeIcon/> Query
+                            </label>
+                        </div>
+                        <div class='ms-auto btn-list'>
+                            <template v-if='mode === "query" && !disabled'>
+                                <button @click='help("query")' class='btn'>
+                                    <HelpIcon/>
+                                </button>
+                                <button v-if='query === null' @click='newQuery' class='btn'>
+                                    <PlusIcon/>
+                                </button>
+                            </template>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-        <div v-if='!loading.save' class='col-md-4'>
-            <div class='d-flex'>
-                <div class='ms-auto'>
-                    <div class='btn-list'>
-                        <template v-if='mode === "query" && !disabled'>
-                            <button @click='help("query")' class='btn'>
-                                <HelpIcon/>
-                            </button>
-                            <button v-if='query === null' @click='newQuery' class='btn'>
-                                <PlusIcon/>
-                            </button>
-                        </template>
-                    </div>
-                </div>
-            </div>
-        </div>
+        </template>
         <template v-if='mode === "query"'>
             <template v-if='query === null && queries.length'>
                 <div class='card-body'>
@@ -78,7 +67,7 @@
                 <div class='card-body'>
                     <TablerInput :disabled='disabled' v-model='query.query' placeholder='JSONata Query' label='JSONata Query' :error='errors.query'/>
 
-                    <StylesSingle :disabled='disabled' v-model='query.styles'/>
+                    <StylesSingle :schema='layer.schema' :disabled='disabled' v-model='query.styles'/>
 
                     <div class='d-flex'>
                         <div @click='query = null' class='btn'>Cancel</div>
@@ -91,14 +80,15 @@
         </template>
         <template v-else>
             <StylesSingle :schema='layer.schema' :disabled='disabled' v-model='basic'/>
+
+            <div v-if='!disabled' class="col-12 py-2 px-2 d-flex">
+                <button @click='reload' class='btn'>Cancel</button>
+                <div class='ms-auto'>
+                    <button @click='saveLayer' class='btn btn-primary'>Save</button>
+                </div>
+            </div>
         </template>
     </template>
-    <div v-if='!disabled' class="col-12 py-2 px-2 d-flex">
-        <button @click='reload' class='btn'>Cancel</button>
-        <div class='ms-auto'>
-            <button @click='saveLayer' class='btn btn-primary'>Save</button>
-        </div>
-    </div>
 </div>
 </template>
 
@@ -133,6 +123,7 @@ export default {
             mode: 'basic',
             disabled: true,
             loading: {
+                init: true,
                 save: false
             },
             enabled: this.layer.enabled_styles,
@@ -145,15 +136,21 @@ export default {
         };
     },
     mounted: function() {
-        if (this.layer.queries) {
-            this.queries = this.layer.styles.queries;
-            this.mode = 'query';
-        } else {
-            this.basic = this.layer.styles;
-            this.mode = 'basic';
-        }
+        this.reload();
+        this.loading.init = false;
     },
     methods: {
+        reload: function() {
+            if (this.layer.queries) {
+                this.queries = this.layer.styles.queries;
+                this.mode = 'query';
+            } else {
+                this.basic = this.layer.styles;
+                this.mode = 'basic';
+            }
+
+            this.disabled = true;
+        },
         help: function(topic) {
             if (topic === "query") {
                 window.open('http://docs.jsonata.org/simple', '_blank');
