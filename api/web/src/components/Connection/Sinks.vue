@@ -21,7 +21,7 @@
 
     <Alert v-if='err' title='ETL Server Error' :err='err.message' :compact='true'/>
     <TablerLoading v-else-if='loading'/>
-    <None v-else-if='!list.sinks.length' :create='false' label='Sinks' :compact='true'/>
+    <TablerNone v-else-if='!list.sinks.length' :create='false' label='Sinks' :compact='true'/>
     <div v-else class='table-resposive'>
         <table class='table card-table table-vcenter datatable table-hover'>
             <thead>
@@ -47,9 +47,9 @@
 
 <script>
 import TableFooter from '../util/TableFooter.vue';
-import None from '../cards/None.vue';
 import Alert from '../util/Alert.vue';
 import {
+    TablerNone,
     TablerLoading
 } from '@tak-ps/vue-tabler'
 import {
@@ -106,7 +106,7 @@ export default {
         }
     },
     components: {
-        None,
+        TablerNone,
         Alert,
         PlusIcon,
         TablerLoading,

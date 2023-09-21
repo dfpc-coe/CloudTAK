@@ -48,7 +48,7 @@
             @cancel='upload = false'
             @done='fetchList'
         />
-        <None v-else-if='!list.assets.length' :create='false' :compact='true'/>
+        <TablerNone v-else-if='!list.assets.length' :create='false' :compact='true'/>
     </div>
 
     <TransformModal v-if='transform.shown' :asset='transform.asset' @close='initTransform'/>
@@ -64,10 +64,10 @@ import {
     TransformIcon,
 } from 'vue-tabler-icons'
 import Alert from '../util/Alert.vue';
-import None from '../cards/None.vue';
 import TransformModal from './TransformModal.vue';
 import Upload from '../util/Upload.vue';
 import {
+    TablerNone,
     TablerLoading,
     TablerBytes,
     TablerEpoch
@@ -141,7 +141,7 @@ export default {
         }
     },
     components: {
-        None,
+        TablerNone,
         Upload,
         Alert,
         PlusIcon,

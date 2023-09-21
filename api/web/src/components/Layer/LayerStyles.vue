@@ -8,87 +8,97 @@
                     <div class='d-flex my-2'>
                         <span class='px-2'>Enabled</span>
                         <label class="form-check form-switch">
-                            <input :disabled='disabled' v-model='global_enabled' class="form-check-input" type="checkbox">
                         </label>
-                    </div>
-                </div>
-            </div>
-            <div class='col-md-4'>
-                <div v-if='global_enabled' class="d-flex justify-content-center">
-                    <div class="btn-list">
-                        <div class="btn-group" role="group">
-                            <input v-model='mode' type="radio" class="btn-check" name="type-toolbar" value='basic'>
-                            <label @click='mode="basic"' class="btn btn-icon px-3">
-                                <AbcIcon/> Basic
-                            </label>
-                            <input v-model='mode' type="radio" class="btn-check" name="type-toolbar" value='query'>
-                            <label @click='mode="query"' class="btn btn-icon px-3">
-                                <CodeIcon/> Query
-                            </label>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class='col-md-4'>
-                <div class='d-flex'>
-                    <div class='ms-auto'>
-                        <div class='btn-list'>
-                            <template v-if='mode === "query" && !disabled'>
-                                <button @click='help("query")' class='btn'>
-                                    <HelpIcon/>
-                                </button>
-                                <button v-if='query === null' @click='newQuery' class='btn'>
-                                    <PlusIcon/>
-                                </button>
-                            </template>
-                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <div v-if='!global_enabled' class='card-body text-center'>
+    <TablerLoading v-if='loading.save' desc='Saving Styles'/>
+    <div v-else-if='!enabled' class='card-body text-center'>
+        <TablerToggle label='Styles Enabled' :disabled='disabled' v-model='enabled'/>
         Style Overrides are disabled
     </div>
-    <template v-else-if='mode === "query"'>
-        <template v-if='query === null && queries.length'>
-            <div class='card-body'>
-                <div class="list-group list-group-flush">
-                    <div :key='q_idx' v-for='(q, q_idx) in queries'>
-                        <div @click='openQuery(q_idx)' class="cursor-pointer list-group-item list-group-item-action">
-                            <div class='d-flex'>
-                                <div class='align-self-center' v-text='q.query'></div>
-                                <div class='ms-auto'>
-                                    <div v-if='!disabled' @click.stop='removeQuery(idx)' class='btn'><TrashIcon/></div>
+    <template v-else>
+        <TablerToggle label='Styles Enabled' :disabled='disabled' v-model='enabled'/>
+        <div v-if='!loading.save' class='col-md-12'>
+            <div v-if='enabled' class="d-flex justify-content-center">
+                <div class="btn-list">
+                    <div class="btn-group" role="group">
+                        <input v-model='mode' type="radio" class="btn-check" name="type-toolbar" value='basic'>
+                        <label @click='mode="basic"' class="btn btn-icon px-3">
+                            <AbcIcon/> Basic
+                        </label>
+                        <input v-model='mode' type="radio" class="btn-check" name="type-toolbar" value='query'>
+                        <label @click='mode="query"' class="btn btn-icon px-3">
+                            <CodeIcon/> Query
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div v-if='!loading.save' class='col-md-4'>
+            <div class='d-flex'>
+                <div class='ms-auto'>
+                    <div class='btn-list'>
+                        <template v-if='mode === "query" && !disabled'>
+                            <button @click='help("query")' class='btn'>
+                                <HelpIcon/>
+                            </button>
+                            <button v-if='query === null' @click='newQuery' class='btn'>
+                                <PlusIcon/>
+                            </button>
+                        </template>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <template v-if='mode === "query"'>
+            <template v-if='query === null && queries.length'>
+                <div class='card-body'>
+                    <div class="list-group list-group-flush">
+                        <div :key='q_idx' v-for='(q, q_idx) in queries'>
+                            <div @click='openQuery(q_idx)' class="cursor-pointer list-group-item list-group-item-action">
+                                <div class='d-flex'>
+                                    <div class='align-self-center' v-text='q.query'></div>
+                                    <div class='ms-auto'>
+                                        <div v-if='!disabled' @click.stop='removeQuery(idx)' class='btn'><TrashIcon/></div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        </template>
-        <template v-else-if='query === null && !queries.length'>
-            <None label='Query' :create='!disabled' @create='newQuery'/>
-        </template>
-        <template v-else-if='typeof query === "object"'>
-            <div class='card-body'>
-                <TablerInput :disabled='disabled' v-model='query.query' placeholder='JSONata Query' label='JSONata Query' :error='errors.query'/>
+            </template>
+            <template v-else-if='query === null && !queries.length'>
+                <TablerNone label='Queries' :create='!disabled' @create='newQuery'/>
+            </template>
+            <template v-else-if='typeof query === "object"'>
+                <div class='card-body'>
+                    <TablerInput :disabled='disabled' v-model='query.query' placeholder='JSONata Query' label='JSONata Query' :error='errors.query'/>
 
-                <StylesSingle :disabled='disabled' v-model='query.styles'/>
+                    <StylesSingle :disabled='disabled' v-model='query.styles'/>
 
-                <div class='d-flex'>
-                    <div @click='query = null' class='btn'>Cancel</div>
-                    <div class='ms-auto'>
-                        <div v-if='!disabled' @click='saveQuery' class='btn btn-primary'>Save Query</div>
+                    <div class='d-flex'>
+                        <div @click='query = null' class='btn'>Cancel</div>
+                        <div class='ms-auto'>
+                            <div v-if='!disabled' @click='saveQuery' class='btn btn-primary'>Save Query</div>
+                        </div>
                     </div>
                 </div>
-            </div>
+            </template>
+        </template>
+        <template v-else>
+            <StylesSingle :schema='layer.schema' :disabled='disabled' v-model='basic'/>
         </template>
     </template>
-    <template v-else>
-        <StylesSingle :schema='layer.schema' :disabled='disabled' v-model='basic'/>
-    </template>
+    <div v-if='!disabled' class="col-12 py-2 px-2 d-flex">
+        <button @click='reload' class='btn'>Cancel</button>
+        <div class='ms-auto'>
+            <button @click='saveLayer' class='btn btn-primary'>Save</button>
+        </div>
+    </div>
 </div>
 </template>
 
@@ -99,13 +109,16 @@ import {
     CodeIcon,
     PlusIcon,
     HelpIcon,
-    TrashIcon
+    TrashIcon,
+    SettingsIcon,
 } from 'vue-tabler-icons'
 import {
-    TablerInput
+    TablerInput,
+    TablerNone,
+    TablerToggle,
+    TablerLoading,
 } from '@tak-ps/vue-tabler';
 import StylesSingle from './utils/SingleStyle.vue';
-import None from '../cards/None.vue';
 
 export default {
     name: 'LayerStyles',
@@ -114,19 +127,15 @@ export default {
             type: Object,
             required: true
         },
-        enabled: {
-            type: Boolean,
-            default: false
-        },
-        disabled: {
-            type: Boolean,
-            default: false
-        }
     },
     data: function() {
         return {
             mode: 'basic',
-            global_enabled: null,
+            disabled: true,
+            loading: {
+                save: false
+            },
+            enabled: this.layer.enabled_styles,
             query: null,
             queries: [],
             basic: {},
@@ -135,14 +144,7 @@ export default {
             }
         };
     },
-    watch: {
-        global_enabled: function() {
-            this.$emit('enabled', this.global_enabled);
-        },
-    },
     mounted: function() {
-        this.global_enabled = this.enabled;
-
         if (this.layer.queries) {
             this.queries = this.layer.styles.queries;
             this.mode = 'query';
@@ -162,6 +164,29 @@ export default {
                 query: '',
                 styles: {}
             }
+        },
+        saveLayer: async function() {
+            this.loading.save = true;
+
+            let styles = {}
+            if (this.mode === 'basic') {
+                styles = this.basic;
+            } else if (this.mode === 'query') {
+                queries: this.queries
+            }
+
+            const layer = await window.std(`/api/layer/${this.$route.params.layerid}`, {
+                method: 'PATCH',
+                body: {
+                    enabled_styles: this.enabled,
+                    styles
+                }
+            });
+
+            this.disabled = true;
+            this.loading.save = false;
+
+            this.$emit('layer', layer);
         },
         saveQuery: function() {
             try {
@@ -193,14 +218,17 @@ export default {
         }
     },
     components: {
-        None,
         CodeIcon,
         AbcIcon,
         PlusIcon,
         HelpIcon,
         StylesSingle,
         TablerInput,
-        TrashIcon
+        TablerToggle,
+        TrashIcon,
+        TablerLoading,
+        TablerNone,
+        SettingsIcon,
     }
 }
 </script>

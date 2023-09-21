@@ -33,7 +33,7 @@
                     <TablerLoading/>
                 </template>
                 <template v-else>
-                    <None
+                    <TablerNone
                         v-if='!list.icons.length'
                         label='Icons'
                         @create='$router.push("/layer/new")'
@@ -63,9 +63,9 @@
 </template>
 
 <script>
-import None from './cards/None.vue';
 import PageFooter from './PageFooter.vue';
 import {
+    TablerNone,
     TablerBreadCrumb,
     TablerLoading
 } from '@tak-ps/vue-tabler';

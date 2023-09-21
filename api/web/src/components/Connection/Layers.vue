@@ -10,7 +10,7 @@
 
     <Alert v-if='err' title='ETL Server Error' :err='err.message' :compact='true'/>
     <TablerLoading v-else-if='loading'/>
-    <None v-else-if='!list.layers.length' :create='false' label='Layers' :compact='true'/>
+    <TablerNone v-else-if='!list.layers.length' :create='false' label='Layers' :compact='true'/>
     <div v-else class='table-resposive'>
         <table class='table card-table table-vcenter datatable table-hover'>
             <thead>
@@ -41,9 +41,9 @@ import {
     PlusIcon
 } from 'vue-tabler-icons';
 import {
+    TablerNone,
     TablerLoading
 } from '@tak-ps/vue-tabler'
-import None from '../cards/None.vue';
 
 export default {
     name: 'ConnectionLayers',
@@ -96,7 +96,7 @@ export default {
         }
     },
     components: {
-        None,
+        TablerNone,
         Alert,
         PlusIcon,
         TablerLoading,

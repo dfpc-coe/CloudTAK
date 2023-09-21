@@ -26,7 +26,7 @@
                         </div>
 
                         <TablerLoading v-if='loading.alerts' desc='Loading Alerts'/>
-                        <None v-else-if='!list.total' :create='false'/>
+                        <TablerNone v-else-if='!list.total' :create='false'/>
                         <div v-else>
                             <div :key='alert.id' v-for='alert in list.alerts' class='row'>
                                 <div class='row px-3 py-2'>
@@ -64,13 +64,13 @@
 
 <script>
 import PageFooter from './PageFooter.vue';
-import None from './cards/None.vue';
 import {
     TrashIcon,
     RefreshIcon,
     AlertCircleIcon,
 } from 'vue-tabler-icons';
 import {
+    TablerNone,
     TablerLoading,
     TablerBreadCrumb,
 } from '@tak-ps/vue-tabler'
@@ -116,7 +116,7 @@ export default {
         }
     },
     components: {
-        None,
+        TablerNone,
         PageFooter,
         TrashIcon,
         RefreshIcon,

@@ -45,7 +45,7 @@
                     <TablerLoading/>
                 </template>
                 <template v-else>
-                    <None
+                    <TablerNone
                         v-if='!list.basemaps.length'
                         label='BaseMaps'
                         @create='$router.push("/basemap/new")'
@@ -95,8 +95,8 @@
 import PageFooter from './PageFooter.vue';
 import BaseMapLocation from './BaseMap/Location.vue';
 import Pager from './util/Pager.vue';
-import None from './cards/None.vue';
 import {
+    TablerNone,
     TablerBreadCrumb,
     TablerLoading
 } from '@tak-ps/vue-tabler';
@@ -164,7 +164,7 @@ export default {
         }
     },
     components: {
-        None,
+        TablerNone,
         Pager,
         Share2Icon,
         SettingsIcon,

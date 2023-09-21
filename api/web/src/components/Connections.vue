@@ -45,7 +45,7 @@
                     <TablerLoading/>
                 </template>
                 <template v-else>
-                    <None
+                    <TablerNone
                         v-if='!list.connections.length'
                         label='Connections'
                         @create='$router.push("/connection/new")'
@@ -87,12 +87,12 @@
 import PageFooter from './PageFooter.vue';
 import Pager from './util/Pager.vue';
 import ConnectionStatus from './Connection/Status.vue';
-import None from './cards/None.vue';
 import timeDiff from '../timediff.js';
 import {
     TablerBreadCrumb,
     TablerMarkdown,
-    TablerLoading
+    TablerLoading,
+    TablerNone,
 } from '@tak-ps/vue-tabler';
 import {
     SettingsIcon,
@@ -143,7 +143,7 @@ export default {
         }
     },
     components: {
-        None,
+        TablerNone,
         Pager,
         SettingsIcon,
         SearchIcon,
