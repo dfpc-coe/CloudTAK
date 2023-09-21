@@ -58,7 +58,7 @@
             </tbody>
         </table>
         <div v-if='!disabled' class="col-12 px-2 py-2 d-flex">
-            <button @click='processModelValue(layer.schema)' class='btn'>Cancel</button>
+            <button @click='processModelValue(layer.schema, true)' class='btn'>Cancel</button>
             <div class='ms-auto'>
                 <button @click='saveLayer' class='btn btn-primary'>Save</button>
             </div>
@@ -176,7 +176,7 @@ export default {
             this.processModelValue(schema.schema)
             this.loading.schema = false;
         },
-        processModelValue: function(modelValue) {
+        processModelValue: function(modelValue, disable = false) {
             this.schema.splice(0, this.schema.length);
 
             if (!modelValue) return;
@@ -188,6 +188,8 @@ export default {
                     ...modelValue.properties[name]
                 });
             }
+
+            if (disable) this.disabled = true;
         }
     },
     components: {
