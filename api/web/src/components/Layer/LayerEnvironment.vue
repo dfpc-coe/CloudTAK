@@ -2,6 +2,9 @@
 <div>
     <div class='card-header d-flex'>
         <h3 class='card-title'>Environment</h3>
+        <div class='ms-auto btn-list'>
+            <SettingsIcon v-if='disabled' @click='disabled = false' class='cursor-pointer'/>
+        </div>
     </div>
 
     <TablerLoading v-if='loading.schema' desc='Loading Environment'/>
@@ -26,6 +29,7 @@ import {
 import Schema from './utils/Schema.vue';
 import {
     PlusIcon,
+    SettingsIcon,
 } from 'vue-tabler-icons'
 
 export default {
@@ -69,6 +73,7 @@ export default {
     components: {
         Schema,
         PlusIcon,
+        SettingsIcon,
         TablerInput,
         TablerLoading,
     }
