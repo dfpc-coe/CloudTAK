@@ -186,7 +186,7 @@ export default async function router(schema: any, config: Config) {
                 };
             }
 
-            if ((!req.body.connection && !req.body.data) || (req.body.connection && req.body.data)) {
+            if (req.body.connection && req.body.data) {
                 throw new Err(400, null, 'Either connection or data must be set');
             } else if (req.body.connection) {
                 req.body.data = null;

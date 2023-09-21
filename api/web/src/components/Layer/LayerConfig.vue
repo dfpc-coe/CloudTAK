@@ -8,7 +8,8 @@
         </div>
     </div>
 
-    <div class='card-body'>
+    <TablerLoading v-if='loading.save' desc='Saving Config'/>
+    <div v-else class='card-body'>
         <div class='row g-4'>
             <div class="col-md-6">
                 <div class='d-flex'>
@@ -155,7 +156,8 @@ export default {
             taskmodal: false,
             newTaskVersion: false,
             loading: {
-                version: false
+                version: false,
+                save: false
             },
             destination: 'connection',
             config: {
@@ -198,6 +200,17 @@ export default {
             else this.destination = 'data';
 
             this.disabled = true;
+        },
+        saveLayer: async function() {
+            this.loading.save = true;
+
+            const layer = await window.std(`/api/layer/${this.$route.params.layerid}`, {
+                method: 'PATCH',
+                body: this.config
+            });
+
+            this.disabled = true;
+            this.loading.save = false;
         },
         updateTask: function() {
             this.config.task = this.config.task.replace(/-v[0-9]+\.[0-9]+\.[0-9]+$/, `-v${this.newTaskVersion}`);
