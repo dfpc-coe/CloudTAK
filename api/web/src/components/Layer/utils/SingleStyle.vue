@@ -94,16 +94,14 @@
         </div>
 
         <div class='col-md-12'>
-            <TablerInput :disabled='disabled' v-model='filters[mode].remarks' label='Remarks'/>
+            <StyleTemplate :disabled='disabled' :schema='schema' v-model='filters[mode].remarks' label='Remarks'/>
         </div>
     </div>
 </div>
 </template>
 
 <script>
-import {
-    TablerInput
-} from '@tak-ps/vue-tabler'
+import StyleTemplate from './StyleTemplate.vue';
 import {
     PointIcon,
     LineIcon,
@@ -118,6 +116,10 @@ export default {
             default: function() {
                 return {};
             },
+            required: true
+        },
+        schema: {
+            type: Object,
             required: true
         },
         disabled: {
@@ -222,10 +224,10 @@ export default {
         }
     },
     components: {
-        TablerInput,
         PointIcon,
         LineIcon,
-        PolygonIcon
+        PolygonIcon,
+        StyleTemplate,
     }
 }
 </script>

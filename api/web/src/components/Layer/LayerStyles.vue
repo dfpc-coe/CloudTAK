@@ -87,7 +87,7 @@
         </template>
     </template>
     <template v-else>
-        <StylesSingle :disabled='disabled' v-model='basic'/>
+        <StylesSingle :schema='layer.schema' :disabled='disabled' v-model='basic'/>
     </template>
 </div>
 </template>
@@ -110,11 +110,8 @@ import None from '../cards/None.vue';
 export default {
     name: 'LayerStyles',
     props: {
-        modelValue: {
+        layer: {
             type: Object,
-            default: function() {
-                return {};
-            },
             required: true
         },
         enabled: {
@@ -142,33 +139,15 @@ export default {
         global_enabled: function() {
             this.$emit('enabled', this.global_enabled);
         },
-        basic: {
-            deep: true,
-            handler: function() {
-                if (this.mode === 'basic') {
-                    this.$emit('update:modelValue', this.basic);
-}
-            }
-        },
-        queries: {
-            deep: true,
-            handler: function() {
-                if (this.mode === 'query') {
-                    this.$emit('update:modelValue', {
-                        queries: this.queries
-                    });
-                }
-            }
-        }
     },
     mounted: function() {
         this.global_enabled = this.enabled;
 
-        if (this.modelValue.queries) {
-            this.queries = this.modelValue.queries;
+        if (this.layer.queries) {
+            this.queries = this.layer.styles.queries;
             this.mode = 'query';
         } else {
-            this.basic = this.modelValue;
+            this.basic = this.layer.styles;
             this.mode = 'basic';
         }
     },
