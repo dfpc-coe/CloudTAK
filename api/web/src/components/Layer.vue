@@ -62,23 +62,23 @@
                                         <span @click='$router.push(`/layer/${$route.params.layerid}/deployment`)' class="list-group-item list-group-item-action d-flex align-items-center" :class='{
                                             "active": $route.name === "layer-deployment",
                                             "cursor-pointer": $route.name !== "layer-deployment"
-                                        }'>Deployment</span>
+                                        }'><PlaneDepartureIcon/><span class='mx-3'>Deployment</span></span>
                                         <span @click='$router.push(`/layer/${$route.params.layerid}/config`)' class="list-group-item list-group-item-action d-flex align-items-center" :class='{
                                             "active": $route.name === "layer-config",
                                             "cursor-pointer": $route.name !== "layer-config"
-                                        }'>Config</span>
+                                        }'><AdjustmentsIcon/><span class='mx-3'>Config</span></span>
                                         <span @click='$router.push(`/layer/${$route.params.layerid}/environment`)' class="list-group-item list-group-item-action d-flex align-items-center" :class='{
                                             "active": $route.name === "layer-environment",
                                             "cursor-pointer": $route.name !== "layer-environment"
-                                        }'>Environment</span>
+                                        }'><BeachIcon/><span class='mx-3'>Environment</span></span>
                                         <span @click='$router.push(`/layer/${$route.params.layerid}/schema`)' class="list-group-item list-group-item-action d-flex align-items-center" :class='{
                                             "active": $route.name === "layer-schema",
                                             "cursor-pointer": $route.name !== "layer-schema"
-                                        }'>Schema</span>
+                                        }'><SchemaIcon/><span class='mx-3'>Schema</span></span>
                                         <span @click='$router.push(`/layer/${$route.params.layerid}/styles`)' class="list-group-item list-group-item-action d-flex align-items-center" :class='{
                                             "active": $route.name === "layer-styles",
                                             "cursor-pointer": $route.name !== "layer-styles"
-                                        }'>Styling</span>
+                                        }'><PaintIcon/><span class='mx-3'>Styling</span></span>
                                     </div>
                                 </div>
                             </div>
@@ -113,6 +113,11 @@ import {
     SettingsIcon,
     DatabaseIcon,
     AlertTriangleIcon,
+    PlaneDepartureIcon,
+    AdjustmentsIcon,
+    BeachIcon,
+    SchemaIcon,
+    PaintIcon,
 } from 'vue-tabler-icons'
 
 export default {
@@ -162,7 +167,12 @@ export default {
         TablerMarkdown,
         TablerLoading,
         DatabaseIcon,
-        AlertTriangleIcon
+        AlertTriangleIcon,
+        PlaneDepartureIcon,
+        AdjustmentsIcon,
+        BeachIcon,
+        SchemaIcon,
+        PaintIcon,
     }
 }
 </script>
