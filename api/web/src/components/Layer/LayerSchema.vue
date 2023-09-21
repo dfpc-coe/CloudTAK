@@ -10,6 +10,7 @@
     </div>
 
     <TablerLoading v-if='loading.schema' desc='Retrieving Schema'/>
+    <TablerLoading v-else-if='loading.save' desc='Saving Schema'/>
     <None v-else-if='!schema.length' :compact='true' label='Schema' :create='false'/>
     <div v-else class='table-responsive'>
         <table class="table table-hover card-table table-vcenter" :class='{
@@ -55,7 +56,10 @@
                 </tr>
             </tbody>
         </table>
-        <div :key='field.name' v-for='field of schema' class='col-12'>
+        <div v-if='!disabled' class="col-12 px-2 py-2 d-flex">
+            <div class='ms-auto'>
+                <button @click='saveLayer' class='btn btn-primary'>Save</button>
+            </div>
         </div>
     </div>
 
@@ -93,17 +97,14 @@ import {
 export default {
     name: 'LayerSchema',
     props: {
-        modelValue: {
+        layer: {
             type: Object,
             required: true
         },
-        disabled: {
-            type: Boolean,
-            default: false
-        }
     },
     data: function() {
         return {
+            disabled: false,
             loading: {
                 schema: false
             },
@@ -112,16 +113,8 @@ export default {
             schema: []
         };
     },
-    watch: {
-        modelValue: {
-            deep: true,
-            handler: function() {
-                this.processModelValue(this.modelValue);
-            }
-        },
-    },
     mounted: function() {
-        this.processModelValue(this.modelValue);
+        this.processModelValue(this.layer.schema);
     },
     methods: {
         edit: function(field) {
@@ -137,10 +130,10 @@ export default {
                 this.schema.push(field);
             }
             this.editField = null;
-
-            this.update();
         },
-        update: function() {
+        saveLayer: async function() {
+            this.loading.save = true;
+
             const required = []
             const properties = {};
 
@@ -156,12 +149,19 @@ export default {
                 }
             }
 
-            this.$emit('update:modelValue', {
-                type: 'object',
-                required,
-                additionalProperties: false,
-                properties
+            const layer = await window.std(`/api/layer/${this.$route.params.layerid}`, {
+                method: 'PATCH',
+                body: {
+                    schema: {
+                        type: 'object',
+                        required,
+                        additionalProperties: false,
+                        properties
+                    }
+                }
             });
+
+            this.loading.save = false;
         },
         fetchSchema: async function() {
             this.loading.schema = true;
@@ -184,8 +184,6 @@ export default {
                     ...modelValue.properties[name]
                 });
             }
-
-            this.update();
         }
     },
     components: {
