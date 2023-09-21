@@ -10,7 +10,7 @@
         </div>
     </div>
 
-    <None v-if='!list.tokens.length' :create='false' label='Tokens'/>
+    <TablerNone v-if='!list.tokens.length' :create='false' label='Tokens'/>
     <TablerLoading v-else-if='loading'/>
     <table v-else class="table card-table table-vcenter">
         <thead>
@@ -59,9 +59,9 @@ import {
 import {
     TablerEpoch,
     TablerLoading,
-    TablerInput
+    TablerInput,
+    TablerNone,
 } from '@tak-ps/vue-tabler';
-import None from '../cards/None.vue';
 
 export default {
     name: 'ProfileTokens',
@@ -117,7 +117,7 @@ export default {
         }
     },
     components: {
-        None,
+        TablerNone,
         PlusIcon,
         PencilIcon,
         CheckIcon,

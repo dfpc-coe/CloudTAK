@@ -37,18 +37,18 @@
             <Alert title='Transforms Error' :err='err.message' :compact='true'/>
         </template>
         <TablerLoading v-else-if='loading.list'/>
-        <None v-else-if='!list.list.length' :create='false' :compact='true'/>
+        <TablerNone v-else-if='!list.list.length' :create='false' :compact='true'/>
     </div>
 </div>
 </template>
 
 <script>
-import None from '../cards/None.vue';
 import Alert from '../util/Alert.vue';
 import {
     RefreshIcon
 } from 'vue-tabler-icons';
 import {
+    TablerNone,
     TablerLoading,
     TablerEpoch
 } from '@tak-ps/vue-tabler';
@@ -83,7 +83,7 @@ export default {
         }
     },
     components: {
-        None,
+        TablerNone,
         Alert,
         RefreshIcon,
         TablerLoading,

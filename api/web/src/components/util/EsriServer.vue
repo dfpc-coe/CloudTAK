@@ -21,7 +21,7 @@
     </template>
     <template v-else-if='!container'>
         <template v-if='list.length === 0'>
-            <None :compact='true' :create='false' label='Services'/>
+            <TablerNone :compact='true' :create='false' label='Services'/>
         </template>
         <template v-else>
             <div class='table-responsive'>
@@ -61,7 +61,7 @@
         </div>
 
         <template v-if='container.layers.length === 0'>
-            <None @create='createLayer' :compact='true' :create='!disabled' label='Layers'/>
+            <TablerNone @create='createLayer' :compact='true' :create='!disabled' label='Layers'/>
         </template>
         <template v-else>
             <div class='table-responsive'>
@@ -90,9 +90,9 @@
 <script>
 import {
     TablerLoading,
-    TablerDelete
+    TablerDelete,
+    TablerNone,
 } from '@tak-ps/vue-tabler';
-import None from '../cards/None.vue';
 import {
     MapIcon,
     RefreshIcon,
@@ -255,7 +255,7 @@ export default {
     components: {
         Alert,
         XIcon,
-        None,
+        TablerNone,
         MapIcon,
         FolderIcon,
         RefreshIcon,

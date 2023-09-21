@@ -4,7 +4,7 @@
         <h3 class="card-title">User Groups</h3>
     </div>
     <TablerLoading v-if='loading'/>
-    <None v-else-if='!list.data.length' :create='false'/>
+    <TablerNone v-else-if='!list.data.length' :create='false'/>
     <table v-else class="table card-table table-hover table-vcenter">
         <thead>
             <tr>
@@ -24,9 +24,9 @@
 
 <script>
 import {
+    TablerNone,
     TablerLoading
 } from '@tak-ps/vue-tabler';
-import None from '../cards/None.vue';
 
 export default {
     name: 'ProfileGroups',
@@ -49,7 +49,7 @@ export default {
         },
     },
     components: {
-        None,
+        TablerNone,
         TablerLoading
     }
 }

@@ -45,7 +45,7 @@
                     <TablerLoading/>
                 </template>
                 <template v-else>
-                    <None
+                    <TablerNone
                         v-if='!list.data.length'
                         label='Data'
                         @create='$router.push("/data/new")'
@@ -77,9 +77,9 @@
 </template>
 
 <script>
-import None from './cards/None.vue';
 import PageFooter from './PageFooter.vue';
 import {
+    TablerNone,
     TablerBreadCrumb,
     TablerMarkdown,
     TablerLoading
@@ -137,7 +137,7 @@ export default {
         }
     },
     components: {
-        None,
+        TablerNone,
         SettingsIcon,
         SearchIcon,
         PageFooter,

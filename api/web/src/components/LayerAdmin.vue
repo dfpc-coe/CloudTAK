@@ -50,7 +50,7 @@
                             </div>
                         </template>
                         <template v-else>
-                            <None
+                            <TablerNone
                                 v-if='!list.layers.length'
                                 label='Layers'
                                 @create='$router.push("/layer/new")'
@@ -94,11 +94,11 @@
 </template>
 
 <script>
-import None from './cards/None.vue';
 import TableHeader from './util/TableHeader.vue'
 import TableFooter from './util/TableFooter.vue'
 import PageFooter from './PageFooter.vue';
 import {
+    TablerNone,
     TablerBreadCrumb,
     TablerMarkdown,
     TablerLoading
@@ -177,7 +177,7 @@ export default {
         }
     },
     components: {
-        None,
+        TablerNone,
         RefreshIcon,
         CloudUploadIcon,
         PageFooter,

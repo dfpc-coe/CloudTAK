@@ -32,7 +32,7 @@
     <template v-else-if='type === "SERVER" || server'>
         <template v-if='!server'>
             <template v-if='servers.length === 0'>
-                <None :compact='true' :create='false' label='ArcGIS Servers'/>
+                <TablerNone :compact='true' :create='false' label='ArcGIS Servers'/>
             </template>
             <template v-else>
                 <div class='table-responsive'>
@@ -114,9 +114,9 @@
 import {
     TablerLoading,
     TablerInput,
-    TablerDelete
+    TablerDelete,
+    TablerNone,
 } from '@tak-ps/vue-tabler';
-import None from '../cards/None.vue';
 import {
     MapIcon,
     RefreshIcon,
@@ -305,7 +305,7 @@ export default {
         Alert,
         XIcon,
         PlusIcon,
-        None,
+        TablerNone,
         MapIcon,
         FolderIcon,
         RefreshIcon,

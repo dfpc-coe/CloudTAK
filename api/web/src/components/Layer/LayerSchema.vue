@@ -12,7 +12,7 @@
 
     <TablerLoading v-if='loading.schema' desc='Retrieving Schema'/>
     <TablerLoading v-else-if='loading.save' desc='Saving Schema'/>
-    <None v-else-if='!schema.length' :compact='true' label='Schema' :create='false'/>
+    <TablerNone v-else-if='!schema.length' :compact='true' label='Schema' :create='false'/>
     <div v-else class='table-responsive'>
         <table class="table table-hover card-table table-vcenter" :class='{
             "cursor-pointer": !disabled
@@ -76,9 +76,9 @@
 </template>
 
 <script>
-import None from '../cards/None.vue';
 import LayerSchemaModal from './utils/LayerSchemaModal.vue';
 import {
+    TablerNone,
     TablerInput,
     TablerLoading,
     TablerToggle,
@@ -193,7 +193,7 @@ export default {
         }
     },
     components: {
-        None,
+        TablerNone,
         AlphabetLatinIcon,
         Sort09Icon,
         DecimalIcon,

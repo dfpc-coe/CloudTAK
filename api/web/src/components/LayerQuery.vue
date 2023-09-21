@@ -46,7 +46,7 @@
                                 </div>
                             </div>
                         </div>
-                        <None v-else-if='!list.features.length' :create='false'/>
+                        <TablerNone v-else-if='!list.features.length' :create='false'/>
                         <div v-else class='table-responsive'>
                             <table class="table card-table table-vcenter">
                                 <thead>
@@ -81,8 +81,8 @@ import Alert from './util/Alert.vue';
 import {
     SearchIcon
 } from 'vue-tabler-icons';
-import None from './cards/None.vue';
 import {
+    TablerNone,
     TablerBreadCrumb, 
     TablerLoading
 } from '@tak-ps/vue-tabler'
@@ -122,7 +122,7 @@ export default {
         }
     },
     components: {
-        None,
+        TablerNone,
         Alert,
         PageFooter,
         SearchIcon,
