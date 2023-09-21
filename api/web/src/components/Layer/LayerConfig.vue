@@ -3,7 +3,6 @@
     <div class='card-header'>
         <h3 class='card-title'>Layer Config</h3>
         <div class='ms-auto btn-list'>
-            <RefreshIcon class='cursor-pointer'/>
             <SettingsIcon v-if='disabled' @click='disabled = false' class='cursor-pointer'/>
         </div>
     </div>
@@ -211,6 +210,8 @@ export default {
 
             this.disabled = true;
             this.loading.save = false;
+
+            this.$emit('layer', layer);
         },
         updateTask: function() {
             this.config.task = this.config.task.replace(/-v[0-9]+\.[0-9]+\.[0-9]+$/, `-v${this.newTaskVersion}`);
