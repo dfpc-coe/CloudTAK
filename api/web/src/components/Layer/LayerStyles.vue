@@ -59,11 +59,17 @@
                         </div>
                     </div>
                 </div>
+                <div v-if='!disabled' class="col-12 py-2 px-2 d-flex">
+                    <button @click='reload' class='btn'>Cancel</button>
+                    <div class='ms-auto'>
+                        <button @click='saveLayer' class='btn btn-primary'>Save</button>
+                    </div>
+                </div>
             </template>
             <template v-else-if='query === null && !queries.length'>
                 <TablerNone label='Queries' :create='!disabled' @create='newQuery'/>
             </template>
-            <template v-else-if='typeof query === "object"'>
+            <template v-else-if='query && typeof query === "object"'>
                 <div class='card-body'>
                     <TablerInput :disabled='disabled' v-model='query.query' placeholder='JSONata Query' label='JSONata Query' :error='errors.query'/>
 
@@ -141,7 +147,7 @@ export default {
     },
     methods: {
         reload: function() {
-            if (this.layer.queries) {
+            if (this.layer.styles.queries) {
                 this.queries = this.layer.styles.queries;
                 this.mode = 'query';
             } else {
@@ -169,7 +175,9 @@ export default {
             if (this.mode === 'basic') {
                 styles = this.basic;
             } else if (this.mode === 'query') {
-                queries: this.queries
+                styles = {
+                    queries: this.queries
+                }
             }
 
             const layer = await window.std(`/api/layer/${this.$route.params.layerid}`, {
