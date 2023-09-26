@@ -9,7 +9,7 @@
 
     <TablerLoading v-if='loading.save' desc='Saving Styles'/>
     <TablerLoading v-else-if='loading.init' desc='Loading Styles'/>
-    <TablerNone v-else-if='!enabled' label='Style Overrides' :create='false'/>
+    <TablerNone v-else-if='!enabled && disabled' label='Style Overrides' :create='false'/>
     <template v-else>
         <template v-if='!disabled'>
             <TablerToggle label='Styles Enabled' :disabled='disabled' v-model='enabled'/>
