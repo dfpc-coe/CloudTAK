@@ -206,9 +206,14 @@ export default {
             this.loading = true;
             try {
                 if (this.$route.params.basemapid) {
+                    const basemap = JSON.parse(JSON.stringify(this.basemap));
+
+                    if (!basemap.bounds) delete basemap.bounds;
+                    if (!basemap.center) delete basemap.center;
+
                     const create = await window.std(`/api/basemap/${this.$route.params.basemapid}`, {
                         method: 'PATCH',
-                        body: this.basemap
+                        body: basemap
                     });
                     this.$router.push(`/basemap/${create.id}`);
                 } else {
