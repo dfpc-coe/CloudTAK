@@ -12,7 +12,7 @@
 
     <TablerLoading v-if='loading.schema' desc='Retrieving Schema'/>
     <TablerLoading v-else-if='loading.save' desc='Saving Schema'/>
-    <TablerNone v-else-if='!schema.length' :compact='true' label='Schema' :create='false'/>
+    <TablerNone v-else-if='!schema.length' label='Schema' :create='false'/>
     <div v-else class='table-responsive'>
         <table class="table table-hover card-table table-vcenter" :class='{
             "cursor-pointer": !disabled
