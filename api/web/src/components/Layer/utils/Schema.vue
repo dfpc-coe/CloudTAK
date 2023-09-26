@@ -11,10 +11,20 @@
             />
         </template>
         <template v-else-if='schema.properties[key].type === "string"'>
-            <TablerInput :label='key' :disabled='disabled' v-model='data[key]' :default='schema.properties[key].default'/>
+            <TablerInput
+                :label='key'
+                :disabled='disabled'
+                v-model='data[key]'
+                :default='schema.properties[key].default'
+            />
         </template>
         <template v-else-if='schema.properties[key].type === "boolean"'>
-            <TablerToggle :label='key' :disabled='disabled' v-model='data[key]' :default='schema.properties[key].default'/>
+            <TablerToggle
+                :label='key'
+                :disabled='disabled'
+                v-model='data[key]'
+                :default='schema.properties[key].default'
+            />
         </template>
         <template v-else-if='schema.properties[key].type === "array"'>
             <div class='d-flex'>
@@ -84,7 +94,11 @@
                         </div>
                     </div>
 
-                    <Schema :schema='schema.properties[key].items' :disabled='disabled' v-model='data[key][i]' />
+                    <Schema
+                        :schema='schema.properties[key].items'
+                        :disabled='disabled'
+                        v-model='data[key][i]'
+                    />
                 </div>
             </template>
         </template>
@@ -202,6 +216,7 @@ export default {
             if (this.schema.properties[key].items.type === 'object') {
                 const obj = {};
                 this.data[key].push(obj);
+                if (!this.edit[key]) this.edit[key] = new Map();
                 this.edit[key].set(obj, true);
             } else if (this.schema.properties[key].items.type === 'array') {
                 this.data[key].push([]);
