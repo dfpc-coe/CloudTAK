@@ -67,16 +67,13 @@
                 <div v-if='errors.task' v-text='errors.task' class="invalid-feedback"></div>
             </div>
             <div class="col-md-4">
-                <label>Stale Value (ms)</label>
-                <TablerInput v-model='config.stale' :disabled='disabled' type='number' min='1' step='1'/>
+                <TablerInput v-model='config.stale' label='Stale Value (ms)' :disabled='disabled' type='number' min='1' step='1'/>
             </div>
             <div class="col-md-4">
-                <label>Memory (Mb)</label>
-                <TablerInput v-model='config.memory' :disabled='disabled' type='number' min='1' step='1'/>
+                <TablerInput v-model='config.memory' label='Memory (Mb)' :disabled='disabled' type='number' min='1' step='1'/>
             </div>
             <div class="col-md-4">
-                <label>Timeout (s)</label>
-                <TablerInput v-model='config.timeout' :disabled='disabled' type='number' min='1' step='1'/>
+                <TablerInput v-model='config.timeout' label='Timeout (s)' :disabled='disabled' type='number' min='1' step='1'/>
             </div>
             <div class="col-md-12">
                 <div class='row'>

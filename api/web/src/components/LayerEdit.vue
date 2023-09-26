@@ -57,35 +57,65 @@
                                         :error='errors.description'
                                     />
                                 </div>
-                                <div v-if='!$route.params.layerid' class="col-md-6">
-                                    <div class='d-flex'>
-                                        <label class='form-label'>Cron Expression</label>
-                                        <div class='ms-auto'>
-                                            <div class='dropdown'>
-                                                <div class="dropdown-toggle" type="button" id="dropdownCron" data-bs-toggle="dropdown" aria-expanded="false">
-                                                    <SettingsIcon width='16' height='16' class='cursor-pointer dropdown-toggle'/>
+                                <template v-if='!$route.params.layerid'>
+                                    <div class="col-md-6">
+                                        <div class='d-flex'>
+                                            <label class='form-label'>Cron Expression</label>
+                                            <div class='ms-auto'>
+                                                <div class='dropdown'>
+                                                    <div class="dropdown-toggle" type="button" id="dropdownCron" data-bs-toggle="dropdown" aria-expanded="false">
+                                                        <SettingsIcon width='16' height='16' class='cursor-pointer dropdown-toggle'/>
+                                                    </div>
+                                                    <ul class="dropdown-menu px-1 py-1" aria-labelledby="dropdownCron">
+                                                        <li class='py-1 cursor-pointer' @click='layer.cron = "rate(1 minute)"'>rate(1 minute)</li>
+                                                        <li class='py-1 cursor-pointer' @click='layer.cron = "rate(5 minutes)"'>rate(5 minutes)</li>
+                                                        <li class='py-1 cursor-pointer' @click='layer.cron = "cron(15 10 * * ? *)"'>cron(15 10 * * ? *)</li>
+                                                        <li class='py-1 cursor-pointer' @click='layer.cron = "cron(0/5 8-17 ? * MON-FRI *)"'>cron(0/5 8-17 ? * MON-FRI *)</li>
+                                                    </ul>
                                                 </div>
-                                                <ul class="dropdown-menu px-1 py-1" aria-labelledby="dropdownCron">
-                                                    <li class='py-1 cursor-pointer' @click='layer.cron = "rate(1 minute)"'>rate(1 minute)</li>
-                                                    <li class='py-1 cursor-pointer' @click='layer.cron = "rate(5 minutes)"'>rate(5 minutes)</li>
-                                                    <li class='py-1 cursor-pointer' @click='layer.cron = "cron(15 10 * * ? *)"'>cron(15 10 * * ? *)</li>
-                                                    <li class='py-1 cursor-pointer' @click='layer.cron = "cron(0/5 8-17 ? * MON-FRI *)"'>cron(0/5 8-17 ? * MON-FRI *)</li>
-                                                </ul>
+                                            </div>
+                                        </div>
+                                        <TablerInput v-model='layer.cron' :error='errors.cron' placeholder='Cron Expression'/>
+                                        <label v-if='layer.cron' v-text='cronstr(layer.cron)'/>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class='d-flex'>
+                                            <label class='form-label'>Schedule Task</label>
+                                            <div class='ms-auto btn-list'>
+                                                <SettingsIcon @click='taskmodal = true' width='16' height='16' class='cursor-pointer'/>
+                                            </div>
+                                        </div>
+                                        <TablerInput v-model='layer.task' :error='errors.task' placeholder='Schedule Task'/>
+                                    </div>
+                                    <div class="col-md-12">
+                                        <div class='row'>
+                                            <div class='col-12'>
+                                                <label>Data Destination</label>
+                                            </div>
+                                            <div class='col-12 d-flex'>
+                                                <div class='btn-group' role="group">
+                                                    <input :disabled='disabled' v-model='destination' value='connection' type="radio" class="btn-check" name="connection-toolbar" id="connection-toolbar-connection" autocomplete="off">
+                                                    <label for="connection-toolbar-connection" class="btn btn-icon"><BuildingBroadcastTowerIcon/></label>
+
+                                                    <input :disabled='disabled' v-model='destination' value='data' type="radio" class="btn-check" name="connection-toolbar" id="connection-toolbar-data" autocomplete="off">
+                                                    <label for="connection-toolbar-data" class="btn btn-icon"><DatabaseIcon/></label>
+                                                </div>
+                                                <ConnectionSelect
+                                                    v-if='destination === "connection"'
+                                                    class='mx-2'
+                                                    :disabled='disabled'
+                                                    v-model='layer.connection'
+                                                />
+                                                <DataSelect
+                                                    v-else
+                                                    class='mx-2'
+                                                    :disabled='disabled'
+                                                    v-model='layer.data'
+                                                />
                                             </div>
                                         </div>
                                     </div>
-                                    <TablerInput v-model='layer.cron' :error='errors.cron' placeholder='Cron Expression'/>
-                                    <label v-if='layer.cron' v-text='cronstr(layer.cron)'/>
-                                </div>
-                                <div v-if='!$route.params.layerid' class="col-md-6">
-                                    <div class='d-flex'>
-                                        <label class='form-label'>Schedule Task</label>
-                                        <div class='ms-auto btn-list'>
-                                            <SettingsIcon @click='taskmodal = true' width='16' height='16' class='cursor-pointer'/>
-                                        </div>
-                                    </div>
-                                    <TablerInput v-model='layer.task' :error='errors.task' placeholder='Schedule Task'/>
-                                </div>
+                                </template>
                                 <div class="col-lg-12 d-flex">
                                     <div v-if='$route.params.layerid'>
                                         <TablerDelete @delete='deleteLayer' label='Delete Layer'/>
@@ -112,6 +142,8 @@
 <script>
 import PageFooter from './PageFooter.vue';
 import cronstrue from 'cronstrue';
+import ConnectionSelect from './util/ConnectionSelect.vue';
+import DataSelect from './util/DataSelect.vue';
 import {
     TablerBreadCrumb,
     TablerDelete,
@@ -119,7 +151,9 @@ import {
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import {
-    SettingsIcon
+    SettingsIcon,
+    BuildingBroadcastTowerIcon,
+    DatabaseIcon,
 } from 'vue-tabler-icons';
 import TaskModal from './Layer/utils/TaskModal.vue';
 
@@ -137,9 +171,12 @@ export default {
                 description: '',
             },
             taskmodal: false,
+            destination: 'connection',
             layer: {
                 name: '',
                 description: '',
+                data: null,
+                connection: null,
                 cron: '',
                 task: '',
                 enabled: true,
@@ -156,7 +193,7 @@ export default {
     },
     methods: {
         updateTask: function() {
-            this.config.task = this.config.task.replace(/-v[0-9]+\.[0-9]+\.[0-9]+$/, `-v${this.newTaskVersion}`);
+            this.layer.task = this.layer.task.replace(/-v[0-9]+\.[0-9]+\.[0-9]+$/, `-v${this.newTaskVersion}`);
             this.newTaskVersion = null;
         },
         cronstr: function(cron) {
@@ -192,25 +229,33 @@ export default {
 
             this.loading.layer = true;
 
+            let layer;
+
             try {
                 let url, method;
                 if (this.$route.params.layerid) {
                     url = window.stdurl(`/api/layer/${this.$route.params.layerid}`);
                     method = 'PATCH'
-                    const create = await window.std(url, { method, body: {
+                    layer = await window.std(url, { method, body: {
                         name: this.layer.name,
                         description: this.layer.description
                     } });
                 } else {
                     url = window.stdurl(`/api/layer`);
                     method = 'POST'
-                    const create = await window.std(url, { method, body: this.layer });
+
+                    let layer = JSON.parse(JSON.stringify(this.layer));
+
+                    if (this.layer.connection) delete layer.data;
+                    if (this.layer.data) delete layer.connection;
+
+                    layer = await window.std(url, { method, body: layer });
                 }
 
 
                 this.loading.layer = false;
 
-                this.$router.push(`/layer/${create.id}`);
+                this.$router.push(`/layer/${layer.id}`);
             } catch (err) {
                 this.loading.layer = false;
                 throw err;
@@ -219,11 +264,15 @@ export default {
     },
     components: {
         PageFooter,
+        ConnectionSelect,
+        DataSelect,
         TablerBreadCrumb,
         TablerInput,
         TablerDelete,
         TablerLoading,
         SettingsIcon,
+        BuildingBroadcastTowerIcon,
+        DatabaseIcon,
         TaskModal,
     }
 }
