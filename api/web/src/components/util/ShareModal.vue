@@ -8,9 +8,9 @@
         <div class="modal-body row">
             <TablerLoading v-if='loading.groups'  desc='Loading Channels'/>
             <template v-else>
-                <div :key='group.name' v-for='group in list.data' class='col-12'>
-                    <CircleFilledIcon @click='selected.remove(group.name)' v-if='selected.has(group.name)' class='cursor-pointer'/>
-                    <CircleIcon @click='selected.add(group.name)' v-else class='cursor-pointer'/>
+                <div @click='selected.has(group.name) ? selected.delete(group.name) : selected.add(group.name)' :key='group.name' v-for='group in list.data' class='col-12 cursor-pointer'>
+                    <CircleFilledIcon  v-if='selected.has(group.name)' class='cursor-pointer'/>
+                    <CircleIcon v-else class='cursor-pointer'/>
                     <span v-text='group.name' class='mx-2'/>
                 </div>
                 <div class="col-12 mt-3">
