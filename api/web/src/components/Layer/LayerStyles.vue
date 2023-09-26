@@ -9,10 +9,7 @@
 
     <TablerLoading v-if='loading.save' desc='Saving Styles'/>
     <TablerLoading v-else-if='loading.init' desc='Loading Styles'/>
-    <div v-else-if='!enabled' class='card-body text-center'>
-        <TablerToggle label='Styles Enabled' :disabled='disabled' v-model='enabled'/>
-        Style Overrides are disabled
-    </div>
+    <TablerNone v-else-if='!enabled' label='Style Overrides' :create='false'/>
     <template v-else>
         <template v-if='!disabled'>
             <TablerToggle label='Styles Enabled' :disabled='disabled' v-model='enabled'/>
