@@ -115,6 +115,11 @@ export default {
             schema: []
         };
     },
+    watch: {
+        layer: function() {
+            this.processModelValue(this.layer.schema);
+        }
+    },
     mounted: function() {
         this.processModelValue(this.layer.schema);
     },
