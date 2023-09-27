@@ -2,6 +2,7 @@ import jsonata from 'jsonata';
 import { Feature } from 'geojson';
 // @ts-ignore
 import Layer from './types/layer.js';
+import handlebars from 'handlebars';
 
 /**
  * Apply layer styling to CoT Messages
@@ -53,6 +54,12 @@ export default class Style {
             Object.assign(feature.properties, style.line);
         } else if (feature.geometry.type === 'Polygon' && style.polygon) {
             Object.assign(feature.properties, style.polygon);
+        }
+
+        // Properties that support Templating
+        for (const prop of ['remarks', 'callsign']) {
+            if (!feature.properties[prop]) continue;
+            feature.properties[prop] = handlebars.compile(feature.properties[prop])(feature.properties);
         }
     }
 }

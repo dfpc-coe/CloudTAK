@@ -238,7 +238,9 @@ export default {
                     method = 'PATCH'
                     layer = await window.std(url, { method, body: {
                         name: this.layer.name,
-                        description: this.layer.description
+                        description: this.layer.description,
+                        enabled: this.layer.enabled,
+                        logging: this.layer.logging,
                     } });
                 } else {
                     url = window.stdurl(`/api/layer`);
