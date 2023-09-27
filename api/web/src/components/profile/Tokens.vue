@@ -12,40 +12,42 @@
 
     <TablerNone v-if='!list.tokens.length' :create='false' label='Tokens'/>
     <TablerLoading v-else-if='loading'/>
-    <table v-else class="table card-table table-vcenter">
-        <thead>
-            <tr>
-                <th>Token Name</th>
-                <th>Created</th>
-                <th>Updated</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr :key='token.id' v-for='(token, tokenit) in list.tokens'>
-                <td>
-                    <template v-if='token._edit'>
-                        <TablerInput v-on:keyup.enter='saveToken(token, tokenit)' v-model='token.name'/>
-                    </template>
-                    <template v-else>
-                        <span v-text='token.name'/>
-                    </template>
-                </td>
-                <td><TablerEpoch :date='token.created'/></td>
-                <td>
-                    <div class='d-flex'>
-                        <TablerEpoch :date='token.updated'/>
-                        <div v-if='token._edit' class='ms-auto btn-list'>
-                            <CheckIcon @click='saveToken(token, tokenit)' class='cursor-pointer'/>
-                            <TrashIcon @click='deleteToken(token, tokenit)' class='cursor-pointer'/>
+    <div v-else class="table-responsive">
+        <table class="table card-table table-vcenter">
+            <thead>
+                <tr>
+                    <th>Token Name</th>
+                    <th>Created</th>
+                    <th>Updated</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr :key='token.id' v-for='(token, tokenit) in list.tokens'>
+                    <td>
+                        <template v-if='token._edit'>
+                            <TablerInput v-on:keyup.enter='saveToken(token, tokenit)' v-model='token.name'/>
+                        </template>
+                        <template v-else>
+                            <span v-text='token.name'/>
+                        </template>
+                    </td>
+                    <td><TablerEpoch :date='token.created'/></td>
+                    <td>
+                        <div class='d-flex'>
+                            <TablerEpoch :date='token.updated'/>
+                            <div v-if='token._edit' class='ms-auto btn-list'>
+                                <CheckIcon @click='saveToken(token, tokenit)' class='cursor-pointer'/>
+                                <TrashIcon @click='deleteToken(token, tokenit)' class='cursor-pointer'/>
+                            </div>
+                            <div v-else class='ms-auto btn-list'>
+                                <PencilIcon @click='token._edit = true' class='cursor-pointer'/>
+                            </div>
                         </div>
-                        <div v-else class='ms-auto btn-list'>
-                            <PencilIcon @click='token._edit = true' class='cursor-pointer'/>
-                        </div>
-                    </div>
-                </td>
-            </tr>
-        </tbody>
-    </table>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
 </div>
 </template>
 

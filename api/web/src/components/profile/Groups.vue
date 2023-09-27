@@ -5,20 +5,22 @@
     </div>
     <TablerLoading v-if='loading'/>
     <TablerNone v-else-if='!list.data.length' :create='false'/>
-    <table v-else class="table card-table table-hover table-vcenter">
-        <thead>
-            <tr>
-                <th>Group Name</th>
-                <th>Description</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr :key='group.name' v-for='group in list.data'>
-                <td v-text='group.name'></td>
-                <td v-text='group.description'></td>
-            </tr>
-        </tbody>
-    </table>
+    <div v-else class='table-responsive'>
+        <table class="table card-table table-hover table-vcenter">
+            <thead>
+                <tr>
+                    <th>Group Name</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr :key='group.name' v-for='group in list.data'>
+                    <td v-text='group.name'></td>
+                    <td v-text='group.description'></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
 </div>
 </template>
 

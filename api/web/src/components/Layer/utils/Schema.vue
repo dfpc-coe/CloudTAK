@@ -37,6 +37,7 @@
             </div>
 
             <template v-if='schema.properties[key].display === "table" && schema.properties[key].items.properties'>
+                <div class='table-responsive'>
                 <table class="table card-table table-vcenter border rounded">
                     <thead>
                         <tr>
@@ -84,6 +85,7 @@
                         </tr>
                     </tbody>
                 </table>
+                </div>
             </template>
             <template v-else>
                 <div :key='i' v-for='(arr, i) of data[key]' class='border rounded my-2 py-2 mx-2 px-2'>

@@ -7,7 +7,7 @@
         </div>
     </div>
 
-    <div v-if='!loading.list && list.list.length'>
+    <div v-if='!loading.list && list.list.length' class='table-responsive'>
         <table class="table table-vcenter card-table table-hover">
             <thead>
                 <tr>

@@ -9,7 +9,7 @@
         </div>
     </div>
 
-    <div v-if='!err && !upload && !loading.list && list.assets.length'>
+    <div v-if='!err && !upload && !loading.list && list.assets.length' class='table-responsive'>
         <table class="table table-vcenter card-table">
             <thead>
                 <tr>
