@@ -49,10 +49,19 @@ export default class Style {
 
     #by_geom(style: any, feature: Feature) {
         if (feature.geometry.type === 'Point' && style.point) {
+            if (!style.point.remarks) delete style.point.remarks;
+            if (!style.point.remarks) delete style.point.callsign;
+
             Object.assign(feature.properties, style.point);
         } else if (feature.geometry.type === 'LineString' && style.line) {
+            if (!style.point.remarks) delete style.line.remarks;
+            if (!style.point.remarks) delete style.line.callsign;
+
             Object.assign(feature.properties, style.line);
         } else if (feature.geometry.type === 'Polygon' && style.polygon) {
+            if (!style.point.remarks) delete style.polygon.remarks;
+            if (!style.point.remarks) delete style.polygon.callsign;
+
             Object.assign(feature.properties, style.polygon);
         }
 

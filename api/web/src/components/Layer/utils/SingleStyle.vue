@@ -1,6 +1,6 @@
 <template>
 <div class='card-body'>
-    <div class='row'>
+    <div class='row g-2'>
         <div class="d-flex justify-content-center mb-4">
             <div class="btn-list">
                 <div class="btn-group" role="group">
@@ -94,7 +94,21 @@
         </div>
 
         <div class='col-md-12'>
-            <StyleTemplate :disabled='disabled' :schema='schema' v-model='filters[mode].remarks' label='Remarks'/>
+            <StyleTemplate
+                :disabled='disabled'
+                :schema='schema'
+                v-model='filters[mode].callsign'
+                label='Callsign'
+            />
+        </div>
+
+        <div class='col-md-12'>
+            <StyleTemplate
+                :disabled='disabled'
+                :schema='schema'
+                v-model='filters[mode].remarks'
+                label='Remarks'
+            />
         </div>
     </div>
 </div>
@@ -133,14 +147,16 @@ export default {
             filters: {
                 point: {
                     color: 'red',
-                    remarks: ''
+                    remarks: '',
+                    callsign: ''
                 },
                 line: {
                     stroke: 'red',
                     'stroke-style': 'solid',
                     'stroke-opacity': 256,
                     'stroke-width': 3,
-                    remarks: ''
+                    remarks: '',
+                    callsign: ''
                 },
                 polygon: {
                     stroke: 'red',
@@ -149,7 +165,8 @@ export default {
                     'stroke-width': 3,
                     'fill': 'red',
                     'fill-opacity': 256,
-                    remarks: ''
+                    remarks: '',
+                    callsign: ''
                 }
             }
         };
