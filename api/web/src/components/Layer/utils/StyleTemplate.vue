@@ -4,7 +4,12 @@
   :items="schemalist"
   offset="6"
 >
-    <TablerInput :label='label' :disabled='disabled' v-model='template'/>
+    <TablerInput
+        :label='label'
+        :disabled='disabled'
+        :description='`Override and/or template the ${label} field of the CoT message. If you do not wish to override the CoT property, leave this field blank.`'
+        v-model='template'
+    />
 
     <template #no-result>
         <div class="subheader mx-2 my-2 text-center">No Results</div>
