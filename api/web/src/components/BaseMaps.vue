@@ -74,7 +74,7 @@
                         </div>
 
                         <div class="col-lg-12">
-                            <Pager v-if='list.total > paging.limit' @page='paging.page = $event' :current='paging.page'  :total='list.total' :limit='paging.limit'/>
+                            <TablerPager v-if='list.total > paging.limit' @page='paging.page = $event' :current='paging.page'  :total='list.total' :limit='paging.limit'/>
                         </div>
                     </template>
                 </template>
@@ -94,9 +94,9 @@
 <script>
 import PageFooter from './PageFooter.vue';
 import BaseMapLocation from './BaseMap/Location.vue';
-import Pager from './util/Pager.vue';
 import {
     TablerNone,
+    TablerPager,
     TablerBreadCrumb,
     TablerLoading
 } from '@tak-ps/vue-tabler';
@@ -165,7 +165,7 @@ export default {
     },
     components: {
         TablerNone,
-        Pager,
+        TablerPager,
         Share2Icon,
         SettingsIcon,
         SearchIcon,

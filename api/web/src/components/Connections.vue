@@ -72,7 +72,7 @@
                         </div>
 
                         <div class="col-lg-12">
-                            <Pager v-if='list.total > paging.limit' @page='paging.page = $event' :current='paging.page'  :total='list.total' :limit='paging.limit'/>
+                            <TablerPager v-if='list.total > paging.limit' @page='paging.page = $event' :current='paging.page'  :total='list.total' :limit='paging.limit'/>
                         </div>
                     </template>
                 </template>
@@ -85,10 +85,10 @@
 
 <script>
 import PageFooter from './PageFooter.vue';
-import Pager from './util/Pager.vue';
 import ConnectionStatus from './Connection/Status.vue';
 import timeDiff from '../timediff.js';
 import {
+    TablerPager,
     TablerBreadCrumb,
     TablerMarkdown,
     TablerLoading,
@@ -144,7 +144,7 @@ export default {
     },
     components: {
         TablerNone,
-        Pager,
+        TablerPager,
         SettingsIcon,
         SearchIcon,
         PageFooter,
