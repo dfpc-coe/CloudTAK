@@ -80,18 +80,13 @@
                                 <span class="nav-link-title">Basemaps</span>
                             </a>
                         </li>
-                        <li class="nav-item dropdown">
-                            <a id='util-dropdown' class="nav-link dropdown-toggle cursor-pointer" data-bs-toggle="dropdown" aria-expanded="false">
+                        <li class="nav-item">
+                            <a class="nav-link cursor-pointer" @click='$router.push("/icon")'>
                                 <span class="nav-link-icon d-md-none d-lg-inline-block">
-                                    <ShovelIcon/>
+                                    <PhotoIcon/>
                                 </span>
-                                <span class="nav-link-title">Utils</span>
+                                <span class="nav-link-title">Icons</span>
                             </a>
-                            <div class="dropdown-menu" aria-labelledby="util-dropdown">
-                                <a @click='$router.push("/icon")' class="dropdown-item cursor-pointer">
-                                    Icon Explorer
-                                </a>
-                            </div>
                         </li>
                     </ul>
 
@@ -127,11 +122,11 @@ import {
     LogoutIcon,
     UserIcon,
     MapIcon,
+    PhotoIcon,
     NetworkIcon,
     DatabaseIcon,
     BuildingBroadcastTowerIcon,
     AdjustmentsIcon,
-    ShovelIcon
 } from 'vue-tabler-icons';
 import {
     TablerError
@@ -207,7 +202,7 @@ export default {
         TablerError,
         BuildingBroadcastTowerIcon,
         AdjustmentsIcon,
-        ShovelIcon,
+        PhotoIcon,
     }
 }
 </script>
