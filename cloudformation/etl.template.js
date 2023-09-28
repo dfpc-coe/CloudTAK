@@ -10,23 +10,14 @@ import PMTiles from './lib/pmtiles.js';
 import Stats from './lib/stats.js';
 import Dynamo from './lib/dynamo.js';
 import Alarms from './lib/alarms.js';
+import Notify from './lib/notify.js';
 import {
     ELB as ELBAlarms,
     RDS as RDSAlarms
 } from '@openaddresses/batch-alarms';
 
 export default cf.merge(
-    S3,
-    DB,
-    API,
-    KMS,
-    Batch,
-    Hooks,
-    Signing,
-    Dynamo,
-    Alarms,
-    PMTiles,
-    Stats,
+    S3, DB, API, KMS, Batch, Hooks, Signing, Dynamo, Alarms, PMTiles, Stats,
     {
         Description: 'Template for @tak-ps/etl',
         Parameters: {
