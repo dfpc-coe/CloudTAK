@@ -105,7 +105,7 @@ export default {
         }
     },
     components: {
-        None,
+        TablerNone,
         SearchIcon,
         PageFooter,
         TablerBreadCrumb,
