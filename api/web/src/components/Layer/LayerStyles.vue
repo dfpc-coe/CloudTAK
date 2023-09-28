@@ -40,22 +40,51 @@
                 </div>
             </div>
         </template>
-        <template v-if='mode === "query"'>
-            <template v-if='query === null && queries.length'>
-                <div class='card-body'>
-                    <div class="list-group list-group-flush">
-                        <div :key='q_idx' v-for='(q, q_idx) in queries'>
-                            <div @click='openQuery(q_idx)' class="cursor-pointer list-group-item list-group-item-action">
-                                <div class='d-flex'>
-                                    <div class='align-self-center' v-text='q.query'></div>
-                                    <div class='ms-auto'>
-                                        <div v-if='!disabled' @click.stop='removeQuery(idx)' class='btn'><TrashIcon/></div>
+        <template v-if='enabled'>
+            <template v-if='mode === "query"'>
+                <template v-if='query === null && queries.length'>
+                    <div class='card-body'>
+                        <div class="list-group list-group-flush">
+                            <div :key='q_idx' v-for='(q, q_idx) in queries'>
+                                <div @click='openQuery(q_idx)' class="cursor-pointer list-group-item list-group-item-action">
+                                    <div class='d-flex'>
+                                        <div class='align-self-center' v-text='q.query'></div>
+                                        <div class='ms-auto'>
+                                            <div v-if='!disabled' @click.stop='removeQuery(idx)' class='btn'><TrashIcon/></div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
+                    <div v-if='!disabled' class="col-12 py-2 px-2 d-flex">
+                        <button @click='reload' class='btn'>Cancel</button>
+                        <div class='ms-auto'>
+                            <button @click='saveLayer' class='btn btn-primary'>Save</button>
+                        </div>
+                    </div>
+                </template>
+                <template v-else-if='query === null && !queries.length'>
+                    <TablerNone label='Queries' :create='!disabled' @create='newQuery'/>
+                </template>
+                <template v-else-if='query && typeof query === "object"'>
+                    <div class='card-body'>
+                        <TablerInput :disabled='disabled' v-model='query.query' placeholder='JSONata Query' label='JSONata Query' :error='errors.query'/>
+
+                        <StylesSingle :schema='layer.schema' :disabled='disabled' v-model='query.styles'/>
+
+                        <div class='d-flex'>
+                            <div @click='query = null' class='btn'>Cancel</div>
+                            <div class='ms-auto'>
+                                <div v-if='!disabled' @click='saveQuery' class='btn btn-primary'>Save Query</div>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </template>
+            <template v-else>
+                <StylesSingle :schema='layer.schema' :disabled='disabled' v-model='basic'/>
+
                 <div v-if='!disabled' class="col-12 py-2 px-2 d-flex">
                     <button @click='reload' class='btn'>Cancel</button>
                     <div class='ms-auto'>
@@ -63,33 +92,6 @@
                     </div>
                 </div>
             </template>
-            <template v-else-if='query === null && !queries.length'>
-                <TablerNone label='Queries' :create='!disabled' @create='newQuery'/>
-            </template>
-            <template v-else-if='query && typeof query === "object"'>
-                <div class='card-body'>
-                    <TablerInput :disabled='disabled' v-model='query.query' placeholder='JSONata Query' label='JSONata Query' :error='errors.query'/>
-
-                    <StylesSingle :schema='layer.schema' :disabled='disabled' v-model='query.styles'/>
-
-                    <div class='d-flex'>
-                        <div @click='query = null' class='btn'>Cancel</div>
-                        <div class='ms-auto'>
-                            <div v-if='!disabled' @click='saveQuery' class='btn btn-primary'>Save Query</div>
-                        </div>
-                    </div>
-                </div>
-            </template>
-        </template>
-        <template v-else>
-            <StylesSingle :schema='layer.schema' :disabled='disabled' v-model='basic'/>
-
-            <div v-if='!disabled' class="col-12 py-2 px-2 d-flex">
-                <button @click='reload' class='btn'>Cancel</button>
-                <div class='ms-auto'>
-                    <button @click='saveLayer' class='btn btn-primary'>Save</button>
-                </div>
-            </div>
         </template>
     </template>
 </div>
