@@ -57,6 +57,8 @@
                                 </div>
 
                                 <BaseMapLocation :basemap='basemap'/>
+
+                                <pre class='mt-3' v-text='basemap.url'/>
                             </div>
                             <div class="card-footer">
                                 <span v-text='`Last Updated: ${timeDiff(basemap.updated)}`'/>
