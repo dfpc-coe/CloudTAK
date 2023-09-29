@@ -38,14 +38,14 @@
             />
         </div>
 
-        <template v-if='mode === "Point"'>
+        <template v-if='mode === "point"'>
             <div class='col-md-12'>
                 <TablerColour label='Point Color' v-model='filters[mode].properties.color' :disabled='disabled || filters[mode].enabled.color'>
                     <TablerToggle v-model='filters[mode].enabled.color' label='Enabled'/>
                 </TablerColour>
             </div>
         </template>
-        <template v-else-if='mode !== "Point"'>
+        <template v-else-if='mode !== "point"'>
             <div class='col-md-12'>
                 <TablerColour label='Line Color' v-model='filters[mode].properties.stroke' :disabled='disabled || filters[mode].enabled.stroke'>
                     <TablerToggle v-model='filters[mode].enabled.stroke' label='Enabled'/>
@@ -68,7 +68,7 @@
                 </TablerRange>
             </div>
         </template>
-        <template v-else-if='mode === "polygon"'>
+        <template v-if='mode === "polygon"'>
             <div class='col-md-12'>
                 <TablerColour label='Fill Color' v-model='filters[mode].properties.fill' :disabled='disabled || filters[mode].enabled.fill'>
                     <TablerToggle v-model='filters[mode].enabled.fill' label='Enabled'/>
