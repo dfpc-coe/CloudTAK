@@ -21,37 +21,15 @@
         </div>
 
         <div v-if='filters[mode].properties.color !== undefined' class='col-md-12'>
-            <label class="form-label">Point Color</label>
-            <div class="row g-2">
-                <div :key='color' v-for='color in [
-                    "dark", "white", "blue", "azure", "indigo", "purple", "pink", "red", "orange", "yellow", "lime"
-                ]'
-                class="col-auto">
-                    <label class="form-colorinput">
-                        <input :disabled='disabled' v-model='filters[mode].properties.color' :value='color' type="radio" class="form-colorinput-input">
-                        <span class="form-colorinput-color bg-dark" :class='[
-                            `bg-${color}`
-                        ]'></span>
-                    </label>
-                </div>
-            </div>
+            <TablerColour label='Point Color' v-model='filters[mode].properties.color' :disabled='disabled || filters[mode].enabled.color' :default='color'>
+                <TablerToggle v-model='filters[mode].enabled.color' label='Enabled'/>
+            </TablerColour>
         </div>
 
         <div v-if='filters[mode].properties.stroke !== undefined' class='col-md-12'>
-            <label class="form-label">Line Color</label>
-            <div class="row g-2">
-                <div :key='color' v-for='color in [
-                    "dark", "white", "blue", "azure", "indigo", "purple", "pink", "red", "orange", "yellow", "lime"
-                ]'
-                class="col-auto">
-                    <label class="form-colorinput">
-                        <input :disabled='disabled' v-model='filters[mode].properties.stroke' :value='color' type="radio" class="form-colorinput-input">
-                        <span class="form-colorinput-color bg-dark" :class='[
-                            `bg-${color}`
-                        ]'></span>
-                    </label>
-                </div>
-            </div>
+            <TablerColour label='Line Color' v-model='filters[mode].properties.stroke' :disabled='disabled || filters[mode].enabled.stroke' :default='color'>
+                <TablerToggle v-model='filters[mode].enabled.stroke' label='Enabled'/>
+            </TablerColour>
         </div>
 
         <div v-if='filters[mode].properties["stroke-style"] !== undefined' class='col-md-12'>
@@ -71,20 +49,9 @@
         </div>
 
         <div v-if='filters[mode].properties.fill !== undefined' class='col-md-12'>
-            <label class="form-label">Fill Color</label>
-            <div class="row g-2">
-                <div :key='color' v-for='color in [
-                    "dark", "white", "blue", "azure", "indigo", "purple", "pink", "red", "orange", "yellow", "lime"
-                ]'
-                class="col-auto">
-                    <label class="form-colorinput">
-                        <input :disabled='disabled' v-model='filters[mode].properties.fill' :value='color' type="radio" class="form-colorinput-input">
-                        <span class="form-colorinput-color bg-dark" :class='[
-                            `bg-${color}`
-                        ]'></span>
-                    </label>
-                </div>
-            </div>
+            <TablerColour label='Fill Color' v-model='filters[mode].properties.fill' :disabled='disabled || filters[mode].enabled.fill' :default='color'>
+                <TablerToggle v-model='filters[mode].enabled.fill' label='Enabled'/>
+            </TablerColour>
         </div>
         <div v-if='filters[mode].properties["fill-opacity"] !== undefined' class='col-md-12'>
             <TablerRange label='Fill Opacity' :disabled='disabled' v-model='filters[mode].properties["fill-opacity"]' :min="0" :max="256" :step="1"/>
@@ -120,6 +87,7 @@ import {
 } from 'vue-tabler-icons'
 import {
     TablerRange,
+    TablerColour,
     TablerToggle,
     TablerEnum
 } from '@tak-ps/vue-tabler';
@@ -214,24 +182,6 @@ export default {
         for (const key in this.modelValue) {
             const style = JSON.parse(JSON.stringify(this.modelValue[key]));
 
-            const colors = {
-                '#1d273b': 'dark',
-                '#ffffff': 'white',
-                '#206bc4': 'blue',
-                '#4299e1': 'azure',
-                '#4263eb': 'indigo',
-                '#ae3ec9': 'purple',
-                '#d6336c': 'pink',
-                '#d63939': 'red',
-                '#f76707': 'orange',
-                '#f59f00': 'yellow',
-                '#74b816': 'lime'
-            };
-
-            for (const color of ['color', 'stroke', 'fill']) {
-                if (style[color]) style[color] = colors[style[color]];
-            }
-
             Object.assign(this.filters[key], style);
         }
 
@@ -241,29 +191,9 @@ export default {
         format: function() {
             const styles = JSON.parse(JSON.stringify(this.filters));
             if (styles) {
-                const colors = {
-                    dark: '#1d273b',
-                    white: '#ffffff',
-                    blue: '#206bc4',
-                    azure: '#4299e1',
-                    indigo: '#4263eb',
-                    purple: '#ae3ec9',
-                    pink: '#d6336c',
-                    red: '#d63939',
-                    orange: '#f76707',
-                    yellow: '#f59f00',
-                    lime: '#74b816'
-                };
-
                 for (const key in styles) {
                     for (const intkey of ['fill-opacity', 'stroke-width', 'stroke-opacity']) {
                         if (styles[key][intkey]) styles[key][intkey] = parseInt(styles[key][intkey])
-                    }
-
-                    for (const color of ['color', 'stroke', 'fill']) {
-                        if (styles[key][color]) {
-                            styles[key][color] = colors[styles[key][color]];
-                        }
                     }
                 }
             }
@@ -278,6 +208,7 @@ export default {
         TablerToggle,
         TablerRange,
         TablerEnum,
+        TablerColour,
         StyleTemplate,
     }
 }
