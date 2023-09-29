@@ -1,11 +1,128 @@
 <template>
-<div class='col-12'>
-    SELECT
+<div class='row'>
+    <div class='col-12 d-flex my-1'>
+        <span v-if='description' class='align-self-center'>
+            <InfoSquareIcon @click='help = true' size='20' class='cursor-pointer'/>
+            <TablerHelp v-if='help' @click='help = false' :label='label || placeholder' :description='description'/>
+        </span>
+        <div class="align-self-center px-2" :class='{ "required": required }' >Icon Select</div>
+        <div class='ms-auto align-self-center'><slot/></div>
+    </div>
+
+    <template v-if='loading'>
+        <TablerLoading/>
+    </template>
+    <template v-else>
+        <div class='d-flex'>
+            <template v-if='selected.id'>
+                <div @click='$router.push(`/connection/${selected.id}`)' class='d-flex cursor-pointer'>
+                    <span class='mt-2' v-text='selected.name'/>
+                </div>
+            </template>
+            <template v-else>
+                <span class='text-center'>No Icon Selected</span>
+            </template>
+
+            <div v-if='!disabled' class='ms-auto'>
+                <div class="dropdown">
+                    <div class="dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+                        <SettingsIcon
+                            class='cursor-pointer dropdown-toggle'
+                        />
+                    </div>
+                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                        <div class='m-1'>
+                            <div class='table-resposive'>
+                                <table class='table table-hover'>
+                                    <thead>
+                                        <tr>
+                                            <th>(Status) Name</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class='table-tbody'>
+                                        <tr @click='selected = connection' :key='connection.id' v-for='connection of connections.connections' class='cursor-pointer'>
+                                            <td>
+                                                <div class='d-flex'>
+                                                    <span class='mt-2' v-text='connection.name'/>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </template>
 </div>
 </template>
 
 <script>
+import {
+    InfoSquareIcon,
+    SettingsIcon
+} from 'vue-tabler-icons';
+import {
+    TablerHelp,
+    TablerLoading
+} from '@tak-ps/vue-tabler';
+
 export default {
-    name: 'IconSelect'
-}
+    name: 'ConnectionSelect',
+    props: {
+        modelValue: Number,
+        required: {
+            type: Boolean,
+            default: false
+        },
+        disabled: {
+            type: Boolean,
+            default: false
+        }
+    },
+    data: function() {
+        return {
+            help: false,
+            loading: true,
+            selected: {
+                id: '',
+                status: 'dead',
+                name: ''
+            },
+            connections: {
+                total: 0,
+                connections: []
+            }
+        }
+    },
+    watch: {
+        selected: function() {
+            this.$emit('update:modelValue', this.selected.id);
+        },
+        modelValue: function() {
+            if (this.modelValue) this.fetch();
+        }
+    },
+    mounted: async function() {
+        if (this.modelValue) await this.fetch();
+        await this.listConnections();
+        this.loading = false;
+    },
+    methods: {
+        fetch: async function() {
+            this.selected = await window.std(`/api/connection/${this.modelValue}`);
+        },
+        listConnections: async function() {
+            this.connections = await window.std('/api/connection');
+        },
+    },
+    components: {
+        TablerHelp,
+        InfoSquareIcon,
+        SettingsIcon,
+        TablerLoading
+    }
+};
 </script>
