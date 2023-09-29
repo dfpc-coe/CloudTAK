@@ -20,43 +20,6 @@
             </div>
         </div>
 
-        <div v-if='filters[mode].properties.color !== undefined' class='col-md-12'>
-            <TablerColour label='Point Color' v-model='filters[mode].properties.color' :disabled='disabled || filters[mode].enabled.color' :default='color'>
-                <TablerToggle v-model='filters[mode].enabled.color' label='Enabled'/>
-            </TablerColour>
-        </div>
-
-        <div v-if='filters[mode].properties.stroke !== undefined' class='col-md-12'>
-            <TablerColour label='Line Color' v-model='filters[mode].properties.stroke' :disabled='disabled || filters[mode].enabled.stroke' :default='color'>
-                <TablerToggle v-model='filters[mode].enabled.stroke' label='Enabled'/>
-            </TablerColour>
-        </div>
-
-        <div v-if='filters[mode].properties["stroke-style"] !== undefined' class='col-md-12'>
-            <TablerEnum label='Line Style' :disabled='disabled || !filters[mode].enabled["stroke-style"]' v-model='filters[mode].properties["stroke-style"]' :options='["Solid", "Dashed", "Dotted", "Outlined"]'>
-                <TablerToggle v-model='filters[mode].enabled["stroke-style"]' label='Enabled'/>
-            </TablerEnum>
-        </div>
-        <div v-if='filters[mode].properties["stroke-width"] !== undefined' class='col-md-12'>
-            <TablerRange label='Line Thickness' :disabled='disabled || !filters[mode].enabled["stroke-width"]' v-model='filters[mode].properties["stroke-width"]' :min="1" :max="6" :step="1">
-                <TablerToggle v-model='filters[mode].enabled["stroke-width"]' label='Enabled'/>
-            </TablerRange>
-        </div>
-        <div v-if='filters[mode].properties["stroke-opacity"] !== undefined' class='col-md-12'>
-            <TablerRange label='Line Opacity' :disabled='disabled || !filters[mode].enabled["stroke-opacity"]' v-model='filters[mode].properties["stroke-opacity"]' :min="0" :max="256" :step="1">
-                <TablerToggle v-model='filters[mode].enabled["stroke-opacity"]' label='Enabled'/>
-            </TablerRange>
-        </div>
-
-        <div v-if='filters[mode].properties.fill !== undefined' class='col-md-12'>
-            <TablerColour label='Fill Color' v-model='filters[mode].properties.fill' :disabled='disabled || filters[mode].enabled.fill' :default='color'>
-                <TablerToggle v-model='filters[mode].enabled.fill' label='Enabled'/>
-            </TablerColour>
-        </div>
-        <div v-if='filters[mode].properties["fill-opacity"] !== undefined' class='col-md-12'>
-            <TablerRange label='Fill Opacity' :disabled='disabled' v-model='filters[mode].properties["fill-opacity"]' :min="0" :max="256" :step="1"/>
-        </div>
-
         <div class='col-md-12'>
             <StyleTemplate
                 :disabled='disabled'
@@ -74,6 +37,47 @@
                 label='Remarks'
             />
         </div>
+
+        <template v-if='mode === "Point"'>
+            <div class='col-md-12'>
+                <TablerColour label='Point Color' v-model='filters[mode].properties.color' :disabled='disabled || filters[mode].enabled.color'>
+                    <TablerToggle v-model='filters[mode].enabled.color' label='Enabled'/>
+                </TablerColour>
+            </div>
+        </template>
+        <template v-else-if='mode !== "Point"'>
+            <div class='col-md-12'>
+                <TablerColour label='Line Color' v-model='filters[mode].properties.stroke' :disabled='disabled || filters[mode].enabled.stroke'>
+                    <TablerToggle v-model='filters[mode].enabled.stroke' label='Enabled'/>
+                </TablerColour>
+            </div>
+
+            <div class='col-md-12'>
+                <TablerEnum label='Line Style' :disabled='disabled || !filters[mode].enabled["stroke-style"]' v-model='filters[mode].properties["stroke-style"]' :options='["Solid", "Dashed", "Dotted", "Outlined"]'>
+                    <TablerToggle v-model='filters[mode].enabled["stroke-style"]' label='Enabled'/>
+                </TablerEnum>
+            </div>
+            <div class='col-md-12'>
+                <TablerRange label='Line Thickness' :disabled='disabled || !filters[mode].enabled["stroke-width"]' v-model='filters[mode].properties["stroke-width"]' :min="1" :max="6" :step="1">
+                    <TablerToggle v-model='filters[mode].enabled["stroke-width"]' label='Enabled'/>
+                </TablerRange>
+            </div>
+            <div class='col-md-12'>
+                <TablerRange label='Line Opacity' :disabled='disabled || !filters[mode].enabled["stroke-opacity"]' v-model='filters[mode].properties["stroke-opacity"]' :min="0" :max="256" :step="1">
+                    <TablerToggle v-model='filters[mode].enabled["stroke-opacity"]' label='Enabled'/>
+                </TablerRange>
+            </div>
+        </template>
+        <template v-else-if='mode === "polygon"'>
+            <div class='col-md-12'>
+                <TablerColour label='Fill Color' v-model='filters[mode].properties.fill' :disabled='disabled || filters[mode].enabled.fill'>
+                    <TablerToggle v-model='filters[mode].enabled.fill' label='Enabled'/>
+                </TablerColour>
+            </div>
+            <div class='col-md-12'>
+                <TablerRange label='Fill Opacity' :disabled='disabled' v-model='filters[mode].properties["fill-opacity"]' :min="0" :max="256" :step="1"/>
+            </div>
+        </template>
     </div>
 </div>
 </template>
