@@ -55,21 +55,13 @@
         </div>
 
         <div v-if='filters[mode]["stroke-style"] !== undefined' class='col-md-12'>
-            <label class="form-label">Line Style</label>
-            <select :disabled='disabled' v-model='filters[mode]["stroke-style"]' class="form-select">
-                <option value="solid">Solid</option>
-                <option value="dashed">Dashed</option>
-                <option value="dotted">Dotted</option>
-                <option value="outlined">Outlined</option>
-            </select>
+            <TablerEnum label='Line Style' :disabled='disabled' v-model='filters[mode]["stroke-style"]' :options='["Solid", "Dashed", "Dotted", "Outlined"]'/>
         </div>
         <div v-if='filters[mode]["stroke-width"] !== undefined' class='col-md-12'>
-            <label class="form-label">Line Thickness</label>
-            <input :disabled='disabled' v-model='filters[mode]["stroke-width"]' type="range" class="form-range" min="1" max="6" step="1">
+            <TablerRange label='Line Thickness' :disabled='disabled' v-model='filters[mode]["stroke-width"]' :min="1" :max="6" :step="1"/>
         </div>
         <div v-if='filters[mode]["stroke-opacity"] !== undefined' class='col-md-12'>
-            <label class="form-label">Line Opacity</label>
-            <input :disabled='disabled' v-model='filters[mode]["stroke-opacity"]' type="range" class="form-range" min="0" max="256" step="1">
+            <TablerRange label='Line Opacity' :disabled='disabled' v-model='filters[mode]["stroke-opacity"]' :min="0" :max="256" :step="1"/>
         </div>
 
         <div v-if='filters[mode].fill !== undefined' class='col-md-12'>
@@ -89,8 +81,7 @@
             </div>
         </div>
         <div v-if='filters[mode]["fill-opacity"] !== undefined' class='col-md-12'>
-            <label class="form-label">Fill Opacity</label>
-            <input :disabled='disabled' v-model='filters[mode]["fill-opacity"]' type="range" class="form-range" min="0" max="256" step="1">
+            <TablerRange label='Fill Opacity' :disabled='disabled' v-model='filters[mode]["fill-opacity"]' :min="0" :max="256" :step="1"/>
         </div>
 
         <div class='col-md-12'>
@@ -121,6 +112,10 @@ import {
     LineIcon,
     PolygonIcon,
 } from 'vue-tabler-icons'
+import {
+    TablerRange,
+    TablerEnum
+} from '@tak-ps/vue-tabler';
 
 export default {
     name: 'StyleSingle',
@@ -244,6 +239,8 @@ export default {
         PointIcon,
         LineIcon,
         PolygonIcon,
+        TablerRange,
+        TablerEnum,
         StyleTemplate,
     }
 }
