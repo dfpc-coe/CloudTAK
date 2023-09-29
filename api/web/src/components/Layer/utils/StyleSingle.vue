@@ -40,6 +40,11 @@
 
         <template v-if='mode === "point"'>
             <div class='col-md-12'>
+                <IconSelect label='Point Icon' v-model='filters[mode].properties.icon' :disabled='disabled || filters[mode].enabled.icon'>
+                    <TablerToggle v-model='filters[mode].enabled.icon' label='Enabled'/>
+                </IconSelect>
+            </div>
+            <div class='col-md-12'>
                 <TablerColour label='Point Color' v-model='filters[mode].properties.color' :disabled='disabled || filters[mode].enabled.color'>
                     <TablerToggle v-model='filters[mode].enabled.color' label='Enabled'/>
                 </TablerColour>
@@ -89,6 +94,7 @@ import {
     LineIcon,
     PolygonIcon,
 } from 'vue-tabler-icons'
+import IconSelect from '../../util/IconSelect.vue';
 import {
     TablerRange,
     TablerColour,
@@ -121,11 +127,13 @@ export default {
             filters: {
                 point: {
                     enabled: {
+                        icon: false,
                         color: false,
                         remarks: false,
                         callsign: false
                     },
                     properties: {
+                        icon: '',
                         color: 'red',
                         remarks: '',
                         callsign: ''
@@ -214,6 +222,7 @@ export default {
         TablerEnum,
         TablerColour,
         StyleTemplate,
+        IconSelect,
     }
 }
 </script>
