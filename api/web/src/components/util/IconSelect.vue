@@ -40,10 +40,10 @@
                                         </tr>
                                     </thead>
                                     <tbody class='table-tbody'>
-                                        <tr @click='selected = connection' :key='connection.id' v-for='connection of connections.connections' class='cursor-pointer'>
+                                        <tr @click='selected = icon' :key='icon.id' v-for='icon of list.icons' class='cursor-pointer'>
                                             <td>
                                                 <div class='d-flex'>
-                                                    <span class='mt-2' v-text='connection.name'/>
+                                                    <span class='mt-2' v-text='icon.name'/>
                                                 </div>
                                             </td>
                                         </tr>
@@ -91,9 +91,9 @@ export default {
                 status: 'dead',
                 name: ''
             },
-            connections: {
+            list: {
                 total: 0,
-                connections: []
+                icons: []
             }
         }
     },
@@ -112,10 +112,10 @@ export default {
     },
     methods: {
         fetch: async function() {
-            this.selected = await window.std(`/api/connection/${this.modelValue}`);
+            this.selected = await window.std(`/api/icon/${this.modelValue}`);
         },
         listConnections: async function() {
-            this.connections = await window.std('/api/connection');
+            this.list = await window.std('/api/icon');
         },
     },
     components: {
