@@ -6,10 +6,10 @@
 >
     <TablerInput
         :label='label'
-        :disabled='disabled'
+        :disabled='disabled || !enabled'
         :description='`Override and/or template the ${label} field of the CoT message. If you do not wish to override the CoT property, leave this field blank.`'
         v-model='template'
-    />
+    ><slot><TablerToggle v-model='enabled' label='Enabled'/></slot></TablerInput>
 
     <template #no-result>
         <div class="subheader mx-2 my-2 text-center">No Results</div>
@@ -24,7 +24,8 @@
 <script>
 import { Mentionable } from 'vue-mention'
 import {
-    TablerInput
+    TablerInput,
+    TablerToggle
 } from '@tak-ps/vue-tabler';
 
 export default {
@@ -67,10 +68,12 @@ export default {
     },
     data: function() {
         return {
-            template: ''
+            enabled: this.modelValue.length > 0,
+            template: this.modelValue
         }
     },
     components: {
+        TablerToggle,
         TablerInput,
         Mentionable
     }
