@@ -4,87 +4,60 @@
         <h3 class='card-title'>Style Overrides</h3>
         <div class='ms-auto btn-list'>
             <SettingsIcon v-if='disabled' @click='disabled = false' class='cursor-pointer'/>
+            <template v-else>
+                <div class='row d-flex mx-2'>
+                    <div class="btn-group" role="group">
+                        <input v-model='mode' type="radio" class="btn-check" name="type-toolbar" value='basic'>
+                        <label @click='mode="basic"' class="btn btn-icon px-3">
+                            <AbcIcon/> Basic
+                        </label>
+                        <input v-model='mode' type="radio" class="btn-check" name="type-toolbar" value='query'>
+                        <label @click='mode="query"' class="btn btn-icon px-3">
+                            <CodeIcon/> Query
+                        </label>
+                        <input v-model='mode' type="radio" class="btn-check" name="type-toolbar" value='disabled'>
+                        <label @click='mode="disabled"' class="btn btn-icon px-3">
+                            <BrushOffIcon/> Disabled
+                        </label>
+                    </div>
+                </div>
+            </template>
         </div>
     </div>
 
     <TablerLoading v-if='loading.save' desc='Saving Styles'/>
     <TablerLoading v-else-if='loading.init' desc='Loading Styles'/>
-    <TablerNone v-else-if='!enabled && disabled' label='Style Overrides' :create='false'/>
+    <TablerNone v-else-if='!enabled' label='Style Overrides' :create='false'/>
     <template v-else>
-        <template v-if='!disabled'>
-            <TablerToggle label='Styles Enabled' :disabled='disabled' v-model='enabled'/>
-            <div class='col-md-12'>
-                <div class='row d-flex mx-2'>
-                    <div v-if='enabled' class="d-flex">
-                        <div class="btn-group" role="group">
-                            <input v-model='mode' type="radio" class="btn-check" name="type-toolbar" value='basic'>
-                            <label @click='mode="basic"' class="btn btn-icon px-3">
-                                <AbcIcon/> Basic
-                            </label>
-                            <input v-model='mode' type="radio" class="btn-check" name="type-toolbar" value='query'>
-                            <label @click='mode="query"' class="btn btn-icon px-3">
-                                <CodeIcon/> Query
-                            </label>
-                        </div>
-                        <div class='ms-auto btn-list'>
-                            <template v-if='mode === "query" && !disabled'>
-                                <button @click='help("query")' class='btn'>
-                                    <HelpIcon/>
-                                </button>
-                                <button v-if='query === null' @click='newQuery' class='btn'>
-                                    <PlusIcon/>
-                                </button>
-                            </template>
-                        </div>
-                    </div>
+        <template v-if='mode === "query"'>
+            <div class='col-12 d-flex card-header'>
+                <h3 class='card-title'>Query Mode</h3>
+                <div class='ms-auto btn-list'>
+                    <template v-if='mode === "query" && !disabled'>
+                        <button @click='help("query")' class='btn'>
+                            <HelpIcon/>
+                        </button>
+                        <button v-if='query === null' @click='newQuery' class='btn'>
+                            <PlusIcon/>
+                        </button>
+                    </template>
                 </div>
             </div>
-        </template>
-        <template v-if='enabled'>
-            <template v-if='mode === "query"'>
-                <template v-if='query === null && queries.length'>
-                    <div class='card-body'>
-                        <div class="list-group list-group-flush">
-                            <div :key='q_idx' v-for='(q, q_idx) in queries'>
-                                <div @click='openQuery(q_idx)' class="cursor-pointer list-group-item list-group-item-action">
-                                    <div class='d-flex'>
-                                        <div class='align-self-center' v-text='q.query'></div>
-                                        <div class='ms-auto'>
-                                            <div v-if='!disabled' @click.stop='removeQuery(idx)' class='btn'><TrashIcon/></div>
-                                        </div>
+            <template v-if='query === null && queries.length'>
+                <div class='card-body'>
+                    <div class="list-group list-group-flush">
+                        <div :key='q_idx' v-for='(q, q_idx) in queries'>
+                            <div @click='openQuery(q_idx)' class="cursor-pointer list-group-item list-group-item-action">
+                                <div class='d-flex'>
+                                    <div class='align-self-center' v-text='q.query'></div>
+                                    <div class='ms-auto'>
+                                        <div v-if='!disabled' @click.stop='removeQuery(idx)' class='btn'><TrashIcon/></div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div v-if='!disabled' class="col-12 py-2 px-2 d-flex">
-                        <button @click='reload' class='btn'>Cancel</button>
-                        <div class='ms-auto'>
-                            <button @click='saveLayer' class='btn btn-primary'>Save</button>
-                        </div>
-                    </div>
-                </template>
-                <template v-else-if='query === null && !queries.length'>
-                    <TablerNone label='Queries' :create='!disabled' @create='newQuery'/>
-                </template>
-                <template v-else-if='query && typeof query === "object"'>
-                    <div class='card-body'>
-                        <TablerInput :disabled='disabled' v-model='query.query' placeholder='JSONata Query' label='JSONata Query' :error='errors.query'/>
-
-                        <StyleSingle :schema='layer.schema' :disabled='disabled' v-model='query.styles'/>
-
-                        <div class='d-flex'>
-                            <div @click='query = null' class='btn'>Cancel</div>
-                            <div class='ms-auto'>
-                                <div v-if='!disabled' @click='saveQuery' class='btn btn-primary'>Save Query</div>
-                            </div>
-                        </div>
-                    </div>
-                </template>
-            </template>
-            <template v-else>
-                <StyleSingle :schema='layer.schema' :disabled='disabled' v-model='basic'/>
-
+                </div>
                 <div v-if='!disabled' class="col-12 py-2 px-2 d-flex">
                     <button @click='reload' class='btn'>Cancel</button>
                     <div class='ms-auto'>
@@ -92,6 +65,33 @@
                     </div>
                 </div>
             </template>
+            <template v-else-if='query === null && !queries.length'>
+                <TablerNone label='Queries' :create='!disabled' @create='newQuery'/>
+            </template>
+            <template v-else-if='query && typeof query === "object"'>
+                <div class='card-body'>
+                    <TablerInput :disabled='disabled' v-model='query.query' placeholder='JSONata Query' label='JSONata Query' :error='errors.query'/>
+
+                    <StyleSingle :schema='layer.schema' :disabled='disabled' v-model='query.styles'/>
+
+                    <div class='d-flex'>
+                        <div @click='query = null' class='btn'>Cancel</div>
+                        <div class='ms-auto'>
+                            <div v-if='!disabled' @click='saveQuery' class='btn btn-primary'>Save Query</div>
+                        </div>
+                    </div>
+                </div>
+            </template>
+        </template>
+        <template v-else-if='mode === "basic"'>
+            <StyleSingle :schema='layer.schema' :disabled='disabled' v-model='basic'/>
+
+            <div v-if='!disabled' class="col-12 py-2 px-2 d-flex">
+                <button @click='reload' class='btn'>Cancel</button>
+                <div class='ms-auto'>
+                    <button @click='saveLayer' class='btn btn-primary'>Save</button>
+                </div>
+            </div>
         </template>
     </template>
 </div>
@@ -106,6 +106,7 @@ import {
     HelpIcon,
     TrashIcon,
     SettingsIcon,
+    BrushOffIcon,
 } from 'vue-tabler-icons'
 import {
     TablerInput,
@@ -140,6 +141,12 @@ export default {
             }
         };
     },
+    watch: {
+        mode: function() {
+            if (this.mode === "disabled") this.enabled = false;
+            else this.enabled = true;
+        }
+    },
     mounted: function() {
         this.reload();
         this.loading.init = false;
@@ -153,6 +160,8 @@ export default {
                 this.basic = this.layer.styles;
                 this.mode = 'basic';
             }
+
+            if (!this.enabled) this.mode = "disabled";
 
             this.disabled = true;
         },
@@ -233,6 +242,7 @@ export default {
         TablerLoading,
         TablerNone,
         SettingsIcon,
+        BrushOffIcon,
     }
 }
 </script>
