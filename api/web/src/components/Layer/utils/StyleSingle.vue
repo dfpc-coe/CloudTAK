@@ -20,7 +20,7 @@
             </div>
         </div>
 
-        <div v-if='filters[mode].color !== undefined' class='col-md-6 mb-3'>
+        <div v-if='filters[mode].color !== undefined' class='col-md-12 mb-3'>
             <label class="form-label">Point Color</label>
             <div class="row g-2">
                 <div :key='color' v-for='color in [
@@ -37,7 +37,7 @@
             </div>
         </div>
 
-        <div v-if='filters[mode].stroke !== undefined' class='col-md-6 mb-3'>
+        <div v-if='filters[mode].stroke !== undefined' class='col-md-12 mb-3'>
             <label class="form-label">Line Color</label>
             <div class="row g-2">
                 <div :key='color' v-for='color in [
@@ -54,7 +54,7 @@
             </div>
         </div>
 
-        <div v-if='filters[mode]["stroke-style"] !== undefined' class='col-md-6 mb-3'>
+        <div v-if='filters[mode]["stroke-style"] !== undefined' class='col-md-12 mb-3'>
             <label class="form-label">Line Style</label>
             <select :disabled='disabled' v-model='filters[mode]["stroke-style"]' class="form-select">
                 <option value="solid">Solid</option>
@@ -63,16 +63,16 @@
                 <option value="outlined">Outlined</option>
             </select>
         </div>
-        <div v-if='filters[mode]["stroke-width"] !== undefined' class='col-md-6 mb-3'>
+        <div v-if='filters[mode]["stroke-width"] !== undefined' class='col-md-12 mb-3'>
             <label class="form-label">Line Thickness</label>
             <input :disabled='disabled' v-model='filters[mode]["stroke-width"]' type="range" class="form-range mb-2" min="1" max="6" step="1">
         </div>
-        <div v-if='filters[mode]["stroke-opacity"] !== undefined' class='col-md-6 mb-3'>
+        <div v-if='filters[mode]["stroke-opacity"] !== undefined' class='col-md-12 mb-3'>
             <label class="form-label">Line Opacity</label>
             <input :disabled='disabled' v-model='filters[mode]["stroke-opacity"]' type="range" class="form-range mb-2" min="0" max="256" step="1">
         </div>
 
-        <div v-if='filters[mode].fill !== undefined' class='col-md-6 mb-3'>
+        <div v-if='filters[mode].fill !== undefined' class='col-md-12 mb-3'>
             <label class="form-label">Fill Color</label>
             <div class="row g-2">
                 <div :key='color' v-for='color in [
@@ -88,7 +88,7 @@
                 </div>
             </div>
         </div>
-        <div v-if='filters[mode]["fill-opacity"] !== undefined' class='col-md-6 mb-3'>
+        <div v-if='filters[mode]["fill-opacity"] !== undefined' class='col-md-12 mb-3'>
             <label class="form-label">Fill Opacity</label>
             <input :disabled='disabled' v-model='filters[mode]["fill-opacity"]' type="range" class="form-range mb-2" min="0" max="256" step="1">
         </div>
