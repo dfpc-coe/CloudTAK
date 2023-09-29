@@ -71,7 +71,7 @@
                     <div class='card-body'>
                         <TablerInput :disabled='disabled' v-model='query.query' placeholder='JSONata Query' label='JSONata Query' :error='errors.query'/>
 
-                        <StylesSingle :schema='layer.schema' :disabled='disabled' v-model='query.styles'/>
+                        <StyleSingle :schema='layer.schema' :disabled='disabled' v-model='query.styles'/>
 
                         <div class='d-flex'>
                             <div @click='query = null' class='btn'>Cancel</div>
@@ -83,7 +83,7 @@
                 </template>
             </template>
             <template v-else>
-                <StylesSingle :schema='layer.schema' :disabled='disabled' v-model='basic'/>
+                <StyleSingle :schema='layer.schema' :disabled='disabled' v-model='basic'/>
 
                 <div v-if='!disabled' class="col-12 py-2 px-2 d-flex">
                     <button @click='reload' class='btn'>Cancel</button>
@@ -113,7 +113,7 @@ import {
     TablerToggle,
     TablerLoading,
 } from '@tak-ps/vue-tabler';
-import StylesSingle from './utils/SingleStyle.vue';
+import StyleSingle from './utils/StyleSingle.vue';
 
 export default {
     name: 'LayerStyles',
@@ -226,7 +226,7 @@ export default {
         AbcIcon,
         PlusIcon,
         HelpIcon,
-        StylesSingle,
+        StyleSingle,
         TablerInput,
         TablerToggle,
         TrashIcon,

@@ -10,7 +10,6 @@ import PMTiles from './lib/pmtiles.js';
 import Stats from './lib/stats.js';
 import Dynamo from './lib/dynamo.js';
 import Alarms from './lib/alarms.js';
-import Notify from './lib/notify.js';
 import {
     ELB as ELBAlarms,
     RDS as RDSAlarms
