@@ -43,6 +43,7 @@
                                         <tr @click='selected = icon' :key='icon.id' v-for='icon of list.icons' class='cursor-pointer'>
                                             <td>
                                                 <div class='d-flex'>
+                                                    <img :src="`/icons/${icon.file}`">
                                                     <span class='mt-2' v-text='icon.name'/>
                                                 </div>
                                             </td>
