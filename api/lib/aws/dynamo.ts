@@ -126,6 +126,7 @@ export default class Dynamo {
 
             await ddbdoc.send(new DynamoDBDoc.BatchWriteCommand(req));
         } catch (err) {
+            console.error('DEBUG', JSON.stringify(features));
             throw new Err(500, new Error(err), 'DynamoDB batchWrite Failed');
         }
     }
