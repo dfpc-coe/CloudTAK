@@ -2,14 +2,13 @@
 <Mentionable
   :keys="['{']"
   :items="schemalist"
-  offset="6"
 >
     <TablerInput
         :label='label'
         :disabled='disabled || !enabled'
         :description='`Override and/or template the ${label} field of the CoT message. If you do not wish to override the CoT property, leave this field blank.`'
         v-model='template'
-    ><TablerToggle v-model='enabled' :disabled='disabled' label='Enabled'/></TablerInput>
+    ></TablerInput>
 
     <template #no-result>
         <div class="subheader mx-2 my-2 text-center">No Results</div>
