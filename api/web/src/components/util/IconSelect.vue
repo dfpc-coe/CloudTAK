@@ -20,7 +20,7 @@
                 </div>
             </template>
             <template v-else>
-                <span class='text-center'>No Icon Selected</span>
+                <span class='text-center w-100'>No Icon Selected</span>
             </template>
 
             <div v-if='!disabled' class='ms-auto'>
