@@ -73,27 +73,19 @@
                     <TablerInput :disabled='disabled' v-model='query.query' placeholder='JSONata Query' label='JSONata Query' :error='errors.query'/>
 
                     <StyleSingle :schema='layer.schema' :disabled='disabled' v-model='query.styles'/>
-
-                    <div class='d-flex'>
-                        <div @click='query = null' class='btn'>Cancel</div>
-                        <div class='ms-auto'>
-                            <div v-if='!disabled' @click='saveQuery' class='btn btn-primary'>Save Query</div>
-                        </div>
-                    </div>
                 </div>
             </template>
         </template>
         <template v-else-if='mode === "basic"'>
             <StyleSingle :schema='layer.schema' :disabled='disabled' v-model='basic'/>
-
-            <div v-if='!disabled' class="col-12 py-2 px-2 d-flex">
-                <button @click='reload' class='btn'>Cancel</button>
-                <div class='ms-auto'>
-                    <button @click='saveLayer' class='btn btn-primary'>Save</button>
-                </div>
-            </div>
         </template>
     </template>
+    <div v-if='!disabled' class="col-12 py-2 px-2 d-flex">
+        <button @click='reload' class='btn'>Cancel</button>
+        <div class='ms-auto'>
+            <button @click='saveLayer' class='btn btn-primary'>Save</button>
+        </div>
+    </div>
 </div>
 </template>
 
