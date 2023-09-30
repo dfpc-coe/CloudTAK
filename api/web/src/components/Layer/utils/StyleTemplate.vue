@@ -5,7 +5,7 @@
 >
     <TablerInput
         :label='label'
-        :disabled='disabled || !enabled'
+        :disabled='disabled'
         :description='`Override and/or template the ${label} field of the CoT message. If you do not wish to override the CoT property, leave this field blank.`'
         v-model='template'
     ></TablerInput>
@@ -67,7 +67,6 @@ export default {
     },
     data: function() {
         return {
-            enabled: this.modelValue.length > 0,
             template: this.modelValue
         }
     },

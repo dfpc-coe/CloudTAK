@@ -215,6 +215,9 @@ export default {
                 for (const intkey of ['fill-opacity', 'stroke-width', 'stroke-opacity']) {
                     if (res[geom][intkey] !== undefined) res[geom][intkey] = parseInt(res[geom][intkey])
                 }
+                for (const key of ['remarks', 'callsign']) {
+                    if (!res[geom][key]) delete res[geom][key];
+                }
             }
 
 console.error('DEBUG', res);
