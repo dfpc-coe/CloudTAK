@@ -209,15 +209,16 @@ export default {
                 res[geom] = {};
                 for (const key in styles[geom].properties) {
                     if (!styles[geom].enabled[key]) continue;
-                    res[geom][key] = styles[geom].properties[key];
+
+                    if (['fill-opacity', 'stroke-width', 'stroke-opacity'].includes(key)) {
+                        if (res[geom][intkey] !== undefined) res[geom][intkey] = parseInt(res[geom][intkey])
+                    } else if (['remarks', 'callsign'].includes(key)) {
+                        if (res[geom][key]) res[geom][key] = styles[geom].properties[key];
+                    } else {
+                        res[geom][key] = styles[geom].properties[key];
+                    }
                 }
 
-                for (const intkey of ['fill-opacity', 'stroke-width', 'stroke-opacity']) {
-                    if (res[geom][intkey] !== undefined) res[geom][intkey] = parseInt(res[geom][intkey])
-                }
-                for (const key of ['remarks', 'callsign']) {
-                    if (!res[geom][key]) delete res[geom][key];
-                }
             }
 
 console.error('DEBUG', res);
