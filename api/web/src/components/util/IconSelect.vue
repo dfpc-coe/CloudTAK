@@ -16,6 +16,7 @@
         <div class='d-flex'>
             <template v-if='selected.id'>
                 <div @click='$router.push(`/connection/${selected.id}`)' class='d-flex cursor-pointer'>
+                    <img :src="`/icons/${selected.file}`" style='width: 25px; height: auto; margin-right: 5px;'>
                     <span class='mt-2' v-text='selected.name'/>
                 </div>
             </template>
@@ -43,7 +44,7 @@
                                         <tr @click='selected = icon' :key='icon.id' v-for='icon of list.icons' class='cursor-pointer'>
                                             <td>
                                                 <div class='d-flex'>
-                                                    <img :src="`/icons/${icon.file}`">
+                                                    <img :src="`/icons/${icon.file}`" style='width: 25px; height: auto; margin-right: 5px;'>
                                                     <span class='mt-2' v-text='icon.name'/>
                                                 </div>
                                             </td>
@@ -107,7 +108,7 @@ export default {
     },
     watch: {
         selected: function() {
-            this.$emit('update:modelValue', this.selected.id);
+            this.$emit('update:modelValue', this.selected.file);
         },
         modelValue: function() {
             if (this.modelValue) this.fetch();
