@@ -15,7 +15,7 @@
     <template v-else>
         <div class='d-flex'>
             <template v-if='selected.id'>
-                <div @click='$router.push(`/connection/${selected.id}`)' class='d-flex cursor-pointer'>
+                <div class='d-flex mx-2'>
                     <img :src="`/icons/${selected.file}`" style='width: 25px; height: auto; margin-right: 5px;'>
                     <span class='mt-2' v-text='selected.name'/>
                 </div>
