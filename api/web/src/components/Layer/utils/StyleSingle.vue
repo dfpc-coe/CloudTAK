@@ -134,7 +134,7 @@ export default {
                     },
                     properties: {
                         icon: '',
-                        color: 'red',
+                        color: '#d63939',
                         remarks: '',
                         callsign: ''
                     }
@@ -149,7 +149,7 @@ export default {
                         callsign: false
                     },
                     properties: {
-                        stroke: 'red',
+                        stroke: '#d63939',
                         'stroke-style': 'solid',
                         'stroke-opacity': 256,
                         'stroke-width': 3,
@@ -169,11 +169,11 @@ export default {
                         callsign: false
                     },
                     properties: {
-                        stroke: 'red',
+                        stroke: '#d63939',
                         'stroke-style': 'solid',
                         'stroke-opacity': 256,
                         'stroke-width': 3,
-                        'fill': 'red',
+                        'fill': '#d63939',
                         'fill-opacity': 256,
                         remarks: '',
                         callsign: ''
