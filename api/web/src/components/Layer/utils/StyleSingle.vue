@@ -45,14 +45,14 @@
                 </IconSelect>
             </div>
             <div class='col-md-12 darken round'>
-                <TablerColour label='Point Color' v-model='filters[mode].properties.color' :disabled='disabled || filters[mode].enabled.color'>
+                <TablerColour label='Point Color' v-model='filters[mode].properties.color' :disabled='disabled || !filters[mode].enabled.color'>
                     <TablerToggle v-model='filters[mode].enabled.color' :disabled='disabled' label='Enabled'/>
                 </TablerColour>
             </div>
         </template>
         <template v-else-if='mode !== "point"'>
             <div class='col-md-12 darken round'>
-                <TablerColour label='Line Color' v-model='filters[mode].properties.stroke' :disabled='disabled || filters[mode].enabled.stroke'>
+                <TablerColour label='Line Color' v-model='filters[mode].properties.stroke' :disabled='disabled || !filters[mode].enabled.stroke'>
                     <TablerToggle v-model='filters[mode].enabled.stroke' :disabled='disabled' label='Enabled'/>
                 </TablerColour>
             </div>
@@ -75,7 +75,7 @@
         </template>
         <template v-if='mode === "polygon"'>
             <div class='col-md-12 darken round'>
-                <TablerColour label='Fill Color' v-model='filters[mode].properties.fill' :disabled='disabled || filters[mode].enabled.fill'>
+                <TablerColour label='Fill Color' v-model='filters[mode].properties.fill' :disabled='disabled || !filters[mode].enabled.fill'>
                     <TablerToggle v-model='filters[mode].enabled.fill' :disabled='disabled' label='Enabled'/>
                 </TablerColour>
             </div>
@@ -193,7 +193,6 @@ export default {
     mounted: function() {
         for (const key in this.modelValue) {
             const style = JSON.parse(JSON.stringify(this.modelValue[key]));
-
             Object.assign(this.filters[key], style);
         }
 
@@ -208,12 +207,12 @@ export default {
             for (const geom in styles) {
                 res[geom] = {};
                 for (const key in styles[geom].properties) {
-                    if (!styles[geom].enabled[key]) continue;
+                    if (!['remarks', 'callsign'].includes(key) && !styles[geom].enabled[key]) continue;
 
                     if (['fill-opacity', 'stroke-width', 'stroke-opacity'].includes(key)) {
                         if (res[geom][intkey] !== undefined) res[geom][intkey] = parseInt(res[geom][intkey])
                     } else if (['remarks', 'callsign'].includes(key)) {
-                        if (res[geom][key]) res[geom][key] = styles[geom].properties[key];
+                        if (styles[geom].properties[key]) res[geom][key] = styles[geom].properties[key];
                     } else {
                         res[geom][key] = styles[geom].properties[key];
                     }
@@ -221,7 +220,7 @@ export default {
 
             }
 
-console.error('DEBUG', res);
+            console.error('DEBUG', JSON.stringify(res));
             this.$emit('update:modelValue', res);
         }
     },
