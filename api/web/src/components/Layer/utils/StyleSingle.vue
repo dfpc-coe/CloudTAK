@@ -41,42 +41,42 @@
         <template v-if='mode === "point"'>
             <div class='col-md-12'>
                 <IconSelect label='Point Icon' v-model='filters[mode].properties.icon' :disabled='disabled || filters[mode].enabled.icon'>
-                    <TablerToggle v-model='filters[mode].enabled.icon' label='Enabled'/>
+                    <TablerToggle v-model='filters[mode].enabled.icon' :disabled='disabled' label='Enabled'/>
                 </IconSelect>
             </div>
             <div class='col-md-12'>
                 <TablerColour label='Point Color' v-model='filters[mode].properties.color' :disabled='disabled || filters[mode].enabled.color'>
-                    <TablerToggle v-model='filters[mode].enabled.color' label='Enabled'/>
+                    <TablerToggle v-model='filters[mode].enabled.color' :disabled='disabled' label='Enabled'/>
                 </TablerColour>
             </div>
         </template>
         <template v-else-if='mode !== "point"'>
             <div class='col-md-12'>
                 <TablerColour label='Line Color' v-model='filters[mode].properties.stroke' :disabled='disabled || filters[mode].enabled.stroke'>
-                    <TablerToggle v-model='filters[mode].enabled.stroke' label='Enabled'/>
+                    <TablerToggle v-model='filters[mode].enabled.stroke' :disabled='disabled' label='Enabled'/>
                 </TablerColour>
             </div>
 
             <div class='col-md-12'>
                 <TablerEnum label='Line Style' :disabled='disabled || !filters[mode].enabled["stroke-style"]' v-model='filters[mode].properties["stroke-style"]' :options='["Solid", "Dashed", "Dotted", "Outlined"]'>
-                    <TablerToggle v-model='filters[mode].enabled["stroke-style"]' label='Enabled'/>
+                    <TablerToggle v-model='filters[mode].enabled["stroke-style"]' :disabled='disabled' label='Enabled'/>
                 </TablerEnum>
             </div>
             <div class='col-md-12'>
                 <TablerRange label='Line Thickness' :disabled='disabled || !filters[mode].enabled["stroke-width"]' v-model='filters[mode].properties["stroke-width"]' :min="1" :max="6" :step="1">
-                    <TablerToggle v-model='filters[mode].enabled["stroke-width"]' label='Enabled'/>
+                    <TablerToggle v-model='filters[mode].enabled["stroke-width"]' :disabled='disabled' label='Enabled'/>
                 </TablerRange>
             </div>
             <div class='col-md-12'>
                 <TablerRange label='Line Opacity' :disabled='disabled || !filters[mode].enabled["stroke-opacity"]' v-model='filters[mode].properties["stroke-opacity"]' :min="0" :max="256" :step="1">
-                    <TablerToggle v-model='filters[mode].enabled["stroke-opacity"]' label='Enabled'/>
+                    <TablerToggle v-model='filters[mode].enabled["stroke-opacity"]' :disabled='disabled' label='Enabled'/>
                 </TablerRange>
             </div>
         </template>
         <template v-if='mode === "polygon"'>
             <div class='col-md-12'>
                 <TablerColour label='Fill Color' v-model='filters[mode].properties.fill' :disabled='disabled || filters[mode].enabled.fill'>
-                    <TablerToggle v-model='filters[mode].enabled.fill' label='Enabled'/>
+                    <TablerToggle v-model='filters[mode].enabled.fill' :disabled='disabled' label='Enabled'/>
                 </TablerColour>
             </div>
             <div class='col-md-12'>
@@ -202,15 +202,23 @@ export default {
     methods: {
         format: function() {
             const styles = JSON.parse(JSON.stringify(this.filters));
-            if (styles) {
-                for (const key in styles) {
-                    for (const intkey of ['fill-opacity', 'stroke-width', 'stroke-opacity']) {
-                        if (styles[key][intkey]) styles[key][intkey] = parseInt(styles[key][intkey])
-                    }
+
+            const res = {};
+
+            for (const geom in styles) {
+                res[geom] = {};
+                for (const key in styles[geom].properties) {
+                    if (!styles[geom].enabled[key]) continue;
+                    res[geom][key] = styles[geom].properties[key];
+                }
+
+                for (const intkey of ['fill-opacity', 'stroke-width', 'stroke-opacity']) {
+                    if (res[geom][intkey] !== undefined) res[geom][intkey] = parseInt(res[geom][intkey])
                 }
             }
 
-            this.$emit('update:modelValue', styles);
+console.error(res);
+            this.$emit('update:modelValue', res);
         }
     },
     components: {

@@ -73,7 +73,14 @@ import {
 export default {
     name: 'ConnectionSelect',
     props: {
-        modelValue: Number,
+        modelValue: {
+            type: String,
+            required: true
+        },
+        description: {
+            type: String,
+            default: ''
+        },
         required: {
             type: Boolean,
             default: false
