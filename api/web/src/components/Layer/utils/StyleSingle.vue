@@ -40,7 +40,7 @@
 
         <template v-if='mode === "point"'>
             <div class='col-md-12 darken round'>
-                <IconSelect label='Point Icon' v-model='filters[mode].properties.icon' :disabled='disabled || filters[mode].enabled.icon'>
+                <IconSelect label='Point Icon' v-model='filters[mode].properties.icon' :disabled='disabled || !filters[mode].enabled.icon'>
                     <TablerToggle v-model='filters[mode].enabled.icon' :disabled='disabled' label='Enabled'/>
                 </IconSelect>
             </div>
