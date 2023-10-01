@@ -226,7 +226,6 @@ export default {
 
             }
 
-            console.error('DEBUG', JSON.stringify(res));
             this.$emit('update:modelValue', res);
         }
     },
