@@ -192,8 +192,14 @@ export default {
     },
     mounted: function() {
         for (const key in this.modelValue) {
+            for (const prop in this.modelValue[key]) {
+                if (this.modelValue[key][prop] !== undefined) {
+                    this.filters[key].enabled[prop] = true;
+                }
+            }
+
             const style = JSON.parse(JSON.stringify(this.modelValue[key]));
-            Object.assign(this.filters[key], style);
+            Object.assign(this.filters[key].properties, style);
         }
 
         this.format();
