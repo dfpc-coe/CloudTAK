@@ -23,6 +23,7 @@ export default async function router(schema) {
         };
 
         iconmap.set(item.id, item);
+        iconmap.set(item.file, item);
         iconset.push(item);
     }
 
@@ -57,19 +58,19 @@ export default async function router(schema) {
         }
     });
 
-    await schema.get('/icon/:cot', {
-        name: 'List Icons',
+    await schema.get('/icon/:icon', {
+        name: 'Get Icon',
         group: 'Icons',
         auth: 'user',
-        ':cot': 'string',
+        ':icon': 'string',
         description: 'Icon Metadata',
         res: 'res.Icon.json'
     }, async (req, res) => {
         try {
             await Auth.is_auth(req);
 
-            if (iconmap.has(req.params.cot)) {
-                return res.json(iconmap.get(req.params.cot));
+            if (iconmap.has(req.params.icon)) {
+                return res.json(iconmap.get(req.params.icon));
             } else {
                 throw new Err(400, null, 'Icon Not Found');
             }
