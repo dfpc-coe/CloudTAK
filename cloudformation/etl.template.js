@@ -7,7 +7,6 @@ import DB from './lib/db.js';
 import Hooks from './lib/hooks.js';
 import Signing from './lib/signing.js';
 import PMTiles from './lib/pmtiles.js';
-import Stats from './lib/stats.js';
 import Dynamo from './lib/dynamo.js';
 import Alarms from './lib/alarms.js';
 import {
@@ -16,7 +15,7 @@ import {
 } from '@openaddresses/batch-alarms';
 
 export default cf.merge(
-    S3, DB, API, KMS, Batch, Hooks, Signing, Dynamo, Alarms, PMTiles, Stats,
+    S3, DB, API, KMS, Batch, Hooks, Signing, Dynamo, Alarms, PMTiles,
     {
         Description: 'Template for @tak-ps/etl',
         Parameters: {
