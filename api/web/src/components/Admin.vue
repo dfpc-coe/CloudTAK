@@ -43,9 +43,19 @@
                                         <TablerInput
                                             v-model='server.url'
                                             :disabled='!edit'
-                                            label='TAK Server URL'
+                                            label='TAK Server Streaming CoT'
                                             placeholder='ssl://'
                                             :error='errors.url'
+                                        />
+                                    </div>
+
+                                    <div class='col-lg-12 py-2'>
+                                        <TablerInput
+                                            v-model='server.api'
+                                            :disabled='!edit'
+                                            label='TAK Server API'
+                                            placeholder='https://'
+                                            :error='errors.api'
                                         />
                                     </div>
 
@@ -99,6 +109,7 @@ export default {
                 updated: null,
                 name: '',
                 url: '',
+                api: '',
                 auth: {}
             }
         }
@@ -118,15 +129,17 @@ export default {
             this.loading = false;
         },
         postServer: async function() {
-            for (const field of ['url', 'name']) {
+            for (const field of ['api', 'url', 'name']) {
                 this.errors[field] = !this.server[field] ? 'Cannot be empty' : '';
             }
 
-            if (!this.errors.url) {
-                try {
-                    new URL(this.server.url);
-                } catch (err) {
-                    this.errors.url = err.message;
+            for (const field of ['api', 'url']) {
+                if (!this.errors[field]) {
+                    try {
+                        new URL(this.server[field]);
+                    } catch (err) {
+                        this.errors[field] = err.message;
+                    }
                 }
             }
 
@@ -146,7 +159,8 @@ export default {
                     method: 'PATCH',
                     body: {
                         name: this.server.name,
-                        url: this.server.url
+                        url: this.server.url,
+                        api: this.server.api
                     }
                 });
             }
