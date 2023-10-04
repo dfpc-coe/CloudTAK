@@ -19,7 +19,7 @@ export default class CloudFormation {
         // LogGroups are managed in CloudFormation, if they are present already an error will throw
         try {
             await cwl.send(new AWSCWL.DeleteLogGroupCommand({
-                logGropName: `/aws/lambda/${config.StackName}-layer-${layerid}`
+                logGroupName: `/aws/lambda/${config.StackName}-layer-${layerid}`
             }));
         } catch (err) {
             // Resource not found
