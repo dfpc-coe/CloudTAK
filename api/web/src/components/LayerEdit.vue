@@ -243,7 +243,7 @@ export default {
                 } else {
                     url = window.stdurl(`/api/layer`);
 
-                    let layer = JSON.parse(JSON.stringify(this.layer));
+                    layer = JSON.parse(JSON.stringify(this.layer));
 
                     if (this.layer.connection) delete layer.data;
                     if (this.layer.data) delete layer.connection;
