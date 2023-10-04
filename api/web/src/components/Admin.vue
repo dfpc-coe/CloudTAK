@@ -101,7 +101,8 @@ export default {
             loading: true,
             errors: {
                 name: '',
-                url: ''
+                url: '',
+                api: ''
             },
             server: {
                 id: null,
