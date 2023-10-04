@@ -2,6 +2,7 @@
 import cf from '@openaddresses/cloudfriend';
 import Config from '../config.js';
 import AWSCloudFormation from '@aws-sdk/client-cloudformation';
+import AWSCWL from '@aws-sdk/client-cloudwatch-logs';
 
 /**
  * @class
@@ -13,6 +14,16 @@ export default class CloudFormation {
 
     static async create(config: Config, layerid: number, stack: object) {
         const cf = new AWSCloudFormation.CloudFormationClient({ region: process.env.AWS_DEFAULT_REGION });
+        const cwl = new AWSCWL.CloudWatchLogsClient({ region: process.env.AWS_DEFAULT_REGION });
+
+        // LogGroups are managed in CloudFormation, if they are present already an error will throw
+        try {
+            await cwl.send(new AWSCWL.DeleteLogGroupCommand({
+                logGropName: `/aws/lambda/${config.StackName}-layer-${layerid}`
+            }));
+        } catch (err) {
+            // Resource not found
+        }
 
         await cf.send(new AWSCloudFormation.CreateStackCommand({
             StackName: this.stdname(config, layerid),
