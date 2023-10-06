@@ -26,6 +26,9 @@
         },
         "url": {
             "$ref": "./server/url.json"
+        },
+        "api": {
+            "$ref": "./server/api.json"
         }
     }
 }
