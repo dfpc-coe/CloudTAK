@@ -3,12 +3,15 @@ import path from 'path';
 import Auth from '../lib/auth.js';
 import Err from '@openaddresses/batch-error';
 import xmljs from 'xml-js';
+import { Response } from 'express';
+import { AuthRequest } from '@tak-ps/blueprint-login';
 
 export default async function router(schema) {
     const iconset = new Array();
     const iconmap = new Map();
     for (const icon of xmljs.xml2js(String(await fs.readFile(new URL('../icons/icons.xml', import.meta.url))), {
         compact: true
+    // @ts-ignore
     }).icons.icon) {
         if (!icon.filePath || !icon.filePath._text) continue;
 
@@ -34,11 +37,11 @@ export default async function router(schema) {
         description: 'List Icons',
         query: 'req.query.ListIcons.json',
         res: 'res.ListIcons.json'
-    }, async (req, res) => {
+    }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(req);
 
-            req.query.filter = req.query.filter.toLowerCase();
+            req.query.filter = String(req.query.filter).toLowerCase();
 
             let icons = iconset;
             if (req.query.filter) {
@@ -51,7 +54,7 @@ export default async function router(schema) {
 
             return res.json({
                 total: icons.length,
-                icons: icons.slice(req.query.page * req.query.limit, req.query.page * req.query.limit + req.query.limit)
+                icons: icons.slice(parseInt(String(req.query.page)) * parseInt(String(req.query.limit)), parseInt(String(req.query.page)) * parseInt(String(req.query.limit)) + parseInt(String(req.query.limit)))
             });
         } catch (err) {
             return Err.respond(err, res);
@@ -65,7 +68,7 @@ export default async function router(schema) {
         ':icon': 'string',
         description: 'Icon Metadata',
         res: 'res.Icon.json'
-    }, async (req, res) => {
+    }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(req);
 

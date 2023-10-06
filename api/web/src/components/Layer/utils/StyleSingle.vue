@@ -216,7 +216,7 @@ export default {
                     if (!['remarks', 'callsign'].includes(key) && !styles[geom].enabled[key]) continue;
 
                     if (['fill-opacity', 'stroke-width', 'stroke-opacity'].includes(key)) {
-                        if (res[geom][intkey] !== undefined) res[geom][intkey] = parseInt(res[geom][intkey])
+                        if (res[geom][key] !== undefined) res[geom][key] = parseInt(res[geom][key])
                     } else if (['remarks', 'callsign'].includes(key)) {
                         if (styles[geom].properties[key]) res[geom][key] = styles[geom].properties[key];
                     } else {

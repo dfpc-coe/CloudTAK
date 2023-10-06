@@ -59,33 +59,29 @@
                                 </div>
                                 <template v-if='!$route.params.layerid'>
                                     <div class="col-md-6">
-                                        <div class='d-flex'>
-                                            <label class='form-label'>Cron Expression</label>
-                                            <div class='ms-auto'>
-                                                <div class='dropdown'>
-                                                    <div class="dropdown-toggle" type="button" id="dropdownCron" data-bs-toggle="dropdown" aria-expanded="false">
-                                                        <SettingsIcon width='16' height='16' class='cursor-pointer dropdown-toggle'/>
-                                                    </div>
-                                                    <ul class="dropdown-menu px-1 py-1" aria-labelledby="dropdownCron">
-                                                        <li class='py-1 cursor-pointer' @click='layer.cron = "rate(1 minute)"'>rate(1 minute)</li>
-                                                        <li class='py-1 cursor-pointer' @click='layer.cron = "rate(5 minutes)"'>rate(5 minutes)</li>
-                                                        <li class='py-1 cursor-pointer' @click='layer.cron = "cron(15 10 * * ? *)"'>cron(15 10 * * ? *)</li>
-                                                        <li class='py-1 cursor-pointer' @click='layer.cron = "cron(0/5 8-17 ? * MON-FRI *)"'>cron(0/5 8-17 ? * MON-FRI *)</li>
-                                                    </ul>
+                                        <TablerInput v-model='layer.cron' :error='errors.cron' placeholder='Cron Expression'>
+                                            <div class='dropdown'>
+                                                <div class="dropdown-toggle" type="button" id="dropdownCron" data-bs-toggle="dropdown" aria-expanded="false">
+                                                    <SettingsIcon width='16' height='16' class='cursor-pointer dropdown-toggle'/>
                                                 </div>
+                                                <ul class="dropdown-menu px-1 py-1" aria-labelledby="dropdownCron">
+                                                    <li class='py-1 cursor-pointer' @click='layer.cron = "rate(1 minute)"'>rate(1 minute)</li>
+                                                    <li class='py-1 cursor-pointer' @click='layer.cron = "rate(5 minutes)"'>rate(5 minutes)</li>
+                                                    <li class='py-1 cursor-pointer' @click='layer.cron = "cron(15 10 * * ? *)"'>cron(15 10 * * ? *)</li>
+                                                    <li class='py-1 cursor-pointer' @click='layer.cron = "cron(0/5 8-17 ? * MON-FRI *)"'>cron(0/5 8-17 ? * MON-FRI *)</li>
+                                                </ul>
                                             </div>
-                                        </div>
-                                        <TablerInput v-model='layer.cron' :error='errors.cron' placeholder='Cron Expression'/>
+                                        </TablerInput>
                                         <label v-if='layer.cron' v-text='cronstr(layer.cron)'/>
                                     </div>
                                     <div class="col-md-6">
                                         <div class='d-flex'>
-                                            <label class='form-label'>Schedule Task</label>
+                                        </div>
+                                        <TablerInput v-model='layer.task' :error='errors.task' placeholder='Schedule Task'>
                                             <div class='ms-auto btn-list'>
                                                 <SettingsIcon @click='taskmodal = true' width='16' height='16' class='cursor-pointer'/>
                                             </div>
-                                        </div>
-                                        <TablerInput v-model='layer.task' :error='errors.task' placeholder='Schedule Task'/>
+                                        </TablerInput>
                                     </div>
                                     <div class="col-md-12">
                                         <div class='row'>
@@ -235,23 +231,27 @@ export default {
                 let url, method;
                 if (this.$route.params.layerid) {
                     url = window.stdurl(`/api/layer/${this.$route.params.layerid}`);
-                    method = 'PATCH'
-                    layer = await window.std(url, { method, body: {
-                        name: this.layer.name,
-                        description: this.layer.description,
-                        enabled: this.layer.enabled,
-                        logging: this.layer.logging,
-                    } });
+                    layer = await window.std(url, {
+                        method: 'PATCH',
+                        body: {
+                            name: this.layer.name,
+                            description: this.layer.description,
+                            enabled: this.layer.enabled,
+                            logging: this.layer.logging,
+                        }
+                    });
                 } else {
                     url = window.stdurl(`/api/layer`);
-                    method = 'POST'
 
-                    let layer = JSON.parse(JSON.stringify(this.layer));
+                    layer = JSON.parse(JSON.stringify(this.layer));
 
                     if (this.layer.connection) delete layer.data;
                     if (this.layer.data) delete layer.connection;
 
-                    layer = await window.std(url, { method, body: layer });
+                    layer = await window.std(url, {
+                        method: 'POST',
+                        body: layer
+                    });
                 }
 
 
