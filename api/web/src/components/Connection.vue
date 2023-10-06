@@ -16,7 +16,7 @@
         <div class='container-xl'>
             <div class='row row-deck row-cards'>
                 <div class="col-lg-12">
-                    <TablerLoading v-if='loading'/>
+                    <TablerLoading v-if='loading.connection'/>
                     <div v-else class="card">
                         <div class="card-header">
                             <ConnectionStatus :connection='connection'/>
@@ -81,7 +81,10 @@ export default {
     name: 'Connection',
     data: function() {
         return {
-            loading: true,
+            loading: {
+                connection: true,
+                channels: true,
+            },
             err: null,
             ws: null,
             connection: {}
@@ -107,6 +110,7 @@ export default {
         this.ws.addEventListener('error', (err) => { this.$emit('err') });
 
         await this.fetch();
+        await this.fetchChannels();
 
     },
     unmounted: function() {
@@ -117,9 +121,15 @@ export default {
             return timeDiff(update);
         },
         fetch: async function() {
-            this.loading = true;
+            this.loading.connection = true;
             this.connection = await window.std(`/api/connection/${this.$route.params.connectionid}`);
-            this.loading = false;
+            this.loading.connection = false;
+        },
+        fetchChannels: async function() {
+            this.loading.channels = true;
+            const channels = await window.std(`/api/connection/${this.$route.params.connectionid}/channel`);
+            console.error(channels);
+            this.loading.channels = false;
         },
         refresh: async function() {
             this.connection = await window.std(`/api/connection/${this.$route.params.connectionid}/refresh`, {
