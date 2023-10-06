@@ -30,7 +30,22 @@
                                 </div>
                             </div>
                         </div>
-                        <TablerMarkdown class="card-body" :markdown='connection.description'/>
+                        <div class='card-body'>
+                            <div class='row g-2'>
+                                <div class='col-12 col-md-8'>
+                                    <TablerMarkdown :markdown='connection.description'/>
+                                </div>
+                                <div class='col-12 col-md-4'>
+                                    <TablerLoading v-if='loading.channels' desc='Loading Channels'/>
+                                    <template v-else>
+                                        <h3 class='subheader'>Channels</h3>
+                                        <div v-for='channel in channels'>
+                                            <span v-text='channel.name'/>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
                         <div class="card-footer">
                             Last updated <span v-text='timeDiff(connection.updated)'/>
                         </div>
@@ -87,6 +102,7 @@ export default {
             },
             err: null,
             ws: null,
+            channels: [],
             connection: {}
         }
     },
@@ -127,8 +143,7 @@ export default {
         },
         fetchChannels: async function() {
             this.loading.channels = true;
-            const channels = await window.std(`/api/connection/${this.$route.params.connectionid}/channel`);
-            console.error(channels);
+            this.channels = (await window.std(`/api/connection/${this.$route.params.connectionid}/channel`)).data;
             this.loading.channels = false;
         },
         refresh: async function() {

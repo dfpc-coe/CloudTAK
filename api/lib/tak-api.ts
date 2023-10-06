@@ -1,7 +1,7 @@
 import MissionData from './api/mission-data.js';
 import Credentials from './api/credentials.js';
-import Groups from './api/groups.js';
 import Contacts from './api/contacts.js';
+import Groups from './api/groups.js';
 import { CookieJar, Cookie } from 'tough-cookie';
 import { CookieAgent } from 'http-cookie-agent/undici';
 import Err from '@openaddresses/batch-error';
@@ -194,7 +194,7 @@ export default class TAKAPI {
                 throw new Error(bdy || `Status Code: ${res.status}`);
             }
 
-            if (res.headers.get('Content-Type') === 'application/json') {
+            if (res.headers.get('content-type') === 'application/json') {
                 return await res.json();
             } else {
                 return await res.text();
