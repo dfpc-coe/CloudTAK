@@ -5,6 +5,7 @@ import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
+import TAKAPI, { APIAuthCertificate, } from '../lib/tak-api.js';
 
 export default async function router(schema: any, config: Config) {
     await schema.get('/connection/:connectionid/channel', {
@@ -19,9 +20,13 @@ export default async function router(schema: any, config: Config) {
             await Auth.is_auth(req);
             const conn = await Connection.from(config.pool, req.params.connectionid);
 
-            console.error(conn);
+            const api = await TAKAPI.init(new URL(config.server.api), new APIAuthCertificate(conn.auth.cert, conn.auth.key));
 
-            return res.json(conn);
+            const list = await api.Contacts.list();
+
+            console.error(list)
+
+            return res.json(list);
         } catch (err) {
             return Err.respond(err, res);
         }
