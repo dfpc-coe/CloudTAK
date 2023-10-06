@@ -5,10 +5,14 @@ import Contacts from './api/contacts.js';
 import { CookieJar, Cookie } from 'tough-cookie';
 import { CookieAgent } from 'http-cookie-agent/undici';
 import Err from '@openaddresses/batch-error';
+import { Client } from 'undici';
+import { Stream } from 'node:stream';
 
 export class APIAuth {
     async init(base: URL) {}
-    async fetch(api: TAKAPI, opts: any) {}
+    async fetch(api: TAKAPI, url: URL, opts: any): Promise<any> {
+        return await fetch(url, opts);
+    }
 }
 
 export class APIAuthPassword extends APIAuth {
@@ -36,7 +40,7 @@ export class APIAuthPassword extends APIAuth {
         this.jwt = body.access_token
     }
 
-    async fetch(api: TAKAPI, opts: any) {
+    async fetch(api: TAKAPI, url: URL, opts: any): Promise<any> {
         const jar = new CookieJar();
 
         await jar.setCookie(new Cookie({ key: 'access_token', value: this.jwt }), String(api.url));
@@ -45,6 +49,8 @@ export class APIAuthPassword extends APIAuth {
 
         opts.credentials = 'include';
         opts.dispatcher = agent;
+
+        return await fetch(url, opts);
     }
 }
 
@@ -56,7 +62,17 @@ export class APIAuthToken extends APIAuth {
         this.jwt = jwt;
     }
 
-    async fetch(api: TAKAPI, opts: any) {
+    async fetch(api: TAKAPI, url: URL, opts: any): Promise<any> {
+        const jar = new CookieJar();
+
+        await jar.setCookie(new Cookie({ key: 'access_token', value: this.jwt }), String(api.url));
+
+        const agent = new CookieAgent({ cookies: { jar } });
+
+        opts.credentials = 'include';
+        opts.dispatcher = agent;
+
+        return await fetch(url, opts);
     }
 }
 
@@ -70,7 +86,42 @@ export class APIAuthCertificate extends APIAuth {
         this.key = key;
     }
 
-    async fetch(api: TAKAPI, opts: any) {
+    async fetch(api: TAKAPI, url: URL, opts: any): Promise<any> {
+        const client = new Client(api.url.origin, {
+            connect: {
+                key: this.key,
+                cert: this.cert,
+                rejectUnauthorized: false,
+            }
+        });
+
+        const res = await client.request({
+            path: String(url).replace(api.url.origin, ''),
+            ...opts
+        });
+
+
+        return {
+            status: res.statusCode,
+            body: res.body,
+            // Make this similiar to the fetch standard
+            headers: new Map(Object.entries(res.headers)),
+            text: async () => {
+                return String(await this.stream2buffer(res.body));
+            },
+            json: async () => {
+                return JSON.parse(String(await this.stream2buffer(res.body)));
+            },
+        };
+    }
+
+    async stream2buffer(stream: Stream): Promise<Buffer> {
+        return new Promise<Buffer> ((resolve, reject) => {
+            const _buf = Array<any>();
+            stream.on("data", chunk => _buf.push(chunk));
+            stream.on("end", () => resolve(Buffer.concat(_buf)));
+            stream.on("error", (err: Error) => reject(`error converting stream - ${err}`));
+        })
     }
 }
 
@@ -128,9 +179,7 @@ export default class TAKAPI {
                 opts.headers['Content-Type'] = 'application/json';
             }
 
-            await this.auth.fetch(this, opts)
-
-            const res = await fetch(url, opts);
+            const res = await this.auth.fetch(this, url, opts)
 
             if (raw) return res;
 
