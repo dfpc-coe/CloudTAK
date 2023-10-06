@@ -1,7 +1,7 @@
 <template>
 <div class='w-100'>
     <template v-if='loading'>
-        <TablerLoading/>
+        <TablerLoading :inline='true'/>
     </template>
     <template v-else>
         <div class='d-flex'>

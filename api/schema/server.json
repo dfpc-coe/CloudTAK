@@ -19,6 +19,9 @@
         },
         "auth": {
             "$ref": "./server/auth.json"
+        },
+        "api": {
+            "$ref": "./server/api.json"
         }
     },
     "required": [
@@ -27,6 +30,7 @@
         "updated",
         "name",
         "url",
-        "auth"
+        "auth",
+        "api"
     ]
 }

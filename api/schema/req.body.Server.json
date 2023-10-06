@@ -9,6 +9,9 @@
         "url": {
             "type": "string"
         },
+        "api": {
+            "type": "string"
+        },
         "auth": {
             "type": "object",
             "default": {}
