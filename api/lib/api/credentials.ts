@@ -1,4 +1,6 @@
-import TAKAPI from '../tak-api.js';
+import TAKAPI, {
+    APIAuthPassword
+} from '../tak-api.js';
 import pem from 'pem';
 import xml2js from 'xml2js';
 
@@ -17,6 +19,8 @@ export default class {
     }
 
     async generate() {
+        if (!(this.api.auth instanceof APIAuthPassword)) throw new Error('Must use Password Auth');
+
         const config = await xml2js.parseStringPromise(await this.config());
 
         let organization = null;

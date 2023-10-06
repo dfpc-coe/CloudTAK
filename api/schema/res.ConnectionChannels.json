@@ -1,0 +1,20 @@
+{
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+        "channels"
+    ],
+    "properties": {
+        "channels": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [],
+                "properties": {
+
+                }
+            }
+        }
+    }
+}

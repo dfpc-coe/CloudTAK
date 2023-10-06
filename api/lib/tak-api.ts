@@ -1,13 +1,77 @@
 import MissionData from './api/mission-data.js';
 import Credentials from './api/credentials.js';
 import Groups from './api/groups.js';
+import Contacts from './api/contacts.js';
 import { CookieJar, Cookie } from 'tough-cookie';
 import { CookieAgent } from 'http-cookie-agent/undici';
 import Err from '@openaddresses/batch-error';
 
-export interface APIAuthInput {
+export class APIAuth {
+    async init(base: URL) {}
+    async fetch(api: TAKAPI, opts: any) {}
+}
+
+export class APIAuthPassword extends APIAuth {
     username: string;
     password: string;
+    jwt?: string;
+
+    constructor(username: string, password: string) {
+        super();
+        this.username = username;
+        this.password = password;
+    }
+
+    async init(base: URL) {
+        const url = new URL('/oauth/token', base);
+        url.searchParams.append('grant_type', 'password');
+        url.searchParams.append('username', this.username);
+        url.searchParams.append('password', this.password);
+
+        const authres = await fetch(url);
+
+        if (!authres.ok) throw new Err(400, new Error(await authres.text()), 'Non-200 Response from Auth Server - Token');
+
+        const body = await authres.json();
+        this.jwt = body.access_token
+    }
+
+    async fetch(api: TAKAPI, opts: any) {
+        const jar = new CookieJar();
+
+        await jar.setCookie(new Cookie({ key: 'access_token', value: this.jwt }), String(api.url));
+
+        const agent = new CookieAgent({ cookies: { jar } });
+
+        opts.credentials = 'include';
+        opts.dispatcher = agent;
+    }
+}
+
+export class APIAuthToken extends APIAuth {
+    jwt?: string;
+
+    constructor(jwt: string) {
+        super();
+        this.jwt = jwt;
+    }
+
+    async fetch(api: TAKAPI, opts: any) {
+    }
+}
+
+export class APIAuthCertificate extends APIAuth {
+    cert: string;
+    key: string;
+
+    constructor(cert: string, key: string) {
+        super();
+        this.cert = cert;
+        this.key = key;
+    }
+
+    async fetch(api: TAKAPI, opts: any) {
+    }
 }
 
 /**
@@ -15,29 +79,26 @@ export interface APIAuthInput {
  * @class
  */
 export default class TAKAPI {
-    auth?: APIAuthInput;
-    authorized?: {
-        jwt: string;
-    };
+    auth: APIAuth;
     url: URL;
     MissionData: MissionData;
     Credentials: Credentials;
+    Contacts: Contacts;
     Groups: Groups;
 
-    constructor(url: URL, auth: APIAuthInput | string) {
-        if (typeof auth === 'string') {
-            this.authorized = {
-                jwt: auth
-            }
-        } else {
-            this.auth = auth;
-        }
+    static async init(url: URL, auth: APIAuth): Promise<TAKAPI> {
+        const api = new TAKAPI();
+        api.url = url;
+        api.auth = auth;
 
-        this.url = url;
+        await api.auth.init(api.url);
 
-        this.MissionData = new MissionData(this);
-        this.Credentials = new Credentials(this);
-        this.Groups = new Groups(this);
+        api.MissionData = new MissionData(api);
+        api.Credentials = new Credentials(api);
+        api.Contacts = new Contacts(api);
+        api.Groups = new Groups(api);
+
+        return api;
     }
 
     stdurl(url: string | URL) {
@@ -48,29 +109,6 @@ export default class TAKAPI {
         }
 
         return url;
-    }
-
-    logout() {
-        delete this.authorized;
-    }
-
-    async login() {
-        if (!this.auth) throw new Err(400, null, 'Username or Password not provided')
-
-        const url = new URL('/oauth/token', this.url);
-        url.searchParams.append('grant_type', 'password');
-        url.searchParams.append('username', this.auth.username);
-        url.searchParams.append('password', this.auth.password);
-
-        const authres = await fetch(url);
-
-        if (!authres.ok) throw new Err(400, new Error(await authres.text()), 'Non-200 Response from Auth Server - Token');
-
-        const body = await authres.json();
-
-        this.authorized = {
-            jwt: body.access_token
-        };
     }
 
     /**
@@ -90,18 +128,7 @@ export default class TAKAPI {
                 opts.headers['Content-Type'] = 'application/json';
             }
 
-            if (!opts.headers['Authorization'] && this.authorized) {
-                const jar = new CookieJar();
-
-                if (this.authorized) {
-                    await jar.setCookie(new Cookie({ key: 'access_token', value: this.authorized.jwt }), String(this.url));
-                }
-
-                const agent = new CookieAgent({ cookies: { jar } });
-
-                opts.credentials = 'include';
-                opts.dispatcher = agent;
-            }
+            await this.auth.fetch(this, opts)
 
             const res = await fetch(url, opts);
 
