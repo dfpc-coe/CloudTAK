@@ -19,6 +19,10 @@
                     <div class="card">
                         <div class='card-header'>
                             <h3 class='card-title'>Iconsets</h3>
+
+                            <div class='ms-auto btn-list'>
+                                <PlusIcon @click='$router.push(`/iconset/new`)' class='cursor-pointer'/>
+                            </div>
                         </div>
                         <div class="card-body">
                             <template v-if='loading'>
@@ -55,7 +59,8 @@ import {
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import {
-    SearchIcon
+    SearchIcon,
+    PlusIcon
 } from 'vue-tabler-icons'
 
 export default {
@@ -64,18 +69,10 @@ export default {
         return {
             err: false,
             loading: true,
-            query: {
-                search: ''
-            },
             list: {
                 total: 0,
                 iconsets: []
             }
-        }
-    },
-    watch: {
-        'query.search': function() {
-            this.fetchList();
         }
     },
     mounted: async function() {
@@ -85,12 +82,12 @@ export default {
         fetchList: async function() {
             this.loading = true;
             const url = window.stdurl('/api/iconset');
-            url.searchParams.append('filter', this.query.search);
             this.list = await window.std(url);
             this.loading = false;
         }
     },
     components: {
+        PlusIcon,
         CombinedIcons,
         TablerNone,
         SearchIcon,

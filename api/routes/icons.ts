@@ -8,10 +8,10 @@ import Config from '../lib/config.js';
 
 export default async function router(schema, config: Config) {
     await schema.get('/iconset', {
-        name: 'List Icons',
+        name: 'List Iconsets',
         group: 'Icons',
         auth: 'user',
-        description: 'List Icons',
+        description: 'List Iconsets',
         query: 'req.query.ListIconsets.json',
         res: 'res.ListIconsets.json'
     }, async (req: AuthRequest, res: Response) => {
@@ -21,6 +21,45 @@ export default async function router(schema, config: Config) {
             const list = await Iconset.list(config.pool, req.query);
 
             return res.json(list);
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
+
+    await schema.post('/iconset', {
+        name: 'Create Iconset',
+        group: 'Icons',
+        auth: 'user',
+        description: 'Create Iconset',
+        body: 'req.body.CreateIconset.json',
+        res: 'iconsets.json'
+    }, async (req: AuthRequest, res: Response) => {
+        try {
+            await Auth.is_auth(req);
+
+            const iconset = await Iconset.generate(config.pool, req.body);
+
+            return res.json(iconset);
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
+
+    await schema.patch('/iconset/:iconset', {
+        name: 'Create Iconset',
+        group: 'Icons',
+        auth: 'user',
+        description: 'Patch Iconset',
+        ':iconset': 'string',
+        body: 'req.body.PatchIconset.json',
+        res: 'iconsets.json'
+    }, async (req: AuthRequest, res: Response) => {
+        try {
+            await Auth.is_auth(req);
+
+            const iconset = await Iconset.commit(config.pool, req.body);
+
+            return res.json(iconset);
         } catch (err) {
             return Err.respond(err, res);
         }

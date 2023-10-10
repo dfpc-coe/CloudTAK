@@ -81,7 +81,7 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link cursor-pointer" @click='$router.push("/icon")'>
+                            <a class="nav-link cursor-pointer" @click='$router.push("/iconset")'>
                                 <span class="nav-link-icon d-md-none d-lg-inline-block">
                                     <PhotoIcon/>
                                 </span>
