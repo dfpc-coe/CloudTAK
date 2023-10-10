@@ -10,5 +10,5 @@ export const handler = async (
     event: Lambda.APIGatewayProxyEventV2,
     context: Lambda.Context,
 ): Promise<Lambda.APIGatewayProxyResult> => {
-
+    console.error(event, context)
 };
