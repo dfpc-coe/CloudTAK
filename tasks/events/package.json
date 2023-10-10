@@ -1,0 +1,25 @@
+{
+    "name": "events",
+    "version": "0.0.0",
+    "type": "module",
+    "private": true,
+    "scripts": {
+        "tsc": "tsc --noEmit --watch",
+        "lint": "eslint src/index.ts",
+        "build": "tsup --target es2022 --format esm src/index.ts"
+    },
+    "dependencies": {
+        "@aws-sdk/client-s3": "^3.213.0",
+        "jsonwebtoken": "^9.0.0"
+    },
+    "devDependencies": {
+        "@types/aws-lambda": "^8.10.108",
+        "@types/jsonwebtoken": "^9.0.2",
+        "@types/node": "^20.0.0",
+        "@typescript-eslint/eslint-plugin": "^6.0.0",
+        "@typescript-eslint/parser": "^6.0.0",
+        "eslint": "^8.37.0",
+        "tsup": "^7.0.0",
+        "typescript": "^5.0.0"
+    }
+}
