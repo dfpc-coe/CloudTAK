@@ -46,8 +46,8 @@ export default {
                         Statement: [{
                             Effect: 'Allow',
                             Resource: [
-                                cf.join(['arn:', cf.partition, ':s3:::', cf.ref('AssetBucket')]),
-                                cf.join(['arn:', cf.partition, ':s3:::', cf.ref('AssetBucket'), '/*'])
+                                cf.join(['arn:', cf.partition, ':s3:::', cf.join('-', [cf.stackName, cf.accountId, cf.region])]),
+                                cf.join(['arn:', cf.partition, ':s3:::', cf.join('-', [cf.stackName, cf.accountId, cf.region]), '/*'])
                             ],
                             Action: '*'
                         }]
