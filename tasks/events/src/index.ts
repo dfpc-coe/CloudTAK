@@ -7,8 +7,10 @@ import { NodeHttpHandler } from "@aws-sdk/node-http-handler";
 
 
 export const handler = async (
-    event: Lambda.APIGatewayProxyEventV2,
+    event: Lambda.S3NotificationEvent,
     context: Lambda.Context,
 ): Promise<Lambda.APIGatewayProxyResult> => {
-    console.error(event, context)
+    for (const record of event.Records) {
+        console.error('Record', record);
+    }
 };
