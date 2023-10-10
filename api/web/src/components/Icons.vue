@@ -27,7 +27,8 @@
                             <template v-else>
                                 <TablerNone
                                     v-if='!list.iconsets.length'
-                                    label='Icons'
+                                    label='Iconsets'
+                                    :create='false'
                                 />
                             </template>
                         </div>
@@ -35,7 +36,7 @@
                 </div>
 
                 <div class="col-lg-12">
-                    <CombinedIcons/>
+                    <CombinedIcons v-if='list.iconsets.length'/>
                 </div>
             </div>
         </div>
