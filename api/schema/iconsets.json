@@ -28,6 +28,12 @@
         },
         "skip_resize": {
             "$ref": "./iconsets/skip_resize.json"
+        },
+        "created": {
+            "$ref": "./iconsets/created.json"
+        },
+        "updated": {
+            "$ref": "./iconsets/updated.json"
         }
     },
     "required": [
@@ -39,6 +45,8 @@
         "default_hostile",
         "default_neutral",
         "default_unknown",
-        "skip_resize"
+        "skip_resize",
+        "created",
+        "updated"
     ]
 }
