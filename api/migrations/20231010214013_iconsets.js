@@ -12,7 +12,7 @@ function up(knex) {
             skip_resize         BOOLEAN NOT NULL DEFAULT False
         );
 
-        CREATE TABLE icon (
+        CREATE TABLE icons (
             iconset         TEXT NOT NULL REFERENCES iconsets(uid),
             name            TEXT NOT NULL,
             type2525b       TEXT

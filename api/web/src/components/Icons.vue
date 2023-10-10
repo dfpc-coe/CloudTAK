@@ -17,43 +17,26 @@
             <div class='row row-deck row-cards'>
                 <div class="col-lg-12">
                     <div class="card">
+                        <div class='card-header'>
+                            <h3 class='card-title'>Iconsets</h3>
+                        </div>
                         <div class="card-body">
-                            <label class="form-label">Icon Search</label>
-                            <div class="input-icon mb-3">
-                                <input v-model='query.search' type="text" class="form-control" placeholder="Search…">
-                                <span class="input-icon-addon">
-                                    <SearchIcon/>
-                                </span>
-                            </div>
+                            <template v-if='loading'>
+                                <TablerLoading/>
+                            </template>
+                            <template v-else>
+                                <TablerNone
+                                    v-if='!list.iconsets.length'
+                                    label='Icons'
+                                />
+                            </template>
                         </div>
                     </div>
                 </div>
 
-                <template v-if='loading'>
-                    <TablerLoading/>
-                </template>
-                <template v-else>
-                    <TablerNone
-                        v-if='!list.icons.length'
-                        label='Icons'
-                        @create='$router.push("/layer/new")'
-                    />
-                    <div :key='icon.id' v-for='icon in list.icons' class="col-sm-2">
-                        <div class="card card-sm">
-                            <a href="#" class="d-block">
-                                <img :src="`/icons/${icon.file}`" class="card-img-top">
-                            </a>
-                            <div class="card-body">
-                                <div class="d-flex align-items-center">
-                                    <div>
-                                        <div v-text='icon.name'></div>
-                                        <div class="text-muted" v-text='icon.id'></div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </template>
+                <div class="col-lg-12">
+                    <CombinedIcons/>
+                </div>
             </div>
         </div>
     </div>
@@ -64,6 +47,7 @@
 
 <script>
 import PageFooter from './PageFooter.vue';
+import CombinedIcons from './cards/Icons.vue'
 import {
     TablerNone,
     TablerBreadCrumb,
@@ -83,7 +67,8 @@ export default {
                 search: ''
             },
             list: {
-                icons: []
+                total: 0,
+                iconsets: []
             }
         }
     },
@@ -98,13 +83,14 @@ export default {
     methods: {
         fetchList: async function() {
             this.loading = true;
-            const url = window.stdurl('/api/icon');
+            const url = window.stdurl('/api/iconset');
             url.searchParams.append('filter', this.query.search);
             this.list = await window.std(url);
             this.loading = false;
         }
     },
     components: {
+        CombinedIcons,
         TablerNone,
         SearchIcon,
         PageFooter,

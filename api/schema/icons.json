@@ -1,0 +1,20 @@
+{
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+        "iconset": {
+            "$ref": "./icons/iconset.json"
+        },
+        "name": {
+            "$ref": "./icons/name.json"
+        },
+        "type2525b": {
+            "$ref": "./icons/type2525b.json"
+        }
+    },
+    "required": [
+        "iconset",
+        "name",
+        "type2525b"
+    ]
+}
