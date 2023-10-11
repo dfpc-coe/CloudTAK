@@ -27,7 +27,7 @@
 
                             <div class='d-flex'>
                                 <div class='ms-auto'>
-                                    <div class='btn btn-primary'>Submit</div>
+                                    <div @click='submit' class='btn btn-primary'>Submit</div>
                                 </div>
                             </div>
                         </div>
@@ -82,6 +82,16 @@ export default {
             this.loading.layer = true;
             this.layer = await window.std(`/api/iconset/${this.$route.params.icon}`);
             this.loading.layer = false;
+        },
+        submit: async function() {
+            const url = await window.stdurl(`/api/iconset/${this.$route.params.icon ||''}`);
+
+            const iconset = await window.std(url, {
+                method: this.$route.params.icon ? 'PATCH' : 'POST',
+                body: this.iconset
+            });
+
+            this.$router.push(`/iconset/${iconset.uid}`);
         },
         fetchSchema: async function() {
             const url = await window.stdurl(`/api/schema`);
