@@ -24,17 +24,23 @@
                                 <PlusIcon @click='$router.push(`/iconset/new`)' class='cursor-pointer'/>
                             </div>
                         </div>
-                        <div class="card-body">
-                            <template v-if='loading'>
-                                <TablerLoading/>
-                            </template>
-                            <template v-else>
-                                <TablerNone
-                                    v-if='!list.iconsets.length'
-                                    label='Iconsets'
-                                    :create='false'
-                                />
-                            </template>
+                        <TablerLoading v-if='loading'/>
+                        <TablerNone
+                            v-else-if='!list.iconsets.length'
+                            label='Iconsets'
+                            :create='false'
+                        />
+                        <div v-else class='table-responsive'>
+                            <table class="table table-hover card-table table-vcenter cursor-pointer">
+                                <thead><tr>
+                                    <th>Name</th>
+                                    <th>UID</th>
+                                </tr></thead>
+                                <tbody><tr @click='$router.push(`/iconset/${iconset.uid}`)' :key='iconset.uid' v-for='iconset in list.iconsets'>
+                                    <td v-text='iconset.name'></td>
+                                    <td v-text='iconset.uid'></td>
+                                </tr></tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
