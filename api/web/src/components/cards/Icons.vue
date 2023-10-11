@@ -3,11 +3,13 @@
     <div class="card-header">
         <h3 class='card-title'>Icon Search</h3>
 
-        <div class="input-icon mb-3">
-            <input v-model='query.search' type="text" class="form-control" placeholder="Search…">
-            <span class="input-icon-addon">
-                <SearchIcon/>
-            </span>
+        <div class='ms-auto'>
+            <div class="input-icon">
+                <input v-model='query.search' type="text" class="form-control" placeholder="Search…">
+                <span class="input-icon-addon">
+                    <SearchIcon/>
+                </span>
+            </div>
         </div>
     </div>
     <div class="card-body">
