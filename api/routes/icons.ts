@@ -78,6 +78,10 @@ export default async function router(schema, config: Config) {
 
             req.query.filter = String(req.query.filter).toLowerCase();
 
+            const list = await Icon.list(config.pool, req.query);
+
+            return res.json(list)
+
         } catch (err) {
             return Err.respond(err, res);
         }

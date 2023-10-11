@@ -20,7 +20,7 @@
             <TablerNone
                 v-if='!list.icons.length'
                 label='Icons'
-                @create='$router.push("/layer/new")'
+                :create='false'
             />
             <div :key='icon.id' v-for='icon in list.icons' class="col-sm-2">
                 <div class="card card-sm">
