@@ -17,7 +17,7 @@ export const handler = async (
             Bucket: record.s3.bucket.name,
             Key: decodeURIComponent(record.s3.object.key.replace(/\+/g, ' '))
         }
-        console.log(`ok - New file detected in ${md.Bucket}: ${md.Key}`);
+        console.log(`ok - New file detected in s3://${md.Bucket}/${md.Key}`);
 
         if (!md.Key.startsWith('import/')) {
             console.log(`ok - Not an import - skipping`);
@@ -58,7 +58,7 @@ export const handler = async (
             }
 
             for (const index of indexes) {
-                await processIndex(String(await zip.entryDate(index)), entries);
+                await processIndex(String(await zip.entryData(index)), entries);
             }
 
             /*
