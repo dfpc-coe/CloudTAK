@@ -19,6 +19,9 @@
         },
         "result": {
             "$ref": "./imports/result.json"
+        },
+        "name": {
+            "$ref": "./imports/name.json"
         }
     },
     "required": [
@@ -27,6 +30,7 @@
         "updated",
         "status",
         "error",
-        "result"
+        "result",
+        "name"
     ]
 }
