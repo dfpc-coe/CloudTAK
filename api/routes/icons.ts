@@ -96,7 +96,7 @@ export default async function router(schema, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            const iconsen = await Iconset.from(config.pool, req.params.iconset);
+            const iconset = await Iconset.from(config.pool, req.params.iconset);
 
             const icon = await Icon.generate(config.pool, {
                 ...req.body,
