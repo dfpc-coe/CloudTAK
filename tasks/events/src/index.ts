@@ -143,7 +143,7 @@ async function processIndex(event: Event, xmlstr: string, zip?: StreamZipAsync) 
         // This was a dumb idea and this code tries to match 1:1 without the prefix
         const icons = await zip.entries();
         const lookup = new Map();
-        for (const icon of icons) {
+        for (const icon in icons) {
             lookup.set(path.parse(icon.name).base, icon);
         }
 

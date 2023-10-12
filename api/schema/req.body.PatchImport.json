@@ -11,10 +11,5 @@
         "result": {
             "$ref": "./imports/result.json"
         }
-    },
-    "required": [
-        "status",
-        "error",
-        "result"
-    ]
+    }
 }
