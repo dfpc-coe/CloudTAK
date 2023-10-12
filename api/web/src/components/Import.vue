@@ -18,7 +18,12 @@
                 <div class="col-lg-12">
                     <div class="card">
                         <div class='card-header'>
-                            <h3 class='card-title'>Import <span v-text='imported.id'/></h3>
+                            <h3 class='card-title'>
+                                <div class='d-flex'>
+                                    <Status :status='imported.status'/>
+                                    <div class='d-flex align-items-center'>Import <span class='mx-2' v-text='imported.id'/></div>
+                                </div>
+                            </h3>
                             <div class='ms-auto btn-list'>
                                 <RefreshIcon @click='fetch' v-tooltip='`Refresh Import`' class='cursor-pointer'/>
                             </div>
@@ -38,6 +43,7 @@
 </template>
 
 <script>
+import Status from './util/Status.vue';
 import PageFooter from './PageFooter.vue';
 import {
     TablerNone,
@@ -70,6 +76,7 @@ export default {
         }
     },
     components: {
+        Status,
         RefreshIcon,
         TablerNone,
         PageFooter,
