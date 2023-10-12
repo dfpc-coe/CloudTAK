@@ -16,6 +16,12 @@
         },
         "updated": {
             "$ref": "./icons/updated.json"
+        },
+        "data": {
+            "$ref": "./icons/data.json"
+        },
+        "path": {
+            "$ref": "./icons/path.json"
         }
     },
     "required": [
@@ -23,6 +29,8 @@
         "name",
         "type2525b",
         "created",
-        "updated"
+        "updated",
+        "data",
+        "path"
     ]
 }
