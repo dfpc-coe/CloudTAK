@@ -14,7 +14,32 @@ export default async function router(schema: any, config: Config) {
         group: 'Import',
         auth: 'user',
         description: 'Import TAK assets and attempt to automatically handle them',
-        res: 'res.Standard.json'
+        res: {
+            type: 'object',
+            required: ['imports'],
+            additionalProperties: false,
+            properties: {
+                imports: {
+                    type: 'array',
+                    items: {
+                        type: 'object',
+                        required: ['file', 'uid', 'ext'],
+                        additionalProperties: false,
+                        properties: {
+                            file: {
+                                type: 'string'
+                            },
+                            uid: {
+                                type: 'string'
+                            },
+                            ext: {
+                                type: 'string'
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(req);
@@ -46,7 +71,9 @@ export default async function router(schema: any, config: Config) {
                 })())
             }).on('finish', async () => {
                 try {
-                    return res.json(await Promise.all(uploads));
+                    return res.json({
+                        imports: await Promise.all(uploads)
+                    });
                 } catch (err) {
                     Err.respond(err, res);
                 }
