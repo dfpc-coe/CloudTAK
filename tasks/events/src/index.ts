@@ -144,9 +144,8 @@ async function processIndex(event: Event, xmlstr: string, zip?: StreamZipAsync) 
         const icons = await zip.entries();
         const lookup = new Map();
         for (const icon in icons) {
-            lookup.set(path.parse(icon.name).base, icon);
+            lookup.set(path.parse(icons[icon].name).base, icons[icon]);
         }
-
 
         for (const icon of xml.iconset.icon) {
             await fetch(new URL(`/api/iconset/${iconset.uid}/icon`, process.env.TAK_ETL_API), {
