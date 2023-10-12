@@ -139,6 +139,15 @@ async function processIndex(event: Event, xmlstr: string, zip?: StreamZipAsync) 
             body: JSON.stringify(iconset)
         });
 
+        // Someone decided that the icon name should be the name without the folder prefix
+        // This was a dumb idea and this code tries to match 1:1 without the prefix
+        const icons = await zip.entries();
+        const lookup = new Map();
+        for (const icon of icons) {
+            lookup.set(path.parse(icon.name).base, icon);
+        }
+
+
         for (const icon of xml.iconset.icon) {
             await fetch(new URL(`/api/iconset/${iconset.uid}/icon`, process.env.TAK_ETL_API), {
                 method: 'POST',
@@ -150,7 +159,7 @@ async function processIndex(event: Event, xmlstr: string, zip?: StreamZipAsync) 
                     name: icon.$.name,
                     path: `${iconset.uid}/${icon.$.name}`,
                     type2525b: icon.$.type2525b || null,
-                    data: (await zip.entryData(icon.$.name)).toString('base64')
+                    data: (await zip.entryData(lookup.get(icon.$.name))).toString('base64')
                 })
             });
         }
