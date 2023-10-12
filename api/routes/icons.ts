@@ -65,6 +65,25 @@ export default async function router(schema, config: Config) {
         }
     });
 
+    await schema.get('/iconset/:iconset', {
+        name: 'Get Iconset',
+        group: 'Icons',
+        auth: 'user',
+        description: 'Get Iconset',
+        ':iconset': 'string',
+        res: 'iconsets.json'
+    }, async (req: AuthRequest, res: Response) => {
+        try {
+            await Auth.is_auth(req);
+
+            const iconset = await Iconset.from(config.pool, req.params.iconset);
+
+            return res.json(iconset);
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
+
     await schema.get('/icon', {
         name: 'List Icons',
         group: 'Icons',
