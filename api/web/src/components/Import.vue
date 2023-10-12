@@ -19,6 +19,9 @@
                     <div class="card">
                         <div class='card-header'>
                             <h3 class='card-title'>Import <span v-text='imported.id'/></h3>
+                            <div class='ms-auto btn-list'>
+                                <RefreshIcon @click='fetch' v-tooltip='`Refresh Import`' class='cursor-pointer'/>
+                            </div>
                         </div>
                         <TablerLoading v-if='loading'/>
                     </div>
@@ -41,6 +44,9 @@ import {
     TablerBreadCrumb,
     TablerLoading
 } from '@tak-ps/vue-tabler';
+import {
+    RefreshIcon
+} from 'vue-tabler-icons';
 
 export default {
     name: 'Import',
@@ -64,6 +70,7 @@ export default {
         }
     },
     components: {
+        RefreshIcon,
         TablerNone,
         PageFooter,
         TablerBreadCrumb,
