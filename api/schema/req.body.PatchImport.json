@@ -1,0 +1,20 @@
+{
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+        "status": {
+            "$ref": "./imports/status.json"
+        },
+        "error": {
+            "$ref": "./imports/error.json"
+        },
+        "result": {
+            "$ref": "./imports/result.json"
+        }
+    },
+    "required": [
+        "status",
+        "error",
+        "result"
+    ]
+}

@@ -8,6 +8,7 @@ import { AuthRequest } from '@tak-ps/blueprint-login';
 import Import from '../lib/types/import.js';
 import S3 from '../lib/aws/s3.js';
 import crypto from 'node:crypto';
+import { sql } from 'slonik';
 
 export default async function router(schema: any, config: Config) {
     await schema.put('/import', {
@@ -103,6 +104,29 @@ export default async function router(schema: any, config: Config) {
             await Auth.is_auth(req);
 
             const imported = await Import.from(config.pool, req.params.import);
+
+            return res.json(imported);
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
+
+    await schema.patch('/import/:import', {
+        name: 'Update Import',
+        group: 'Import',
+        auth: 'user',
+        description: 'Update Import',
+        ':import': 'string',
+        body: 'req.PatchImport.json',
+        res: 'imports.json'
+    }, async (req: AuthRequest, res: Response) => {
+        try {
+            await Auth.is_auth(req);
+
+            const imported = await Import.commit(config.pool, req.params.import, {
+                ...req.body,
+                updated: sql`Now()`
+            });
 
             return res.json(imported);
         } catch (err) {
