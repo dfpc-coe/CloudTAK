@@ -46,10 +46,10 @@ export default async function router(schema, config: Config) {
     });
 
     await schema.patch('/iconset/:iconset', {
-        name: 'Create Iconset',
+        name: 'Update Iconset',
         group: 'Icons',
         auth: 'user',
-        description: 'Patch Iconset',
+        description: 'Update Iconset',
         ':iconset': 'string',
         body: 'req.body.PatchIconset.json',
         res: 'iconsets.json'
@@ -57,7 +57,7 @@ export default async function router(schema, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            const iconset = await Iconset.commit(config.pool, req.body);
+            const iconset = await Iconset.commit(config.pool, req.params.iconset, req.body);
 
             return res.json(iconset);
         } catch (err) {
