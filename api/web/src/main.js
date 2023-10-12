@@ -87,6 +87,9 @@ const router = new VueRouter.createRouter({
         { path: '/iconset/:icon', name: 'icon', component: () => import('./components/Icon.vue') },
         { path: '/iconset/:icon/edit', name: 'icon-edit', component: () => import('./components/IconEdit.vue') },
 
+        { path: '/import', name: 'imports', component: () => import('./components/Imports.vue') },
+        { path: '/import/:import', name: 'import', component: () => import('./components/Import.vue') },
+
         { path: '/login', name: 'login', component: () => import('./components/Login.vue') },
 
         { path: '/admin', name: 'admin', component: () => import('./components/Admin.vue') },

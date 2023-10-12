@@ -5,6 +5,7 @@ import busboy from 'busboy';
 import Config from '../lib/config.js';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
+import Import from '../lib/types/import.js';
 import S3 from '../lib/aws/s3.js';
 import crypto from 'node:crypto';
 
@@ -65,6 +66,10 @@ export default async function router(schema: any, config: Config) {
                         uid: crypto.randomUUID()
                     };
 
+                    await Import.generate(config.pool, {
+                        id: res.uid
+                    });
+
                     await S3.put(`import/${res.uid}${res.ext}`, file)
 
                     return res;
@@ -80,6 +85,44 @@ export default async function router(schema: any, config: Config) {
             });
 
             return req.pipe(bb);
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
+
+    await schema.get('/import/:import', {
+        name: 'Get Import',
+        group: 'Import',
+        auth: 'user',
+        description: 'Get Import',
+        ':import': 'string',
+        res: 'imports.json'
+    }, async (req: AuthRequest, res: Response) => {
+        try {
+            await Auth.is_auth(req);
+
+            const imported = await Import.from(config.pool, req.params.import);
+
+            return res.json(imported);
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
+
+    await schema.get('/import', {
+        name: 'List Imports',
+        group: 'Import',
+        auth: 'user',
+        description: 'List Imports',
+        query: 'req.query.ListImports.json',
+        res: 'res.ListImports.json'
+    }, async (req: AuthRequest, res: Response) => {
+        try {
+            await Auth.is_auth(req);
+
+            const list = await Import.list(config.pool, req.query);
+
+            return res.json(list);
         } catch (err) {
             return Err.respond(err, res);
         }
