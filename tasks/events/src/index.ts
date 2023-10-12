@@ -1,9 +1,10 @@
 import os from 'node:os';
+import fsp from 'node:fs/promises';
 import fs from 'node:fs';
 import Lambda from "aws-lambda";
 import path from 'node:path';
 import S3 from "@aws-sdk/client-s3";
-import StreamZip, { ZipEntry } from 'node-stream-zip'
+import StreamZip, { StreamZipAsync } from 'node-stream-zip'
 import { pipeline } from 'node:stream/promises';
 import xml2js from 'xml2js';
 import jwt from 'jsonwebtoken';
@@ -13,18 +14,22 @@ interface Event {
     Token: string;
     Bucket: string;
     Key: string;
+    Ext: string;
+    Local: string;
 }
 
 export const handler = async (
-    event: Lambda.S3NotificationEvent,
-): Promise<Lambda.APIGatewayProxyResult> => {
+    event: Lambda.S3Event,
+): Promise<void> => {
 
     for (const record of event.Records) {
         const md = {
             Import: path.parse(decodeURIComponent(record.s3.object.key.replace(/\+/g, ' '))).name,
-            Token: jwt.sign({ access: 'event' }, process.env.SigningSecret),
+            Token: jwt.sign({ access: 'event' }, String(process.env.SigningSecret)),
             Bucket: record.s3.bucket.name,
-            Key: decodeURIComponent(record.s3.object.key.replace(/\+/g, ' '))
+            Key: decodeURIComponent(record.s3.object.key.replace(/\+/g, ' ')),
+            Ext: path.parse(decodeURIComponent(record.s3.object.key.replace(/\+/g, ' '))).ext,
+            Local: path.resolve(os.tmpdir(), `input${path.parse(decodeURIComponent(record.s3.object.key.replace(/\+/g, ' '))).ext}`),
         }
 
         try {
@@ -37,10 +42,8 @@ export const handler = async (
 
             const s3 = new S3.S3Client({ region: process.env.AWS_DEFAULT_REGION || 'us-east-1' });
 
-            md.Ext = path.parse(md.Key).ext;
-            md.Local = path.resolve(os.tmpdir(), `input${md.Ext}`);
-
             await pipeline(
+                // @ts-ignore
                 (await s3.send(new S3.GetObjectCommand({
                     Bucket: md.Bucket,
                     Key: md.Key
@@ -56,23 +59,20 @@ export const handler = async (
 
                 const preentries = await zip.entries();
 
-                const entries = new Map();
                 const indexes = [];
                 for (const entrykey in preentries) {
                     const entry = preentries[entrykey];
 
                     if (path.parse(entry.name).ext === '.xml') {
                         indexes.push(entry);
-                    } else {
-                        entries.set(entry.name, entry);
                     }
                 }
 
                 for (const index of indexes) {
-                    await processIndex(md, String(await zip.entryData(index)), entries);
+                    await processIndex(md, String(await zip.entryData(index)), zip);
                 }
             } else if (md.Ext === '.xml') {
-                await processIndex(md, String(await zip.entryDate(index)), new Map());
+                await processIndex(md, String(await fsp.readFile(md.Local)));
             } else {
                 throw new Error('Unable to parse Index');
             }
@@ -81,7 +81,7 @@ export const handler = async (
 
             await updateImport(md, {
                 status: 'Fail',
-                error: err.message
+                error: err instanceof Error ? err.message : String(err)
             });
         }
     }
@@ -100,10 +100,12 @@ async function updateImport(event: Event, body: object) {
     console.log(await res.text());
 }
 
-async function processIndex(event: Event, xml: string, entries: Map<string, ZipEntry>) {
-    xml = await xml2js.parseStringPromise(xml);
+async function processIndex(event: Event, xmlstr: string, zip?: StreamZipAsync) {
+    const xml = await xml2js.parseStringPromise(xmlstr);
 
     if (xml.iconset) {
+        if (!zip) throw new Error('Iconsets must be zipped');
+
         const iconset = {
             version: parseInt(xml.iconset.$.version),
             name: xml.iconset.$.name,
@@ -132,25 +134,25 @@ async function processIndex(event: Event, xml: string, entries: Map<string, ZipE
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${md.Token}`
+                'Authorization': `Bearer ${event.Token}`
             },
             body: JSON.stringify(iconset)
         });
-    }
 
-    for (const icon of xml.iconset.icon) {
-        await fetch(new URL(`/api/iconset/${iconset.uid}/icon`, process.env.TAK_ETL_API), {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${md.Token}`
-            },
-            body: JSON.stringify({
-                name: icon.$.name,
-                path: ``,
-                type2525b: icon.$.type2525b || null
-                data: ``
-            })
-        });
+        for (const icon of xml.iconset.icon) {
+            await fetch(new URL(`/api/iconset/${iconset.uid}/icon`, process.env.TAK_ETL_API), {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${event.Token}`
+                },
+                body: JSON.stringify({
+                    name: icon.$.name,
+                    path: `${iconset.uid}/${icon.$.name}`,
+                    type2525b: icon.$.type2525b || null,
+                    data: (await zip.entryData(icon.$.name)).toString('base64')
+                })
+            });
+        }
     }
 }
