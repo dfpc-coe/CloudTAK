@@ -84,6 +84,31 @@ export default async function router(schema, config: Config) {
         }
     });
 
+    await schema.post('/iconset/:iconset/icon', {
+        name: 'Create Icon',
+        group: 'Icons',
+        auth: 'user',
+        description: 'Create Icon',
+        ':iconset': 'string',
+        body: 'req.body.CreateIcon.json',
+        res: 'icons.json'
+    }, async (req: AuthRequest, res: Response) => {
+        try {
+            await Auth.is_auth(req);
+
+            const iconsen = await Iconset.from(config.pool, req.params.iconset);
+
+            const icon = await Icon.generate(config.pool, {
+                ...req.body,
+                iconset: iconset.uid
+            });
+
+            return res.json(icon);
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
+
     await schema.get('/icon', {
         name: 'List Icons',
         group: 'Icons',
