@@ -6,7 +6,6 @@ import path from 'node:path';
 import S3 from "@aws-sdk/client-s3";
 import StreamZip, { ZipEntry } from 'node-stream-zip'
 import { pipeline } from 'node:stream/promises';
-import asyncPool from 'tiny-async-pool';
 import xml2js from 'xml2js';
 
 export const handler = async (
@@ -60,15 +59,6 @@ export const handler = async (
             for (const index of indexes) {
                 await processIndex(String(await zip.entryData(index)), entries);
             }
-
-            /*
-            for await (const ms of asyncPool(1000, entries, async (entry) => {
-                console.error(entry)
-                const data = await zip.entryData(entry);
-            })) {
-                console.log(ms);
-            }
-            */
         } else if (md.Ext === '.xml') {
             await processIndex(String(await zip.entryDate(index)), new Map());
         } else {
@@ -79,5 +69,26 @@ export const handler = async (
 
 async function processIndex(xml: string, entries: Map<string, ZipEntry>) {
     xml = await xml2js.parseStringPromise(xml);
-    console.error(JSON.stringify(xml));
+
+    if (xml.iconset) {
+        const iconset = {
+            version: parseInt(xml.iconset.$.version),
+            name: xml.iconset.$.name,
+            default_group: xml.iconset.$.defaultGroup || null,
+            default_friendly: xml.iconset.$.defaultFriendly || null,
+            default_hostile: xml.iconset.$.defaultHostile || null,
+            default_neutral: xml.iconset.$.defaultNeutral || null,
+            default_unknown: xml.iconset.$.defaultUnknown || null,
+            skip_resize: xml.iconset.$.skipResize === "true" ? true : false,
+            uid: xml.iconset.$.uid
+        }
+    }
+
+    const icons = [];
+    for (const icon of xml.iconset.icon) {
+        icons.push({
+            name: icon.$.name,
+            type2525b: icon.$.type2525b || null
+        });
+    }
 }
