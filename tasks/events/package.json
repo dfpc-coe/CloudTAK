@@ -12,7 +12,8 @@
         "@aws-sdk/client-s3": "^3.213.0",
         "jsonwebtoken": "^9.0.0",
         "node-stream-zip": "^1.15.0",
-        "tiny-async-pool": "^2.1.0"
+        "tiny-async-pool": "^2.1.0",
+        "xml2js": "^0.6.2"
     },
     "devDependencies": {
         "@types/aws-lambda": "^8.10.108",
