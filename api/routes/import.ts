@@ -67,6 +67,7 @@ export default async function router(schema: any, config: Config) {
                     };
 
                     await Import.generate(config.pool, {
+                        name: res.file,
                         id: res.uid
                     });
 
