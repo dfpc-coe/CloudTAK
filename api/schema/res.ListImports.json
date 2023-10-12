@@ -1,0 +1,19 @@
+{
+    "type": "object",
+    "required": [
+        "total",
+        "imports"
+    ],
+    "additionalProperties": false,
+    "properties": {
+        "total": {
+            "$ref": "./util/total.json"
+        },
+        "iconsets": {
+            "type": "array",
+            "items": {
+                "$ref": "./imports.json"
+            }
+        }
+    }
+}
