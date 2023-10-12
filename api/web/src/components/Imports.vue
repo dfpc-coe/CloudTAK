@@ -40,7 +40,10 @@
                                 </tr></thead>
                                 <tbody><tr @click='$router.push(`/import/${imported.id}`)' :key='imported.id' v-for='imported in list.imports'>
                                     <td>
-                                        <span v-text='imported.id'/>
+                                        <div class='d-flex'>
+                                            <Status :status='imported.status'/>
+                                            <div class='d-flex align-items-center' v-text='imported.id'></div>
+                                        </div>
                                    </td>
                                     <td v-text='imported.name'></td>
                                     <td v-text='timeDiff(imported.created)'></td>
@@ -61,6 +64,7 @@
 <script>
 import timeDiff from '../timediff.js';
 import PageFooter from './PageFooter.vue';
+import Status from './util/Status.vue';
 import {
     TablerNone,
     TablerBreadCrumb,
@@ -96,6 +100,7 @@ export default {
         }
     },
     components: {
+        Status,
         RefreshIcon,
         TablerNone,
         PageFooter,
