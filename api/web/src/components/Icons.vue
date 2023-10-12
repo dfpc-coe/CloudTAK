@@ -37,8 +37,8 @@
                                 :url='uploadURL()'
                                 :headers='uploadHeaders()'
                                 @done='processUpload($event)'
-                                @cancel='mode.upload = false'
-                                @err='err = $event'
+                                @cancel='upload = false'
+                                @err='throws($event)'
                             />
                         </template>
                         <div v-else class='table-responsive'>
@@ -69,6 +69,7 @@
 
 <script>
 import PageFooter from './PageFooter.vue';
+import Upload from './util/Upload.vue';
 import CombinedIcons from './cards/Icons.vue'
 import {
     TablerNone,
@@ -98,6 +99,21 @@ export default {
         await this.fetchList();
     },
     methods: {
+        throws: function(err) {
+            throw err;
+        },
+        processUpload: function(body) {
+            body = JSON.parse(body);
+            this.$router.push(`/import/${body.imports[0].uid}`);
+        },
+        uploadHeaders: function() {
+            return {
+                Authorization: `Bearer ${localStorage.token}`
+            };
+        },
+        uploadURL: function() {
+            return window.stdurl(`/api/import`);
+        },
         fetchList: async function() {
             this.loading = true;
             const url = window.stdurl('/api/iconset');
@@ -106,6 +122,7 @@ export default {
         }
     },
     components: {
+        Upload,
         PlusIcon,
         FileUploadIcon,
         CombinedIcons,
