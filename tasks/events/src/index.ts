@@ -1,5 +1,6 @@
 import os from 'node:os';
-import fs from 'node:fs/promises';
+import fs from 'node:fs';
+import fsp from 'node:fs/promises';
 import Lambda from "aws-lambda";
 import path from 'node:path';
 //import jwt from 'jsonwebtoken';
@@ -52,7 +53,7 @@ export const handler = async (
             for await (const ms of asyncPool(1000, entries, async (entry) => {
                 console.error(entry)
                 const data = await zip.entryData(entry);
-                await fs.writeFile(path.resolve(os.tmpdir(), entry.name), data);
+                await fsp.writeFile(path.resolve(os.tmpdir(), entry.name), data);
             })) {
                 console.log(ms);
             }
