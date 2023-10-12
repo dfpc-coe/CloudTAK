@@ -9,7 +9,7 @@
         "total": {
             "$ref": "./util/total.json"
         },
-        "iconsets": {
+        "imports": {
             "type": "array",
             "items": {
                 "$ref": "./imports.json"

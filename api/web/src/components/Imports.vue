@@ -30,13 +30,17 @@
                             <table class="table table-hover card-table table-vcenter cursor-pointer">
                                 <thead><tr>
                                     <th>UID</th>
+                                    <th>Name</th>
                                     <th>Created</th>
                                     <th>Result</th>
                                 </tr></thead>
-                                <tbody><tr @click='$router.push(`/import/${import.id}`)' :key='import.id' v-for='import in list.imports'>
-                                    <td v-text='import.id'></td>
-                                    <td v-text='import.created'></td>
-                                    <td v-text='import.error || import.result'></td>
+                                <tbody><tr @click='$router.push(`/import/${imported.id}`)' :key='imported.id' v-for='imported in list.imports'>
+                                    <td>
+                                        <span v-text='imported.id'/>
+                                   </td>
+                                    <td v-text='imported.name'></td>
+                                    <td v-text='timeDiff(imported.created)'></td>
+                                    <td v-text='imported.error || imported.result'></td>
                                 </tr></tbody>
                             </table>
                         </div>
@@ -51,6 +55,7 @@
 </template>
 
 <script>
+import timeDiff from '../timediff.js';
 import PageFooter from './PageFooter.vue';
 import {
     TablerNone,
@@ -73,6 +78,9 @@ export default {
         await this.fetchList();
     },
     methods: {
+        timeDiff(update) {
+            return timeDiff(update);
+        },
         fetchList: async function() {
             this.loading = true;
             const url = window.stdurl('/api/import');
@@ -82,7 +90,6 @@ export default {
     },
     components: {
         TablerNone,
-        SearchIcon,
         PageFooter,
         TablerBreadCrumb,
         TablerLoading
