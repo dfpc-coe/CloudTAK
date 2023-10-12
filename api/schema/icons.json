@@ -10,11 +10,19 @@
         },
         "type2525b": {
             "$ref": "./icons/type2525b.json"
+        },
+        "created": {
+            "$ref": "./icons/created.json"
+        },
+        "updated": {
+            "$ref": "./icons/updated.json"
         }
     },
     "required": [
         "iconset",
         "name",
-        "type2525b"
+        "type2525b",
+        "created",
+        "updated"
     ]
 }

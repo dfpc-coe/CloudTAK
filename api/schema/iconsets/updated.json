@@ -1,8 +1,5 @@
 {
-    "type": [
-        "integer",
-        "null"
-    ],
+    "type": "integer",
     "description": "",
     "$comment": "timestamptz"
 }

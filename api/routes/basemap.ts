@@ -13,6 +13,7 @@ import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
 import xml2js from 'xml2js';
 import { Stream, Readable } from 'node:stream';
+import stream2buffer from '../lib/stream.js';
 
 export default async function router(schema: any, config: Config) {
     await schema.put('/basemap', {
@@ -281,13 +282,3 @@ export default async function router(schema: any, config: Config) {
         }
     });
 }
-
-async function stream2buffer(stream: Stream): Promise<Buffer> {
-    return new Promise < Buffer > ((resolve, reject) => {
-        const _buf = Array < any > ();
-        stream.on("data", chunk => _buf.push(chunk));
-        stream.on("end", () => resolve(Buffer.concat(_buf)));
-        stream.on("error", (err: Error) => reject(`error converting stream - ${err}`));
-    });
-}
-

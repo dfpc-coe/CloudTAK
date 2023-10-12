@@ -21,7 +21,8 @@
                             <h3 class='card-title'>Iconsets</h3>
 
                             <div class='ms-auto btn-list'>
-                                <PlusIcon @click='$router.push(`/iconset/new`)' class='cursor-pointer'/>
+                                <FileUploadIcon @click='upload = true' v-tooltip='"Zip Upload"' class='cursor-pointer'/>
+                                <PlusIcon v-tooltip='"Manual Creation"' @click='$router.push(`/iconset/new`)' class='cursor-pointer'/>
                             </div>
                         </div>
                         <TablerLoading v-if='loading'/>
@@ -30,6 +31,16 @@
                             label='Iconsets'
                             :create='false'
                         />
+                        <template v-else-if='upload'>
+                            <Upload
+                                method='PUT'
+                                :url='uploadURL()'
+                                :headers='uploadHeaders()'
+                                @done='processUpload($event)'
+                                @cancel='mode.upload = false'
+                                @err='err = $event'
+                            />
+                        </template>
                         <div v-else class='table-responsive'>
                             <table class="table table-hover card-table table-vcenter cursor-pointer">
                                 <thead><tr>
@@ -66,6 +77,7 @@ import {
 } from '@tak-ps/vue-tabler';
 import {
     SearchIcon,
+    FileUploadIcon,
     PlusIcon
 } from 'vue-tabler-icons'
 
@@ -75,6 +87,7 @@ export default {
         return {
             err: false,
             loading: true,
+            upload: false,
             list: {
                 total: 0,
                 iconsets: []
@@ -94,6 +107,7 @@ export default {
     },
     components: {
         PlusIcon,
+        FileUploadIcon,
         CombinedIcons,
         TablerNone,
         SearchIcon,
