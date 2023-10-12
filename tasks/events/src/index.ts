@@ -1,3 +1,4 @@
+import os from 'node:os';
 import fs from 'node:fs/promises';
 import Lambda from "aws-lambda";
 import path from 'node:path';
