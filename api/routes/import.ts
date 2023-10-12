@@ -117,7 +117,7 @@ export default async function router(schema: any, config: Config) {
         auth: 'user',
         description: 'Update Import',
         ':import': 'string',
-        body: 'req.PatchImport.json',
+        body: 'req.body.PatchImport.json',
         res: 'imports.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
