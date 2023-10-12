@@ -1,13 +1,13 @@
 import os from 'node:os';
 import fs from 'node:fs';
-import fsp from 'node:fs/promises';
 import Lambda from "aws-lambda";
 import path from 'node:path';
 //import jwt from 'jsonwebtoken';
 import S3 from "@aws-sdk/client-s3";
-import StreamZip from 'node-stream-zip'
+import StreamZip, { ZipEntry } from 'node-stream-zip'
 import { pipeline } from 'node:stream/promises';
 import asyncPool from 'tiny-async-pool';
+import xml2js from 'xml2js';
 
 export const handler = async (
     event: Lambda.S3NotificationEvent,
@@ -44,19 +44,40 @@ export const handler = async (
             });
 
             const preentries = await zip.entries();
-            const entries = []
+
+            const entries = new Map();
+            const indexes = [];
             for (const entrykey in preentries) {
                 const entry = preentries[entrykey];
-                entries.push(entry);
+
+                if (path.parse(entry.name).ext === '.xml') {
+                    indexes.push(entry);
+                } else {
+                    entries.set(entry.name, entry);
+                }
             }
 
+            for (const index of indexes) {
+                await processIndex(String(await zip.entryDate(index)), entries);
+            }
+
+            /*
             for await (const ms of asyncPool(1000, entries, async (entry) => {
                 console.error(entry)
                 const data = await zip.entryData(entry);
-                await fsp.writeFile(path.resolve(os.tmpdir(), entry.name), data);
             })) {
                 console.log(ms);
             }
+            */
+        } else if (md.Ext === '.xml') {
+            await processIndex(String(await zip.entryDate(index)), new Map());
+        } else {
+            throw new Error('Unable to parse Index');
         }
     }
 };
+
+async function processIndex(xml: string, entries: Map<string, ZipEntry>) {
+    xml = await xml2js.parseStringPromise(xml);
+    console.error(JSON.stringify(xml));
+}
