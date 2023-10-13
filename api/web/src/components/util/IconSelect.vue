@@ -14,9 +14,9 @@
     </template>
     <template v-else>
         <div class='d-flex'>
-            <template v-if='selected.id'>
+            <template v-if='selected.name'>
                 <div class='d-flex mx-2'>
-                    <img :src="`/icons/${selected.file}`" style='width: 25px; height: auto; margin-right: 5px;'>
+                    <img :src='iconurl(selected)' style='width: 25px; height: auto; margin-right: 5px;'>
                     <span class='mt-2' v-text='selected.name'/>
                 </div>
             </template>
@@ -25,36 +25,22 @@
             </template>
 
             <div v-if='!disabled' class='ms-auto'>
-                <div class="dropdown">
-                    <div class="dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
-                        <SettingsIcon
-                            class='cursor-pointer dropdown-toggle'
-                        />
-                    </div>
-                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                        <div class='m-1'>
-                            <div class='table-resposive'>
-                                <table class='table table-hover'>
-                                    <thead>
-                                        <tr>
-                                            <th>(Status) Name</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody class='table-tbody'>
-                                        <tr @click='selected = icon' :key='icon.id' v-for='icon of list.icons' class='cursor-pointer'>
-                                            <td>
-                                                <div class='d-flex'>
-                                                    <img :src="`/icons/${icon.file}`" style='width: 25px; height: auto; margin-right: 5px;'>
-                                                    <span class='mt-2' v-text='icon.name'/>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
+                <TablerDropdown>
+                    <template #default>
+                        <SettingsIcon class='cursor-pointer dropdown-toggle'/>
+                    </template>
+                    <template #dropdown>
+                        <div class='mx-2'>
+                            <TablerInput v-model='filter'/>
+                            <div @click='selected = icon' :key='icon.id' v-for='icon of list.icons' class='cursor-pointer'>
+                                <div class='d-flex my-1'>
+                                    <img :src="iconurl(icon)" style='width: 25px; height: 25px; margin-right: 5px;'>
+                                    <span class='mt-2' v-text='icon.name'/>
+                                </div>
                             </div>
                         </div>
-                    </ul>
-                </div>
+                    </template>
+                </TablerDropdown>
             </div>
         </div>
     </template>
@@ -68,11 +54,13 @@ import {
 } from 'vue-tabler-icons';
 import {
     TablerHelp,
+    TablerInput,
+    TablerDropdown,
     TablerLoading
 } from '@tak-ps/vue-tabler';
 
 export default {
-    name: 'ConnectionSelect',
+    name: 'IconSelect',
     props: {
         modelValue: {
             type: String,
@@ -95,9 +83,9 @@ export default {
         return {
             help: false,
             loading: true,
+            filter: '',
             selected: {
-                id: '',
-                status: 'dead',
+                iconset: false,
                 name: ''
             },
             list: {
@@ -110,25 +98,38 @@ export default {
         selected: function() {
             this.$emit('update:modelValue', this.selected.file);
         },
+        filter: async function() {
+            await this.listIcons();
+        },
         modelValue: function() {
             if (this.modelValue) this.fetch();
         }
     },
     mounted: async function() {
         if (this.modelValue) await this.fetch();
-        await this.listConnections();
+        await this.listIcons();
         this.loading = false;
     },
     methods: {
+        iconurl: function(icon) {
+            const url = window.stdurl(`/api/iconset/${icon.iconset}/icon/${icon.name}/raw`);
+            url.searchParams.append('token', localStorage.token);
+            return String(url);
+        },
         fetch: async function() {
             this.selected = await window.std(`/api/icon/${this.modelValue}`);
         },
-        listConnections: async function() {
-            this.list = await window.std('/api/icon');
+        listIcons: async function() {
+            const url = window.stdurl('/api/icon');
+            url.searchParams.append('limit', 10);
+            url.searchParams.append('filter', this.filter);
+            this.list = await window.std(url)
         },
     },
     components: {
         TablerHelp,
+        TablerInput,
+        TablerDropdown,
         InfoSquareIcon,
         SettingsIcon,
         TablerLoading
