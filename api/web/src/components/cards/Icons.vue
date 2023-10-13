@@ -25,7 +25,7 @@
             <div :key='icon.id' v-for='icon in list.icons' class="col-sm-2">
                 <div class="card card-sm">
                     <a href="#" class="d-block">
-                        <img :src="`/icons/${icon.file}`" class="card-img-top">
+                        <img :src='iconurl(icon)' class="card-img-top">
                     </a>
                     <div class="card-body">
                         <div class="d-flex align-items-center">
@@ -74,6 +74,9 @@ export default {
         await this.fetchList();
     },
     methods: {
+        iconurl: function(icon) {
+            return String(window.stdurl(`/iconset/${icon.iconset}/icon/${icon.name}`));
+        },
         fetchList: async function() {
             this.loading = true;
             const url = window.stdurl('/api/icon');

@@ -38,4 +38,22 @@ export default class Icon extends Generic {
         }
     }
 
+    static async from(pool, iconset, name) {
+        try {
+            const pgres = await pool.query(sql`
+                SELECT
+                    *
+                FROM
+                    ${sql.identifier([this._table])}
+                WHERE
+                    name = ${name}
+                    AND iconset = ${iconset}
+            `);
+
+            return this.deserialize(pgres);
+        } catch (err) {
+            throw new Err(500, err, 'Failed to get icon');
+        }
+    }
+
 }

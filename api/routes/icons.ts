@@ -154,17 +154,37 @@ export default async function router(schema, config: Config) {
         }
     });
 
-    await schema.get('/icon/:icon', {
+    await schema.get('/iconset/:iconset/icon/:icon', {
         name: 'Get Icon',
         group: 'Icons',
         auth: 'user',
+        ':iconset': 'string',
         ':icon': 'string',
         description: 'Icon Metadata',
-        res: 'res.Icon.json'
+        res: 'icons.json'
+    }, async (req: AuthRequest, res: Response) => {
+        try {
+            await Auth.is_auth(req);
+            const icon = await Icon.from(config.pool, req.params.icon);
+            return res.json(icon);
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
+
+    await schema.get('/iconset/:iconset/icon/:icon.png', {
+        name: 'Get Raw',
+        group: 'Icons',
+        auth: 'user',
+        ':iconset': 'string',
+        ':icon': 'string',
+        description: 'Icon Data',
     }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(req);
 
+            const icon = await Icon.from(config.pool, req.params.icon);
+            return res.status(200).write(Buffer.from(icon.data, 'base64'));
         } catch (err) {
             return Err.respond(err, res);
         }
