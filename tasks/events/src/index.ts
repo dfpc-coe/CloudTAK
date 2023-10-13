@@ -40,6 +40,8 @@ export const handler = async (
                 return;
             }
 
+            await updateImport(md, { status: 'Running' });
+
             const s3 = new S3.S3Client({ region: process.env.AWS_DEFAULT_REGION || 'us-east-1' });
 
             await pipeline(
@@ -166,5 +168,10 @@ async function processIndex(event: Event, xmlstr: string, zip?: StreamZipAsync) 
 
             if (!iconset_req.ok) console.error(await iconset_req.text());
         }
+
+        await updateImport(md, {
+            status: 'Success',
+            result: { url: `/iconset/${iconset.uid}` }
+        });
     }
 }
