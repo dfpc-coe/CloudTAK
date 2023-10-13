@@ -50,7 +50,7 @@ export default class Icon extends Generic {
                     AND iconset = ${iconset}
             `);
 
-            return this.deserialize(pgres);
+            return this.deserialize(pool, pgres);
         } catch (err) {
             throw new Err(500, err, 'Failed to get icon');
         }
