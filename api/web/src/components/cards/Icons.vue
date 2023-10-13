@@ -22,16 +22,18 @@
                 label='Icons'
                 :create='false'
             />
-            <div :key='icon.id' v-for='icon in list.icons' class="col-sm-2">
-                <div class="card card-sm">
-                    <a href="#" class="d-block">
-                        <img :src='iconurl(icon)' class="card-img-top">
-                    </a>
-                    <div class="card-body">
-                        <div class="d-flex align-items-center">
-                            <div>
-                                <div v-text='icon.name'></div>
-                                <div class="text-muted" v-text='icon.id'></div>
+            <div class='row g-1'>
+                <div :key='icon.id' v-for='icon in list.icons' class="col-sm-2">
+                    <div class="card card-sm">
+                        <div class='col-12'>
+                            <div class='d-flex justify-content-center mt-3'>
+                                <img :src='iconurl(icon)' height='32' width='32'>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class='row'>
+                                <div class='d-inline-block text-truncate' v-text='icon.name'></div>
+                                <div class="d-inline-block text-truncate text-muted" v-text='icon.type2525b || "None"'></div>
                             </div>
                         </div>
                     </div>
