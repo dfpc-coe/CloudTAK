@@ -7,7 +7,7 @@ export default {
             Properties: {
                 FunctionName: cf.join([cf.stackName, '-events']),
                 MemorySize: 512,
-                Timeout: 15,
+                Timeout: 900,
                 Description: 'Respond to events on the S3 Asset Bucket',
                 ReservedConcurrentExecutions: 20,
                 PackageType: 'Image',
