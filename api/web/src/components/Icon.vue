@@ -19,7 +19,7 @@
                     <div class="card">
                         <div class='card-header'>
                             <h3 class='card-title'>Iconset <span v-text='iconset.name'/></h3>
-                    
+
                             <div class='ms-auto btn-list'>
                                 <TablerDelete displaytype='icon' @delete='deleteIconset'/>
                             </div>
@@ -75,7 +75,7 @@ export default {
             this.iconset = await window.std(url, {
                 method: 'DELETE'
             });
-            this.$router.push('/icon');
+            this.$router.push('/iconset');
         }
     },
     components: {
