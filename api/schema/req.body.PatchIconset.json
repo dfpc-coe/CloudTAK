@@ -2,15 +2,6 @@
     "type": "object",
     "additionalProperties": false,
     "properties": {
-        "uid": {
-            "$ref": "./iconsets/uid.json"
-        },
-        "version": {
-            "$ref": "./iconsets/version.json"
-        },
-        "name": {
-            "$ref": "./iconsets/name.json"
-        },
         "default_group": {
             "$ref": "./iconsets/default_group.json"
         },
