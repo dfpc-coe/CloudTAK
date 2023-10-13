@@ -96,7 +96,7 @@ export default {
     },
     watch: {
         selected: function() {
-            this.$emit('update:modelValue', this.selected.file);
+            this.$emit('update:modelValue', this.selected.path);
         },
         filter: async function() {
             await this.listIcons();
