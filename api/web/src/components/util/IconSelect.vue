@@ -117,7 +117,9 @@ export default {
             return String(url);
         },
         fetch: async function() {
-            this.selected = await window.std(`/api/icon/${this.modelValue}`);
+            const iconset = this.modelValue.split('/')[0];
+            const icon = this.modelValue.split('/').splice(1);
+            this.selected = await window.std(`/api/iconset/${iconset}/icon/${icon}`);
         },
         listIcons: async function() {
             const url = window.stdurl('/api/icon');
