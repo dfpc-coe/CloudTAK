@@ -184,7 +184,7 @@ export default async function router(schema, config: Config) {
             await Auth.is_auth(req, true);
 
             const icon = await Icon.from(config.pool, req.params.iconset, req.params.icon);
-            return res.status(200).write(Buffer.from(icon.data, 'base64'));
+            return res.status(200).send(Buffer.from(icon.data, 'base64'));
         } catch (err) {
             return Err.respond(err, res);
         }
