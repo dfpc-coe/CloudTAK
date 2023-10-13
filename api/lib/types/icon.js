@@ -14,6 +14,7 @@ export default class Icon extends Generic {
         query.sort = Params.string(query.sort, { default: 'created' });
         query.order = Params.order(query.order);
         query.filter = Params.string(query.filter, { default: '' });
+        query.iconset = Params.string(query.iconset);
 
         try {
             const pgres = await pool.query(sql`
@@ -24,6 +25,7 @@ export default class Icon extends Generic {
                     ${sql.identifier([this._table])}
                 WHERE
                     name ~* ${query.filter}
+                    AND (${query.iconset}::TEXT IS NULL OR iconset = ${query.iconset}::TEXT)
                 ORDER BY
                     ${sql.identifier([this._table, query.sort])} ${query.order}
                 LIMIT
