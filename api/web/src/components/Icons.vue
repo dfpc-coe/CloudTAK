@@ -23,6 +23,7 @@
                             <div class='ms-auto btn-list'>
                                 <FileUploadIcon @click='upload = true' v-tooltip='"Zip Upload"' class='cursor-pointer'/>
                                 <PlusIcon v-tooltip='"Manual Creation"' @click='$router.push(`/iconset/new`)' class='cursor-pointer'/>
+                                <RefreshIcon v-tooltip='"Refresh"' @click='fetchList' class='cursor-pointer'/>
                             </div>
                         </div>
                         <TablerLoading v-if='loading'/>
@@ -77,6 +78,7 @@ import {
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import {
+    RefreshIcon,
     SearchIcon,
     FileUploadIcon,
     PlusIcon
@@ -130,7 +132,8 @@ export default {
         SearchIcon,
         PageFooter,
         TablerBreadCrumb,
-        TablerLoading
+        TablerLoading,
+        RefreshIcon,
     }
 }
 </script>

@@ -109,6 +109,29 @@ export default async function router(schema, config: Config) {
         }
     });
 
+    await schema.delete('/iconset/:iconset', {
+        name: 'Delete Iconset',
+        group: 'Icons',
+        auth: 'user',
+        description: 'Delete Iconset',
+        ':iconset': 'string',
+        res: 'res.Standard.json'
+    }, async (req: AuthRequest, res: Response) => {
+        try {
+            await Auth.is_auth(req);
+
+            await Icon.delete(config.pool, req.params.iconset, { column: 'iconset' });
+            await Iconset.delete(config.pool, req.params.iconset);
+
+            return res.json({
+                status: 200,
+                message: 'Iconset Deleted'
+            });
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
+
     await schema.get('/icon', {
         name: 'List Icons',
         group: 'Icons',

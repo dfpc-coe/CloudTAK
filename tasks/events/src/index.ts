@@ -139,7 +139,7 @@ async function processIndex(event: Event, xmlstr: string, zip?: StreamZipAsync) 
             body: JSON.stringify(iconset)
         });
 
-        console.log(await iconset_req.text());
+        if (!iconset_req.ok) throw new Error(await iconset_req.text());
 
         // Someone decided that the icon name should be the name without the folder prefix
         // This was a dumb idea and this code tries to match 1:1 without the prefix

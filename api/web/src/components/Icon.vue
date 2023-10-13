@@ -19,6 +19,10 @@
                     <div class="card">
                         <div class='card-header'>
                             <h3 class='card-title'>Iconset <span v-text='iconset.name'/></h3>
+                    
+                            <div class='ms-auto btn-list'>
+                                <TablerDelete displaytype='icon' @delete='deleteIconset'/>
+                            </div>
                         </div>
                         <TablerLoading v-if='loading'/>
                     </div>
@@ -40,6 +44,7 @@ import PageFooter from './PageFooter.vue';
 import CombinedIcons from './cards/Icons.vue'
 import {
     TablerNone,
+    TablerDelete,
     TablerBreadCrumb,
     TablerLoading
 } from '@tak-ps/vue-tabler';
@@ -63,10 +68,19 @@ export default {
             const url = window.stdurl(`/api/iconset/${this.$route.params.icon}`);
             this.iconset = await window.std(url);
             this.loading = false;
+        },
+        deleteIconset: async function() {
+            this.loading = true;
+            const url = window.stdurl(`/api/iconset/${this.$route.params.icon}`);
+            this.iconset = await window.std(url, {
+                method: 'DELETE'
+            });
+            this.$router.push('/icon');
         }
     },
     components: {
         CombinedIcons,
+        TablerDelete,
         TablerNone,
         PageFooter,
         TablerBreadCrumb,
