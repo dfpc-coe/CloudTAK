@@ -130,7 +130,7 @@ async function processIndex(event: Event, xmlstr: string, zip?: StreamZipAsync) 
             return;
         }
 
-        await fetch(new URL(`/api/iconset`, process.env.TAK_ETL_API), {
+        const iconset_req = await fetch(new URL(`/api/iconset`, process.env.TAK_ETL_API), {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -138,6 +138,8 @@ async function processIndex(event: Event, xmlstr: string, zip?: StreamZipAsync) 
             },
             body: JSON.stringify(iconset)
         });
+
+        console.log(await iconset_req.text());
 
         // Someone decided that the icon name should be the name without the folder prefix
         // This was a dumb idea and this code tries to match 1:1 without the prefix
@@ -148,7 +150,7 @@ async function processIndex(event: Event, xmlstr: string, zip?: StreamZipAsync) 
         }
 
         for (const icon of xml.iconset.icon) {
-            await fetch(new URL(`/api/iconset/${iconset.uid}/icon`, process.env.TAK_ETL_API), {
+            const icon_req = await fetch(new URL(`/api/iconset/${iconset.uid}/icon`, process.env.TAK_ETL_API), {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -161,6 +163,8 @@ async function processIndex(event: Event, xmlstr: string, zip?: StreamZipAsync) 
                     data: (await zip.entryData(lookup.get(icon.$.name))).toString('base64')
                 })
             });
+
+            console.log(await icon_req.text());
         }
     }
 }
