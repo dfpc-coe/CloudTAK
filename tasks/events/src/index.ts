@@ -160,7 +160,7 @@ async function processIndex(event: Event, xmlstr: string, zip?: StreamZipAsync) 
                 },
                 body: JSON.stringify({
                     name: lookup.get(icon.$.name).name,
-                    path: `${iconset.uid}/${iconset.name}/${icon.$.name}`,
+                    path: `${iconset.uid}/${iconset.name}/${lookup.get(icon.$.name).name}`,
                     type2525b: icon.$.type2525b || null,
                     data: (await zip.entryData(lookup.get(icon.$.name))).toString('base64')
                 })
