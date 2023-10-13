@@ -90,7 +90,7 @@ export default {
             this.loading = true;
             const url = window.stdurl('/api/icon');
             url.searchParams.append('filter', this.query.search);
-            url.searchParams.append('iconset', this.iconset);
+            if (this.iconset) url.searchParams.append('iconset', this.iconset);
             this.list = await window.std(url);
             this.loading = false;
         }

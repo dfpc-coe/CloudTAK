@@ -29,7 +29,7 @@
                 </div>
 
                 <div class="col-lg-12">
-                    <CombinedIcons v-if='!loading' iconset='iconset.uid'/>
+                    <CombinedIcons v-if='!loading' :iconset='iconset.uid'/>
                 </div>
             </div>
         </div>
