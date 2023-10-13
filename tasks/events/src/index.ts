@@ -169,7 +169,7 @@ async function processIndex(event: Event, xmlstr: string, zip?: StreamZipAsync) 
             if (!iconset_req.ok) console.error(await iconset_req.text());
         }
 
-        await updateImport(md, {
+        await updateImport(event, {
             status: 'Success',
             result: { url: `/iconset/${iconset.uid}` }
         });
