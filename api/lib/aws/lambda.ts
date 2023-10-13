@@ -60,9 +60,9 @@ export default class Lambda {
                             Name: 'FunctionName',
                             Value: StackName
                         }],
-                        Period: 60,
-                        EvaluationPeriods: 1,
-                        DatapointsToAlarm: 1,
+                        Period: 30,
+                        EvaluationPeriods: 5,
+                        DatapointsToAlarm: 4,
                         Threshold: 0,
                         ComparisonOperator: 'GreaterThanThreshold',
                         TreatMissingData: 'missing'

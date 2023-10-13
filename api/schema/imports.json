@@ -1,0 +1,36 @@
+{
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+        "id": {
+            "$ref": "./imports/id.json"
+        },
+        "created": {
+            "$ref": "./imports/created.json"
+        },
+        "updated": {
+            "$ref": "./imports/updated.json"
+        },
+        "status": {
+            "$ref": "./imports/status.json"
+        },
+        "error": {
+            "$ref": "./imports/error.json"
+        },
+        "result": {
+            "$ref": "./imports/result.json"
+        },
+        "name": {
+            "$ref": "./imports/name.json"
+        }
+    },
+    "required": [
+        "id",
+        "created",
+        "updated",
+        "status",
+        "error",
+        "result",
+        "name"
+    ]
+}

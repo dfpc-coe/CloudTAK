@@ -208,6 +208,7 @@ export default {
                 this.logs = (await window.std(`/api/layer/${this.$route.params.layerid}/task/logs`))
                     .logs
                     .map((log) => { return log.message })
+                    .reverse()
                     .join('\n');
             } catch (err) {
                 this.errors.cloudwatch = err;

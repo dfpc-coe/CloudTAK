@@ -17,43 +17,49 @@
             <div class='row row-deck row-cards'>
                 <div class="col-lg-12">
                     <div class="card">
-                        <div class="card-body">
-                            <label class="form-label">Icon Search</label>
-                            <div class="input-icon mb-3">
-                                <input v-model='query.search' type="text" class="form-control" placeholder="Search…">
-                                <span class="input-icon-addon">
-                                    <SearchIcon/>
-                                </span>
+                        <div class='card-header'>
+                            <h3 class='card-title'>Iconsets</h3>
+
+                            <div class='ms-auto btn-list'>
+                                <FileUploadIcon v-if='!upload' @click='upload = true' v-tooltip='"Zip Upload"' class='cursor-pointer'/>
+                                <PlusIcon v-tooltip='"Manual Creation"' @click='$router.push(`/iconset/new`)' class='cursor-pointer'/>
+                                <RefreshIcon v-tooltip='"Refresh"' @click='fetchList' class='cursor-pointer'/>
                             </div>
+                        </div>
+                        <TablerLoading v-if='loading'/>
+                        <template v-else-if='upload'>
+                            <Upload
+                                method='PUT'
+                                :url='uploadURL()'
+                                :headers='uploadHeaders()'
+                                @done='processUpload($event)'
+                                @cancel='upload = false'
+                                @err='throws($event)'
+                            />
+                        </template>
+                        <TablerNone
+                            v-else-if='!list.iconsets.length'
+                            label='Iconsets'
+                            :create='false'
+                        />
+                        <div v-else class='table-responsive'>
+                            <table class="table table-hover card-table table-vcenter cursor-pointer">
+                                <thead><tr>
+                                    <th>Name</th>
+                                    <th>UID</th>
+                                </tr></thead>
+                                <tbody><tr @click='$router.push(`/iconset/${iconset.uid}`)' :key='iconset.uid' v-for='iconset in list.iconsets'>
+                                    <td v-text='iconset.name'></td>
+                                    <td v-text='iconset.uid'></td>
+                                </tr></tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
 
-                <template v-if='loading'>
-                    <TablerLoading/>
-                </template>
-                <template v-else>
-                    <TablerNone
-                        v-if='!list.icons.length'
-                        label='Icons'
-                        @create='$router.push("/layer/new")'
-                    />
-                    <div :key='icon.id' v-for='icon in list.icons' class="col-sm-2">
-                        <div class="card card-sm">
-                            <a href="#" class="d-block">
-                                <img :src="`/icons/${icon.file}`" class="card-img-top">
-                            </a>
-                            <div class="card-body">
-                                <div class="d-flex align-items-center">
-                                    <div>
-                                        <div v-text='icon.name'></div>
-                                        <div class="text-muted" v-text='icon.id'></div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </template>
+                <div class="col-lg-12">
+                    <CombinedIcons v-if='list.iconsets.length'/>
+                </div>
             </div>
         </div>
     </div>
@@ -64,13 +70,18 @@
 
 <script>
 import PageFooter from './PageFooter.vue';
+import Upload from './util/Upload.vue';
+import CombinedIcons from './cards/Icons.vue'
 import {
     TablerNone,
     TablerBreadCrumb,
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import {
-    SearchIcon
+    RefreshIcon,
+    SearchIcon,
+    FileUploadIcon,
+    PlusIcon
 } from 'vue-tabler-icons'
 
 export default {
@@ -79,37 +90,50 @@ export default {
         return {
             err: false,
             loading: true,
-            query: {
-                search: ''
-            },
+            upload: false,
             list: {
-                icons: []
+                total: 0,
+                iconsets: []
             }
-        }
-    },
-    watch: {
-        'query.search': function() {
-            this.fetchList();
         }
     },
     mounted: async function() {
         await this.fetchList();
     },
     methods: {
+        throws: function(err) {
+            throw err;
+        },
+        processUpload: function(body) {
+            body = JSON.parse(body);
+            this.$router.push(`/import/${body.imports[0].uid}`);
+        },
+        uploadHeaders: function() {
+            return {
+                Authorization: `Bearer ${localStorage.token}`
+            };
+        },
+        uploadURL: function() {
+            return window.stdurl(`/api/import`);
+        },
         fetchList: async function() {
             this.loading = true;
-            const url = window.stdurl('/api/icon');
-            url.searchParams.append('filter', this.query.search);
+            const url = window.stdurl('/api/iconset');
             this.list = await window.std(url);
             this.loading = false;
         }
     },
     components: {
+        Upload,
+        PlusIcon,
+        FileUploadIcon,
+        CombinedIcons,
         TablerNone,
         SearchIcon,
         PageFooter,
         TablerBreadCrumb,
-        TablerLoading
+        TablerLoading,
+        RefreshIcon,
     }
 }
 </script>

@@ -1,0 +1,38 @@
+{
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+        "uid",
+        "version",
+        "name"
+    ],
+    "properties": {
+        "uid": {
+            "$ref": "./iconsets/uid.json"
+        },
+        "version": {
+            "$ref": "./iconsets/version.json"
+        },
+        "name": {
+            "$ref": "./iconsets/name.json"
+        },
+        "default_group": {
+            "$ref": "./iconsets/default_group.json"
+        },
+        "default_friendly": {
+            "$ref": "./iconsets/default_friendly.json"
+        },
+        "default_hostile": {
+            "$ref": "./iconsets/default_hostile.json"
+        },
+        "default_neutral": {
+            "$ref": "./iconsets/default_neutral.json"
+        },
+        "default_unknown": {
+            "$ref": "./iconsets/default_unknown.json"
+        },
+        "skip_resize": {
+            "$ref": "./iconsets/skip_resize.json"
+        }
+    }
+}
