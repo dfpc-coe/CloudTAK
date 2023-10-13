@@ -164,7 +164,7 @@ async function processIndex(event: Event, xmlstr: string, zip?: StreamZipAsync) 
                 })
             });
 
-            console.log(await icon_req.text());
+            if (!iconset_req.ok) console.error(await iconset_req.text());
         }
     }
 }
