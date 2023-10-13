@@ -13,6 +13,9 @@ services:
             - POSTGRES=postgres://docker:docker@postgis:5432/gis
             - TAK_USERNAME
             - TAK_PASSWORD
+    events:
+        platform: linux/amd64
+        build: ./tasks/events/
 
     task:
         platform: linux/amd64

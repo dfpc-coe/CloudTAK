@@ -8,6 +8,9 @@
         "page": {
             "$ref": "./util/page.json"
         },
+        "iconset": {
+            "type": "string"
+        },
         "filter": {
             "type": "string",
             "default": "",

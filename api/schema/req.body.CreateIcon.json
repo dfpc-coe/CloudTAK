@@ -1,0 +1,23 @@
+{
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+        "name",
+        "path",
+        "data"
+    ],
+    "properties": {
+        "name": {
+            "$ref": "./icons/name.json"
+        },
+        "path": {
+            "$ref": "./icons/path.json"
+        },
+        "data": {
+            "$ref": "./icons/data.json"
+        },
+        "type2525b": {
+            "$ref": "./icons/type2525b.json"
+        }
+    }
+}

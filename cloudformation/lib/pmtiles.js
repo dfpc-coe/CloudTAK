@@ -12,7 +12,7 @@ export default {
                 PackageType: 'Image',
                 Environment: {
                     Variables: {
-                        BUCKET: cf.ref('AssetBucket'),
+                        BUCKET: cf.join('-', [cf.stackName, cf.accountId, cf.region]),
                         APIROOT: cf.join(['https://', cf.ref('PMTilesLambdaAPI'), '.execute-api.', cf.region, '.amazonaws.com']),
                         SigningSecret: cf.sub('{{resolve:secretsmanager:${AWS::StackName}/api/secret:SecretString::AWSCURRENT}}')
                     }
@@ -50,8 +50,8 @@ export default {
                                 's3:Describe*'
                             ],
                             Resource: [
-                                cf.join(['arn:', cf.partition, ':s3:::', cf.ref('AssetBucket')]),
-                                cf.join(['arn:', cf.partition, ':s3:::', cf.ref('AssetBucket'), '/*'])
+                                cf.join(['arn:', cf.partition, ':s3:::', cf.join('-', [cf.stackName, cf.accountId, cf.region])]),
+                                cf.join(['arn:', cf.partition, ':s3:::', cf.join('-', [cf.stackName, cf.accountId, cf.region]), '/*'])
                             ]
                         }]
                     }
