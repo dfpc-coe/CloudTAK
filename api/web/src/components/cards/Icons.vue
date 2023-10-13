@@ -75,7 +75,7 @@ export default {
     },
     methods: {
         iconurl: function(icon) {
-            return String(window.stdurl(`/iconset/${icon.iconset}/icon/${icon.name}`));
+            return String(window.stdurl(`/api/iconset/${icon.iconset}/icon/${icon.name}`));
         },
         fetchList: async function() {
             this.loading = true;
