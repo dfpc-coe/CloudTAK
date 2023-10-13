@@ -159,7 +159,7 @@ async function processIndex(event: Event, xmlstr: string, zip?: StreamZipAsync) 
                     'Authorization': `Bearer ${event.Token}`
                 },
                 body: JSON.stringify({
-                    name: icon.$.name,
+                    name: lookup.get(icon.$.name).name,
                     path: `${iconset.uid}/${iconset.name}/${icon.$.name}`,
                     type2525b: icon.$.type2525b || null,
                     data: (await zip.entryData(lookup.get(icon.$.name))).toString('base64')
