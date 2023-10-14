@@ -82,7 +82,7 @@ export default {
     },
     methods: {
         iconurl: function(icon) {
-            const url = window.stdurl(`/api/iconset/${icon.iconset}/icon/${icon.name}/raw`);
+            const url = window.stdurl(`/api/iconset/${icon.iconset}/icon/${encodeURIComponent(icon.name)}/raw`);
             url.searchParams.append('token', localStorage.token);
             return String(url);
         },
