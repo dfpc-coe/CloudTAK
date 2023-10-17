@@ -1,17 +1,19 @@
 <template>
 <div>
-    <button type="button" class="btn-close" @click='close' aria-label="Close"></button>
+    <button type="button" class="btn-close" @click='$emit("close")' aria-label="Close"></button>
     <div class="modal-status bg-yellow"></div>
     <div class="modal-body text-center py-4">
         <template v-if='!file'>
             <form class="dropzone dz-clickable" id="dropzone-default" action="./" autocomplete="off" novalidate="">
                 <div class="dz-default dz-message">
-                    <button class="dz-button" type="button">Drop .p12 here<br>click to upload</button>
+                    <button class="dz-button" type="button">
+                        Drop File Here<br><br>or<br><br>Click to Select File
+                    </button>
                 </div>
             </form>
         </template>
         <div v-if='progress && progress < 101' class='row'>
-            <TablerLoading :desc='`Uploading ${name}`'/>
+            <TablerLoading :desc='`Uploading ${file.name}`'/>
             <TablerProgress :percent='progress / 100'/>
         </div>
     </div>
@@ -32,7 +34,6 @@ export default {
     data: function() {
         return {
             file: false,
-            name: '',
             dropzone: null,
             progress: 0,
             headers: {
@@ -53,7 +54,49 @@ export default {
                 };
                 read.readAsDataURL(file);
             });
-        }); 
+        });
+    },
+    watch: {
+        file: async function() {
+            if (this.file) await this.upload();
+        }
+    },
+    methods: {
+        upload: function() {
+            return new Promise((resolve, reject) => {
+                const xhr = new XMLHttpRequest()
+                const formData = new FormData()
+
+                xhr.open('PUT', window.stdurl('/api/import'), true)
+                xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+
+                for (const header of Object.keys(this.headers)) {
+                    xhr.setRequestHeader(header, this.headers[header]);
+                }
+
+                xhr.upload.addEventListener('progress', (e) => {
+                    this.progress = (e.loaded * 100.0 / e.total) || 100
+                });
+
+                xhr.addEventListener('readystatechange', () => {
+                    if (xhr.readyState == 4 && xhr.status == 200) {
+                        this.progress = 100;
+                    } else if (xhr.readyState == 4 && xhr.status != 200) {
+                        const err = new Error('Failed to upload file');
+                        this.$emit('cancel')
+                        return reject(err);
+                    }
+
+                    if (xhr.readyState === 4) {
+                        this.progress = 101;
+                        this.$emit('done', xhr.response);
+                    }
+                });
+
+                formData.append('file', this.file)
+                xhr.send(formData)
+            });
+        }
     },
     components: {
         TablerLoading,
