@@ -109,7 +109,9 @@
 
     <template v-if='upload'>
         <TablerModal>
-            <UploadImport/>
+            <UploadImport
+                @close='upload = false'
+            />
         </TablerModal>
     </template>
 
