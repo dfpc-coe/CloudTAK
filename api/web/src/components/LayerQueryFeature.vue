@@ -30,6 +30,9 @@
                         </div>
                     </div>
                 </div>
+                <div v-if='feature' class="col-lg-12">
+                    <LayerQueryMap :feature='JSON.parse(feature)'/>
+                </div>
             </div>
         </div>
     </div>
@@ -40,6 +43,7 @@
 
 <script>
 import PageFooter from './PageFooter.vue';
+import LayerQueryMap from './LayerQuery/Map.vue';
 import Alert from './util/Alert.vue';
 import {
     TablerBreadCrumb, 
@@ -77,6 +81,7 @@ export default {
         Alert,
         PageFooter,
         TablerBreadCrumb, 
+        LayerQueryMap,
         TablerLoading,
     }
 }

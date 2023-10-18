@@ -107,6 +107,14 @@
         </div>
     </div>
 
+    <template v-if='upload'>
+        <TablerModal>
+            <UploadImport
+                @close='upload = false'
+            />
+        </TablerModal>
+    </template>
+
     <router-view/>
 
     <TablerError v-if='err' :err='err' @close='err = null'/>
@@ -116,6 +124,7 @@
 <script>
 import '@tabler/core/dist/js/tabler.min.js';
 import '@tabler/core/dist/css/tabler.min.css';
+import UploadImport from './components/util/UploadImport.vue'
 import {
     CodeIcon,
     HomeIcon,
@@ -129,6 +138,7 @@ import {
     AdjustmentsIcon,
 } from 'vue-tabler-icons';
 import {
+    TablerModal,
     TablerError
 } from '@tak-ps/vue-tabler';
 
@@ -136,6 +146,8 @@ export default {
     name: 'Tak-PS-ETL',
     data: function() {
         return {
+            upload: false,
+            dragTimer: false,
             mounted: false,
             user: null,
             err: null,
@@ -167,6 +179,14 @@ export default {
         }
 
         this.mounted = true;
+
+        addEventListener('dragover', (e) => {
+            const dt = e.dataTransfer;
+            if (dt.types && (dt.types.indexOf ? dt.types.indexOf('Files') != -1 : dt.types.contains('Files'))) {
+                this.upload = true;
+                window.clearTimeout(this.dragTimer);
+            }
+        });
     },
     methods: {
         logout: function() {
@@ -192,6 +212,7 @@ export default {
         }
     },
     components: {
+        UploadImport,
         HomeIcon,
         CodeIcon,
         LogoutIcon,
@@ -200,6 +221,7 @@ export default {
         NetworkIcon,
         DatabaseIcon,
         TablerError,
+        TablerModal,
         BuildingBroadcastTowerIcon,
         AdjustmentsIcon,
         PhotoIcon,
