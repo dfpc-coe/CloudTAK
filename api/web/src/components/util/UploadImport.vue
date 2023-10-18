@@ -48,11 +48,7 @@ export default {
             });
 
             this.dropzone.on('addedfile', (file) => {
-                const read = new FileReader();
-                read.onload = (event) => {
-                    this.file = event.target.result;
-                };
-                read.readAsDataURL(file);
+                this.file = file;
             });
         });
     },
@@ -89,7 +85,9 @@ export default {
 
                     if (xhr.readyState === 4) {
                         this.progress = 101;
-                        this.$emit('done', xhr.response);
+                        const imported = JSON.parse(xhr.response).imports[0];
+                        this.$router.push(`/import/${imported.uid}`)
+                        this.$emit('close', xhr.response);
                     }
                 });
 
