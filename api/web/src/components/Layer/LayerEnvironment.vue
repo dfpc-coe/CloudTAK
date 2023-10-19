@@ -19,6 +19,13 @@
                         v-model='environment.ARCGIS_PORTAL'
                     />
                 </div>
+                <div v-if='environment.ARCGIS_URL' class="col-12">
+                    <TablerInput
+                        label='ArcGIS Layer URL'
+                        :disabled='disabled'
+                        v-model='environment.ARCGIS_URL'
+                    />
+                </div>
                 <div class="col-12 col-md-6 mt-3">
                     <TablerInput
                         label='ArcGIS Username'
@@ -44,9 +51,11 @@
                     </template>
                     <template v-else>
                         <EsriPortal
+                            :disabled='disabled'
                             :url='environment.ARCGIS_PORTAL'
                             :username='environment.ARCGIS_USERNAME'
                             :password='environment.ARCGIS_PASSWORD'
+                            :layer='environment.ARCGIS_URL'
                             @layer='environment.ARCGIS_URL = $event'
                             @close='esriView = false'
                         />
