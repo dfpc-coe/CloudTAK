@@ -89,9 +89,9 @@
                         </td>
                         <td>
                             <span v-text='res.access' class='badge mx-1 mb-1' :class='{
-                                 "bg-green": res.access === "public",
-                                 "bg-yellow": res.access === "org",
-                                 "bg-red": res.access === "private"
+                                 "bg-green text-white": res.access === "public",
+                                 "bg-yellow text-white": res.access === "org",
+                                 "bg-red text-white": res.access === "private"
                             }'/>
                         </td>
                     </tr>

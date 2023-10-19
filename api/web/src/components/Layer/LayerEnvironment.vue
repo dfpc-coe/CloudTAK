@@ -10,7 +10,51 @@
     <TablerLoading v-if='loading.schema' desc='Loading Environment'/>
     <TablerLoading v-else-if='loading.save' desc='Saving Environment'/>
     <div v-else class="col">
-        <template v-if='schema.type !== "object"'>
+        <template v-if='schema.display === "arcgis"'>
+            <div class='row g-2 mx-2 my-2'>
+                <div class="col-12">
+                    <TablerInput
+                        label='ArcGIS Portal URL (Example: https://example.com/portal/sharing/rest)'
+                        :disabled='disabled'
+                        v-model='environment.ARCGIS_PORTAL'
+                    />
+                </div>
+                <div class="col-12 col-md-6 mt-3">
+                    <TablerInput
+                        label='ArcGIS Username'
+                        :disabled='disabled'
+                        v-model='environment.ARCGIS_USERNAME'
+                    />
+                </div>
+                <div class="col-12 col-md-6 mt-3">
+                    <TablerInput
+                        type='password'
+                        label='ArcGIS Password'
+                        :disabled='disabled'
+                        v-model='environment.ARCGIS_PASSWORD'
+                    />
+                </div>
+                <div class="col-md-12 mt-3">
+                    <template v-if='!esriView'>
+                        <div class='d-flex'>
+                            <div class='ms-auto'>
+                                <a @click='esriView = true' class="cursor-pointer btn btn-secondary">Connect</a>
+                            </div>
+                        </div>
+                    </template>
+                    <template v-else>
+                        <EsriPortal
+                            :url='environment.ARCGIS_PORTAL'
+                            :username='environment.ARCGIS_USERNAME'
+                            :password='environment.ARCGIS_PASSWORD'
+                            @layer='environment.ARCGIS_URL = $event'
+                            @close='esriView = false'
+                        />
+                    </template>
+                </div>
+            </div>
+        </template>
+        <template v-else-if='schema.type !== "object"'>
             <div class="d-flex justify-content-center my-4">
                 Only Object Schemas are Supported.
             </div>
@@ -34,6 +78,7 @@ import {
     TablerLoading,
 } from '@tak-ps/vue-tabler';
 import Schema from './utils/Schema.vue';
+import EsriPortal from './../util/EsriPortal.vue';
 import {
     PlusIcon,
     SettingsIcon,
@@ -50,6 +95,7 @@ export default {
     data: function() {
         return {
             alert: false,
+            esriView: false,
             disabled: true,
             environment: {},
             schema: {},
@@ -100,6 +146,7 @@ export default {
         Schema,
         PlusIcon,
         SettingsIcon,
+        EsriPortal,
         TablerInput,
         TablerLoading,
     }
