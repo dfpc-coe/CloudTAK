@@ -48,7 +48,8 @@ test('POST: api/server', async (t) => {
             id: 1,
             status: 'configured',
             name: 'Default Server',
-            url: 'ssl://example.com'
+            url: 'ssl://example.com',
+            api: ''
         });
     } catch (err) {
         t.error(err, 'no error');
@@ -75,7 +76,8 @@ test('GET: api/server', async (t) => {
             id: 1,
             status: 'configured',
             name: 'Default Server',
-            url: 'ssl://example.com'
+            url: 'ssl://example.com',
+            api: ''
         });
     } catch (err) {
         t.error(err, 'no error');

@@ -9,7 +9,9 @@ import { Client } from 'undici';
 import { Stream } from 'node:stream';
 
 export class APIAuth {
-    async init(base: URL) {}
+    async init(base: URL) {
+        console.log(base);
+    }
     async fetch(api: TAKAPI, url: URL, opts: any): Promise<any> {
         return await fetch(url, opts);
     }
