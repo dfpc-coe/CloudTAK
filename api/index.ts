@@ -15,7 +15,6 @@ import EventsPool from './lib/events-pool.js';
 import { WebSocket, WebSocketServer } from 'ws';
 import Cacher from './lib/cacher.js';
 import BlueprintLogin from '@tak-ps/blueprint-login';
-// @ts-ignore
 import Server from './lib/types/server.js';
 import Config from './lib/config.js';
 
