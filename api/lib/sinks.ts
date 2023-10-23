@@ -1,7 +1,7 @@
 //@ts-ignore
 import Connection from './types/connection.js';
 import Config from './config.js';
-import CoT from '@tak-ps/node-cot';
+import { CoT } from '@tak-ps/node-tak';
 //@ts-ignore
 import ConnectionSink from './types/connection-sink.js';
 import ESRISink from './sinks/esri.js';

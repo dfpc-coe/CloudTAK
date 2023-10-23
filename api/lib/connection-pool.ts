@@ -1,4 +1,3 @@
-import TAK from './tak.js';
 // @ts-ignore
 import Connection from './types/connection.js';
 // @ts-ignore
@@ -9,7 +8,7 @@ import Metrics from './aws/metric.js';
 // @ts-ignore
 import { Pool } from '@openaddresses/batch-generic';
 import { WebSocket } from 'ws';
-import CoT from '@tak-ps/node-cot';
+import TAK, { CoT } from '@tak-ps/node-tak';
 
 class ConnectionClient {
     conn: Connection;
