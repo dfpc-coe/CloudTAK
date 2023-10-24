@@ -381,7 +381,7 @@ class EsriProxyServer {
                             "defaultValue": null
                         },{
                             "name": "time",
-                            "type": "esriFieldTypeString",
+                            "type": "esriFieldTypeDate",
                             "actualType": "nvarchar",
                             "alias": "time",
                             "sqlType": "sqlTypeNVarchar",
@@ -392,7 +392,7 @@ class EsriProxyServer {
                             "defaultValue": null
                         },{
                             "name": "start",
-                            "type": "esriFieldTypeString",
+                            "type": "esriFieldTypeDate",
                             "actualType": "nvarchar",
                             "alias": "start",
                             "sqlType": "sqlTypeNVarchar",
@@ -403,7 +403,7 @@ class EsriProxyServer {
                             "defaultValue": null
                         },{
                             "name": "stale",
-                            "type": "esriFieldTypeString",
+                            "type": "esriFieldTypeDate",
                             "actualType": "nvarchar",
                             "alias": "stale",
                             "sqlType": "sqlTypeNVarchar",
