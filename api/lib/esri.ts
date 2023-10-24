@@ -381,10 +381,10 @@ class EsriProxyServer {
                             "defaultValue": null
                         },{
                             "name": "time",
-                            "type": "esriFieldTypeString",
-                            "actualType": "nvarchar",
+                            "type": "esriFieldTypeDate",
+                            "actualType": "datetime2",
                             "alias": "time",
-                            "sqlType": "sqlTypeNVarchar",
+                            "sqlType": "sqlTypeTimestamp2",
                             "length": 100,
                             "nullable": true,
                             "editable": true,
@@ -392,10 +392,10 @@ class EsriProxyServer {
                             "defaultValue": null
                         },{
                             "name": "start",
-                            "type": "esriFieldTypeString",
-                            "actualType": "nvarchar",
+                            "type": "esriFieldTypeDate",
+                            "actualType": "datetime2",
                             "alias": "start",
-                            "sqlType": "sqlTypeNVarchar",
+                            "sqlType": "sqlTypeTimestamp2",
                             "length": 100,
                             "nullable": true,
                             "editable": true,
@@ -403,10 +403,10 @@ class EsriProxyServer {
                             "defaultValue": null
                         },{
                             "name": "stale",
-                            "type": "esriFieldTypeString",
-                            "actualType": "nvarchar",
+                            "type": "esriFieldTypeDate",
+                            "actualType": "datetime2",
                             "alias": "stale",
-                            "sqlType": "sqlTypeNVarchar",
+                            "sqlType": "sqlTypeTimestamp2",
                             "length": 100,
                             "nullable": true,
                             "editable": true,
