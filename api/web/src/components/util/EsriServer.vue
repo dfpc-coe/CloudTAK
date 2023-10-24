@@ -74,6 +74,7 @@
                             <div class='d-flex'>
                                 <MapIcon/><span v-text='lyr.name' class='mx-3'/>
                                 <div class='ms-auto btn-list'>
+                                    <FilterIcon @click='filterModal = true' v-tooltip='"Filter Features"' class='cursor-pointer'/>
                                     <CheckIcon v-if='layer && layer.id === lyr.id'/>
                                     <TablerDelete v-if='!disabled' @delete='deleteLayer' displaytype='icon' label='Delete Layer'/>
                                 </div>
@@ -84,6 +85,13 @@
             </div>
         </template>
     </template>
+
+    <EsriFilter
+        v-if='filterModal'
+        @close='filterModal = false'
+        :token='token'
+        :layer='server'
+    />
 </div>
 </template>
 
@@ -93,12 +101,14 @@ import {
     TablerDelete,
     TablerNone,
 } from '@tak-ps/vue-tabler';
+import EsriFilter from './EsriFilter.vue';
 import {
     MapIcon,
     RefreshIcon,
     XIcon,
     FolderIcon,
     ArrowBackIcon,
+    FilterIcon,
     CheckIcon
 } from 'vue-tabler-icons';
 import Alert from './Alert.vue';
@@ -127,6 +137,7 @@ export default {
     data: function() {
         return {
             base: this.server,
+            filterModal: false,
             loading: true,
             err: null,
             listpath: [],
@@ -259,10 +270,12 @@ export default {
         MapIcon,
         FolderIcon,
         RefreshIcon,
+        FilterIcon,
         CheckIcon,
         ArrowBackIcon,
         TablerLoading,
-        TablerDelete
+        TablerDelete,
+        EsriFilter
     }
 }
 </script>
