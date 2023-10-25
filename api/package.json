@@ -10,7 +10,7 @@
         "prod": "NODE_OPTIONS='--max-old-space-size=6144' ts-node index.ts",
         "lint": "eslint index.ts lib/**.ts test/**.ts",
         "loaddb": "echo 'DROP DATABASE tak_ps_etl' | psql && echo 'CREATE DATABASE tak_ps_etl' | psql && psql tak_ps_etl < coe-etl-latest.dump && knex migrate:latest",
-        "dev": "nodemon -i schema/ -i web/ --esm index.ts --noevents --nosinks --unsafe"
+        "dev": "nodemon -i schema/ -i web/ --esm index.ts --noevents --nosinks --nometrics --unsafe"
     },
     "repository": {
         "type": "git",
