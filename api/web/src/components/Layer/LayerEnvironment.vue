@@ -95,7 +95,7 @@
     <EsriFilter
         v-if='filterModal'
         @close='filterModal = false'
-        @filter='environment.ARCGIS_QUERY = $event'
+        v-model='environment.ARCGIS_QUERY'
         :token='environment.ARCGIS_TOKEN'
         :layer='environment.ARCGIS_URL'
     />
