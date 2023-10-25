@@ -21,7 +21,7 @@
         </div>
         <div class="modal-footer">
             <button @click='$emit("close")' class="btn me-auto">Close</button>
-            <button @click='$emit("filter", filter)' class="btn btn-primary">Save Filter</button>
+            <button @click='save' class="btn btn-primary">Save Filter</button>
         </div>
     </TablerModal>
 </template>
@@ -69,6 +69,10 @@ export default {
         }
     },
     methods: {
+        save: function() {
+            this.$emit('filter', this.filter.query);
+            this.$emit('close');
+        },
         fetch: async function() {
             this.loading.count = true;
 

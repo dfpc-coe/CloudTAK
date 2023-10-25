@@ -185,6 +185,9 @@ export default {
                 await this.fetchServers();
             }
         },
+        token: function() {
+            this.$emit('token', this.token);
+        },
         contentFilter: {
             deep: true,
             handler: async function() {

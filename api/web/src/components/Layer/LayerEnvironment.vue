@@ -41,6 +41,18 @@
                         v-model='environment.ARCGIS_PASSWORD'
                     />
                 </div>
+                <div class="col-12 mt-3">
+                    <div class='d-flex'>
+                        <div class='w-100'>
+                            <TablerInput
+                                label='ArcGIS SQL Query'
+                                :disabled='disabled'
+                                v-model='environment.ARCGIS_QUERY'
+                            />
+                        </div>
+                        <button v-if='!disabled' @click='filterModal = true' class='btn' style='margin-left: 8px; margin-top: 26px;'><FilterIcon/> Query Editor</button>
+                    </div>
+                </div>
                 <div class="col-md-12 mt-3">
                     <template v-if='!esriView'>
                         <div class='d-flex'>
@@ -57,6 +69,7 @@
                             :password='environment.ARCGIS_PASSWORD'
                             :layer='environment.ARCGIS_URL'
                             @layer='environment.ARCGIS_URL = $event'
+                            @token='environment.ARCGIS_TOKEN = $event'
                             @close='esriView = false'
                         />
                     </template>
@@ -78,6 +91,14 @@
             </div>
         </div>
     </div>
+
+    <EsriFilter
+        v-if='filterModal'
+        @close='filterModal = false'
+        @filter='environment.ARCGIS_QUERY = $event'
+        :token='environment.ARCGIS_TOKEN'
+        :layer='environment.ARCGIS_URL'
+    />
 </div>
 </template>
 
@@ -88,8 +109,10 @@ import {
 } from '@tak-ps/vue-tabler';
 import Schema from './utils/Schema.vue';
 import EsriPortal from './../util/EsriPortal.vue';
+import EsriFilter from './../util/EsriFilter.vue';
 import {
     PlusIcon,
+    FilterIcon,
     SettingsIcon,
 } from 'vue-tabler-icons'
 
@@ -108,6 +131,7 @@ export default {
             disabled: true,
             environment: {},
             schema: {},
+            filterModal: false,
             loading: {
                 schema: false,
                 save: false
@@ -158,6 +182,8 @@ export default {
         EsriPortal,
         TablerInput,
         TablerLoading,
+        FilterIcon,
+        EsriFilter
     }
 }
 </script>
