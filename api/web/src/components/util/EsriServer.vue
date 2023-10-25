@@ -74,7 +74,6 @@
                             <div class='d-flex'>
                                 <MapIcon/><span v-text='lyr.name' class='mx-3'/>
                                 <div class='ms-auto btn-list'>
-                                    <FilterIcon @click='filterModal = true' v-tooltip='"Filter Features"' class='cursor-pointer'/>
                                     <CheckIcon v-if='layer && layer.id === lyr.id'/>
                                     <TablerDelete v-if='!disabled' @delete='deleteLayer' displaytype='icon' label='Delete Layer'/>
                                 </div>
@@ -85,13 +84,6 @@
             </div>
         </template>
     </template>
-
-    <EsriFilter
-        v-if='filterModal'
-        @close='filterModal = false'
-        :token='token'
-        :layer='server'
-    />
 </div>
 </template>
 
@@ -101,14 +93,12 @@ import {
     TablerDelete,
     TablerNone,
 } from '@tak-ps/vue-tabler';
-import EsriFilter from './EsriFilter.vue';
 import {
     MapIcon,
     RefreshIcon,
     XIcon,
     FolderIcon,
     ArrowBackIcon,
-    FilterIcon,
     CheckIcon
 } from 'vue-tabler-icons';
 import Alert from './Alert.vue';
@@ -142,6 +132,7 @@ export default {
             err: null,
             listpath: [],
             container: null,
+            list: [],
             layer: null,
         }
     },
@@ -166,6 +157,10 @@ export default {
             // TODO Support Directories / Layer Parsing
             postfix = postfix.split('/');
 
+            this.layer = {
+                id: parseInt(postfix[2])
+            };
+
             this.listpath = [{
                 name: postfix[0],
                 type: postfix[1]
@@ -186,16 +181,16 @@ export default {
                 this.$emit('close');
             }
         },
-        stdurl: function() {
+        stdurl: function(layer=true) {
             if (this.listpath.length) {
                 const listpath = this.listpath.map((pth) => {
                     if (pth.type === 'folder') return pth.name;
                     return pth.name + '/' + pth.type;
                 }).join('/');
 
-                if (!this.layer) {
+                if (!layer || !this.layer) {
                     return this.base + '/rest/services/' + listpath;
-                } else {
+                } else if (layer && this.layer) {
                     return this.base + '/rest/services/' + listpath + '/' + this.layer.id;
                 }
             } else {
@@ -240,7 +235,7 @@ export default {
             try {
                 const url = window.stdurl('/api/sink/esri/server');
                 url.searchParams.append('token', this.token);
-                url.searchParams.append('server', this.stdurl());
+                url.searchParams.append('server', this.stdurl(false));
                 url.searchParams.append('portal', this.portal);
 
                 const res = await window.std(url);
@@ -270,12 +265,10 @@ export default {
         MapIcon,
         FolderIcon,
         RefreshIcon,
-        FilterIcon,
         CheckIcon,
         ArrowBackIcon,
         TablerLoading,
         TablerDelete,
-        EsriFilter
     }
 }
 </script>
