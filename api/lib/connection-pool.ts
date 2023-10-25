@@ -48,6 +48,7 @@ export default class ConnectionPool extends Map<number, ConnectionClient> {
         this.stackName = stackName,
         this.local = local,
         this.metrics = new Metrics(stackName);
+        if (config.nometrics) this.metrics.paused = true;
         this.pool = config.pool;
         this.sinks = new Sinks(config);
         this.nosinks = config.nosinks;
