@@ -40,6 +40,10 @@ export default {
             type: Boolean,
             default: false
         },
+        modelValue: {
+            type: String,
+            default: ''
+        },
         layer: {
             type: String
         },
@@ -60,7 +64,7 @@ export default {
                 count: false
             },
             filter: {
-                query: ''
+                query: this.modelValue || ''
             },
             list: {
                 count: 0,
@@ -70,7 +74,7 @@ export default {
     },
     methods: {
         save: function() {
-            this.$emit('filter', this.filter.query);
+            this.$emit('modelValue:update', this.filter.query);
             this.$emit('close');
         },
         fetch: async function() {
@@ -79,7 +83,7 @@ export default {
             const url = window.stdurl('/api/sink/esri/server/layer');
             url.searchParams.append('query', this.filter.query);
             url.searchParams.append('layer', this.layer);
-            url.searchParams.append('token', this.token);
+            if (this.token) url.searchParams.append('token', this.token);
 
             this.list = await window.std(url, {
                 method: 'GET',
