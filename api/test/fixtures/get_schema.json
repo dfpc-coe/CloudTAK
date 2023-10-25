@@ -99,6 +99,11 @@
         "query": true,
         "res": true
     },
+    "GET /sink/esri/server/layer": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
     "GET /data/:dataid/job/:jobid": {
         "body": false,
         "query": false,
@@ -204,14 +209,14 @@
         "query": false,
         "res": true
     },
-    "DELETE /basemap/:basemapid": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
     "GET /layer/:layerid/query": {
         "body": false,
         "query": true,
+        "res": true
+    },
+    "DELETE /basemap/:basemapid": {
+        "body": false,
+        "query": false,
         "res": true
     },
     "GET /connection/:connectionid": {
@@ -219,13 +224,13 @@
         "query": false,
         "res": true
     },
-    "DELETE /connection/:connectionid/sink/:sinkid": {
-        "body": false,
+    "PATCH /import/:import": {
+        "body": true,
         "query": false,
         "res": true
     },
-    "PATCH /import/:import": {
-        "body": true,
+    "DELETE /connection/:connectionid/sink/:sinkid": {
+        "body": false,
         "query": false,
         "res": true
     },
@@ -369,13 +374,13 @@
         "query": false,
         "res": true
     },
-    "POST /layer/redeploy": {
-        "body": false,
+    "PATCH /server": {
+        "body": true,
         "query": false,
         "res": true
     },
-    "PATCH /server": {
-        "body": true,
+    "POST /layer/redeploy": {
+        "body": false,
         "query": false,
         "res": true
     },
@@ -384,22 +389,22 @@
         "query": false,
         "res": true
     },
-    "GET /layer/:layerid/task/schema": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
     "POST /token": {
         "body": true,
         "query": false,
         "res": true
     },
-    "POST /layer/:layerid/task": {
+    "GET /layer/:layerid/task/schema": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "DELETE /token/:id": {
         "body": false,
         "query": false,
         "res": true
     },
-    "DELETE /token/:id": {
+    "POST /layer/:layerid/task": {
         "body": false,
         "query": false,
         "res": true

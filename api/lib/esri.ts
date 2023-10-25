@@ -443,7 +443,57 @@ class EsriProxyServer {
     }
 }
 
+class EsriProxyLayer {
+    layer: URL;
+    token: string;
+    referer: string;
+
+    constructor(layer: URL, token: string, referer: string) {
+        this.layer = layer;
+        this.token = token;
+        this.referer = referer;
+    }
+
+    async query(where: string): Promise<object> {
+        const count: any = await this.#features(where, true);
+        const features: any = await this.#features(where, false);
+
+        return {
+            count: count.count,
+            features
+        }
+    }
+
+    async #features(where: string, countOnly=false): Promise<object> {
+        const url = new URL(this.layer + '/query');
+        url.searchParams.append('f', 'json');
+        url.searchParams.append('where', where);
+        if (countOnly) {
+            url.searchParams.append('returnCountOnly', 'true');
+        } else {
+            url.searchParams.append('resultRecordCount', '5');
+        }
+
+        const res = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Referer': this.referer,
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-Esri-Authorization': `Bearer ${this.token}`
+            },
+        });
+
+        const json = await res.json()
+
+        if (json.error) throw new Err(400, null, 'ESRI Server Error: ' + json.error.message);
+
+        return json;
+    }
+}
+
+
 export {
     EsriProxyPortal,
-    EsriProxyServer
+    EsriProxyServer,
+    EsriProxyLayer
 }

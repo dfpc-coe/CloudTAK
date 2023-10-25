@@ -24,8 +24,6 @@ export default async function router(schema: any, config: Config) {
 
             const list = await api.Groups.list();
 
-            console.error(list)
-
             return res.json(list);
         } catch (err) {
             return Err.respond(err, res);
