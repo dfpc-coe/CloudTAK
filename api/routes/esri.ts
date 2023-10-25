@@ -7,7 +7,8 @@ import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
 import {
     EsriProxyPortal,
-    EsriProxyServer
+    EsriProxyServer,
+    EsriProxyLayer
 } from '../lib/esri.js';
 
 export default async function router(schema: any, config: Config) {
@@ -427,6 +428,48 @@ export default async function router(schema: any, config: Config) {
             const layer = await server.deleteLayer(layer_id);
 
             return res.json(layer);
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
+
+    await schema.get('/sink/esri/server/layer', {
+        name: 'Query Layer',
+        group: 'SinkEsri',
+        auth: 'user',
+        description: 'Return Sample features and count',
+        query: {
+            type: 'object',
+            required: ['layer', 'token', 'query'],
+            properties: {
+                layer: { type: 'string' },
+                token: { type: 'string' },
+                query: { type: 'string' }
+            }
+        },
+        res: {
+            type: 'object'
+        }
+    }, async (req: AuthRequest, res: Response) => {
+        try {
+            await Auth.is_auth(req);
+
+            let layer_url;
+            try {
+                layer_url = new URL(String(req.query.layer));
+            } catch (err) {
+                throw new Err(400, null, err.message);
+            }
+
+            const layer = new EsriProxyLayer(
+                layer_url,
+                String(req.query.token),
+                config.API_URL,
+            );
+
+            const count = await layer.query(String(req.query.query));
+
+            return res.json(count)
         } catch (err) {
             return Err.respond(err, res);
         }

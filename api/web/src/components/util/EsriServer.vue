@@ -127,10 +127,12 @@ export default {
     data: function() {
         return {
             base: this.server,
+            filterModal: false,
             loading: true,
             err: null,
             listpath: [],
             container: null,
+            list: [],
             layer: null,
         }
     },
@@ -155,6 +157,10 @@ export default {
             // TODO Support Directories / Layer Parsing
             postfix = postfix.split('/');
 
+            this.layer = {
+                id: parseInt(postfix[2])
+            };
+
             this.listpath = [{
                 name: postfix[0],
                 type: postfix[1]
@@ -175,16 +181,16 @@ export default {
                 this.$emit('close');
             }
         },
-        stdurl: function() {
+        stdurl: function(layer=true) {
             if (this.listpath.length) {
                 const listpath = this.listpath.map((pth) => {
                     if (pth.type === 'folder') return pth.name;
                     return pth.name + '/' + pth.type;
                 }).join('/');
 
-                if (!this.layer) {
+                if (!layer || !this.layer) {
                     return this.base + '/rest/services/' + listpath;
-                } else {
+                } else if (layer && this.layer) {
                     return this.base + '/rest/services/' + listpath + '/' + this.layer.id;
                 }
             } else {
@@ -229,7 +235,7 @@ export default {
             try {
                 const url = window.stdurl('/api/sink/esri/server');
                 url.searchParams.append('token', this.token);
-                url.searchParams.append('server', this.stdurl());
+                url.searchParams.append('server', this.stdurl(false));
                 url.searchParams.append('portal', this.portal);
 
                 const res = await window.std(url);
@@ -262,7 +268,7 @@ export default {
         CheckIcon,
         ArrowBackIcon,
         TablerLoading,
-        TablerDelete
+        TablerDelete,
     }
 }
 </script>
