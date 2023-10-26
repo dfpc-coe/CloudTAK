@@ -74,7 +74,7 @@ export default {
     },
     methods: {
         save: function() {
-            this.$emit('modelValue:update', this.filter.query);
+            this.$emit('update:modelValue', this.filter.query);
             this.$emit('close');
         },
         fetch: async function() {
