@@ -118,12 +118,12 @@ export class EsriBase {
 
             if (json.error) throw new Err(400, null, 'ESRI Server Error: ' + json.error.message);
 
-            if (!json.currentVersion || typeof json.currentVersion !== 'string') throw new Err(400, null, 'Could not determine ESRI Server Version, is this an ESRI Portal URL?');
+            if (!json.currentVersion) throw new Err(400, null, 'Could not determine ESRI Server Version, is this an ESRI Server?');
 
             if (this.type === EsriType.PORTAL || this.type === EsriType.SERVER) {
-                if (json.currentVersion.split('.').length < 2) throw new Err(400, null, 'Could not parse ESRI Server Version - this version may not be supported');
+                if (String(json.currentVersion).split('.').length < 2) throw new Err(400, null, 'Could not parse ESRI Server Version - this version may not be supported');
 
-                const major = parseInt(json.currentVersion.split('.')[0])
+                const major = parseInt(String(json.currentVersion).split('.')[0])
                 if (isNaN(major)) throw new Err(400, null, 'Could not parse ESRI Server Version - non-integer - this version may not be supported');
                 if (major < 8) throw new Err(400, null, 'ESRI Server version is too old - Update to at least version 8.x')
             } else if (this.type === EsriType.AGOL) {

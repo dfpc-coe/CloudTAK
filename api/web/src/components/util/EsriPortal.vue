@@ -1,10 +1,23 @@
 <template>
 <div class='row col-12'>
-    <template v-if='!url'> <!-- If no url is given assume auth is directly with a Server-->
-        HERE
+    <template v-if='err'>
+        <Alert title='ESRI Connection Error' :err='err.message' :compact='true'/>
+        <div class="col-md-12 mt-3 pb-2 px-3">
+            <div class='d-flex'>
+                <div class='ms-auto'>
+                    <a v-if='pane' @click='$emit("close")' class="cursor-pointer btn btn-primary">Close Viewer</a>
+                </div>
+            </div>
+        </div>
+    </template>
+    <template v-else-if='loading.main'>
+        <TablerLoading desc='Connecting to ESRI Portal'/>
+    </template>
+    <template v-else-if='!url'> <!-- If no url is given assume auth is directly with a Server-->
         <EsriServer
             :disabled='disabled'
             :server='server.url'
+            :readonly='readonly'
             :token='token'
             @layer='$emit("layer", $event)'
             @close='server = null'
@@ -23,25 +36,12 @@
                 <div class='ms-auto btn-list mx-3'>
                     <RefreshIcon v-if='!disabled && !err && !loading.main' @click='generateToken' v-tooltip='"Refresh"' class='cursor-pointer'/>
 
-                    <PlusIcon v-if='!disabled && !err && !loading.main' @click='createModal = true' v-tooltip='"Create Hosted Service"' class='cursor-pointer'/>
+                    <PlusIcon v-if='!readonly && !disabled && !err && !loading.main' @click='createModal = true' v-tooltip='"Create Hosted Service"' class='cursor-pointer'/>
                     <XIcon v-if='pane && !disabled' @click='$emit("close")' v-tooltip='"Close Explorer"' class='cursor-pointer'/>
                 </div>
             </div>
 
-            <template v-if='err'>
-                <Alert title='ESRI Connection Error' :err='err.message' :compact='true'/>
-                <div class="col-md-12 mt-3 pb-2 px-3">
-                    <div class='d-flex'>
-                        <div class='ms-auto'>
-                            <a v-if='pane' @click='$emit("close")' class="cursor-pointer btn btn-primary">Close Viewer</a>
-                        </div>
-                    </div>
-                </div>
-            </template>
-            <template v-else-if='loading.main'>
-                <TablerLoading desc='Connecting to ESRI Portal'/>
-            </template>
-            <template v-else-if='type === "PORTAL" || server'>
+            <template v-if='type === "PORTAL" || server'>
                 <template v-if='!server'>
                     <template v-if='servers.length === 0'>
                         <TablerNone :compact='true' :create='false' label='ArcGIS Servers'/>
@@ -72,6 +72,7 @@
                     <EsriServer
                         :disabled='disabled'
                         :server='server.url'
+                        :readonly='readonly'
                         :portal='url'
                         :token='token'
                         @layer='$emit("layer", $event)'
@@ -80,7 +81,7 @@
                 </template>
             </template>
             <template v-else-if="type === 'AGOL'">
-                <TablerInput placeholder='Filter by title' v-model='contentFilter.title'/>
+                <TablerInput placeholder='Filter by Title' v-model='contentFilter.title'/>
 
                 <template v-if='loading.content'>
                     <TablerLoading desc='Searching Content'/>
@@ -151,6 +152,11 @@ export default {
             type: Boolean,
             required: false,
             default: false
+        },
+        readonly: {
+            type: Boolean,
+            default: false,
+            description: 'Hide buttons for CRUD Operations'
         },
         url: {
             type: [URL, String],
@@ -225,7 +231,7 @@ export default {
                     username: this.username,
                     password: this.password,
                     sinkid: this.sinkid,
-                    url: this.url
+                    url: this.url || this.server.url
                 }
 
                 const res = await window.std('/api/esri', {
@@ -236,11 +242,11 @@ export default {
                 this.token = res.auth;
                 this.type = res.type;
 
-                await this.fetchPortal();
-
                 if (this.type === 'AGOL') {
+                    await this.fetchPortal();
                     await this.fetchContent();
-                } else {
+                } else if (this.type === 'PORTAL') {
+                    await this.fetchPortal();
                     await this.fetchServers();
                 }
             } catch (err) {

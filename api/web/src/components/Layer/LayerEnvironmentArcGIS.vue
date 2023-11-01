@@ -53,6 +53,7 @@
             <EsriPortal
                 :disabled='disabled'
                 :url='environment.ARCGIS_PORTAL'
+                :readonly='true'
                 :username='environment.ARCGIS_USERNAME'
                 :password='environment.ARCGIS_PASSWORD'
                 :layer='environment.ARCGIS_URL'
