@@ -16,7 +16,7 @@
         }'>
             <div class='d-flex'>
                 <h1 class='subheader px-3'>
-                    ESRI Server Explorer
+                    ESRI Portal Explorer
                     <span v-if='portal && portal.name' v-text='" - " + portal.name'/>
                 </h1>
 
@@ -60,11 +60,11 @@
                     </template>
                 </template>
                 <template v-else>
-                    <div class='datagrid mx-4 my-4'>
+                    <div class='datagrid'>
                         <template v-for='ele in ["id", "name", "adminUrl"]'>
-                            <div class='datagrid-item'>
+                            <div v-if='server[ele]' class='datagrid-item'>
                                 <div class="datagrid-title" v-text='ele'></div>
-                                <div class="datagrid-content" v-text='server[ele] || "Unknown"'></div>
+                                <div class="datagrid-content" v-text='server[ele]'></div>
                             </div>
                         </template>
                     </div>
