@@ -1,7 +1,7 @@
 <template>
 <div class='border py-2 mx-2'>
     <div class='d-flex'>
-        <h1 class='subheader px-3' v-text='server'></h1>
+        <h1 class='subheader px-3 col-9 text-truncate' v-text='server'></h1>
 
         <div class='ms-auto btn-list mx-3'>
             <RefreshIcon v-if='!disabled && !err && !loading' @click='getList' v-tooltip='"Refresh"' class='cursor-pointer'/>
@@ -73,7 +73,7 @@
                                 <MapIcon/><span v-text='lyr.name' class='mx-3'/>
                                 <div class='ms-auto btn-list'>
                                     <CheckIcon v-if='layer && layer.id === lyr.id'/>
-                                    <TablerDelete v-if='!disabled' @delete='deleteLayer' displaytype='icon' label='Delete Layer'/>
+                                    <TablerDelete v-if='!readonly && !disabled' @delete='deleteLayer' displaytype='icon' label='Delete Layer'/>
                                 </div>
                             </div>
                         </td>
@@ -107,6 +107,10 @@ export default {
         disabled: {
             type: Boolean,
             required: false,
+            default: false
+        },
+        readonly: {
+            type: Boolean,
             default: false
         },
         portal: {
@@ -154,12 +158,12 @@ export default {
             postfix = postfix.split('/');
 
             this.layer = {
-                id: parseInt(postfix[4])
+                id: parseInt(postfix[3])
             };
 
             this.listpath = [{
                 name: postfix[0],
-                type: postfix[1]
+                type: postfix[1] + '/' + postfix[2]
             }]
         } else {
             await this.getList();
@@ -201,7 +205,7 @@ export default {
             try {
                 const url = window.stdurl('/api/esri/server/layer');
                 url.searchParams.append('token', this.token.token);
-                url.searchParams.append('token', this.token.expires);
+                url.searchParams.append('expires', this.token.expires);
                 if (this.portal) url.searchParams.append('portal', this.portal);
                 url.searchParams.append('server', this.stdurl());
 
@@ -236,6 +240,7 @@ export default {
             this.loading = true;
             try {
                 const url = window.stdurl('/api/esri/server');
+
                 if (this.token) {
                     url.searchParams.append('token', this.token.token);
                     url.searchParams.append('expires', this.token.expires);
