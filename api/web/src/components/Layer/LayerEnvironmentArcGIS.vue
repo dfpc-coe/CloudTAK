@@ -57,7 +57,7 @@
                 :password='environment.ARCGIS_PASSWORD'
                 :layer='environment.ARCGIS_URL'
                 @layer='environment.ARCGIS_URL = $event'
-                @token='environment.ARCGIS_TOKEN = $event'
+                @token='processToken($event)'
                 @close='esriView = false'
             />
         </template>
@@ -67,7 +67,10 @@
         v-if='filterModal'
         @close='filterModal = false'
         v-model='environment.ARCGIS_QUERY'
-        :token='environment.ARCGIS_TOKEN'
+        :token='{
+            token: environment.ARCGIS_TOKEN,
+            expires: environment.ARCGIS_EXPIRES
+        }'
         :layer='environment.ARCGIS_URL'
     />
 </div>
@@ -112,6 +115,14 @@ export default {
             environment: this.modelValue,
             filterModal: false,
         };
+    },
+    methods: {
+        processToken(token) {
+            if (!token) return;
+
+            this.environment.ARCGIS_TOKEN = token.token;
+            this.environment.ARCGIS_EXPIRES = token.expires;
+        }
     },
     components: {
         PlusIcon,
