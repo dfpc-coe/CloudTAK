@@ -13,8 +13,6 @@
 
     <template v-if='err'>
         <Alert title='ESRI Connection Error' :err='err.message' :compact='true'/>
-        <div class="col-md-12 mt-3 pb-2 px-3">
-        </div>
     </template>
     <template v-else-if='loading'>
         <TablerLoading desc='Connecting to ESRI Server'/>
@@ -113,11 +111,9 @@ export default {
         },
         portal: {
             type: String,
-            required: true,
         },
         token: {
-            type: String,
-            required: true
+            type: Object,
         },
         server: {
             type: String,
@@ -158,7 +154,7 @@ export default {
             postfix = postfix.split('/');
 
             this.layer = {
-                id: parseInt(postfix[2])
+                id: parseInt(postfix[4])
             };
 
             this.listpath = [{
@@ -199,11 +195,14 @@ export default {
 
         },
         createLayer: async function() {
+            if (!this.token) throw new Error('Auth Token is required to create a service');
+
             this.loading = true;
             try {
-                const url = window.stdurl('/api/sink/esri/server/layer');
-                url.searchParams.append('token', this.token);
-                url.searchParams.append('portal', this.portal);
+                const url = window.stdurl('/api/esri/server/layer');
+                url.searchParams.append('token', this.token.token);
+                url.searchParams.append('token', this.token.expires);
+                if (this.portal) url.searchParams.append('portal', this.portal);
                 url.searchParams.append('server', this.stdurl());
 
                 await window.std(url, { method: 'POST' });
@@ -214,11 +213,14 @@ export default {
             }
         },
         deleteLayer: async function() {
+            if (!this.token) throw new Error('Auth Token is required to create a service');
+
             this.loading = true;
             try {
-                const url = window.stdurl('/api/sink/esri/server/layer');
-                url.searchParams.append('token', this.token);
-                url.searchParams.append('portal', this.portal);
+                const url = window.stdurl('/api/esri/server/layer');
+                if (this.token) url.searchParams.append('token', this.token.token);
+                if (this.token) url.searchParams.append('expires', this.token.expires);
+                if (this.portal) url.searchParams.append('portal', this.portal);
                 url.searchParams.append('server', this.stdurl());
 
                 await window.std(url, { method: 'DELETE' });
@@ -233,10 +235,13 @@ export default {
         getList: async function() {
             this.loading = true;
             try {
-                const url = window.stdurl('/api/sink/esri/server');
-                url.searchParams.append('token', this.token);
+                const url = window.stdurl('/api/esri/server');
+                if (this.token) {
+                    url.searchParams.append('token', this.token.token);
+                    url.searchParams.append('expires', this.token.expires);
+                }
+
                 url.searchParams.append('server', this.stdurl(false));
-                url.searchParams.append('portal', this.portal);
 
                 const res = await window.std(url);
 

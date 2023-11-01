@@ -6,21 +6,24 @@ import ConnectionSink from '../lib/types/connection-sink.js';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
 import {
+    EsriType,
+    EsriAuth,
+    EsriBase,
     EsriProxyPortal,
     EsriProxyServer,
     EsriProxyLayer
 } from '../lib/esri.js';
 
 export default async function router(schema: any, config: Config) {
-    await schema.post('/sink/esri', {
+    await schema.post('/esri', {
         name: 'Validate & Auth',
-        group: 'SinkEsri',
+        group: 'ESRI',
         auth: 'user',
         description: `
-            Helper API to configure ESRI MapServers
+            Helper API to configure ESRI MapServer Layers
 
-            An ESRI portal URL should be submitted along with the username & password.
-            The portal will be verified and if it passes a TOKEN and portal type will be returned
+            The URL can either be an ESRI Portal URL or a Server URL that doesn't require auth
+            or supports token generation
         `,
         body: {
             type: "object",
@@ -36,14 +39,21 @@ export default async function router(schema: any, config: Config) {
         res: {
             type: "object",
             additionalProperties: false,
+            required: ['type', 'base'],
             properties: {
                 type: {
                     type: 'string',
-                    enum: [ 'AGOL', 'SERVER' ]
+                    enum: [ 'AGOL', 'PORTAL', 'SERVER' ]
                 },
-                token: { type: "string" },
-                referer: { type: "string" },
-                expires: { type: "integer" },
+                base: { type: 'string' },
+                auth: {
+                    type: 'object',
+                    properties: {
+                        token: { type: 'string' },
+                        referer: { type: 'string' },
+                        expires: { type: 'integer' },
+                    }
+                }
             }
         }
     }, async (req: AuthRequest, res: Response) => {
@@ -56,37 +66,36 @@ export default async function router(schema: any, config: Config) {
                 throw new Err(400, null, err.message);
             }
 
-            if (!req.body.username && !req.body.password && !req.body.sinkid) throw new Err(400, null, 'Either SinkId or Username/Password Combo Required');
-            if (req.body.username && req.body.password && req.body.sinkid) throw new Err(400, null, 'Either SinkId or Username/Password Combo Required');
-
             if (req.body.sinkid) {
                 const sink = await ConnectionSink.from(config.pool, req.body.sinkid);
-
                 req.body.username = sink.body.username;
                 req.body.password = sink.body.password;
             }
 
-            const esri = await EsriProxyPortal.init(
-                req.body.url,
-                config.API_URL,
-                req.body.username,
-                req.body.password
-            );
+            let base;
+            if (req.body.username && req.body.password) {
+                base = await EsriBase.from(req.body.url, {
+                    username: req.body.username,
+                    password: req.body.password,
+                    referer: config.API_URL,
+                });
+            } else {
+                base = await EsriBase.from(req.body.url);
+            }
 
             return res.json({
-                type: esri.type,
-                token: esri.token,
-                referer: esri.referer,
-                expires: esri.expires,
+                type: base.type,
+                base: base.base,
+                auth: base.token
             });
         } catch (err) {
             return Err.respond(err, res);
         }
     });
 
-    await schema.get('/sink/esri/portal', {
+    await schema.get('/esri/portal', {
         name: 'Portal Meta',
-        group: 'SinkEsri',
+        group: 'ESRI',
         auth: 'user',
         description: `
             Helper API to configure ESRI MapServers
@@ -95,42 +104,37 @@ export default async function router(schema: any, config: Config) {
         query: {
             type: "object",
             additionalProperties: false,
-            required: [ "portal", "token" ],
+            required: [ 'portal' ],
             properties: {
-                portal: { "type": "string" },
-                token: { "type": "string" },
+                portal: { type: 'string' },
+                token: { type: 'string' },
+                expires: { type: 'string' },
             }
         },
-        res: { type: "object" }
+        res: { type: 'object' }
     }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(req);
 
-            let portal_url;
-            try {
-                portal_url = new URL(String(req.query.portal));
-            } catch (err) {
-                throw new Err(400, null, err.message);
+            const base = new EsriBase(String(req.query.portal));
+            if (req.query.token && req.query.expires) {
+                base.token = {
+                    token: String(req.query.token),
+                    expires: Number(req.query.expires),
+                    referer: config.API_URL
+                }
             }
 
-            const esri = new EsriProxyPortal(
-                String(req.query.token),
-                +new Date() + 1000,
-                portal_url,
-                config.API_URL,
-            );
-
-            const portal = await esri.getPortal();
-
-            return res.json(portal);
+            const portal = new EsriProxyPortal(base);
+            return res.json(await portal.getPortal());
         } catch (err) {
             return Err.respond(err, res);
         }
     });
 
-    await schema.get('/sink/esri/portal/content', {
+    await schema.get('/esri/portal/content', {
         name: 'Portal Content',
-        group: 'SinkEsri',
+        group: 'ESRI',
         auth: 'user',
         description: `
             Helper API to configure ESRI MapServers
@@ -139,11 +143,12 @@ export default async function router(schema: any, config: Config) {
         query: {
             type: "object",
             additionalProperties: false,
-            required: [ "portal", "token" ],
+            required: [ "portal" ],
             properties: {
-                portal: { "type": "string" },
-                token: { "type": "string" },
-                title: { "type": "string" },
+                portal: { type: 'string' },
+                token: { type: 'string' },
+                expires: { type: 'string' },
+                title: { type: "string" },
             }
         },
         res: { type: "object" }
@@ -151,21 +156,18 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            let portal_url;
-            try {
-                portal_url = new URL(String(req.query.portal));
-            } catch (err) {
-                throw new Err(400, null, err.message);
+            const base = new EsriBase(String(req.query.portal));
+            if (req.query.token && req.query.expires) {
+                base.token = {
+                    token: String(req.query.token),
+                    expires: Number(req.query.expires),
+                    referer: config.API_URL
+                }
             }
 
-            const esri = new EsriProxyPortal(
-                String(req.query.token),
-                +new Date() + 1000,
-                portal_url,
-                config.API_URL,
-            );
+            const portal = new EsriProxyPortal(base);
 
-            const content = await esri.getContent({
+            const content = await portal.getContent({
                 title: req.query.title ? String(req.query.title) : undefined
             });
 
@@ -175,17 +177,18 @@ export default async function router(schema: any, config: Config) {
         }
     });
 
-    await schema.post('/sink/esri/portal/service', {
+    await schema.post('/esri/portal/service', {
         name: 'Create Service',
-        group: 'SinkEsri',
+        group: 'ESRI',
         auth: 'user',
         description: 'Create Service to store Feature Layers',
         query: {
             type: 'object',
-            required: ['portal', 'token'],
+            required: ['portal', 'token', 'expires'],
             properties: {
                 portal: { type: 'string' },
-                token: { type: 'string' }
+                token: { type: 'string' },
+                expires: { type: 'string' },
             }
         },
         body: {
@@ -202,32 +205,24 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            let portal_url;
-            try {
-                portal_url = new URL(String(req.query.portal));
-            } catch (err) {
-                throw new Err(400, null, err.message);
+            const base = new EsriBase(String(req.query.portal));
+            base.token = {
+                token: String(req.query.token),
+                expires: Number(req.query.expires),
+                referer: config.API_URL
             }
 
-            const esri = new EsriProxyPortal(
-                String(req.query.token),
-                +new Date() + 1000,
-                portal_url,
-                config.API_URL,
-            );
+            const portal = new EsriProxyPortal(base);
 
-            const service = await esri.createService(req.body.name);
-
-            return res.json(service);
+            return res.json(await portal.createService(req.body.name));
         } catch (err) {
             return Err.respond(err, res);
         }
     });
 
-
-    await schema.get('/sink/esri/portal/server', {
+    await schema.get('/esri/portal/server', {
         name: 'List Servers',
-        group: 'SinkEsri',
+        group: 'ESRI',
         auth: 'user',
         description: `
             Helper API to configure ESRI MapServers
@@ -239,7 +234,8 @@ export default async function router(schema: any, config: Config) {
             required: [ "portal", "token" ],
             properties: {
                 portal: { type: "string" },
-                token: { type: "string" },
+                token: { type: 'string' },
+                expires: { type: 'string' },
             }
         },
         res: {
@@ -256,21 +252,17 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            let portal_url;
-            try {
-                portal_url = new URL(String(req.query.portal));
-            } catch (err) {
-                throw new Err(400, null, err.message);
+            const base = new EsriBase(String(req.query.portal));
+            if (req.query.token && req.query.expires) {
+                base.token = {
+                    token: String(req.query.token),
+                    expires: Number(req.query.expires),
+                    referer: config.API_URL
+                }
             }
 
-            const esri = new EsriProxyPortal(
-                String(req.query.token),
-                +new Date() + 1000,
-                portal_url,
-                config.API_URL,
-            );
-
-            const servers = await esri.getServers();
+            const portal = new EsriProxyPortal(base);
+            const servers = await portal.getServers();
 
             return res.json({
                 servers: servers.servers
@@ -280,51 +272,44 @@ export default async function router(schema: any, config: Config) {
         }
     });
 
-    await schema.get('/sink/esri/server', {
-        name: 'Validate & Auth',
-        group: 'SinkEsri',
+    await schema.get('/esri/server', {
+        name: 'List Services',
+        group: 'ESRI',
         auth: 'user',
         description: 'Helper API to configure ESRI MapServers - Get Services',
         query: {
             type: 'object',
-            required: ['server', 'portal', 'token'],
+            required: ['server'],
             properties: {
                 server: { type: 'string' },
-                portal: { type: 'string' },
-                token: { type: 'string' }
+                token: { type: 'string' },
+                expires: { type: 'number' }
             }
         },
         res: {
             type: 'object',
             required: ['folders', 'services'],
             properties: {
-                folders: { type: "array" },
-                services: { type: "array" },
+                folders: { type: 'array' },
+                services: { type: 'array' },
             }
         }
     }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(req);
 
-            let portal_url, server_url;
-            try {
-                portal_url = new URL(String(req.query.portal));
-                server_url = new URL(String(req.query.server));
-            } catch (err) {
-                throw new Err(400, null, err.message);
+            const base = new EsriBase(String(req.query.server));
+            if (req.query.token && req.query.expires) {
+                base.token = {
+                    token: String(req.query.token),
+                    expires: Number(req.query.expires),
+                    referer: config.API_URL
+                }
             }
 
-            const server = new EsriProxyServer(
-                new EsriProxyPortal(
-                    String(req.query.token),
-                    +new Date() + 10000,
-                    portal_url,
-                    config.API_URL
-                ),
-                server_url
-            );
+            const server = new EsriProxyServer(base);
 
-            const list: any = await server.getList();
+            const list: any = await server.getList(base.postfix);
             if (!list.folders) list.folders = [];
             if (!list.services) list.services = [];
 
@@ -336,7 +321,7 @@ export default async function router(schema: any, config: Config) {
 
     await schema.post('/sink/esri/server/layer', {
         name: 'Create Layer',
-        group: 'SinkEsri',
+        group: 'ESRI',
         auth: 'user',
         description: 'Create Layer necessary to push CoT data',
         query: {
@@ -355,27 +340,18 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            let portal_url, server_url;
-            try {
-                portal_url = new URL(String(req.query.portal));
-                server_url = new URL(String(req.query.server));
-            } catch (err) {
-                throw new Err(400, null, err.message);
+            const base = new EsriBase(String(req.query.server));
+            if (req.query.token && req.query.expires) {
+                base.token = {
+                    token: String(req.query.token),
+                    expires: Number(req.query.expires),
+                    referer: config.API_URL
+                }
             }
 
-            const server = new EsriProxyServer(
-                new EsriProxyPortal(
-                    String(req.query.token),
-                    +new Date() + 10000,
-                    portal_url,
-                    config.API_URL
-                ),
-                server_url
-            );
+            const server = new EsriProxyServer(base);
 
-            const layer = await server.createLayer();
-
-            return res.json(layer)
+            return res.json(await server.createLayer());
         } catch (err) {
             return Err.respond(err, res);
         }
@@ -383,7 +359,7 @@ export default async function router(schema: any, config: Config) {
 
     await schema.delete('/sink/esri/server/layer', {
         name: 'Delete Layer',
-        group: 'SinkEsri',
+        group: 'ESRI',
         auth: 'user',
         description: 'Delete an ESRI Layer',
         query: {
@@ -407,23 +383,18 @@ export default async function router(schema: any, config: Config) {
             const url = new URL(String(req.query.server).replace(/\/\d+$/, ''));
             const layer_id = parseInt(String(req.query.server).match(/\/\d+$/)[0].replace('/', ''));
 
-            let portal_url, server_url;
-            try {
-                portal_url = new URL(String(req.query.portal));
-                server_url = new URL(String(req.query.server));
-            } catch (err) {
-                throw new Err(400, null, err.message);
+            const base = new EsriBase(String(req.query.server));
+            if (req.query.token && req.query.expires) {
+                base.token = {
+                    token: String(req.query.token),
+                    expires: Number(req.query.expires),
+                    referer: config.API_URL
+                }
             }
 
-            const server = new EsriProxyServer(
-                new EsriProxyPortal(
-                    String(req.query.token),
-                    +new Date() + 10000,
-                    portal_url,
-                    config.API_URL
-                ),
-                url
-            );
+            const server = new EsriProxyServer(base);
+
+            return res.json(await server.createLayer());
 
             const layer = await server.deleteLayer(layer_id);
 
@@ -432,10 +403,11 @@ export default async function router(schema: any, config: Config) {
             return Err.respond(err, res);
         }
     });
+/*
 
     await schema.get('/sink/esri/server/layer', {
         name: 'Query Layer',
-        group: 'SinkEsri',
+        group: 'ESRI',
         auth: 'user',
         description: 'Return Sample features and count',
         query: {
@@ -474,4 +446,5 @@ export default async function router(schema: any, config: Config) {
             return Err.respond(err, res);
         }
     });
+*/
 }
