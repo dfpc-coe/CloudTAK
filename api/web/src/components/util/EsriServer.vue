@@ -139,7 +139,7 @@ export default {
     watch: {
         layer: function() {
             if (!this.layer) return this.$emit('layer', '');
-            this.$emit('layer', this.stdurl());
+            this.$emit('layer', this.stdurl(true));
         },
         listpath: {
             deep: true,
@@ -157,14 +157,15 @@ export default {
             // TODO Support Directories / Layer Parsing
             postfix = postfix.split('/');
 
-            this.layer = {
-                id: parseInt(postfix[3])
-            };
-
             this.listpath = [{
                 name: postfix[0],
-                type: postfix[1] + '/' + postfix[2]
+                type: postfix[1]
             }]
+
+            this.layer = {
+                id: parseInt(postfix[2])
+            };
+
         } else {
             await this.getList();
         }
