@@ -489,14 +489,10 @@ class EsriProxyServer {
 }
 
 class EsriProxyLayer {
-    layer: URL;
-    token: string;
-    referer: string;
+    esri: EsriBase;
 
-    constructor(layer: URL, token: string, referer: string) {
-        this.layer = layer;
-        this.token = token;
-        this.referer = referer;
+    constructor(esri: EsriBase) {
+        this.esri = esri;
     }
 
     async query(where: string): Promise<object> {
@@ -510,7 +506,7 @@ class EsriProxyLayer {
     }
 
     async #features(where: string, countOnly=false): Promise<object> {
-        const url = new URL(this.layer + '/query');
+        const url = new URL(this.esri.base + this.esri.postfix + '/query');
         url.searchParams.append('f', 'json');
         url.searchParams.append('where', where);
         if (countOnly) {
@@ -519,13 +515,11 @@ class EsriProxyLayer {
             url.searchParams.append('resultRecordCount', '5');
         }
 
+        const headers = this.esri.standardHeaders();
+        headers.append('Content-Type', 'application/x-www-form-urlencoded');
         const res = await fetch(url, {
             method: 'GET',
-            headers: {
-                'Referer': this.referer,
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'X-Esri-Authorization': `Bearer ${this.token}`
-            },
+            headers
         });
 
         const json = await res.json()
