@@ -38,11 +38,11 @@ export class EsriBase {
         this.auth = auth;
 
         if (this.type === EsriType.AGOL || this.type === EsriType.PORTAL) {
-            this.postfix = base.pathname.replace(/.*sharing\/rest/, '');
-            base.pathname = base.pathname.replace(/sharing\/rest.*/, 'sharing/rest');
+            this.postfix = base.pathname.replace(/.*sharing\/rest/i, '');
+            base.pathname = base.pathname.replace(/(?<=sharing\/rest).*/i, '');
         } else if (this.type === EsriType.SERVER) {
-            this.postfix = base.pathname.replace(/.*arcgis\/rest/, '');
-            base.pathname = base.pathname.replace(/arcgis\/rest.*/, 'arcgis/rest');
+            this.postfix = base.pathname.replace(/.*arcgis\/rest/i, '');
+            base.pathname = base.pathname.replace(/(?<=arcgis\/rest).*/i, '');
         }
 
         this.base = base;
