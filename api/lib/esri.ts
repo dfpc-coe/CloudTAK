@@ -102,9 +102,9 @@ export class EsriBase {
 
         if (base.hostname.match(/maps\.arcgis\.com$/)) {
             return EsriType.AGOL;
-        } else if (base.pathname.includes('/arcgis/rest')) {
+        } else if (base.pathname.toLowerCase().includes('/arcgis/rest')) {
             return EsriType.SERVER;
-        } else if (base.pathname.includes('/sharing/rest')) {
+        } else if (base.pathname.toLowerCase().includes('/sharing/rest')) {
             return EsriType.PORTAL;
         }
 
