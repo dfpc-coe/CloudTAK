@@ -59,14 +59,20 @@ export class EsriBase {
         if (!this.auth) return;
 
         const body = new URLSearchParams();
+        body.append('f', 'json');
         body.append('username', this.auth.username);
         body.append('password', this.auth.password);
-        body.append('referer', this.auth.referer);
+        body.append('referer', 'https://iagis.intterragroup.com');
         body.append('expiration', String(this.auth.expiration || 21600));
 
+        let url = new URL(this.base);
+        if (this.type === EsriType.SERVER) {
+            url.pathname = url.pathname.replace('/rest', '/tokens/generateToken');
+        } else {
+            url.pathname = url.pathname + '/generateToken'
+        }
+
         try {
-            const url = new URL(this.base + '/generateToken');
-            url.searchParams.append('f', 'json');
             const res = await fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
