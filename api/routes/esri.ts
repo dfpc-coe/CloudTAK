@@ -435,11 +435,7 @@ export default async function router(schema: any, config: Config) {
                 }
             }
 
-            const layer = new EsriProxyLayer(
-                new URL(String(req.query.layer)),
-                String(req.query.token),
-                config.API_URL,
-            );
+            const layer = new EsriProxyLayer(base);
 
             const count = await layer.query(String(req.query.query));
 
