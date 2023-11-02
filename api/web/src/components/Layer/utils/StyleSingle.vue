@@ -80,7 +80,9 @@
                 </TablerColour>
             </div>
             <div class='col-md-12 darken round'>
-                <TablerRange label='Fill Opacity' :disabled='disabled' v-model='filters[mode].properties["fill-opacity"]' :min="0" :max="256" :step="1"/>
+                <TablerRange label='Fill Opacity' :disabled='disabled' v-model='filters[mode].properties["fill-opacity"]' :min="0" :max="256" :step="1">
+                    <TablerToggle v-model='filters[mode].enabled["fill-opacity"]' :disabled='disabled' label='Enabled'/>
+                </TablerRange>
             </div>
         </template>
     </div>

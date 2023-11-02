@@ -58,7 +58,7 @@
                                 <div class="card-header">
                                     <LayerStatus :layer='layer'/>
 
-                                    <a @click='$router.push(`/layer/${layer.id}`)' class="card-title cursor-pointer" v-text='layer.name'></a>
+                                    <a @click='$router.push(`/layer/${layer.id}`)' class="card-title cursor-pointer mx-2" v-text='layer.name'></a>
 
                                     <div class='ms-auto'>
                                         <div class='btn-list'>

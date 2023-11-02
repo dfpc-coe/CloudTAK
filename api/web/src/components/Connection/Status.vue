@@ -1,17 +1,22 @@
 <template>
-<span v-if='!connection.enabled'>
-    <PlayerPauseIcon class='mt-1'/>
-</span>
-<span v-else class="status-indicator status-indicator-animated" :class='{
-    "status-green": connection.status === "live",
-    "status-red": connection.status === "dead",
-    "status-dark": connection.status === "unknown",
-}'>
-      <span class="status-indicator-circle"></span>
-      <span class="status-indicator-circle"></span>
-      <span class="status-indicator-circle"></span>
-</span>
+<div class='d-flex justify-content-center align-items-center' style='width: 36px;'>
+    <template v-if='!connection.enabled'>
+        <PlayerPauseIcon/>
+    </template>
+    <template v-else>
+        <span class="status-indicator status-indicator-animated" :class='{
+            "status-green": connection.status === "live",
+            "status-red": connection.status === "dead",
+            "status-dark": connection.status === "unknown",
+        }'>
+              <span class="status-indicator-circle"></span>
+              <span class="status-indicator-circle"></span>
+              <span class="status-indicator-circle"></span>
+        </span>
+    </template>
+</div>
 </template>
+
 
 <script>
 import {

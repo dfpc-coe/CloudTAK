@@ -21,8 +21,8 @@
             <tbody class='table-tbody'>
                 <tr @click='$router.push(`/layer/${layer.id}`)' :key='layer.id' v-for='layer of list.layers' class='cursor-pointer'>
                     <td>
-                        <div class='d-flex'>
-                            <span class='mt-2' v-text='layer.name'/>
+                        <div class='d-flex align-items-center'>
+                            <LayerStatus :layer='layer'/><div class='mx-2' v-text='layer.name'></div>
                         </div>
                     </td>
                 </tr>
@@ -44,6 +44,7 @@ import {
     TablerNone,
     TablerLoading
 } from '@tak-ps/vue-tabler'
+import LayerStatus from '../Layer/utils/Status.vue';
 
 export default {
     name: 'ConnectionLayers',
@@ -101,6 +102,7 @@ export default {
         PlusIcon,
         TablerLoading,
         TableFooter,
+        LayerStatus,
     }
 }
 </script>

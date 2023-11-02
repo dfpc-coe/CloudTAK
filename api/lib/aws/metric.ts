@@ -8,14 +8,17 @@ import moment from 'moment';
 export default class Metric {
     stack: string;
     cw: CloudWatch.CloudWatchClient;
+    paused: boolean;
 
     constructor(stack: string) {
         this.stack = stack;
         this.cw = new CloudWatch.CloudWatchClient({ region: process.env.AWS_DEFAULT_REGION });
-
+        this.paused = false;
     }
 
     async post(connid: number) {
+        if (this.paused) return;
+
         try {
             await this.cw.send(new CloudWatch.PutMetricDataCommand({
                 Namespace: 'TAKETL',
@@ -39,6 +42,8 @@ export default class Metric {
     }
 
     async connection(connid: number) {
+        if (this.paused) return;
+
         try {
             return await this.cw.send(new CloudWatch.GetMetricDataCommand({
                 EndTime: moment().toDate(),
@@ -69,6 +74,8 @@ export default class Metric {
     }
 
     async sink(sinkid: number) {
+        if (this.paused) return;
+
         try {
             return await this.cw.send(new CloudWatch.GetMetricDataCommand({
                 EndTime: moment().toDate(),
