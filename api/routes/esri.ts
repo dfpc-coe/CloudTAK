@@ -403,9 +403,8 @@ export default async function router(schema: any, config: Config) {
             return Err.respond(err, res);
         }
     });
-/*
 
-    await schema.get('/sink/esri/server/layer', {
+    await schema.get('/esri/server/layer', {
         name: 'Query Layer',
         group: 'ESRI',
         auth: 'user',
@@ -416,6 +415,7 @@ export default async function router(schema: any, config: Config) {
             properties: {
                 layer: { type: 'string' },
                 token: { type: 'string' },
+                expires: { type: 'string' },
                 query: { type: 'string' }
             }
         },
@@ -426,15 +426,17 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            let layer_url;
-            try {
-                layer_url = new URL(String(req.query.layer));
-            } catch (err) {
-                throw new Err(400, null, err.message);
+            const base = new EsriBase(String(req.query.layer));
+            if (req.query.token && req.query.expires) {
+                base.token = {
+                    token: String(req.query.token),
+                    expires: Number(req.query.expires),
+                    referer: config.API_URL
+                }
             }
 
             const layer = new EsriProxyLayer(
-                layer_url,
+                new URL(String(req.query.layer)),
                 String(req.query.token),
                 config.API_URL,
             );
@@ -446,5 +448,4 @@ export default async function router(schema: any, config: Config) {
             return Err.respond(err, res);
         }
     });
-*/
 }
