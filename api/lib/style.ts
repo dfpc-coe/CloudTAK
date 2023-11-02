@@ -54,13 +54,13 @@ export default class Style {
 
             Object.assign(feature.properties, style.point);
         } else if (feature.geometry.type === 'LineString' && style.line) {
-            if (!style.point.remarks) delete style.line.remarks;
-            if (!style.point.callsign) delete style.line.callsign;
+            if (!style.line.remarks) delete style.line.remarks;
+            if (!style.line.callsign) delete style.line.callsign;
 
             Object.assign(feature.properties, style.line);
         } else if (feature.geometry.type === 'Polygon' && style.polygon) {
-            if (!style.point.remarks) delete style.polygon.remarks;
-            if (!style.point.callsign) delete style.polygon.callsign;
+            if (!style.polygon.remarks) delete style.polygon.remarks;
+            if (!style.polygon.callsign) delete style.polygon.callsign;
 
             Object.assign(feature.properties, style.polygon);
         }
