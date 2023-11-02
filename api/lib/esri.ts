@@ -62,7 +62,8 @@ export class EsriBase {
         body.append('f', 'json');
         body.append('username', this.auth.username);
         body.append('password', this.auth.password);
-        body.append('referer', 'https://iagis.intterragroup.com');
+        body.append('encrypted', 'false');
+        body.append('referer', this.auth.referer);
         body.append('expiration', String(this.auth.expiration || 21600));
 
         let url = new URL(this.base);
