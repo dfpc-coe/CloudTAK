@@ -218,7 +218,7 @@ export default {
         }
     },
     mounted: async function() {
-        if (this.username && this.password) await this.generateToken();
+        if ((this.username && this.password) || this.sinkid) await this.generateToken();
     },
     methods: {
         fmtserver: function(content) {
