@@ -21,7 +21,7 @@ export default class ESRI extends SinkInterface {
                     referer: config.API_URL,
                 });
 
-                return esri.auth;
+                return esri.token;
             });
 
             if (secrets.expires < +new Date()  + 1000 * 60 * 60) {
