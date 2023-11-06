@@ -3,14 +3,23 @@
     <div class='card-header d-flex'>
         <h3 class='card-title'>Environment</h3>
         <div class='ms-auto btn-list'>
-            <SettingsIcon v-if='disabled' @click='disabled = false' class='cursor-pointer'/>
+            <template v-if='!raw && disabled'>
+                <CodeIcon @click='raw = true' v-tooltip='"Raw View"' class='cursor-pointer'/>
+                <SettingsIcon @click='disabled = false' class='cursor-pointer'/>
+            </template>
+            <template v-else-if='raw'>
+                <XIcon @click='raw = false' v-tooltip='"Close View"' class='cursor-pointer'/>
+            </template>
         </div>
     </div>
 
     <TablerLoading v-if='loading.schema' desc='Loading Environment'/>
     <TablerLoading v-else-if='loading.save' desc='Saving Environment'/>
     <div v-else class="col">
-        <template v-if='schema.display === "arcgis"'>
+        <template v-if='raw'>
+            <pre v-text='environment'/>
+        </template>
+        <template v-else-if='schema.display === "arcgis"'>
             <LayerEnvironmentArcGIS v-model='environment' :disabled='disabled'/>
         </template>
         <template v-else-if='schema.type !== "object"'>
@@ -39,8 +48,9 @@ import {
 import LayerEnvironmentArcGIS from './LayerEnvironmentArcGIS.vue';
 import Schema from './utils/Schema.vue';
 import {
+    XIcon,
     PlusIcon,
-    FilterIcon,
+    CodeIcon,
     SettingsIcon,
 } from 'vue-tabler-icons'
 
@@ -54,6 +64,7 @@ export default {
     },
     data: function() {
         return {
+            raw: false,
             alert: false,
             esriView: false,
             disabled: true,
@@ -106,10 +117,11 @@ export default {
     components: {
         Schema,
         PlusIcon,
+        CodeIcon,
+        XIcon,
         SettingsIcon,
         TablerInput,
         TablerLoading,
-        FilterIcon,
         LayerEnvironmentArcGIS
     }
 }
