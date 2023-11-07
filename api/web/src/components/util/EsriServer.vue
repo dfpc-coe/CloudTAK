@@ -73,7 +73,7 @@
                                 <MapIcon/><span v-text='lyr.name' class='mx-3'/>
                                 <div class='ms-auto btn-list'>
                                     <CheckIcon v-if='layer && layer.id === lyr.id'/>
-                                    <TablerDelete v-if='!readonly && !disabled' @delete='deleteLayer' displaytype='icon' label='Delete Layer'/>
+                                    <TablerDelete v-if='!readonly && !disabled' @delete='deleteLayer(lyr)' displaytype='icon' label='Delete Layer'/>
                                 </div>
                             </div>
                         </td>
@@ -189,6 +189,7 @@ export default {
                     return pth.name + '/' + pth.type;
                 }).join('/');
 
+                console.error(layer, listpath);
                 if (!layer || !this.layer) {
                     return this.base + '/rest/services/' + listpath;
                 } else if (layer && this.layer) {
@@ -208,7 +209,7 @@ export default {
                 url.searchParams.append('token', this.token.token);
                 url.searchParams.append('expires', this.token.expires);
                 if (this.portal) url.searchParams.append('portal', this.portal);
-                url.searchParams.append('server', this.stdurl());
+                url.searchParams.append('server', this.stdurl(false));
 
                 await window.std(url, { method: 'POST' });
 
@@ -217,7 +218,7 @@ export default {
                 this.err = err;
             }
         },
-        deleteLayer: async function() {
+        deleteLayer: async function(layer) {
             if (!this.token) throw new Error('Auth Token is required to create a service');
 
             this.loading = true;
@@ -226,7 +227,7 @@ export default {
                 if (this.token) url.searchParams.append('token', this.token.token);
                 if (this.token) url.searchParams.append('expires', this.token.expires);
                 if (this.portal) url.searchParams.append('portal', this.portal);
-                url.searchParams.append('server', this.stdurl());
+                url.searchParams.append('server', this.stdurl(false) + '/' + layer.id);
 
                 await window.std(url, { method: 'DELETE' });
 
@@ -234,7 +235,8 @@ export default {
 
                 await this.getList();
             } catch (err) {
-                this.err = err;
+                this.loading = false;
+                throw err;
             }
         },
         getList: async function() {

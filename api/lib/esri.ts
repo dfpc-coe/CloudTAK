@@ -308,8 +308,8 @@ class EsriProxyServer {
     }
 
     async deleteLayer(id: number): Promise<object> {
-        const url = new URL(this.esri.base);
-        url.pathname = url.pathname.replace('/rest/', '/rest/admin/') + '/deleteFromDefinition';
+        const url = new URL(this.esri.base)
+        url.pathname = url.pathname.replace(/\/rest/i, '/rest/admin' + this.esri.postfix + '/deleteFromDefinition');
 
         const headers = this.esri.standardHeaders();
         headers.append('Content-Type', 'application/x-www-form-urlencoded');
@@ -332,8 +332,8 @@ class EsriProxyServer {
     }
 
     async createLayer(): Promise<object> {
-        const url = new URL(this.esri.base);
-        url.pathname = url.pathname.replace('/rest/', '/rest/admin/') + '/addToDefinition';
+        const url = new URL(this.esri.base)
+        url.pathname = url.pathname.replace(/\/rest/i, '/rest/admin' + this.esri.postfix + '/addToDefinition');
 
         const headers = this.esri.standardHeaders();
         headers.append('Content-Type', 'application/x-www-form-urlencoded');
