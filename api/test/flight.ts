@@ -220,6 +220,7 @@ export default class Flight {
                 unsafe: true,
                 noevents: true,
                 nosinks: true,
+                nometrics: true,
                 local: true
             });
 
