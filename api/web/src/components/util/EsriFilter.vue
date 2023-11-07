@@ -80,7 +80,7 @@ export default {
         fetch: async function() {
             this.loading.count = true;
 
-            const url = window.stdurl('/api/sink/esri/server/layer');
+            const url = window.stdurl('/api/esri/server/layer');
             url.searchParams.append('query', this.filter.query);
             url.searchParams.append('layer', this.layer);
             if (this.token) url.searchParams.append('token', this.token);

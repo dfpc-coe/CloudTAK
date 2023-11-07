@@ -1,21 +1,5 @@
 <template>
-<div class='py-2' :class='{
-    "border": pane
-}'>
-    <div class='d-flex'>
-        <h1 class='subheader px-3'>
-            ESRI Server Explorer
-            <span v-if='portal && portal.name' v-text='" - " + portal.name'/>
-        </h1>
-
-        <div class='ms-auto btn-list mx-3'>
-            <RefreshIcon v-if='!disabled && !err && !loading.main' @click='generateToken' v-tooltip='"Refresh"' class='cursor-pointer'/>
-
-            <PlusIcon v-if='!disabled && !err && !loading.main' @click='createModal = true' v-tooltip='"Create Hosted Service"' class='cursor-pointer'/>
-            <XIcon v-if='pane && !disabled' @click='$emit("close")' v-tooltip='"Close Explorer"' class='cursor-pointer'/>
-        </div>
-    </div>
-
+<div class='row col-12'>
     <template v-if='err'>
         <Alert title='ESRI Connection Error' :err='err.message' :compact='true'/>
         <div class="col-md-12 mt-3 pb-2 px-3">
@@ -29,84 +13,115 @@
     <template v-else-if='loading.main'>
         <TablerLoading desc='Connecting to ESRI Portal'/>
     </template>
-    <template v-else-if='type === "SERVER" || server'>
-        <template v-if='!server'>
-            <template v-if='servers.length === 0'>
-                <TablerNone :compact='true' :create='false' label='ArcGIS Servers'/>
+    <template v-else-if='!url'> <!-- If no url is given assume auth is directly with a Server-->
+        <EsriServer
+            :disabled='disabled'
+            :server='server.url'
+            :readonly='readonly'
+            :token='token'
+            @layer='$emit("layer", $event)'
+            @close='server = null'
+        />
+    </template>
+    <template v-else>
+        <div class='py-2' :class='{
+            "border": pane
+        }'>
+            <div class='d-flex'>
+                <h1 class='subheader px-3'>
+                    ESRI Portal Explorer
+                    <span v-if='portal && portal.name' v-text='" - " + portal.name'/>
+                </h1>
+
+                <div class='ms-auto btn-list mx-3'>
+                    <RefreshIcon v-if='!disabled && !err && !loading.main' @click='generateToken' v-tooltip='"Refresh"' class='cursor-pointer'/>
+
+                    <PlusIcon v-if='!readonly && !disabled && !err && !loading.main' @click='createModal = true' v-tooltip='"Create Hosted Service"' class='cursor-pointer'/>
+                    <XIcon v-if='pane && !disabled' @click='$emit("close")' v-tooltip='"Close Explorer"' class='cursor-pointer'/>
+                </div>
+            </div>
+
+            <template v-if='type === "PORTAL" || server'>
+                <template v-if='!server'>
+                    <template v-if='servers.length === 0'>
+                        <TablerNone :compact='true' :create='false' label='ArcGIS Servers'/>
+                    </template>
+                    <template v-else>
+                        <div class='table-responsive'>
+                            <table class="table table-hover card-table table-vcenter cursor-pointer">
+                                <thead><tr><th>ID</th><th>Name</th><th>Url</th></tr></thead>
+                                <tbody><tr @click='server = serv' :key='serv.id' v-for='serv in servers'>
+                                    <td v-text='serv.id'></td>
+                                    <td v-text='serv.name'></td>
+                                    <td v-text='serv.url'></td>
+                                </tr></tbody>
+                            </table>
+                        </div>
+                    </template>
+                </template>
+                <template v-else>
+                    <div class='datagrid'>
+                        <template v-for='ele in ["id", "name", "adminUrl"]'>
+                            <div v-if='server[ele]' class='datagrid-item'>
+                                <div class="datagrid-title" v-text='ele'></div>
+                                <div class="datagrid-content" v-text='server[ele]'></div>
+                            </div>
+                        </template>
+                    </div>
+
+                    <EsriServer
+                        :disabled='disabled'
+                        :server='server.url'
+                        :readonly='readonly'
+                        :portal='url'
+                        :token='token'
+                        @layer='$emit("layer", $event)'
+                        @close='server = null'
+                    />
+                </template>
             </template>
-            <template v-else>
-                <div class='table-responsive'>
+            <template v-else-if="type === 'AGOL'">
+                <TablerInput placeholder='Filter by Title' v-model='contentFilter.title'/>
+
+                <template v-if='loading.content'>
+                    <TablerLoading desc='Searching Content'/>
+                </template>
+                <div v-else class='table-responsive'>
                     <table class="table table-hover card-table table-vcenter cursor-pointer">
-                        <thead><tr><th>ID</th><th>Name</th><th>Url</th></tr></thead>
-                        <tbody><tr @click='server = serv' :key='serv.id' v-for='serv in servers'>
-                            <td v-text='serv.id'></td>
-                            <td v-text='serv.name'></td>
-                            <td v-text='serv.url'></td>
-                        </tr></tbody>
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Attributes</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr @click='fmtserver(res)' :key='res.id' v-for='res in content.results'>
+                                <td>
+                                    <MapIcon/>
+                                    <span v-text='res.title' class='mx-1'/>
+                                </td>
+                                <td>
+                                    <span v-text='res.access' class='badge mx-1 mb-1' :class='{
+                                         "bg-green text-white": res.access === "public",
+                                         "bg-yellow text-white": res.access === "org",
+                                         "bg-red text-white": res.access === "private"
+                                    }'/>
+                                </td>
+                            </tr>
+                        </tbody>
                     </table>
                 </div>
             </template>
-        </template>
-        <template v-else>
-            <div class='datagrid mx-4 my-4'>
-                <template v-for='ele in ["id", "name", "adminUrl"]'>
-                    <div class='datagrid-item'>
-                        <div class="datagrid-title" v-text='ele'></div>
-                        <div class="datagrid-content" v-text='server[ele] || "Unknown"'></div>
-                    </div>
-                </template>
-            </div>
 
-            <EsriServer
-                :disabled='disabled'
-                :server='server.url'
+            <EsriPortalCreate
+                v-if='createModal'
                 :portal='url'
                 :token='token'
-                @layer='$emit("layer", $event)'
-                @close='server = null'
+                @close='createModal = false'
+                @create='createService($event)'
             />
-        </template>
-    </template>
-    <template v-else-if="type === 'AGOL'">
-        <TablerInput placeholder='Filter by title' v-model='contentFilter.title'/>
-
-        <template v-if='loading.content'>
-            <TablerLoading desc='Searching Content'/>
-        </template>
-        <div v-else class='table-responsive'>
-            <table class="table table-hover card-table table-vcenter cursor-pointer">
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Attributes</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr @click='fmtserver(res)' :key='res.id' v-for='res in content.results'>
-                        <td>
-                            <MapIcon/>
-                            <span v-text='res.title' class='mx-1'/>
-                        </td>
-                        <td>
-                            <span v-text='res.access' class='badge mx-1 mb-1' :class='{
-                                 "bg-green text-white": res.access === "public",
-                                 "bg-yellow text-white": res.access === "org",
-                                 "bg-red text-white": res.access === "private"
-                            }'/>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
         </div>
     </template>
-
-    <EsriPortalCreate
-        v-if='createModal'
-        :portal='url'
-        :token='token'
-        @close='createModal = false'
-        @create='createService($event)'
-    />
 </div>
 </template>
 
@@ -138,11 +153,18 @@ export default {
             required: false,
             default: false
         },
+        readonly: {
+            type: Boolean,
+            default: false,
+            description: 'Hide buttons for CRUD Operations'
+        },
         url: {
-            type: [URL, String]
+            type: [URL, String],
+            description: 'ArcGIS Portal URL to authenticate against'
         },
         layer: {
-            type: [URL, String]
+            type: [URL, String],
+            description: 'ArcGIS Server/Layer URL'
         },
         sinkid: {
             type: Number
@@ -169,7 +191,7 @@ export default {
             err: null,
             portal: null,
             token: null,
-            server: null,
+            server: this.layer ? { url: this.layer } : null,
             servers: [],
             content: [],
             contentFilter: {
@@ -196,11 +218,7 @@ export default {
         }
     },
     mounted: async function() {
-        await this.generateToken();
-
-        if (this.layer) this.server = {
-            url: this.layer
-        }
+        if ((this.username && this.password) || this.sinkid) await this.generateToken();
     },
     methods: {
         fmtserver: function(content) {
@@ -213,22 +231,22 @@ export default {
                     username: this.username,
                     password: this.password,
                     sinkid: this.sinkid,
-                    url: this.url
+                    url: this.url || this.server.url
                 }
 
-                const res = await window.std('/api/sink/esri', {
+                const res = await window.std('/api/esri', {
                     method: 'POST',
                     body
                 });
 
-                this.token = res.token;
+                this.token = res.auth;
                 this.type = res.type;
 
-                await this.fetchPortal();
-
                 if (this.type === 'AGOL') {
+                    await this.fetchPortal();
                     await this.fetchContent();
-                } else {
+                } else if (this.type === 'PORTAL') {
+                    await this.fetchPortal();
                     await this.fetchServers();
                 }
             } catch (err) {
@@ -239,8 +257,12 @@ export default {
         fetchPortal: async function() {
             this.loading.main = true;
             try {
-                const url = window.stdurl('/api/sink/esri/portal');
-                url.searchParams.append('token', this.token);
+                const url = window.stdurl('/api/esri/portal');
+                if (this.token) {
+                    url.searchParams.append('token', this.token.token);
+                    url.searchParams.append('expires', this.token.expires);
+                }
+
                 url.searchParams.append('portal', this.url);
 
                 const res = await window.std(url);
@@ -256,8 +278,11 @@ export default {
         fetchContent: async function() {
             this.loading.content = true;
             try {
-                const url = window.stdurl('/api/sink/esri/portal/content');
-                url.searchParams.append('token', this.token);
+                const url = window.stdurl('/api/esri/portal/content');
+                if (this.token) {
+                    url.searchParams.append('token', this.token.token);
+                    url.searchParams.append('expires', this.token.expires);
+                }
                 url.searchParams.append('portal', this.url);
                 url.searchParams.append('title', this.contentFilter.title);
 
@@ -272,8 +297,11 @@ export default {
         fetchServers: async function() {
             this.loading.main = true;
             try {
-                const url = window.stdurl('/api/sink/esri/portal/server');
-                url.searchParams.append('token', this.token);
+                const url = window.stdurl('/api/esri/portal/server');
+                if (this.token) {
+                    url.searchParams.append('token', this.token.token);
+                    url.searchParams.append('expires', this.token.expires);
+                }
                 url.searchParams.append('portal', this.url);
 
                 const res = await window.std(url);
@@ -286,10 +314,13 @@ export default {
             this.loading.main = false;
         },
         createService: async function(body) {
+            if (!this.token) throw new Error('Auth Token is required to create a service');
+
             this.loading.main = true;
             try {
-                const url = window.stdurl('/api/sink/esri/portal/service');
-                url.searchParams.append('token', this.token);
+                const url = window.stdurl('/api/esri/portal/service');
+                url.searchParams.append('token', this.token.token);
+                url.searchParams.append('expires', this.token.expires);
                 url.searchParams.append('portal', this.url);
 
                 const res = await window.std(url, { method: 'POST', body });

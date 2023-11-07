@@ -3,78 +3,24 @@
     <div class='card-header d-flex'>
         <h3 class='card-title'>Environment</h3>
         <div class='ms-auto btn-list'>
-            <SettingsIcon v-if='disabled' @click='disabled = false' class='cursor-pointer'/>
+            <template v-if='!raw && disabled'>
+                <CodeIcon @click='raw = true' v-tooltip='"Raw View"' class='cursor-pointer'/>
+                <SettingsIcon @click='disabled = false' class='cursor-pointer'/>
+            </template>
+            <template v-else-if='raw'>
+                <XIcon @click='raw = false' v-tooltip='"Close View"' class='cursor-pointer'/>
+            </template>
         </div>
     </div>
 
     <TablerLoading v-if='loading.schema' desc='Loading Environment'/>
     <TablerLoading v-else-if='loading.save' desc='Saving Environment'/>
     <div v-else class="col">
-        <template v-if='schema.display === "arcgis"'>
-            <div class='row g-2 mx-2 my-2'>
-                <div class="col-12">
-                    <TablerInput
-                        label='ArcGIS Portal URL (Example: https://example.com/portal/sharing/rest)'
-                        :disabled='disabled'
-                        v-model='environment.ARCGIS_PORTAL'
-                    />
-                </div>
-                <div v-if='environment.ARCGIS_URL' class="col-12">
-                    <TablerInput
-                        label='ArcGIS Layer URL'
-                        :disabled='disabled'
-                        v-model='environment.ARCGIS_URL'
-                    />
-                </div>
-                <div class="col-12 col-md-6 mt-3">
-                    <TablerInput
-                        label='ArcGIS Username'
-                        :disabled='disabled'
-                        v-model='environment.ARCGIS_USERNAME'
-                    />
-                </div>
-                <div class="col-12 col-md-6 mt-3">
-                    <TablerInput
-                        type='password'
-                        label='ArcGIS Password'
-                        :disabled='disabled'
-                        v-model='environment.ARCGIS_PASSWORD'
-                    />
-                </div>
-                <div class="col-12 mt-3">
-                    <div class='d-flex'>
-                        <div class='w-100'>
-                            <TablerInput
-                                label='ArcGIS SQL Query'
-                                :disabled='disabled'
-                                v-model='environment.ARCGIS_QUERY'
-                            />
-                        </div>
-                        <button v-if='!disabled' @click='filterModal = true' class='btn' style='margin-left: 8px; margin-top: 26px;'><FilterIcon/> Query Editor</button>
-                    </div>
-                </div>
-                <div class="col-md-12 mt-3">
-                    <template v-if='!esriView'>
-                        <div class='d-flex'>
-                            <div class='ms-auto'>
-                                <a @click='esriView = true' class="cursor-pointer btn btn-secondary">Connect</a>
-                            </div>
-                        </div>
-                    </template>
-                    <template v-else>
-                        <EsriPortal
-                            :disabled='disabled'
-                            :url='environment.ARCGIS_PORTAL'
-                            :username='environment.ARCGIS_USERNAME'
-                            :password='environment.ARCGIS_PASSWORD'
-                            :layer='environment.ARCGIS_URL'
-                            @layer='environment.ARCGIS_URL = $event'
-                            @token='environment.ARCGIS_TOKEN = $event'
-                            @close='esriView = false'
-                        />
-                    </template>
-                </div>
-            </div>
+        <template v-if='raw'>
+            <pre v-text='environment'/>
+        </template>
+        <template v-else-if='schema.display === "arcgis"'>
+            <LayerEnvironmentArcGIS v-model='environment' :disabled='disabled'/>
         </template>
         <template v-else-if='schema.type !== "object"'>
             <div class="d-flex justify-content-center my-4">
@@ -91,14 +37,6 @@
             </div>
         </div>
     </div>
-
-    <EsriFilter
-        v-if='filterModal'
-        @close='filterModal = false'
-        v-model='environment.ARCGIS_QUERY'
-        :token='environment.ARCGIS_TOKEN'
-        :layer='environment.ARCGIS_URL'
-    />
 </div>
 </template>
 
@@ -107,12 +45,12 @@ import {
     TablerInput,
     TablerLoading,
 } from '@tak-ps/vue-tabler';
+import LayerEnvironmentArcGIS from './LayerEnvironmentArcGIS.vue';
 import Schema from './utils/Schema.vue';
-import EsriPortal from './../util/EsriPortal.vue';
-import EsriFilter from './../util/EsriFilter.vue';
 import {
+    XIcon,
     PlusIcon,
-    FilterIcon,
+    CodeIcon,
     SettingsIcon,
 } from 'vue-tabler-icons'
 
@@ -126,6 +64,7 @@ export default {
     },
     data: function() {
         return {
+            raw: false,
             alert: false,
             esriView: false,
             disabled: true,
@@ -178,12 +117,12 @@ export default {
     components: {
         Schema,
         PlusIcon,
+        CodeIcon,
+        XIcon,
         SettingsIcon,
-        EsriPortal,
         TablerInput,
         TablerLoading,
-        FilterIcon,
-        EsriFilter
+        LayerEnvironmentArcGIS
     }
 }
 </script>
