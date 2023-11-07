@@ -319,7 +319,7 @@ export default async function router(schema: any, config: Config) {
         }
     });
 
-    await schema.post('/sink/esri/server/layer', {
+    await schema.post('/esri/server/layer', {
         name: 'Create Layer',
         group: 'ESRI',
         auth: 'user',
@@ -357,7 +357,7 @@ export default async function router(schema: any, config: Config) {
         }
     });
 
-    await schema.delete('/sink/esri/server/layer', {
+    await schema.delete('/esri/server/layer', {
         name: 'Delete Layer',
         group: 'ESRI',
         auth: 'user',
@@ -383,7 +383,7 @@ export default async function router(schema: any, config: Config) {
             const url = new URL(String(req.query.server).replace(/\/\d+$/, ''));
             const layer_id = parseInt(String(req.query.server).match(/\/\d+$/)[0].replace('/', ''));
 
-            const base = new EsriBase(String(req.query.server));
+            const base = new EsriBase(String(url));
             if (req.query.token && req.query.expires) {
                 base.token = {
                     token: String(req.query.token),
@@ -394,11 +394,7 @@ export default async function router(schema: any, config: Config) {
 
             const server = new EsriProxyServer(base);
 
-            return res.json(await server.createLayer());
-
-            const layer = await server.deleteLayer(layer_id);
-
-            return res.json(layer);
+            return res.json(await server.deleteLayer(layer_id));
         } catch (err) {
             return Err.respond(err, res);
         }
