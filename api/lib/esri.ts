@@ -67,7 +67,7 @@ export class EsriBase {
         body.append('referer', this.auth.referer);
         body.append('expiration', String(this.auth.expiration || 21600));
 
-        let url = new URL(this.base);
+        const url = new URL(this.base);
         if (this.type === EsriType.SERVER) {
             url.pathname = url.pathname.replace('/rest', '/tokens/generateToken');
         } else {
@@ -116,7 +116,7 @@ export class EsriBase {
      * The root of any portal REST endpoint should return
      * a version string that can be parsed and verified
      */
-    async fetchVersion(): Promise<String> {
+    async fetchVersion(): Promise<string> {
         try {
             const url = new URL(this.base);
             url.searchParams.append('f', 'json');
