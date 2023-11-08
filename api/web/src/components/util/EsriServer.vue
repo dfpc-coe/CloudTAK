@@ -157,15 +157,11 @@ export default {
             // TODO Support Directories / Layer Parsing
             postfix = postfix.split('/');
 
-            this.listpath = [{
-                name: postfix[0],
-                type: postfix[1]
-            }]
+            const id = parseInt(postfix.pop());
+            const type = postfix.pop()
 
-            this.layer = {
-                id: parseInt(postfix[2])
-            };
-
+            this.listpath = [{ name: postfix.join('/'), type }]
+            this.layer = { id };
         } else {
             await this.getList();
         }
@@ -189,7 +185,6 @@ export default {
                     return pth.name + '/' + pth.type;
                 }).join('/');
 
-                console.error(layer, listpath);
                 if (!layer || !this.layer) {
                     return this.base + '/rest/services/' + listpath;
                 } else if (layer && this.layer) {
