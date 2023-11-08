@@ -29,16 +29,34 @@
             v-model='environment.ARCGIS_PASSWORD'
         />
     </div>
-    <div class="col-12 mt-3">
-        <div class='d-flex'>
-            <div class='w-100'>
-                <TablerInput
-                    label='ArcGIS SQL Query'
+
+    <label @click='advanced = !advanced' class='subheader mt-3 cursor-pointer'>
+        <SquareChevronRightIcon v-if='!advanced'/>
+        <ChevronDownIcon v-else/>
+        Advanced Options
+    </label>
+
+    <div v-if='advanced' class='col-12'>
+        <div class='row'>
+            <div class="col-12">
+                <div class='d-flex'>
+                    <div class='w-100'>
+                        <TablerInput
+                            label='ArcGIS SQL Query'
+                            :disabled='disabled'
+                            v-model='environment.ARCGIS_QUERY'
+                        />
+                    </div>
+                    <button v-if='!disabled' @click='filterModal = true' class='btn' style='margin-left: 8px; margin-top: 26px;'><FilterIcon/> Query Editor</button>
+                </div>
+            </div>
+            <div class="col-12 mt-3">
+                <TablerTimeZone
+                    label='Date TimeZone Override'
                     :disabled='disabled'
-                    v-model='environment.ARCGIS_QUERY'
+                    v-model='environment.ARCGIS_TIMEZONE'
                 />
             </div>
-            <button v-if='!disabled' @click='filterModal = true' class='btn' style='margin-left: 8px; margin-top: 26px;'><FilterIcon/> Query Editor</button>
         </div>
     </div>
     <div class="col-md-12 mt-3">
@@ -80,14 +98,16 @@
 <script>
 import {
     TablerInput,
+    TablerTimeZone,
 } from '@tak-ps/vue-tabler';
 import Schema from './utils/Schema.vue';
 import EsriPortal from './../util/EsriPortal.vue';
 import EsriFilter from './../util/EsriFilter.vue';
 import {
     PlusIcon,
+    SquareChevronRightIcon,
+    ChevronDownIcon,
     FilterIcon,
-    SettingsIcon,
 } from 'vue-tabler-icons'
 
 export default {
@@ -112,6 +132,7 @@ export default {
     },
     data: function() {
         return {
+            advanced: false,
             esriView: false,
             environment: this.modelValue,
             filterModal: false,
@@ -127,9 +148,11 @@ export default {
     },
     components: {
         PlusIcon,
-        SettingsIcon,
         EsriPortal,
+        SquareChevronRightIcon,
+        ChevronDownIcon,
         TablerInput,
+        TablerTimeZone,
         FilterIcon,
         EsriFilter
     }
