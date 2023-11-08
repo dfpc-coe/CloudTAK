@@ -396,6 +396,7 @@ export default async function router(schema: any, config: Config) {
                     }
 
                     pooledClient.tak.write(cots);
+                    for (const cot of cots) config.conns.cot(pooledClient.conn, cot);
 
                     // TODO Only GeoJSON Features go to Dynamo, this should also store CoT XML
                     // @ts-ignore
