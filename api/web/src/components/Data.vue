@@ -23,8 +23,8 @@
 
                             <div class='ms-auto'>
                                 <div class='btn-list'>
-                                    <AccessPointIcon v-if='data.mission' class='cursor-pointer' v-tooltip='"Mission Sync On"'/>
-                                    <AccessPointOffIcon v-else class='cursor-pointer' v-tooltip='"Mission Sync Off"'/>
+                                    <AccessPointIcon @click='modal.mission = true' v-if='data.mission' class='cursor-pointer' v-tooltip='"Mission Sync On"'/>
+                                    <AccessPointOffIcon @click='modal.mission = true' v-else class='cursor-pointer' v-tooltip='"Mission Sync Off"'/>
                                     <SettingsIcon class='cursor-pointer' @click='$router.push(`/data/${data.id}/edit`)'/>
                                 </div>
                             </div>
@@ -48,17 +48,24 @@
         </div>
     </div>
 
+    <MissionModal
+        :data='data'
+        @close='modal.mission = false'
+    />
+
     <PageFooter/>
 </div>
 </template>
 
 <script>
+import MissionModal from './Mission/Modal.vue';
 import PageFooter from './PageFooter.vue';
 import DataAsset from './Data/Assets.vue';
 import DataLocation from './Data/Location.vue';
 import DataTransforms from './Data/Transforms.vue';
 import timeDiff from '../timediff.js';
 import {
+    TablerModal,
     TablerLoading,
     TablerMarkdown,
     TablerBreadCrumb,
@@ -74,6 +81,9 @@ export default {
     data: function() {
         return {
             err: false,
+            modal: {
+                mission: true
+            },
             loading: {
                 data: true
             },
@@ -105,6 +115,7 @@ export default {
         TablerMarkdown,
         AccessPointIcon,
         AccessPointOffIcon,
+        MissionModal
     }
 }
 </script>
