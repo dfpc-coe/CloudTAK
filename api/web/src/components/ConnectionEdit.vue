@@ -61,8 +61,8 @@
                             <div class='card-header d-flex'>
                                 <h3 class='card-title'>Connection Authentication</h3>
                                 <div v-if='!$route.params.connectionid || regen' class='ms-auto btn-list'>
-                                    <LoginIcon @click='modal.login = true' class='cursor-pointer'/>
-                                    <PlusIcon @click='modal.upload = true' class='cursor-pointer'/>
+                                    <LoginIcon @click='modal.login = true' class='cursor-pointer' v-tooltip='"User Login"'/>
+                                    <PlusIcon @click='modal.upload = true' class='cursor-pointer' v-tooltip='"P12 Upload"'/>
                                 </div>
                             </div>
                             <div class='card-body'>

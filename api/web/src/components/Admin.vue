@@ -60,7 +60,7 @@
                             <div class='card-header'>
                                 <h3 class='card-title'>Admin Certificate</h3>
                                 <div v-if='regen && edit' class='ms-auto btn-list'>
-                                    <PlusIcon @click='modal.upload = true' class='cursor-pointer'/>
+                                    <PlusIcon @click='modal.upload = true' class='cursor-pointer' v-tooltip='"Upload P12"'/>
                                 </div>
                             </div>
                             <div class='card-body row'>
@@ -185,6 +185,19 @@ export default {
             this.server = await window.std(`/api/server`);
             if (!this.server.auth) this.regen = true;
             this.loading = false;
+        },
+        p12upload: function(certs) {
+            this.modal.upload = false;
+            this.auth.cert = certs.pemCertificate
+                .split('-----BEGIN CERTIFICATE-----')
+                .join('-----BEGIN CERTIFICATE-----\n')
+                .split('-----END CERTIFICATE-----')
+                .join('\n-----END CERTIFICATE-----');
+            this.auth.key = certs.pemKey
+                .split('-----BEGIN RSA PRIVATE KEY-----')
+                .join('-----BEGIN RSA PRIVATE KEY-----\n')
+                .split('-----END RSA PRIVATE KEY-----')
+                .join('\n-----END RSA PRIVATE KEY-----');
         },
         postServer: async function() {
             for (const field of ['api', 'url', 'name']) {
