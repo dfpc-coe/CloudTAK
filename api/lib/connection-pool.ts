@@ -27,9 +27,6 @@ class ConnectionClient {
 /**
  * Maintain a pool of TAK Connections, reconnecting as necessary
  * @class
- *
- * @param server      Server Connection Object
- * @param clients     WSS Clients Array
  */
 export default class ConnectionPool extends Map<number, ConnectionClient> {
     #server: Server;
@@ -98,6 +95,21 @@ export default class ConnectionPool extends Map<number, ConnectionClient> {
         }
     }
 
+    /**
+     * Handle writing a CoT into the Sink/WebSocket Clients
+     * This is also called externally by the layer/:layer/cot API as CoTs
+     * aren't rebroadcast to the submitter by the TAK Server
+     */
+    async cot(conn: Connection, cot: CoT) {
+        for (const client of this.clients) {
+            client.send(JSON.stringify({ type: 'cot', connection: conn.id, data: cot.raw }));
+        }
+
+        if (!this.nosinks && cot.is_atom()) {
+            await this.sinks.cot(conn, cot);
+        }
+    }
+
     async add(conn: Connection) {
         const tak = await TAK.connect(conn.id, new URL(this.#server.url), conn.auth);
         const connClient = new ConnectionClient(conn, tak);
@@ -107,17 +119,7 @@ export default class ConnectionPool extends Map<number, ConnectionClient> {
             connClient.retry = 0;
             connClient.initial = false;
 
-            for (const client of this.clients) {
-                client.send(JSON.stringify({
-                    type: 'cot',
-                    connection: conn.id,
-                    data: cot.raw
-                }));
-            }
-
-            if (!this.nosinks && cot.is_atom()) {
-                await this.sinks.cot(conn, cot);
-            }
+            this.cot(connClient, cot);
         }).on('end', async () => {
             console.error(`not ok - ${conn.id} @ end`);
             this.retry(connClient);

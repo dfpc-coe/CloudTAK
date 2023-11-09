@@ -14,7 +14,15 @@
         },
         "auth": {
             "type": "object",
-            "default": {}
+            "required": ["cert", "key"],
+            "properties": {
+                "cert": {
+                    "type": "string"
+                },
+                "key": {
+                    "type": "string"
+                }
+            }
         },
         "name": {
             "type": "string"

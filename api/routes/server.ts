@@ -25,7 +25,8 @@ export default async function router(schema: any, config: Config) {
             } else {
                 return res.json({
                     status: 'configured',
-                    ...config.server
+                    ...config.server,
+                    auth: config.server.auth.cert && config.server.auth.key
                 });
             }
         } catch (err) {
@@ -51,7 +52,8 @@ export default async function router(schema: any, config: Config) {
 
             return res.json({
                 status: 'configured',
-                ...config.server
+                ...config.server,
+                auth: config.server.auth.cert && config.server.auth.key
             });
         } catch (err) {
             return Err.respond(err, res);
@@ -71,13 +73,17 @@ export default async function router(schema: any, config: Config) {
 
             if (!config.server) throw new Err(400, null, 'Cannot patch a server that hasn\'t been created');
 
-            config.server = await config.server.commit(req.body);
+            config.server = await config.server.commit({
+                ...req.body,
+                updated: sql`Now()`,
+            });
+
             await config.conns.refresh(config.pool, config.server);
 
             return res.json({
                 status: 'configured',
-                updated: sql`Now()`,
-                ...config.server
+                ...config.server,
+                auth: config.server.auth.cert && config.server.auth.key
             });
         } catch (err) {
             return Err.respond(err, res);
