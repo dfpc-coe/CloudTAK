@@ -217,22 +217,23 @@ export default {
             for (const e in this.errors) if (this.errors[e]) return;
 
             this.loading = true;
+            const body = {
+                name: this.server.name,
+                url: this.server.url,
+                api: this.server.api
+            }
+
+            if (this.auth.cert && this.auth.key) {
+                body.auth = this.auth;
+            }
+
             if (this.server.status === 'unconfigured') {
                 this.server = await window.std(`/api/server`, {
-                    method: 'POST',
-                    body: {
-                        name: this.server.name,
-                        url: this.server.url
-                    }
+                    method: 'POST', body
                 });
             } else {
                 this.server = await window.std(`/api/server`, {
-                    method: 'PATCH',
-                    body: {
-                        name: this.server.name,
-                        url: this.server.url,
-                        api: this.server.api
-                    }
+                    method: 'PATCH', body
                 });
             }
 
