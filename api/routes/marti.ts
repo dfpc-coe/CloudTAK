@@ -14,6 +14,22 @@ export default async function router(schema: any, config: Config) {
         group: 'Marti',
         auth: 'user',
         description: 'Helper API to list missions',
+        query: {
+            type: 'object',
+            properties: {
+                passwordProtected: {
+                    type: 'boolean',
+                    default: false,
+                },
+                defaultRole: {
+                    type: 'boolean',
+                    default: false
+                },
+                tool: {
+                    type: 'string'
+                }
+            }
+        },
         res: 'res.MartiMissions.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
@@ -23,8 +39,12 @@ export default async function router(schema: any, config: Config) {
 
             const api = await TAKAPI.init(new URL(config.MartiAPI), new APIAuthToken(req.auth.token));
 
-            const groups = await api.Mission.list();
+            const query = {};
+            for (const q in req.query) {
+                query[q] = String(req.query.passwordProtected);
+            }
 
+            const groups = await api.Mission.list(query);
             return res.json(groups);
         } catch (err) {
             return Err.respond(err, res);
