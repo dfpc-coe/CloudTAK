@@ -14,7 +14,7 @@ export default async function router(schema: any, config: Config) {
         auth: 'admin',
         description: 'List channels that a given connection is broadcasting to',
         ':connectionid': 'integer',
-        res: 'res.MartiGroups.json'
+        res: 'res.Marti.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(req);
