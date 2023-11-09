@@ -2,11 +2,14 @@
 <div class='col-12'>
     <div class='modal-header'>
         <div class='modal-title'>Missions</div>
-        <PlusIcon @click='$emit("create")' class='cursor-pointer'/>
-        <RefreshIcon v-if='!loading' @click='fetchMissions' class='cursor-pointer'/>
+        <div class='btn-list'>
+            <PlusIcon @click='$emit("create")' class='cursor-pointer'/>
+            <RefreshIcon v-if='!loading' @click='fetchMissions' class='cursor-pointer'/>
+        </div>
     </div>
     <div class='modal-body'>
         <TablerLoading v-if='loading' desc='Loading Missions'/>
+        <Alert v-else-if='err' :err='err'/>
         <template v-else>
             <div
                 @click='$emit("mission", mission)'
@@ -36,10 +39,12 @@
 
 <script>
 import {
+    PlusIcon,
     LockIcon,
     LockOpenIcon,
     RefreshIcon,
 } from 'vue-tabler-icons';
+import Alert from '../util/Alert.vue';
 import {
     TablerLoading
 } from '@tak-ps/vue-tabler';
@@ -48,6 +53,7 @@ export default {
     name: 'ListMissions',
     data: function() {
         return {
+            err: false,
             loading: true,
             list: {
                 data: {}
@@ -59,16 +65,22 @@ export default {
     },
     methods: {
         fetchMissions: async function() {
-            this.loading = true;
-            const url = window.stdurl('/api/marti/mission');
-            url.searchParams.append('passwordProtected', 'true');
-            this.list = await window.std(url);
+            try {
+                this.loading = true;
+                const url = window.stdurl('/api/marti/mission');
+                url.searchParams.append('passwordProtected', 'true');
+                this.list = await window.std(url);
+            } catch (err) {
+                this.err = err;
+            }
             this.loading = false;
         }
     },
     components: {
+        Alert,
         TablerLoading,
         RefreshIcon,
+        PlusIcon,
         LockIcon,
         LockOpenIcon
     }

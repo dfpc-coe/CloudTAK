@@ -83,7 +83,7 @@ export default {
         return {
             err: false,
             modal: {
-                mission: true
+                mission: false
             },
             loading: {
                 data: true
