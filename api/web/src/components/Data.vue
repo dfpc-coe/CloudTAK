@@ -49,6 +49,7 @@
     </div>
 
     <MissionModal
+        v-if='modal.mission'
         :data='data'
         @close='modal.mission = false'
     />

@@ -2,9 +2,7 @@
 <TablerModal size='xl'>
     <button type="button" class="btn-close" @click='close' aria-label="Close"></button>
     <div class="modal-status bg-yellow"></div>
-    <div class="modal-body text-center py-4">
-        <ListMissions/>
-    </div>
+    <ListMissions/>
 </TablerModal>
 </template>
 
