@@ -237,6 +237,9 @@ export default {
                 });
             }
 
+            this.auth.cert = '';
+            this.auth.key = '';
+            this.regen = false;
             this.edit = false;
             this.loading = false;
         }
