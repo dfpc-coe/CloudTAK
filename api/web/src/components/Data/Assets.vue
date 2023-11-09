@@ -27,9 +27,9 @@
                     <td class='d-flex'>
                         <TablerEpoch :date='asset.updated'/>
                         <div class='ms-auto btn-list'>
-                            <TrashIcon @click='deleteAsset(asset)' class='cursor-pointer'/>
-                            <TransformIcon v-if='!asset.name.endsWith(".pmtiles")' @click='initTransform(asset)' class='cursor-pointer'/>
-                            <DownloadIcon @click='downloadAsset(asset)' class='cursor-pointer'/>
+                            <TablerDelete displaytype='icon' @click='deleteAsset(asset)' v-tooltip='"Delete Asset"'/>
+                            <TransformIcon v-if='!asset.name.endsWith(".pmtiles")' @click='initTransform(asset)' v-tooltip='"Convert Asset"' class='cursor-pointer'/>
+                            <DownloadIcon @click='downloadAsset(asset)' class='cursor-pointer' v-tooltip='"Download Asset"'/>
                         </div>
                     </td>
                 </tr>
@@ -58,7 +58,6 @@
 <script>
 import {
     PlusIcon,
-    TrashIcon,
     RefreshIcon,
     DownloadIcon,
     TransformIcon,
@@ -68,6 +67,7 @@ import TransformModal from './TransformModal.vue';
 import Upload from '../util/Upload.vue';
 import {
     TablerNone,
+    TablerDelete,
     TablerLoading,
     TablerBytes,
     TablerEpoch
@@ -145,10 +145,10 @@ export default {
         Upload,
         Alert,
         PlusIcon,
-        TrashIcon,
         RefreshIcon,
         TransformIcon,
         DownloadIcon,
+        TablerDelete,
         TablerLoading,
         TablerBytes,
         TablerEpoch,
