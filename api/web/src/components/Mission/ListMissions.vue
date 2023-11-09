@@ -2,15 +2,17 @@
 <div class='col-12'>
     <div class='modal-header'>
         <div class='modal-title'>Missions</div>
+        <PlusIcon @click='$emit("create")' class='cursor-pointer'/>
         <RefreshIcon v-if='!loading' @click='fetchMissions' class='cursor-pointer'/>
     </div>
     <div class='modal-body'>
         <TablerLoading v-if='loading' desc='Loading Missions'/>
         <template v-else>
             <div
+                @click='$emit("mission", mission)'
                 :key='mission_it'
                 v-for='(mission, mission_it) in list.data'
-                class='col-12 row my-2'
+                class='cursor-pointer col-12 row my-2'
             >
                 <div class='col-auto'>
                     <LockIcon v-if='mission.passwordProtected'/>
