@@ -23,6 +23,8 @@
 
                             <div class='ms-auto'>
                                 <div class='btn-list'>
+                                    <AccessPointIcon v-if='data.mission' class='cursor-pointer' v-tooltip='"Mission Sync On"'/>
+                                    <AccessPointOffIcon v-else class='cursor-pointer' v-tooltip='"Mission Sync Off"'/>
                                     <SettingsIcon class='cursor-pointer' @click='$router.push(`/data/${data.id}/edit`)'/>
                                 </div>
                             </div>
@@ -63,6 +65,8 @@ import {
 } from '@tak-ps/vue-tabler'
 import {
     SettingsIcon,
+    AccessPointIcon,
+    AccessPointOffIcon,
 } from 'vue-tabler-icons'
 
 export default {
@@ -99,6 +103,8 @@ export default {
         DataTransforms,
         TablerBreadCrumb,
         TablerMarkdown,
+        AccessPointIcon,
+        AccessPointOffIcon,
     }
 }
 </script>
