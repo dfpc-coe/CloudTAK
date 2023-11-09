@@ -29,6 +29,10 @@
         },
         "api": {
             "$ref": "./server/api.json"
+        },
+        "auth": {
+            "type": "boolean",
+            "description": "Once an admin certificate is configured it is not retrivable. This boolean refers to if a certificate is currently loaded"
         }
     }
 }

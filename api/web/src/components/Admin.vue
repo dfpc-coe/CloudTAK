@@ -77,15 +77,16 @@
                                         </div>
                                     </template>
                                     <template v-else>
+                                        <label class='subheader mt-3'>Admin Certificate</label>
                                         <div class='px-3 py-3'>
                                             <div class='d-flex justify-content-center'>
                                                 <LockIcon width='50' height='50'/>
                                             </div>
                                             <div class='d-flex justify-content-center my-3'>
-                                                Once Certificates are generated they cannot be viewed
+                                                Once Certificates are uploaded they cannot be viewed
                                             </div>
-                                            <div class='d-flex justify-content-center'>
-                                                <button @click='regen=true' class='btn btn-secondary'>Regenerate Certificate</button>
+                                            <div v-if='edit' class='d-flex justify-content-center'>
+                                                <button @click='regen=true' class='btn btn-secondary'>Replace Certificate</button>
                                             </div>
                                         </div>
                                     </template>
