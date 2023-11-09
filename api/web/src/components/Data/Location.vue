@@ -140,6 +140,7 @@ export default {
 
             const url = window.stdurl(`/api/data/${this.$route.params.dataid}/asset/${this.asset.name}/tile`);
             url.searchParams.append('token', localStorage.token);
+
             map.addSource('vector', {
                 type: 'vector',
                 url: String(url)
