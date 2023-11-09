@@ -9,6 +9,28 @@ import TAKAPI, {
 } from '../lib/tak-api.js';
 
 export default async function router(schema: any, config: Config) {
+    await schema.get('/marti/mission', {
+        name: 'List Missions',
+        group: 'Marti',
+        auth: 'user',
+        description: 'Helper API to list missions',
+        res: 'res.MartiMissions.json'
+    }, async (req: AuthRequest, res: Response) => {
+        try {
+            await Auth.is_auth(req);
+
+            if (!req.auth.email) throw new Err(400, null, 'Missions can only be listed by a JWT authenticated user');
+
+            const api = await TAKAPI.init(new URL(config.MartiAPI), new APIAuthToken(req.auth.token));
+
+            const groups = await api.Mission.list();
+
+            return res.json(groups);
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
+
     await schema.get('/marti/group', {
         name: 'List Groups',
         group: 'Marti',
@@ -23,7 +45,7 @@ export default async function router(schema: any, config: Config) {
 
             const api = await TAKAPI.init(new URL(config.MartiAPI), new APIAuthToken(req.auth.token));
 
-            const groups = await api.Groups.list();
+            const groups = await api.Group.list();
 
             return res.json(groups);
         } catch (err) {
