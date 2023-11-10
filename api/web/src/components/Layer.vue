@@ -39,7 +39,7 @@
                                     />
                                     <SettingsIcon
                                         class='cursor-pointer'
-                                        v-tooltip='"Edit Layer"'
+                                        v-tooltip='"Edit"'
                                         @click='$router.push(`/layer/${layer.id}/edit`)'
                                     />
                                 </div>

@@ -25,7 +25,7 @@
                                 <div class='btn-list'>
                                     <AccessPointIcon @click='modal.mission = true' v-if='data.mission' class='cursor-pointer' v-tooltip='"Mission Sync On"'/>
                                     <AccessPointOffIcon @click='modal.mission = true' v-else class='cursor-pointer' v-tooltip='"Mission Sync Off"'/>
-                                    <SettingsIcon class='cursor-pointer' @click='$router.push(`/data/${data.id}/edit`)'/>
+                                    <SettingsIcon class='cursor-pointer' @click='$router.push(`/data/${data.id}/edit`)' v-tooltip='"Edit"'/>
                                 </div>
                             </div>
                         </div>
