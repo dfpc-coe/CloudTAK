@@ -37,15 +37,38 @@
                         "bg-blue-lt": mode === "users",
                         "cursor-pointer": mode !== "users"
                     }'><UsersIcon/></div>
+                    <div @click='mode = "logs"' class='px-2 py-2' :class='{
+                        "bg-blue-lt": mode === "logs",
+                        "cursor-pointer": mode !== "logs"
+                    }'><ArticleIcon/></div>
                 </div>
                 <div class="col-10 mx-2 my-2">
                     <template v-if='mode === "info"'>
-
+                        <div class="datagrid-item pb-2">
+                            <div class="datagrid-title">Created</div>
+                            <div class="datagrid-content" v-text='mission.createTime'></div>
+                        </div>
+                        <div class="datagrid-item pb-2">
+                            <div class="datagrid-title">Updated</div>
+                            <div class="datagrid-content"></div>
+                        </div>
+                        <div class="datagrid-item pb-2">
+                            <div class="datagrid-title">Subscribers</div>
+                            <div class="datagrid-content"></div>
+                        </div>
+                        <div class="datagrid-item pb-2">
+                            <div class="datagrid-title">Description</div>
+                            <div class="datagrid-content" v-text='mission.description || "No Feed Description"'></div>
+                        </div>
                     </template>
                     <template v-else-if='mode === "users"'>
                         <div class='col-12 my-2' :key='uid.createorUid' v-for='uid in mission.uids'>
                             <UserIcon/><span v-text='uid.details.callsign'/>
                         </div>
+                    </template>
+                    <template v-else-if='mode === "logs"'>
+                        <TablerNone v-if='!mission.logs'/>
+                        <pre v-text='mission.logs'/>
                     </template>
                 </div>
             </div>
@@ -56,6 +79,7 @@
 
 <script>
 import {
+    ArticleIcon,
     LockIcon,
     InfoSquareIcon,
     UserIcon,
@@ -66,6 +90,7 @@ import {
 } from 'vue-tabler-icons';
 import Alert from '../util/Alert.vue';
 import {
+    TablerNone,
     TablerLoading
 } from '@tak-ps/vue-tabler';
 
@@ -94,7 +119,10 @@ export default {
         fetchMission: async function() {
             try {
                 this.loading.mission = true;
-                const list = await window.std(`/api/marti/missions/${this.missionid}`);
+                const url = window.stdurl(`/api/marti/missions/${this.missionid}`);
+                url.searchParams.append('changes', 'true');
+                url.searchParams.append('logs', 'true');
+                const list = await window.std(url);
                 if (list.data.length !== 1) throw new Error('Mission Error');
                 this.mission = list.data[0];
             } catch (err) {
@@ -105,7 +133,9 @@ export default {
         }
     },
     components: {
+        TablerNone,
         Alert,
+        ArticleIcon,
         InfoSquareIcon,
         UserIcon,
         UsersIcon,
