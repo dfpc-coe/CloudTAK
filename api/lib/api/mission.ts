@@ -57,7 +57,19 @@ export default class {
 
         for (const q in query) url.searchParams.append(q, query[q]);
         return await this.api.fetch(url, {
-            method: 'PUT'
+            method: 'POST'
+        });
+    }
+
+    async delete(name: string, query: {
+        creatorUid?: string;
+        deepDelete?: string;
+    }) {
+        const url = new URL(`/Marti/api/missions/${encodeURIComponent(name)}`, this.api.url);
+
+        for (const q in query) url.searchParams.append(q, query[q]);
+        return await this.api.fetch(url, {
+            method: 'DELETE'
         });
     }
 }
