@@ -20,11 +20,13 @@
                 </div>
             </div>
             <div class='ms-auto btn-list my-2' style='padding-right: 56px;'>
+                <TablerDelete @delete='deleteMission' displaytype='icon'/>
                 <PencilIcon class='cursor-pointer' v-tooltip='"Edit"'/>
                 <RefreshIcon v-if='!loading.initial' @click='fetchMission' class='cursor-pointer' v-tooltip='"Refresh"'/>
             </div>
         </div>
         <TablerLoading v-if='loading.mission' desc='Loading Mission'/>
+        <TablerLoading v-else-if='loading.delete' desc='Deleting Mission'/>
         <Alert v-else-if='err' :err='err'/>
         <template v-else-if='this.initial.passwordProtected && !password'>
             <div class='modal-body'>
@@ -105,6 +107,7 @@ import {
 import Alert from '../util/Alert.vue';
 import {
     TablerNone,
+    TablerDelete,
     TablerInput,
     TablerLoading
 } from '@tak-ps/vue-tabler';
@@ -124,6 +127,7 @@ export default {
             loading: {
                 initial: !this.initial.passwordProtected,
                 mission: !this.initial.passwordProtected,
+                delete: false 
             },
             mission: {
                 name: this.initial.name || 'Unknown',
@@ -137,6 +141,20 @@ export default {
         }
     },
     methods: {
+        deleteMission: async function() {
+            try {
+                this.loading.delete = true;
+                const url = window.stdurl(`/api/marti/missions/${this.mission.name}`);
+                const list = await window.std(url, {
+                    method: 'DELETE'
+                });
+                if (list.data.length !== 1) throw new Error('Mission Error');
+                this.$emit('close');
+            } catch (err) {
+                this.err = err;
+            }
+            this.loading.delete = false;
+        },
         fetchMission: async function() {
             try {
                 this.loading.mission = true;
@@ -162,6 +180,7 @@ export default {
         UsersIcon,
         PencilIcon,
         TablerLoading,
+        TablerDelete,
         TablerInput,
         RefreshIcon,
         LockIcon,

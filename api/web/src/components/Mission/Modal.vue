@@ -5,11 +5,13 @@
     <template v-if='create'>
         <MissionCreate
             @mission='mission = $event'
+            @close='mission = null'
         />
     </template>
     <template v-else-if='mission'>
         <MissionEdit
             :initial='mission'
+            @close='mission = null'
         />
     </template>
     <template v-else>
