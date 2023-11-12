@@ -31,14 +31,14 @@
                 </label>
 
                 <div v-if='advanced' class='col-12'>
-                    <TablerEnum label='Default Role' v-model='mission.role' :options='["Read-only", "Subscriber", "Owner"]'/>
+                    <TablerEnum label='Default Role' v-model='mission.role' :options='["Read-Only", "Subscriber", "Owner"]'/>
                     <TablerInput label='Description' v-model='mission.name'/>
                     <TablerInput label='Hashtags' v-model='mission.hashtags'/>
                 </div>
 
                 <div class='col-12 d-flex'>
                     <div class='ms-auto'>
-                        <button class='btn btn-primary'>Create Mission</button>
+                        <button @click='createMission' class='btn btn-primary'>Create Mission</button>
                     </div>
                 </div>
             </div>
@@ -77,16 +77,27 @@ export default {
                 passwordProtected: false,
                 role: 'Subscriber',
                 description: '',
+                groups: [],
                 hashtags: ''
             }
         }
     },
     methods: {
-        saveMission: async function() {
+        createMission: async function() {
             this.loading.mission = true;
             try {
                 this.loading.mission = true;
-                const url = window.stdurl(`/api/marti/missions/${this.missionid}`);
+
+                const url = window.stdurl(`/api/marti/missions/${this.mission.name}`);
+
+                if (this.mission.role === 'Subscriber') url.searchParams.append('defaultRole', 'MISSION_SUBSCRIBER');
+                if (this.mission.role === 'Read-Only') url.searchParams.append('defaultRole', 'MISSION_READONLY_SUBSCRIBER');
+                if (this.mission.role === 'Owner') url.searchParams.append('defaultRole', 'MISSION_OWNER');
+
+                const res = window.std(url, {
+                    method: 'POST',
+                });
+
                 const list = await window.std(url);
             } catch (err) {
                 this.err = err;
