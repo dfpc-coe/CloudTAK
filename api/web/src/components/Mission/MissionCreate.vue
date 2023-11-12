@@ -94,7 +94,7 @@ export default {
                 if (this.mission.role === 'Read-Only') url.searchParams.append('defaultRole', 'MISSION_READONLY_SUBSCRIBER');
                 if (this.mission.role === 'Owner') url.searchParams.append('defaultRole', 'MISSION_OWNER');
 
-                const res = window.std(url, {
+                const res = await window.std(url, {
                     method: 'POST',
                 });
 
