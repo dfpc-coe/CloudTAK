@@ -3,8 +3,8 @@
     <div class='modal-header'>
         <div class='modal-title'>Missions</div>
         <div class='btn-list'>
-            <PlusIcon @click='$emit("create")' class='cursor-pointer'/>
-            <RefreshIcon v-if='!loading' @click='fetchMissions' class='cursor-pointer'/>
+            <PlusIcon @click='$emit("create")' class='cursor-pointer' v-tooltip='"Create Mission"'/>
+            <RefreshIcon v-if='!loading' @click='fetchMissions' class='cursor-pointer' v-tooltip='"Refresh"'/>
         </div>
     </div>
     <div class='modal-body'>
@@ -50,7 +50,7 @@ import {
 } from '@tak-ps/vue-tabler';
 
 export default {
-    name: 'ListMissions',
+    name: 'MissionList',
     data: function() {
         return {
             err: false,
