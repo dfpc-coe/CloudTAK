@@ -9,7 +9,7 @@
     </template>
     <template v-else-if='mission'>
         <MissionEdit
-            :missionid='mission.name'
+            :initial='mission'
         />
     </template>
     <template v-else>
@@ -40,7 +40,7 @@ export default {
     },
     watch: {
         mission: function() {
-            this.create = fale;
+            this.create = false;
         }
     },
     methods: {
