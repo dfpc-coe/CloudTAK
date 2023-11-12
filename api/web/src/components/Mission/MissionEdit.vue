@@ -13,9 +13,9 @@
                         <span v-text='mission.name'/>
                     </div>
                     <div class='col-12'>
-                        <span v-text='mission.createTime.replace(/T.*/, "")' class='text-secondary'/>
-                        &nbsp;-&nbsp;
-                        <span v-text='mission.contents.length + " Items"' class='text-secondary'/>
+                        <span v-if='mission.createTime' v-text='mission.createTime.replace(/T.*/, "")' class='text-secondary'/>
+                        <span v-if='mission.createTime'>&nbsp;-&nbsp;</span>
+                        <span v-if='Array.isArray(mission.contents)' v-text='mission.contents.length + " Items"' class='text-secondary'/>
                     </div>
                 </div>
             </div>
@@ -26,6 +26,20 @@
         </div>
         <TablerLoading v-if='loading.mission' desc='Loading Mission'/>
         <Alert v-else-if='err' :err='err'/>
+        <template v-else-if='this.initial.passwordProtected && !password'>
+            <div class='modal-body'>
+                <div class='d-flex justify-content-center py-3'>
+                    <LockIcon width='32' height='32' />
+                </div>
+                <h3 class='text-center'>Mission Locked</h3>
+                <div class='col-12 d-flex pt-2'>
+                    <TablerInput v-model='password' label='Mission Password' class='w-100'/>
+                    <div class='ms-auto' style='padding-top: 28px; padding-left: 10px;'>
+                        <button class='btn btn-primary'>Unlock Mission</button>
+                    </div>
+                </div>
+            </div>
+        </template>
         <template v-else>
             <div class='row g-0'>
                 <div class="col-auto border-end">
@@ -91,35 +105,42 @@ import {
 import Alert from '../util/Alert.vue';
 import {
     TablerNone,
+    TablerInput,
     TablerLoading
 } from '@tak-ps/vue-tabler';
 
 export default {
     name: 'MissionEdit',
     props: {
-        missionid: {
-            type: String
+        initial: {
+            type: Object
         }
     },
     data: function() {
         return {
             err: null,
             mode: 'general',
+            password: '',
             loading: {
-                initial: true,
-                mission: true
+                initial: !this.initial.passwordProtected,
+                mission: !this.initial.passwordProtected,
             },
-            mission: {}
+            mission: {
+                name: this.initial.name || 'Unknown',
+                passwordProtected: this.initial.passwordProtected,
+            }
         }
     },
     mounted: async function() {
-        await this.fetchMission();
+        if (!this.mission.passwordProtected) {
+            await this.fetchMission();
+        }
     },
     methods: {
         fetchMission: async function() {
             try {
                 this.loading.mission = true;
-                const url = window.stdurl(`/api/marti/missions/${this.missionid}`);
+                const url = window.stdurl(`/api/marti/missions/${this.mission.name}`);
                 url.searchParams.append('changes', 'true');
                 url.searchParams.append('logs', 'true');
                 const list = await window.std(url);
@@ -141,6 +162,7 @@ export default {
         UsersIcon,
         PencilIcon,
         TablerLoading,
+        TablerInput,
         RefreshIcon,
         LockIcon,
         LockOpenIcon
