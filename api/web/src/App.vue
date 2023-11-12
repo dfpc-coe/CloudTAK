@@ -145,6 +145,12 @@
 </div>
 </template>
 
+<style>
+    .hover:hover {
+        background: #f5f5f5;
+    }
+</style>
+
 <script>
 import '@tabler/core/dist/js/tabler.min.js';
 import '@tabler/core/dist/css/tabler.min.css';

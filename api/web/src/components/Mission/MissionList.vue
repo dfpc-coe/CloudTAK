@@ -15,9 +15,9 @@
                 @click='$emit("mission", mission)'
                 :key='mission_it'
                 v-for='(mission, mission_it) in list.data'
-                class='cursor-pointer col-12 row my-2'
+                class='cursor-pointer col-12 row py-2 hover rounded'
             >
-                <div class='col-auto'>
+                <div class='col-auto d-flex justify-content-center align-items-center'>
                     <LockIcon v-if='mission.passwordProtected'/>
                     <LockOpenIcon v-else/>
                 </div>
