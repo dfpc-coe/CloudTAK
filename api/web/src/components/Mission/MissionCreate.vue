@@ -23,9 +23,24 @@
                 <TablerInput :disabled='!mission.passwordProtected' type='password' label='Password' v-model='mission.password'>
                     <TablerToggle label='Password Protected' v-model='mission.passwordProtected'/>
                 </TablerInput>
-                <TablerEnum label='Default Role' v-model='mission.role' :options='["Read-only", "Subscriber", "Owner"]'/>
-                <TablerInput label='Description' v-model='mission.name'/>
-                <TablerInput label='Hashtags' v-model='mission.hashtags'/>
+
+                <label @click='advanced = !advanced' class='subheader mt-3 cursor-pointer'>
+                    <SquareChevronRightIcon v-if='!advanced'/>
+                    <ChevronDownIcon v-else/>
+                    Advanced Options
+                </label>
+
+                <div v-if='advanced' class='col-12'>
+                    <TablerEnum label='Default Role' v-model='mission.role' :options='["Read-only", "Subscriber", "Owner"]'/>
+                    <TablerInput label='Description' v-model='mission.name'/>
+                    <TablerInput label='Hashtags' v-model='mission.hashtags'/>
+                </div>
+
+                <div class='col-12 d-flex'>
+                    <div class='ms-auto'>
+                        <button class='btn btn-primary'>Create Mission</button>
+                    </div>
+                </div>
             </div>
         </template>
     </template>
@@ -36,6 +51,8 @@
 import {
     LockIcon,
     LockOpenIcon,
+    SquareChevronRightIcon,
+    ChevronDownIcon,
 } from 'vue-tabler-icons';
 import Alert from '../util/Alert.vue';
 import {
@@ -53,13 +70,14 @@ export default {
             err: null,
             loading: {
                 mission: false,
+            },
+            advanced: false,
+            mission: {
+                name: '',
                 passwordProtected: false,
                 role: 'Subscriber',
                 description: '',
                 hashtags: ''
-            },
-            mission: {
-                name: ''
             }
         }
     },
@@ -77,6 +95,8 @@ export default {
         }
     },
     components: {
+        SquareChevronRightIcon,
+        ChevronDownIcon,
         TablerNone,
         Alert,
         TablerLoading,
