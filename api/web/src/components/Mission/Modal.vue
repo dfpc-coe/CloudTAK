@@ -2,22 +2,29 @@
 <TablerModal size='xl'>
     <button type="button" class="btn-close" @click='close' aria-label="Close"></button>
     <div class="modal-status bg-yellow"></div>
-    <template v-if='mission'>
+    <template v-if='create'>
+        <MissionCreate
+            @mission='mission = $event'
+        />
+    </template>
+    <template v-else-if='mission'>
         <MissionEdit
             :missionid='mission.name'
         />
     </template>
     <template v-else>
-        <ListMissions
+        <MissionList
             @mission='mission = $event'
+            @create='create = true'
         />
     </template>
 </TablerModal>
 </template>
 
 <script>
-import ListMissions from './ListMissions.vue';
+import MissionList from './MissionList.vue';
 import MissionEdit from './MissionEdit.vue';
+import MissionCreate from './MissionCreate.vue';
 
 import {
     TablerModal
@@ -27,7 +34,13 @@ export default {
     name: 'MissionModal',
     data: function() {
         return {
+            create: false,
             mission: null
+        }
+    },
+    watch: {
+        mission: function() {
+            this.create = fale;
         }
     },
     methods: {
@@ -38,7 +51,8 @@ export default {
     components: {
         TablerModal,
         MissionEdit,
-        ListMissions
+        MissionList,
+        MissionCreate,
     },
 }
 </script>
