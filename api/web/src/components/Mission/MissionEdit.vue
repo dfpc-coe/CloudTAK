@@ -2,9 +2,9 @@
 <div class='col-12'>
     <TablerLoading v-if='loading.initial' desc='Loading Mission'/>
     <template v-else>
-        <div class='modal-header'>
+        <div class='d-flex px-1 py-1'>
             <div class='row'>
-                <div class='col-auto'>
+                <div class='col-auto d-flex justify-content-center align-items-center mx-2'>
                     <LockIcon v-if='mission.passwordProtected'/>
                     <LockOpenIcon v-else/>
                 </div>
@@ -19,9 +19,9 @@
                     </div>
                 </div>
             </div>
-            <div class='btn-list'>
-                <PencilIcon class='cursor-pointer'/>
-                <RefreshIcon v-if='!loading.initial' @click='fetchMission' class='cursor-pointer'/>
+            <div class='ms-auto btn-list my-2' style='padding-right: 56px;'>
+                <PencilIcon class='cursor-pointer' v-tooltip='"Edit"'/>
+                <RefreshIcon v-if='!loading.initial' @click='fetchMission' class='cursor-pointer' v-tooltip='"Refresh"'/>
             </div>
         </div>
         <TablerLoading v-if='loading.mission' desc='Loading Mission'/>
