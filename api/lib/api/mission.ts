@@ -8,9 +8,9 @@ export default class {
     }
 
     async list(query: {
-        passwordProtected?: String;
-        defaultRole?: String;
-        tool?: String;
+        passwordProtected?: string;
+        defaultRole?: string;
+        tool?: string;
     }) {
         const url = new URL('/Marti/api/missions', this.api.url);
 
@@ -21,18 +21,43 @@ export default class {
     }
 
     async get(name: string, query: {
-        password?: String;
-        changes?: String;
-        logs?: String;
-        secago?: String;
-        start?: String;
-        end?: String;
+        password?: string;
+        changes?: string;
+        logs?: string;
+        secago?: string;
+        start?: string;
+        end?: string;
     }) {
         const url = new URL(`/Marti/api/missions/${encodeURIComponent(name)}`, this.api.url);
 
         for (const q in query) url.searchParams.append(q, query[q]);
         return await this.api.fetch(url, {
             method: 'GET'
+        });
+    }
+
+    async create(name: string, query: {
+        creatorUid?: string;
+        group?: Array<string>;
+        description?: string;
+        chatRoom?: string;
+        baseLayer?: string;
+        bbox?: string;
+        boundingPolygon?: string;
+        path?: string;
+        classification?: string;
+        tool?: string;
+        password?: string;
+        defaultRole?: string;
+        expiration?: string;
+        inviteOnly?: string;
+        allowDupe?: string;
+    }) {
+        const url = new URL(`/Marti/api/missions/${encodeURIComponent(name)}`, this.api.url);
+
+        for (const q in query) url.searchParams.append(q, query[q]);
+        return await this.api.fetch(url, {
+            method: 'PUT'
         });
     }
 }

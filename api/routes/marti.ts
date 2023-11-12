@@ -51,8 +51,37 @@ export default async function router(schema: any, config: Config) {
 
             const query = {};
             for (const q in req.query) query[q] = String(req.query[q]);
-            const groups = await api.Mission.get(req.params.name, query);
-            return res.json(groups);
+            const mission = await api.Mission.get(req.params.name, query);
+            return res.json(mission);
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
+
+    await schema.post('/marti/missions/:name', {
+        name: 'Create Mission',
+        group: 'Marti',
+        auth: 'user',
+        ':name': 'string',
+        description: 'Helper API to create a mission',
+        query: {
+            type: 'object',
+            properties: {
+            }
+        },
+        res: 'res.Marti.json'
+    }, async (req: AuthRequest, res: Response) => {
+        try {
+            await Auth.is_auth(req);
+
+            if (!req.auth.email) throw new Err(400, null, 'Missions can only be created by a JWT authenticated user');
+
+            const api = await TAKAPI.init(new URL(config.MartiAPI), new APIAuthToken(req.auth.token));
+
+            const query = {};
+            for (const q in req.query) query[q] = String(req.query[q]);
+            const mission = await api.Mission.create(req.params.name, query);
+            return res.json(mission);
         } catch (err) {
             return Err.respond(err, res);
         }
@@ -90,8 +119,8 @@ export default async function router(schema: any, config: Config) {
 
             const query = {};
             for (const q in req.query) query[q] = String(req.query[q]);
-            const groups = await api.Mission.list(query);
-            return res.json(groups);
+            const missions = await api.Mission.list(query);
+            return res.json(missions);
         } catch (err) {
             return Err.respond(err, res);
         }
