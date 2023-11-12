@@ -98,7 +98,7 @@ export default {
                     method: 'POST',
                 });
 
-                const list = await window.std(url);
+                this.$emit('mission', res);
             } catch (err) {
                 this.err = err;
             }
