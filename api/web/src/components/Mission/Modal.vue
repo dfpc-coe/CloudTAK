@@ -40,12 +40,16 @@ export default {
         selectable: {
             type: Boolean,
             default: false
+        },
+        initial: {
+            type: Object,
+            default: null
         }
     },
     data: function() {
         return {
             create: false,
-            mission: null
+            mission: this.initial || null
         }
     },
     watch: {
