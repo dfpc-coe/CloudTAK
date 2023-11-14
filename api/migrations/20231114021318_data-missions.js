@@ -4,7 +4,8 @@ function up(knex) {
             id              BIGSERIAL PRIMARY KEY,
             mission         TEXT NOT NULL,
             enabled         BOOLEAN NOT NULL DEFAULT True,
-            assets          JSON NOT NULL DEFAULT '[]'::JSON
+            assets          JSON NOT NULL DEFAULT '[]'::JSON,
+            data            BIGINT UNIQUE NOT NULL REFERENCES data(id)
         );
     `);
 }

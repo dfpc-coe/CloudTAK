@@ -91,6 +91,9 @@
                         <pre v-text='mission.logs'/>
                     </template>
                 </div>
+                <div v-if='selectable' class='modal-footer'>
+                    <button @click='$emit("select", mission)' class='btn btn-primary'>Select</button>
+                </div>
             </div>
         </template>
     </template>
