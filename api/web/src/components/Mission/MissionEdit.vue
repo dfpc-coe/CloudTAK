@@ -48,15 +48,15 @@
                     <div @click='mode = "info"' class='px-2 py-2' :class='{
                         "bg-blue-lt": mode === "info",
                         "cursor-pointer": mode !== "info"
-                    }'><InfoSquareIcon/></div>
+                    }'><InfoSquareIcon v-tooltip='"Metadata"'/></div>
                     <div @click='mode = "users"' class='px-2 py-2' :class='{
                         "bg-blue-lt": mode === "users",
                         "cursor-pointer": mode !== "users"
-                    }'><UsersIcon/></div>
+                    }'><UsersIcon v-tooltip='"Users"'/></div>
                     <div @click='mode = "logs"' class='px-2 py-2' :class='{
                         "bg-blue-lt": mode === "logs",
                         "cursor-pointer": mode !== "logs"
-                    }'><ArticleIcon/></div>
+                    }'><ArticleIcon v-tooltip='"Logs"'/></div>
                 </div>
                 <div class="col-10 mx-2 my-2">
                     <template v-if='mode === "info"'>
@@ -69,10 +69,6 @@
                             <div class="datagrid-content"></div>
                         </div>
                         <div class="datagrid-item pb-2">
-                            <div class="datagrid-title">Subscribers</div>
-                            <div class="datagrid-content"></div>
-                        </div>
-                        <div class="datagrid-item pb-2">
                             <div class="datagrid-title">Groups (Channels)</div>
                             <div class="datagrid-content" v-text='mission.groups.join(", ")'></div>
                         </div>
@@ -82,9 +78,6 @@
                         </div>
                     </template>
                     <template v-else-if='mode === "users"'>
-                        <div class='col-12 my-2' :key='uid.createorUid' v-for='uid in mission.uids'>
-                            <UserIcon/><span v-text='uid.details.callsign'/>
-                        </div>
                     </template>
                     <template v-else-if='mode === "logs"'>
                         <TablerNone v-if='!mission.logs'/>
