@@ -131,20 +131,35 @@ export default {
             loading: {
                 initial: !this.initial.passwordProtected,
                 mission: !this.initial.passwordProtected,
+                users: true,
                 delete: false
             },
             mission: {
                 name: this.initial.name || 'Unknown',
                 passwordProtected: this.initial.passwordProtected,
-            }
+            },
+            contacts: []
         }
     },
     mounted: async function() {
         if (!this.mission.passwordProtected) {
             await this.fetchMission();
+
+            await Promise.all([
+                this.fetchContacts()
+            ]);
         }
     },
     methods: {
+        fetchContacts: async function() {
+            try {
+                this.loading.users = true;
+                this.contacts = await window.std(`/api/marti/missions/${this.mission.name}/contacts`);
+            } catch (err) {
+                this.err = err;
+            }
+            this.loading.users = false;
+        },
         deleteMission: async function() {
             try {
                 this.loading.delete = true;

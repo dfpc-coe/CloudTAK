@@ -7,6 +7,14 @@ export default class {
         this.api = api;
     }
 
+    async contacts(name: string) {
+        const url = new URL(`/Marti/api/missions/${encodeURIComponent(name)}/contacts`, this.api.url);
+
+        return await this.api.fetch(url, {
+            method: 'GET'
+        });
+    }
+
     async list(query: {
         passwordProtected?: string;
         defaultRole?: string;

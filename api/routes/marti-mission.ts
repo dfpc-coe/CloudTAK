@@ -26,18 +26,10 @@ export default async function router(schema: any, config: Config) {
                     type: 'boolean',
                     default: false
                 },
-                logs: {
-                    type: 'string'
-                },
-                secago: {
-                    type: 'string'
-                },
-                start: {
-                    type: 'string'
-                },
-                end: {
-                    type: 'string'
-                }
+                logs: { type: 'string' },
+                secago: { type: 'string' },
+                start: { type: 'string' },
+                end: { type: 'string' }
             }
         },
         res: 'res.Marti.json'
@@ -173,6 +165,45 @@ export default async function router(schema: any, config: Config) {
             const query = {};
             for (const q in req.query) query[q] = String(req.query[q]);
             const missions = await api.Mission.list(query);
+            return res.json(missions);
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
+
+    await schema.get('/marti/missions/:name/contacts', {
+        name: 'Mission Contacts',
+        group: 'Marti',
+        auth: 'user',
+        ':name': 'string',
+        description: 'List contacts associated with a mission',
+        res: {
+            type: 'array',
+            items: {
+                type: 'object',
+                required: [ 'filterGroups', 'notes', 'callsign', 'team', 'role', 'takv', 'uid' ],
+                additionalPropeties: false,
+                properties: {
+                    'filterGroups': { type: 'array', items: { type: 'string' } },
+                    'notes': { type: 'string' },
+                    'callsign': { type: 'string' },
+                    'team': { type: 'string' },
+                    'role': { type: 'string' },
+                    'takv': { type: 'string' },
+                    'uid': { type: 'string' },
+                }
+            }
+        }
+    }, async (req: AuthRequest, res: Response) => {
+        try {
+            await Auth.is_auth(req);
+
+            if (!req.auth.email) throw new Err(400, null, 'Missions can only be listed by a JWT authenticated user');
+
+            const api = await TAKAPI.init(new URL(config.MartiAPI), new APIAuthToken(req.auth.token));
+
+            const missions = await api.Mission.contacts(String(req.params.name));
+
             return res.json(missions);
         } catch (err) {
             return Err.respond(err, res);
