@@ -136,7 +136,9 @@ export default async function router(schema: any, config: Config) {
                 },
                 defaultRole: {
                     type: 'boolean',
-                    default: false
+                },
+                nameFilter: {
+                    type: 'string'
                 },
                 tool: {
                     type: 'string'
