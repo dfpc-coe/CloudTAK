@@ -38,7 +38,7 @@ export default class {
 
     async create(name: string, query: {
         creatorUid?: string;
-        group?: Array<string>;
+        group?: Array<string> | string;
         description?: string;
         chatRoom?: string;
         baseLayer?: string;
@@ -55,6 +55,7 @@ export default class {
     }) {
         const url = new URL(`/Marti/api/missions/${encodeURIComponent(name)}`, this.api.url);
 
+        if (query.group && Array.isArray(query.group)) query.group = query.group.join(',');
         for (const q in query) url.searchParams.append(q, query[q]);
         return await this.api.fetch(url, {
             method: 'POST'
