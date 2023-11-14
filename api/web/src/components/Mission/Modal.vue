@@ -11,6 +11,8 @@
     <template v-else-if='mission'>
         <MissionEdit
             :initial='mission'
+            :selectable='selectable'
+            @select='$emit("select", $event)'
             @close='mission = null'
         />
     </template>
@@ -34,6 +36,12 @@ import {
 
 export default {
     name: 'MissionModal',
+    props: {
+        selectable: {
+            type: Boolean,
+            default: false
+        }
+    },
     data: function() {
         return {
             create: false,

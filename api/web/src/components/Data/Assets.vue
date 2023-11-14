@@ -4,13 +4,13 @@
         <h3 class='card-title'>Data Assets</h3>
 
         <div class='ms-auto btn-list'>
-            <PlusIcon @click='upload = true' class='cursor-pointer'/>
-            <RefreshIcon @click='fetchList' class='cursor-pointer'/>
+            <PlusIcon @click='upload = true' class='cursor-pointer' v-tooltip='"Upload"'/>
+            <RefreshIcon @click='fetchList' class='cursor-pointer' v-tooltip='"Refresh"'/>
         </div>
     </div>
 
     <div v-if='!err && !upload && !loading.list && list.assets.length' class='table-responsive'>
-        <table class="table table-vcenter card-table">
+        <table class="table table-hover table-vcenter card-table">
             <thead>
                 <tr>
                     <th>Name</th>

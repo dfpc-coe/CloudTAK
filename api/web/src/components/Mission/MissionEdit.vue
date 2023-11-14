@@ -121,6 +121,10 @@ export default {
     props: {
         initial: {
             type: Object
+        },
+        selectable: {
+            type: Boolean,
+            default: false
         }
     },
     data: function() {

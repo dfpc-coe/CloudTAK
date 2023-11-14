@@ -23,8 +23,9 @@
 
                             <div class='ms-auto'>
                                 <div class='btn-list'>
-                                    <AccessPointIcon @click='modal.mission = true' v-if='data.mission' class='cursor-pointer' v-tooltip='"Mission Sync On"'/>
+                                    <AccessPointIcon @click='modal.mission = true' v-if='missions.total' class='cursor-pointer' v-tooltip='"Mission Sync On"'/>
                                     <AccessPointOffIcon @click='modal.mission = true' v-else class='cursor-pointer' v-tooltip='"Mission Sync Off"'/>
+
                                     <SettingsIcon class='cursor-pointer' @click='$router.push(`/data/${data.id}/edit`)' v-tooltip='"Edit"'/>
                                 </div>
                             </div>
@@ -50,7 +51,9 @@
 
     <MissionModal
         v-if='modal.mission'
+        :selectable='true'
         :data='data'
+        @select=''
         @close='modal.mission = false'
     />
 
@@ -89,7 +92,11 @@ export default {
                 data: true
             },
             assets: {},
-            data: {}
+            data: {},
+            missions: {
+                total: 0,
+                missions: []
+            }
         }
     },
     mounted: async function() {

@@ -33,7 +33,7 @@ export default async function router(schema: any, config: Config) {
         auth: 'admin',
         description: 'Register a new data source',
         body: 'req.body.CreateData.json',
-        res: 'data.json'
+        res: 'res.Data.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(req);
@@ -51,7 +51,7 @@ export default async function router(schema: any, config: Config) {
         description: 'Update a data source',
         ':dataid': 'integer',
         body: 'req.body.PatchData.json',
-        res: 'data.json'
+        res: 'res.Data.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(req);
@@ -73,7 +73,7 @@ export default async function router(schema: any, config: Config) {
         auth: 'user',
         description: 'Get a data source',
         ':dataid': 'integer',
-        res: 'data.json'
+        res: 'res.Data.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(req);
