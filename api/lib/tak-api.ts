@@ -1,6 +1,7 @@
 import Mission from './api/mission.js';
 import Credentials from './api/credentials.js';
 import Contacts from './api/contacts.js';
+import Files from './api/files.js';
 import Group from './api/groups.js';
 import { CookieJar, Cookie } from 'tough-cookie';
 import { CookieAgent } from 'http-cookie-agent/undici';
@@ -139,6 +140,7 @@ export default class TAKAPI {
     Credentials: Credentials;
     Contacts: Contacts;
     Group: Group;
+    Files: Files;
 
     static async init(url: URL, auth: APIAuth): Promise<TAKAPI> {
         const api = new TAKAPI();
@@ -151,6 +153,7 @@ export default class TAKAPI {
         api.Credentials = new Credentials(api);
         api.Contacts = new Contacts(api);
         api.Group = new Group(api);
+        api.Files = new Files(api);
 
         return api;
     }
