@@ -53,7 +53,7 @@
         v-if='modal.mission'
         :selectable='true'
         :data='data'
-        @select=''
+        @select='selectMission($event)'
         @close='modal.mission = false'
     />
 
@@ -105,6 +105,10 @@ export default {
     methods: {
         timeDiff(update) {
             return timeDiff(update);
+        },
+        selectMission: async function(mission) {
+            this.modal.mission = false;
+            console.error(mission);
         },
         fetch: async function() {
             this.loading.data = true;
