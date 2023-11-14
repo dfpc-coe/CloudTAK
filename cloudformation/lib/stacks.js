@@ -18,6 +18,14 @@ export default {
             Properties: {
                 QueueName: cf.join([cf.stackName, '-stack-events']),
             }
-        }
+        },
+        StackHookLambdaSource: {
+            Type: 'AWS::Lambda::EventSourceMapping',
+            Properties: {
+                Enabled: 'True',
+                EventSourceArn:  cf.getAtt('StackHookQueue', 'Arn'),
+                FunctionName: cf.ref('EventLambdaRole')
+            }
+        },
     }
 };
