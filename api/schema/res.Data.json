@@ -16,6 +16,9 @@
         },
         "description": {
             "$ref": "./data/description.json"
+        },
+        "mission": {
+            "$ref": "./data_mission.json"
         }
     },
     "required": [

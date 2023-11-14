@@ -23,8 +23,8 @@
 
                             <div class='ms-auto'>
                                 <div class='btn-list'>
-                                    <AccessPointIcon @click='modal.mission = true' v-if='missions.total' class='cursor-pointer' v-tooltip='"Mission Sync On"'/>
-                                    <AccessPointOffIcon @click='modal.mission = true' v-else class='cursor-pointer' v-tooltip='"Mission Sync Off"'/>
+                                    <AccessPointIcon @click='modal.mission = true' v-if='data.mission' class='cursor-pointer text-green' v-tooltip='"Mission Sync On"'/>
+                                    <AccessPointOffIcon @click='modal.mission = true' v-else class='cursor-pointer text-red' v-tooltip='"Mission Sync Off"'/>
 
                                     <SettingsIcon class='cursor-pointer' @click='$router.push(`/data/${data.id}/edit`)' v-tooltip='"Edit"'/>
                                 </div>
@@ -93,10 +93,6 @@ export default {
             },
             assets: {},
             data: {},
-            missions: {
-                total: 0,
-                missions: []
-            }
         }
     },
     mounted: async function() {
@@ -108,7 +104,19 @@ export default {
         },
         selectMission: async function(mission) {
             this.modal.mission = false;
-            console.error(mission);
+
+            if (!this.data.mission) {
+                this.loading.data = true;
+                this.data = await window.std(`/api/data/${this.$route.params.dataid}/mission`, {
+                    method: 'POST',
+                    body: {
+                        mission: mission.name,
+                    }
+                });
+                this.loading.data = false;
+            } else {
+                throw new Error('Updating missions not yet supported');
+            }
         },
         fetch: async function() {
             this.loading.data = true;
