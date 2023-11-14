@@ -101,7 +101,23 @@ export default async function router(schema: any, config: Config) {
         description: 'Helper API to create a mission',
         query: {
             type: 'object',
+            additionalProperties: false,
             properties: {
+                creatorUid: { type: 'string' },
+                group: { type: 'array', items: { type: 'string' } },
+                description: { type: 'string' },
+                chatRoom: { type: 'string' },
+                baseLayer: { type: 'string' },
+                bbox: { type: 'string' },
+                boundingPolygon: { type: 'string' },
+                path: { type: 'string' },
+                classification: { type: 'string' },
+                tool: { type: 'string' },
+                password: { type: 'string' },
+                defaultRole: { type: 'string' },
+                expiration: { type: 'string' },
+                inviteOnly: { type: 'string' },
+                allowDupe: { type: 'string' },
             }
         },
         res: 'res.Marti.json'

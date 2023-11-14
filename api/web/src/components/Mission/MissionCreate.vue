@@ -44,11 +44,8 @@
                         <div class='col-12'>
                             <TablerEnum label='Default Role' v-model='mission.role' :options='["Read-Only", "Subscriber", "Owner"]'/>
                         </div>
-                        <div class='col-12 col-md-6'>
-                            <TablerInput label='Description' v-model='mission.name'/>
-                        </div>
-                        <div class='col-12 col-md-6'>
-                            <TablerInput label='Hashtags' v-model='mission.hashtags'/>
+                        <div class='col-12'>
+                            <TablerInput label='Description' v-model='mission.description'/>
                         </div>
                     </div>
                 </div>
@@ -122,11 +119,15 @@ export default {
                 if (this.mission.role === 'Read-Only') url.searchParams.append('defaultRole', 'MISSION_READONLY_SUBSCRIBER');
                 if (this.mission.role === 'Owner') url.searchParams.append('defaultRole', 'MISSION_OWNER');
 
+                url.searchParams.append('group', this.mission.groups.join(','));
+                url.searchParams.append('description', this.mission.description);
+                if (this.mission.passwordProtected) url.searchParams.append('password', this.mission.password);
+
                 const res = await window.std(url, {
                     method: 'POST',
                 });
 
-                this.$emit('mission', res);
+                this.$emit('mission', res.data[0]);
             } catch (err) {
                 this.err = err;
             }
