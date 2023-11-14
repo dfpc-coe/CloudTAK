@@ -9,8 +9,10 @@ import { Client } from 'undici';
 import { Stream } from 'node:stream';
 
 export class APIAuth {
-    async init(base: URL) {
+    async init(base: URL) { // eslint-disable-line @typescript-eslint/no-unused-vars
+
     }
+
     async fetch(api: TAKAPI, url: URL, opts: any): Promise<any> {
         return await fetch(url, opts);
     }
