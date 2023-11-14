@@ -61,7 +61,7 @@ export default {
                                 'sqs:GetQueueAttributes'
                             ],
                             Resource: [
-                                cf.getAtt('StackHookQueue', 'Arn'),
+                                cf.getAtt('StackHookQueue', 'Arn')
                             ]
                         }]
                     }
