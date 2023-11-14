@@ -8,7 +8,7 @@ export default {
                 FunctionName: cf.join([cf.stackName, '-events']),
                 MemorySize: 512,
                 Timeout: 900,
-                Description: 'Respond to events on the S3 Asset Bucket',
+                Description: 'Respond to events on the S3 Asset Bucket & Stack SQS Queue',
                 ReservedConcurrentExecutions: 20,
                 PackageType: 'Image',
                 Environment: {
@@ -50,6 +50,19 @@ export default {
                                 cf.join(['arn:', cf.partition, ':s3:::', cf.join('-', [cf.stackName, cf.accountId, cf.region]), '/*'])
                             ],
                             Action: '*'
+                        },{
+                            Effect: 'Allow',
+                            Action: [
+                                'sqs:SendMessage',
+                                'sqs:ReceiveMessage',
+                                'sqs:ChangeMessageVisibility',
+                                'sqs:DeleteMessage',
+                                'sqs:GetQueueUrl',
+                                'sqs:GetQueueAttributes'
+                            ],
+                            Resource: [
+                                cf.getAtt('StackHookQueue', 'Arn'),
+                            ]
                         }]
                     }
                 }],
