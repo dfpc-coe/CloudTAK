@@ -20,6 +20,15 @@
         <template v-else>
             <div class='modal-body row g-2'>
                 <TablerInput label='Name' v-model='mission.name'/>
+
+                <div class='col-12'>
+                    <label class='px-2 w-100'>Groups (Channels)</label>
+                    <div class='mx-1 d-flex' style='padding-right: 15px;'>
+                        <input type='text' class='form-control' disabled :value='mission.groups.length ? mission.groups.join(", ") : "None"'/>
+                        <button @click='modal.groups = true' class='btn btn-sm'><ListSearchIcon class='cursor-pointer mx-2'/></button>
+                    </div>
+                </div>
+
                 <TablerInput :disabled='!mission.passwordProtected' type='password' label='Password' v-model='mission.password'>
                     <TablerToggle label='Password Protected' v-model='mission.passwordProtected'/>
                 </TablerInput>
@@ -31,9 +40,17 @@
                 </label>
 
                 <div v-if='advanced' class='col-12'>
-                    <TablerEnum label='Default Role' v-model='mission.role' :options='["Read-Only", "Subscriber", "Owner"]'/>
-                    <TablerInput label='Description' v-model='mission.name'/>
-                    <TablerInput label='Hashtags' v-model='mission.hashtags'/>
+                    <div class='row g-2'>
+                        <div class='col-12'>
+                            <TablerEnum label='Default Role' v-model='mission.role' :options='["Read-Only", "Subscriber", "Owner"]'/>
+                        </div>
+                        <div class='col-12 col-md-6'>
+                            <TablerInput label='Description' v-model='mission.name'/>
+                        </div>
+                        <div class='col-12 col-md-6'>
+                            <TablerInput label='Hashtags' v-model='mission.hashtags'/>
+                        </div>
+                    </div>
                 </div>
 
                 <div class='col-12 d-flex'>
@@ -44,6 +61,12 @@
             </div>
         </template>
     </template>
+
+    <GroupSelect
+        v-if='modal.groups'
+        v-model='mission.groups'
+        @close='modal.groups = false'
+    />
 </div>
 </template>
 
@@ -51,9 +74,11 @@
 import {
     LockIcon,
     LockOpenIcon,
+    ListSearchIcon,
     SquareChevronRightIcon,
     ChevronDownIcon,
 } from 'vue-tabler-icons';
+import GroupSelect from '../util/GroupSelectModal.vue';
 import Alert from '../util/Alert.vue';
 import {
     TablerNone,
@@ -70,6 +95,9 @@ export default {
             err: null,
             loading: {
                 mission: false,
+            },
+            modal: {
+                groups: false
             },
             advanced: false,
             mission: {
@@ -108,12 +136,14 @@ export default {
     components: {
         SquareChevronRightIcon,
         ChevronDownIcon,
+        GroupSelect,
         TablerNone,
         Alert,
         TablerLoading,
         TablerInput,
         TablerEnum,
         TablerToggle,
+        ListSearchIcon,
         LockIcon,
         LockOpenIcon
     }

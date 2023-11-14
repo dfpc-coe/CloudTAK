@@ -3,18 +3,18 @@
         <button type="button" class="btn-close" @click='close' aria-label="Close"></button>
         <div class="modal-status bg-yellow"></div>
         <div class='modal-header'>
-            <div class='modal-title'>Share in TAK</div>
+            <div class='modal-title'>Channel Selection</div>
         </div>
         <div class="modal-body row">
             <TablerLoading v-if='loading.groups'  desc='Loading Channels'/>
             <template v-else>
-                <div @click='selected.has(group.name) ? selected.delete(group.name) : selected.add(group.name)' :key='group.name' v-for='group in list.data' class='col-12 cursor-pointer'>
+                <div @click='updateGroup(group)' :key='group.name' v-for='group in list.data' class='col-12 cursor-pointer'>
                     <CircleFilledIcon  v-if='selected.has(group.name)' class='cursor-pointer'/>
                     <CircleIcon v-else class='cursor-pointer'/>
                     <span v-text='group.name' class='mx-2'/>
                 </div>
                 <div class="col-12 mt-3">
-                    <button disabled @click='share' class="cursor-pointer btn w-100">Sharing Disabled</button>
+                    <button :disabled='disabled' @click='$emit("close")' class="cursor-pointer btn w-100">Done</button>
                 </div>
             </template>
         </div>
@@ -34,13 +34,26 @@ import {
 
 export default {
     name: 'ShareModal',
+    props: {
+        disabled: {
+            type: Boolean
+        },
+        button: {
+            type: Boolean,
+            default: false
+        },
+        modelValue: {
+            type: Array,
+            default: []
+        }
+    },
     data: function() {
         return {
             loading: {
                 groups: true,
                 generate: false
             },
-            selected: new Set(),
+            selected: new Set(this.modelValue),
             list: {
                 data: []
             }
@@ -50,15 +63,9 @@ export default {
         await this.fetch();
     },
     methods: {
-        share: async function() {
-            this.loading.generate = true;
-            const res = await window.std('/api/marti/signClient', {
-                method: 'POST',
-                body: this.body
-            });
-
-            this.$emit('certs', res);
-            this.$emit('close');
+        updateGroup: function(group) {
+            this.selected.has(group.name) ? this.selected.delete(group.name) : this.selected.add(group.name)
+            this.$emit('update:modelValue', Array.from(this.selected));
         },
         fetch: async function() {
             this.loading.groups = true;

@@ -20,7 +20,7 @@
                 </div>
             </div>
             <div class='ms-auto btn-list my-2' style='padding-right: 56px;'>
-                <TablerDelete @delete='deleteMission' displaytype='icon'/>
+                <TablerDelete @delete='deleteMission' displaytype='icon' v-tooltip='"Delete"'/>
                 <PencilIcon class='cursor-pointer' v-tooltip='"Edit"'/>
                 <RefreshIcon v-if='!loading.initial' @click='fetchMission' class='cursor-pointer' v-tooltip='"Refresh"'/>
             </div>
@@ -73,6 +73,10 @@
                             <div class="datagrid-content"></div>
                         </div>
                         <div class="datagrid-item pb-2">
+                            <div class="datagrid-title">Groups (Channels)</div>
+                            <div class="datagrid-content" v-text='mission.groups.join(", ")'></div>
+                        </div>
+                        <div class="datagrid-item pb-2">
                             <div class="datagrid-title">Description</div>
                             <div class="datagrid-content" v-text='mission.description || "No Feed Description"'></div>
                         </div>
@@ -122,12 +126,12 @@ export default {
     data: function() {
         return {
             err: null,
-            mode: 'general',
+            mode: 'info',
             password: '',
             loading: {
                 initial: !this.initial.passwordProtected,
                 mission: !this.initial.passwordProtected,
-                delete: false 
+                delete: false
             },
             mission: {
                 name: this.initial.name || 'Unknown',

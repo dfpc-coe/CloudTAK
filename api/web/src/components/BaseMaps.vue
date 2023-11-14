@@ -83,10 +83,11 @@
     </div>
     <PageFooter/>
 
-    <ShareModal
+    <GroupSelectModal
         v-if='shareModal.shown'
         @close='shareModal.shown = false'
         :item='shareModal.basemap'
+        :disabled='true'
     />
 </div>
 </template>
@@ -101,7 +102,7 @@ import {
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import timeDiff from '../timediff.js';
-import ShareModal from './util/ShareModal.vue';
+import GroupSelectModal from './util/GroupSelectModal.vue';
 import {
     Share2Icon,
     SettingsIcon,
@@ -172,7 +173,7 @@ export default {
         PageFooter,
         DownloadIcon,
         TablerBreadCrumb,
-        ShareModal,
+        GroupSelectModal,
         TablerLoading,
         BaseMapLocation
     }
