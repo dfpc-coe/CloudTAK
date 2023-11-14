@@ -33,7 +33,7 @@ import {
 } from 'vue-tabler-icons';
 
 export default {
-    name: 'ShareModal',
+    name: 'GroupSelectModal',
     props: {
         disabled: {
             type: Boolean
