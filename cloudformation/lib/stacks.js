@@ -16,7 +16,8 @@ export default {
         StackHookQueue: {
             Type: 'AWS::SQS::Queue',
             Properties: {
-                QueueName: cf.join([cf.stackName, '-stack-events'])
+                QueueName: cf.join([cf.stackName, '-stack-events']),
+                VisibilityTimeout: 900
             }
         },
         StackHookLambdaSource: {

@@ -52,9 +52,9 @@
     <MissionModal
         v-if='modal.mission'
         :selectable='true'
-        :initial='{
+        :initial='data.mission ? {
             "name": data.mission.mission
-        }'
+        } : null'
         @select='selectMission($event)'
         @close='modal.mission = false'
     />
