@@ -71,7 +71,7 @@
     </div>
     <PageFooter/>
 
-    <ShareModal
+    <GroupSelectModal
         v-if='share'
         @close='share = false'
         :item='basemap'
@@ -81,7 +81,7 @@
 
 <script>
 import PageFooter from './PageFooter.vue';
-import ShareModal from './util/ShareModal.vue';
+import GroupSelectModal from './util/GroupSelectModal.vue';
 import {
     TablerBreadCrumb,
     TablerLoading
@@ -127,7 +127,7 @@ export default {
         TablerBreadCrumb,
         BaseMapLocation,
         TablerLoading,
-        ShareModal
+        GroupSelectModal
     }
 }
 </script>
