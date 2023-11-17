@@ -54,6 +54,11 @@ export default {
 
             this.schema = schema.body;
 
+            if (this.asset.name.endsWith('.geojson')) {
+                this.schema.properties.format.enum.splice(this.schema.properties.format.enum.indexOf('GeoJSON'), 1)
+                this.schema.properties.format.default = 'PMTiles';
+            }
+
             this.loading = false;
         },
         submit: async function() {
