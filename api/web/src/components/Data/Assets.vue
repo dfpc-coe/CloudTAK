@@ -27,7 +27,7 @@
                     <td class='d-flex'>
                         <TablerEpoch :date='asset.updated'/>
                         <div class='ms-auto btn-list'>
-                            <TablerDelete displaytype='icon' @click='deleteAsset(asset)' v-tooltip='"Delete Asset"'/>
+                            <TablerDelete displaytype='icon' @delete='deleteAsset(asset)' v-tooltip='"Delete Asset"'/>
                             <TransformIcon v-if='!asset.name.endsWith(".pmtiles")' @click='initTransform(asset)' v-tooltip='"Convert Asset"' class='cursor-pointer'/>
                             <DownloadIcon @click='downloadAsset(asset)' class='cursor-pointer' v-tooltip='"Download Asset"'/>
                         </div>
