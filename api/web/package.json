@@ -1,5 +1,6 @@
 {
     "name": "@tak-ps/etl.web",
+    "type": "module",
     "version": "0.1.0",
     "private": true,
     "scripts": {
@@ -35,7 +36,7 @@
         "@vitejs/plugin-vue": "^4.1.0",
         "eslint": "^8.11.0",
         "eslint-plugin-vue": "^9.0.0",
-        "vite": "^4.2.1"
+        "vite": "^5.0.0"
     },
     "eslintConfig": {
         "root": true,
