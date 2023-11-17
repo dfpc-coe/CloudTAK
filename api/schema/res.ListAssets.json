@@ -26,11 +26,15 @@
             "required": [
                 "name",
                 "updated",
+                "visualized",
                 "etag",
                 "size"
             ],
             "properties": {
                 "name": {
+                    "type": "string"
+                },
+                "visualized": {
                     "type": "string"
                 },
                 "updated": {

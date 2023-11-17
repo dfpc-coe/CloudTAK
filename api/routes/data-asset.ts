@@ -28,21 +28,40 @@ export default async function router(schema: any, config: Config) {
 
             const data = await Data.from(config.pool, req.params.dataid);
 
-            const list: any[] = await S3.list(`data/${data.id}/`);
+            const viz = new Map() ;
+            let assets = [];
+            (await S3.list(`data/${data.id}/`)).map((l) => {
+                if (path.parse(l.Key).ext === '.pmtiles') viz.set(path.parse(l.Key).name, l)
+                else assets.push(l)
+            });
+
+            assets = assets.map((a) => {
+                const isViz = viz.get(path.parse(a.Key).name);
+                if (isViz) viz.delete(path.parse(a.Key).name);
+
+                return {
+                    name: a.Key.replace(`data/${data.id}/`, ''),
+                    visualized: a.Key.replace(`data/${data.id}/`, '') + '.pmtiles',
+                    updated: new Date(a.LastModified).getTime(),
+                    etag: JSON.parse(a.ETag),
+                    size: a.Size
+                };
+            }).concat(Array.from(viz.values()).map((a) => {
+                return {
+                    name: a.Key.replace(`data/${data.id}/`, ''),
+                    visualized: a.Key.replace(`data/${data.id}/`, ''),
+                    updated: new Date(a.LastModified).getTime(),
+                    etag: JSON.parse(a.ETag),
+                    size: a.Size
+                };
+            }));
 
             return res.json({
-                total: list.length,
+                total: assets.length,
                 tiles: {
                     url: String(new URL(`${config.PMTILES_URL}/tiles/data/${data.id}/`))
                 },
-                assets: list.map((asset) => {
-                    return {
-                        name: asset.Key.replace(`data/${data.id}/`, ''),
-                        updated: new Date(asset.LastModified).getTime(),
-                        etag: JSON.parse(asset.ETag),
-                        size: asset.Size
-                    };
-                })
+                assets
             });
         } catch (err) {
             return Err.respond(err, res);
