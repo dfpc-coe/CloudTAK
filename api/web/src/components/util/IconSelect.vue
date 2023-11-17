@@ -9,9 +9,7 @@
         <div class='ms-auto align-self-center'><slot/></div>
     </div>
 
-    <template v-if='loading'>
-        <TablerLoading/>
-    </template>
+    <TablerLoading desc='Loading Iconsets' v-if='loading.iconset'/>
     <template v-else>
         <div class='d-flex'>
             <template v-if='selected.name'>
@@ -30,13 +28,25 @@
                         <SettingsIcon class='cursor-pointer dropdown-toggle'/>
                     </template>
                     <template #dropdown>
-                        <div class='mx-2'>
-                            <TablerInput v-model='filter'/>
-                            <div @click='selected = icon' :key='icon.id' v-for='icon of list.icons' class='cursor-pointer'>
-                                <div class='d-flex my-1'>
-                                    <img :src="iconurl(icon)" style='width: 25px; height: 25px; margin-right: 5px;'>
-                                    <span class='mt-2' v-text='icon.name'/>
-                                </div>
+                        <label class='w-100 subheader d-flex'>
+                            <span class='mx-2 d-flex justify-content-center align-items-center'>Iconsets</span>
+                            <SearchIcon @click.stop.prevent='params.showFilter = !params.showFilter' class='ms-auto cursor-pointer mx-2'/>
+                        </label>
+                        <TablerEnum v-model='params.iconset' :options='setsName'/>
+                        <TablerInput v-if='params.showFilter' placeholder='Icon Search' v-model='params.filter'/>
+                        <TablerLoading desc='Loading Icons' v-if='loading.icons'/>
+                        <div v-else class='row mx-2 my-2'>
+                            <div
+                                @click='selected = icon'
+                                :key='icon.id'
+                                v-for='icon of list.icons'
+                                class='col-auto cursor-pointer'
+                            >
+                                <img
+                                    :src="iconurl(icon)"
+                                    style='width: 25px; height: 25px; margin-right: 5px;'
+                                    v-tooltip='icon.name'
+                                >
                             </div>
                         </div>
                     </template>
@@ -50,10 +60,12 @@
 <script>
 import {
     InfoSquareIcon,
+    SearchIcon,
     SettingsIcon
 } from 'vue-tabler-icons';
 import {
     TablerHelp,
+    TablerEnum,
     TablerInput,
     TablerDropdown,
     TablerLoading
@@ -79,15 +91,28 @@ export default {
             default: false
         }
     },
+    computed: {
+        setsName: function() {
+            return this.sets.map((set) => { return set.name });
+        }
+    },
     data: function() {
         return {
             help: false,
-            loading: true,
-            filter: '',
+            loading: {
+               iconsets: true,
+               icons: true
+           },
+            params: {
+                iconset: '',
+                showFilter: false,
+                filter: '',
+            },
             selected: {
                 iconset: false,
                 name: ''
             },
+            sets: [],
             list: {
                 total: 0,
                 icons: []
@@ -98,8 +123,11 @@ export default {
         selected: function() {
             this.$emit('update:modelValue', this.selected.path);
         },
-        filter: async function() {
-            await this.listIcons();
+        'params': {
+            deep: true,
+            handler: async function() {
+                await this.listIcons();
+            },
         },
         modelValue: function() {
             if (this.modelValue) this.fetch();
@@ -107,8 +135,8 @@ export default {
     },
     mounted: async function() {
         if (this.modelValue) await this.fetch();
+        await this.listIconsets();
         await this.listIcons();
-        this.loading = false;
     },
     methods: {
         iconurl: function(icon) {
@@ -121,11 +149,27 @@ export default {
             const icon = this.modelValue.split('/').splice(1).join('/');
             this.selected = await window.std(`/api/iconset/${iconset}/icon/${encodeURIComponent(icon)}`);
         },
+        listIconsets: async function() {
+            this.loading.iconsets = true;
+            const url = window.stdurl('/api/iconset');
+            this.sets = (await window.std(url)).iconsets;
+            this.params.iconset = this.sets[0].name;
+            this.loading.iconsets = false;
+        },
         listIcons: async function() {
-            const url = window.stdurl('/api/icon');
-            url.searchParams.append('limit', 10);
-            url.searchParams.append('filter', this.filter);
+            this.loading.icons = true;
+            let url = window.stdurl(`/api/icon`);
+            if (this.params.iconset) {
+                const id = this.sets.filter((set) => {
+                    return set.name === this.params.iconset;
+                })[0];
+
+                if (id) url.searchParams.append('iconset', id.uid);
+            }
+
+            url.searchParams.append('filter', this.params.filter);
             this.list = await window.std(url)
+            this.loading.icons = false;
         },
     },
     components: {
@@ -133,7 +177,9 @@ export default {
         TablerInput,
         TablerDropdown,
         InfoSquareIcon,
+        SearchIcon,
         SettingsIcon,
+        TablerEnum,
         TablerLoading
     }
 };
