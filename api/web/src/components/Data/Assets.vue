@@ -20,7 +20,10 @@
             </thead>
             <tbody>
                 <tr :key='asset.name' v-for='asset in list.assets'>
-                    <td v-text='asset.name'></td>
+                    <td>
+                        <MapIcon v-if='asset.visualized' v-tooltip='"Visualizable"' class='cursor-pointer'/>
+                        <span v-text='asset.name' class='mx-2'/>
+                    </td>
                     <td>
                         <TablerBytes :bytes='asset.size'/>
                     </td>
@@ -58,6 +61,7 @@
 <script>
 import {
     PlusIcon,
+    MapIcon,
     RefreshIcon,
     DownloadIcon,
     TransformIcon,
@@ -145,6 +149,7 @@ export default {
         Upload,
         Alert,
         PlusIcon,
+        MapIcon,
         RefreshIcon,
         TransformIcon,
         DownloadIcon,
