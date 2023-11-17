@@ -79,7 +79,7 @@ export default class Task {
 
             //TODO Check if input is a GeoJSONLD, if not, convert to GeoJSON before tiling
 
-            asset = path.parse(this.etl.task.asset).name + '.pmtiles';
+            asset = path.parse(this.etl.task.asset).base + '.pmtiles';
             console.log(`ok - tiling ${path.resolve(os.tmpdir(), asset)}`);
             await tp.tile(
                 fs.createReadStream(path.resolve(os.tmpdir(), this.etl.task.asset)),
