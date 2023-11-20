@@ -58,13 +58,12 @@ export default {
         }
     },
     beforeUnmount: function() {
+        if (this.timer) window.clearInterval(this.timer);
+        if (this.ws) this.ws.close();
+
         if (this.map) {
             this.map.remove();
             this.map = null;
-        }
-
-        if (this.timer) {
-            window.clearInterval(this.timer)
         }
     },
     methods: {
