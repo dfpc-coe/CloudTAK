@@ -72,9 +72,14 @@ export default async function router(schema: any, config: Config) {
 
             const job = await Batch.job(config, req.params.jobid);
 
-            const logs = await Logs.list(job.logstream);
-
-            return res.json(logs)
+            if (job.logstream) {
+                const logs = await Logs.list(job.logstream);
+                return res.json(logs)
+            } else {
+                return res.json({
+                    logs: []
+                })
+            }
         } catch (err) {
             return Err.respond(err, res);
         }
