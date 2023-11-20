@@ -25,7 +25,7 @@ export default {
         this.ws.addEventListener('message', (msg) => {
             msg = JSON.parse(msg.data);
             if (msg.type !== 'cot') return;
-            this.cots.features.push(msg.data);
+            this.cots.set(msg.data.id, msg.data);
         });
 
         this.$nextTick(() => {
@@ -41,10 +41,7 @@ export default {
                 total: 0,
                 basemaps: []
             },
-            cots: {
-                type: 'FeatureCollection',
-                features: []
-            }
+            cots: new Map()
         }
     },
     beforeUnmount: function() {
@@ -84,7 +81,7 @@ export default {
                         },
                         cots: {
                             type: 'geojson',
-                            data: this.cots
+                            data: { type: 'FeatureCollection', features: [] }
                         }
                     },
                     layers: [{
@@ -104,6 +101,7 @@ export default {
                         type: 'symbol',
                         source: 'cots',
                         paint: {
+                            'text-color': '#ffffff',
                         },
                         layout: {
                             'icon-image': "airfield_11",
@@ -117,7 +115,10 @@ export default {
             this.map.once('load', () => {
                 this.timer = window.setInterval(() => {
                     if (!this.map) return;
-                    this.map.getSource('cots').setData(this.cots);
+                    this.map.getSource('cots').setData({
+                        type: 'FeatureCollection',
+                        features: Array.from(this.cots.values())
+                    });
                 }, 1000);
             });
         }
