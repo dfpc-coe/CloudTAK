@@ -8,12 +8,25 @@
 import mapgl from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css';
 
-let map;
-
 export default {
     name: 'CloudTAK',
     mounted: async function() {
         await this.fetchBaseMaps();
+
+        const url = window.stdurl('/api?format=geojson');
+        if (window.location.hostname === 'localhost') {
+            url.protocol = 'ws:';
+        } else {
+            url.protocol = 'wss:';
+        }
+
+        this.ws = new WebSocket(url);
+        this.ws.addEventListener('error', (err) => { this.$emit('err') });
+        this.ws.addEventListener('message', (msg) => {
+            msg = JSON.parse(msg.data);
+            if (msg.type !== 'cot') return;
+            this.cots.features.push(msg.data);
+        });
 
         this.$nextTick(() => {
             return this.mountMap();
@@ -21,16 +34,27 @@ export default {
     },
     data: function() {
         return {
+            ws: null,
+            map: null,
+            timer: null,
             basemaps: {
                 total: 0,
                 basemaps: []
+            },
+            cots: {
+                type: 'FeatureCollection',
+                features: []
             }
         }
     },
     beforeUnmount: function() {
-        if (map) {
-            map.remove();
-            map = null;
+        if (this.map) {
+            this.map.remove();
+            this.map = null;
+        }
+
+        if (this.timer) {
+            window.clearInterval(this.timer)
         }
     },
     methods: {
@@ -41,17 +65,26 @@ export default {
             const basemap = this.basemaps.basemaps[0];
             const url = String(window.stdurl(`/api/basemap/${basemap.id}/tiles/`)) + `{z}/{x}/{y}?token=${localStorage.token}`;
 
-            const tmpmap = new mapgl.Map({
+            this.map = new mapgl.Map({
                 container: this.$refs.map,
                 zoom: 0,
                 center: basemap.center ? basemap.center : [0, 0],
                 style: {
                     version: 8,
+                "glyphs": "https://fonts.openmaptiles.org/{fontstack}/{range}.pbf",
+                sprite: [{
+                    id: 'default',
+                    url: "https://demotiles.maplibre.org/styles/osm-bright-gl-style/sprite"
+                }],
                     sources: {
                         basemap: {
                             type: 'raster',
                             tileSize: 256,
                             tiles: [ url ]
+                        },
+                        cots: {
+                            type: 'geojson',
+                            data: this.cots
                         }
                     },
                     layers: [{
@@ -66,17 +99,27 @@ export default {
                         source: 'basemap',
                         minzoom: basemap.minzoom,
                         maxzoom: basemap.maxzoom
+                    },{
+                        id: 'cots',
+                        type: 'symbol',
+                        source: 'cots',
+                        paint: {
+                        },
+                        layout: {
+                            'icon-image': "airfield_11",
+                            'text-font': ['Open Sans Bold'],
+                            'text-field':  ['get', 'callsign']
+                        }
                     }]
                 }
             });
 
-            tmpmap.addControl(new mapgl.NavigationControl({}), "bottom-left");
-
-            tmpmap.once('load', () => {
-                map = tmpmap;
+            this.map.once('load', () => {
+                this.timer = window.setInterval(() => {
+                    if (!this.map) return;
+                    this.map.getSource('cots').setData(this.cots);
+                }, 1000);
             });
-
-            map
         }
     }
 }

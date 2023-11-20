@@ -1,7 +1,6 @@
 import SecretsManager from '@aws-sdk/client-secrets-manager';
 import type EventsPool from './events-pool.js';
-import ConnectionPool from './connection-pool.js'
-import { WebSocket } from 'ws';
+import ConnectionPool, { ConnectionWebSocket } from './connection-pool.js';
 // @ts-ignore
 import Server from './types/Server.js';
 // @ts-ignore
@@ -37,7 +36,7 @@ export default class Config {
     PMTILES_URL: string;
     TileBaseURL: URL;
     DynamoDB: string;
-    wsClients: WebSocket[];
+    wsClients: ConnectionWebSocket[];
     Bucket?: string;
     pool?: Pool;
     cacher?: Cacher;

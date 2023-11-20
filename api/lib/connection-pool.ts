@@ -10,6 +10,16 @@ import { Pool } from '@openaddresses/batch-generic';
 import { WebSocket } from 'ws';
 import TAK, { CoT } from '@tak-ps/node-tak';
 
+export class ConnectionWebSocket {
+    ws: WebSocket;
+    format: string;
+
+    constructor(ws: WebSocket, format = 'raw') {
+        this.ws = ws;
+        this.format = format;
+    }
+}
+
 class ConnectionClient {
     conn: Connection;
     tak: TAK;
@@ -31,14 +41,14 @@ class ConnectionClient {
 export default class ConnectionPool extends Map<number, ConnectionClient> {
     #server: Server;
     pool: Pool;
-    clients: WebSocket[];
+    clients: ConnectionWebSocket[];
     metrics: Metrics;
     sinks: Sinks;
     nosinks: boolean;
     stackName: string;
     local: boolean;
 
-    constructor(config: Config, server: Server, clients: WebSocket[] = [], stackName: string, local=false) {
+    constructor(config: Config, server: Server, clients: ConnectionWebSocket[] = [], stackName: string, local=false) {
         super();
         this.#server = server;
         this.clients = clients;
@@ -102,7 +112,11 @@ export default class ConnectionPool extends Map<number, ConnectionClient> {
      */
     async cot(conn: Connection, cot: CoT) {
         for (const client of this.clients) {
-            client.send(JSON.stringify({ type: 'cot', connection: conn.id, data: cot.raw }));
+            if (client.format == 'geojson') {
+                client.ws.send(JSON.stringify({ type: 'cot', connection: conn.id, data: cot.to_geojson() }));
+            } else {
+                client.ws.send(JSON.stringify({ type: 'cot', connection: conn.id, data: cot.raw }));
+            }
         }
 
         if (!this.nosinks && cot.is_atom()) {
