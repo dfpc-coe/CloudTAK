@@ -97,7 +97,7 @@ export default async function router(schema, config: Config) {
         ':iconset': 'string',
     }, async (req: AuthRequest, res: Response) => {
         try {
-            //await Auth.is_auth(req);
+            await Auth.is_auth(req, true);
 
             const iconset = await Iconset.from(config.pool, req.params.iconset);
             const icons = await Icon.list(config.pool, {
@@ -107,13 +107,21 @@ export default async function router(schema, config: Config) {
             const doc = await SpriteSmith({
                 src: icons.icons.map((icon) => {
                     return new Vinyl({
-                        path: icon.path,
+                        path: icon.path.replace(/.*?\//, ''),
                         contents: Buffer.from(icon.data, 'base64'),
                     })
                 })
             });
+  
+            const coords = {};
+            for (const key in doc.coordinates) {
+                coords[key.replace(/.png/, '')] = {
+                    ...doc.coordinates[key],
+                    pixelRatio: 1
+                }
+            }
 
-            return res.json(doc.coordinates);
+            return res.json(coords);
         } catch (err) {
             return Err.respond(err, res);
         }
@@ -127,7 +135,7 @@ export default async function router(schema, config: Config) {
         ':iconset': 'string',
     }, async (req: AuthRequest, res: Response) => {
         try {
-            //await Auth.is_auth(req);
+            await Auth.is_auth(req, true);
 
             const iconset = await Iconset.from(config.pool, req.params.iconset);
             const icons = await Icon.list(config.pool, {
@@ -137,12 +145,13 @@ export default async function router(schema, config: Config) {
             const doc = await SpriteSmith({
                 src: icons.icons.map((icon) => {
                     return new Vinyl({
-                        path: icon.path,
+                        path: icon.path.replace(/.*?\//, ''),
                         contents: Buffer.from(icon.data, 'base64'),
                     })
                 })
             });
 
+            res.type('png');
             return res.send(doc.image);
         } catch (err) {
             return Err.respond(err, res);

@@ -1,17 +1,23 @@
 <template>
 <div class="row vh-100">
-    <div ref="map" style='vh-100'></div>
+    <TablerLoading v-if='loading.main'/>
+    <div v-else ref="map" style='vh-100'></div>
 </div>
 </template>
 
 <script>
 import mapgl from 'maplibre-gl'
+import {
+    TablerLoading
+} from '@tak-ps/vue-tabler';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
 export default {
     name: 'CloudTAK',
     mounted: async function() {
         await this.fetchBaseMaps();
+        await this.fetchIconsets();
+        this.loading.main = false;
 
         const url = window.stdurl('/api?format=geojson');
         if (window.location.hostname === 'localhost') {
@@ -25,6 +31,12 @@ export default {
         this.ws.addEventListener('message', (msg) => {
             msg = JSON.parse(msg.data);
             if (msg.type !== 'cot') return;
+
+            if (msg.data.properties.icon) {
+                // Format of icon needs to change for spritesheet
+                msg.data.properties.icon = msg.data.properties.icon.replace('/', ':').replace(/.png$/, '');
+            }
+
             this.cots.set(msg.data.id, msg.data);
         });
 
@@ -37,10 +49,11 @@ export default {
             ws: null,
             map: null,
             timer: null,
-            basemaps: {
-                total: 0,
-                basemaps: []
+            loading: {
+                main: true
             },
+            basemaps: { total: 0, basemaps: [] },
+            iconsets: { total: 0, iconsets: [] },
             cots: new Map()
         }
     },
@@ -58,6 +71,9 @@ export default {
         fetchBaseMaps: async function() {
             this.basemaps = await window.std('/api/basemap');
         },
+        fetchIconsets: async function() {
+            this.iconsets = await window.std('/api/iconset');
+        },
         mountMap: function() {
             const basemap = this.basemaps.basemaps[0];
             const url = String(window.stdurl(`/api/basemap/${basemap.id}/tiles/`)) + `{z}/{x}/{y}?token=${localStorage.token}`;
@@ -68,11 +84,13 @@ export default {
                 center: basemap.center ? basemap.center : [0, 0],
                 style: {
                     version: 8,
-                "glyphs": "https://fonts.openmaptiles.org/{fontstack}/{range}.pbf",
-                sprite: [{
-                    id: 'default',
-                    url: "https://demotiles.maplibre.org/styles/osm-bright-gl-style/sprite"
-                }],
+                    "glyphs": "https://fonts.openmaptiles.org/{fontstack}/{range}.pbf",
+                    sprite: this.iconsets.iconsets.map((iconset) => {
+                        return {
+                            id: iconset.uid,
+                            url: String(window.stdurl(`/api/iconset/${iconset.uid}/sprite?token=${localStorage.token}`))
+                        }
+                    }),
                     sources: {
                         basemap: {
                             type: 'raster',
@@ -108,12 +126,12 @@ export default {
                             'icon-halo-width': 4
                         },
                         layout: {
-                            'icon-size': 2,
-                            'icon-image': "airfield_11",
+                            'icon-size': 1,
+                            'icon-image': '{icon}',
                             'icon-anchor': 'bottom',
                             'text-offset': [0, 1],
                             'text-font': ['Open Sans Bold'],
-                            'text-field':  ['get', 'callsign']
+                            'text-field':  '{callsign}'
                         }
                     }]
                 }
@@ -129,6 +147,9 @@ export default {
                 }, 1000);
             });
         }
+    },
+    components: {
+        TablerLoading
     }
 }
 </script>
