@@ -102,9 +102,16 @@ export default {
                         source: 'cots',
                         paint: {
                             'text-color': '#ffffff',
+                            'text-halo-color': '#000000',
+                            'text-halo-width': 2,
+                            'icon-halo-color': '#ffffff',
+                            'icon-halo-width': 4
                         },
                         layout: {
+                            'icon-size': 2,
                             'icon-image': "airfield_11",
+                            'icon-anchor': 'bottom',
+                            'text-offset': [0, 1],
                             'text-font': ['Open Sans Bold'],
                             'text-field':  ['get', 'callsign']
                         }
