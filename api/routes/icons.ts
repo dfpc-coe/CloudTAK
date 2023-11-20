@@ -5,6 +5,11 @@ import { AuthRequest } from '@tak-ps/blueprint-login';
 import Iconset from '../lib/types/iconset.js';
 import Icon from '../lib/types/icon.js';
 import Config from '../lib/config.js';
+import spritesmith from 'spritesmith';
+import { promisify } from 'node:util'
+import Vinyl from 'vinyl';
+
+const SpriteSmith = promisify(spritesmith.run);
 
 export default async function router(schema, config: Config) {
     await schema.get('/iconset', {
@@ -79,6 +84,66 @@ export default async function router(schema, config: Config) {
             const iconset = await Iconset.from(config.pool, req.params.iconset);
 
             return res.json(iconset);
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
+
+    await schema.get('/iconset/:iconset/sprite.json', {
+        name: 'Get SpriteSet',
+        group: 'Icons',
+        auth: 'user',
+        description: 'Get Spriteset JSON',
+        ':iconset': 'string',
+    }, async (req: AuthRequest, res: Response) => {
+        try {
+            //await Auth.is_auth(req);
+
+            const iconset = await Iconset.from(config.pool, req.params.iconset);
+            const icons = await Icon.list(config.pool, {
+                iconset: iconset.uid
+            });
+
+            const doc = await SpriteSmith({
+                src: icons.icons.map((icon) => {
+                    return new Vinyl({
+                        path: icon.path,
+                        contents: Buffer.from(icon.data, 'base64'),
+                    })
+                })
+            });
+
+            return res.json(doc.coordinates);
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
+
+    await schema.get('/iconset/:iconset/sprite.png', {
+        name: 'Get SpriteSet Image',
+        group: 'Icons',
+        auth: 'user',
+        description: 'Get Spriteset JSON',
+        ':iconset': 'string',
+    }, async (req: AuthRequest, res: Response) => {
+        try {
+            //await Auth.is_auth(req);
+
+            const iconset = await Iconset.from(config.pool, req.params.iconset);
+            const icons = await Icon.list(config.pool, {
+                iconset: iconset.uid
+            });
+
+            const doc = await SpriteSmith({
+                src: icons.icons.map((icon) => {
+                    return new Vinyl({
+                        path: icon.path,
+                        contents: Buffer.from(icon.data, 'base64'),
+                    })
+                })
+            });
+
+            return res.send(doc.image);
         } catch (err) {
             return Err.respond(err, res);
         }
