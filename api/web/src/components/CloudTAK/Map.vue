@@ -172,6 +172,15 @@ export default {
                             'fill-color': ['get', 'fill'],
                             'fill-opacity': ['get', 'fill-opacity']
                         },
+                    },{
+                        id: 'cots-line',
+                        type: 'line',
+                        source: 'cots',
+                        paint: {
+                            'line-color': ['get', 'stroke'],
+                            'line-opacity': ['get', 'stroke-opacity'],
+                            'line-width': ['get', 'stroke-width'],
+                        },
                     }]
                 }
             });
