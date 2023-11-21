@@ -1,4 +1,4 @@
-FROM alpine:3.17
+FROM ghcr.io/osgeo/gdal:alpine-normal-3.8.0
 
 ENV HOME=/home/etl
 WORKDIR $HOME
