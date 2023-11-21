@@ -3,9 +3,11 @@
     <TablerLoading v-if='loading.main'/>
     <template v-else>
         <div class='position-absolute top-0 end-0 text-white py-2 bg-dark' style='z-index: 1; width: 60px;'>
-            <Menu2Icon @click='menu = !menu' size='40' class='cursor-pointer'/>
+            <Menu2Icon v-if='!cot' @click='menu = !menu' size='40' class='cursor-pointer'/>
+            <XIcon v-if='cot' @click='cot = false' size='40' class='cursor-pointer'/>
         </div>
         <CloudTAKMenu v-if='menu'/>
+        <CloudTAKCoTView v-if='cot' :cot='cot'/>
         <div ref="map" style='vh-100'></div>
     </template>
 </div>
@@ -14,13 +16,15 @@
 <script>
 import mapgl from 'maplibre-gl'
 import {
-    Menu2Icon
+    Menu2Icon,
+    XIcon,
 } from 'vue-tabler-icons';
 import {
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import CloudTAKMenu from './Menu.vue';
+import CloudTAKCoTView from './CoTView.vue';
 
 export default {
     name: 'CloudTAK',
@@ -59,6 +63,7 @@ export default {
     data: function() {
         return {
             menu: false,
+            cot: null,
             ws: null,
             map: null,
             timer: null,
@@ -160,6 +165,16 @@ export default {
                 }
             });
 
+            this.map.on('mouseenter', 'cots', () => {
+                this.map.getCanvas().style.cursor = 'pointer';
+            })
+            this.map.on('mouseleave', 'cots', () => {
+                this.map.getCanvas().style.cursor = '';
+            })
+            this.map.on('click', 'cots', (e) => {
+                this.cot = e.features[0]; 
+            });
+
             this.map.once('load', () => {
                 this.timer = window.setInterval(() => {
                     if (!this.map) return;
@@ -173,8 +188,10 @@ export default {
     },
     components: {
         Menu2Icon,
+        XIcon,
         TablerLoading,
-        CloudTAKMenu
+        CloudTAKMenu,
+        CloudTAKCoTView
     }
 }
 </script>
