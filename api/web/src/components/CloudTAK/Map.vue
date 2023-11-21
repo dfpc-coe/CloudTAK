@@ -53,6 +53,12 @@ export default {
                 msg.data.properties.icon = `default:${msg.data.properties.type}`;
             }
 
+            // MapLibre Opacity must be of range 0-1
+            if (msg.data.properties['fill-opacity']) msg.data.properties['fill-opacity'] = msg.data.properties['fill-opacity'] / 255;
+            else msg.data.properties['fill-opacity'] = 255;
+            if (msg.data.properties['stroke-opacity']) msg.data.properties['stroke-opacity'] = msg.data.properties['stroke-opacity'] / 255;
+            else msg.data.properties['stroke-opacity'] = 255;
+
             this.cots.set(msg.data.id, msg.data);
         });
 
@@ -157,9 +163,10 @@ export default {
                         id: 'cots-poly',
                         type: 'fill',
                         source: 'cots',
+                        filter: [ 'all', ['==', '$type', 'Polygon']],
                         paint: {
-                            'fill-color': '#ffffff',
-                            'fill-opacity': 0.8
+                            'fill-color': ['get', 'fill-color'],
+                            'fill-opacity': ['get', 'fill-opacity']
                         },
                     }]
                 }

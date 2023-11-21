@@ -40,7 +40,7 @@
         "@openapi-contrib/openapi-schema-to-json-schema": "^5.1.0",
         "@placemarkio/check-geojson": "^0.1.12",
         "@tak-ps/blueprint-login": "^2.2.3",
-        "@tak-ps/node-tak": "^0.4.0",
+        "@tak-ps/node-tak": "^0.4.1",
         "@turf/meta": "^6.5.0",
         "ajv": "^8.11.2",
         "ajv-formats": "^2.1.1",
