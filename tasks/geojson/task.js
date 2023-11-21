@@ -7,6 +7,8 @@ import jwt from 'jsonwebtoken';
 import path from 'node:path';
 import os from 'node:os';
 
+const FORMATS = [KML];
+
 try {
     const dotfile = new URL('.env', import.meta.url);
 
@@ -56,7 +58,7 @@ export default class Task {
         const formats = new Map();
 
         // TODO load all conversion files from a directory
-        for (const format of [KML]) {
+        for (const format of FORMATS) {
             const config = format.register();
             for (const input of config.inputs) {
                 if (formats.has(input)) throw new Error('Input is already defined');
