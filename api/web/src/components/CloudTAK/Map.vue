@@ -1,16 +1,26 @@
 <template>
-<div class="row vh-100">
+<div class="row vh-100 position-relative">
     <TablerLoading v-if='loading.main'/>
-    <div v-else ref="map" style='vh-100'></div>
+    <template v-else>
+        <div class='position-absolute top-0 end-0 text-white py-2 bg-dark' style='z-index: 1; width: 60px;'>
+            <Menu2Icon @click='menu = !menu' size='40' class='cursor-pointer'/>
+        </div>
+        <CloudTAKMenu v-if='menu'/>
+        <div ref="map" style='vh-100'></div>
+    </template>
 </div>
 </template>
 
 <script>
 import mapgl from 'maplibre-gl'
 import {
+    Menu2Icon
+} from 'vue-tabler-icons';
+import {
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import 'maplibre-gl/dist/maplibre-gl.css';
+import CloudTAKMenu from './Menu.vue';
 
 export default {
     name: 'CloudTAK',
@@ -48,6 +58,7 @@ export default {
     },
     data: function() {
         return {
+            menu: false,
             ws: null,
             map: null,
             timer: null,
@@ -85,7 +96,7 @@ export default {
                 center: basemap.center ? basemap.center : [0, 0],
                 style: {
                     version: 8,
-                    "glyphs": "https://fonts.openmaptiles.org/{fontstack}/{range}.pbf",
+                    glyphs: 'https://fonts.openmaptiles.org/{fontstack}/{range}.pbf',
                     sprite: [{
                         id: 'default',
                         url: String(window.stdurl(`/api/icon/sprite?token=${localStorage.token}&type=true`))
@@ -143,6 +154,7 @@ export default {
                         source: 'cots',
                         paint: {
                             'fill-color': '#ffffff',
+                            'fill-opacity': 0.8
                         },
                     }]
                 }
@@ -160,7 +172,9 @@ export default {
         }
     },
     components: {
-        TablerLoading
+        Menu2Icon,
+        TablerLoading,
+        CloudTAKMenu
     }
 }
 </script>
