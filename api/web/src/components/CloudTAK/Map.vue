@@ -35,6 +35,8 @@ export default {
             if (msg.data.properties.icon) {
                 // Format of icon needs to change for spritesheet
                 msg.data.properties.icon = msg.data.properties.icon.replace('/', ':').replace(/.png$/, '');
+            } else {
+                msg.data.properties.icon = `default:${msg.data.properties.type}`;
             }
 
             this.cots.set(msg.data.id, msg.data);
@@ -84,12 +86,15 @@ export default {
                 style: {
                     version: 8,
                     "glyphs": "https://fonts.openmaptiles.org/{fontstack}/{range}.pbf",
-                    sprite: this.iconsets.iconsets.map((iconset) => {
+                    sprite: [{
+                        id: 'default',
+                        url: String(window.stdurl(`/api/icon/sprite?token=${localStorage.token}&type=true`))
+                    }].concat(this.iconsets.iconsets.map((iconset) => {
                         return {
                             id: iconset.uid,
-                            url: String(window.stdurl(`/api/iconset/${iconset.uid}/sprite?token=${localStorage.token}`))
+                            url: String(window.stdurl(`/api/icon/sprite?token=${localStorage.token}&iconset=${iconset.uid}`))
                         }
-                    }),
+                    })),
                     sources: {
                         basemap: {
                             type: 'raster',
@@ -132,6 +137,13 @@ export default {
                             'text-font': ['Open Sans Bold'],
                             'text-field':  '{callsign}'
                         }
+                    },{
+                        id: 'cots-poly',
+                        type: 'fill',
+                        source: 'cots',
+                        paint: {
+                            'fill-color': '#ffffff',
+                        },
                     }]
                 }
             });
