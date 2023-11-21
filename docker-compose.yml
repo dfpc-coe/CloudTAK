@@ -19,7 +19,7 @@ services:
 
     task:
         platform: linux/amd64
-        build: ./tasks/geojson/
+        build: ./tasks/data/
 
     pmtiles:
         platform: linux/amd64
