@@ -185,15 +185,11 @@ export default {
                 }
             });
 
-            this.map.on('mouseenter', 'cots', () => {
-                this.map.getCanvas().style.cursor = 'pointer';
-            })
-            this.map.on('mouseleave', 'cots', () => {
-                this.map.getCanvas().style.cursor = '';
-            })
-            this.map.on('click', 'cots', (e) => {
-                this.cot = e.features[0]; 
-            });
+            for (const layer of ['cots', 'cots-poly', 'cots-line']) {
+                this.map.on('mouseenter', layer, () => { this.map.getCanvas().style.cursor = 'pointer'; })
+                this.map.on('mouseleave', layer, () => { this.map.getCanvas().style.cursor = ''; })
+                this.map.on('click', layer, (e) => { this.cot = e.features[0]; });
+            }
 
             this.map.once('load', () => {
                 this.timer = window.setInterval(() => {
