@@ -5,11 +5,7 @@ import { AuthRequest } from '@tak-ps/blueprint-login';
 import Iconset from '../lib/types/iconset.js';
 import Icon from '../lib/types/icon.js';
 import Config from '../lib/config.js';
-import spritesmith from 'spritesmith';
-import { promisify } from 'node:util'
-import Vinyl from 'vinyl';
-
-const SpriteSmith = promisify(spritesmith.run);
+import Sprites from '../lib/sprites.js';
 
 export default async function router(schema, config: Config) {
     await schema.get('/iconset', {
@@ -84,75 +80,6 @@ export default async function router(schema, config: Config) {
             const iconset = await Iconset.from(config.pool, req.params.iconset);
 
             return res.json(iconset);
-        } catch (err) {
-            return Err.respond(err, res);
-        }
-    });
-
-    await schema.get('/iconset/:iconset/sprite.json', {
-        name: 'Get SpriteSet',
-        group: 'Icons',
-        auth: 'user',
-        description: 'Get Spriteset JSON',
-        ':iconset': 'string',
-    }, async (req: AuthRequest, res: Response) => {
-        try {
-            await Auth.is_auth(req, true);
-
-            const iconset = await Iconset.from(config.pool, req.params.iconset);
-            const icons = await Icon.list(config.pool, {
-                iconset: iconset.uid
-            });
-
-            const doc = await SpriteSmith({
-                src: icons.icons.map((icon) => {
-                    return new Vinyl({
-                        path: icon.path.replace(/.*?\//, ''),
-                        contents: Buffer.from(icon.data, 'base64'),
-                    })
-                })
-            });
-  
-            const coords = {};
-            for (const key in doc.coordinates) {
-                coords[key.replace(/.png/, '')] = {
-                    ...doc.coordinates[key],
-                    pixelRatio: 1
-                }
-            }
-
-            return res.json(coords);
-        } catch (err) {
-            return Err.respond(err, res);
-        }
-    });
-
-    await schema.get('/iconset/:iconset/sprite.png', {
-        name: 'Get SpriteSet Image',
-        group: 'Icons',
-        auth: 'user',
-        description: 'Get Spriteset JSON',
-        ':iconset': 'string',
-    }, async (req: AuthRequest, res: Response) => {
-        try {
-            await Auth.is_auth(req, true);
-
-            const iconset = await Iconset.from(config.pool, req.params.iconset);
-            const icons = await Icon.list(config.pool, {
-                iconset: iconset.uid
-            });
-
-            const doc = await SpriteSmith({
-                src: icons.icons.map((icon) => {
-                    return new Vinyl({
-                        path: icon.path.replace(/.*?\//, ''),
-                        contents: Buffer.from(icon.data, 'base64'),
-                    })
-                })
-            });
-
-            res.type('png');
-            return res.send(doc.image);
         } catch (err) {
             return Err.respond(err, res);
         }
@@ -259,6 +186,62 @@ export default async function router(schema, config: Config) {
 
             const icon = await Icon.from(config.pool, req.params.iconset, req.params.icon);
             return res.status(200).send(Buffer.from(icon.data, 'base64'));
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
+
+    await schema.get('/icon/sprite.json', {
+        name: 'CoT Type Sprites (json)',
+        group: 'Icons',
+        auth: 'user',
+        description: 'Get Spriteset JSON for CoT types',
+        ':iconset': 'string',
+        query: {
+            type: 'object',
+            additionalProperties: false,
+            properties: {
+                iconset: { type: 'string' },
+                type: { type: 'boolean' }
+            }
+        }
+    }, async (req: AuthRequest, res: Response) => {
+        try {
+            await Auth.is_auth(req, true);
+
+            const icons = await Icon.list(config.pool, req.query)
+
+            const sprites = await Sprites(icons);
+            return res.json(sprites.json);
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
+
+    await schema.get('/icon/sprite.png', {
+        name: 'CoT Type Sprites',
+        group: 'Icons',
+        auth: 'user',
+        description: 'Return a sprite sheet for CoT Types',
+        ':iconset': 'string',
+        query: {
+            type: 'object',
+            additionalProperties: false,
+            properties: {
+                iconset: { type: 'string' },
+                type: { type: 'boolean' }
+            }
+        }
+    }, async (req: AuthRequest, res: Response) => {
+        try {
+            await Auth.is_auth(req, true);
+
+            const icons = await Icon.list(config.pool, req.query)
+
+            const sprites = await Sprites(icons);
+
+            res.type('png');
+            return res.send(sprites.image);
         } catch (err) {
             return Err.respond(err, res);
         }
