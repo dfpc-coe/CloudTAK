@@ -59,6 +59,10 @@ export default {
             if (msg.data.properties['stroke-opacity']) msg.data.properties['stroke-opacity'] = msg.data.properties['stroke-opacity'] / 255;
             else msg.data.properties['stroke-opacity'] = 255;
 
+            if (msg.data.properties.callsign === 'Rectangle 1') {
+                console.error(msg.data);
+            }
+
             this.cots.set(msg.data.id, msg.data);
         });
 
@@ -165,7 +169,7 @@ export default {
                         source: 'cots',
                         filter: [ 'all', ['==', '$type', 'Polygon']],
                         paint: {
-                            'fill-color': ['get', 'fill-color'],
+                            'fill-color': ['get', 'fill'],
                             'fill-opacity': ['get', 'fill-opacity']
                         },
                     }]
