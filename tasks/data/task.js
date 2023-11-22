@@ -1,5 +1,4 @@
 import fs from 'node:fs';
-import KML from './lib/kml.js';
 import S3 from '@aws-sdk/client-s3';
 import { pipeline } from 'node:stream/promises';
 import Tippecanoe from './lib/tippecanoe.js';
@@ -8,7 +7,11 @@ import path from 'node:path';
 import os from 'node:os';
 import cp from 'node:child_process';
 
-const FORMATS = [KML];
+// Formats
+import KML from './lib/kml.js';
+import Translate from './lib/translate.js';
+
+const FORMATS = [KML, Translate];
 const formats = new Map();
 
 // TODO load all conversion files from a directory
