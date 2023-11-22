@@ -6,6 +6,7 @@ import Tippecanoe from './lib/tippecanoe.js';
 import jwt from 'jsonwebtoken';
 import path from 'node:path';
 import os from 'node:os';
+import cp from 'node:child_process';
 
 const FORMATS = [KML];
 const formats = new Map();
@@ -81,11 +82,10 @@ export default class Task {
 
             const tp = new Tippecanoe();
 
-            asset = path.parse(this.etl.task.asset).base + '.pmtiles';
             console.log(`ok - tiling ${path.resolve(os.tmpdir(), asset)}`);
             await tp.tile(
                 fs.createReadStream(path.resolve(os.tmpdir(), this.etl.task.asset)),
-                path.resolve(os.tmpdir(), asset), {
+                path.resolve(os.tmpdir(), path.parse(this.etl.task.asset).base + '.pmtiles'), {
                     std: true,
                     quiet: true,
                     name: asset,
@@ -102,16 +102,16 @@ export default class Task {
             await s3.send(new S3.PutObjectCommand({
                 Bucket: this.etl.bucket,
                 Key: `data/${this.etl.data}/${path.parse(this.etl.task.asset).base}.pmtiles`,
-                Body: fs.createReadStream(path.resolve(os.tmpdir(), asset))
+                Body: fs.createReadStream(path.resolve(os.tmpdir(), path.parse(this.etl.task.asset).base + '.pmtiles'))
             }));
         } else {
-            asset = path.parse(this.etl.task.asset).base + '.pmtiles';
             console.log(`ok - tiling ${path.resolve(os.tmpdir(), asset)}`);
+            cp.spawnSync(`pmtiles ${asset} ${path.parse(this.etl.task.asset).base}.pmtiles`);
 
             await s3.send(new S3.PutObjectCommand({
                 Bucket: this.etl.bucket,
                 Key: `data/${this.etl.data}/${path.parse(this.etl.task.asset).base}.pmtiles`,
-                Body: fs.createReadStream(path.resolve(os.tmpdir(), asset))
+                Body: fs.createReadStream(path.resolve(os.tmpdir(), path.parse(this.etl.task.asset).base + '.pmtiles'))
             }));
         }
     }
