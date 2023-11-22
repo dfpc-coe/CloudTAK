@@ -6,7 +6,10 @@
             <Menu2Icon v-if='!cot' @click='menu = !menu' size='40' class='cursor-pointer'/>
             <XIcon v-if='cot' @click='cot = false' size='40' class='cursor-pointer'/>
         </div>
-        <CloudTAKMenu v-if='menu'/>
+        <CloudTAKMenu
+            v-if='menu'
+            @basemap='setBasemap($event)'
+        />
         <CloudTAKCoTView v-if='cot' :cot='cot'/>
         <div ref="map" style='vh-100'></div>
     </template>
@@ -100,6 +103,15 @@ export default {
         },
         fetchIconsets: async function() {
             this.iconsets = await window.std('/api/iconset');
+        },
+        setBasemap: function(basemap) {
+            this.map.removeSource('basemap')
+            const url = String(window.stdurl(`/api/basemap/${basemap.id}/tiles/`)) + `{z}/{x}/{y}?token=${localStorage.token}`;
+            this.map.addSource('basemap', {
+                type: 'raster',
+                tileSize: 256,
+                tiles: [ url ]
+            });
         },
         mountMap: function() {
             const basemap = this.basemaps.basemaps[0];

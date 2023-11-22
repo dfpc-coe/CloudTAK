@@ -72,7 +72,7 @@ export default class Task {
 
         const { ext } = path.parse(this.etl.task.asset);
         if (!formats.has(ext)) throw new Error('Unsupported Input Format');
-        const convert = new formats.get(ext)(this.etl);
+        const convert = new (formats.get(ext))(this.etl);
 
         const asset = await convert.convert();
 

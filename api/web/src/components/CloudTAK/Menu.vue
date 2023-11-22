@@ -5,6 +5,9 @@
     <template v-else-if='mode === "contacts"'>
     </template>
     <template v-else-if='mode === "basemaps"'>
+        <MenuBasemaps
+            @basemap='$emit("basemap", $event)'
+        />
     </template>
     <template v-else>
         <div class='row'>
@@ -31,10 +34,17 @@ import {
     UsersIcon,
     SettingsIcon
 } from 'vue-tabler-icons';
+import MenuBasemaps from './Menu/Basemaps.vue';
 
 export default {
     name: 'CloudTAKMenu',
+    data: function() {
+        return {
+            mode: null
+        }
+    },
     components: {
+        MenuBasemaps,
         SettingsIcon,
         UsersIcon,
         MapIcon
