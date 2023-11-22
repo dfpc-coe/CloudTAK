@@ -105,12 +105,14 @@ export default {
             this.iconsets = await window.std('/api/iconset');
         },
         setBasemap: function(basemap) {
+            this.map.removeLayer('basemap')
             this.map.removeSource('basemap')
             const url = String(window.stdurl(`/api/basemap/${basemap.id}/tiles/`)) + `{z}/{x}/{y}?token=${localStorage.token}`;
-            this.map.addSource('basemap', {
-                type: 'raster',
-                tileSize: 256,
-                tiles: [ url ]
+            this.map.addSource('basemap', { type: 'raster', tileSize: 256, tiles: [ url ] });
+            this.map.addLayer({
+                id: 'basemap',
+                type: 'background',
+                paint: { 'background-color': 'rgb(4,7,14)' }
             });
         },
         mountMap: function() {
@@ -147,9 +149,7 @@ export default {
                     layers: [{
                         id: 'background',
                         type: 'background',
-                        paint: {
-                            'background-color': 'rgb(4,7,14)'
-                        }
+                        paint: { 'background-color': 'rgb(4,7,14)' }
                     },{
                         id: 'basemap',
                         type: 'raster',
