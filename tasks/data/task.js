@@ -70,7 +70,6 @@ export default class Task {
 
         await pipeline(res.Body, fs.createWriteStream(path.resolve(os.tmpdir(), this.etl.task.asset)));
 
-
         const { ext } = path.parse(this.etl.task.asset);
         if (!formats.has(ext)) throw new Error('Unsupported Input Format');
         const convert = new (formats.get(ext))(this.etl);
@@ -90,9 +89,9 @@ export default class Task {
 
             const tp = new Tippecanoe();
 
-            console.log(`ok - tiling ${path.resolve(os.tmpdir(), asset)}`);
+            console.log(`ok - tiling ${asset}`);
             await tp.tile(
-                fs.createReadStream(path.resolve(os.tmpdir(), this.etl.task.asset)),
+                fs.createReadStream(asset),
                 path.resolve(os.tmpdir(), path.parse(this.etl.task.asset).name + '.pmtiles'), {
                     std: true,
                     quiet: true,
@@ -117,7 +116,7 @@ export default class Task {
             });
             await pmuploader.done();
         } else {
-            console.log(`ok - converting ${path.resolve(os.tmpdir(), asset)}`);
+            console.log(`ok - converting ${asset}`);
             cp.spawnSync(`pmtiles ${asset} ${path.resolve(os.tmpdir(), path.parse(this.etl.task.asset).name + '.pmtiles')}`);
 
             const pmuploader = new Upload({
