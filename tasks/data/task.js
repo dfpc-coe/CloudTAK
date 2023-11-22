@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import S3 from '@aws-sdk/client-s3';
 import { pipeline } from 'node:stream/promises';
+import { Upload } from '@aws-sdk/lib-storage';
 import Tippecanoe from './lib/tippecanoe.js';
 import jwt from 'jsonwebtoken';
 import path from 'node:path';
@@ -77,11 +78,15 @@ export default class Task {
         const asset = await convert.convert();
 
         if (path.parse(asset).ext === '.geojsonld') {
-            await s3.send(new S3.PutObjectCommand({
-                Bucket: this.etl.bucket,
-                Key: `data/${this.etl.data}/${path.parse(this.etl.task.asset).base}.geojsonld`,
-                Body: fs.createReadStream(asset)
-            }));
+            const geouploader = new Upload({
+                client: s3,
+                params: {
+                    Bucket: this.etl.bucket,
+                    Key: `data/${this.etl.data}/${path.parse(this.etl.task.asset).base}.geojsonld`,
+                    Body: fs.createReadStream(asset)
+                }
+            });
+            await geouploader.done();
 
             const tp = new Tippecanoe();
 
@@ -102,20 +107,28 @@ export default class Task {
                 }
             );
 
-            await s3.send(new S3.PutObjectCommand({
-                Bucket: this.etl.bucket,
-                Key: `data/${this.etl.data}/${path.parse(this.etl.task.asset).base}.pmtiles`,
-                Body: fs.createReadStream(path.resolve(os.tmpdir(), path.parse(this.etl.task.asset).base + '.pmtiles'))
-            }));
+            const pmuploader = new Upload({
+                client: s3,
+                params: {
+                    Bucket: this.etl.bucket,
+                    Key: `data/${this.etl.data}/${path.parse(this.etl.task.asset).base}.pmtiles`,
+                    Body: fs.createReadStream(path.resolve(os.tmpdir(), path.parse(this.etl.task.asset).base + '.pmtiles'))
+                }
+            });
+            await pmuploader.done();
         } else {
             console.log(`ok - tiling ${path.resolve(os.tmpdir(), asset)}`);
             cp.spawnSync(`pmtiles ${asset} ${path.parse(this.etl.task.asset).base}.pmtiles`);
 
-            await s3.send(new S3.PutObjectCommand({
-                Bucket: this.etl.bucket,
-                Key: `data/${this.etl.data}/${path.parse(this.etl.task.asset).base}.pmtiles`,
-                Body: fs.createReadStream(path.resolve(os.tmpdir(), path.parse(this.etl.task.asset).base + '.pmtiles'))
-            }));
+            const pmuploader = new Upload({
+                client: s3,
+                params: {
+                    Bucket: this.etl.bucket,
+                    Key: `data/${this.etl.data}/${path.parse(this.etl.task.asset).base}.pmtiles`,
+                    Body: fs.createReadStream(path.resolve(os.tmpdir(), path.parse(this.etl.task.asset).base + '.pmtiles'))
+                }
+            });
+            await pmuploader.done();
         }
     }
 }
