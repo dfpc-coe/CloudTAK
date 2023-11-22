@@ -3,7 +3,8 @@
     <TablerLoading v-if='loading.main'/>
     <template v-else>
         <div class='position-absolute top-0 end-0 text-white py-2 bg-dark' style='z-index: 1; width: 60px;'>
-            <Menu2Icon v-if='!cot' @click='menu = !menu' size='40' class='cursor-pointer'/>
+            <Menu2Icon v-if='!cot && !menu' @click='menu = true' size='40' class='cursor-pointer'/>
+            <XIcon v-else-if='!cot && menu' @click='menu = false' size='40' class='cursor-pointer'/>
             <XIcon v-if='cot' @click='cot = false' size='40' class='cursor-pointer'/>
         </div>
         <CloudTAKMenu
