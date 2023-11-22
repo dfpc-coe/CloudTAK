@@ -8,6 +8,16 @@ import path from 'node:path';
 import os from 'node:os';
 
 const FORMATS = [KML];
+const formats = new Map();
+
+// TODO load all conversion files from a directory
+for (const format of FORMATS) {
+    const config = format.register();
+    for (const input of config.inputs) {
+        if (formats.has(input)) throw new Error('Input is already defined');
+        formats.set(input, format);
+    }
+}
 
 try {
     const dotfile = new URL('.env', import.meta.url);
@@ -55,31 +65,21 @@ export default class Task {
 
         await pipeline(res.Body, fs.createWriteStream(path.resolve(os.tmpdir(), this.etl.task.asset)));
 
-        const formats = new Map();
 
-        // TODO load all conversion files from a directory
-        for (const format of FORMATS) {
-            const config = format.register();
-            for (const input of config.inputs) {
-                if (formats.has(input)) throw new Error('Input is already defined');
-                formats.set(input, format);
-            }
-        }
+        const { ext } = path.parse(this.etl.task.asset);
+        if (!formats.has(ext)) throw new Error('Unsupported Input Format');
+        const convert = new formats.get(ext)(this.etl);
 
-        let stream;
-        let asset;
-        if (this.etl.task.config.format === 'GeoJSON') {
-            const { ext } = path.parse(this.etl.task.asset);
-            if (!formats.has(ext)) throw new Error('Unsupported Input Format');
-            const Convert = formats.get(ext);
-            const convert = new Convert(this.etl);
+        const asset = await convert.convert();
 
-            stream = await convert.convert();
-            asset = path.parse(this.etl.task.asset).name + '.geojsonld';
-        } else if (this.etl.task.config.format === 'PMTiles') {
+        if (path.parse(asset).ext === '.geojsonld') {
+            await s3.send(new S3.PutObjectCommand({
+                Bucket: this.etl.bucket,
+                Key: `data/${this.etl.data}/${path.parse(this.etl.task.asset).base}.geojsonld`,
+                Body: fs.createReadStream(asset)
+            }));
+
             const tp = new Tippecanoe();
-
-            //TODO Check if input is a GeoJSONLD, if not, convert to GeoJSON before tiling
 
             asset = path.parse(this.etl.task.asset).base + '.pmtiles';
             console.log(`ok - tiling ${path.resolve(os.tmpdir(), asset)}`);
@@ -99,16 +99,21 @@ export default class Task {
                 }
             );
 
-            stream = fs.createReadStream(path.resolve(os.tmpdir(), asset));
+            await s3.send(new S3.PutObjectCommand({
+                Bucket: this.etl.bucket,
+                Key: `data/${this.etl.data}/${path.parse(this.etl.task.asset).base}.pmtiles`,
+                Body: fs.createReadStream(path.resolve(os.tmpdir(), asset))
+            }));
         } else {
-            throw new Error('Unknown Task Format');
-        }
+            asset = path.parse(this.etl.task.asset).base + '.pmtiles';
+            console.log(`ok - tiling ${path.resolve(os.tmpdir(), asset)}`);
 
-        await s3.send(new S3.PutObjectCommand({
-            Bucket: this.etl.bucket,
-            Key: `data/${this.etl.data}/${asset}`,
-            Body: stream
-        }));
+            await s3.send(new S3.PutObjectCommand({
+                Bucket: this.etl.bucket,
+                Key: `data/${this.etl.data}/${path.parse(this.etl.task.asset).base}.pmtiles`,
+                Body: fs.createReadStream(path.resolve(os.tmpdir(), asset))
+            }));
+        }
     }
 }
 
