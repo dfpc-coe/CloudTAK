@@ -118,7 +118,7 @@ export default class Task {
             await pmuploader.done();
         } else {
             console.log(`ok - converting ${path.resolve(os.tmpdir(), asset)}`);
-            cp.spawnSync(`pmtiles ${asset} ${path.parse(this.etl.task.asset).name}.pmtiles`);
+            cp.spawnSync(`pmtiles ${asset} ${path.resolve(os.tmpdir(), path.parse(this.etl.task.asset).name + '.pmtiles')}`);
 
             const pmuploader = new Upload({
                 client: s3,
