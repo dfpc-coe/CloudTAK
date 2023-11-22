@@ -111,8 +111,10 @@ export default {
             this.map.addSource('basemap', { type: 'raster', tileSize: 256, tiles: [ url ] });
             this.map.addLayer({
                 id: 'basemap',
-                type: 'background',
-                paint: { 'background-color': 'rgb(4,7,14)' }
+                type: 'raster',
+                source: 'basemap',
+                minzoom: basemap.minzoom,
+                maxzoom: basemap.maxzoom
             });
         },
         mountMap: function() {
