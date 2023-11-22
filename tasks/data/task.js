@@ -82,7 +82,7 @@ export default class Task {
                 client: s3,
                 params: {
                     Bucket: this.etl.bucket,
-                    Key: `data/${this.etl.data}/${path.parse(this.etl.task.asset).base}.geojsonld`,
+                    Key: `data/${this.etl.data}/${path.parse(this.etl.task.asset).name}.geojsonld`,
                     Body: fs.createReadStream(asset)
                 }
             });
@@ -93,7 +93,7 @@ export default class Task {
             console.log(`ok - tiling ${path.resolve(os.tmpdir(), asset)}`);
             await tp.tile(
                 fs.createReadStream(path.resolve(os.tmpdir(), this.etl.task.asset)),
-                path.resolve(os.tmpdir(), path.parse(this.etl.task.asset).base + '.pmtiles'), {
+                path.resolve(os.tmpdir(), path.parse(this.etl.task.asset).name + '.pmtiles'), {
                     std: true,
                     quiet: true,
                     name: asset,
@@ -111,21 +111,21 @@ export default class Task {
                 client: s3,
                 params: {
                     Bucket: this.etl.bucket,
-                    Key: `data/${this.etl.data}/${path.parse(this.etl.task.asset).base}.pmtiles`,
-                    Body: fs.createReadStream(path.resolve(os.tmpdir(), path.parse(this.etl.task.asset).base + '.pmtiles'))
+                    Key: `data/${this.etl.data}/${path.parse(this.etl.task.asset).name}.pmtiles`,
+                    Body: fs.createReadStream(path.resolve(os.tmpdir(), path.parse(this.etl.task.asset).name + '.pmtiles'))
                 }
             });
             await pmuploader.done();
         } else {
-            console.log(`ok - tiling ${path.resolve(os.tmpdir(), asset)}`);
-            cp.spawnSync(`pmtiles ${asset} ${path.parse(this.etl.task.asset).base}.pmtiles`);
+            console.log(`ok - converting ${path.resolve(os.tmpdir(), asset)}`);
+            cp.spawnSync(`pmtiles ${asset} ${path.parse(this.etl.task.asset).name}.pmtiles`);
 
             const pmuploader = new Upload({
                 client: s3,
                 params: {
                     Bucket: this.etl.bucket,
-                    Key: `data/${this.etl.data}/${path.parse(this.etl.task.asset).base}.pmtiles`,
-                    Body: fs.createReadStream(path.resolve(os.tmpdir(), path.parse(this.etl.task.asset).base + '.pmtiles'))
+                    Key: `data/${this.etl.data}/${path.parse(this.etl.task.asset).name}.pmtiles`,
+                    Body: fs.createReadStream(path.resolve(os.tmpdir(), path.parse(this.etl.task.asset).name + '.pmtiles'))
                 }
             });
             await pmuploader.done();

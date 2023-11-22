@@ -23,7 +23,7 @@ export default class KML {
         }).join('\n');
         console.error('ok - converted to GeoJSON');
 
-        const output = path.resolve(os.tmpdir(), path.parse(this.etl.task.asset).base + '.geojsonld');
+        const output = path.resolve(os.tmpdir(), path.parse(this.etl.task.asset).name + '.geojsonld');
 
         await fs.writeFile(output, converted);
 

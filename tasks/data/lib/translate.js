@@ -15,7 +15,7 @@ export default class GDALTranslate {
 
     async convert() {
         const input = path.resolve(os.tmpdir(), this.etl.task.asset);
-        const output = path.resolve(os.tmpdir(), path.parse(this.etl.task.asset).base + '.mbtiles');
+        const output = path.resolve(os.tmpdir(), path.parse(this.etl.task.asset).name + '.mbtiles');
 
         cp.spawnSync(`gdal_translate ${input} ${output}`);
 
