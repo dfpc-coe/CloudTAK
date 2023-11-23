@@ -17,7 +17,8 @@ export default class GDALTranslate {
         const input = path.resolve(os.tmpdir(), this.etl.task.asset);
         const output = path.resolve(os.tmpdir(), path.parse(this.etl.task.asset).name + '.mbtiles');
 
-        cp.spawnSync(`gdal_translate ${input} ${output}`);
+        const run = cp.execSync(`gdal_translate ${input} ${output}`);
+        console.error(run);
 
         return output;
     }
