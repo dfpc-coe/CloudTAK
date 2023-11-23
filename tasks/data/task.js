@@ -117,9 +117,8 @@ export default class Task {
             await pmuploader.done();
         } else {
             console.log(`ok - converting ${asset}`);
-            const pmout = cp.spawnSync(`pmtiles convert ${asset} ${path.resolve(os.tmpdir(), path.parse(this.etl.task.asset).name + '.pmtiles')}`);
-            console.log(String(pmout.stdout.toString()))
-            console.log(String(pmout.stderr.toString()))
+            const pmout = cp.execSync(`pmtiles convert ${asset} ${path.resolve(os.tmpdir(), path.parse(this.etl.task.asset).name + '.pmtiles')}`);
+            console.log(String(pmout));
 
             console.log(`ok - converted: ${path.resolve(os.tmpdir(), path.parse(this.etl.task.asset).name + '.pmtiles')}`);
 
