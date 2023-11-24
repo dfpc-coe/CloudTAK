@@ -3,6 +3,9 @@
     <template v-if='mode === "settings"'>
     </template>
     <template v-else-if='mode === "contacts"'>
+        <MenuContacts
+            :map='map'
+        />
     </template>
     <template v-else-if='mode === "datas"'>
         <MenuDatas
@@ -53,6 +56,7 @@ import {
 import MenuBasemaps from './Menu/Basemaps.vue';
 import MenuOverlays from './Menu/Overlays.vue';
 import MenuDatas from './Menu/Datas.vue';
+import MenuContacts from './Menu/Contacts.vue';
 
 export default {
     name: 'CloudTAKMenu',
@@ -71,6 +75,7 @@ export default {
         BoxMultipleIcon,
         MenuBasemaps,
         MenuOverlays,
+        MenuContacts,
         MenuDatas,
         SettingsIcon,
         UsersIcon,
