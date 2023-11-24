@@ -4,7 +4,7 @@
         <div class='card-header my-2'>
             <div class='card-title mx-2'>Overlays</div>
             <div class='ms-auto mx-2'>
-                <PlusIcon class='cursor-pointer'/>
+                <PlusIcon @click='$emit("datas")' class='cursor-pointer'/>
             </div>
         </div>
     </div>
@@ -72,7 +72,6 @@ export default {
                 let name = layer.id
                 if (layer.id === 'cots') name = 'CoT Icons';
 
-                console.error(layer.layout);
                 return {
                     name,
                     visible: this.map.getLayoutProperty(layer.id, 'visibility') !== 'none',
