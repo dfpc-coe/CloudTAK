@@ -1,4 +1,6 @@
 import Auth from '../lib/auth.js';
+import path from 'node:path';
+import fs from 'node:fs/promises';
 import Err from '@openaddresses/batch-error';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
@@ -6,8 +8,14 @@ import Iconset from '../lib/types/iconset.js';
 import Icon from '../lib/types/icon.js';
 import Config from '../lib/config.js';
 import Sprites from '../lib/sprites.js';
+import Cacher from '../lib/cacher.js';
 
 export default async function router(schema, config: Config) {
+    const defaultSprite = {
+        json: await fs.readFile(new URL('../icons/generator.json', import.meta.url)),
+        image: await fs.readFile(new URL('../icons/generator.png', import.meta.url))
+    }
+
     await schema.get('/iconset', {
         name: 'List Iconsets',
         group: 'Icons',
@@ -209,10 +217,17 @@ export default async function router(schema, config: Config) {
         try {
             await Auth.is_auth(req, true);
 
-            const icons = await Icon.list(config.pool, req.query)
+            if (req.query.iconset === 'default') {
+                return res.send(defaultSprite.json);
+            } else {
+                const icons = await Icon.list(config.pool, req.query)
 
-            const sprites = await Sprites(icons);
-            return res.json(sprites.json);
+                const sprites = await Sprites(icons, {
+                    name: 'type2525b'
+                });
+
+                return res.json(sprites.json);
+            }
         } catch (err) {
             return Err.respond(err, res);
         }
@@ -236,14 +251,14 @@ export default async function router(schema, config: Config) {
         try {
             await Auth.is_auth(req, true);
 
-            const icons = await Icon.list(config.pool, req.query)
-
-            const sprites = await Sprites(icons, {
-                name: 'type2525b'
-            });
-
             res.type('png');
-            return res.send(sprites.image);
+            if (req.query.iconset === 'default') {
+                return res.send(defaultSprite.image);
+            } else {
+                const icons = await Icon.list(config.pool, req.query)
+                const sprites = await Sprites(icons, { name: 'type2525b' });
+                return res.send(sprites.image);
+            }
         } catch (err) {
             return Err.respond(err, res);
         }
