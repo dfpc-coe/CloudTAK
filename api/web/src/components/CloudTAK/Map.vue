@@ -31,7 +31,11 @@
             :map='map'
             @basemap='setBasemap($event)'
         />
-        <CloudTAKCoTView v-if='cot' :cot='cot'/>
+        <CloudTAKCoTView
+            v-if='cot'
+            :cot='cot'
+            :map='map'
+        />
         <div ref="map" style='vh-100'></div>
     </template>
 </div>
