@@ -41,7 +41,7 @@ export default async function router(schema: any, config: Config) {
 
                 return {
                     name: a.Key.replace(`data/${data.id}/`, ''),
-                    visualized: a.Key.replace(`data/${data.id}/`, '') + '.pmtiles',
+                    visualized: path.parse(a.Key.replace(`data/${data.id}/`, '')).name + '.pmtiles',
                     updated: new Date(a.LastModified).getTime(),
                     etag: JSON.parse(a.ETag),
                     size: a.Size

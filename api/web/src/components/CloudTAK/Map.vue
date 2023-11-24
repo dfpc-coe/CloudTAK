@@ -19,6 +19,7 @@
 </template>
 
 <script>
+import * from 'pmtiles';
 import mapgl from 'maplibre-gl'
 import {
     Menu2Icon,
@@ -123,6 +124,9 @@ export default {
         mountMap: function() {
             const basemap = this.basemaps.basemaps[0];
             const url = String(window.stdurl(`/api/basemap/${basemap.id}/tiles/`)) + `{z}/{x}/{y}?token=${localStorage.token}`;
+
+            const protocol = new pmtiles.Protocol();
+            mapgl.addProtocol('pmtiles', protocol.tile);
 
             this.map = new mapgl.Map({
                 container: this.$refs.map,
