@@ -152,7 +152,7 @@ export const handlerRaw = async (
 
     try {
         const header = await p.getHeader();
-        if (tile[0] < header.minZoom || tile[0] > header.maxZoom) {
+        if (!meta && (tile[0] < header.minZoom || tile[0] > header.maxZoom)) {
             return apiResp(404, "", false, headers);
         }
 
