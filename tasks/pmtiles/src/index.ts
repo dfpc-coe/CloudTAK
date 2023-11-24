@@ -219,13 +219,24 @@ export const handlerRaw = async (
             return apiResp(200, JSON.stringify(fc), false, headers);
         } else if (meta) {
             headers["Content-Type"] = "application/json";
+
+            let format = 'mvt';
+            for (const pair of [
+                [pmtiles.TileType.Mvt, "mvt"],
+                [pmtiles.TileType.Png, "png"],
+                [pmtiles.TileType.Jpeg, "jpg"],
+                [pmtiles.TileType.Webp, "webp"],
+            ]) {
+                if (header.tileType === pair[0]) format = pair[1];
+            }
+
             return apiResp(200, JSON.stringify({
                 "tilejson": "2.2.0",
                 "name": `${name}.pmtiles`,
                 "description": "Hosted by TAK-ETL",
                 "version": "1.0.0",
                 "scheme": "xyz",
-                "tiles": [ process.env.APIROOT + `/tiles${path}/{z}/{x}/{y}.mvt?token=${event.queryStringParameters.token}`],
+                "tiles": [ process.env.APIROOT + `/tiles${path}/{z}/{x}/{y}.${format}?token=${event.queryStringParameters.token}`],
                 "minzoom": header.minZoom,
                 "maxzoom": header.maxZoom,
                 "bounds": [
