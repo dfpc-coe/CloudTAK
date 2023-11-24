@@ -12,7 +12,7 @@ import Cacher from '../lib/cacher.js';
 
 export default async function router(schema, config: Config) {
     const defaultSprite = {
-        json: await fs.readFile(new URL('../icons/generator.json', import.meta.url)),
+        json: JSON.parse(String(await fs.readFile(new URL('../icons/generator.json', import.meta.url)))),
         image: await fs.readFile(new URL('../icons/generator.png', import.meta.url))
     }
 
@@ -222,9 +222,7 @@ export default async function router(schema, config: Config) {
             } else {
                 const icons = await Icon.list(config.pool, req.query)
 
-                const sprites = await Sprites(icons, {
-                    name: 'type2525b'
-                });
+                const sprites = await Sprites(icons, { name: req.query.type ? 'type2525b' : null });
 
                 return res.json(sprites.json);
             }
@@ -256,7 +254,7 @@ export default async function router(schema, config: Config) {
                 return res.send(defaultSprite.image);
             } else {
                 const icons = await Icon.list(config.pool, req.query)
-                const sprites = await Sprites(icons, { name: 'type2525b' });
+                const sprites = await Sprites(icons, { name: req.query.type ? 'type2525b' : null });
                 return res.send(sprites.image);
             }
         } catch (err) {

@@ -54,7 +54,7 @@ export default {
                 // Format of icon needs to change for spritesheet
                 msg.data.properties.icon = msg.data.properties.icon.replace('/', ':').replace(/.png$/, '');
             } else {
-                msg.data.properties.icon = `default:${msg.data.properties.type}`;
+                msg.data.properties.icon = `${msg.data.properties.type}`;
             }
 
             // MapLibre Opacity must be of range 0-1
