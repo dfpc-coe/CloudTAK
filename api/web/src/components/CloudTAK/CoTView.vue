@@ -9,9 +9,11 @@
                     <span class='subheader ms-auto' v-text='" (" + cot.properties.how + ")"'/>
                 </div>
             </div>
-            <div class='col-auto my-2 ms-auto d-flex align-items-center mx-2'>
-                <CodeIcon v-if='mode === "default"' @click='mode = "raw"' class='cursor-pointer'/>
-                <XIcon v-if='mode === "raw"' @click='mode = "default"' class='cursor-pointer'/>
+            <div class='col-auto btn-list my-2 ms-auto d-flex align-items-center mx-2'>
+                <ZoomPanIcon @click='zoomTo' class='cursor-pointer' v-tooltip='"Zoom To"'/>
+
+                <CodeIcon v-if='mode === "default"' @click='mode = "raw"' class='cursor-pointer' v-tooltip='"Raw View"'/>
+                <XIcon v-if='mode === "raw"' @click='mode = "default"' class='cursor-pointer' v-tooltip='"Default View"'/>
             </div>
         </div>
 
@@ -50,8 +52,10 @@ import {
     TablerInput,
     TablerEnum
 } from '@tak-ps/vue-tabler';
+import pointOnFeature from '@turf/point-on-feature';
 import {
     XIcon,
+    ZoomPanIcon,
     CodeIcon
 } from 'vue-tabler-icons';
 
@@ -73,11 +77,18 @@ export default {
             icon: null
         }
     },
-    mounted: function() {
+    methods: {
+        zoomTo: function() {
+            this.map.flyTo({
+                center: pointOnFeature(this.cot).geometry.coordinates,
+                zoom: 14
+            })
+        }
     },
     components: {
         XIcon,
         CodeIcon,
+        ZoomPanIcon,
         TablerInput,
         TablerEnum
     }
