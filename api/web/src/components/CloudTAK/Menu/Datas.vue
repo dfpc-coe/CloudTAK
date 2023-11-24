@@ -110,7 +110,8 @@ export default {
                 url.searchParams.append('token', localStorage.token);
 
                 this.map.addSource(id, { type: 'raster', tileSize: 256, url: String(url) });
-                this.map.addLayer({ id, 'type': 'raster', 'source': 'basemap' });
+                this.map.addLayer({ id, 'type': 'raster', 'source': id });
+
                 a.visible = true;
             }
         },
