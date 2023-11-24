@@ -7,6 +7,7 @@
         </div>
         <TablerInput label='Name' v-model='cot.properties.callsign'/>
         <TablerInput label='Remarks' v-model='cot.properties.remarks'/>
+        <span class='' v-text='"Icon: " + cot.properties.icon'/>
     </div>
 </div>
 </template>
