@@ -4,6 +4,11 @@
     </template>
     <template v-else-if='mode === "contacts"'>
     </template>
+    <template v-else-if='mode === "overlays"'>
+        <MenuOverlays
+            :map='map'
+        />
+    </template>
     <template v-else-if='mode === "basemaps"'>
         <MenuBasemaps
             @basemap='$emit("basemap", $event)'
@@ -14,6 +19,10 @@
             <div @click='mode = "settings"' class='cursor-pointer col-12 py-2 px-2 d-flex align-items-center'>
                 <SettingsIcon size='32'/>
                 <span class='mx-2' style='font-size: 18px;'>Settings</span>
+            </div>
+            <div @click='mode = "overlays"' class='cursor-pointer col-12 py-2 px-2 d-flex align-items-center'>
+                <BoxMultipleIcon size='32'/>
+                <span class='mx-2' style='font-size: 18px;'>Overlays</span>
             </div>
             <div @click='mode = "contacts"' class='cursor-pointer col-12 py-2 px-2 d-flex align-items-center'>
                 <UsersIcon size='32'/>
@@ -32,19 +41,29 @@
 import {
     MapIcon,
     UsersIcon,
-    SettingsIcon
+    SettingsIcon,
+    BoxMultipleIcon,
 } from 'vue-tabler-icons';
 import MenuBasemaps from './Menu/Basemaps.vue';
+import MenuOverlays from './Menu/Overlays.vue';
 
 export default {
     name: 'CloudTAKMenu',
+    props: {
+        map: {
+            type: Object,
+            required: true
+        }
+    },
     data: function() {
         return {
             mode: null
         }
     },
     components: {
+        BoxMultipleIcon,
         MenuBasemaps,
+        MenuOverlays,
         SettingsIcon,
         UsersIcon,
         MapIcon

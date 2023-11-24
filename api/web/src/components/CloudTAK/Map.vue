@@ -9,6 +9,7 @@
         </div>
         <CloudTAKMenu
             v-if='menu'
+            :map='map'
             @basemap='setBasemap($event)'
         />
         <CloudTAKCoTView v-if='cot' :cot='cot'/>
