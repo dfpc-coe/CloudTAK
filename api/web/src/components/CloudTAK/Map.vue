@@ -12,7 +12,19 @@
             class='position-absolute top-0 text-white py-2'
             style='z-index: 1; width: 60px; right: 60px;'
         >
-            <PencilIcon @click='menu.draw = true' size='40' class='cursor-pointer'/>
+            <TablerDropdown>
+                <template #default>
+                    <PencilIcon @click='menu.draw = true' size='40' class='cursor-pointer'/>
+                </template>
+                <template #dropdown>
+                    <div class='btn-list'>
+                        <PointIcon @click='startDraw("point")' class='cursor-pointer'/>
+                        <LineIcon @click='startDraw("linestring")' class='cursor-pointer'/>
+                        <PolygonIcon @click='startDraw("polygon")' class='cursor-pointer'/>
+                        <VectorIcon @click='startDraw("rectangle")' class='cursor-pointer'/>
+                    </div>
+                </template>
+            </TablerDropdown>
         </div>
         <CloudTAKMenu
             v-if='menu.main'
@@ -33,8 +45,13 @@ import {
     Menu2Icon,
     PencilIcon,
     XIcon,
+    PointIcon,
+    LineIcon,
+    PolygonIcon,
+    VectorIcon,
 } from 'vue-tabler-icons';
 import {
+    TablerDropdown,
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import 'maplibre-gl/dist/maplibre-gl.css';
@@ -115,6 +132,10 @@ export default {
         }
     },
     methods: {
+        startDraw: function(type) {
+            this.draw.start();
+            this.draw.setMode(type);
+        },
         fetchBaseMaps: async function() {
             this.basemaps = await window.std('/api/basemap');
         },
@@ -228,8 +249,18 @@ export default {
             this.map.once('load', () => {
                 this.draw = new terraDraw.TerraDraw({
                     adapter: new terraDraw.TerraDrawMapLibreGLAdapter({ map: this.map }),
-                    modes: [new terraDraw.TerraDrawRectangleMode()]
+                    modes: [
+                        new terraDraw.TerraDrawPointMode(),
+                        new terraDraw.TerraDrawLineStringMode(),
+                        new terraDraw.TerraDrawPolygonMode(),
+                        new terraDraw.TerraDrawRectangleMode()
+                    ]
                 });
+
+                this.draw.on('finish', (ids) => {
+                    this.draw.stop();
+                });
+
 
                 this.timer = window.setInterval(() => {
                     if (!this.map) return;
@@ -242,6 +273,11 @@ export default {
         }
     },
     components: {
+        PointIcon,
+        LineIcon,
+        PolygonIcon,
+        VectorIcon,
+        TablerDropdown,
         Menu2Icon,
         PencilIcon,
         XIcon,
