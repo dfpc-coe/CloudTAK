@@ -1,5 +1,13 @@
 <template>
 <div class='row'>
+    <div class='col-12 border-light border-bottom'>
+        <div class='card-header my-2'>
+            <div class='card-title mx-2'>Overlays</div>
+            <div class='ms-auto mx-2'>
+                <PlusIcon class='cursor-pointer'/>
+            </div>
+        </div>
+    </div>
     <div :key='layer.name' v-for='layer in layers' class="col-lg-12">
         <div class='col-12 py-2 px-2 d-flex align-items-center'>
             <EyeIcon v-if='layer.visible' @click='flipVisible(layer)' class='cursor-pointer'/>
@@ -19,6 +27,7 @@
 import {
     VectorIcon,
     EyeOffIcon,
+    PlusIcon,
     EyeIcon,
     MapIcon
 } from 'vue-tabler-icons';
@@ -76,6 +85,7 @@ export default {
     components: {
         EyeIcon,
         EyeOffIcon,
+        PlusIcon,
         VectorIcon,
         MapIcon
     }
