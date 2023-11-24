@@ -1,30 +1,28 @@
 <template>
 <div class='row'>
     <TablerLoading v-if='loading'/>
+    <TablerNone
+        v-else-if='!list.basemaps.length'
+        label='BaseMaps'
+        @create='$router.push("/basemap/new")'
+    />
     <template v-else>
-        <TablerNone
-            v-if='!list.basemaps.length'
-            label='BaseMaps'
-            @create='$router.push("/basemap/new")'
-        />
-        <template v-else>
-            <div :key='basemap.id' v-for='basemap in list.basemaps' class="col-lg-12">
-                <div class="d-flex">
-                    <a @click='$emit("basemap", basemap)' class="card-title cursor-pointer" v-text='basemap.name'></a>
+        <div :key='basemap.id' v-for='basemap in list.basemaps' class="col-lg-12">
+            <div class="d-flex">
+                <a @click='$emit("basemap", basemap)' class="card-title cursor-pointer" v-text='basemap.name'></a>
 
-                    <div class='ms-auto'>
-                        <div class='btn-list'>
-                            <Share2Icon v-if='false' v-tooltip='"Share BaseMap"' class='cursor-pointer' @click='share(basemap)'/>
-                            <SettingsIcon v-tooltip='"Edit Basemap"' class='cursor-pointer' @click='$router.push(`/basemap/${basemap.id}/edit`)'/>
-                        </div>
+                <div class='ms-auto'>
+                    <div class='btn-list'>
+                        <Share2Icon v-if='false' v-tooltip='"Share BaseMap"' class='cursor-pointer' @click='share(basemap)'/>
+                        <SettingsIcon v-tooltip='"Edit Basemap"' class='cursor-pointer' @click='$router.push(`/basemap/${basemap.id}/edit`)'/>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <div class="col-lg-12">
-                <TablerPager v-if='list.total > paging.limit' @page='paging.page = $event' :current='paging.page'  :total='list.total' :limit='paging.limit'/>
-            </div>
-        </template>
+        <div class="col-lg-12">
+            <TablerPager v-if='list.total > paging.limit' @page='paging.page = $event' :current='paging.page'  :total='list.total' :limit='paging.limit'/>
+        </div>
     </template>
 </div>
 </template>
