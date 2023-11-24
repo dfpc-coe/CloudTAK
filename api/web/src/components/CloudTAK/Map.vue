@@ -19,7 +19,7 @@
 </template>
 
 <script>
-import * from 'pmtiles';
+import * as pmtiles from 'pmtiles';
 import mapgl from 'maplibre-gl'
 import {
     Menu2Icon,
