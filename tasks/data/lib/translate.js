@@ -17,8 +17,16 @@ export default class GDALTranslate {
         const input = path.resolve(os.tmpdir(), this.etl.task.asset);
         const output = path.resolve(os.tmpdir(), path.parse(this.etl.task.asset).name + '.mbtiles');
 
-        const run = cp.execSync(`gdal_translate ${input} ${output}`);
+        const env = {};
+        if (path.parse(this.etl.task.asset).ext === '.pdf') {
+            env['GDAL_PDF_DPI'] = '300';
+        }
+
+        const run = cp.execSync(`gdal_translate ${input} ${output}`, { env });
         console.error(run);
+
+        const runadd = cp.execSync(`gdaladdo ${output} 2 4 8 16 32 64 128`);
+        console.error(runadd);
 
         return output;
     }
