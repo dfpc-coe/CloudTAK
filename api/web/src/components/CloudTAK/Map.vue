@@ -4,8 +4,8 @@
     <template v-else>
         <div class='position-absolute top-0 end-0 text-white py-2' style='z-index: 1; width: 60px;'>
             <Menu2Icon v-if='!cot && !menu.main' @click='menu.main = true' size='40' class='cursor-pointer'/>
-            <XIcon v-else-if='!cot && menu.main' @click='menu.main = false' size='40' class='cursor-pointer'/>
-            <XIcon v-if='cot' @click='cot = false' size='40' class='cursor-pointer'/>
+            <XIcon v-else-if='!cot && menu.main' @click='menu.main = false' size='40' class='cursor-pointer bg-dark'/>
+            <XIcon v-if='cot' @click='cot = false' size='40' class='cursor-pointer bg-dark'/>
         </div>
 
         <div
