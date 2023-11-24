@@ -4,11 +4,17 @@ import { promisify } from 'node:util'
 
 const SpriteSmith = promisify(spritesmith.run);
 
-export default async function(icons) {
+type SpriteConfig = {
+    name?: string;
+};
+
+export default async function(icons, config?: SpriteConfig) {
+    if (!config) config = {};
+
     const doc = await SpriteSmith({
         src: icons.icons.map((icon) => {
             return new Vinyl({
-                path: icon.path.replace(/.*?\//, ''),
+                path: config.name ? icon[config.name] + '.png' : icon.path.replace(/.*?\//, ''),
                 contents: Buffer.from(icon.data, 'base64'),
             })
         })

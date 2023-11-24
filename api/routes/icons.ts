@@ -238,7 +238,9 @@ export default async function router(schema, config: Config) {
 
             const icons = await Icon.list(config.pool, req.query)
 
-            const sprites = await Sprites(icons);
+            const sprites = await Sprites(icons, {
+                name: 'type2525b'
+            });
 
             res.type('png');
             return res.send(sprites.image);

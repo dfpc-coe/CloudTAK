@@ -81,6 +81,7 @@ export default {
             ws: null,
             map: null,
             timer: null,
+            defaultIcons: new Set(),
             loading: {
                 main: true
             },
