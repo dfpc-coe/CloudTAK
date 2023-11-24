@@ -31,6 +31,28 @@ export default async function router(schema: any, config: Config) {
         }
     });
 
+    await schema.get('/marti/api/contacts/all', {
+        name: 'List Groups',
+        group: 'Marti',
+        auth: 'user',
+        description: 'Helper API to list contacts',
+        res: 'res.Marti.json'
+    }, async (req: AuthRequest, res: Response) => {
+        try {
+            await Auth.is_auth(req);
+
+            if (!req.auth.email) throw new Err(400, null, 'Contacts can only be listed by a JWT authenticated user');
+
+            const api = await TAKAPI.init(new URL(config.MartiAPI), new APIAuthToken(req.auth.token));
+
+            const contacts = await api.Contacts.list();
+
+            return res.json(contacts);
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
+
     await schema.post('/marti/signClient', {
         name: 'Sign Client',
         group: 'Marti',
