@@ -61,6 +61,7 @@ import {
 import 'maplibre-gl/dist/maplibre-gl.css';
 import CloudTAKMenu from './Menu.vue';
 import CloudTAKCoTView from './CoTView.vue';
+import moment from 'moment';
 
 export default {
     name: 'CloudTAK',
@@ -211,6 +212,7 @@ export default {
                             'text-color': '#ffffff',
                             'text-halo-color': '#000000',
                             'text-halo-width': 2,
+                            'icon-opacity': ['get', 'icon-opacity'],
                             'icon-halo-color': '#ffffff',
                             'icon-halo-width': 4
                         },
@@ -270,9 +272,12 @@ export default {
                     if (!this.map) return;
                     this.map.getSource('cots').setData({
                         type: 'FeatureCollection',
-                        features: Array.from(this.cots.values())
+                        features: Array.from(this.cots.values()).map((cot) => {
+                            cot.properties['icon-opacity'] = moment().subtract(5, 'minutes').isBefore(moment(cot.properties.stale)) ? 1 : 0.5;
+                            return cot;
+                        })
                     });
-                }, 1000);
+                }, 500);
             });
         }
     },
