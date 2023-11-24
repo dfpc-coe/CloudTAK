@@ -2,13 +2,20 @@
 <div class="row vh-100 position-relative">
     <TablerLoading v-if='loading.main'/>
     <template v-else>
-        <div class='position-absolute top-0 end-0 text-white py-2 bg-dark' style='z-index: 1; width: 60px;'>
-            <Menu2Icon v-if='!cot && !menu' @click='menu = true' size='40' class='cursor-pointer'/>
-            <XIcon v-else-if='!cot && menu' @click='menu = false' size='40' class='cursor-pointer'/>
+        <div class='position-absolute top-0 end-0 text-white py-2' style='z-index: 1; width: 60px;'>
+            <Menu2Icon v-if='!cot && !menu.main' @click='menu.main = true' size='40' class='cursor-pointer'/>
+            <XIcon v-else-if='!cot && menu.main' @click='menu.main = false' size='40' class='cursor-pointer'/>
             <XIcon v-if='cot' @click='cot = false' size='40' class='cursor-pointer'/>
         </div>
+
+        <div
+            class='position-absolute top-0 text-white py-2'
+            style='z-index: 1; width: 60px; right: 60px;'
+        >
+            <PencilIcon @click='menu.draw = true' size='40' class='cursor-pointer'/>
+        </div>
         <CloudTAKMenu
-            v-if='menu'
+            v-if='menu.main'
             :map='map'
             @basemap='setBasemap($event)'
         />
@@ -21,8 +28,10 @@
 <script>
 import * as pmtiles from 'pmtiles';
 import mapgl from 'maplibre-gl'
+import * as terraDraw from 'terra-draw';
 import {
     Menu2Icon,
+    PencilIcon,
     XIcon,
 } from 'vue-tabler-icons';
 import {
@@ -78,10 +87,14 @@ export default {
     },
     data: function() {
         return {
-            menu: false,
+            menu: {
+                main: false,
+                draw: false,
+            },
             cot: null,
             ws: null,
             map: null,
+            draw: null,
             timer: null,
             defaultIcons: new Set(),
             loading: {
@@ -213,6 +226,11 @@ export default {
             }
 
             this.map.once('load', () => {
+                this.draw = new terraDraw.TerraDraw({
+                    adapter: new terraDraw.TerraDrawMapLibreGLAdapter({ map: this.map }),
+                    modes: [new terraDraw.TerraDrawRectangleMode()]
+                });
+
                 this.timer = window.setInterval(() => {
                     if (!this.map) return;
                     this.map.getSource('cots').setData({
@@ -225,6 +243,7 @@ export default {
     },
     components: {
         Menu2Icon,
+        PencilIcon,
         XIcon,
         TablerLoading,
         CloudTAKMenu,

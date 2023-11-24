@@ -1,13 +1,21 @@
 <template>
 <div class='position-absolute end-0 bottom-0 text-white py-2 bg-dark' style='z-index: 1; width: 400px; top: 50px;'>
     <div class='row'>
+        <div class='col-12 border-light border-bottom'>
+            <div class='card-header my-2'>
+                <div class='card-title mx-2'></div>
+                <div class='ms-auto mx-2'>
+                    <PlusIcon @click='$emit("datas")' class='cursor-pointer'/>
+                </div>
+            </div>
+        </div>
+
         <div class='col-12 d-flex'>
             <span class='subheader' v-text='"Type: " + cot.properties.type'/>
             <span class='subheader ms-auto' v-text='"How: " + cot.properties.how'/>
         </div>
         <TablerInput label='Name' v-model='cot.properties.callsign'/>
         <TablerInput label='Remarks' v-model='cot.properties.remarks'/>
-        <span class='' v-text='"Icon: " + cot.properties.icon'/>
     </div>
 </div>
 </template>
