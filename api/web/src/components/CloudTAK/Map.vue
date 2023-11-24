@@ -132,7 +132,7 @@ export default {
                     glyphs: 'https://fonts.openmaptiles.org/{fontstack}/{range}.pbf',
                     sprite: [{
                         id: 'default',
-                        url: String(window.stdurl(`/api/icon/sprite?token=${localStorage.token}&type=true`))
+                        url: String(window.stdurl(`/api/icon/sprite?token=${localStorage.token}&iconset=default`))
                     }].concat(this.iconsets.iconsets.map((iconset) => {
                         return {
                             id: iconset.uid,
