@@ -220,7 +220,10 @@ export default async function router(schema, config: Config) {
             if (req.query.iconset === 'default') {
                 return res.send(defaultSprite.json);
             } else {
-                const icons = await Icon.list(config.pool, req.query)
+                const icons = await Icon.list(config.pool, {
+                    limit: 1000,
+                    ...req.query
+                })
 
                 const sprites = await Sprites(icons, { name: req.query.type ? 'type2525b' : null });
 
@@ -253,7 +256,10 @@ export default async function router(schema, config: Config) {
             if (req.query.iconset === 'default') {
                 return res.send(defaultSprite.image);
             } else {
-                const icons = await Icon.list(config.pool, req.query)
+                const icons = await Icon.list(config.pool, {
+                    limit: 1000,
+                    ...req.query
+                })
                 const sprites = await Sprites(icons, { name: req.query.type ? 'type2525b' : null });
                 return res.send(sprites.image);
             }
