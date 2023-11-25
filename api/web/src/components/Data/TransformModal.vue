@@ -1,13 +1,15 @@
 <template>
     <TablerModal>
-        <button type="button" class="btn-close" @click='close' aria-label="Close"></button>
+        <button type="button" class="btn-close" @click='$emit("close")' aria-label="Close"></button>
         <div class="modal-status bg-yellow"></div>
         <div class="modal-body py-4">
             <h3 class='subtitle-header'>Asset Transform:</h3>
 
-            <TablerLoading v-if='loading'/>
+            <TablerLoading v-if='loading' desc='Creating Transform Job'/>
             <template v-else>
-                <GenericSchema v-model='transform' :schema='schema'/>
+                <div class='modal-body'>
+                    Submit the for conversion into a TAK &amp; Cloud Native Format
+                </div>
 
                 <div class='col-12 d-flex'>
                     <div class='ms-auto'>
@@ -24,7 +26,6 @@ import {
     TablerModal,
     TablerLoading
 } from '@tak-ps/vue-tabler';
-import GenericSchema from '../util/Schema.vue';
 
 export default {
     name: 'TransformModal',
@@ -36,48 +37,23 @@ export default {
     },
     data: function() {
         return {
-            loading: true,
-            schema: {},
-            transform: {}
+            loading: false,
         }
     },
-    mounted: async function() {
-        await this.fetch();
-    },
     methods: {
-        fetch: async function() {
-            this.loading = true;
-            const url = window.stdurl('/api/schema');
-            url.searchParams.append('method', 'POST');
-            url.searchParams.append('url', '/data/:dataid/asset/:asset.:ext');
-            const schema = await window.std(url);
-
-            this.schema = schema.body;
-
-            if (this.asset.name.endsWith('.geojson')) {
-                this.schema.properties.format.enum.splice(this.schema.properties.format.enum.indexOf('GeoJSON'), 1)
-                this.schema.properties.format.default = 'PMTiles';
-            }
-
-            this.loading = false;
-        },
         submit: async function() {
             this.loading = true;
             await window.std(`/api/data/${this.$route.params.dataid}/asset/${this.asset.name}`, {
                 method: 'POST',
-                body: this.transform
             });
             this.loading = false;
-            this.close();
-        },
-        close: function() {
+            this.$emit('done');
             this.$emit('close');
         },
     },
     components: {
         TablerModal,
         TablerLoading,
-        GenericSchema
     }
 }
 </script>
