@@ -128,11 +128,10 @@ export default async function router(schema: any, config: Config) {
         name: 'Convert Asset',
         auth: 'user',
         group: 'DataAssets',
-        description: 'Convert Asset',
+        description: 'Convert Asset into a cloud native or TAK Native format automatically',
         ':dataid': 'integer',
         ':asset': 'string',
         ':ext': 'string',
-        body: 'req.ConvertAsset.json',
         res: 'res.Standard.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
