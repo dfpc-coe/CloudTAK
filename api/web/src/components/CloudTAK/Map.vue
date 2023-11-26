@@ -33,7 +33,7 @@
             @basemap='setBasemap($event)'
         />
         <CloudTAKCoTView
-            v-if='false'
+            v-if='cot'
             :cot='cot'
             :map='map'
         />
@@ -43,6 +43,7 @@
     <RadialMenu
         v-if='radial.cot'
         @close='radial.cot = null'
+        @click='handleRadial($event)'
         :x='radial.x'
         :y='radial.y'
         ref='radial'
@@ -93,6 +94,9 @@ export default {
             msg = JSON.parse(msg.data);
             if (msg.type !== 'cot') return;
 
+            //Vector Tiles only support integer IDs
+            msg.data.properties.id = msg.data.id;
+
             if (msg.data.properties.icon) {
                 // Format of icon needs to change for spritesheet
                 msg.data.properties.icon = msg.data.properties.icon.replace('/', ':').replace(/.png$/, '');
@@ -105,10 +109,6 @@ export default {
             else msg.data.properties['fill-opacity'] = 255;
             if (msg.data.properties['stroke-opacity']) msg.data.properties['stroke-opacity'] = msg.data.properties['stroke-opacity'] / 255;
             else msg.data.properties['stroke-opacity'] = 255;
-
-            if (msg.data.properties.callsign === 'Rectangle 1') {
-                console.error(msg.data);
-            }
 
             this.cots.set(msg.data.id, msg.data);
         });
@@ -151,6 +151,11 @@ export default {
             this.map = null;
         }
     },
+    watch: {
+        cot: function() {
+            if (this.cot) this.radial.cot = null;
+        }
+    },
     methods: {
         startDraw: function(type) {
             this.draw.start();
@@ -161,6 +166,30 @@ export default {
         },
         fetchIconsets: async function() {
             this.iconsets = await window.std('/api/iconset');
+        },
+        handleRadial: function(event) {
+            const cot = this.radial.cot;
+            this.radial.cot = null;
+            if (event.id === 'cot') {
+                this.cot = cot;
+            } else if (event.id === 'delete') {
+                this.deleteCOT(cot);
+            } else {
+                this.radial.cot = null;
+            }
+        },
+        deleteCOT: function(cot) {
+            this.cots.delete(cot.properties.id)
+            this.updateCOT();
+        },
+        updateCOT: function() {
+            this.map.getSource('cots').setData({
+                type: 'FeatureCollection',
+                features: Array.from(this.cots.values()).map((cot) => {
+                    cot.properties['icon-opacity'] = moment().subtract(5, 'minutes').isBefore(moment(cot.properties.stale)) ? 1 : 0.5;
+                    return cot;
+                })
+            });
         },
         setBasemap: function(basemap) {
             this.map.removeLayer('basemap')
@@ -291,13 +320,7 @@ export default {
 
                 this.timer = window.setInterval(() => {
                     if (!this.map) return;
-                    this.map.getSource('cots').setData({
-                        type: 'FeatureCollection',
-                        features: Array.from(this.cots.values()).map((cot) => {
-                            cot.properties['icon-opacity'] = moment().subtract(5, 'minutes').isBefore(moment(cot.properties.stale)) ? 1 : 0.5;
-                            return cot;
-                        })
-                    });
+                    this.updateCOT();
                 }, 500);
             });
         }
