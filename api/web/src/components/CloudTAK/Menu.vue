@@ -1,6 +1,9 @@
 <template>
 <div class='position-absolute end-0 bottom-0 text-white bg-dark' style='z-index: 1; width: 400px; top: 50px;'>
     <template v-if='mode === "settings"'>
+        <MenuSettings
+            :map='map'
+        />
     </template>
     <template v-else-if='mode === "contacts"'>
         <MenuContacts
@@ -57,6 +60,7 @@ import MenuBasemaps from './Menu/Basemaps.vue';
 import MenuOverlays from './Menu/Overlays.vue';
 import MenuDatas from './Menu/Datas.vue';
 import MenuContacts from './Menu/Contacts.vue';
+import MenuSettings from './Menu/Settings.vue';
 
 export default {
     name: 'CloudTAKMenu',
@@ -74,6 +78,7 @@ export default {
     components: {
         BoxMultipleIcon,
         MenuBasemaps,
+        MenuSettings,
         MenuOverlays,
         MenuContacts,
         MenuDatas,
