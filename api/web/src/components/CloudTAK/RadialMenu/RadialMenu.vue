@@ -44,14 +44,6 @@ export default {
                     id: 'item1', title: 'Item 1'
                 },{
                     id: 'item2', title: 'Item 2'
-                },{
-                    id: 'more',
-                    title: 'More...',
-                    items: [{
-                        id: 'subitem1', title: 'Subitem 1'
-                    },{
-                        id: 'item2', title: 'Subitem 2' }
-                    ]
                 }],
                 onClick: (item) => {
                     console.log('You have clicked:', item);
