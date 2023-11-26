@@ -2,7 +2,6 @@ div.menuHolder {
     user-select: none;
     -moz-user-select: none;
     position: relative;
-    margin: 10px;
 }
 
 svg.icons {
@@ -26,6 +25,10 @@ svg.menu.outer {
     transform: scale(1.5) rotate(10deg);
     opacity: 0;
     visibility: hidden;
+}
+
+g.sector {
+    pointer-events: visiblePainted;
 }
 
 svg.menu > g > path {
