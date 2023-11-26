@@ -29,7 +29,7 @@ svg.menu.outer {
 }
 
 svg.menu > g > path {
-    fill: #00000080;
+    fill: #000000c0;
 }
 
 svg.menu > g.sector > path {
