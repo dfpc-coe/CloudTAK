@@ -40,7 +40,13 @@
         <div ref="map" style='vh-100'></div>
     </template>
 
-    <RadialMenu v-if='radial.cot' :x='radial.x' :y='radial.y' ref='radial'/>
+    <RadialMenu
+        v-if='radial.cot'
+        @close='radial.cot = null'
+        :x='radial.x'
+        :y='radial.y'
+        ref='radial'
+    />
 </div>
 </template>
 

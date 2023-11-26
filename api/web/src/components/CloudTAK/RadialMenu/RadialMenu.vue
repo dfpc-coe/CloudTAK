@@ -36,7 +36,7 @@ export default {
     },
     mounted: function() {
         this.$nextTick(() => {
-            this.svgMenu = new RadialMenu({
+            this.menu = new RadialMenu({
                 parent: this.$refs.radialMenu,
                 size: this.size,
                 closeOnClick: true,
@@ -53,11 +53,14 @@ export default {
                         id: 'item2', title: 'Subitem 2' }
                     ]
                 }],
-                onClick: function (item) {
+                onClick: (item) => {
                     console.log('You have clicked:', item);
+                },
+                onClose: () => {
+                    this.$emit('close')
                 }
             });
-            this.svgMenu.open();
+            this.menu.open();
         })
     }
 }

@@ -11,6 +11,7 @@ export default function RadialMenu(params) {
 
     self.size      = params.size    || DEFAULT_SIZE;
     self.onClick   = params.onClick || null;
+    self.onClose   = params.onClose || null;
     self.menuItems = params.menuItems ? params.menuItems : [{id: 'one', title: 'One'}, {id: 'two', title: 'Two'}];
 
     self.radius      = 50;
@@ -48,7 +49,7 @@ RadialMenu.prototype.open = function () {
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-RadialMenu.prototype.close = function () {
+RadialMenu.prototype.close = function (closeEvent = true) {
     var self = this;
 
     if (self.currentMenu) {
@@ -62,6 +63,10 @@ RadialMenu.prototype.close = function () {
             self.currentMenu.remove();
             self.currentMenu = null;
         });
+
+        if (self.onClose) {
+            self.onClose();
+        }
     }
 };
 
@@ -126,7 +131,7 @@ RadialMenu.prototype.handleClick = function () {
             if (self.onClick) {
                 self.onClick(item);
                 if (self.closeOnClick) {
-                    self.close();
+                    self.close(false);
                 }
             }
         }
