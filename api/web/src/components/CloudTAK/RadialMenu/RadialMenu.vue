@@ -23,6 +23,7 @@ import {
 
 export default {
     name: 'RadialMenu',
+    emits: ['close', 'click'],
     props: {
         x: {
             type: Number,
@@ -55,7 +56,7 @@ export default {
                     icon: '#radial-trash'
                 }],
                 onClick: (item) => {
-                    console.log('You have clicked:', item);
+                    this.$emit('click', item);
                 },
                 onClose: () => {
                     this.$emit('close')
