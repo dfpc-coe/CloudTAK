@@ -1,5 +1,5 @@
 <template>
-<div class='position-absolute end-0 bottom-0 text-white py-2 bg-dark' style='z-index: 1; width: 400px; top: 50px;'>
+<div class='position-absolute end-0 bottom-0 text-white bg-dark' style='z-index: 1; width: 400px; top: 50px;'>
     <template v-if='mode === "settings"'>
     </template>
     <template v-else-if='mode === "contacts"'>

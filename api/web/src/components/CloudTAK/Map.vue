@@ -26,18 +26,21 @@
                 </template>
             </TablerDropdown>
         </div>
+
         <CloudTAKMenu
             v-if='menu.main'
             :map='map'
             @basemap='setBasemap($event)'
         />
         <CloudTAKCoTView
-            v-if='cot'
+            v-if='false'
             :cot='cot'
             :map='map'
         />
         <div ref="map" style='vh-100'></div>
     </template>
+
+    <RadialMenu v-if='radial.cot' :x='radial.x' :y='radial.y' ref='radial'/>
 </div>
 </template>
 
@@ -61,6 +64,7 @@ import {
 import 'maplibre-gl/dist/maplibre-gl.css';
 import CloudTAKMenu from './Menu.vue';
 import CloudTAKCoTView from './CoTView.vue';
+import RadialMenu from './RadialMenu/RadialMenu.vue';
 import moment from 'moment';
 
 export default {
@@ -112,6 +116,11 @@ export default {
             menu: {
                 main: false,
                 draw: false,
+            },
+            radial: {
+                x: 0,
+                y: 0,
+                cot: null
             },
             cot: null,
             ws: null,
@@ -246,10 +255,17 @@ export default {
                 }
             });
 
+
             for (const layer of ['cots', 'cots-poly', 'cots-line']) {
                 this.map.on('mouseenter', layer, () => { this.map.getCanvas().style.cursor = 'pointer'; })
                 this.map.on('mouseleave', layer, () => { this.map.getCanvas().style.cursor = ''; })
-                this.map.on('click', layer, (e) => { this.cot = e.features[0]; });
+                this.map.on('click', layer, (e) => {
+                    this.map.flyTo({ center: e.features[0].geometry.coordinates });
+
+                    this.radial.x = this.$refs.map.clientWidth / 2;
+                    this.radial.y = this.$refs.map.clientHeight / 2;
+                    this.radial.cot = e.features[0];
+                });
             }
 
             this.map.once('load', () => {
@@ -267,7 +283,6 @@ export default {
                     this.draw.stop();
                 });
 
-
                 this.timer = window.setInterval(() => {
                     if (!this.map) return;
                     this.map.getSource('cots').setData({
@@ -282,6 +297,7 @@ export default {
         }
     },
     components: {
+        RadialMenu,
         PointIcon,
         LineIcon,
         PolygonIcon,

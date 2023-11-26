@@ -10,7 +10,8 @@
     <template v-if='data'>
         <div :key='a.id' v-for='a in assetList.assets' class="col-lg-12">
             <div class='col-12 py-2 px-2 d-flex align-items-center'>
-                <EyeIcon v-if='a.visible' @click='flipVisible(a)' class='cursor-pointer'/>
+                <EyeXIconIcon v-if='!a.visualized' v-tooltip='"No Viz Layer"'/>
+                <EyeIcon v-else-if='a.visible' @click='flipVisible(a)' class='cursor-pointer'/>
                 <EyeOffIcon v-else @click='flipVisible(a)' class='cursor-pointer'/>
                 <span class="mx-2 cursor-pointer" v-text='a.name'></span>
             </div>
@@ -45,6 +46,7 @@ import {
 } from '@tak-ps/vue-tabler';
 import {
     EyeIcon,
+    EyeXIcon,
     EyeOffIcon,
     SettingsIcon,
     SearchIcon
@@ -145,6 +147,7 @@ export default {
     },
     components: {
         EyeIcon,
+        EyeXIcon,
         EyeOffIcon,
         TablerNone,
         TablerPager,
