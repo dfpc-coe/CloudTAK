@@ -120,26 +120,30 @@ export default {
     data: function() {
         return {
             menu: {
+                // Menu State Functions - true for shown
                 main: false,
                 draw: false,
             },
             radial: {
+                // Settings related to the Radial menu - shown if radial.cot is not null
                 x: 0,
                 y: 0,
                 cot: null
             },
-            cot: null,
-            ws: null,
-            map: null,
-            draw: null,
-            timer: null,
-            defaultIcons: new Set(),
+            locked: [],         // Lock the map view to a given CoT - The first element is the currently locked value
+                                //   this is an array so that things like the radial menu can temporarily lock state but remember the previous lock value when they are closed
+            cot: null,          // Show the CoT Viewer sidebar
+            cots: new Map(),    // Store all on-screen CoT messages
+            ws: null,           // WebSocket Connection for CoT events
+            map: null,          // MapLibre map
+            draw: null,         // TerraDraw Instance
+            timer: null,        // Interval for pushing GeoJSON Map Updates (CoT)
             loading: {
+                // Any Loading related states
                 main: true
             },
             basemaps: { total: 0, basemaps: [] },
             iconsets: { total: 0, iconsets: [] },
-            cots: new Map()
         }
     },
     beforeUnmount: function() {
@@ -308,10 +312,15 @@ export default {
                 this.map.on('mouseenter', layer, () => { this.map.getCanvas().style.cursor = 'pointer'; })
                 this.map.on('mouseleave', layer, () => { this.map.getCanvas().style.cursor = ''; })
                 this.map.on('click', layer, (e) => {
-                    this.map.flyTo({ center: e.features[0].geometry.coordinates });
+                    const flyTo = { center: e.features[0].geometry.coordinates, speed: Infinity };
+                    // This is required to ensure the map has nowhere to flyTo - ie the whole world is shown
+                    // and then the radial menu won't actually be on the CoT when the CoT is clicked
+                    if (this.map.getZoom() < 3) flyTo.zoom = 4;
+                    this.map.flyTo(flyTo)
 
                     this.radial.x = this.$refs.map.clientWidth / 2;
                     this.radial.y = this.$refs.map.clientHeight / 2;
+
                     this.radial.cot = e.features[0];
                 });
             }
