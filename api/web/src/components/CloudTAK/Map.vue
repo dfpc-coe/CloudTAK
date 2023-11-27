@@ -130,7 +130,7 @@ export default {
                 y: 0,
                 cot: null
             },
-            locked: [],         // Lock the map view to a given CoT - The first element is the currently locked value
+            locked: [],         // Lock the map view to a given CoT - The last element is the currently locked value
                                 //   this is an array so that things like the radial menu can temporarily lock state but remember the previous lock value when they are closed
             cot: null,          // Show the CoT Viewer sidebar
             cots: new Map(),    // Store all on-screen CoT messages
@@ -162,11 +162,13 @@ export default {
                 this.map.touchZoomRotate.disableRotation();
                 this.map.dragRotate.disable();
                 this.map.dragPan.disable();
+                this.locked.push(this.radial.cot.properties.id);
             } else {
                 this.map.scrollZoom.enable();
                 this.map.touchZoomRotate.enableRotation();
                 this.map.dragRotate.enable();
                 this.map.dragPan.enable();
+                this.locked.pop();
             }
         },
         cot: function() {
@@ -207,6 +209,11 @@ export default {
                     return cot;
                 })
             });
+
+            if (this.locked.length && this.cots.has(this.locked[this.locked.length - 1])) {
+                const flyTo = { center: this.cots.get(this.locked[this.locked.length - 1]).geometry.coordinates, speed: Infinity };
+                this.map.flyTo(flyTo)
+            }
         },
         setBasemap: function(basemap) {
             this.map.removeLayer('basemap')
