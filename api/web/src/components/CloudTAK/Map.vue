@@ -152,6 +152,19 @@ export default {
         }
     },
     watch: {
+        'radial.cot': function() {
+            if (this.radial.cot) {
+                this.map.scrollZoom.disable();
+                this.map.touchZoomRotate.disableRotation();
+                this.map.dragRotate.disable();
+                this.map.dragPan.disable();
+            } else {
+                this.map.scrollZoom.enable();
+                this.map.touchZoomRotate.enableRotation();
+                this.map.dragRotate.enable();
+                this.map.dragPan.enable();
+            }
+        },
         cot: function() {
             if (this.cot) this.radial.cot = null;
         }
