@@ -14,7 +14,7 @@
             "type": "array",
             "description": "Array of data objects",
             "items":  {
-                "$ref": "data.json"
+                "type": "object"
             }
         }
     }

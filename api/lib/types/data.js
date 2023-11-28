@@ -16,9 +16,12 @@ export default class Data extends Generic {
             const pgres = await pool.query(sql`
                 SELECT
                     count(*) OVER() AS count,
-                    data.*
+                    data.*,
+                    data_mission.id IS NOT NULL AS mission
                 FROM
                     ${sql.identifier([this._table])}
+                        LEFT JOIN 
+                            data_mission ON data.id = data_mission.data
                 WHERE
                     name ~* ${query.filter}
                 ORDER BY
