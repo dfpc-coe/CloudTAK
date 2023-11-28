@@ -8,7 +8,7 @@
             <XIcon v-if='cot' @click='cot = false' size='40' class='cursor-pointer bg-dark'/>
         </div>
 
-        <div
+        <div v-if='map && draw'
             class='position-absolute top-0 text-white py-2'
             style='z-index: 1; width: 60px; right: 60px;'
         >
