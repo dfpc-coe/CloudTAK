@@ -34,22 +34,12 @@
         "query": true,
         "res": true
     },
-    "GET /connection/:connectionid/sink": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "POST /basemap": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
     "GET /data/:dataid/asset": {
         "body": false,
         "query": false,
         "res": true
     },
-    "GET /connection": {
+    "GET /connection/:connectionid/sink": {
         "body": false,
         "query": true,
         "res": true
@@ -59,12 +49,22 @@
         "query": false,
         "res": true
     },
+    "GET /connection": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
     "POST /data/:dataid/asset": {
         "body": false,
         "query": false,
         "res": true
     },
     "GET /data/:dataid/job/:jobid": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "POST /data/:dataid/asset/:asset.:ext": {
         "body": false,
         "query": false,
         "res": true
@@ -114,23 +114,13 @@
         "query": true,
         "res": true
     },
-    "POST /connection/:connectionid/sink": {
+    "POST /basemap": {
         "body": true,
         "query": false,
         "res": true
     },
     "GET /data/:dataid/job/:jobid/logs": {
         "body": false,
-        "query": false,
-        "res": true
-    },
-    "POST /data/:dataid/asset/:asset.:ext": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "PATCH /basemap/:basemapid": {
-        "body": true,
         "query": false,
         "res": true
     },
@@ -149,6 +139,11 @@
         "query": false,
         "res": false
     },
+    "POST /connection/:connectionid/sink": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
     "POST /connection": {
         "body": true,
         "query": false,
@@ -164,7 +159,22 @@
         "query": true,
         "res": true
     },
+    "PATCH /basemap/:basemapid": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
     "PATCH /connection/:connectionid/sink/:sinkid": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "GET /import/:import": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "PATCH /connection/:connectionid": {
         "body": true,
         "query": false,
         "res": true
@@ -179,21 +189,6 @@
         "query": false,
         "res": false
     },
-    "DELETE /basemap/:basemapid": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /import/:import": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /iconset": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
     "GET /connection/:connectionid/sink/:sinkid": {
         "body": false,
         "query": false,
@@ -204,12 +199,7 @@
         "query": false,
         "res": true
     },
-    "PATCH /connection/:connectionid": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "DELETE /connection/:connectionid/sink/:sinkid": {
+    "DELETE /basemap/:basemapid": {
         "body": false,
         "query": false,
         "res": true
@@ -219,12 +209,12 @@
         "query": false,
         "res": true
     },
-    "POST /data": {
-        "body": true,
+    "DELETE /connection/:connectionid/sink/:sinkid": {
+        "body": false,
         "query": false,
         "res": true
     },
-    "PATCH /import/:import": {
+    "POST /data": {
         "body": true,
         "query": false,
         "res": true
@@ -234,13 +224,8 @@
         "query": true,
         "res": true
     },
-    "POST /iconset": {
+    "PATCH /import/:import": {
         "body": true,
-        "query": false,
-        "res": true
-    },
-    "POST /connection/:connectionid/refresh": {
-        "body": false,
         "query": false,
         "res": true
     },
@@ -249,7 +234,17 @@
         "query": true,
         "res": true
     },
+    "GET /iconset": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
     "GET /layer/:layerid/query/:featid": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "POST /connection/:connectionid/refresh": {
         "body": false,
         "query": false,
         "res": true
@@ -269,7 +264,12 @@
         "query": true,
         "res": true
     },
-    "PATCH /iconset/:iconset": {
+    "GET /marti/group": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "PATCH /data/:dataid": {
         "body": true,
         "query": false,
         "res": true
@@ -279,13 +279,23 @@
         "query": true,
         "res": true
     },
-    "PATCH /data/:dataid": {
+    "POST /layer/:layerid/alert": {
         "body": true,
         "query": false,
         "res": true
     },
-    "POST /layer/:layerid/alert": {
+    "POST /iconset": {
         "body": true,
+        "query": false,
+        "res": true
+    },
+    "GET /import": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "GET /marti/api/contacts/all": {
+        "body": false,
         "query": false,
         "res": true
     },
@@ -299,17 +309,12 @@
         "query": false,
         "res": true
     },
-    "GET /marti/group": {
+    "GET /server": {
         "body": false,
         "query": false,
         "res": true
     },
-    "GET /iconset/:iconset": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /import": {
+    "GET /layer": {
         "body": false,
         "query": true,
         "res": true
@@ -319,9 +324,14 @@
         "query": true,
         "res": true
     },
-    "GET /layer": {
+    "GET /marti/missions/:name/contacts": {
         "body": false,
-        "query": true,
+        "query": false,
+        "res": true
+    },
+    "GET /task": {
+        "body": false,
+        "query": false,
         "res": true
     },
     "DELETE /layer/:layerid/alert/:alertid": {
@@ -334,18 +344,8 @@
         "query": false,
         "res": true
     },
-    "GET /server": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
     "POST /marti/signClient": {
         "body": true,
-        "query": false,
-        "res": true
-    },
-    "GET /task": {
-        "body": false,
         "query": false,
         "res": true
     },
@@ -354,12 +354,7 @@
         "query": false,
         "res": true
     },
-    "POST /iconset/:iconset/icon": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "POST /layer": {
+    "PATCH /iconset/:iconset": {
         "body": true,
         "query": false,
         "res": true
@@ -369,17 +364,32 @@
         "query": false,
         "res": true
     },
-    "DELETE /iconset/:iconset": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
     "GET /layer/:layerid/task": {
         "body": false,
         "query": false,
         "res": true
     },
     "GET /token": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "POST /layer/:layerid/task/invoke": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "POST /layer": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "GET /iconset/:iconset": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /layer/:layerid/task/logs": {
         "body": false,
         "query": false,
         "res": true
@@ -394,8 +404,8 @@
         "query": false,
         "res": true
     },
-    "POST /layer/:layerid/task/invoke": {
-        "body": false,
+    "PATCH /server": {
+        "body": true,
         "query": false,
         "res": true
     },
@@ -404,32 +414,12 @@
         "query": false,
         "res": true
     },
-    "GET /layer/:layerid/task/logs": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "PATCH /server": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "POST /token": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
     "GET /layer/:layerid/task/schema": {
         "body": false,
         "query": true,
         "res": true
     },
-    "GET /icon": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "PATCH /layer/:layerid": {
+    "POST /token": {
         "body": true,
         "query": false,
         "res": true
@@ -444,15 +434,20 @@
         "query": false,
         "res": true
     },
-    "GET /iconset/:iconset/icon/:icon": {
-        "body": false,
+    "POST /iconset/:iconset/icon": {
+        "body": true,
         "query": false,
         "res": true
     },
-    "GET /iconset/:iconset/icon/:icon/raw": {
+    "PATCH /layer/:layerid": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "DELETE /iconset/:iconset": {
         "body": false,
         "query": false,
-        "res": false
+        "res": true
     },
     "GET /layer/:layerid": {
         "body": false,
@@ -469,9 +464,34 @@
         "query": false,
         "res": true
     },
+    "GET /icon": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
     "POST /layer/:layerid/cot": {
         "body": false,
         "query": true,
         "res": true
+    },
+    "GET /iconset/:iconset/icon/:icon": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /iconset/:iconset/icon/:icon/raw": {
+        "body": false,
+        "query": false,
+        "res": false
+    },
+    "GET /icon/sprite.json": {
+        "body": false,
+        "query": true,
+        "res": false
+    },
+    "GET /icon/sprite.png": {
+        "body": false,
+        "query": true,
+        "res": false
     }
 }
