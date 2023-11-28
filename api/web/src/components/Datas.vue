@@ -57,6 +57,9 @@
 
                                 <div class='ms-auto'>
                                     <div class='btn-list'>
+                                        <AccessPointIcon @click='modal.mission = true' v-if='data.mission' class='cursor-pointer text-green' v-tooltip='"Mission Sync On"'/>
+                                        <AccessPointOffIcon @click='modal.mission = true' v-else class='cursor-pointer text-red' v-tooltip='"Mission Sync Off"'/>
+
                                         <SettingsIcon class='cursor-pointer' @click='$router.push(`/data/${data.id}/edit`)'/>
                                     </div>
                                 </div>
@@ -86,7 +89,9 @@ import {
 } from '@tak-ps/vue-tabler';
 import {
     SettingsIcon,
-    SearchIcon
+    SearchIcon,
+    AccessPointIcon,
+    AccessPointOffIcon,
 } from 'vue-tabler-icons'
 
 export default {
@@ -137,6 +142,8 @@ export default {
         }
     },
     components: {
+        AccessPointIcon,
+        AccessPointOffIcon,
         TablerNone,
         SettingsIcon,
         SearchIcon,
