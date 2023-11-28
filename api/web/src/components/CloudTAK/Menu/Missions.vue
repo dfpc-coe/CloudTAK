@@ -9,7 +9,6 @@ export default {
     name: 'Missions',
     components: {
         MissionList,
-        PlusIcon,
     }
 }
 </script>
