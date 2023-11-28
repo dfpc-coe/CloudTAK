@@ -26,13 +26,22 @@
                                 <div class="col-md-12">
                                     <TablerInput
                                         label='Data Name'
+                                        description='The human readable name of the Data Layer'
                                         v-model='data.name'
                                         :error='errors.name'
                                     />
                                 </div>
                                 <div class="col-md-12">
+                                    <TablerToggle
+                                        label='Auto Transform'
+                                        description='If Enabled, Assets uploaded to the Data package will be automatically transformed into Cloud & TAK Native formats'
+                                        v-model='data.auto_transform'
+                                    />
+                                </div>
+                                <div class="col-md-12">
                                     <TablerInput
                                         label='Data Description'
+                                        description='The human readable description of the Data Layer'
                                         :rows='6'
                                         v-model='data.description'
                                         :error='errors.description'
@@ -64,6 +73,7 @@ import PageFooter from './PageFooter.vue';
 import {
     TablerBreadCrumb,
     TablerInput,
+    TablerToggle,
     TablerLoading
 } from '@tak-ps/vue-tabler';
 
@@ -80,6 +90,7 @@ export default {
             },
             data: {
                 name: '',
+                auto_transform: true,
                 description: '',
             }
         }
@@ -136,6 +147,7 @@ export default {
     components: {
         PageFooter,
         TablerBreadCrumb,
+        TablerToggle,
         TablerInput,
         TablerLoading
     }

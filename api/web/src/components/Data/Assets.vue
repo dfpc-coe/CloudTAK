@@ -4,13 +4,13 @@
         <h3 class='card-title'>Data Assets</h3>
 
         <div class='ms-auto btn-list'>
-            <PlusIcon @click='upload = true' class='cursor-pointer'/>
-            <RefreshIcon @click='fetchList' class='cursor-pointer'/>
+            <PlusIcon @click='upload = true' class='cursor-pointer' v-tooltip='"Upload"'/>
+            <RefreshIcon @click='fetchList' class='cursor-pointer' v-tooltip='"Refresh"'/>
         </div>
     </div>
 
     <div v-if='!err && !upload && !loading.list && list.assets.length' class='table-responsive'>
-        <table class="table table-vcenter card-table">
+        <table class="table table-hover table-vcenter card-table">
             <thead>
                 <tr>
                     <th>Name</th>
@@ -20,16 +20,19 @@
             </thead>
             <tbody>
                 <tr :key='asset.name' v-for='asset in list.assets'>
-                    <td v-text='asset.name'></td>
+                    <td>
+                        <MapIcon v-if='asset.visualized' v-tooltip='"Visualizable"' class='cursor-pointer'/>
+                        <span v-text='asset.name' class='mx-2'/>
+                    </td>
                     <td>
                         <TablerBytes :bytes='asset.size'/>
                     </td>
                     <td class='d-flex'>
                         <TablerEpoch :date='asset.updated'/>
                         <div class='ms-auto btn-list'>
-                            <TrashIcon @click='deleteAsset(asset)' class='cursor-pointer'/>
-                            <TransformIcon v-if='!asset.name.endsWith(".pmtiles")' @click='initTransform(asset)' class='cursor-pointer'/>
-                            <DownloadIcon @click='downloadAsset(asset)' class='cursor-pointer'/>
+                            <TablerDelete displaytype='icon' @delete='deleteAsset(asset)' v-tooltip='"Delete Asset"'/>
+                            <TransformIcon v-if='!asset.name.endsWith(".pmtiles")' @click='initTransform(asset)' v-tooltip='"Convert Asset"' class='cursor-pointer'/>
+                            <DownloadIcon @click='downloadAsset(asset)' class='cursor-pointer' v-tooltip='"Download Asset"'/>
                         </div>
                     </td>
                 </tr>
@@ -58,7 +61,7 @@
 <script>
 import {
     PlusIcon,
-    TrashIcon,
+    MapIcon,
     RefreshIcon,
     DownloadIcon,
     TransformIcon,
@@ -68,6 +71,7 @@ import TransformModal from './TransformModal.vue';
 import Upload from '../util/Upload.vue';
 import {
     TablerNone,
+    TablerDelete,
     TablerLoading,
     TablerBytes,
     TablerEpoch
@@ -145,10 +149,11 @@ export default {
         Upload,
         Alert,
         PlusIcon,
-        TrashIcon,
+        MapIcon,
         RefreshIcon,
         TransformIcon,
         DownloadIcon,
+        TablerDelete,
         TablerLoading,
         TablerBytes,
         TablerEpoch,

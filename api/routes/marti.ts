@@ -14,7 +14,7 @@ export default async function router(schema: any, config: Config) {
         group: 'Marti',
         auth: 'user',
         description: 'Helper API to list groups that the client is part of',
-        res: 'res.MartiGroups.json'
+        res: 'res.Marti.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(req);
@@ -23,9 +23,31 @@ export default async function router(schema: any, config: Config) {
 
             const api = await TAKAPI.init(new URL(config.MartiAPI), new APIAuthToken(req.auth.token));
 
-            const groups = await api.Groups.list();
+            const groups = await api.Group.list();
 
             return res.json(groups);
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
+
+    await schema.get('/marti/api/contacts/all', {
+        name: 'List Groups',
+        group: 'Marti',
+        auth: 'user',
+        description: 'Helper API to list contacts',
+        res: 'res.Marti.json'
+    }, async (req: AuthRequest, res: Response) => {
+        try {
+            await Auth.is_auth(req);
+
+            if (!req.auth.email) throw new Err(400, null, 'Contacts can only be listed by a JWT authenticated user');
+
+            const api = await TAKAPI.init(new URL(config.MartiAPI), new APIAuthToken(req.auth.token));
+
+            const contacts = await api.Contacts.list();
+
+            return res.json(contacts);
         } catch (err) {
             return Err.respond(err, res);
         }

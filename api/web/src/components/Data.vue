@@ -23,7 +23,10 @@
 
                             <div class='ms-auto'>
                                 <div class='btn-list'>
-                                    <SettingsIcon class='cursor-pointer' @click='$router.push(`/data/${data.id}/edit`)'/>
+                                    <AccessPointIcon @click='modal.mission = true' v-if='data.mission' class='cursor-pointer text-green' v-tooltip='"Mission Sync On"'/>
+                                    <AccessPointOffIcon @click='modal.mission = true' v-else class='cursor-pointer text-red' v-tooltip='"Mission Sync Off"'/>
+
+                                    <SettingsIcon class='cursor-pointer' @click='$router.push(`/data/${data.id}/edit`)' v-tooltip='"Edit"'/>
                                 </div>
                             </div>
                         </div>
@@ -46,23 +49,37 @@
         </div>
     </div>
 
+    <MissionModal
+        v-if='modal.mission'
+        :selectable='true'
+        :initial='data.mission ? {
+            "name": data.mission.mission
+        } : null'
+        @select='selectMission($event)'
+        @close='modal.mission = false'
+    />
+
     <PageFooter/>
 </div>
 </template>
 
 <script>
+import MissionModal from './Mission/Modal.vue';
 import PageFooter from './PageFooter.vue';
 import DataAsset from './Data/Assets.vue';
 import DataLocation from './Data/Location.vue';
 import DataTransforms from './Data/Transforms.vue';
 import timeDiff from '../timediff.js';
 import {
+    TablerModal,
     TablerLoading,
     TablerMarkdown,
     TablerBreadCrumb,
 } from '@tak-ps/vue-tabler'
 import {
     SettingsIcon,
+    AccessPointIcon,
+    AccessPointOffIcon,
 } from 'vue-tabler-icons'
 
 export default {
@@ -70,11 +87,14 @@ export default {
     data: function() {
         return {
             err: false,
+            modal: {
+                mission: false
+            },
             loading: {
                 data: true
             },
             assets: {},
-            data: {}
+            data: {},
         }
     },
     mounted: async function() {
@@ -83,6 +103,22 @@ export default {
     methods: {
         timeDiff(update) {
             return timeDiff(update);
+        },
+        selectMission: async function(mission) {
+            this.modal.mission = false;
+
+            if (!this.data.mission) {
+                this.loading.data = true;
+                this.data = await window.std(`/api/data/${this.$route.params.dataid}/mission`, {
+                    method: 'POST',
+                    body: {
+                        mission: mission.name,
+                    }
+                });
+                this.loading.data = false;
+            } else {
+                throw new Error('Updating missions not yet supported');
+            }
         },
         fetch: async function() {
             this.loading.data = true;
@@ -99,6 +135,9 @@ export default {
         DataTransforms,
         TablerBreadCrumb,
         TablerMarkdown,
+        AccessPointIcon,
+        AccessPointOffIcon,
+        MissionModal
     }
 }
 </script>

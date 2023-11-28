@@ -30,6 +30,30 @@
                             </div>
                         <div>
                     </div>
+                    <div class='dropdown d-md-none'>
+                        <div type="button" id="userMenuButton" data-bs-toggle="dropdown" aria-expanded="false" class='btn btn-dark'>
+                            <MenuIcon/>
+                            </div>
+                                <ul class="dropdown-menu" aria-labelledby='userMenuButton'>
+                                    <div class='d-flex mx-2 cursor-pointer'>
+                                        <NetworkIcon class='my-2'/><a @click='$router.push("/connection")' class="cursor-pointer dropdown-item">Connections</a>
+                                    </div>
+                                    <div class='d-flex mx-2 cursor-pointer'>
+                                        <BuildingBroadcastTowerIcon class='my-2'/><a @click='$router.push("/layer")' class="cursor-pointer dropdown-item">Layers</a>
+                                    </div>
+                                    <div class='d-flex mx-2 cursor-pointer'>
+                                        <DatabaseIcon class='my-2'/><a @click='$router.push("/data")' class="cursor-pointer dropdown-item">Data</a>
+                                    </div>
+                                    <div class='d-flex mx-2 cursor-pointer'>
+                                        <MapIcon class='my-2'/><a @click='$router.push("/basemap")' class="cursor-pointer dropdown-item">Basemaps</a>
+                                    </div>
+                                    <div class='d-flex mx-2 cursor-pointer'>
+                                        <PhotoIcon class='my-2'/><a @click='$router.push("/iconset")' class="cursor-pointer dropdown-item">Iconsets</a>
+                                    </div>
+                                </ul>
+                            </div>
+                        <div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -121,6 +145,12 @@
 </div>
 </template>
 
+<style>
+    .hover:hover {
+        background: #f5f5f5;
+    }
+</style>
+
 <script>
 import '@tabler/core/dist/js/tabler.min.js';
 import '@tabler/core/dist/css/tabler.min.css';
@@ -129,6 +159,7 @@ import {
     CodeIcon,
     HomeIcon,
     LogoutIcon,
+    MenuIcon,
     UserIcon,
     MapIcon,
     PhotoIcon,
@@ -216,6 +247,7 @@ export default {
         HomeIcon,
         CodeIcon,
         LogoutIcon,
+        MenuIcon,
         UserIcon,
         MapIcon,
         NetworkIcon,

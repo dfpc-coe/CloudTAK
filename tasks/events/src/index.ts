@@ -10,7 +10,7 @@ import xml2js from 'xml2js';
 import jwt from 'jsonwebtoken';
 
 interface Event {
-    Import: string;
+    ID?: string;
     Token: string;
     Bucket: string;
     Key: string;
@@ -19,26 +19,35 @@ interface Event {
 }
 
 export const handler = async (
-    event: Lambda.S3Event,
+    event: any
 ): Promise<void> => {
 
     for (const record of event.Records) {
-        const md = {
-            Import: path.parse(decodeURIComponent(record.s3.object.key.replace(/\+/g, ' '))).name,
-            Token: jwt.sign({ access: 'event' }, String(process.env.SigningSecret)),
-            Bucket: record.s3.bucket.name,
-            Key: decodeURIComponent(record.s3.object.key.replace(/\+/g, ' ')),
-            Ext: path.parse(decodeURIComponent(record.s3.object.key.replace(/\+/g, ' '))).ext,
-            Local: path.resolve(os.tmpdir(), `input${path.parse(decodeURIComponent(record.s3.object.key.replace(/\+/g, ' '))).ext}`),
+        if (record.s3) {
+            await s3Event(record as Lambda.S3EventRecord)
+        } else if (record.body) {
+            await sqsEvent(record as Lambda.SQSRecord);
         }
+    }
+};
 
+async function sqsEvent(record: Lambda.SQSRecord) {
+    console.error(record);
+}
+
+async function s3Event(record: Lambda.S3EventRecord) {
+    const md: Event = {
+        Token: jwt.sign({ access: 'event' }, String(process.env.SigningSecret)),
+        Bucket: record.s3.bucket.name,
+        Key: decodeURIComponent(record.s3.object.key.replace(/\+/g, ' ')),
+        Ext: path.parse(decodeURIComponent(record.s3.object.key.replace(/\+/g, ' '))).ext,
+        Local: path.resolve(os.tmpdir(), `input${path.parse(decodeURIComponent(record.s3.object.key.replace(/\+/g, ' '))).ext}`),
+    }
+
+    console.log(`ok - New file detected in s3://${md.Bucket}/${md.Key}`);
+    if (md.Key.startsWith('import/')) {
         try {
-            console.log(`ok - New file detected in s3://${md.Bucket}/${md.Key}`);
-
-            if (!md.Key.startsWith('import/')) {
-                console.log(`ok - Not an import - skipping`);
-                return;
-            }
+            md.ID = path.parse(md.Key).name;
 
             await updateImport(md, { status: 'Running' });
 
@@ -86,11 +95,48 @@ export const handler = async (
                 error: err instanceof Error ? err.message : String(err)
             });
         }
+    } else if (md.Key.startsWith('data/')) {
+        md.ID = path.parse(md.Key).dir.replace('data/', '');
+
+        const data = await fetchData(md);
+
+        if (!data.auto_transform) {
+            console.log(`ok - Data ${md.ID} has auto-transform turned off`);
+            return;
+        }
+
+        await transformData(md);
+    } else {
+        throw new Error('Unknown Import Type');
     }
-};
+}
+
+async function transformData(event: Event) {
+    const res = await fetch(new URL(`/api/data/${event.ID}/${path.parse(event.Key).name}`, process.env.TAK_ETL_API), {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${event.Token}`
+        }
+    });
+
+    return await res.json();
+}
+
+async function fetchData(event: Event) {
+    const res = await fetch(new URL(`/api/data/${event.ID}`, process.env.TAK_ETL_API), {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${event.Token}`
+        }
+    });
+
+    return await res.json();
+}
 
 async function updateImport(event: Event, body: object) {
-    const res = await fetch(new URL(`/api/import/${event.Import}`, process.env.TAK_ETL_API), {
+    const res = await fetch(new URL(`/api/import/${event.ID}`, process.env.TAK_ETL_API), {
         method: 'PATCH',
         headers: {
             'Content-Type': 'application/json',
@@ -166,7 +212,7 @@ async function processIndex(event: Event, xmlstr: string, zip?: StreamZipAsync) 
                 })
             });
 
-            if (!iconset_req.ok) console.error(await iconset_req.text());
+            if (!icon_req.ok) console.error(await icon_req.text());
         }
 
         await updateImport(event, {

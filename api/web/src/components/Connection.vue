@@ -25,8 +25,8 @@
 
                             <div class='ms-auto'>
                                 <div class='btn-list'>
-                                    <RefreshIcon class='cursor-pointer' @click='refresh'/>
-                                    <SettingsIcon class='cursor-pointer' @click='$router.push(`/connection/${connection.id}/edit`)'/>
+                                    <RefreshIcon class='cursor-pointer' @click='refresh' v-tooltip='"Refresh"' />
+                                    <SettingsIcon class='cursor-pointer' @click='$router.push(`/connection/${connection.id}/edit`)' v-tooltip='"Edit"'/>
                                 </div>
                             </div>
                         </div>

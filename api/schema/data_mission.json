@@ -1,0 +1,28 @@
+{
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+        "id": {
+            "$ref": "./data_mission/id.json"
+        },
+        "mission": {
+            "$ref": "./data_mission/mission.json"
+        },
+        "enabled": {
+            "$ref": "./data_mission/enabled.json"
+        },
+        "assets": {
+            "$ref": "./data_mission/assets.json"
+        },
+        "data": {
+            "$ref": "./data_mission/data.json"
+        }
+    },
+    "required": [
+        "id",
+        "mission",
+        "enabled",
+        "assets",
+        "data"
+    ]
+}
