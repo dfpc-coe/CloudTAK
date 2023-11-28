@@ -19,6 +19,9 @@
         },
         "mission": {
             "$ref": "./data_mission.json"
+        },
+        "auto_transform": {
+            "$ref": "./data/auto_transform.json"
         }
     },
     "required": [
@@ -26,6 +29,7 @@
         "created",
         "updated",
         "name",
+        "auto_transform",
         "description"
     ]
 }
