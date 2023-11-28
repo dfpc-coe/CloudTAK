@@ -37,7 +37,7 @@
                     </div>
                 </div>
                 <div class="col-lg-12">
-                    <DataAsset @assets='assets = $event'/>
+                    <DataAsset :data='data' @assets='assets = $event'/>
                 </div>
                 <div class="col-lg-12">
                     <DataLocation :assets='assets'/>

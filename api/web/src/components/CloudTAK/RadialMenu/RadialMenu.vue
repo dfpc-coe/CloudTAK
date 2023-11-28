@@ -4,8 +4,8 @@
         class='position-absolute'
         style='pointer-events: none;'
         :style='{
-            top: `${y - (size / 2) - 10}px`,
-            left: `${x - (size / 2) - 10}px`,
+            top: `${y - (size / 2) - 13}px`,
+            left: `${x - (size / 2) - 8}px`,
         }'
     ></div>
 
