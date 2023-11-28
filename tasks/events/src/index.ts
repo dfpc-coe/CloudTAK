@@ -37,7 +37,6 @@ async function sqsEvent(record: Lambda.SQSRecord) {
 
 async function s3Event(record: Lambda.S3EventRecord) {
     const md = {
-        Import: path.parse(decodeURIComponent(record.s3.object.key.replace(/\+/g, ' '))).name,
         Token: jwt.sign({ access: 'event' }, String(process.env.SigningSecret)),
         Bucket: record.s3.bucket.name,
         Key: decodeURIComponent(record.s3.object.key.replace(/\+/g, ' ')),
@@ -45,60 +44,96 @@ async function s3Event(record: Lambda.S3EventRecord) {
         Local: path.resolve(os.tmpdir(), `input${path.parse(decodeURIComponent(record.s3.object.key.replace(/\+/g, ' '))).ext}`),
     }
 
-    try {
-        console.log(`ok - New file detected in s3://${md.Bucket}/${md.Key}`);
+    console.log(`ok - New file detected in s3://${md.Bucket}/${md.Key}`);
+    if (md.Key.startsWith('import/')) {
+        try {
+            md.Import: path.parse(md.Key).name;
 
-        if (!md.Key.startsWith('import/')) {
-            console.log(`ok - Not an import - skipping`);
+            await updateImport(md, { status: 'Running' });
+
+            const s3 = new S3.S3Client({ region: process.env.AWS_DEFAULT_REGION || 'us-east-1' });
+
+            await pipeline(
+                // @ts-ignore
+                (await s3.send(new S3.GetObjectCommand({
+                    Bucket: md.Bucket,
+                    Key: md.Key
+                }))).Body,
+                fs.createWriteStream(md.Local)
+            );
+
+            if (md.Ext === '.zip') {
+                const zip = new StreamZip.async({
+                    file: path.resolve(os.tmpdir(), md.Local),
+                    skipEntryNameValidation: true
+                });
+
+                const preentries = await zip.entries();
+
+                const indexes = [];
+                for (const entrykey in preentries) {
+                    const entry = preentries[entrykey];
+
+                    if (path.parse(entry.name).ext === '.xml') {
+                        indexes.push(entry);
+                    }
+                }
+
+                for (const index of indexes) {
+                    await processIndex(md, String(await zip.entryData(index)), zip);
+                }
+            } else if (md.Ext === '.xml') {
+                await processIndex(md, String(await fsp.readFile(md.Local)));
+            } else {
+                throw new Error('Unable to parse Index');
+            }
+        } catch (err) {
+            console.error(err);
+
+            await updateImport(md, {
+                status: 'Fail',
+                error: err instanceof Error ? err.message : String(err)
+            });
+        }
+    } else if (md.Key.startsWith('data/')) {
+        md.Data = path.parse(md.Key).dir.replace('data/', '');
+        md.Name = path.parse(md.Key).name;
+
+        const data = await fetchData(md);
+
+        if (!data.auto_transform) {
+            console.log(`ok - Data ${md.Data} has auto-transform turned off`);
             return;
         }
 
-        await updateImport(md, { status: 'Running' });
-
-        const s3 = new S3.S3Client({ region: process.env.AWS_DEFAULT_REGION || 'us-east-1' });
-
-        await pipeline(
-            // @ts-ignore
-            (await s3.send(new S3.GetObjectCommand({
-                Bucket: md.Bucket,
-                Key: md.Key
-            }))).Body,
-            fs.createWriteStream(md.Local)
-        );
-
-        if (md.Ext === '.zip') {
-            const zip = new StreamZip.async({
-                file: path.resolve(os.tmpdir(), md.Local),
-                skipEntryNameValidation: true
-            });
-
-            const preentries = await zip.entries();
-
-            const indexes = [];
-            for (const entrykey in preentries) {
-                const entry = preentries[entrykey];
-
-                if (path.parse(entry.name).ext === '.xml') {
-                    indexes.push(entry);
-                }
-            }
-
-            for (const index of indexes) {
-                await processIndex(md, String(await zip.entryData(index)), zip);
-            }
-        } else if (md.Ext === '.xml') {
-            await processIndex(md, String(await fsp.readFile(md.Local)));
-        } else {
-            throw new Error('Unable to parse Index');
-        }
-    } catch (err) {
-        console.error(err);
-
-        await updateImport(md, {
-            status: 'Fail',
-            error: err instanceof Error ? err.message : String(err)
-        });
+        await transformData(md);
+    } else {
+        throw new Error('Unknown Import Type');
     }
+}
+
+async function transformData(event: Event) {
+    const res = await fetch(new URL(`/api/data/${event.Data}/${event.Name}`, process.env.TAK_ETL_API), {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${event.Token}`
+        }
+    });
+
+    return await res.json();
+}
+
+async function fetchData(event: Event) {
+    const res = await fetch(new URL(`/api/data/${event.Data}`, process.env.TAK_ETL_API), {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${event.Token}`
+        }
+    });
+
+    return await res.json();
 }
 
 async function updateImport(event: Event, body: object) {
