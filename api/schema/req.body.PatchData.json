@@ -5,6 +5,9 @@
         "name": {
             "$ref": "./data/name.json"
         },
+        "auto_transform": {
+            "$ref": "./data/auto_transform.json"
+        },
         "description": {
             "$ref": "./data/description.json"
         }

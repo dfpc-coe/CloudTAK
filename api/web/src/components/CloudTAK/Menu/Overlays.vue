@@ -22,7 +22,7 @@
 
                 <div class='ms-auto btn-list'>
                     <MaximizeIcon v-if='layer.bounds' @click='zoomTo(layer)' class='cursor-pointer' v-tooltip='"Zoom To Overlay"'/>
-                    <TablerDelete v-if='layer.name.startsWith("data-")' displaytype='icon' @delete='removeLayer(layer)' v-tooltip='"Delete Overlay"'/>
+                    <TablerDelete v-if='layer.name.startsWith("data-")' displaytype='icon' @delete='removeLayer(layer)' v-tooltip='"Delete Overlay"' class='text-dark'/>
                 </div>
             </div>
 
