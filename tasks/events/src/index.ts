@@ -10,7 +10,7 @@ import xml2js from 'xml2js';
 import jwt from 'jsonwebtoken';
 
 interface Event {
-    Import: string;
+    ID?: string;
     Token: string;
     Bucket: string;
     Key: string;
@@ -19,7 +19,7 @@ interface Event {
 }
 
 export const handler = async (
-    event: Lambda.S3Event | Lambda.SQSEvent,
+    event: any
 ): Promise<void> => {
 
     for (const record of event.Records) {
@@ -36,7 +36,7 @@ async function sqsEvent(record: Lambda.SQSRecord) {
 }
 
 async function s3Event(record: Lambda.S3EventRecord) {
-    const md = {
+    const md: Event = {
         Token: jwt.sign({ access: 'event' }, String(process.env.SigningSecret)),
         Bucket: record.s3.bucket.name,
         Key: decodeURIComponent(record.s3.object.key.replace(/\+/g, ' ')),
@@ -47,7 +47,7 @@ async function s3Event(record: Lambda.S3EventRecord) {
     console.log(`ok - New file detected in s3://${md.Bucket}/${md.Key}`);
     if (md.Key.startsWith('import/')) {
         try {
-            md.Import: path.parse(md.Key).name;
+            md.ID = path.parse(md.Key).name;
 
             await updateImport(md, { status: 'Running' });
 
@@ -96,13 +96,12 @@ async function s3Event(record: Lambda.S3EventRecord) {
             });
         }
     } else if (md.Key.startsWith('data/')) {
-        md.Data = path.parse(md.Key).dir.replace('data/', '');
-        md.Name = path.parse(md.Key).name;
+        md.ID = path.parse(md.Key).dir.replace('data/', '');
 
         const data = await fetchData(md);
 
         if (!data.auto_transform) {
-            console.log(`ok - Data ${md.Data} has auto-transform turned off`);
+            console.log(`ok - Data ${md.ID} has auto-transform turned off`);
             return;
         }
 
@@ -113,7 +112,7 @@ async function s3Event(record: Lambda.S3EventRecord) {
 }
 
 async function transformData(event: Event) {
-    const res = await fetch(new URL(`/api/data/${event.Data}/${event.Name}`, process.env.TAK_ETL_API), {
+    const res = await fetch(new URL(`/api/data/${event.ID}/${path.parse(event.Key).name}`, process.env.TAK_ETL_API), {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -125,7 +124,7 @@ async function transformData(event: Event) {
 }
 
 async function fetchData(event: Event) {
-    const res = await fetch(new URL(`/api/data/${event.Data}`, process.env.TAK_ETL_API), {
+    const res = await fetch(new URL(`/api/data/${event.ID}`, process.env.TAK_ETL_API), {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -137,7 +136,7 @@ async function fetchData(event: Event) {
 }
 
 async function updateImport(event: Event, body: object) {
-    const res = await fetch(new URL(`/api/import/${event.Import}`, process.env.TAK_ETL_API), {
+    const res = await fetch(new URL(`/api/import/${event.ID}`, process.env.TAK_ETL_API), {
         method: 'PATCH',
         headers: {
             'Content-Type': 'application/json',
