@@ -1,13 +1,15 @@
 <template>
-<div class='col-12'>
-    <div class='modal-header'>
-        <div class='modal-title'>Missions</div>
-        <div class='btn-list'>
-            <PlusIcon @click='$emit("create")' class='cursor-pointer' v-tooltip='"Create Mission"'/>
-            <RefreshIcon v-if='!loading' @click='fetchMissions' class='cursor-pointer' v-tooltip='"Refresh"'/>
+<div class='row'>
+    <div class='col-12 border-light border-bottom'>
+        <div class='modal-header px-0 mx-2'>
+            <div class='modal-title'>Missions</div>
+            <div class='btn-list'>
+                <PlusIcon @click='$emit("create")' class='cursor-pointer' v-tooltip='"Create Mission"'/>
+                <RefreshIcon v-if='!loading' @click='fetchMissions' class='cursor-pointer' v-tooltip='"Refresh"'/>
+            </div>
         </div>
     </div>
-    <div class='modal-body'>
+    <div class='modal-body mx-3'>
         <TablerLoading v-if='loading' desc='Loading Missions'/>
         <Alert v-else-if='err' :err='err'/>
         <template v-else>
