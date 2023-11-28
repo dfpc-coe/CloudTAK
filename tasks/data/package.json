@@ -1,0 +1,29 @@
+{
+    "name": "geojson",
+    "type": "module",
+    "private": true,
+    "version": "1.0.0",
+    "description": "",
+    "main": "task.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "lint": "eslint task.js lib/*.js",
+        "start": "node task.js"
+    },
+    "author": "Nick Ingalls <nick@ingalls.ca>",
+    "license": "ISC",
+    "dependencies": {
+        "@aws-sdk/client-s3": "^3.303.0",
+        "@aws-sdk/lib-storage": "^3.456.0",
+        "@tmcw/togeojson": "^5.5.0",
+        "@xmldom/xmldom": "^0.8.6",
+        "form-data-encoder": "^2.1.4",
+        "formdata-node": "^5.0.0",
+        "geojson-precision": "^1.0.0",
+        "jsonwebtoken": "^9.0.0"
+    },
+    "devDependencies": {
+        "eslint": "^8.54.0",
+        "eslint-plugin-node": "^11.1.0"
+    }
+}

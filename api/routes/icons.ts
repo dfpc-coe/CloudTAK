@@ -1,12 +1,21 @@
 import Auth from '../lib/auth.js';
+import path from 'node:path';
+import fs from 'node:fs/promises';
 import Err from '@openaddresses/batch-error';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
 import Iconset from '../lib/types/iconset.js';
 import Icon from '../lib/types/icon.js';
 import Config from '../lib/config.js';
+import Sprites from '../lib/sprites.js';
+import Cacher from '../lib/cacher.js';
 
 export default async function router(schema, config: Config) {
+    const defaultSprite = {
+        json: JSON.parse(String(await fs.readFile(new URL('../icons/generator.json', import.meta.url)))),
+        image: await fs.readFile(new URL('../icons/generator.png', import.meta.url))
+    }
+
     await schema.get('/iconset', {
         name: 'List Iconsets',
         group: 'Icons',
@@ -185,6 +194,75 @@ export default async function router(schema, config: Config) {
 
             const icon = await Icon.from(config.pool, req.params.iconset, req.params.icon);
             return res.status(200).send(Buffer.from(icon.data, 'base64'));
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
+
+    await schema.get('/icon/sprite.json', {
+        name: 'CoT Type Sprites (json)',
+        group: 'Icons',
+        auth: 'user',
+        description: 'Get Spriteset JSON for CoT types',
+        ':iconset': 'string',
+        query: {
+            type: 'object',
+            additionalProperties: false,
+            properties: {
+                iconset: { type: 'string' },
+                type: { type: 'boolean' }
+            }
+        }
+    }, async (req: AuthRequest, res: Response) => {
+        try {
+            await Auth.is_auth(req, true);
+
+            if (req.query.iconset === 'default') {
+                return res.send(defaultSprite.json);
+            } else {
+                const icons = await Icon.list(config.pool, {
+                    limit: 1000,
+                    ...req.query
+                })
+
+                const sprites = await Sprites(icons, { name: req.query.type ? 'type2525b' : null });
+
+                return res.json(sprites.json);
+            }
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
+
+    await schema.get('/icon/sprite.png', {
+        name: 'CoT Type Sprites',
+        group: 'Icons',
+        auth: 'user',
+        description: 'Return a sprite sheet for CoT Types',
+        ':iconset': 'string',
+        query: {
+            type: 'object',
+            additionalProperties: false,
+            properties: {
+                iconset: { type: 'string' },
+                type: { type: 'boolean' }
+            }
+        }
+    }, async (req: AuthRequest, res: Response) => {
+        try {
+            await Auth.is_auth(req, true);
+
+            res.type('png');
+            if (req.query.iconset === 'default') {
+                return res.send(defaultSprite.image);
+            } else {
+                const icons = await Icon.list(config.pool, {
+                    limit: 1000,
+                    ...req.query
+                })
+                const sprites = await Sprites(icons, { name: req.query.type ? 'type2525b' : null });
+                return res.send(sprites.image);
+            }
         } catch (err) {
             return Err.respond(err, res);
         }

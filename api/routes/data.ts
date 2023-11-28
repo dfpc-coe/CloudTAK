@@ -1,6 +1,8 @@
 import Err from '@openaddresses/batch-error';
 // @ts-ignore
 import Data from '../lib/types/data.js';
+// @ts-ignore
+import DataMission from '../lib/types/data-mission.js';
 import { sql } from 'slonik';
 import Auth from '../lib/auth.js';
 import { Response } from 'express';
@@ -33,7 +35,7 @@ export default async function router(schema: any, config: Config) {
         auth: 'admin',
         description: 'Register a new data source',
         body: 'req.body.CreateData.json',
-        res: 'data.json'
+        res: 'res.Data.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(req);
@@ -51,7 +53,7 @@ export default async function router(schema: any, config: Config) {
         description: 'Update a data source',
         ':dataid': 'integer',
         body: 'req.body.PatchData.json',
-        res: 'data.json'
+        res: 'res.Data.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(req);
@@ -60,6 +62,16 @@ export default async function router(schema: any, config: Config) {
                 updated: sql`Now()`,
                 ...req.body
             });
+
+            data = data.serialize();
+
+            try {
+                data.mission = await DataMission.from(config.pool, req.params.dataid, {
+                    column: 'data'
+                });
+            } catch (err) {
+                data.mission = false;
+            }
 
             return res.json(data);
         } catch (err) {
@@ -73,12 +85,48 @@ export default async function router(schema: any, config: Config) {
         auth: 'user',
         description: 'Get a data source',
         ':dataid': 'integer',
-        res: 'data.json'
+        res: 'res.Data.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(req);
 
-            const data = await Data.from(config.pool, req.params.dataid);
+            let data = await Data.from(config.pool, req.params.dataid);
+
+            data = data.serialize();
+
+            try {
+                data.mission = await DataMission.from(config.pool, req.params.dataid, {
+                    column: 'data'
+                });
+            } catch (err) {
+                data.mission = false;
+            }
+
+            return res.json(data);
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
+
+    await schema.post('/data/:dataid/mission', {
+        name: 'Attach Mission',
+        group: 'Data',
+        auth: 'admin',
+        ':dataid': 'integer',
+        description: 'Attach a TAK Server Mission to a Data Layer',
+        body: 'req.body.CreateDataMission.json',
+        res: 'res.Data.json'
+    }, async (req: AuthRequest, res: Response) => {
+        try {
+            await Auth.is_auth(req);
+
+            let data = await Data.from(config.pool, req.params.dataid);
+            data = data.serialize();
+
+            data.mission = await DataMission.generate(config.pool, {
+                ...req.body,
+                data: req.params.dataid
+            });
 
             return res.json(data);
         } catch (err) {

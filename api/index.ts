@@ -10,7 +10,7 @@ import Schema from '@openaddresses/batch-schema';
 // @ts-ignore
 import { Pool } from '@openaddresses/batch-generic';
 import minimist from 'minimist';
-import ConnectionPool from './lib/connection-pool.js';
+import ConnectionPool, { ConnectionWebSocket } from './lib/connection-pool.js';
 import EventsPool from './lib/events-pool.js';
 import { WebSocket, WebSocketServer } from 'ws';
 import Cacher from './lib/cacher.js';
@@ -196,9 +196,10 @@ export default async function server(config: Config) {
 
     const wss = new WebSocketServer({
         noServer: true
-    }).on('connection', (ws: WebSocket) => {
+    }).on('connection', (ws: WebSocket, request) => {
+        const params = new URLSearchParams(request.url.replace(/.*\?/, ''));
         // TODO: Remove connections
-        config.wsClients.push(ws);
+        config.wsClients.push(new ConnectionWebSocket(ws, params.get('format')));
     });
 
     return new Promise((resolve) => {

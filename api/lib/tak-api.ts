@@ -1,7 +1,8 @@
-import MissionData from './api/mission-data.js';
+import Mission from './api/mission.js';
 import Credentials from './api/credentials.js';
 import Contacts from './api/contacts.js';
-import Groups from './api/groups.js';
+import Files from './api/files.js';
+import Group from './api/groups.js';
 import { CookieJar, Cookie } from 'tough-cookie';
 import { CookieAgent } from 'http-cookie-agent/undici';
 import Err from '@openaddresses/batch-error';
@@ -9,9 +10,10 @@ import { Client } from 'undici';
 import { Stream } from 'node:stream';
 
 export class APIAuth {
-    async init(base: URL) {
-        console.log(base);
+    async init(base: URL) { // eslint-disable-line @typescript-eslint/no-unused-vars
+
     }
+
     async fetch(api: TAKAPI, url: URL, opts: any): Promise<any> {
         return await fetch(url, opts);
     }
@@ -134,10 +136,11 @@ export class APIAuthCertificate extends APIAuth {
 export default class TAKAPI {
     auth: APIAuth;
     url: URL;
-    MissionData: MissionData;
+    Mission: Mission;
     Credentials: Credentials;
     Contacts: Contacts;
-    Groups: Groups;
+    Group: Group;
+    Files: Files;
 
     static async init(url: URL, auth: APIAuth): Promise<TAKAPI> {
         const api = new TAKAPI();
@@ -146,10 +149,11 @@ export default class TAKAPI {
 
         await api.auth.init(api.url);
 
-        api.MissionData = new MissionData(api);
+        api.Mission = new Mission(api);
         api.Credentials = new Credentials(api);
         api.Contacts = new Contacts(api);
-        api.Groups = new Groups(api);
+        api.Group = new Group(api);
+        api.Files = new Files(api);
 
         return api;
     }
