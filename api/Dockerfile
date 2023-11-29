@@ -26,4 +26,5 @@ COPY ./nginx.conf /etc/nginx/nginx.conf
 CMD memcached -d -u root \
     && nginx \
     && npx knex migrate:latest \
+    && npm run build \
     && npm run prod
