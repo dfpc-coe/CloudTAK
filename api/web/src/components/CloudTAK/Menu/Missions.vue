@@ -9,10 +9,12 @@
         <button type="button" class="btn-close" @click='mode = "list"' aria-label="Close"></button>
         <MissionCreate
             v-if='mode === "create"'
+            @close='mode = "list"'
         />
         <MissionEdit
             v-else-if='mode === "edit"'
             :initial='mission'
+            @close='mode = "list"'
         />
     </TablerModal>
 </template>
@@ -35,9 +37,17 @@ export default {
         };
     },
     watch: {
+        mode: function() {
+            if (this.mode === 'list') {
+                this.mission = false;
+            }
+        },
         mission: function() {
-            if (this.mission) this.mode = 'edit';
-            else this.mode = 'list';
+            if (this.mission) {
+                this.mode = 'edit';
+            } else {
+                this.mode = 'list';
+            }
         }
     },
     components: {
