@@ -40,9 +40,6 @@
                     <DataAsset :data='data' @assets='assets = $event'/>
                 </div>
                 <div class="col-lg-12">
-                    <DataLocation :assets='assets'/>
-                </div>
-                <div class="col-lg-12">
                     <DataTransforms/>
                 </div>
             </div>

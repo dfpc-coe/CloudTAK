@@ -146,8 +146,12 @@
 </template>
 
 <style>
-    .hover:hover {
+    .hover-light:hover {
         background: #f5f5f5;
+    }
+
+    .hover-dark:hover {
+        background: #0f172a;
     }
 </style>
 
