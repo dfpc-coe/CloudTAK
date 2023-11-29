@@ -20,8 +20,10 @@
                 </div>
             </div>
             <div class='ms-auto btn-list my-2' style='padding-right: 56px;'>
-                <TablerDelete @delete='deleteMission' displaytype='icon' v-tooltip='"Delete"'/>
-                <PencilIcon class='cursor-pointer' v-tooltip='"Edit"'/>
+                <template v-if='mode === "info"'>
+                    <TablerDelete @delete='deleteMission' displaytype='icon' v-tooltip='"Delete"'/>
+                    <PencilIcon class='cursor-pointer' v-tooltip='"Edit"'/>
+                </template>
                 <RefreshIcon v-if='!loading.initial' @click='fetchMission' class='cursor-pointer' v-tooltip='"Refresh"'/>
             </div>
         </div>
@@ -57,6 +59,10 @@
                         "bg-blue-lt": mode === "logs",
                         "cursor-pointer": mode !== "logs"
                     }'><ArticleIcon v-tooltip='"Logs"'/></div>
+                    <div @click='mode = "contents"' class='px-2 py-2' :class='{
+                        "bg-blue-lt": mode === "contents",
+                        "cursor-pointer": mode !== "contents"
+                    }'><FilesIcon v-tooltip='"Contents"'/></div>
                 </div>
                 <div class="col-10 mx-2 my-2">
                     <template v-if='mode === "info"'>
@@ -79,9 +85,22 @@
                     </template>
                     <template v-else-if='mode === "users"'>
                     </template>
+                    <template v-else-if='mode === "contents"'>
+                        <TablerNone v-if='!mission.contents.length' :create='false'/>
+                        <template v-else>
+                            <div :key='content.data.uid' v-for='content in mission.contents' class='col-12 row'>
+                                <div class='col-12'>
+                                    <span v-text='content.data.name'/>
+                                </div>
+                                <div class='col-12'>
+                                    <span v-text='content.data.submitter'/><span v-text='content.data.submissionTime'/>
+                                </div>
+                            </div>
+                        </template>
+                    </template>
                     <template v-else-if='mode === "logs"'>
-                        <TablerNone v-if='!mission.logs'/>
-                        <pre v-text='mission.logs'/>
+                        <TablerNone v-if='!mission.logs.length' :create='false'/>
+                        <pre v-else v-text='mission.logs'/>
                     </template>
                 </div>
                 <div v-if='selectable' class='modal-footer'>
@@ -96,6 +115,7 @@
 <script>
 import {
     ArticleIcon,
+    FilesIcon,
     LockIcon,
     InfoSquareIcon,
     UserIcon,
@@ -194,6 +214,7 @@ export default {
         TablerNone,
         Alert,
         ArticleIcon,
+        FilesIcon,
         InfoSquareIcon,
         UserIcon,
         UsersIcon,

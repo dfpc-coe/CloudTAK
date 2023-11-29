@@ -61,7 +61,7 @@
 </template>
 
 <script>
-import MissionModal from './Mission/Modal.vue';
+import MissionModal from './Data/MissionModal.vue';
 import PageFooter from './PageFooter.vue';
 import DataAsset from './Data/Assets.vue';
 import DataLocation from './Data/Location.vue';
