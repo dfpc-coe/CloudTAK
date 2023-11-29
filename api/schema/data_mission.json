@@ -11,18 +11,18 @@
         "enabled": {
             "$ref": "./data_mission/enabled.json"
         },
-        "assets": {
-            "$ref": "./data_mission/assets.json"
-        },
         "data": {
             "$ref": "./data_mission/data.json"
+        },
+        "assets": {
+            "$ref": "./data_mission/assets.json"
         }
     },
     "required": [
         "id",
         "mission",
         "enabled",
-        "assets",
-        "data"
+        "data",
+        "assets"
     ]
 }

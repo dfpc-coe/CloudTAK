@@ -1,5 +1,5 @@
 <template>
-<MissionList/>
+<MissionList :modal='false'/>
 </template>
 
 <script>
