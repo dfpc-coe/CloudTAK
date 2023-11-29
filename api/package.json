@@ -6,8 +6,8 @@
     "main": "index.js",
     "scripts": {
         "test": "./test/test",
-        "build": "tsc",
-        "prod": "NODE_OPTIONS='--max-old-space-size=6144' node dist/index.js",
+        "build": "tsc --outDir . && rm ./routes/*.ts",
+        "prod": "NODE_OPTIONS='--max-old-space-size=6144' node index.js",
         "lint": "eslint index.ts lib/**.ts test/**.ts",
         "loaddb": "echo 'DROP DATABASE tak_ps_etl' | psql && echo 'CREATE DATABASE tak_ps_etl' | psql && psql tak_ps_etl < coe-etl-latest.dump && knex migrate:latest",
         "dev": "nodemon -i schema/ -i web/ --esm index.ts --noevents --nosinks --nometrics --unsafe"
