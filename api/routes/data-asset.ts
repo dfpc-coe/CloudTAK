@@ -4,11 +4,14 @@ import fs from 'node:fs/promises';
 import path from 'path';
 // @ts-ignore
 import Data from '../lib/types/data.js';
+// @ts-ignore
+import DataMission from '../lib/types/data-mission.js';
 import Auth from '../lib/auth.js';
 import S3 from '../lib/aws/s3.js';
 import Stream from 'node:stream';
 import Batch from '../lib/aws/batch.js';
 import jwt from 'jsonwebtoken';
+import { includesWithGlob } from "array-includes-with-glob";
 
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
@@ -27,6 +30,14 @@ export default async function router(schema: any, config: Config) {
             await Auth.is_auth(req);
 
             const data = await Data.from(config.pool, req.params.dataid);
+
+            try {
+                data.mission = await DataMission.from(config.pool, req.params.dataid, {
+                    column: 'data'
+                });
+            } catch (err) {
+                data.mission = false;
+            }
 
             const viz = new Map() ;
             let assets = [];
@@ -54,7 +65,18 @@ export default async function router(schema: any, config: Config) {
                     etag: JSON.parse(a.ETag),
                     size: a.Size
                 };
-            }));
+            })).map((a: any) => {
+                if (!data.mission) {
+                    a.sync = false;
+                } else {
+                    for (const glob of data.mission.assets) {
+                        a.sync = includesWithGlob([a.name], glob);
+                        if (a.sync) break;
+                    }
+                }
+
+                return a;
+            });
 
             return res.json({
                 total: assets.length,
