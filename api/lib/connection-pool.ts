@@ -120,7 +120,11 @@ export default class ConnectionPool extends Map<number, ConnectionClient> {
         }
 
         if (!this.nosinks && cot.is_atom()) {
-            await this.sinks.cot(conn, cot);
+            try {
+                await this.sinks.cot(conn, cot);
+            } catch (err) {
+                console.error('Error', err);
+            }
         }
     }
 
