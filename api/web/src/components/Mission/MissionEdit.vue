@@ -64,7 +64,7 @@
                         "cursor-pointer": mode !== "contents"
                     }'><FilesIcon v-tooltip='"Contents"'/></div>
                 </div>
-                <div class="col-10 mx-2 my-2">
+                <div class="col-11 mx-2 my-2">
                     <template v-if='mode === "info"'>
                         <div class="datagrid-item pb-2">
                             <div class="datagrid-title">Created</div>
@@ -88,12 +88,15 @@
                     <template v-else-if='mode === "contents"'>
                         <TablerNone v-if='!mission.contents.length' :create='false'/>
                         <template v-else>
-                            <div :key='content.data.uid' v-for='content in mission.contents' class='col-12 row'>
-                                <div class='col-12'>
+                            <div :key='content.data.uid' v-for='content in mission.contents' class='col-12 d-flex'>
+                                <div>
                                     <span v-text='content.data.name'/>
+                                    <div class='col-12'>
+                                        <span class='subheader' v-text='content.data.submitter'/> - <span class='subheader' v-text='content.data.submissionTime'/>
+                                    </div>
                                 </div>
-                                <div class='col-12'>
-                                    <span v-text='content.data.submitter'/><span v-text='content.data.submissionTime'/>
+                                <div class='ms-auto btn-list'>
+                                    <DownloadIcon @click='downloadFile(content.data)' class='cursor-pointer'/>
                                 </div>
                             </div>
                         </template>
@@ -115,6 +118,7 @@
 <script>
 import {
     ArticleIcon,
+    DownloadIcon,
     FilesIcon,
     LockIcon,
     InfoSquareIcon,
@@ -180,6 +184,9 @@ export default {
             }
             this.loading.users = false;
         },
+        downloadFile: async function(file) {
+            console.error(file);
+        },
         deleteMission: async function() {
             try {
                 this.loading.delete = true;
@@ -214,6 +221,7 @@ export default {
         TablerNone,
         Alert,
         ArticleIcon,
+        DownloadIcon,
         FilesIcon,
         InfoSquareIcon,
         UserIcon,
