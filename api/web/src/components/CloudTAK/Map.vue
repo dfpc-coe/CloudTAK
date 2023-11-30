@@ -345,6 +345,7 @@ export default {
                 this.draw.on('finish', (id) => {
                     const feat = this.draw._store.store[id];
                     this.draw._store.delete([id]);
+                    this.draw.stop();
                     this.cots.set(id, feat);
                     this.updateCOT();
                 });
