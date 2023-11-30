@@ -342,8 +342,11 @@ export default {
                     this.map.addSprite(iconset.uid, String(window.stdurl(`/api/icon/sprite?token=${localStorage.token}&iconset=${iconset.uid}`)))
                 }
 
-                this.draw.on('finish', (ids) => {
-                    this.draw.stop();
+                this.draw.on('finish', (id) => {
+                    const feat = this.draw._store.store[id];
+                    this.draw._store.delete([id]);
+                    this.cots.set(id, feat);
+                    this.updateCOT();
                 });
 
                 this.timer = window.setInterval(() => {
