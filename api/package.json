@@ -7,7 +7,7 @@
     "scripts": {
         "test": "./test/test",
         "build": "tsc --outDir . && rm ./routes/*.ts",
-        "prod": "NODE_OPTIONS='--max-old-space-size=6144' pm2-runtime start index.js",
+        "prod": "NODE_OPTIONS='--max-old-space-size=6144' forever index.js",
         "lint": "eslint index.ts lib/**.ts test/**.ts",
         "loaddb": "echo 'DROP DATABASE tak_ps_etl' | psql && echo 'CREATE DATABASE tak_ps_etl' | psql && psql tak_ps_etl < coe-etl-latest.dump && knex migrate:latest",
         "dev": "nodemon -i schema/ -i web/ --esm index.ts --noevents --nosinks --nometrics --unsafe"
@@ -53,6 +53,7 @@
         "csv-stringify": "^6.3.0",
         "express": "^4.18.2",
         "express-minify": "^1.0.0",
+        "forever": "^4.0.3",
         "handlebars": "^4.7.8",
         "http-cookie-agent": "^5.0.2",
         "jsonata": "^2.0.1",
@@ -63,7 +64,6 @@
         "moment": "^2.29.4",
         "pem": "^1.14.7",
         "pg": "^8.8.0",
-        "pm2": "^5.3.0",
         "semver-sort": "^1.0.0",
         "sharp": "^0.32.6",
         "sinon": "^17.0.0",
