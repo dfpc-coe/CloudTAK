@@ -344,6 +344,13 @@ export default {
 
                 this.draw.on('finish', (id) => {
                     const feat = this.draw._store.store[id];
+
+                    if (this.draw.getMode() === 'polygon') {
+                        feat.properties.id = id;
+                        feat.properties.type = 'u-d-f';
+                        feat.properties.fill = '#ff0000'
+                    }
+
                     this.draw._store.delete([id]);
                     this.draw.stop();
                     this.cots.set(id, feat);
