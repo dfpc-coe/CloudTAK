@@ -245,12 +245,7 @@ export default {
                     sprite: [{
                         id: 'default',
                         url: String(window.stdurl(`/api/icon/sprite?token=${localStorage.token}&iconset=default`))
-                    }].concat(this.iconsets.iconsets.map((iconset) => {
-                        return {
-                            id: iconset.uid,
-                            url: String(window.stdurl(`/api/icon/sprite?token=${localStorage.token}&iconset=${iconset.uid}`))
-                        }
-                    })),
+                    }],
                     sources: {
                         basemap: {
                             type: 'raster',
@@ -314,7 +309,6 @@ export default {
                 }
             });
 
-
             for (const layer of ['cots', 'cots-poly', 'cots-line']) {
                 this.map.on('mouseenter', layer, () => { this.map.getCanvas().style.cursor = 'pointer'; })
                 this.map.on('mouseleave', layer, () => { this.map.getCanvas().style.cursor = ''; })
@@ -342,6 +336,11 @@ export default {
                         new terraDraw.TerraDrawRectangleMode()
                     ]
                 });
+
+
+                for (const iconset of this.iconsets.iconsets) {
+                    this.map.addSprite(iconset.uid, String(window.stdurl(`/api/icon/sprite?token=${localStorage.token}&iconset=${iconset.uid}`)))
+                }
 
                 this.draw.on('finish', (ids) => {
                     this.draw.stop();
