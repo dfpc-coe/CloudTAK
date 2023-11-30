@@ -92,7 +92,7 @@ export default {
             this.layers = order.filter((layer) => {
                 return !['background'].includes(layer);
             }).filter((layer) => {
-                return !(layer.endsWith('-poly') || layer.endsWith('-line'))
+                return !(layer.endsWith('-poly') || layer.endsWith('-line') || layer.startsWith('td-'))
             }).map((layer) => {
                 layer = this.map.getLayer(layer);
 
