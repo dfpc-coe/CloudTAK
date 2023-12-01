@@ -133,6 +133,7 @@ export default {
             },
             locked: [],         // Lock the map view to a given CoT - The last element is the currently locked value
                                 //   this is an array so that things like the radial menu can temporarily lock state but remember the previous lock value when they are closed
+            edit: false,        // If a radial.cot is set and edit is true then load the cot into terra-draw
             cot: null,          // Show the CoT Viewer sidebar
             cots: new Map(),    // Store all on-screen CoT messages
             ws: null,           // WebSocket Connection for CoT events
@@ -172,6 +173,14 @@ export default {
                 this.locked.pop();
             }
         },
+        edit: function() {
+            if (this.edit) {
+                this.draw._store.create([this.radial.cot]);
+                this.draw.start();
+                this.draw.setMode('polygon');
+                console.error('HERE')
+            }
+        },
         cot: function() {
             if (this.cot) this.radial.cot = null;
         }
@@ -188,12 +197,16 @@ export default {
             this.iconsets = await window.std('/api/iconset');
         },
         handleRadial: function(event) {
-            const cot = this.radial.cot;
-            this.radial.cot = null;
             if (event.id === 'cot') {
                 this.cot = cot;
+                const cot = this.radial.cot;
+                this.radial.cot = null;
             } else if (event.id === 'delete') {
                 this.deleteCOT(cot);
+                const cot = this.radial.cot;
+                this.radial.cot = null;
+            } else if (event.id === 'edit') {
+                //this.edit = true;
             } else {
                 this.radial.cot = null;
             }

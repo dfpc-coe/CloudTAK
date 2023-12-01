@@ -1,0 +1,24 @@
+{
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+        "username": {
+            "$ref": "./profile/username.json"
+        },
+        "auth": {
+            "$ref": "./profile/auth.json"
+        },
+        "created": {
+            "$ref": "./profile/created.json"
+        },
+        "updated": {
+            "$ref": "./profile/updated.json"
+        }
+    },
+    "required": [
+        "username",
+        "auth",
+        "created",
+        "updated"
+    ]
+}
