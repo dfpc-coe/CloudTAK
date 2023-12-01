@@ -1,5 +1,4 @@
 import Err from '@openaddresses/batch-error';
-// @ts-ignore
 import Connection from '../lib/types/connection.js';
 import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';

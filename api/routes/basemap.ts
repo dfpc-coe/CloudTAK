@@ -1,8 +1,6 @@
 import path from 'node:path';
 import Err from '@openaddresses/batch-error';
-// @ts-ignore
 import BaseMap from '../lib/types/basemap.js';
-// @ts-ignore
 import Data from '../lib/types/data.js';
 import Auth from '../lib/auth.js';
 import Cacher from '../lib/cacher.js';

@@ -1,7 +1,5 @@
 import Err from '@openaddresses/batch-error';
-// @ts-ignore
 import Layer from '../lib/types/layer.js';
-// @ts-ignore
 import LayerAlert from '../lib/types/layer-alert.js';
 import Cacher from '../lib/cacher.js';
 import { sql } from 'slonik';
