@@ -254,6 +254,9 @@ export default {
                         },
                         cots: {
                             type: 'geojson',
+                            cluster: true,
+                            clusterMaxZoom: 8,
+                            clusterRadius: 50,
                             data: { type: 'FeatureCollection', features: [] }
                         }
                     },
@@ -267,6 +270,24 @@ export default {
                         source: 'basemap',
                         minzoom: basemap.minzoom,
                         maxzoom: basemap.maxzoom
+                    },{
+                        id: 'cots-poly',
+                        type: 'fill',
+                        source: 'cots',
+                        filter: [ 'all', ['==', '$type', 'Polygon']],
+                        paint: {
+                            'fill-color': ['get', 'fill'],
+                            'fill-opacity': ['get', 'fill-opacity']
+                        },
+                    },{
+                        id: 'cots-line',
+                        type: 'line',
+                        source: 'cots',
+                        paint: {
+                            'line-color': ['get', 'stroke'],
+                            'line-opacity': ['get', 'stroke-opacity'],
+                            'line-width': ['get', 'stroke-width'],
+                        },
                     },{
                         id: 'cots',
                         type: 'symbol',
@@ -287,24 +308,6 @@ export default {
                             'text-font': ['Open Sans Bold'],
                             'text-field':  '{callsign}'
                         }
-                    },{
-                        id: 'cots-poly',
-                        type: 'fill',
-                        source: 'cots',
-                        filter: [ 'all', ['==', '$type', 'Polygon']],
-                        paint: {
-                            'fill-color': ['get', 'fill'],
-                            'fill-opacity': ['get', 'fill-opacity']
-                        },
-                    },{
-                        id: 'cots-line',
-                        type: 'line',
-                        source: 'cots',
-                        paint: {
-                            'line-color': ['get', 'stroke'],
-                            'line-opacity': ['get', 'stroke-opacity'],
-                            'line-width': ['get', 'stroke-width'],
-                        },
                     }]
                 }
             });
