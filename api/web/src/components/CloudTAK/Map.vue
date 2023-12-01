@@ -301,6 +301,7 @@ export default {
                         },
                         layout: {
                             'icon-size': 1,
+                            'icon-allow-overlap': true,
                             'icon-image': '{icon}',
                             'icon-anchor': 'bottom',
                             'text-offset': [0, 1],
