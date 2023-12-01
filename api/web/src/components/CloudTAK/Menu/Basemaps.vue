@@ -18,7 +18,7 @@
             @create='$router.push("/basemap/new")'
         />
         <template v-else>
-            <div :key='basemap.id' v-for='basemap in list.basemaps' class="col-lg-12">
+            <div :key='basemap.id' v-for='basemap in list.basemaps' class="col-12 hover-dark">
                 <div class="d-flex">
                     <a @click='$emit("basemap", basemap)' class="card-title cursor-pointer" v-text='basemap.name'></a>
 
