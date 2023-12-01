@@ -36,7 +36,7 @@ export default class Config {
     PMTILES_URL: string;
     TileBaseURL: URL;
     DynamoDB: string;
-    wsClients: ConnectionWebSocket[];
+    wsClients: Map<string, ConnectionWebSocket[]>;
     Bucket?: string;
     pool?: Pool;
     cacher?: Cacher;
@@ -52,7 +52,7 @@ export default class Config {
         config.noevents = (args.noevents || false);
         config.nometrics = (args.nometrics || false);
         config.nosinks = (args.nosinks || false);
-        config.wsClients = []
+        config.wsClients = new Map();
 
         try {
             if (!process.env.AWS_DEFAULT_REGION) {

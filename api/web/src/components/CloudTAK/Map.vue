@@ -77,12 +77,20 @@ import moment from 'moment';
 
 export default {
     name: 'CloudTAK',
+    props: {
+        user: {
+            type: Object,
+            required: true
+        }
+    },
     mounted: async function() {
         await this.fetchBaseMaps();
         await this.fetchIconsets();
         this.loading.main = false;
 
         const url = window.stdurl('/api?format=geojson');
+        url.searchParams.append('format', 'geojson');
+        url.searchParams.append('connection', this.user.email);
         if (window.location.hostname === 'localhost') {
             url.protocol = 'ws:';
         } else {

@@ -86,8 +86,6 @@ export default async function server(config: Config) {
         }
     });
 
-    config.wsClients = [];
-
     try {
         config.server = await Server.from(config.pool, 1);
     } catch (err) {
@@ -227,7 +225,11 @@ export default async function server(config: Config) {
     }).on('connection', (ws: WebSocket, request) => {
         const params = new URLSearchParams(request.url.replace(/.*\?/, ''));
         // TODO: Remove connections
-        config.wsClients.push(new ConnectionWebSocket(ws, params.get('format')));
+
+        if (!params.get('connection')) throw new Error('Connection Parameter Required');
+
+        if (!config.wsClients.has(params.get('connection'))) config.wsClients.set(params.get('connection'), [])
+        config.wsClients.get(params.get('connection')).push(new ConnectionWebSocket(ws, params.get('format')));
     });
 
     return new Promise((resolve) => {
