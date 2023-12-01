@@ -254,9 +254,7 @@ export default {
                         },
                         cots: {
                             type: 'geojson',
-                            cluster: true,
-                            clusterMaxZoom: 8,
-                            clusterRadius: 50,
+                            cluster: false,
                             data: { type: 'FeatureCollection', features: [] }
                         }
                     },

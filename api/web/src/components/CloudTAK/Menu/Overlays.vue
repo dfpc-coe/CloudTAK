@@ -1,9 +1,10 @@
 <template>
 <div class='row'>
-    <div class='col-12 border-light border-bottom'>
-        <div class='card-header my-2'>
-            <div class='card-title mx-2'>Overlays</div>
-            <div class='ms-auto mx-2'>
+    <div class='col-12 border-bottom border-light'>
+        <div class='modal-header px-0 mx-2'>
+            <CircleArrowLeftIcon @click='$emit("close")' class='cursor-pointer'/>
+            <div class='modal-title'>Overlays</div>
+            <div class='btn-list'>
                 <PlusIcon @click='$emit("datas")' class='cursor-pointer'/>
             </div>
         </div>
@@ -40,6 +41,7 @@ import {
     TablerRange
 } from '@tak-ps/vue-tabler';
 import {
+    CircleArrowLeftIcon,
     MaximizeIcon,
     VectorIcon,
     EyeOffIcon,
@@ -121,6 +123,7 @@ export default {
         TablerRange,
         TablerDelete,
         MaximizeIcon,
+        CircleArrowLeftIcon,
         EyeIcon,
         EyeOffIcon,
         PlusIcon,
