@@ -57,8 +57,8 @@
 
                                 <div class='ms-auto'>
                                     <div class='btn-list'>
-                                        <AccessPointIcon v-if='data.mission' class='cursor-pointer text-green' v-tooltip='"Mission Sync On"'/>
-                                        <AccessPointOffIcon v-else class='cursor-pointer text-red' v-tooltip='"Mission Sync Off"'/>
+                                        <AccessPointIcon v-if='data.mission' class='text-green' v-tooltip='"Mission Sync On"'/>
+                                        <AccessPointOffIcon v-else class='text-red' v-tooltip='"Mission Sync Off"'/>
 
                                         <SettingsIcon class='cursor-pointer' @click='$router.push(`/data/${data.id}/edit`)'/>
                                     </div>
