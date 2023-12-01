@@ -41,17 +41,17 @@ class ConnectionClient {
 export default class ConnectionPool extends Map<number, ConnectionClient> {
     #server: Server;
     pool: Pool;
-    clients: ConnectionWebSocket[];
+    wsClients: Map<string, ConnectionWebSocket[]>;
     metrics: Metrics;
     sinks: Sinks;
     nosinks: boolean;
     stackName: string;
     local: boolean;
 
-    constructor(config: Config, server: Server, clients: ConnectionWebSocket[] = [], stackName: string, local=false) {
+    constructor(config: Config, server: Server, wsClients: Map<string, ConnectionWebSocket[]> = new Map(), stackName: string, local=false) {
         super();
         this.#server = server;
-        this.clients = clients;
+        this.wsClients = wsClients;
         this.stackName = stackName,
         this.local = local,
         this.metrics = new Metrics(stackName);
@@ -111,11 +111,13 @@ export default class ConnectionPool extends Map<number, ConnectionClient> {
      * aren't rebroadcast to the submitter by the TAK Server
      */
     async cot(conn: Connection, cot: CoT) {
-        for (const client of this.clients) {
-            if (client.format == 'geojson') {
-                client.ws.send(JSON.stringify({ type: 'cot', connection: conn.id, data: cot.to_geojson() }));
-            } else {
-                client.ws.send(JSON.stringify({ type: 'cot', connection: conn.id, data: cot.raw }));
+        if (this.wsClients.has(String(conn.id))) {
+            for (const client of this.wsClients.get(String(conn.id))) {
+                if (client.format == 'geojson') {
+                    client.ws.send(JSON.stringify({ type: 'cot', connection: conn.id, data: cot.to_geojson() }));
+                } else {
+                    client.ws.send(JSON.stringify({ type: 'cot', connection: conn.id, data: cot.raw }));
+                }
             }
         }
 

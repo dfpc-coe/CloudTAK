@@ -116,6 +116,7 @@ export default {
     },
     mounted: async function() {
         const url = window.stdurl('/api');
+        url.searchParams.append('connection', this.$route.params.connectionid);
         if (window.location.hostname === 'localhost') {
             url.protocol = 'ws:';
         } else {

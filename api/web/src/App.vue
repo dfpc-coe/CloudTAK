@@ -139,7 +139,7 @@
         </TablerModal>
     </template>
 
-    <router-view/>
+    <router-view :user='user'/>
 
     <TablerError v-if='err' :err='err' @close='err = null'/>
     <LoginModal v-if='login' @close='login = null' @login='login=null'/>
