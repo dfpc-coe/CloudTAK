@@ -11,11 +11,13 @@
     </template>
     <template v-else-if='mode === "missions"'>
         <MenuMissions
+            :map='map'
             @close='mode = null'
         />
     </template>
     <template v-else-if='mode === "channels"'>
         <MenuChannels
+            :map='map'
             @close='mode = null'
         />
     </template>
