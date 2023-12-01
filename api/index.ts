@@ -17,6 +17,7 @@ import Cacher from './lib/cacher.js';
 import BlueprintLogin from '@tak-ps/blueprint-login';
 import Server from './lib/types/server.js';
 import Config from './lib/config.js';
+import Profile from './lib/types/profile.js';
 
 const args = minimist(process.argv, {
     boolean: [
@@ -137,12 +138,18 @@ export default async function server(config: Config) {
 
     await schema.api();
 
-    await schema.blueprint(new BlueprintLogin({
+    const login = new BlueprintLogin({
         secret: config.SigningSecret,
         unsafe: config.unsafe ? config.UnsafeSigningSecret : undefined,
         group: config.AuthGroup,
         api: config.local ? 'http://localhost:5001' : config.MartiAPI
-    }));
+    });
+
+    login.on('login', (user) => {
+        Profile
+    });
+
+    await schema.blueprint(login);
 
     if (config.local) {
         // Mock WebTAK API to allow any username & Password

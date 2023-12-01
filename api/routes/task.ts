@@ -6,7 +6,6 @@ import Lambda from '../lib/aws/lambda.js';
 import CloudFormation from '../lib/aws/cloudformation.js';
 import Logs from '../lib/aws/lambda-logs.js';
 
-// @ts-ignore
 import Layer from '../lib/types/layer.js';
 import semver from 'semver-sort';
 import Cacher from '../lib/cacher.js';

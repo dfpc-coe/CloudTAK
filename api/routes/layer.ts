@@ -1,9 +1,7 @@
 import { check } from '@placemarkio/check-geojson';
 import bodyparser from 'body-parser';
 import Err from '@openaddresses/batch-error';
-// @ts-ignore
 import Layer from '../lib/types/layer.js';
-// @ts-ignore
 import Data from '../lib/types/data.js';
 import { CoT } from '@tak-ps/node-tak';
 import { Item as QueueItem } from '../lib/queue.js'

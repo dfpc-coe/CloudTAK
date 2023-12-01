@@ -1,7 +1,5 @@
 import Err from '@openaddresses/batch-error';
-// @ts-ignore
 import Data from '../lib/types/data.js';
-// @ts-ignore
 import DataMission from '../lib/types/data-mission.js';
 import { sql } from 'slonik';
 import Auth from '../lib/auth.js';

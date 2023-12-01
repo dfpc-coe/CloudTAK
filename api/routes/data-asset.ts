@@ -2,9 +2,7 @@ import Err from '@openaddresses/batch-error';
 import busboy from 'busboy';
 import fs from 'node:fs/promises';
 import path from 'path';
-// @ts-ignore
 import Data from '../lib/types/data.js';
-// @ts-ignore
 import DataMission from '../lib/types/data-mission.js';
 import Auth from '../lib/auth.js';
 import S3 from '../lib/aws/s3.js';
