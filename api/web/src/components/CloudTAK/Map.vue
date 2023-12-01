@@ -288,7 +288,7 @@ export default {
                             'line-width': ['get', 'stroke-width'],
                         },
                     },{
-                        id: 'cots-icons',
+                        id: 'CoTs',
                         type: 'symbol',
                         source: 'cots',
                         paint: {
