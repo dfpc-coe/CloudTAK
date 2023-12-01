@@ -226,7 +226,7 @@ export default {
                 source: 'basemap',
                 minzoom: basemap.minzoom,
                 maxzoom: basemap.maxzoom
-            }, 'CoTs');
+            }, 'cots');
         },
         mountMap: function() {
             const basemap = this.basemaps.basemaps[0];
@@ -288,7 +288,7 @@ export default {
                             'line-width': ['get', 'stroke-width'],
                         },
                     },{
-                        id: 'CoTs',
+                        id: 'cots',
                         type: 'symbol',
                         source: 'cots',
                         paint: {
