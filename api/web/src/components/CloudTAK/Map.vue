@@ -68,6 +68,7 @@ import {
     TablerDropdown,
     TablerLoading
 } from '@tak-ps/vue-tabler';
+import pointOnFeature from '@turf/point-on-feature';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import CloudTAKMenu from './Menu.vue';
 import CloudTAKCoTView from './CoTView.vue';
@@ -324,7 +325,13 @@ export default {
                 this.map.on('mouseenter', layer, () => { this.map.getCanvas().style.cursor = 'pointer'; })
                 this.map.on('mouseleave', layer, () => { this.map.getCanvas().style.cursor = ''; })
                 this.map.on('click', layer, (e) => {
-                    const flyTo = { center: e.features[0].geometry.coordinates, speed: Infinity };
+                    const flyTo = { speed: Infinity };
+                    if (e.features[0].geometry.type === 'Point') {
+                        flyTo.center = e.features[0].geometry.coordinates;
+                    } else {
+                        flyTo.center = pointOnFeature(e.features[0].geometry).coordinates;
+                    }
+
                     // This is required to ensure the map has nowhere to flyTo - ie the whole world is shown
                     // and then the radial menu won't actually be on the CoT when the CoT is clicked
                     if (this.map.getZoom() < 3) flyTo.zoom = 4;
