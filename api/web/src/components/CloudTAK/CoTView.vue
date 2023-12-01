@@ -6,7 +6,7 @@
                 <div class='card-title mx-2' v-text='cot.properties.callsign'></div>
                 <div class='subheader mx-2'>
                     <span class='subheader' v-text='cot.properties.type'/>
-                    <span class='subheader ms-auto' v-text='" (" + cot.properties.how + ")"'/>
+                    <span class='subheader ms-auto' v-text='" (" + cot.properties.how || "Unknown" + ")"'/>
                 </div>
             </div>
             <div class='col-auto btn-list my-2 ms-auto d-flex align-items-center mx-2'>
