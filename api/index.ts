@@ -18,6 +18,9 @@ import BlueprintLogin from '@tak-ps/blueprint-login';
 import Server from './lib/types/server.js';
 import Config from './lib/config.js';
 import Profile from './lib/types/profile.js';
+import TAKAPI, {
+    APIAuthPassword
+} from './lib/tak-api.js';
 
 const args = minimist(process.argv, {
     boolean: [
@@ -145,8 +148,26 @@ export default async function server(config: Config) {
         api: config.local ? 'http://localhost:5001' : config.MartiAPI
     });
 
-    login.on('login', (user) => {
-        Profile
+    login.on('login', async (user) => {
+        let profile;
+        try {
+            profile = await Profile.from(config.pool, user.username);
+        } catch (err) {
+            if (err.status === 404) {
+                profile = await Profile.generate(config.pool, { username: user.username });
+            } else {
+                console.error(err);
+            }
+        }
+
+        if (!profile.auth.cert || !profile.auth.key) {
+            try {
+            const api = await TAKAPI.init(new URL(config.MartiAPI), new APIAuthPassword(user.username, user.password));
+            await profile.commit({ auth: await api.Credentials.generate() });
+            } catch (err) {
+                console.error(err);
+            }
+        }
     });
 
     await schema.blueprint(login);
