@@ -45,8 +45,8 @@
             </div>
         </template>
         <template v-else>
-            <div class='row g-0'>
-                <div class="col-auto border-end">
+            <div class='d-flex'>
+                <div class="border-end" style='width: 40px;'>
                     <div @click='mode = "info"' class='px-2 py-2' :class='{
                         "bg-blue-lt": mode === "info",
                         "cursor-pointer": mode !== "info"
@@ -64,7 +64,7 @@
                         "cursor-pointer": mode !== "contents"
                     }'><FilesIcon v-tooltip='"Contents"'/></div>
                 </div>
-                <div class="col-11 mx-2 my-2">
+                <div class="mx-2 my-2" style='width: calc(100% - 40px);'>
                     <template v-if='mode === "info"'>
                         <div class="datagrid-item pb-2">
                             <div class="datagrid-title">Created</div>
