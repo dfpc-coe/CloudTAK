@@ -38,7 +38,6 @@
         "@openaddresses/batch-generic": "^14.0.0",
         "@openaddresses/batch-schema": "^9.0.0",
         "@openaddresses/cloudfriend": "^7.0.0",
-        "@openapi-contrib/openapi-schema-to-json-schema": "^5.1.0",
         "@placemarkio/check-geojson": "^0.1.12",
         "@tak-ps/blueprint-login": "^2.2.3",
         "@tak-ps/node-tak": "^0.4.1",
