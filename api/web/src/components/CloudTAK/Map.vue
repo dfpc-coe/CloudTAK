@@ -237,6 +237,7 @@ export default {
 
             this.map = new mapgl.Map({
                 container: this.$refs.map,
+                fadeDuration: 0,
                 zoom: 8,
                 center: [-105.91873757464982, 39.2473040734323],
                 style: {
