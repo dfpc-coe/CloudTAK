@@ -342,8 +342,10 @@ export default {
                     if (e.features[0].geometry.type === 'Point') {
                         flyTo.center = e.features[0].geometry.coordinates;
                     } else {
-                        flyTo.center = pointOnFeature(e.features[0].geometry).coordinates;
+                        flyTo.center = pointOnFeature(e.features[0].geometry).geometry.coordinates;
                     }
+
+                    console.error(flyTo);
 
                     // This is required to ensure the map has nowhere to flyTo - ie the whole world is shown
                     // and then the radial menu won't actually be on the CoT when the CoT is clicked
