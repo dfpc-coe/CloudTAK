@@ -14,6 +14,15 @@ export default async function router(schema: any, config: Config) {
         group: 'Marti',
         auth: 'user',
         description: 'Helper API to list groups that the client is part of',
+        query: {
+            type: 'object',
+            properties: {
+                useCache: {
+                    type: 'boolean',
+                    description: 'This tells TAK server to return the users cached group selection vs the groups that came directly from the auth backend.'
+                }
+            }
+        },
         res: 'res.Marti.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
@@ -23,7 +32,9 @@ export default async function router(schema: any, config: Config) {
 
             const api = await TAKAPI.init(new URL(config.MartiAPI), new APIAuthToken(req.auth.token));
 
-            const groups = await api.Group.list();
+            const query = {};
+            for (const q in req.query) query[q] = String(req.query[q]);
+            const groups = await api.Group.list(query);
 
             return res.json(groups);
         } catch (err) {

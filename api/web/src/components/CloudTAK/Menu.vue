@@ -11,6 +11,11 @@
             @close='mode = null'
         />
     </template>
+    <template v-else-if='mode === "channels"'>
+        <MenuChannels
+            @close='mode = null'
+        />
+    </template>
     <template v-else-if='mode === "contacts"'>
         <MenuContacts
             :map='map'
@@ -66,6 +71,10 @@
                     <AmbulanceIcon size='32'/>
                     <span class='mx-2' style='font-size: 18px;'>Mission Sync</span>
                 </div>
+                <div @click='mode = "channels"' class='cursor-pointer col-12 py-2 px-2 d-flex align-items-center hover-dark'>
+                    <AffiliateIcon size='32'/>
+                    <span class='mx-2' style='font-size: 18px;'>Channels</span>
+                </div>
             </div>
         </div>
     </template>
@@ -79,6 +88,7 @@ import {
     SettingsIcon,
     AmbulanceIcon,
     BoxMultipleIcon,
+    AffiliateIcon,
 } from 'vue-tabler-icons';
 import MenuBasemaps from './Menu/Basemaps.vue';
 import MenuOverlays from './Menu/Overlays.vue';
@@ -86,6 +96,7 @@ import MenuDatas from './Menu/Datas.vue';
 import MenuContacts from './Menu/Contacts.vue';
 import MenuSettings from './Menu/Settings.vue';
 import MenuMissions from './Menu/Missions.vue';
+import MenuChannels from './Menu/Channels.vue';
 
 export default {
     name: 'CloudTAKMenu',
@@ -106,8 +117,10 @@ export default {
         MenuSettings,
         MenuOverlays,
         MenuContacts,
+        MenuChannels,
         MenuMissions,
         MenuDatas,
+        AffiliateIcon,
         AmbulanceIcon,
         SettingsIcon,
         UsersIcon,
