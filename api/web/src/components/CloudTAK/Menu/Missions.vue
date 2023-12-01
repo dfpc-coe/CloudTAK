@@ -3,6 +3,7 @@
         :modal='false'
         @create='mode = "create"'
         @mission='mission = $event'
+        @close='$emit("close")'
     />
     <TablerModal size='xl' v-if='mode !== "list"' class='text-black'>
     <div class="modal-status bg-yellow"></div>

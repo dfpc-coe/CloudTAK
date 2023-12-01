@@ -8,6 +8,7 @@
         <div class='modal-header' :class='{
             "px-0 mx-2": !modal
         }'>
+            <CircleArrowLeftIcon v-if='!modal' @click='$emit("close")' class='cursor-pointer'/>
             <div class='modal-title'>Missions</div>
             <div class='btn-list'>
                 <PlusIcon @click='$emit("create")' class='cursor-pointer' v-tooltip='"Create Mission"'/>
@@ -52,6 +53,7 @@ import {
     LockIcon,
     LockOpenIcon,
     RefreshIcon,
+    CircleArrowLeftIcon,
 } from 'vue-tabler-icons';
 import Alert from '../util/Alert.vue';
 import {
@@ -94,6 +96,7 @@ export default {
     components: {
         Alert,
         TablerLoading,
+        CircleArrowLeftIcon,
         RefreshIcon,
         PlusIcon,
         LockIcon,
