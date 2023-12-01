@@ -12,12 +12,12 @@
     <div :key='layer.name' v-for='layer in layers' class="col-lg-12">
         <div class='row col-12 py-2 px-2 d-flex'>
             <div class='col-12 d-flex align-items-center'>
-                <EyeIcon v-if='layer.visible' @click='flipVisible(layer)' class='cursor-pointer'/>
-                <EyeOffIcon v-else @click='flipVisible(layer)' class='cursor-pointer'/>
+                <EyeIcon v-if='layer.visible' @click='flipVisible(layer)' class='cursor-pointer' v-tooltip='"Hide Layer"'/>
+                <EyeOffIcon v-else @click='flipVisible(layer)' class='cursor-pointer' v-tooltip='"Show Layer"'/>
 
                 <span class='mx-2'>
-                    <MapIcon v-if='layer.type === "raster"'/>
-                    <VectorIcon v-else/>
+                    <MapIcon v-if='layer.type === "raster"' v-tooltip='"Raster"'/>
+                    <VectorIcon v-else v-tooltip='"Vector"'/>
                 </span>
                 <span class='mx-2' v-text='layer.name'/>
 

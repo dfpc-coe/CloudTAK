@@ -226,7 +226,7 @@ export default {
                 source: 'basemap',
                 minzoom: basemap.minzoom,
                 maxzoom: basemap.maxzoom
-            }, 'cots');
+            }, 'CoTs');
         },
         mountMap: function() {
             const basemap = this.basemaps.basemaps[0];
