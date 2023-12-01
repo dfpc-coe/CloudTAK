@@ -288,13 +288,10 @@ export default {
                             'line-width': ['get', 'stroke-width'],
                         },
                     },{
-                        id: 'cots',
+                        id: 'cots-icons',
                         type: 'symbol',
                         source: 'cots',
                         paint: {
-                            'text-color': '#ffffff',
-                            'text-halo-color': '#000000',
-                            'text-halo-width': 2,
                             'icon-opacity': ['get', 'icon-opacity'],
                             'icon-halo-color': '#ffffff',
                             'icon-halo-width': 4
@@ -304,6 +301,17 @@ export default {
                             'icon-allow-overlap': true,
                             'icon-image': '{icon}',
                             'icon-anchor': 'bottom',
+                        }
+                    },{
+                        id: 'cots-text',
+                        type: 'symbol',
+                        source: 'cots',
+                        paint: {
+                            'text-color': '#ffffff',
+                            'text-halo-color': '#000000',
+                            'text-halo-width': 2,
+                        },
+                        layout: {
                             'text-offset': [0, 1],
                             'text-font': ['Open Sans Bold'],
                             'text-field':  '{callsign}'
