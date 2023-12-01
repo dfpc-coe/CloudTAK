@@ -198,13 +198,13 @@ export default {
         },
         handleRadial: function(event) {
             if (event.id === 'cot') {
+                const cot = this.radial.cot;
+                this.radial.cot = null;
                 this.cot = cot;
-                const cot = this.radial.cot;
-                this.radial.cot = null;
             } else if (event.id === 'delete') {
-                this.deleteCOT(cot);
                 const cot = this.radial.cot;
                 this.radial.cot = null;
+                this.deleteCOT(cot);
             } else if (event.id === 'edit') {
                 //this.edit = true;
             } else {
