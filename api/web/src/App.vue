@@ -142,6 +142,7 @@
     <router-view/>
 
     <TablerError v-if='err' :err='err' @close='err = null'/>
+    <LoginModal v-if='login' @close='login = null' @login='login=null'/>
 </div>
 </template>
 
@@ -159,6 +160,7 @@
 import '@tabler/core/dist/js/tabler.min.js';
 import '@tabler/core/dist/css/tabler.min.css';
 import UploadImport from './components/util/UploadImport.vue'
+import LoginModal from './components/util/LoginModal.vue'
 import {
     CodeIcon,
     HomeIcon,
@@ -183,6 +185,7 @@ export default {
         return {
             upload: false,
             dragTimer: false,
+            login: false,
             mounted: false,
             user: null,
             err: null,
@@ -190,7 +193,11 @@ export default {
         }
     },
     errorCaptured: function(err) {
-        this.err = err;
+        if (err.message === '401') {
+            this.login = true;
+        } else {
+            this.err = err;
+        }
     },
     watch: {
         async $route() {
@@ -247,6 +254,7 @@ export default {
         }
     },
     components: {
+        LoginModal,
         UploadImport,
         HomeIcon,
         CodeIcon,
