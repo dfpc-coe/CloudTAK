@@ -30,6 +30,7 @@ import {
 } from '@tak-ps/vue-tabler';
 
 import {
+    RefreshIcon,
     CircleArrowLeftIcon
 } from 'vue-tabler-icons';
 
@@ -62,6 +63,7 @@ export default {
     components: {
         TablerNone,
         TablerLoading,
+        RefreshIcon,
         CircleArrowLeftIcon,
     }
 }
