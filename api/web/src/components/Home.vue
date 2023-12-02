@@ -1,5 +1,5 @@
 <template>
-<CloudTAK :user='user'/>
+<CloudTAK v-if='user' :user='user'/>
 </template>
 
 <script>

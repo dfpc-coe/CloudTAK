@@ -88,9 +88,10 @@ export default {
         await this.fetchIconsets();
         this.loading.main = false;
 
-        const url = window.stdurl('/api?format=geojson');
+        const url = window.stdurl('/api');
         url.searchParams.append('format', 'geojson');
         url.searchParams.append('connection', this.user.email);
+        url.searchParams.append('token', localStorage.token);
         if (window.location.hostname === 'localhost') {
             url.protocol = 'ws:';
         } else {

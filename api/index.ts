@@ -10,11 +10,11 @@ import Schema from '@openaddresses/batch-schema';
 // @ts-ignore
 import { Pool } from '@openaddresses/batch-generic';
 import minimist from 'minimist';
-import ConnectionPool, { ConnectionWebSocket } from './lib/connection-pool.js';
+import ConnectionPool, { ConnectionWebSocket, sleep } from './lib/connection-pool.js';
 import EventsPool from './lib/events-pool.js';
 import { WebSocket, WebSocketServer } from 'ws';
 import Cacher from './lib/cacher.js';
-import BlueprintLogin from '@tak-ps/blueprint-login';
+import BlueprintLogin, { tokenParser } from '@tak-ps/blueprint-login';
 import Server from './lib/types/server.js';
 import Config from './lib/config.js';
 import Profile from './lib/types/profile.js';
@@ -222,14 +222,32 @@ export default async function server(config: Config) {
 
     const wss = new WebSocketServer({
         noServer: true
-    }).on('connection', (ws: WebSocket, request) => {
-        const params = new URLSearchParams(request.url.replace(/.*\?/, ''));
-        // TODO: Remove connections
+    }).on('connection', async (ws: WebSocket, request) => {
+        try {
+            const params = new URLSearchParams(request.url.replace(/.*\?/, ''));
+            // TODO: Remove connections
 
-        if (!params.get('connection')) throw new Error('Connection Parameter Required');
+            if (!params.get('connection')) throw new Error('Connection Parameter Required');
+            if (!params.get('token')) throw new Error('Token Parameter Required');
 
-        if (!config.wsClients.has(params.get('connection'))) config.wsClients.set(params.get('connection'), [])
-        config.wsClients.get(params.get('connection')).push(new ConnectionWebSocket(ws, params.get('format')));
+            const auth = tokenParser(params.get('token'), config.SigningSecret);
+            console.error(auth);
+
+            // Connect to MachineUser Connection if it is an integer
+            if (!isNaN(parseInt(params.get('connection')))) {
+                if (!config.wsClients.has(params.get('connection'))) config.wsClients.set(params.get('connection'), [])
+                config.wsClients.get(params.get('connection')).push(new ConnectionWebSocket(ws, params.get('format')));
+            } else if (params.get('connection') === auth.email) {
+                if (!config.wsClients.has(params.get('connection'))) config.wsClients.set(params.get('connection'), [])
+                config.wsClients.get(params.get('connection')).push(new ConnectionWebSocket(ws, params.get('format')));
+            } else {
+                throw new Error('Unauthorized');
+            }
+        } catch (err) {
+            ws.send(JSON.stringify({type: 'Error', message: String(err.message) }));
+            await sleep(500);
+            ws.close();
+        }
     });
 
     return new Promise((resolve) => {
