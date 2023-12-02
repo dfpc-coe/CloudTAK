@@ -30,7 +30,7 @@
                             </div>
                         <div>
                     </div>
-                    <div class='dropdown d-md-none'>
+                    <div class='dropdown'>
                         <div type="button" id="userMenuButton" data-bs-toggle="dropdown" aria-expanded="false" class='btn btn-dark'>
                             <MenuIcon/>
                             </div>
@@ -58,78 +58,6 @@
             </div>
         </div>
     </header>
-
-    <div v-if='user' class="navbar-expand-md">
-        <div class="collapse navbar-collapse" id="navbar-menu">
-            <div class="navbar navbar-light">
-                <div class="container-xl">
-                    <ul class="navbar-nav">
-                        <li class="nav-item">
-                            <a class="nav-link cursor-pointer" @click='$router.push("/")'>
-                                <span class="nav-link-icon d-md-none d-lg-inline-block">
-                                    <HomeIcon/>
-                                </span>
-                                <span class="nav-link-title">Home</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link cursor-pointer" @click='$router.push("/connection")'>
-                                <span class="nav-link-icon d-md-none d-lg-inline-block">
-                                    <NetworkIcon/>
-                                </span>
-                                <span class="nav-link-title">Connections</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link cursor-pointer" @click='$router.push("/layer")'>
-                                <span class="nav-link-icon d-md-none d-lg-inline-block">
-                                    <BuildingBroadcastTowerIcon/>
-                                </span>
-                                <span class="nav-link-title">Layers</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link cursor-pointer" @click='$router.push("/data")'>
-                                <span class="nav-link-icon d-md-none d-lg-inline-block">
-                                    <DatabaseIcon/>
-                                </span>
-                                <span class="nav-link-title">Data</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link cursor-pointer" @click='$router.push("/basemap")'>
-                                <span class="nav-link-icon d-md-none d-lg-inline-block">
-                                    <MapIcon/>
-                                </span>
-                                <span class="nav-link-title">Basemaps</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link cursor-pointer" @click='$router.push("/iconset")'>
-                                <span class="nav-link-icon d-md-none d-lg-inline-block">
-                                    <PhotoIcon/>
-                                </span>
-                                <span class="nav-link-title">Icons</span>
-                            </a>
-                        </li>
-                    </ul>
-
-                    <div class='ms-auto'>
-                        <ul class="navbar-nav">
-                            <li class="nav-item">
-                                <a class="nav-link cursor-pointer" @click='$router.push("/admin")'>
-                                    <span class="nav-link-icon d-md-none d-lg-inline-block">
-                                        <AdjustmentsIcon/>
-                                    </span>
-                                    <span class="nav-link-title">Admin</span>
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <template v-if='upload'>
         <TablerModal>
