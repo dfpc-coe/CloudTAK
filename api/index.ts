@@ -18,9 +18,7 @@ import BlueprintLogin, { tokenParser } from '@tak-ps/blueprint-login';
 import Server from './lib/types/server.js';
 import Config from './lib/config.js';
 import Profile from './lib/types/profile.js';
-import TAKAPI, {
-    APIAuthPassword
-} from './lib/tak-api.js';
+import TAKAPI, { APIAuthPassword } from './lib/tak-api.js';
 
 const args = minimist(process.argv, {
     boolean: [
@@ -240,6 +238,18 @@ export default async function server(config: Config) {
             } else if (params.get('connection') === auth.email) {
                 if (!config.wsClients.has(params.get('connection'))) config.wsClients.set(params.get('connection'), [])
                 config.wsClients.get(params.get('connection')).push(new ConnectionWebSocket(ws, params.get('format')));
+
+                if (!config.conns.has(params.get('connection'))) {
+                    const profile = await Profile.from(config.pool, params.get('connection'));
+                    config.conns.add({
+                        id: params.get('connection'),
+                        name: params.get('connection'),
+                        created: new Date(),
+                        updated: new Date(),
+                        enabled: true,
+                        auth: profile.auth
+                    }, true);
+                }
             } else {
                 throw new Error('Unauthorized');
             }
