@@ -1,5 +1,5 @@
 <template>
-<div class="row position-relative" style='height: calc(100vh - 114px) !important;'>
+<div class="row position-relative" style='height: calc(100vh - 58px) !important;'>
     <TablerLoading v-if='loading.main'/>
     <template v-else>
         <div class='position-absolute top-0 end-0 text-white py-2' style='z-index: 1; width: 60px;'>
