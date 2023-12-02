@@ -1,6 +1,4 @@
-// @ts-ignore
 import Connection from './types/connection.js';
-// @ts-ignore
 import Server from './types/server.js';
 import Sinks from './sinks.js';
 import Config from './config.js';
@@ -139,7 +137,7 @@ export default class ConnectionPool extends Map<number, ConnectionClient> {
             connClient.retry = 0;
             connClient.initial = false;
 
-            this.cot(connClient, cot);
+            this.cot(conn, cot);
         }).on('end', async () => {
             console.error(`not ok - ${conn.id} @ end`);
             this.retry(connClient);
@@ -189,7 +187,7 @@ export default class ConnectionPool extends Map<number, ConnectionClient> {
     }
 }
 
-function sleep(ms: number): Promise<void> {
+export function sleep(ms: number): Promise<void> {
     return new Promise((resolve) => {
         setTimeout(resolve, ms);
     });
