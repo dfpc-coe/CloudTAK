@@ -31,6 +31,10 @@
                 <label class='subheader'>Remarks</label>
                 <div v-text='cot.properties.remarks || "None"' class='bg-gray-500 rounded mx-2 py-2 px-2'/>
             </div>
+
+            <template v-if='cot.properties.type.toLowerCase().startsWith("u-d")'>
+                <CoTStyle v-model='feat'/>
+            </template>
         </template>
         <template v-else-if='mode === "raw"'>
             <pre v-text='cot'/>
@@ -45,6 +49,7 @@ import {
     TablerEnum
 } from '@tak-ps/vue-tabler';
 import pointOnFeature from '@turf/point-on-feature';
+import CoTStyle from './util/CoTStyle.vue';
 import Coordinate from './util/Coordinate.vue';
 import {
     XIcon,
@@ -67,6 +72,7 @@ export default {
     data: function() {
         return {
             mode: 'default',
+            feat: this.cot,
             icon: null
         }
     },
@@ -81,6 +87,7 @@ export default {
     components: {
         XIcon,
         CodeIcon,
+        CoTStyle,
         ZoomPanIcon,
         Coordinate,
         TablerInput,
