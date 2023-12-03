@@ -13,12 +13,24 @@
         },
         "updated": {
             "$ref": "./profile/updated.json"
+        },
+        "tak_callsign": {
+            "$ref": "./profile/tak_callsign.json"
+        },
+        "tak_group": {
+            "$ref": "./profile/tak_group.json"
+        },
+        "tak_role": {
+            "$ref": "./profile/tak_role.json"
         }
     },
     "required": [
         "username",
         "auth",
         "created",
-        "updated"
+        "updated",
+        "tak_callsign",
+        "tak_group",
+        "tak_role"
     ]
 }

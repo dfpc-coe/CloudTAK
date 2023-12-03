@@ -18,13 +18,7 @@
         </div>
 
         <template v-if='mode === "default"'>
-            <div v-if='cot.geometry.type === "Point"' class='col-12'>
-                <label class='subheader'>Centroid</label>
-                <div
-                    v-text='cot.geometry.coordinates.join(", ")'
-                    class='bg-gray-500 rounded mx-2 py-2 px-2'
-                />
-            </div>
+            <Coordinate :coordinates='cot.geometry.coordinates'/>
             <div v-if='!isNaN(cot.properties.speed)' class='col-12 row'>
                 <div class='col-6'>
                     <label class='subheader'>Speed</label>
@@ -53,6 +47,7 @@ import {
     TablerEnum
 } from '@tak-ps/vue-tabler';
 import pointOnFeature from '@turf/point-on-feature';
+import Coordinate from './util/Coordinate.vue';
 import {
     XIcon,
     ZoomPanIcon,
@@ -89,6 +84,7 @@ export default {
         XIcon,
         CodeIcon,
         ZoomPanIcon,
+        Coordinate,
         TablerInput,
         TablerEnum
     }
