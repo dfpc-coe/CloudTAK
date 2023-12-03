@@ -19,15 +19,13 @@
 
         <template v-if='mode === "default"'>
             <Coordinate :coordinates='cot.geometry.coordinates'/>
-            <div v-if='!isNaN(cot.properties.speed)' class='col-12 row'>
-                <div class='col-6'>
-                    <label class='subheader'>Speed</label>
-                    <div v-text='cot.properties.speed' class='bg-gray-500 rounded mx-2 py-2 px-2'/>
-                </div>
-                <div class='col-6'>
-                    <label class='subheader'>Course</label>
-                    <div v-text='cot.properties.course' class='bg-gray-500 rounded mx-2 py-2 px-2'/>
-                </div>
+            <div v-if='!isNaN(cot.properties.speed)' class='col-12'>
+                <label class='subheader'>Speed</label>
+                <div v-text='cot.properties.speed' class='bg-gray-500 rounded mx-2 py-2 px-2'/>
+            </div>
+            <div v-if='!isNaN(cot.properties.course)' class='col-12'>
+                <label class='subheader'>Course</label>
+                <div v-text='cot.properties.course' class='bg-gray-500 rounded mx-2 py-2 px-2'/>
             </div>
             <div class='col-12'>
                 <label class='subheader'>Remarks</label>
