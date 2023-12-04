@@ -1,5 +1,6 @@
 // @ts-ignore
 import cf from '@openaddresses/cloudfriend';
+import Data from '../types/Data.js';
 import AWSBatch from '@aws-sdk/client-batch';
 import Config from '../config.js';
 import jwt from 'jsonwebtoken';
@@ -18,7 +19,31 @@ export interface BatchJob {
  * @class
  */
 export default class Batch {
-    static async submit(config: Config, data: any, asset: string, task: object): Promise<any> {
+    static async submitUser(config: Config, email: string, asset: string, task: object): Promise<SubmitJobCommandOutput> {
+        const batch = new AWSBatch.BatchClient({ region: process.env.AWS_DEFAULT_REGION });
+
+        let jobName = `user-${email}-${asset.replace(/[^a-zA-Z0-9]/g, '_').slice(0, 50)}`;
+
+        const batchres = await batch.send(new AWSBatch.SubmitJobCommand({
+            jobName,
+            jobQueue: `${config.StackName}-queue`,
+            jobDefinition: `${config.StackName}-data-job`,
+            containerOverrides: {
+                environment: [
+                    { name: 'ETL_API',      value:  config.API_URL },
+                    { name: 'ETL_BUCKET',   value:  config.Bucket },
+                    { name: 'ETL_TOKEN',    value: jwt.sign({ access: 'user', user: email }, config.SigningSecret) },
+                    { name: 'ETL_TYPE',     value: 'user' },
+                    { name: 'ETL_ID',       value: email },
+                    { name: 'ETL_TASK',     value: JSON.stringify({ asset: asset, config: task }) },
+                ]
+            }
+        }));
+
+        return batchres;
+    }
+
+    static async submitData(config: Config, data: Data, asset: string, task: object): Promise<SubmitJobCommandOutput> {
         const batch = new AWSBatch.BatchClient({ region: process.env.AWS_DEFAULT_REGION });
 
         let jobName = `data-${data.id}-${asset.replace(/[^a-zA-Z0-9]/g, '_').slice(0, 50)}`;
@@ -32,7 +57,8 @@ export default class Batch {
                     { name: 'ETL_API',      value:  config.API_URL },
                     { name: 'ETL_BUCKET',   value:  config.Bucket },
                     { name: 'ETL_TOKEN',    value: jwt.sign({ access: 'data', data: data.id }, config.SigningSecret) },
-                    { name: 'ETL_DATA',     value: String(data.id) },
+                    { name: 'ETL_TYPE',     value: 'data' },
+                    { name: 'ETL_ID',       value: String(data.id) },
                     { name: 'ETL_TASK',     value: JSON.stringify({ asset: asset, config: task }) },
                 ]
             }
