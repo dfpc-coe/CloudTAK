@@ -2,17 +2,17 @@
 <div class="row position-relative" style='height: calc(100vh - 58px) !important;'>
     <TablerLoading v-if='loading.main'/>
     <template v-else>
-        <div class='position-absolute top-0 end-0 text-white py-2' style='z-index: 1; width: 60px;'>
+        <div class='position-absolute top-0 end-0 text-white py-2' style='z-index: 1; width: 60px; background-color: rgba(0, 0, 0, 0.5);'>
             <Menu2Icon v-if='!cot && !menu.main' @click='menu.main = true' size='40' class='cursor-pointer'/>
             <XIcon v-else-if='!cot && menu.main' @click='menu.main = false' size='40' class='cursor-pointer bg-dark'/>
             <XIcon v-if='cot' @click='cot = false' size='40' class='cursor-pointer bg-dark'/>
         </div>
 
-        <div class='position-absolute top-0 beginning-0 text-white py-2 mx-2' style='z-index: 1; width: 40px'>
+        <div class='position-absolute top-0 beginning-0 text-white py-2 mx-2' style='z-index: 1; width: 60px; background-color: rgba(0, 0, 0, 0.5)'>
             <Focus2Icon v-if='!radial.cot && !locked.length' @click='getLocation' :size='40' class='cursor-pointer'/>
             <LockAccessIcon v-else-if='!radial.cot' @click='locked.splice(0, locked.length)' :size='40' class='cursor-pointer'/>
 
-            <div class='my-3'>
+            <div class='mt-3'>
                 <SquarePlusIcon size='40' @click='map.setZoom(map.getZoom() + 1);' class='cursor-pointer'/>
                 <SquareMinusIcon size='40' @click='map.setZoom(map.getZoom() - 1);' class='cursor-pointer'/>
             </div>
@@ -20,7 +20,7 @@
 
         <div v-if='map && draw'
             class='position-absolute top-0 text-white py-2'
-            style='z-index: 1; width: 60px; right: 60px;'
+            style='z-index: 1; width: 60px; right: 60px; background-color: rgba(0, 0, 0, 0.5)'
         >
             <TablerDropdown>
                 <template #default>
