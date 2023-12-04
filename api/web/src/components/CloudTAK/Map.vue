@@ -8,6 +8,16 @@
             <XIcon v-if='cot' @click='cot = false' size='40' class='cursor-pointer bg-dark'/>
         </div>
 
+        <div class='position-absolute top-0 beginning-0 text-white py-2 mx-2' style='z-index: 1; width: 40px'>
+            <Focus2Icon v-if='!radial.cot && !locked.length' :size='40' class='cursor-pointer'/>
+            <LockAccessIcon v-else-if='!radial.cot' @click='locked.splice(0, locked.length)' :size='40' class='cursor-pointer'/>
+
+            <div class='my-3'>
+                <SquarePlusIcon size='40' @click='map.setZoom(map.getZoom() + 1);' class='cursor-pointer'/>
+                <SquareMinusIcon size='40' @click='map.setZoom(map.getZoom() - 1);' class='cursor-pointer'/>
+            </div>
+        </div>
+
         <div v-if='map && draw'
             class='position-absolute top-0 text-white py-2'
             style='z-index: 1; width: 60px; right: 60px;'
@@ -57,6 +67,10 @@ import mapgl from 'maplibre-gl'
 import * as terraDraw from 'terra-draw';
 import {
     Menu2Icon,
+    SquarePlusIcon,
+    SquareMinusIcon,
+    Focus2Icon,
+    LockAccessIcon,
     PencilIcon,
     XIcon,
     PointIcon,
@@ -404,6 +418,10 @@ export default {
         }
     },
     components: {
+        SquarePlusIcon,
+        SquareMinusIcon,
+        Focus2Icon,
+        LockAccessIcon,
         RadialMenu,
         PointIcon,
         LineIcon,
