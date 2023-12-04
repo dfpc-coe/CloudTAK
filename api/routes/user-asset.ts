@@ -106,7 +106,7 @@ export default async function router(schema: any, config: Config) {
                 await assets[0];
 
                 //TODO Make this generic to support user inputs
-                await Batch.submit(config, data, `${req.params.asset}.${req.params.ext}`, req.body);
+                await Batch.submitUser(config, req.auth.email, `${req.params.asset}.${req.params.ext}`, req.body);
 
                 return res.json({
                     status: 200,
@@ -133,7 +133,7 @@ export default async function router(schema: any, config: Config) {
             await Auth.is_auth(req);
 
             //TODO Make this generic to support user inputs
-            await Batch.submit(config, data, `${req.params.asset}.${req.params.ext}`, req.body);
+            await Batch.submit(config, req.auth.email, `${req.params.asset}.${req.params.ext}`, req.body);
 
             return res.json({
                 status: 200,
