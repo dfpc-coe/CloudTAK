@@ -139,10 +139,10 @@ export default {
                 M2 * Math.sin(2 * latRad) +
                 M3 * Math.sin(4 * latRad) -
                 M4 * Math.sin(6 * latRad));
-            const easting = K0 * n * (a +
+            let easting = K0 * n * (a +
                 a3 / 6 * (1 - latTan2 + c) +
                 a5 / 120 * (5 - 18 * latTan2 + latTan4 + 72 * c - 58 * E_P2)) + 500000;
-            const northing = K0 * (m + n * latTan * (a2 / 2 +
+            let northing = K0 * (m + n * latTan * (a2 / 2 +
                 a4 / 24 * (5 - latTan2 + 9 * c + 4 * c * c) +
                 a6 / 720 * (61 - 58 * latTan2 + latTan4 + 600 * c - 330 * E_P2)));
             if (latitude < 0) northing += 1e7;

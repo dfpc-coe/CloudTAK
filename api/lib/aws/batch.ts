@@ -1,6 +1,6 @@
 // @ts-ignore
 import cf from '@openaddresses/cloudfriend';
-import Data from '../types/Data.js';
+import Data from '../types/data.js';
 import AWSBatch from '@aws-sdk/client-batch';
 import Config from '../config.js';
 import jwt from 'jsonwebtoken';
@@ -19,7 +19,7 @@ export interface BatchJob {
  * @class
  */
 export default class Batch {
-    static async submitUser(config: Config, email: string, asset: string, task: object): Promise<SubmitJobCommandOutput> {
+    static async submitUser(config: Config, email: string, asset: string, task: object): Promise<AWSBatch.SubmitJobCommandOutput> {
         const batch = new AWSBatch.BatchClient({ region: process.env.AWS_DEFAULT_REGION });
 
         let jobName = `user-${email}-${asset.replace(/[^a-zA-Z0-9]/g, '_').slice(0, 50)}`;
@@ -43,7 +43,7 @@ export default class Batch {
         return batchres;
     }
 
-    static async submitData(config: Config, data: Data, asset: string, task: object): Promise<SubmitJobCommandOutput> {
+    static async submitData(config: Config, data: Data, asset: string, task: object): Promise<AWSBatch.SubmitJobCommandOutput> {
         const batch = new AWSBatch.BatchClient({ region: process.env.AWS_DEFAULT_REGION });
 
         let jobName = `data-${data.id}-${asset.replace(/[^a-zA-Z0-9]/g, '_').slice(0, 50)}`;
