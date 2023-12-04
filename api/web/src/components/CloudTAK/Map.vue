@@ -9,7 +9,7 @@
         </div>
 
         <div class='position-absolute top-0 beginning-0 text-white py-2 mx-2' style='z-index: 1; width: 40px'>
-            <Focus2Icon v-if='!radial.cot && !locked.length' :size='40' class='cursor-pointer'/>
+            <Focus2Icon v-if='!radial.cot && !locked.length' @click='getLocation' :size='40' class='cursor-pointer'/>
             <LockAccessIcon v-else-if='!radial.cot' @click='locked.splice(0, locked.length)' :size='40' class='cursor-pointer'/>
 
             <div class='my-3'>
@@ -208,6 +208,17 @@ export default {
         }
     },
     methods: {
+        getLocation: function() {
+            if (!("geolocation" in navigator)) throw new Error('GeoLocation is not available in this browser');
+
+            navigator.geolocation.getCurrentPosition((position) => {
+                this.map.flyTo({
+                    center: [position.coords.longitude, position.coords.latitude],
+                    zoom: 14
+                });
+                console.error(position);
+            });
+        },
         startDraw: function(type) {
             this.draw.start();
             this.draw.setMode(type);
