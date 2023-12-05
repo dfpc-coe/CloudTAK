@@ -79,7 +79,7 @@ export default {
     methods: {
         zoomTo: function() {
             this.map.flyTo({
-                center: pointOnFeature(this.cot).geometry.coordinates,
+                center: JSON.parse(this.cot.properties.center),
                 zoom: 14
             })
         }
