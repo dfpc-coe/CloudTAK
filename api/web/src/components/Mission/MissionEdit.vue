@@ -96,7 +96,7 @@
                                     </div>
                                 </div>
                                 <div class='ms-auto btn-list'>
-                                    <DownloadIcon @click='downloadFile(content.data)' class='cursor-pointer'/>
+                                    <a :href='downloadFile(content.data)' :download='content.data.name + ".zip"'><DownloadIcon class='cursor-pointer'/></a>
                                 </div>
                             </div>
                         </template>
@@ -175,6 +175,9 @@ export default {
         }
     },
     methods: {
+        downloadFile: function(file) {
+            return window.stdurl(`/api/marti/api/files/${file.hash}?token=${localStorage.token}`);
+        },
         fetchContacts: async function() {
             try {
                 this.loading.users = true;
@@ -183,9 +186,6 @@ export default {
                 this.err = err;
             }
             this.loading.users = false;
-        },
-        downloadFile: async function(file) {
-            console.error(file);
         },
         deleteMission: async function() {
             try {
