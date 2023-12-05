@@ -31,7 +31,9 @@
     <template v-else>
         <template v-if='mode === "query"'>
             <div class='col-12 d-flex card-header'>
-                <h3 class='card-title'>Query Mode</h3>
+                <h3 class='card-title'>
+                    Query Mode
+                </h3>
                 <div class='ms-auto btn-list'>
                     <template v-if='mode === "query" && !disabled'>
                         <button @click='help("query")' class='btn'>
@@ -41,12 +43,17 @@
                             <PlusIcon/>
                         </button>
                     </template>
+                    <template v-else-if='mode === "query"'>
+                        <button v-if='query' @click='query = null' class='btn'>
+                            <XIcon/>
+                        </button>
+                    </template>
                 </div>
             </div>
             <template v-if='query === null && queries.length'>
                 <div class='card-body'>
                     <div class="list-group list-group-flush">
-                        <div :key='q_idx' v-for='(q, q_idx) in queries'>
+                        <div :key='q_idx' v-for='(q, q_idx) in queries' class='my-1'>
                             <div @click='openQuery(q_idx)' class="cursor-pointer list-group-item list-group-item-action">
                                 <div class='d-flex'>
                                     <div class='align-self-center' v-text='q.query'></div>
@@ -57,41 +64,51 @@
                             </div>
                         </div>
                     </div>
-                </div>
-                <div v-if='!disabled' class="col-12 py-2 px-2 d-flex">
-                    <button @click='reload' class='btn'>Cancel</button>
-                    <div class='ms-auto'>
-                        <button @click='saveLayer' class='btn btn-primary'>Save</button>
+
+                    <div v-if='!disabled' class="col-12 py-2 px-2 d-flex">
+                        <div class='ms-auto'>
+                            <button @click='saveLayer(query)' class='btn btn-primary'>Save</button>
+                        </div>
                     </div>
                 </div>
             </template>
             <template v-else-if='query === null && !queries.length'>
-                <TablerNone label='Queries' :create='!disabled' @create='newQuery'/>
+                <TablerNone label='Queries' :create='false' @create='newQuery'/>
             </template>
             <template v-else-if='query && typeof query === "object"'>
                 <div class='card-body'>
                     <TablerInput :disabled='disabled' v-model='query.query' placeholder='JSONata Query' label='JSONata Query' :error='errors.query'/>
 
                     <StyleSingle :schema='layer.schema' :disabled='disabled' v-model='query.styles'/>
+
+                    <div v-if='!disabled' class="col-12 py-2 px-2 d-flex">
+                        <button @click='query = null' class='btn'>Cancel</button>
+                        <div class='ms-auto'>
+                            <button @click='saveLayer(query)' class='btn btn-primary'>Save</button>
+                        </div>
+                    </div>
                 </div>
             </template>
         </template>
         <template v-else-if='mode === "basic"'>
             <StyleSingle :schema='layer.schema' :disabled='disabled' v-model='basic'/>
+
+            <div v-if='!disabled' class="col-12 py-2 px-2 d-flex">
+                <button v-if='mode === "single"' @click='reload' class='btn'>Cancel</button>
+                <button v-else @click='query = null' class='btn'>Cancel</button>
+                <div class='ms-auto'>
+                    <button @click='saveLayer' class='btn btn-primary'>Save</button>
+                </div>
+            </div>
         </template>
     </template>
-    <div v-if='!disabled' class="col-12 py-2 px-2 d-flex">
-        <button @click='reload' class='btn'>Cancel</button>
-        <div class='ms-auto'>
-            <button @click='saveLayer' class='btn btn-primary'>Save</button>
-        </div>
-    </div>
 </div>
 </template>
 
 <script>
 import jsonata from 'jsonata';
 import {
+    XIcon,
     AbcIcon,
     CodeIcon,
     PlusIcon,
@@ -168,8 +185,10 @@ export default {
                 styles: {}
             }
         },
-        saveLayer: async function() {
+        saveLayer: async function(query = null) {
             this.loading.save = true;
+
+            if (query) this.queries.push(query);
 
             let styles = {}
             if (this.mode === 'basic') {
@@ -190,6 +209,7 @@ export default {
 
             this.disabled = true;
             this.loading.save = false;
+            this.query = null;
 
             this.$emit('layer', layer);
         },
@@ -223,6 +243,7 @@ export default {
         }
     },
     components: {
+        XIcon,
         CodeIcon,
         AbcIcon,
         PlusIcon,
