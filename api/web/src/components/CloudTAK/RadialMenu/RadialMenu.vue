@@ -32,6 +32,10 @@ export default {
             type: Number,
             default: 0
         },
+        cot: {
+            type: Object,
+            required: true,
+        },
         size: {
             type: Number,
             default: 200
