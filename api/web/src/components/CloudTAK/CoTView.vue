@@ -20,8 +20,7 @@
         <template v-if='mode === "default"'>
             <Coordinate :coordinates='cot.geometry.coordinates'/>
             <div v-if='!isNaN(cot.properties.speed)' class='col-12'>
-                <label class='subheader'>Speed</label>
-                <div v-text='cot.properties.speed' class='bg-gray-500 rounded mx-2 py-2 px-2'/>
+                <Speed :speed='cot.properties.speed'/>
             </div>
             <div v-if='!isNaN(cot.properties.course)' class='col-12'>
                 <label class='subheader'>Course</label>
@@ -51,6 +50,7 @@ import {
 import pointOnFeature from '@turf/point-on-feature';
 import CoTStyle from './util/CoTStyle.vue';
 import Coordinate from './util/Coordinate.vue';
+import Speed from './util/Speed.vue';
 import {
     XIcon,
     ZoomPanIcon,
@@ -89,6 +89,7 @@ export default {
         CodeIcon,
         CoTStyle,
         ZoomPanIcon,
+        Speed,
         Coordinate,
         TablerInput,
         TablerEnum
