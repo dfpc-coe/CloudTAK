@@ -55,6 +55,7 @@
         @close='radial.cot = null'
         @click='handleRadial($event)'
         :x='radial.x'
+        :cot='radial.cot'
         :y='radial.y'
         ref='radial'
     />
@@ -258,7 +259,7 @@ export default {
             });
 
             if (this.locked.length && this.cots.has(this.locked[this.locked.length - 1])) {
-                const flyTo = { center: this.cots.get(this.locked[this.locked.length - 1]).geometry.coordinates, speed: Infinity };
+                const flyTo = { center: this.cots.get(this.locked[this.locked.length - 1]).properties.center, speed: Infinity };
                 this.map.flyTo(flyTo)
             }
         },
@@ -413,6 +414,7 @@ export default {
                         feat.properties.id = id;
                         feat.properties.type = 'u-d-f';
                         feat.properties.fill = '#ff0000'
+                        feat.properties.center = pointOnFeature(feat.geometry).geometry.coordinates;
                     }
 
                     this.draw._store.delete([id]);

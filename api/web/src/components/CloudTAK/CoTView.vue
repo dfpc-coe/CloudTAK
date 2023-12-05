@@ -18,7 +18,7 @@
         </div>
 
         <template v-if='mode === "default"'>
-            <Coordinate :coordinates='cot.geometry.coordinates'/>
+            <Coordinate :coordinates='center'/>
             <div v-if='!isNaN(cot.properties.speed)' class='col-12'>
                 <Speed :speed='cot.properties.speed'/>
             </div>
@@ -76,10 +76,15 @@ export default {
             icon: null
         }
     },
+    computed: {
+        center: function() {
+            return JSON.parse(this.cot.properties.center);
+        }
+    },
     methods: {
         zoomTo: function() {
             this.map.flyTo({
-                center: JSON.parse(this.cot.properties.center),
+                center: this.center,
                 zoom: 14
             })
         }
