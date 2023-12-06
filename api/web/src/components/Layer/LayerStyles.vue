@@ -27,8 +27,16 @@
 
     <TablerLoading v-if='loading.save' desc='Saving Styles'/>
     <TablerLoading v-else-if='loading.init' desc='Loading Styles'/>
-    <TablerNone v-else-if='!enabled' label='Style Overrides' :create='false'/>
+    <TablerNone v-else-if='!enabled && disabled' label='Style Overrides' :create='false'/>
     <template v-else>
+        <template v-if='!enabled'>
+            <TablerNone label='Style Overrides' :create='false'/>
+            <div class="col-12 py-2 px-2 d-flex">
+                <div class='ms-auto'>
+                    <button @click='saveLayer' class='btn btn-primary'>Save</button>
+                </div>
+            </div>
+        </template>
         <template v-if='mode === "query"'>
             <div class='col-12 d-flex card-header'>
                 <h3 class='card-title'>
