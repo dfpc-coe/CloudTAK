@@ -44,19 +44,19 @@ jobs:
       - name: Docker Push API
         run: docker push ${{secrets.AWS_ACCOUNT_ID}}.dkr.ecr.${{secrets.AWS_REGION}}.amazonaws.com/coe-ecr-etl:${{github.event.pull_request.head.sha || github.sha}}
 
-      - name: Configure AWS Credentials
+      - name: Configure AWS Credentials (STAGING)
         uses: aws-actions/configure-aws-credentials@v1
         with:
           role-to-assume: arn:aws-us-gov:iam::${{secrets.AWS_STAGING_ACCOUNT_ID}}:role/Github-ECR-Builder
           role-session-name: GithubECRBuilder
-          aws-region: ${{secrets.AWS_REGION}}
+          aws-region: ${{secrets.AWS_STAGING_REGION}}
 
-      - name: Login to Amazon ECR
+      - name: Login to Amazon ECR (STAGING)
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
 
-      - name: Docker Tag API
+      - name: Docker Tag API (STAGING)
         run: docker tag etl_api:latest ${{secrets.AWS_STAGING_ACCOUNT_ID}}.dkr.ecr.${{secrets.AWS_STAGING_REGION}}.amazonaws.com/coe-ecr-etl:${{github.event.pull_request.head.sha || github.sha}}
 
-      - name: Docker Push API
+      - name: Docker Push API (STAGING)
         run: docker push ${{secrets.AWS_STAGING_ACCOUNT_ID}}.dkr.ecr.${{secrets.AWS_STAGING_REGION}}.amazonaws.com/coe-ecr-etl:${{github.event.pull_request.head.sha || github.sha}}
