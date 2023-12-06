@@ -1,8 +1,8 @@
 import jsonata from 'jsonata';
 import { Feature } from 'geojson';
-// @ts-ignore
 import Layer from './types/layer.js';
 import handlebars from 'handlebars';
+import Err from '@openaddresses/batch-error';
 
 /**
  * Apply layer styling to CoT Messages
@@ -15,6 +15,20 @@ export default class Style {
 
     constructor(layer: Layer) {
         this.layer = layer;
+    }
+
+    static validate(styles: any) {
+        try {
+            if (styles.queries) {
+                for (const q of styles.queries) {
+                    jsonata(q.query);
+                }
+            }
+
+            return true;
+        } catch (err) {
+            throw new Err(400, err, err.message);
+        }
     }
 
     /**
