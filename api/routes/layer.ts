@@ -172,16 +172,20 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            if (req.body.styles && req.body.styles.queries) {
-                req.body.styles = {
-                    queries: req.body.styles.queries
-                };
-            } else if (req.body.styles) {
-                req.body.styles = {
-                    point: req.body.styles.point,
-                    line: req.body.styles.line,
-                    polygon: req.body.styles.polygon
-                };
+            if (req.body.styles) {
+                await Style.validate(req.body.styles);
+ 
+                if (req.body.styles && req.body.styles.queries) {
+                    req.body.styles = {
+                        queries: req.body.styles.queries
+                    };
+                } else {
+                    req.body.styles = {
+                        point: req.body.styles.point,
+                        line: req.body.styles.line,
+                        polygon: req.body.styles.polygon
+                    };
+                }
             }
 
             if (req.body.connection && req.body.data) {
