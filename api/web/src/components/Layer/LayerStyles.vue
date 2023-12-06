@@ -58,7 +58,7 @@
                                 <div class='d-flex'>
                                     <div class='align-self-center' v-text='q.query'></div>
                                     <div class='ms-auto'>
-                                        <div v-if='!disabled' @click.stop='removeQuery(idx)' class='btn'><TrashIcon/></div>
+                                        <div v-if='!disabled' @click.stop='queries.splice(q_idx, 1)' class='btn'><TrashIcon/></div>
                                     </div>
                                 </div>
                             </div>
@@ -212,28 +212,6 @@ export default {
             this.query = null;
 
             this.$emit('layer', layer);
-        },
-        saveQuery: function() {
-            try {
-                jsonata(this.query.query);
-            } catch (err) {
-                this.errors.query = err.message;
-                return;
-            } finally {
-                this.errors.query = '';
-            }
-
-            if (this.query.id !== undefined) {
-                delete this.query.id;
-                this.queries.splice(this.query.id, 1, this.query);
-            } else {
-                this.queries.push(this.query);
-            }
-
-            this.query = null;
-        },
-        removeQuery: function(idx) {
-            this.queries.splice(idx, 1);
         },
         openQuery: function(idx) {
             this.query = {
