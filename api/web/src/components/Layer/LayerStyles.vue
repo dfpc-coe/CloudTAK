@@ -44,6 +44,9 @@
                         </button>
                     </template>
                     <template v-else-if='mode === "query"'>
+                        <button @click='help("query")' class='btn'>
+                            <HelpIcon/>
+                        </button>
                         <button v-if='query' @click='query = null' class='btn'>
                             <XIcon/>
                         </button>
@@ -199,19 +202,24 @@ export default {
                 }
             }
 
-            const layer = await window.std(`/api/layer/${this.$route.params.layerid}`, {
-                method: 'PATCH',
-                body: {
-                    enabled_styles: this.enabled,
-                    styles
-                }
-            });
+            try {
+                const layer = await window.std(`/api/layer/${this.$route.params.layerid}`, {
+                    method: 'PATCH',
+                    body: {
+                        enabled_styles: this.enabled,
+                        styles
+                    }
+                });
 
-            this.disabled = true;
-            this.loading.save = false;
-            this.query = null;
+                this.disabled = true;
+                this.loading.save = false;
+                this.query = null;
 
-            this.$emit('layer', layer);
+                this.$emit('layer', layer);
+            } catch (err) {
+                this.loading.save = false;
+                throw err;
+            }
         },
         openQuery: function(idx) {
             this.query = {
