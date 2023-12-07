@@ -4,6 +4,7 @@ export default {
     Resources: {
         PMTilesLambda: {
             Type: 'AWS::Lambda::Function',
+            DependsOn: ['SigningSecret'],
             Properties: {
                 FunctionName: cf.join([cf.stackName, '-pmtiles']),
                 MemorySize: 512,
