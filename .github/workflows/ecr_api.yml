@@ -47,7 +47,7 @@ jobs:
       - name: Configure AWS Credentials (STAGING)
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws-us-gov:iam::${{secrets.AWS_STAGING_ACCOUNT_ID}}:role/Github-ECR-Builder
+          role-to-assume: arn:aws:iam::${{secrets.AWS_STAGING_ACCOUNT_ID}}:role/Github-ECR-Builder
           role-session-name: GithubECRBuilder
           aws-region: ${{secrets.AWS_STAGING_REGION}}
 
