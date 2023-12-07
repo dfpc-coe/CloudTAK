@@ -1,11 +1,13 @@
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
+import Profile from '../lib/types/profile.js';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
 import TAKAPI, {
     APIAuthToken,
-    APIAuthPassword
+    APIAuthPassword,
+    APIAuthCertificate
 } from '../lib/tak-api.js';
 
 export default async function router(schema: any, config: Config) {
@@ -30,7 +32,8 @@ export default async function router(schema: any, config: Config) {
 
             if (!req.auth.email) throw new Err(400, null, 'Groups can only be listed by a JWT authenticated user');
 
-            const api = await TAKAPI.init(new URL(config.MartiAPI), new APIAuthToken(req.auth.token));
+            const profile = await Profile.from(config.pool, req.auth.email);
+            const api = await TAKAPI.init(new URL(config.server.api), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
 
             const query = {};
             for (const q in req.query) query[q] = String(req.query[q]);
@@ -76,7 +79,8 @@ export default async function router(schema: any, config: Config) {
 
             if (!req.auth.email) throw new Err(400, null, 'Groups can only be listed by a JWT authenticated user');
 
-            const api = await TAKAPI.init(new URL(config.MartiAPI), new APIAuthToken(req.auth.token));
+            const profile = await Profile.from(config.pool, req.auth.email);
+            const api = await TAKAPI.init(new URL(config.server.api), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
 
             const query = {};
             for (const q in req.query) query[q] = String(req.query[q]);
@@ -100,7 +104,8 @@ export default async function router(schema: any, config: Config) {
 
             if (!req.auth.email) throw new Err(400, null, 'Contacts can only be listed by a JWT authenticated user');
 
-            const api = await TAKAPI.init(new URL(config.MartiAPI), new APIAuthToken(req.auth.token));
+            const profile = await Profile.from(config.pool, req.auth.email);
+            const api = await TAKAPI.init(new URL(config.server.api), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
 
             const contacts = await api.Contacts.list();
 
@@ -121,7 +126,8 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            const api = await TAKAPI.init(new URL(config.MartiAPI), new APIAuthPassword(req.body.username, req.body.password));
+            const profile = await Profile.from(config.pool, req.auth.email);
+            const api = await TAKAPI.init(new URL(config.server.api), new APIAuthPassword(req.body.username, req.body.password));
 
             const certs = await api.Credentials.generate();
 
