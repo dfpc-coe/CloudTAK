@@ -42,6 +42,52 @@ export default async function router(schema: any, config: Config) {
         }
     });
 
+    await schema.put('/marti/group', {
+        name: 'Upate Groups',
+        group: 'Marti',
+        auth: 'user',
+        description: 'Helper API to update groups that the client is part of',
+        query: {
+            type: 'object',
+            properties: {
+                clientUid: { type: 'string' }
+            }
+        },
+        body: {
+            type: 'array',
+            items: {
+                type: 'object',
+                required: ['name', 'direction', 'created', 'type', 'bitpos', 'active'],
+                properties: {
+                    name: { type: "string" },
+                    direction: { type: "string" },
+                    created: { type: 'string' },
+                    type: { type: "string" },
+                    bitpos: { type: 'integer' },
+                    active: { type: 'boolean' },
+                    description: { type: "string" }
+                }
+            }
+        },
+        res: 'res.Marti.json'
+    }, async (req: AuthRequest, res: Response) => {
+        try {
+            await Auth.is_auth(req);
+
+            if (!req.auth.email) throw new Err(400, null, 'Groups can only be listed by a JWT authenticated user');
+
+            const api = await TAKAPI.init(new URL(config.MartiAPI), new APIAuthToken(req.auth.token));
+
+            const query = {};
+            for (const q in req.query) query[q] = String(req.query[q]);
+            const groups = await api.Group.update(query, req.body);
+
+            return res.json(groups);
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
+
     await schema.get('/marti/api/contacts/all', {
         name: 'List Groups',
         group: 'Marti',
