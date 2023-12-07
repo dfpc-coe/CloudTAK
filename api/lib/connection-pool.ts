@@ -1,6 +1,4 @@
-// @ts-ignore
 import Connection from './types/connection.js';
-// @ts-ignore
 import Server from './types/server.js';
 import Sinks from './sinks.js';
 import Config from './config.js';
@@ -25,12 +23,14 @@ class ConnectionClient {
     tak: TAK;
     retry: number;
     initial: boolean;
+    ephemeral: boolean;
 
-    constructor(conn: Connection, tak: TAK) {
+    constructor(conn: Connection, tak: TAK, ephemeral = false) {
         this.tak = tak;
         this.conn = conn;
         this.retry = 0;
         this.initial = true;
+        this.ephemeral = ephemeral;
     }
 }
 
@@ -38,20 +38,26 @@ class ConnectionClient {
  * Maintain a pool of TAK Connections, reconnecting as necessary
  * @class
  */
-export default class ConnectionPool extends Map<number, ConnectionClient> {
+export default class ConnectionPool extends Map<number | string, ConnectionClient> {
     #server: Server;
     pool: Pool;
-    clients: ConnectionWebSocket[];
+    wsClients: Map<string, ConnectionWebSocket[]>;
     metrics: Metrics;
     sinks: Sinks;
     nosinks: boolean;
     stackName: string;
     local: boolean;
 
-    constructor(config: Config, server: Server, clients: ConnectionWebSocket[] = [], stackName: string, local=false) {
+    constructor(
+        config: Config,
+        server: Server,
+        wsClients: Map<string, ConnectionWebSocket[]> = new Map(),
+        stackName: string,
+        local=false
+    ) {
         super();
         this.#server = server;
-        this.clients = clients;
+        this.wsClients = wsClients;
         this.stackName = stackName,
         this.local = local,
         this.metrics = new Metrics(stackName);
@@ -97,7 +103,7 @@ export default class ConnectionPool extends Map<number, ConnectionClient> {
         });
     }
 
-    status(id: number): string {
+    status(id: number | string): string {
         if (this.has(id)) {
             return this.get(id).tak.open ? 'live' : 'dead';
         } else {
@@ -110,30 +116,36 @@ export default class ConnectionPool extends Map<number, ConnectionClient> {
      * This is also called externally by the layer/:layer/cot API as CoTs
      * aren't rebroadcast to the submitter by the TAK Server
      */
-    async cot(conn: Connection, cot: CoT) {
-        for (const client of this.clients) {
-            if (client.format == 'geojson') {
-                client.ws.send(JSON.stringify({ type: 'cot', connection: conn.id, data: cot.to_geojson() }));
-            } else {
-                client.ws.send(JSON.stringify({ type: 'cot', connection: conn.id, data: cot.raw }));
+    async cot(conn: Connection, cot: CoT, ephemeral=false) {
+        if (this.wsClients.has(String(conn.id))) {
+            for (const client of this.wsClients.get(String(conn.id))) {
+                if (client.format == 'geojson') {
+                    client.ws.send(JSON.stringify({ type: 'cot', connection: conn.id, data: cot.to_geojson() }));
+                } else {
+                    client.ws.send(JSON.stringify({ type: 'cot', connection: conn.id, data: cot.raw }));
+                }
             }
         }
 
-        if (!this.nosinks && cot.is_atom()) {
-            await this.sinks.cot(conn, cot);
+        if (!ephemeral && !this.nosinks && cot.is_atom()) {
+            try {
+                await this.sinks.cot(conn, cot);
+            } catch (err) {
+                console.error('Error', err);
+            }
         }
     }
 
-    async add(conn: Connection) {
+    async add(conn: Connection, ephemeral=false) {
         const tak = await TAK.connect(conn.id, new URL(this.#server.url), conn.auth);
-        const connClient = new ConnectionClient(conn, tak);
+        const connClient = new ConnectionClient(conn, tak, ephemeral);
         this.set(conn.id, connClient);
 
         tak.on('cot', async (cot: CoT) => {
             connClient.retry = 0;
             connClient.initial = false;
 
-            this.cot(connClient, cot);
+            this.cot(conn, cot, ephemeral);
         }).on('end', async () => {
             console.error(`not ok - ${conn.id} @ end`);
             this.retry(connClient);
@@ -141,7 +153,7 @@ export default class ConnectionPool extends Map<number, ConnectionClient> {
             console.error(`not ok - ${conn.id} @ timeout`);
             this.retry(connClient);
         }).on('ping', async () => {
-            if (this.stackName !== 'test') {
+            if (this.stackName !== 'test' && !ephemeral) {
                 try {
                     await this.metrics.post(conn.id);
                 } catch (err) {
@@ -170,7 +182,7 @@ export default class ConnectionPool extends Map<number, ConnectionClient> {
         }
     }
 
-    delete(id: number): boolean {
+    delete(id: number | string): boolean {
         if (this.has(id)) {
             const conn = this.get(id);
             conn.tak.destroy();
@@ -183,7 +195,7 @@ export default class ConnectionPool extends Map<number, ConnectionClient> {
     }
 }
 
-function sleep(ms: number): Promise<void> {
+export function sleep(ms: number): Promise<void> {
     return new Promise((resolve) => {
         setTimeout(resolve, ms);
     });

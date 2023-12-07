@@ -25,6 +25,7 @@
             "additionalProperties": false,
             "required": [
                 "name",
+                "sync",
                 "updated",
                 "visualized",
                 "etag",
@@ -33,6 +34,10 @@
             "properties": {
                 "name": {
                     "type": "string"
+                },
+                "sync": {
+                    "type": "boolean",
+                    "description": "If the Data is attached to a mission, signify if the asset is syncing with the mission"
                 },
                 "visualized": {
                     "type": "string"

@@ -21,8 +21,16 @@
             <tbody>
                 <tr :key='asset.name' v-for='asset in list.assets'>
                     <td>
-                        <MapIcon v-if='asset.visualized' v-tooltip='"Visualizable"' class='cursor-pointer'/>
-                        <span v-text='asset.name' class='mx-2'/>
+                        <div class='d-flex'>
+                            <div class='btn-list'>
+                                <MapIcon v-if='asset.visualized' v-tooltip='"Visualizable"' class='cursor-pointer'/>
+                            </div>
+
+                            <span v-text='asset.name' class='mx-2'/>
+
+                            <RefreshDotIcon v-if='data.mission && asset.sync' class='text-green' v-tooltip='"Syncing"'/>
+                            <RefreshOffIcon v-else-if='data.mission && !asset.sync'/>
+                        </div>
                     </td>
                     <td>
                         <TablerBytes :bytes='asset.size'/>
@@ -60,6 +68,8 @@
 
 <script>
 import {
+    RefreshDotIcon,
+    RefreshOffIcon,
     PlusIcon,
     MapIcon,
     RefreshIcon,
@@ -79,6 +89,12 @@ import {
 
 export default {
     name: 'DataAssets',
+    props: {
+        data: {
+            type: Object,
+            required: true
+        }
+    },
     data: function() {
         return {
             err: null,
@@ -152,6 +168,8 @@ export default {
         MapIcon,
         RefreshIcon,
         TransformIcon,
+        RefreshDotIcon,
+        RefreshOffIcon,
         DownloadIcon,
         TablerDelete,
         TablerLoading,

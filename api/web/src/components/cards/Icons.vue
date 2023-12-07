@@ -5,7 +5,7 @@
 
         <div class='ms-auto'>
             <div class="input-icon">
-                <input v-model='query.search' type="text" class="form-control" placeholder="Search…">
+                <input v-model='paging.filter' type="text" class="form-control" placeholder="Search…">
                 <span class="input-icon-addon">
                     <SearchIcon/>
                 </span>
@@ -13,15 +13,13 @@
         </div>
     </div>
     <div class="card-body">
-        <template v-if='loading'>
-            <TablerLoading/>
-        </template>
+        <TablerLoading v-if='loading' desc='Loading Icons'/>
+        <TablerNone
+            v-else-if='!list.icons.length'
+            label='Icons'
+            :create='false'
+        />
         <template v-else>
-            <TablerNone
-                v-if='!list.icons.length'
-                label='Icons'
-                :create='false'
-            />
             <div class='row g-1'>
                 <div :key='icon.id' v-for='icon in list.icons' class="col-sm-2">
                     <div class="card card-sm">
@@ -38,6 +36,11 @@
                         </div>
                     </div>
                 </div>
+                <div class="col-lg-12 d-flex my-4">
+                    <div class='ms-auto'>
+                        <TablerPager v-if='list.total > paging.limit' @page='paging.page = $event' :page='paging.page'  :total='list.total' :limit='paging.limit'/>
+                    </div>
+                </div>
             </div>
         </template>
     </div>
@@ -47,6 +50,7 @@
 <script>
 import {
     TablerNone,
+    TablerPager,
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import {
@@ -64,17 +68,23 @@ export default {
         return {
             err: false,
             loading: true,
-            query: {
-                search: ''
+            paging: {
+                filter: '',
+                limit: 100,
+                page: 0
             },
             list: {
+                total: 0,
                 icons: []
             }
         }
     },
     watch: {
-        'query.search': function() {
-            this.fetchList();
+        paging: {
+            deep: true,
+            handler: async function() {
+                await this.fetchList();
+            }
         }
     },
     mounted: async function() {
@@ -89,7 +99,9 @@ export default {
         fetchList: async function() {
             this.loading = true;
             const url = window.stdurl('/api/icon');
-            url.searchParams.append('filter', this.query.search);
+            url.searchParams.append('filter', this.paging.filter);
+            url.searchParams.append('limit', this.paging.limit);
+            url.searchParams.append('page', this.paging.page);
             if (this.iconset) url.searchParams.append('iconset', this.iconset);
             this.list = await window.std(url);
             this.loading = false;
@@ -97,6 +109,7 @@ export default {
     },
     components: {
         TablerNone,
+        TablerPager,
         SearchIcon,
         TablerLoading
     }

@@ -1,7 +1,14 @@
 <template>
-<div class='row'>
-    <div class='col-12 border-light border-bottom'>
-        <div class='modal-header px-0 mx-2'>
+<div class='row' :class='{
+    "bg-dark text-white": !modal
+}'>
+    <div class='col-12' :class='{
+        "border-bottom border-light": !modal
+    }'>
+        <div class='modal-header' :class='{
+            "px-0 mx-2": !modal
+        }'>
+            <CircleArrowLeftIcon v-if='!modal' @click='$emit("close")' class='cursor-pointer'/>
             <div class='modal-title'>Missions</div>
             <div class='btn-list'>
                 <PlusIcon @click='$emit("create")' class='cursor-pointer' v-tooltip='"Create Mission"'/>
@@ -9,7 +16,7 @@
             </div>
         </div>
     </div>
-    <div class='modal-body mx-3'>
+    <div class='modal-body mx-3 my-2'>
         <TablerLoading v-if='loading' desc='Loading Missions'/>
         <Alert v-else-if='err' :err='err'/>
         <template v-else>
@@ -17,7 +24,8 @@
                 @click='$emit("mission", mission)'
                 :key='mission_it'
                 v-for='(mission, mission_it) in list.data'
-                class='cursor-pointer col-12 row py-2 hover rounded'
+                class='cursor-pointer col-12 row py-2 rounded'
+                :class='{ "hover-dark": !modal, "hover-light": modal }'
             >
                 <div class='col-auto d-flex justify-content-center align-items-center'>
                     <LockIcon v-if='mission.passwordProtected'/>
@@ -45,6 +53,7 @@ import {
     LockIcon,
     LockOpenIcon,
     RefreshIcon,
+    CircleArrowLeftIcon,
 } from 'vue-tabler-icons';
 import Alert from '../util/Alert.vue';
 import {
@@ -53,6 +62,12 @@ import {
 
 export default {
     name: 'MissionList',
+    props: {
+        modal: {
+            type: Boolean,
+            default: true
+        }
+    },
     data: function() {
         return {
             err: false,
@@ -81,6 +96,7 @@ export default {
     components: {
         Alert,
         TablerLoading,
+        CircleArrowLeftIcon,
         RefreshIcon,
         PlusIcon,
         LockIcon,

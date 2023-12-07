@@ -11,10 +11,13 @@ import Sprites from '../lib/sprites.js';
 import Cacher from '../lib/cacher.js';
 
 export default async function router(schema, config: Config) {
-    const defaultSprite = {
-        json: JSON.parse(String(await fs.readFile(new URL('../icons/generator.json', import.meta.url)))),
-        image: await fs.readFile(new URL('../icons/generator.png', import.meta.url))
-    }
+    // Eventually look at replacing this with memcached?
+    const SpriteMap = {
+        default: {
+            json: JSON.parse(String(await fs.readFile(new URL('../icons/generator.json', import.meta.url)))),
+            image: await fs.readFile(new URL('../icons/generator.png', import.meta.url))
+        }
+    };
 
     await schema.get('/iconset', {
         name: 'List Iconsets',
@@ -210,22 +213,23 @@ export default async function router(schema, config: Config) {
             additionalProperties: false,
             properties: {
                 iconset: { type: 'string' },
-                type: { type: 'boolean' }
             }
         }
     }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(req, true);
 
-            if (req.query.iconset === 'default') {
-                return res.send(defaultSprite.json);
+            if (SpriteMap[String(req.query.iconset)]) {
+                return res.json(SpriteMap[String(req.query.iconset)].json);
             } else {
                 const icons = await Icon.list(config.pool, {
                     limit: 1000,
                     ...req.query
                 })
 
-                const sprites = await Sprites(icons, { name: req.query.type ? 'type2525b' : null });
+                const sprites = await Sprites(icons);
+
+                SpriteMap[String(req.query.iconset)] = { image: sprites.image, json: sprites.json };
 
                 return res.json(sprites.json);
             }
@@ -245,7 +249,6 @@ export default async function router(schema, config: Config) {
             additionalProperties: false,
             properties: {
                 iconset: { type: 'string' },
-                type: { type: 'boolean' }
             }
         }
     }, async (req: AuthRequest, res: Response) => {
@@ -253,14 +256,17 @@ export default async function router(schema, config: Config) {
             await Auth.is_auth(req, true);
 
             res.type('png');
-            if (req.query.iconset === 'default') {
-                return res.send(defaultSprite.image);
+            if (SpriteMap[String(req.query.iconset)]) {
+                return res.send(SpriteMap[String(req.query.iconset)].image);
             } else {
                 const icons = await Icon.list(config.pool, {
                     limit: 1000,
                     ...req.query
                 })
-                const sprites = await Sprites(icons, { name: req.query.type ? 'type2525b' : null });
+                const sprites = await Sprites(icons);
+
+                SpriteMap[String(req.query.iconset)] = { image: sprites.image, json: sprites.json };
+
                 return res.send(sprites.image);
             }
         } catch (err) {

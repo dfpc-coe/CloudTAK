@@ -1,5 +1,4 @@
 import Err from '@openaddresses/batch-error';
-// @ts-ignore
 import Data from '../lib/types/data.js';
 import Auth from '../lib/auth.js';
 import Batch from '../lib/aws/batch.js';

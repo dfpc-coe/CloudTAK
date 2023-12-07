@@ -39,22 +39,27 @@ export default class Task {
     constructor() {
         this.etl = {
             api: process.env.ETL_API || '',
-            data: process.env.ETL_DATA || '',
+            id: process.env.ETL_ID || '',
+            type: process.env.ETL_TYPE || '',
             bucket: process.env.ETL_BUCKET || '',
             token: process.env.ETL_TOKEN || '',
             task: process.env.ETL_TASK || '{}'
         };
 
-        // This is just a helper function for local development, signing with the (unsecure) default secret
-        if (!this.etl.token && (new URL(this.etl.api)).hostname === 'localhost') {
-            this.etl.token = jwt.sign({ access: 'data', data: parseInt(this.etl.data) }, 'coe-wildland-fire');
-        }
-
         if (!this.etl.api) throw new Error('No ETL API URL Provided');
-        if (!this.etl.data) throw new Error('No ETL Data Provided');
+        if (!this.etl.type) throw new Error('No ETL Type Provided');
+        if (!this.etl.id) throw new Error('No ETL ID Provided');
         if (!this.etl.token) throw new Error('No ETL Token Provided');
         if (!this.etl.bucket) throw new Error('No ETL Bucket Provided');
         if (!this.etl.task) throw new Error('No ETL Task Provided');
+
+        // This is just a helper function for local development, signing with the (unsecure) default secret
+        if (!this.etl.token && (new URL(this.etl.api)).hostname === 'localhost') {
+            const jwtPayload = { access: this.etl.type };
+            jwtPayload[this.etl.type] = this.etl.id;
+            this.etl.token = jwt.sign({ access: this.etl.type }, 'coe-wildland-fire');
+        }
+
 
         this.etl.task = JSON.parse(this.etl.task);
     }
@@ -62,10 +67,10 @@ export default class Task {
     async control() {
         const s3 = new S3.S3Client({ region: process.env.AWS_DEFAULT_REGION });
 
-        console.log(`ok - fetching s3://${this.etl.bucket}/data/${this.etl.data}/${this.etl.task.asset}`);
+        console.log(`ok - fetching s3://${this.etl.bucket}/${this.etl.type}/${this.etl.id}/${this.etl.task.asset}`);
         const res = await s3.send(new S3.GetObjectCommand({
             Bucket: this.etl.bucket,
-            Key: `data/${this.etl.data}/${this.etl.task.asset}`
+            Key: `${this.etl.type}/${this.etl.id}/${this.etl.task.asset}`
         }));
 
         await pipeline(res.Body, fs.createWriteStream(path.resolve(os.tmpdir(), this.etl.task.asset)));
@@ -81,7 +86,7 @@ export default class Task {
                 client: s3,
                 params: {
                     Bucket: this.etl.bucket,
-                    Key: `data/${this.etl.data}/${path.parse(this.etl.task.asset).name}.geojsonld`,
+                    Key: `${this.etl.type}/${this.etl.id}/${path.parse(this.etl.task.asset).name}.geojsonld`,
                     Body: fs.createReadStream(asset)
                 }
             });
@@ -110,7 +115,7 @@ export default class Task {
                 client: s3,
                 params: {
                     Bucket: this.etl.bucket,
-                    Key: `data/${this.etl.data}/${path.parse(this.etl.task.asset).name}.pmtiles`,
+                    Key: `${this.etl.type}/${this.etl.id}/${path.parse(this.etl.task.asset).name}.pmtiles`,
                     Body: fs.createReadStream(path.resolve(os.tmpdir(), path.parse(this.etl.task.asset).name + '.pmtiles'))
                 }
             });
@@ -126,7 +131,7 @@ export default class Task {
                 client: s3,
                 params: {
                     Bucket: this.etl.bucket,
-                    Key: `data/${this.etl.data}/${path.parse(this.etl.task.asset).name}.pmtiles`,
+                    Key: `${this.etl.type}/${this.etl.id}/${path.parse(this.etl.task.asset).name}.pmtiles`,
                     Body: fs.createReadStream(path.resolve(os.tmpdir(), path.parse(this.etl.task.asset).name + '.pmtiles'))
                 }
             });

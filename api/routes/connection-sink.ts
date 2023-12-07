@@ -1,7 +1,5 @@
 import Err from '@openaddresses/batch-error';
-// @ts-ignore
 import Connection from '../lib/types/connection.js';
-// @ts-ignore
 import ConnectionSink from '../lib/types/connection-sink.js';
 import Auth from '../lib/auth.js';
 import CW from '../lib/aws/metric.js';

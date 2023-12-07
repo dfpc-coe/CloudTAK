@@ -1,7 +1,7 @@
 <template>
 <TablerModal size='xl'>
-    <button type="button" class="btn-close" @click='close' aria-label="Close"></button>
     <div class="modal-status bg-yellow"></div>
+    <button type="button" class="btn-close" @click='close' aria-label="Close"></button>
     <template v-if='create'>
         <MissionCreate
             @mission='mission = $event'
@@ -26,9 +26,9 @@
 </template>
 
 <script>
-import MissionList from './MissionList.vue';
-import MissionEdit from './MissionEdit.vue';
-import MissionCreate from './MissionCreate.vue';
+import MissionList from '../Mission/MissionList.vue';
+import MissionEdit from '../Mission/MissionEdit.vue';
+import MissionCreate from '../Mission/MissionCreate.vue';
 
 import {
     TablerModal

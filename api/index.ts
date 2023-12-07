@@ -10,13 +10,15 @@ import Schema from '@openaddresses/batch-schema';
 // @ts-ignore
 import { Pool } from '@openaddresses/batch-generic';
 import minimist from 'minimist';
-import ConnectionPool, { ConnectionWebSocket } from './lib/connection-pool.js';
+import ConnectionPool, { ConnectionWebSocket, sleep } from './lib/connection-pool.js';
 import EventsPool from './lib/events-pool.js';
 import { WebSocket, WebSocketServer } from 'ws';
 import Cacher from './lib/cacher.js';
-import BlueprintLogin from '@tak-ps/blueprint-login';
+import BlueprintLogin, { tokenParser } from '@tak-ps/blueprint-login';
 import Server from './lib/types/server.js';
 import Config from './lib/config.js';
+import Profile from './lib/types/profile.js';
+import TAKAPI, { APIAuthPassword } from './lib/tak-api.js';
 
 const args = minimist(process.argv, {
     boolean: [
@@ -82,8 +84,6 @@ export default async function server(config: Config) {
         }
     });
 
-    config.wsClients = [];
-
     try {
         config.server = await Server.from(config.pool, 1);
     } catch (err) {
@@ -137,12 +137,36 @@ export default async function server(config: Config) {
 
     await schema.api();
 
-    await schema.blueprint(new BlueprintLogin({
+    const login = new BlueprintLogin({
         secret: config.SigningSecret,
         unsafe: config.unsafe ? config.UnsafeSigningSecret : undefined,
         group: config.AuthGroup,
         api: config.local ? 'http://localhost:5001' : config.MartiAPI
-    }));
+    });
+
+    login.on('login', async (user) => {
+        let profile;
+        try {
+            profile = await Profile.from(config.pool, user.username);
+        } catch (err) {
+            if (err.status === 404) {
+                profile = await Profile.generate(config.pool, { username: user.username });
+            } else {
+                console.error(err);
+            }
+        }
+
+        if (!profile.auth.cert || !profile.auth.key) {
+            try {
+            const api = await TAKAPI.init(new URL(config.MartiAPI), new APIAuthPassword(user.username, user.password));
+            await profile.commit({ auth: await api.Credentials.generate() });
+            } catch (err) {
+                console.error(err);
+            }
+        }
+    });
+
+    await schema.blueprint(login);
 
     if (config.local) {
         // Mock WebTAK API to allow any username & Password
@@ -196,10 +220,44 @@ export default async function server(config: Config) {
 
     const wss = new WebSocketServer({
         noServer: true
-    }).on('connection', (ws: WebSocket, request) => {
-        const params = new URLSearchParams(request.url.replace(/.*\?/, ''));
-        // TODO: Remove connections
-        config.wsClients.push(new ConnectionWebSocket(ws, params.get('format')));
+    }).on('connection', async (ws: WebSocket, request) => {
+        try {
+            const params = new URLSearchParams(request.url.replace(/.*\?/, ''));
+            // TODO: Remove connections
+
+            if (!params.get('connection')) throw new Error('Connection Parameter Required');
+            if (!params.get('token')) throw new Error('Token Parameter Required');
+
+            const auth = tokenParser(params.get('token'), config.SigningSecret);
+            console.error(auth);
+
+            // Connect to MachineUser Connection if it is an integer
+            if (!isNaN(parseInt(params.get('connection')))) {
+                if (!config.wsClients.has(params.get('connection'))) config.wsClients.set(params.get('connection'), [])
+                config.wsClients.get(params.get('connection')).push(new ConnectionWebSocket(ws, params.get('format')));
+            } else if (params.get('connection') === auth.email) {
+                if (!config.wsClients.has(params.get('connection'))) config.wsClients.set(params.get('connection'), [])
+                config.wsClients.get(params.get('connection')).push(new ConnectionWebSocket(ws, params.get('format')));
+
+                if (!config.conns.has(params.get('connection'))) {
+                    const profile = await Profile.from(config.pool, params.get('connection'));
+                    config.conns.add({
+                        id: params.get('connection'),
+                        name: params.get('connection'),
+                        created: new Date(),
+                        updated: new Date(),
+                        enabled: true,
+                        auth: profile.auth
+                    }, true);
+                }
+            } else {
+                throw new Error('Unauthorized');
+            }
+        } catch (err) {
+            ws.send(JSON.stringify({type: 'Error', message: String(err.message) }));
+            await sleep(500);
+            ws.close();
+        }
     });
 
     return new Promise((resolve) => {
