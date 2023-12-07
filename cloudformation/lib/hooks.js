@@ -31,6 +31,7 @@ export default {
         },
         HookLambda: {
             Type: 'AWS::Lambda::Function',
+            DependsOn: ['SigningSecret'],
             Properties: {
                 FunctionName: cf.join([cf.stackName, '-hooks']),
                 MemorySize: 512,
