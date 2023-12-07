@@ -46,6 +46,7 @@ export default class {
 
         const url = new URL(`/Marti/api/tls/signClient/v2`, this.api.url);
         url.searchParams.append('clientUid', this.api.auth.username + ' (ETL)');
+        url.searchParams.append('version', '3');
 
         const res = await this.api.fetch(url, {
             method: 'POST',

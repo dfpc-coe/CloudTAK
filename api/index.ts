@@ -241,6 +241,8 @@ export default async function server(config: Config) {
 
                 if (!config.conns.has(params.get('connection'))) {
                     const profile = await Profile.from(config.pool, params.get('connection'));
+                    if (!profile.auth) throw new Error('No Cert Found on profile');
+
                     config.conns.add({
                         id: params.get('connection'),
                         name: params.get('connection'),
