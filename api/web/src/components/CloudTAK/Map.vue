@@ -1,16 +1,26 @@
 <template>
-<div class="row vh-100 position-relative">
+<div class="row position-relative" style='height: calc(100vh - 58px) !important;'>
     <TablerLoading v-if='loading.main'/>
     <template v-else>
-        <div class='position-absolute top-0 end-0 text-white py-2' style='z-index: 1; width: 60px;'>
+        <div class='position-absolute top-0 end-0 text-white py-2' style='z-index: 1; width: 60px; background-color: rgba(0, 0, 0, 0.5);'>
             <Menu2Icon v-if='!cot && !menu.main' @click='menu.main = true' size='40' class='cursor-pointer'/>
             <XIcon v-else-if='!cot && menu.main' @click='menu.main = false' size='40' class='cursor-pointer bg-dark'/>
             <XIcon v-if='cot' @click='cot = false' size='40' class='cursor-pointer bg-dark'/>
         </div>
 
+        <div class='position-absolute top-0 beginning-0 text-white py-2 mx-2' style='z-index: 1; width: 60px; background-color: rgba(0, 0, 0, 0.5)'>
+            <Focus2Icon v-if='!radial.cot && !locked.length' @click='getLocation' :size='40' class='cursor-pointer'/>
+            <LockAccessIcon v-else-if='!radial.cot' @click='locked.splice(0, locked.length)' :size='40' class='cursor-pointer'/>
+
+            <div class='mt-3'>
+                <SquarePlusIcon size='40' @click='map.setZoom(map.getZoom() + 1);' class='cursor-pointer'/>
+                <SquareMinusIcon size='40' @click='map.setZoom(map.getZoom() - 1);' class='cursor-pointer'/>
+            </div>
+        </div>
+
         <div v-if='map && draw'
             class='position-absolute top-0 text-white py-2'
-            style='z-index: 1; width: 60px; right: 60px;'
+            style='z-index: 1; width: 60px; right: 60px; background-color: rgba(0, 0, 0, 0.5)'
         >
             <TablerDropdown>
                 <template #default>
@@ -45,6 +55,7 @@
         @close='radial.cot = null'
         @click='handleRadial($event)'
         :x='radial.x'
+        :cot='radial.cot'
         :y='radial.y'
         ref='radial'
     />
@@ -57,6 +68,10 @@ import mapgl from 'maplibre-gl'
 import * as terraDraw from 'terra-draw';
 import {
     Menu2Icon,
+    SquarePlusIcon,
+    SquareMinusIcon,
+    Focus2Icon,
+    LockAccessIcon,
     PencilIcon,
     XIcon,
     PointIcon,
@@ -68,6 +83,7 @@ import {
     TablerDropdown,
     TablerLoading
 } from '@tak-ps/vue-tabler';
+import pointOnFeature from '@turf/point-on-feature';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import CloudTAKMenu from './Menu.vue';
 import CloudTAKCoTView from './CoTView.vue';
@@ -76,12 +92,21 @@ import moment from 'moment';
 
 export default {
     name: 'CloudTAK',
+    props: {
+        user: {
+            type: Object,
+            required: true
+        }
+    },
     mounted: async function() {
         await this.fetchBaseMaps();
         await this.fetchIconsets();
         this.loading.main = false;
 
-        const url = window.stdurl('/api?format=geojson');
+        const url = window.stdurl('/api');
+        url.searchParams.append('format', 'geojson');
+        url.searchParams.append('connection', this.user.email);
+        url.searchParams.append('token', localStorage.token);
         if (window.location.hostname === 'localhost') {
             url.protocol = 'ws:';
         } else {
@@ -132,6 +157,7 @@ export default {
             },
             locked: [],         // Lock the map view to a given CoT - The last element is the currently locked value
                                 //   this is an array so that things like the radial menu can temporarily lock state but remember the previous lock value when they are closed
+            edit: false,        // If a radial.cot is set and edit is true then load the cot into terra-draw
             cot: null,          // Show the CoT Viewer sidebar
             cots: new Map(),    // Store all on-screen CoT messages
             ws: null,           // WebSocket Connection for CoT events
@@ -171,11 +197,29 @@ export default {
                 this.locked.pop();
             }
         },
+        edit: function() {
+            if (this.edit) {
+                this.draw._store.create([this.radial.cot]);
+                this.draw.start();
+                this.draw.setMode('polygon');
+            }
+        },
         cot: function() {
             if (this.cot) this.radial.cot = null;
         }
     },
     methods: {
+        getLocation: function() {
+            if (!("geolocation" in navigator)) throw new Error('GeoLocation is not available in this browser');
+
+            navigator.geolocation.getCurrentPosition((position) => {
+                this.map.flyTo({
+                    center: [position.coords.longitude, position.coords.latitude],
+                    zoom: 14
+                });
+                console.error(position);
+            });
+        },
         startDraw: function(type) {
             this.draw.start();
             this.draw.setMode(type);
@@ -187,12 +231,16 @@ export default {
             this.iconsets = await window.std('/api/iconset');
         },
         handleRadial: function(event) {
-            const cot = this.radial.cot;
-            this.radial.cot = null;
             if (event.id === 'cot') {
+                const cot = this.radial.cot;
+                this.radial.cot = null;
                 this.cot = cot;
             } else if (event.id === 'delete') {
+                const cot = this.radial.cot;
+                this.radial.cot = null;
                 this.deleteCOT(cot);
+            } else if (event.id === 'edit') {
+                //this.edit = true;
             } else {
                 this.radial.cot = null;
             }
@@ -211,7 +259,7 @@ export default {
             });
 
             if (this.locked.length && this.cots.has(this.locked[this.locked.length - 1])) {
-                const flyTo = { center: this.cots.get(this.locked[this.locked.length - 1]).geometry.coordinates, speed: Infinity };
+                const flyTo = { center: this.cots.get(this.locked[this.locked.length - 1]).properties.center, speed: Infinity };
                 this.map.flyTo(flyTo)
             }
         },
@@ -237,20 +285,16 @@ export default {
 
             this.map = new mapgl.Map({
                 container: this.$refs.map,
-                zoom: 0,
-                center: basemap.center ? basemap.center : [0, 0],
+                fadeDuration: 0,
+                zoom: 8,
+                center: [-105.91873757464982, 39.2473040734323],
                 style: {
                     version: 8,
                     glyphs: 'https://fonts.openmaptiles.org/{fontstack}/{range}.pbf',
                     sprite: [{
                         id: 'default',
                         url: String(window.stdurl(`/api/icon/sprite?token=${localStorage.token}&iconset=default`))
-                    }].concat(this.iconsets.iconsets.map((iconset) => {
-                        return {
-                            id: iconset.uid,
-                            url: String(window.stdurl(`/api/icon/sprite?token=${localStorage.token}&iconset=${iconset.uid}`))
-                        }
-                    })),
+                    }],
                     sources: {
                         basemap: {
                             type: 'raster',
@@ -259,6 +303,7 @@ export default {
                         },
                         cots: {
                             type: 'geojson',
+                            cluster: false,
                             data: { type: 'FeatureCollection', features: [] }
                         }
                     },
@@ -272,26 +317,6 @@ export default {
                         source: 'basemap',
                         minzoom: basemap.minzoom,
                         maxzoom: basemap.maxzoom
-                    },{
-                        id: 'cots',
-                        type: 'symbol',
-                        source: 'cots',
-                        paint: {
-                            'text-color': '#ffffff',
-                            'text-halo-color': '#000000',
-                            'text-halo-width': 2,
-                            'icon-opacity': ['get', 'icon-opacity'],
-                            'icon-halo-color': '#ffffff',
-                            'icon-halo-width': 4
-                        },
-                        layout: {
-                            'icon-size': 1,
-                            'icon-image': '{icon}',
-                            'icon-anchor': 'bottom',
-                            'text-offset': [0, 1],
-                            'text-font': ['Open Sans Bold'],
-                            'text-field':  '{callsign}'
-                        }
                     },{
                         id: 'cots-poly',
                         type: 'fill',
@@ -310,16 +335,50 @@ export default {
                             'line-opacity': ['get', 'stroke-opacity'],
                             'line-width': ['get', 'stroke-width'],
                         },
+                    },{
+                        id: 'cots',
+                        type: 'symbol',
+                        source: 'cots',
+                        paint: {
+                            'icon-opacity': ['get', 'icon-opacity'],
+                            'icon-halo-color': '#ffffff',
+                            'icon-halo-width': 4
+                        },
+                        layout: {
+                            'icon-size': 1,
+                            'icon-allow-overlap': true,
+                            'icon-image': '{icon}',
+                            'icon-anchor': 'bottom',
+                        }
+                    },{
+                        id: 'cots-text',
+                        type: 'symbol',
+                        source: 'cots',
+                        paint: {
+                            'text-color': '#ffffff',
+                            'text-halo-color': '#000000',
+                            'text-halo-width': 2,
+                        },
+                        layout: {
+                            'text-offset': [0, 1],
+                            'text-font': ['Open Sans Bold'],
+                            'text-field':  '{callsign}'
+                        }
                     }]
                 }
             });
-
 
             for (const layer of ['cots', 'cots-poly', 'cots-line']) {
                 this.map.on('mouseenter', layer, () => { this.map.getCanvas().style.cursor = 'pointer'; })
                 this.map.on('mouseleave', layer, () => { this.map.getCanvas().style.cursor = ''; })
                 this.map.on('click', layer, (e) => {
-                    const flyTo = { center: e.features[0].geometry.coordinates, speed: Infinity };
+                    const flyTo = { speed: Infinity };
+                    if (e.features[0].geometry.type === 'Point') {
+                        flyTo.center = e.features[0].geometry.coordinates;
+                    } else {
+                        flyTo.center = pointOnFeature(e.features[0].geometry).geometry.coordinates;
+                    }
+
                     // This is required to ensure the map has nowhere to flyTo - ie the whole world is shown
                     // and then the radial menu won't actually be on the CoT when the CoT is clicked
                     if (this.map.getZoom() < 3) flyTo.zoom = 4;
@@ -343,8 +402,25 @@ export default {
                     ]
                 });
 
-                this.draw.on('finish', (ids) => {
+
+                for (const iconset of this.iconsets.iconsets) {
+                    this.map.addSprite(iconset.uid, String(window.stdurl(`/api/icon/sprite?token=${localStorage.token}&iconset=${iconset.uid}`)))
+                }
+
+                this.draw.on('finish', (id) => {
+                    const feat = this.draw._store.store[id];
+
+                    if (this.draw.getMode() === 'polygon') {
+                        feat.properties.id = id;
+                        feat.properties.type = 'u-d-f';
+                        feat.properties.fill = '#ff0000'
+                        feat.properties.center = pointOnFeature(feat.geometry).geometry.coordinates;
+                    }
+
+                    this.draw._store.delete([id]);
                     this.draw.stop();
+                    this.cots.set(id, feat);
+                    this.updateCOT();
                 });
 
                 this.timer = window.setInterval(() => {
@@ -355,6 +431,10 @@ export default {
         }
     },
     components: {
+        SquarePlusIcon,
+        SquareMinusIcon,
+        Focus2Icon,
+        LockAccessIcon,
         RadialMenu,
         PointIcon,
         LineIcon,

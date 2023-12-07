@@ -1,5 +1,4 @@
 import Err from '@openaddresses/batch-error';
-// @ts-ignore
 import Connection from '../lib/types/connection.js';
 import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
@@ -22,7 +21,9 @@ export default async function router(schema: any, config: Config) {
 
             const api = await TAKAPI.init(new URL(config.server.api), new APIAuthCertificate(conn.auth.cert, conn.auth.key));
 
-            const list = await api.Group.list();
+            const list = await api.Group.list({
+                useCache: 'true'
+            });
 
             return res.json(list);
         } catch (err) {

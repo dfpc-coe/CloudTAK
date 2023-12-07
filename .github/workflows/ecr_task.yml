@@ -28,7 +28,7 @@ jobs:
           ref: ${{github.event.pull_request.head.sha || github.sha}}
 
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: arn:aws-us-gov:iam::${{secrets.AWS_ACCOUNT_ID}}:role/Github-ECR-Builder
           role-session-name: GithubECRBuilder
@@ -39,10 +39,27 @@ jobs:
 
       - name: Login to Amazon ECR
         id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v1
+        uses: aws-actions/amazon-ecr-login@v2
 
       - name: Docker Tag Task
         run: docker tag etl_${{matrix.task}}:latest ${{secrets.AWS_ACCOUNT_ID}}.dkr.ecr.${{secrets.AWS_REGION}}.amazonaws.com/coe-ecr-etl:${{matrix.task}}-${{github.event.pull_request.head.sha || github.sha}}
 
       - name: Docker Push task
         run: docker push ${{secrets.AWS_ACCOUNT_ID}}.dkr.ecr.${{secrets.AWS_REGION}}.amazonaws.com/coe-ecr-etl:${{matrix.task}}-${{github.event.pull_request.head.sha || github.sha}}
+
+      - name: Configure AWS Credentials (STAGING)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{secrets.AWS_STAGING_ACCOUNT_ID}}:role/Github-ECR-Builder
+          role-session-name: GithubECRBuilder
+          aws-region: ${{secrets.AWS_STAGING_REGION}}
+
+      - name: Login to Amazon ECR (STAGING)
+        id: login-ecr-staging
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Docker Tag Task (STAGING)
+        run: docker tag etl_${{matrix.task}}:latest ${{secrets.AWS_STAGING_ACCOUNT_ID}}.dkr.ecr.${{secrets.AWS_STAGING_REGION}}.amazonaws.com/coe-ecr-etl:${{matrix.task}}-${{github.event.pull_request.head.sha || github.sha}}
+
+      - name: Docker Push task (STAGING)
+        run: docker push ${{secrets.AWS_STAGING_ACCOUNT_ID}}.dkr.ecr.${{secrets.AWS_STAGING_REGION}}.amazonaws.com/coe-ecr-etl:${{matrix.task}}-${{github.event.pull_request.head.sha || github.sha}}

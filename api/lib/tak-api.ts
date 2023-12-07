@@ -104,7 +104,6 @@ export class APIAuthCertificate extends APIAuth {
             ...opts
         });
 
-
         return {
             status: res.statusCode,
             body: res.body,
@@ -190,14 +189,14 @@ export default class TAKAPI {
             if (raw) return res;
 
             let bdy: any = {};
-            if ((res.status < 200 || res.status >= 400) && ![401].includes(res.status)) {
+            if ((res.status < 200 || res.status >= 400)) {
                 try {
                     bdy = await res.text();
                 } catch (err) {
-                    throw new Error(`Status Code: ${res.status}`);
+                    bdy = null;
                 }
 
-                throw new Error(bdy || `Status Code: ${res.status}`);
+                throw new Err(res.status, null, bdy || `Status Code: ${res.status}`);
             }
 
             if (res.headers.get('content-type') === 'application/json') {
@@ -206,6 +205,7 @@ export default class TAKAPI {
                 return await res.text();
             }
         } catch (err) {
+            if (err instanceof Err) throw err;
             throw new Err(400, null, err.message);
         }
     }

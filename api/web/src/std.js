@@ -48,7 +48,7 @@ function std() {
                 throw err;
             } else if (res.status === 401) {
                 delete localStorage.token;
-                return window.location.reload();
+                throw new Error(401);
             }
 
             return await res.json();

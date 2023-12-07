@@ -6,7 +6,7 @@
             <p v-else class="m-0 text-muted">Showing <span v-text='limit * page + 1'/> to <span v-text='total < limit ? total : (page * limit + limit > total ? total : page * limit + limit)'/> of <span v-text='total'/> entries</p>
         </div>
         <div v-if='total > limit' class='col-sm-12 col-md-6 d-flex'>
-            <TablerPager @page='page = $event' :total='total' :limit='limit'/>
+            <TablerPager @page='page = $event' :page='page' :total='total' :limit='limit'/>
         </div>
     </div>
 </div>

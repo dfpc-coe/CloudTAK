@@ -37,10 +37,7 @@
                     </div>
                 </div>
                 <div class="col-lg-12">
-                    <DataAsset @assets='assets = $event'/>
-                </div>
-                <div class="col-lg-12">
-                    <DataLocation :assets='assets'/>
+                    <DataAsset :data='data' @assets='assets = $event'/>
                 </div>
                 <div class="col-lg-12">
                     <DataTransforms/>
@@ -64,7 +61,7 @@
 </template>
 
 <script>
-import MissionModal from './Mission/Modal.vue';
+import MissionModal from './Data/MissionModal.vue';
 import PageFooter from './PageFooter.vue';
 import DataAsset from './Data/Assets.vue';
 import DataLocation from './Data/Location.vue';

@@ -20,8 +20,10 @@
                 </div>
             </div>
             <div class='ms-auto btn-list my-2' style='padding-right: 56px;'>
-                <TablerDelete @delete='deleteMission' displaytype='icon' v-tooltip='"Delete"'/>
-                <PencilIcon class='cursor-pointer' v-tooltip='"Edit"'/>
+                <template v-if='mode === "info"'>
+                    <TablerDelete @delete='deleteMission' displaytype='icon' v-tooltip='"Delete"'/>
+                    <PencilIcon class='cursor-pointer' v-tooltip='"Edit"'/>
+                </template>
                 <RefreshIcon v-if='!loading.initial' @click='fetchMission' class='cursor-pointer' v-tooltip='"Refresh"'/>
             </div>
         </div>
@@ -43,8 +45,8 @@
             </div>
         </template>
         <template v-else>
-            <div class='row g-0'>
-                <div class="col-auto border-end">
+            <div class='d-flex'>
+                <div class="border-end" style='width: 40px;'>
                     <div @click='mode = "info"' class='px-2 py-2' :class='{
                         "bg-blue-lt": mode === "info",
                         "cursor-pointer": mode !== "info"
@@ -57,8 +59,12 @@
                         "bg-blue-lt": mode === "logs",
                         "cursor-pointer": mode !== "logs"
                     }'><ArticleIcon v-tooltip='"Logs"'/></div>
+                    <div @click='mode = "contents"' class='px-2 py-2' :class='{
+                        "bg-blue-lt": mode === "contents",
+                        "cursor-pointer": mode !== "contents"
+                    }'><FilesIcon v-tooltip='"Contents"'/></div>
                 </div>
-                <div class="col-10 mx-2 my-2">
+                <div class="mx-2 my-2" style='width: calc(100% - 40px);'>
                     <template v-if='mode === "info"'>
                         <div class="datagrid-item pb-2">
                             <div class="datagrid-title">Created</div>
@@ -79,9 +85,25 @@
                     </template>
                     <template v-else-if='mode === "users"'>
                     </template>
+                    <template v-else-if='mode === "contents"'>
+                        <TablerNone v-if='!mission.contents.length' :create='false'/>
+                        <template v-else>
+                            <div :key='content.data.uid' v-for='content in mission.contents' class='col-12 d-flex'>
+                                <div>
+                                    <span v-text='content.data.name'/>
+                                    <div class='col-12'>
+                                        <span class='subheader' v-text='content.data.submitter'/> - <span class='subheader' v-text='content.data.submissionTime'/>
+                                    </div>
+                                </div>
+                                <div class='ms-auto btn-list'>
+                                    <a :href='downloadFile(content.data)' :download='content.data.name + ".zip"'><DownloadIcon class='cursor-pointer'/></a>
+                                </div>
+                            </div>
+                        </template>
+                    </template>
                     <template v-else-if='mode === "logs"'>
-                        <TablerNone v-if='!mission.logs'/>
-                        <pre v-text='mission.logs'/>
+                        <TablerNone v-if='!mission.logs.length' :create='false'/>
+                        <pre v-else v-text='mission.logs'/>
                     </template>
                 </div>
                 <div v-if='selectable' class='modal-footer'>
@@ -96,6 +118,8 @@
 <script>
 import {
     ArticleIcon,
+    DownloadIcon,
+    FilesIcon,
     LockIcon,
     InfoSquareIcon,
     UserIcon,
@@ -151,6 +175,9 @@ export default {
         }
     },
     methods: {
+        downloadFile: function(file) {
+            return window.stdurl(`/api/marti/api/files/${file.hash}?token=${localStorage.token}`);
+        },
         fetchContacts: async function() {
             try {
                 this.loading.users = true;
@@ -194,6 +221,8 @@ export default {
         TablerNone,
         Alert,
         ArticleIcon,
+        DownloadIcon,
+        FilesIcon,
         InfoSquareIcon,
         UserIcon,
         UsersIcon,

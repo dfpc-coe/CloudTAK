@@ -21,6 +21,8 @@ RUN cd web \
     && npm run build \
     && cd ..
 
+RUN npm run build
+
 COPY ./nginx.conf /etc/nginx/nginx.conf
 
 CMD memcached -d -u root \

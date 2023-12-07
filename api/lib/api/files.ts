@@ -7,6 +7,16 @@ export default class {
         this.api = api;
     }
 
+    async download(hash: string) {
+        const url = new URL(`/Marti/api/files/${hash}`, this.api.url);
+
+        const res = await this.api.fetch(url, {
+            method: 'GET'
+        }, true);
+
+        return res.body.getReader();
+    }
+
     async count() {
         const url = new URL('/Marti/api/files/metadata/count', this.api.url);
 

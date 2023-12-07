@@ -7,8 +7,11 @@ export default class {
         this.api = api;
     }
 
-    async list() {
+    async list(query: {
+        useCache?: string;
+    }) {
         const url = new URL(`/Marti/api/groups/all`, this.api.url);
+        for (const q in query) url.searchParams.append(q, query[q]);
         return await this.api.fetch(url, {
             method: 'GET'
         });

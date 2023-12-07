@@ -1,5 +1,4 @@
 import Err from '@openaddresses/batch-error';
-// @ts-ignore
 import Server from '../lib/types/server.js';
 import Auth from '../lib/auth.js';
 import { sql } from 'slonik';
