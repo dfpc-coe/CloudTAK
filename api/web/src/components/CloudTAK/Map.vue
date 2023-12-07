@@ -41,6 +41,7 @@
             v-if='menu.main'
             :map='map'
             @basemap='setBasemap($event)'
+            @reset='deleteCOT()'
         />
         <CloudTAKCoTView
             v-if='cot'
@@ -246,7 +247,11 @@ export default {
             }
         },
         deleteCOT: function(cot) {
-            this.cots.delete(cot.properties.id)
+            if (cot) {
+                this.cots.delete(cot.properties.id)
+            } else {
+                this.cots.clear();
+            }
             this.updateCOT();
         },
         updateCOT: function() {

@@ -19,6 +19,7 @@
         <MenuChannels
             :map='map'
             @close='mode = null'
+            @reset='$emit("reset")'
         />
     </template>
     <template v-else-if='mode === "contacts"'>
