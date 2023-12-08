@@ -25,7 +25,7 @@ export default {
             Properties: {
                 Enabled: 'True',
                 EventSourceArn:  cf.getAtt('StackHookQueue', 'Arn'),
-                FunctionName: cf.ref('EventLambdaRole')
+                FunctionName: cf.ref('EventLambda')
             }
         }
     }
