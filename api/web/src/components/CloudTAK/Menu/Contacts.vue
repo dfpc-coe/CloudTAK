@@ -13,9 +13,30 @@
         <TablerLoading v-if='loading'/>
         <TablerNone v-else-if='!contacts.length' :create='false'/>
         <template v-else>
-            <div :key='a.id' v-for='a in contacts' class="col-lg-12">
-                <div class='col-12 py-2 px-2 d-flex align-items-center'>
-                    <span class="mx-2 cursor-pointer" v-text='a.notes'></span>
+            <div :key='a.id' v-for='a of visibleContacts' class="col-lg-12">
+                <div class='col-12 row py-2 px-2 d-flex align-items-center hover-dark cursor-pointer'>
+                    <div class='col-auto'>
+                        <CircleFilledIcon :class='{
+                            "text-yellow": a.team === "Yellow",
+                            "text-cyan": a.team === "Cyan",
+                            "text-lime": a.team === "Green",
+                            "text-red": a.team === "Red",
+                            "text-purple": a.team === "Purple",
+                            "text-orange": a.team === "Orange",
+                            "text-azure": a.team === "Blue",
+                            "text-dribble": a.team === "Magenta",
+                            "text-white": a.team === "White",
+                            "text-pinterest": a.team === "Maroon",
+                            "text-blue": a.team === "Dark Blue",
+                            "text-teal": a.team === "Teal",
+                            "text-green": a.team === "Dark Green",
+                            "text-google": a.team === "Brown",
+                        }'/>
+                    </div>
+                    <div class='col-auto'>
+                        <div v-text='a.callsign'></div>
+                        <div v-text='a.notes.trim()' class='subheader'></div>
+                    </div>
                 </div>
             </div>
         </template>
@@ -31,6 +52,7 @@ import {
 
 import {
     RefreshIcon,
+    CircleFilledIcon,
     CircleArrowLeftIcon
 } from 'vue-tabler-icons';
 
@@ -52,6 +74,13 @@ export default {
     mounted: async function() {
         await this.fetchList();
     },
+    computed: {
+        visibleContacts: function() {
+            return this.contacts.filter((contact) => {
+                return contact.callsign;
+            });
+        }
+    },
     methods: {
         fetchList: async function() {
             this.loading = true;
@@ -64,6 +93,7 @@ export default {
         TablerNone,
         TablerLoading,
         RefreshIcon,
+        CircleFilledIcon,
         CircleArrowLeftIcon,
     }
 }
