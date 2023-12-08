@@ -40,8 +40,10 @@ The following are dependencies which need to be created:
 
 | Name                  | Notes |
 | --------------------- | ----- |
-| `coe-ecr-etl`         | ECR Repository for storing API Images     |
-| `coe-ecr-etl-tasks`   | ECR Repository for storing Task Images    |
+| `coe-vpc-<name>`      | VPC & networking to place tasks in - [repo](ttps://github.com/tak-ps/vpc) |
+| `coe-ecs-<name>`      | ECS Cluster for API Service - [repo](ttps://github.com/tak-ps/ecs) |
+| `coe-ecr-etl`         | ECR Repository for storing API Images - [repo](ttps://github.com/tak-ps/ecr)     |
+| `coe-ecr-etl-tasks`   | ECR Repository for storing Task Images - [repo](ttps://github.com/tak-ps/ecr)  |
 
 **coe-ecr-etl**
 
