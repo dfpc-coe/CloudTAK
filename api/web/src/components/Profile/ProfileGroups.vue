@@ -1,5 +1,5 @@
 <template>
-<div class="card">
+<div>
     <div class="card-header">
         <h3 class="card-title">User Groups</h3>
     </div>

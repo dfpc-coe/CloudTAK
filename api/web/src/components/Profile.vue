@@ -1,5 +1,16 @@
 <template>
 <div>
+    <div class='page-wrapper'>
+        <div class="page-header d-print-none">
+            <div class="container-xl">
+                <div class="row g-2 align-items-center">
+                    <div class="col d-flex">
+                        <TablerBreadCrumb/>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     <div class='page-body'>
         <div class='container-xl'>
             <div class='row row-deck row-cards'>
@@ -11,16 +22,16 @@
                                     <h4 class="subheader">Profile Sections</h4>
                                     <div class="list-group list-group-transparent">
                                         <span @click='$router.push(`/profile/groups`)' class="list-group-item list-group-item-action d-flex align-items-center" :class='{
-                                            "active": $route.name === "layer-groups",
-                                            "cursor-pointer": $route.name !== "layer-groups"
+                                            "active": $route.name === "profile-groups",
+                                            "cursor-pointer": $route.name !== "profile-groups"
                                         }'><AffiliateIcon/><span class='mx-3'>Channels</span></span>
                                         <span @click='$router.push(`/profile/tokens`)' class="list-group-item list-group-item-action d-flex align-items-center" :class='{
-                                            "active": $route.name === "layer-tokens",
-                                            "cursor-pointer": $route.name !== "layer-tokens"
+                                            "active": $route.name === "profile-tokens",
+                                            "cursor-pointer": $route.name !== "profile-tokens"
                                         }'><RobotIcon/><span class='mx-3'>API Tokens</span></span>
                                         <span @click='$router.push(`/profile/files`)' class="list-group-item list-group-item-action d-flex align-items-center" :class='{
-                                            "active": $route.name === "layer-files",
-                                            "cursor-pointer": $route.name !== "layer-files"
+                                            "active": $route.name === "profile-files",
+                                            "cursor-pointer": $route.name !== "profile-files"
                                         }'><FilesIcon/><span class='mx-3'>Files</span></span>
                                     </div>
                                 </div>
