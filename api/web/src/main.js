@@ -80,7 +80,30 @@ const router = new VueRouter.createRouter({
         { path: '/basemap/:basemapid', name: 'basemap', component: () => import('./components/BaseMap.vue') },
         { path: '/basemap/:basemapid/edit', name: 'basemap-edit', component: () => import('./components/BaseMapEdit.vue') },
 
-        { path: '/profile', name: 'profile', component: () => import('./components/Profile.vue') },
+        {
+            path: '/profile',
+            name: 'profile',
+            component: () => import('./components/Profile.vue'),
+            children: [{
+                path: '',
+                name: 'profile-default',
+                redirect: to => {
+                    return { name: 'profile-groups' };
+                }
+            },{
+                path: 'groups',
+                name: 'layer-groups',
+                component: () => import('./components/Profile/ProfileGroups.vue')
+            },{
+                path: 'files',
+                name: 'profile-files',
+                component: () => import('./components/Profile/ProfileFiles.vue')
+            },{
+                path: 'tokens',
+                name: 'profile-tokens',
+                component: () => import('./components/Profile/ProfileTokens.vue')
+            }]
+        },
 
         { path: '/iconset', name: 'icons', component: () => import('./components/Icons.vue') },
         { path: '/iconset/new', name: 'icon-new', component: () => import('./components/IconEdit.vue') },
