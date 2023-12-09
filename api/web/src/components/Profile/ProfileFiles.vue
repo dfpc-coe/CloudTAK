@@ -1,7 +1,7 @@
 <template>
 <div class='card'>
     <div class='card-header d-flex'>
-        <h3 class='card-title'>Data Assets</h3>
+        <h3 class='card-title'>User Assets</h3>
 
         <div class='ms-auto btn-list'>
             <PlusIcon @click='upload = true' class='cursor-pointer' v-tooltip='"Upload"'/>
@@ -27,9 +27,6 @@
                             </div>
 
                             <span v-text='asset.name' class='mx-2'/>
-
-                            <RefreshDotIcon v-if='data.mission && asset.sync' class='text-green' v-tooltip='"Syncing"'/>
-                            <RefreshOffIcon v-else-if='data.mission && !asset.sync'/>
                         </div>
                     </td>
                     <td>
@@ -77,7 +74,7 @@ import {
     TransformIcon,
 } from 'vue-tabler-icons'
 import Alert from '../util/Alert.vue';
-import TransformModal from './TransformModal.vue';
+import TransformModal from '../Data/TransformModal.vue';
 import Upload from '../util/Upload.vue';
 import {
     TablerNone,
@@ -88,13 +85,7 @@ import {
 } from '@tak-ps/vue-tabler';
 
 export default {
-    name: 'DataAssets',
-    props: {
-        data: {
-            type: Object,
-            required: true
-        }
-    },
+    name: 'ProfileFiles',
     data: function() {
         return {
             err: null,
@@ -122,10 +113,10 @@ export default {
             };
         },
         uploadURL: function() {
-            return window.stdurl(`/api/data/${this.$route.params.dataid}/asset`);
+            return window.stdurl(`/api/user/asset`);
         },
         downloadAsset: async function(asset) {
-            const url = window.stdurl(`/api/data/${this.$route.params.dataid}/asset/${asset.name}`);
+            const url = window.stdurl(`/api/user/asset/${asset.name}`);
             url.searchParams.append('token', localStorage.token);
             window.open(url, "_blank")
         },
@@ -140,7 +131,7 @@ export default {
         },
         deleteAsset: async function(asset) {
             this.loading.list = true;
-            await window.std(`/api/data/${this.$route.params.dataid}/asset/${asset.name}`, {
+            await window.std(`/api/user/asset/${asset.name}`, {
                 method: 'DELETE'
             });
 
@@ -152,7 +143,7 @@ export default {
             try {
                 this.loading.list = true;
                 this.err = false;
-                this.list = await window.std(`/api/data/${this.$route.params.dataid}/asset`);
+                this.list = await window.std(`/api/user/asset`);
                 this.loading.list = false;
                 this.$emit('assets', this.list);
             } catch (err) {
