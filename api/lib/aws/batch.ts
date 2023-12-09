@@ -22,7 +22,7 @@ export default class Batch {
     static async submitUser(config: Config, email: string, asset: string, task: object): Promise<AWSBatch.SubmitJobCommandOutput> {
         const batch = new AWSBatch.BatchClient({ region: process.env.AWS_DEFAULT_REGION });
 
-        let jobName = `user-${email}-${asset.replace(/[^a-zA-Z0-9]/g, '_').slice(0, 50)}`;
+        let jobName = `user-${email.replace(/[^a-zA-Z0-9]/g, '_')}-${asset.replace(/[^a-zA-Z0-9]/g, '_').slice(0, 50)}`;
 
         const batchres = await batch.send(new AWSBatch.SubmitJobCommand({
             jobName,
