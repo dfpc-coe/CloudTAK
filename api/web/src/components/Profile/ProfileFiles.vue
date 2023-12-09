@@ -1,6 +1,6 @@
 <template>
-<div class='card'>
-    <div class='card-header d-flex'>
+<div>
+    <div class='card-header'>
         <h3 class='card-title'>User Assets</h3>
 
         <div class='ms-auto btn-list'>
@@ -113,10 +113,10 @@ export default {
             };
         },
         uploadURL: function() {
-            return window.stdurl(`/api/user/asset`);
+            return window.stdurl(`/api/profile/asset`);
         },
         downloadAsset: async function(asset) {
-            const url = window.stdurl(`/api/user/asset/${asset.name}`);
+            const url = window.stdurl(`/api/profile/asset/${asset.name}`);
             url.searchParams.append('token', localStorage.token);
             window.open(url, "_blank")
         },
@@ -131,7 +131,7 @@ export default {
         },
         deleteAsset: async function(asset) {
             this.loading.list = true;
-            await window.std(`/api/user/asset/${asset.name}`, {
+            await window.std(`/api/profile/asset/${asset.name}`, {
                 method: 'DELETE'
             });
 
@@ -143,7 +143,7 @@ export default {
             try {
                 this.loading.list = true;
                 this.err = false;
-                this.list = await window.std(`/api/user/asset`);
+                this.list = await window.std(`/api/profile/asset`);
                 this.loading.list = false;
                 this.$emit('assets', this.list);
             } catch (err) {
