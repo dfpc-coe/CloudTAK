@@ -1,12 +1,10 @@
 <template>
-<div class="card">
-    <div class="card-body">
-        <div class="d-flex">
-            <h3 class="card-title">API Tokens</h3>
+<div>
+    <div class="card-header">
+        <h3 class="card-title">API Tokens</h3>
 
-            <div class='ms-auto btn-list'>
-                <PlusIcon @click='push()' class='cursor-pointer'/>
-            </div>
+        <div class='ms-auto btn-list'>
+            <PlusIcon @click='push()' class='cursor-pointer'/>
         </div>
     </div>
 

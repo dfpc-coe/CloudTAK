@@ -92,7 +92,7 @@ const router = new VueRouter.createRouter({
                 }
             },{
                 path: 'groups',
-                name: 'layer-groups',
+                name: 'profile-groups',
                 component: () => import('./components/Profile/ProfileGroups.vue')
             },{
                 path: 'files',
