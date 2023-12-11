@@ -12,6 +12,7 @@ import { AuthRequest } from '@tak-ps/blueprint-login';
 import xml2js from 'xml2js';
 import { Stream, Readable } from 'node:stream';
 import stream2buffer from '../lib/stream.js';
+import bboxPolygon from '@turf/bbox-polygon';
 
 export default async function router(schema: any, config: Config) {
     await schema.put('/basemap', {
@@ -140,6 +141,9 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req);
 
+            if (req.body.bounds) req.body.bounds = bboxPolygon(req.body.bounds).geometry;
+            if (req.body.center) req.body.center = { type: 'Point', coordinates: req.body.center };
+
             const basemap = await BaseMap.generate(config.pool, req.body);
 
             return res.json(basemap);
@@ -159,6 +163,10 @@ export default async function router(schema: any, config: Config) {
     }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(req);
+
+            if (req.body.bounds) req.body.bounds = bboxPolygon(req.body.bounds).geometry;
+            if (req.body.center) req.body.center = { type: 'Point', coordinates: req.body.center };
+
             const basemap = await BaseMap.commit(config.pool, req.params.basemapid, {
                 updated: sql`Now()`,
                 ...req.body

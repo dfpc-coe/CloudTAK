@@ -81,7 +81,10 @@ export default async function server(config: Config) {
     config.pool = await Pool.connect(process.env.POSTGRES || args.postgres || 'postgres://postgres@localhost:5432/tak_ps_etl', {
         schemas: {
             dir: new URL('./schema', import.meta.url)
-        }
+        },
+        parsing: {
+            geometry: true
+        }   
     });
 
     try {
