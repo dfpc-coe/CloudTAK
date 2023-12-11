@@ -150,8 +150,8 @@ export default {
                 minzoom: 0,
                 maxzoom: 16,
                 format: 'png',
-                bounds: [],
-                center: []
+                bounds: [-180, -90, 180, 90 ],
+                center: [0, 0]
             }
         }
     },
