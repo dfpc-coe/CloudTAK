@@ -1,4 +1,5 @@
 import TAKAPI from '../tak-api.js';
+import { Readable } from 'node:stream'
 
 export default class {
     api: TAKAPI;

@@ -24,6 +24,10 @@
                     <TablerDelete @delete='deleteMission' displaytype='icon' v-tooltip='"Delete"'/>
                     <PencilIcon class='cursor-pointer' v-tooltip='"Edit"'/>
                 </template>
+                <template v-else-if='mode === "contents"'>
+                    <PlusIcon v-if='!upload' @click='upload = true' v-tooltip='"Upload File"' class='cursor-pointer'/>
+                </template>
+
                 <RefreshIcon v-if='!loading.initial' @click='fetchMission' class='cursor-pointer' v-tooltip='"Refresh"'/>
             </div>
         </div>
@@ -86,7 +90,10 @@
                     <template v-else-if='mode === "users"'>
                     </template>
                     <template v-else-if='mode === "contents"'>
-                        <TablerNone v-if='!mission.contents.length' :create='false'/>
+                        <template v-if='upload'>
+                            UPLOAD
+                        </template>
+                        <TablerNone v-else-if='!mission.contents.length' :create='false'/>
                         <template v-else>
                             <div :key='content.data.uid' v-for='content in mission.contents' class='col-12 d-flex'>
                                 <div>
@@ -117,6 +124,7 @@
 
 <script>
 import {
+    PlusIcon,
     ArticleIcon,
     DownloadIcon,
     FilesIcon,
@@ -152,6 +160,7 @@ export default {
             err: null,
             mode: 'info',
             password: '',
+            upload: false,
             loading: {
                 initial: !this.initial.passwordProtected,
                 mission: !this.initial.passwordProtected,
@@ -220,6 +229,7 @@ export default {
     components: {
         TablerNone,
         Alert,
+        PlusIcon,
         ArticleIcon,
         DownloadIcon,
         FilesIcon,
