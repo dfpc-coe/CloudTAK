@@ -50,6 +50,9 @@
                                     <div class='d-flex mx-2 cursor-pointer'>
                                         <PhotoIcon class='my-2'/><a @click='$router.push("/iconset")' class="cursor-pointer dropdown-item">Iconsets</a>
                                     </div>
+                                    <div class='d-flex mx-2 cursor-pointer'>
+                                        <SettingsIcon class='my-2'/><a @click='$router.push("/admin")' class="cursor-pointer dropdown-item">Admin</a>
+                                    </div>
                                 </ul>
                             </div>
                         <div>
@@ -98,6 +101,7 @@ import {
     MapIcon,
     PhotoIcon,
     NetworkIcon,
+    SettingsIcon,
     DatabaseIcon,
     BuildingBroadcastTowerIcon,
     AdjustmentsIcon,
@@ -186,6 +190,7 @@ export default {
         UploadImport,
         HomeIcon,
         CodeIcon,
+        SettingsIcon,
         LogoutIcon,
         MenuIcon,
         UserIcon,
