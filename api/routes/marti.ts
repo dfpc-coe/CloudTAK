@@ -126,7 +126,6 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            const profile = await Profile.from(config.pool, req.auth.email);
             const api = await TAKAPI.init(new URL(config.server.api), new APIAuthPassword(req.body.username, req.body.password));
 
             const certs = await api.Credentials.generate();

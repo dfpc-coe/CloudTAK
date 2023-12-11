@@ -229,7 +229,6 @@ export default async function server(config: Config) {
             if (!params.get('token')) throw new Error('Token Parameter Required');
 
             const auth = tokenParser(params.get('token'), config.SigningSecret);
-            console.error(auth);
 
             // Connect to MachineUser Connection if it is an integer
             if (!isNaN(parseInt(params.get('connection')))) {
@@ -241,7 +240,7 @@ export default async function server(config: Config) {
 
                 if (!config.conns.has(params.get('connection'))) {
                     const profile = await Profile.from(config.pool, params.get('connection'));
-                    if (!profile.auth) throw new Error('No Cert Found on profile');
+                    if (!profile.auth.cert || !profile.auth.key) throw new Error('No Cert Found on profile');
 
                     config.conns.add({
                         id: params.get('connection'),
