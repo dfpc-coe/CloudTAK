@@ -35,7 +35,7 @@
                                 <IconDecimal/>
                             </template>
                             <template v-else-if='field.type === "integer"'>
-                                <Sort09Icon/>
+                                <IconSort09/>
                             </template>
                             <template v-else>
                                 <IconBinary/>
@@ -86,7 +86,7 @@ import {
 } from '@tak-ps/vue-tabler';
 import {
     IconAlphabetLatin,
-    Sort09Icon,
+    IconSort09,
     IconPlus,
     IconRefresh,
     IconSettings,
@@ -200,7 +200,7 @@ export default {
     components: {
         TablerNone,
         IconAlphabetLatin,
-        Sort09Icon,
+        IconSort09,
         IconDecimal,
         TablerInput,
         TablerToggle,
