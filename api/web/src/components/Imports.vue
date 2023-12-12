@@ -21,7 +21,7 @@
                             <h3 class='card-title'>Imports</h3>
 
                             <div class='ms-auto btn-list'>
-                                <RefreshIcon @click='fetchList' v-tooltip='`Refresh Import`' class='cursor-pointer'/>
+                                <IconRefresh @click='fetchList' v-tooltip='`Refresh Import`' class='cursor-pointer'/>
                             </div>
                         </div>
                         <TablerLoading v-if='loading'/>
@@ -71,8 +71,8 @@ import {
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import {
-    RefreshIcon
-} from 'vue-tabler-icons';
+    IconRefresh
+} from '@tabler/icons-vue';
 
 export default {
     name: 'Icons',
@@ -101,7 +101,7 @@ export default {
     },
     components: {
         Status,
-        RefreshIcon,
+        IconRefresh,
         TablerNone,
         PageFooter,
         TablerBreadCrumb,

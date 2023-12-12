@@ -31,8 +31,8 @@
     </div>
 
     <label @click='advanced = !advanced' class='subheader mt-3 cursor-pointer'>
-        <SquareChevronRightIcon v-if='!advanced'/>
-        <ChevronDownIcon v-else/>
+        <IconSquareChevronRight v-if='!advanced'/>
+        <IconChevronDown v-else/>
         Advanced Options
     </label>
 
@@ -47,7 +47,7 @@
                             v-model='environment.ARCGIS_QUERY'
                         />
                     </div>
-                    <button v-if='!disabled' @click='filterModal = true' class='btn' style='margin-left: 8px; margin-top: 26px;'><FilterIcon/> Query Editor</button>
+                    <button v-if='!disabled' @click='filterModal = true' class='btn' style='margin-left: 8px; margin-top: 26px;'><IconFilter/> Query Editor</button>
                 </div>
             </div>
             <div class="col-12 mt-3">
@@ -104,11 +104,11 @@ import Schema from './utils/Schema.vue';
 import EsriPortal from './../util/EsriPortal.vue';
 import EsriFilter from './../util/EsriFilter.vue';
 import {
-    PlusIcon,
-    SquareChevronRightIcon,
-    ChevronDownIcon,
-    FilterIcon,
-} from 'vue-tabler-icons'
+    IconPlus,
+    IconSquareChevronRight,
+    IconChevronDown,
+    IconFilter,
+} from '@tabler/icons-vue'
 
 export default {
     name: 'LayerEnvironment',
@@ -147,13 +147,13 @@ export default {
         }
     },
     components: {
-        PlusIcon,
+        IconPlus,
         EsriPortal,
-        SquareChevronRightIcon,
-        ChevronDownIcon,
+        IconSquareChevronRight,
+        IconChevronDown,
         TablerInput,
         TablerTimeZone,
-        FilterIcon,
+        IconFilter,
         EsriFilter
     }
 }

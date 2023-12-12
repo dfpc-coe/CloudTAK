@@ -22,7 +22,7 @@
                             <div class="input-icon mb-3">
                                 <input v-model='params.filter' v-on:keyup.enter='query' type="text" class="form-control" placeholder="Search…">
                                 <span class="input-icon-addon">
-                                    <SearchIcon/>
+                                    <IconSearch/>
                                 </span>
                             </div>
 
@@ -79,8 +79,8 @@
 import PageFooter from './PageFooter.vue';
 import Alert from './util/Alert.vue';
 import {
-    SearchIcon
-} from 'vue-tabler-icons';
+    IconSearch
+} from '@tabler/icons-vue';
 import {
     TablerNone,
     TablerBreadCrumb, 
@@ -125,7 +125,7 @@ export default {
         TablerNone,
         Alert,
         PageFooter,
-        SearchIcon,
+        IconSearch,
         TablerBreadCrumb, 
         TablerLoading,
     }

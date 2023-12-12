@@ -24,15 +24,15 @@
                                         <span @click='$router.push(`/profile/groups`)' class="list-group-item list-group-item-action d-flex align-items-center" :class='{
                                             "active": $route.name === "profile-groups",
                                             "cursor-pointer": $route.name !== "profile-groups"
-                                        }'><AffiliateIcon/><span class='mx-3'>Channels</span></span>
+                                        }'><IconAffiliate/><span class='mx-3'>Channels</span></span>
                                         <span @click='$router.push(`/profile/tokens`)' class="list-group-item list-group-item-action d-flex align-items-center" :class='{
                                             "active": $route.name === "profile-tokens",
                                             "cursor-pointer": $route.name !== "profile-tokens"
-                                        }'><RobotIcon/><span class='mx-3'>API Tokens</span></span>
+                                        }'><IconRobot/><span class='mx-3'>API Tokens</span></span>
                                         <span @click='$router.push(`/profile/files`)' class="list-group-item list-group-item-action d-flex align-items-center" :class='{
                                             "active": $route.name === "profile-files",
                                             "cursor-pointer": $route.name !== "profile-files"
-                                        }'><FilesIcon/><span class='mx-3'>Files</span></span>
+                                        }'><IconFiles/><span class='mx-3'>Files</span></span>
                                     </div>
                                 </div>
                             </div>
@@ -56,18 +56,18 @@ import {
     TablerBreadCrumb
 } from '@tak-ps/vue-tabler';
 import {
-    RobotIcon,
-    FilesIcon,
-    AffiliateIcon
-} from 'vue-tabler-icons';
+    IconRobot,
+    IconFiles,
+    IconAffiliate
+} from '@tabler/icons-vue';
 
 export default {
     name: 'Profile',
     components: {
-        RobotIcon,
+        IconRobot,
         PageFooter,
-        AffiliateIcon,
-        FilesIcon,
+        IconAffiliate,
+        IconFiles,
         TablerBreadCrumb
     }
 }

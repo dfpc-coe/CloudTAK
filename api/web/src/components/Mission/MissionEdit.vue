@@ -5,8 +5,8 @@
         <div class='d-flex px-1 py-1'>
             <div class='row'>
                 <div class='col-auto d-flex justify-content-center align-items-center mx-2'>
-                    <LockIcon v-if='mission.passwordProtected'/>
-                    <LockOpenIcon v-else/>
+                    <IconLock v-if='mission.passwordProtected'/>
+                    <IconLockOpen v-else/>
                 </div>
                 <div class='col-auto row'>
                     <div class='col-12'>
@@ -22,13 +22,13 @@
             <div class='ms-auto btn-list my-2' style='padding-right: 56px;'>
                 <template v-if='mode === "info"'>
                     <TablerDelete @delete='deleteMission' displaytype='icon' v-tooltip='"Delete"'/>
-                    <PencilIcon class='cursor-pointer' v-tooltip='"Edit"'/>
+                    <IconPencil class='cursor-pointer' v-tooltip='"Edit"'/>
                 </template>
                 <template v-else-if='mode === "contents"'>
-                    <PlusIcon v-if='!upload' @click='upload = true' v-tooltip='"Upload File"' class='cursor-pointer'/>
+                    <IconPlus v-if='!upload' @click='upload = true' v-tooltip='"Upload File"' class='cursor-pointer'/>
                 </template>
 
-                <RefreshIcon v-if='!loading.initial' @click='fetchMission' class='cursor-pointer' v-tooltip='"Refresh"'/>
+                <IconRefresh v-if='!loading.initial' @click='fetchMission' class='cursor-pointer' v-tooltip='"Refresh"'/>
             </div>
         </div>
         <TablerLoading v-if='loading.mission' desc='Loading Mission'/>
@@ -37,7 +37,7 @@
         <template v-else-if='this.initial.passwordProtected && !password'>
             <div class='modal-body'>
                 <div class='d-flex justify-content-center py-3'>
-                    <LockIcon width='32' height='32' />
+                    <IconLock width='32' height='32' />
                 </div>
                 <h3 class='text-center'>Mission Locked</h3>
                 <div class='col-12 d-flex pt-2'>
@@ -54,19 +54,19 @@
                     <div @click='mode = "info"' class='px-2 py-2' :class='{
                         "bg-blue-lt": mode === "info",
                         "cursor-pointer": mode !== "info"
-                    }'><InfoSquareIcon v-tooltip='"Metadata"'/></div>
+                    }'><IconInfoSquare v-tooltip='"Metadata"'/></div>
                     <div @click='mode = "users"' class='px-2 py-2' :class='{
                         "bg-blue-lt": mode === "users",
                         "cursor-pointer": mode !== "users"
-                    }'><UsersIcon v-tooltip='"Users"'/></div>
+                    }'><IconUsers v-tooltip='"Users"'/></div>
                     <div @click='mode = "logs"' class='px-2 py-2' :class='{
                         "bg-blue-lt": mode === "logs",
                         "cursor-pointer": mode !== "logs"
-                    }'><ArticleIcon v-tooltip='"Logs"'/></div>
+                    }'><IconArticle v-tooltip='"Logs"'/></div>
                     <div @click='mode = "contents"' class='px-2 py-2' :class='{
                         "bg-blue-lt": mode === "contents",
                         "cursor-pointer": mode !== "contents"
-                    }'><FilesIcon v-tooltip='"Contents"'/></div>
+                    }'><IconFiles v-tooltip='"Contents"'/></div>
                 </div>
                 <div class="mx-2 my-2" style='width: calc(100% - 40px);'>
                     <template v-if='mode === "info"'>
@@ -103,7 +103,7 @@
                                     </div>
                                 </div>
                                 <div class='ms-auto btn-list'>
-                                    <a :href='downloadFile(content.data)' :download='content.data.name + ".zip"'><DownloadIcon class='cursor-pointer'/></a>
+                                    <a :href='downloadFile(content.data)' :download='content.data.name + ".zip"'><IconDownload class='cursor-pointer'/></a>
                                 </div>
                             </div>
                         </template>
@@ -124,18 +124,18 @@
 
 <script>
 import {
-    PlusIcon,
-    ArticleIcon,
-    DownloadIcon,
-    FilesIcon,
-    LockIcon,
-    InfoSquareIcon,
-    UserIcon,
-    UsersIcon,
-    LockOpenIcon,
-    PencilIcon,
-    RefreshIcon,
-} from 'vue-tabler-icons';
+    IconPlus,
+    IconArticle,
+    IconDownload,
+    IconFiles,
+    IconLock,
+    IconInfoSquare,
+    IconUser,
+    IconUsers,
+    IconLockOpen,
+    IconPencil,
+    IconRefresh,
+} from '@tabler/icons-vue';
 import Alert from '../util/Alert.vue';
 import {
     TablerNone,
@@ -229,20 +229,20 @@ export default {
     components: {
         TablerNone,
         Alert,
-        PlusIcon,
-        ArticleIcon,
-        DownloadIcon,
-        FilesIcon,
-        InfoSquareIcon,
-        UserIcon,
-        UsersIcon,
-        PencilIcon,
+        IconPlus,
+        IconArticle,
+        IconDownload,
+        IconFiles,
+        IconInfoSquare,
+        IconUser,
+        IconUsers,
+        IconPencil,
         TablerLoading,
         TablerDelete,
         TablerInput,
-        RefreshIcon,
-        LockIcon,
-        LockOpenIcon
+        IconRefresh,
+        IconLock,
+        IconLockOpen
     }
 }
 </script>

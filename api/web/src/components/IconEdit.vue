@@ -52,8 +52,8 @@ import {
     TablerSchema
 } from '@tak-ps/vue-tabler';
 import {
-    SettingsIcon,
-} from 'vue-tabler-icons';
+    IconSettings,
+} from '@tabler/icons-vue';
 
 export default {
     name: 'IconEdit',
@@ -99,7 +99,7 @@ export default {
             url.searchParams.append('url', this.$route.params.icon ? '/iconset/:iconset' : '/iconset');
             this.schema = (await window.std(url)).body;
         },
-        deleteIconset: async function() {
+        Icondeleteset: async function() {
             await window.std(`/api/iconset/${this.$route.params.icon}`, {
                 method: 'DELETE'
             });
@@ -113,7 +113,7 @@ export default {
         TablerDelete,
         TablerLoading,
         TablerSchema,
-        SettingsIcon,
+        IconSettings,
     }
 }
 </script>

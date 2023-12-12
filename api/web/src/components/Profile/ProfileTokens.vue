@@ -4,7 +4,7 @@
         <h3 class="card-title">API Tokens</h3>
 
         <div class='ms-auto btn-list'>
-            <PlusIcon @click='push()' class='cursor-pointer'/>
+            <IconPlus @click='push()' class='cursor-pointer'/>
         </div>
     </div>
 
@@ -34,11 +34,11 @@
                         <div class='d-flex'>
                             <TablerEpoch :date='token.updated'/>
                             <div v-if='token._edit' class='ms-auto btn-list'>
-                                <CheckIcon @click='saveToken(token, tokenit)' class='cursor-pointer'/>
-                                <TrashIcon @click='deleteToken(token, tokenit)' class='cursor-pointer'/>
+                                <IconCheck @click='saveToken(token, tokenit)' class='cursor-pointer'/>
+                                <IconTrash @click='deleteToken(token, tokenit)' class='cursor-pointer'/>
                             </div>
                             <div v-else class='ms-auto btn-list'>
-                                <PencilIcon @click='token._edit = true' class='cursor-pointer'/>
+                                <IconPencil @click='token._edit = true' class='cursor-pointer'/>
                             </div>
                         </div>
                     </td>
@@ -51,11 +51,11 @@
 
 <script>
 import {
-    PlusIcon,
-    PencilIcon,
-    CheckIcon,
-    TrashIcon
-} from 'vue-tabler-icons';
+    IconPlus,
+    IconPencil,
+    IconCheck,
+    IconTrash
+} from '@tabler/icons-vue';
 import {
     TablerEpoch,
     TablerLoading,
@@ -118,10 +118,10 @@ export default {
     },
     components: {
         TablerNone,
-        PlusIcon,
-        PencilIcon,
-        CheckIcon,
-        TrashIcon,
+        IconPlus,
+        IconPencil,
+        IconCheck,
+        IconTrash,
         TablerEpoch,
         TablerLoading,
         TablerInput

@@ -29,14 +29,14 @@
                             <h1 class='card-title'>Layer Admin</h1>
 
                             <div class='ms-auto btn-list'>
-                                <CloudUploadIcon
+                                <IconCloudUpload
                                     @click='redeploy'
                                     v-tooltip='"Redeploy"'
                                     width='24' height='24'
                                     class='cursor-pointer'
                                 />
 
-                                <RefreshIcon
+                                <IconRefresh
                                     @click='fetchList'
                                     v-tooltip='"Refresh"'
                                     width='24' height='24'
@@ -104,9 +104,9 @@ import {
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import {
-    RefreshIcon,
-    CloudUploadIcon,
-} from 'vue-tabler-icons'
+    IconRefresh,
+    IconCloudUpload,
+} from '@tabler/icons-vue'
 
 export default {
     name: 'LayerAdmin',
@@ -178,8 +178,8 @@ export default {
     },
     components: {
         TablerNone,
-        RefreshIcon,
-        CloudUploadIcon,
+        IconRefresh,
+        IconCloudUpload,
         PageFooter,
         TablerBreadCrumb,
         TablerLoading,

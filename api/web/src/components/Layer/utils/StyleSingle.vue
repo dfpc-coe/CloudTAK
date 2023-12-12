@@ -6,15 +6,15 @@
                 <div class="btn-group" role="group">
                     <input v-model='mode' type="radio" class="btn-check" name="geom-toolbar" value='point'>
                     <label @click='mode="point"' class="btn btn-icon px-3">
-                        <PointIcon/> Points
+                        <IconPoint/> Points
                     </label>
                     <input v-model='mode' type="radio" class="btn-check" name="geom-toolbar" value='line'>
                     <label @click='mode="line"' class="btn btn-icon px-3">
-                        <LineIcon/> Lines
+                        <IconLine/> Lines
                     </label>
                     <input v-model='mode' type="radio" class="btn-check" name="geom-toolbar" value='polygon'>
                     <label @click='mode="polygon"' class="btn btn-icon px-3">
-                        <PolygonIcon/> Polygons
+                        <IconPolygon/> Polygons
                     </label>
                 </div>
             </div>
@@ -92,10 +92,10 @@
 <script>
 import StyleTemplate from './StyleTemplate.vue';
 import {
-    PointIcon,
-    LineIcon,
-    PolygonIcon,
-} from 'vue-tabler-icons'
+    IconPoint,
+    IconLine,
+    IconPolygon,
+} from '@tabler/icons-vue'
 import IconSelect from '../../util/IconSelect.vue';
 import {
     TablerRange,
@@ -232,9 +232,9 @@ export default {
         }
     },
     components: {
-        PointIcon,
-        LineIcon,
-        PolygonIcon,
+        IconPoint,
+        IconLine,
+        IconPolygon,
         TablerToggle,
         TablerRange,
         TablerEnum,

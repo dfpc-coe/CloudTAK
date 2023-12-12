@@ -10,9 +10,9 @@
     <template v-if='data'>
         <div :key='a.id' v-for='a in assetList.assets' class="col-lg-12">
             <div class='col-12 py-2 px-2 d-flex align-items-center'>
-                <EyeXIconIcon v-if='!a.visualized' v-tooltip='"No Viz Layer"'/>
-                <EyeIcon v-else-if='a.visible' @click='flipVisible(a)' class='cursor-pointer'/>
-                <EyeOffIcon v-else @click='flipVisible(a)' class='cursor-pointer'/>
+                <IconEyeXIcon v-if='!a.visualized' v-tooltip='"No Viz Layer"'/>
+                <IconEye v-else-if='a.visible' @click='flipVisible(a)' class='cursor-pointer'/>
+                <IconEyeOff v-else @click='flipVisible(a)' class='cursor-pointer'/>
                 <span class="mx-2 cursor-pointer" v-text='a.name'></span>
             </div>
         </div>
@@ -45,12 +45,12 @@ import {
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import {
-    EyeIcon,
-    EyeXIcon,
-    EyeOffIcon,
-    SettingsIcon,
-    SearchIcon
-} from 'vue-tabler-icons'
+    IconEye,
+    IconEyeX,
+    IconEyeOff,
+    IconSettings,
+    IconSearch
+} from '@tabler/icons-vue'
 
 export default {
     name: 'Datas',
@@ -146,13 +146,13 @@ export default {
         }
     },
     components: {
-        EyeIcon,
-        EyeXIcon,
-        EyeOffIcon,
+        IconEye,
+        IconEyeX,
+        IconEyeOff,
         TablerNone,
         TablerPager,
-        SettingsIcon,
-        SearchIcon,
+        IconSettings,
+        IconSearch,
         TablerLoading,
     }
 }

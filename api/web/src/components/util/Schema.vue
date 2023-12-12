@@ -20,7 +20,7 @@
             <div class='d-flex'>
                 <label class='form-label' v-text='key'/>
                 <div class='ms-auto'>
-                    <PlusIcon v-if='!disabled' @click='push(key)' class='cursor-pointer'/>
+                    <IconPlus v-if='!disabled' @click='push(key)' class='cursor-pointer'/>
                 </div>
             </div>
 
@@ -28,7 +28,7 @@
                 <div class='d-flex'>
                     <div class='mx-2 my-2'>Entry <span v-text='i + 1'/></div>
                     <div class='ms-auto mx-2 my-2'>
-                        <TrashIcon v-if='!disabled' @click='data[key].splice(i, 1)' class='cursor-pointer'/>
+                        <IconTrash v-if='!disabled' @click='data[key].splice(i, 1)' class='cursor-pointer'/>
                     </div>
                 </div>
 
@@ -51,9 +51,9 @@ import {
     TablerEnum
 } from '@tak-ps/vue-tabler';
 import {
-    PlusIcon,
-    TrashIcon,
-} from 'vue-tabler-icons'
+    IconPlus,
+    IconTrash,
+} from '@tabler/icons-vue'
 
 export default {
     name: 'GenericSchema',
@@ -120,8 +120,8 @@ export default {
         }
     },
     components: {
-        PlusIcon,
-        TrashIcon,
+        IconPlus,
+        IconTrash,
         TablerInput,
         TablerToggle,
         TablerEnum

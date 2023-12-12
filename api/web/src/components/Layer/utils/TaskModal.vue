@@ -14,7 +14,7 @@
             </template>
             <template v-else-if='!version'>
                 <div class='d-flex'>
-                    <ArrowBackIcon class='mx-3' @click='newtask=null'/>
+                    <IconArrowBack class='mx-3' @click='newtask=null'/>
                     <h3 class='subtitle-header'>Available Versions</h3>
                 </div>
 
@@ -24,7 +24,7 @@
             </template>
             <template v-else>
                 <div class='d-flex'>
-                    <ArrowBackIcon class='mx-3' @click='version=null'/>
+                    <IconArrowBack class='mx-3' @click='version=null'/>
                     <h3 class='subtitle-header'>Selected Task</h3>
                 </div>
 
@@ -44,8 +44,8 @@
 
 <script>
 import {
-    ArrowBackIcon
-} from 'vue-tabler-icons'
+    IconArrowBack
+} from '@tabler/icons-vue'
 import {
     TablerLoading,
     TablerModal,
@@ -87,7 +87,7 @@ export default {
         }
     },
     components: {
-        ArrowBackIcon,
+        IconArrowBack,
         TablerLoading,
         TablerModal
     }

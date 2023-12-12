@@ -2,11 +2,11 @@
 <div class='row'>
     <div class='col-12 d-flex'>
         <div class='py-2'>
-            <FolderIcon/><span class='px-2' v-text='asset.name'/>
+            <IconFolder/><span class='px-2' v-text='asset.name'/>
         </div>
 
         <div class='ms-auto'>
-            <div @click='download' class='btn btn-sm'><DownloadIcon/></div>
+            <div @click='download' class='btn btn-sm'><IconDownload/></div>
         </div>
     </div>
 </div>
@@ -14,9 +14,9 @@
 
 <script>
 import {
-    FolderIcon,
-    DownloadIcon
-} from 'vue-tabler-icons'
+    IconFolder,
+    IconDownload
+} from '@tabler/icons-vue'
 
 export default {
     name: 'Asset',
@@ -43,8 +43,8 @@ export default {
         }
     },
     components: {
-        FolderIcon,
-        DownloadIcon
+        IconFolder,
+        IconDownload
     }
 }
 </script>

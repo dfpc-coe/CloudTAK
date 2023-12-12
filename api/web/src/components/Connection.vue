@@ -25,8 +25,8 @@
 
                             <div class='ms-auto'>
                                 <div class='btn-list'>
-                                    <RefreshIcon class='cursor-pointer' @click='refresh' v-tooltip='"Refresh"' />
-                                    <SettingsIcon class='cursor-pointer' @click='$router.push(`/connection/${connection.id}/edit`)' v-tooltip='"Edit"'/>
+                                    <IconRefresh class='cursor-pointer' @click='refresh' v-tooltip='"Refresh"' />
+                                    <IconSettings class='cursor-pointer' @click='$router.push(`/connection/${connection.id}/edit`)' v-tooltip='"Edit"'/>
                                 </div>
                             </div>
                         </div>
@@ -83,9 +83,9 @@ import ConnectionChart from './Connection/Chart.vue';
 import ConnectionEvents from './Connection/Events.vue';
 import timeDiff from '../timediff.js';
 import {
-    RefreshIcon,
-    SettingsIcon
-} from 'vue-tabler-icons'
+    IconRefresh,
+    IconSettings
+} from '@tabler/icons-vue'
 import {
     TablerBreadCrumb,
     TablerMarkdown,
@@ -155,8 +155,8 @@ export default {
         }
     },
     components: {
-        SettingsIcon,
-        RefreshIcon,
+        IconSettings,
+        IconRefresh,
         PageFooter,
         TablerBreadCrumb,
         TablerMarkdown,

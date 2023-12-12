@@ -26,9 +26,9 @@
 
                                 <div class='ms-auto'>
                                     <div class='btn-list'>
-                                        <Share2Icon v-tooltip='"Share BaseMap"' class='cursor-pointer' @click='share = true'/>
-                                        <DownloadIcon v-tooltip='"Download TAK XML"' class='cursor-pointer' @click='download'/>
-                                        <SettingsIcon v-tooltip='"Edit Basemap"' class='cursor-pointer' @click='$router.push(`/basemap/${basemap.id}/edit`)'/>
+                                        <IconShare2 v-tooltip='"Share BaseMap"' class='cursor-pointer' @click='share = true'/>
+                                        <IconDownload v-tooltip='"Download TAK XML"' class='cursor-pointer' @click='download'/>
+                                        <IconSettings v-tooltip='"Edit Basemap"' class='cursor-pointer' @click='$router.push(`/basemap/${basemap.id}/edit`)'/>
                                     </div>
                                 </div>
                             </div>
@@ -89,10 +89,10 @@ import {
 import BaseMapLocation from './BaseMap/Location.vue';
 import timeDiff from '../timediff.js';
 import {
-    Share2Icon,
-    DownloadIcon,
-    SettingsIcon,
-} from 'vue-tabler-icons'
+    IconShare2,
+    IconDownload,
+    IconSettings,
+} from '@tabler/icons-vue'
 
 export default {
     name: 'BaseMap',
@@ -120,9 +120,9 @@ export default {
         }
     },
     components: {
-        Share2Icon,
-        SettingsIcon,
-        DownloadIcon,
+        IconShare2,
+        IconSettings,
+        IconDownload,
         PageFooter,
         TablerBreadCrumb,
         BaseMapLocation,

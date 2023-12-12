@@ -2,27 +2,27 @@
 <div class='row'>
     <div class='col-12 border-bottom border-light'>
         <div class='modal-header px-0 mx-2'>
-            <CircleArrowLeftIcon @click='$emit("close")' class='cursor-pointer'/>
+            <IconCircleArrowLeft @click='$emit("close")' class='cursor-pointer'/>
             <div class='modal-title'>Overlays</div>
             <div class='btn-list'>
-                <PlusIcon @click='$emit("datas")' class='cursor-pointer'/>
+                <IconPlus @click='$emit("datas")' class='cursor-pointer'/>
             </div>
         </div>
     </div>
     <div :key='layer.name' v-for='layer in layers' class="col-lg-12">
         <div class='row col-12 py-2 px-2 d-flex'>
             <div class='col-12 d-flex align-items-center'>
-                <EyeIcon v-if='layer.visible' @click='flipVisible(layer)' class='cursor-pointer' v-tooltip='"Hide Layer"'/>
-                <EyeOffIcon v-else @click='flipVisible(layer)' class='cursor-pointer' v-tooltip='"Show Layer"'/>
+                <IconEye v-if='layer.visible' @click='flipVisible(layer)' class='cursor-pointer' v-tooltip='"Hide Layer"'/>
+                <IconEyeOff v-else @click='flipVisible(layer)' class='cursor-pointer' v-tooltip='"Show Layer"'/>
 
                 <span class='mx-2'>
-                    <MapIcon v-if='layer.type === "raster"' v-tooltip='"Raster"'/>
-                    <VectorIcon v-else v-tooltip='"Vector"'/>
+                    <IconMap v-if='layer.type === "raster"' v-tooltip='"Raster"'/>
+                    <IconVector v-else v-tooltip='"Vector"'/>
                 </span>
                 <span class='mx-2' v-text='layer.name'/>
 
                 <div class='ms-auto btn-list'>
-                    <MaximizeIcon v-if='layer.bounds' @click='zoomTo(layer)' class='cursor-pointer' v-tooltip='"Zoom To Overlay"'/>
+                    <IconMaximize v-if='layer.bounds' @click='zoomTo(layer)' class='cursor-pointer' v-tooltip='"Zoom To Overlay"'/>
                     <TablerDelete v-if='layer.name.startsWith("data-")' displaytype='icon' @delete='removeLayer(layer)' v-tooltip='"Delete Overlay"' class='text-dark'/>
                 </div>
             </div>
@@ -41,14 +41,14 @@ import {
     TablerRange
 } from '@tak-ps/vue-tabler';
 import {
-    CircleArrowLeftIcon,
-    MaximizeIcon,
-    VectorIcon,
-    EyeOffIcon,
-    PlusIcon,
-    EyeIcon,
-    MapIcon
-} from 'vue-tabler-icons';
+    IconCircleArrowLeft,
+    IconMaximize,
+    IconVector,
+    IconEyeOff,
+    IconPlus,
+    IconEye,
+    IconMap
+} from '@tabler/icons-vue';
 
 export default {
     name: 'Overlays',
@@ -122,13 +122,13 @@ export default {
     components: {
         TablerRange,
         TablerDelete,
-        MaximizeIcon,
-        CircleArrowLeftIcon,
-        EyeIcon,
-        EyeOffIcon,
-        PlusIcon,
-        VectorIcon,
-        MapIcon
+        IconMaximize,
+        IconCircleArrowLeft,
+        IconEye,
+        IconEyeOff,
+        IconPlus,
+        IconVector,
+        IconMap
     }
 }
 </script>

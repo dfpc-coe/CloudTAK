@@ -6,7 +6,7 @@
         <div class='ms-auto'>
             <div class='dropdown'>
                 <div type="button" id="connectionSinkButton" data-bs-toggle="dropdown" aria-expanded="false">
-                    <PlusIcon v-tooltip='"Create Sink"' class='cursor-pointer'/>
+                    <IconPlus v-tooltip='"Create Sink"' class='cursor-pointer'/>
                     </div>
                         <ul class="dropdown-menu" aria-labelledby='connectionSinkButton'>
                             <div @click='$router.push(`/connection/${$route.params.connectionid}/sink/new`)' class='d-flex mx-2 my-2 cursor-pointer'>
@@ -53,8 +53,8 @@ import {
     TablerLoading
 } from '@tak-ps/vue-tabler'
 import {
-    PlusIcon
-} from 'vue-tabler-icons';
+    IconPlus
+} from '@tabler/icons-vue';
 
 export default {
     name: 'ConnectionSinks',
@@ -108,7 +108,7 @@ export default {
     components: {
         TablerNone,
         Alert,
-        PlusIcon,
+        IconPlus,
         TablerLoading,
         TableFooter,
     }
