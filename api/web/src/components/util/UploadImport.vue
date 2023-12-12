@@ -62,7 +62,7 @@ export default {
             const file = event.target.files[0];
             this.name = file.name;
 
-            const imp = await window.std('/api/import', {
+            const imported = await window.std('/api/import', {
                 method: 'POST',
                 body: {
                     name: this.name,
@@ -71,18 +71,14 @@ export default {
                 }
             });
 
-            console.error(imp);
-
             return new Promise((resolve, reject) => {
                 const xhr = new XMLHttpRequest()
                 const formData = new FormData()
 
-                xhr.open('POST', window.stdurl('/api/import'), true)
+                xhr.open('PUT', window.stdurl(`/api/import/${imported.id}`), true)
                 xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
 
-                for (const header of Object.keys(this.headers)) {
-                    xhr.setRequestHeader(header, this.headers[header]);
-                }
+                xhr.setRequestHeader('Authorization', `Bearer ${localStorage.token}`);
 
                 xhr.upload.addEventListener('progress', (e) => {
                     this.progress = (e.loaded * 100.0 / e.total) || 100
