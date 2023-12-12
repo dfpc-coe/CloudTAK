@@ -1,17 +1,19 @@
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
+import Profile from '../lib/types/profile.js';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
 import TAKAPI, {
     APIAuthToken,
+    APIAuthCertificate,
     APIAuthPassword
 } from '../lib/tak-api.js';
 
 export default async function router(schema: any, config: Config) {
     await schema.get('/marti/missions/:name', {
         name: 'Get Mission',
-        group: 'Marti',
+        group: 'MartiMissions',
         auth: 'user',
         ':name': 'string',
         description: 'Helper API to get a single mission',
@@ -37,9 +39,9 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            if (!req.auth.email) throw new Err(400, null, 'Missions can only be listed by a JWT authenticated user');
-
-            const api = await TAKAPI.init(new URL(config.MartiAPI), new APIAuthToken(req.auth.token));
+            if (!req.auth.email) throw new Err(400, null, 'Groups can only be listed by an authenticated user');
+            const profile = await Profile.from(config.pool, req.auth.email);
+            const api = await TAKAPI.init(new URL(config.server.api), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
 
             const query = {};
             for (const q in req.query) query[q] = String(req.query[q]);
@@ -52,7 +54,7 @@ export default async function router(schema: any, config: Config) {
 
     await schema.delete('/marti/missions/:name', {
         name: 'Delete Mission',
-        group: 'Marti',
+        group: 'MartiMissions',
         auth: 'user',
         ':name': 'string',
         description: 'Helper API to delete a single mission',
@@ -72,9 +74,9 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            if (!req.auth.email) throw new Err(400, null, 'Missions can only be deleted by a JWT authenticated user');
-
-            const api = await TAKAPI.init(new URL(config.MartiAPI), new APIAuthToken(req.auth.token));
+            if (!req.auth.email) throw new Err(400, null, 'Groups can only be listed by an authenticated user');
+            const profile = await Profile.from(config.pool, req.auth.email);
+            const api = await TAKAPI.init(new URL(config.server.api), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
 
             const query = {};
             for (const q in req.query) query[q] = String(req.query[q]);
@@ -87,7 +89,7 @@ export default async function router(schema: any, config: Config) {
 
     await schema.post('/marti/missions/:name', {
         name: 'Create Mission',
-        group: 'Marti',
+        group: 'MartiMissions',
         auth: 'user',
         ':name': 'string',
         description: 'Helper API to create a mission',
@@ -117,9 +119,9 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            if (!req.auth.email) throw new Err(400, null, 'Missions can only be created by a JWT authenticated user');
-
-            const api = await TAKAPI.init(new URL(config.MartiAPI), new APIAuthToken(req.auth.token));
+            if (!req.auth.email) throw new Err(400, null, 'Groups can only be listed by an authenticated user');
+            const profile = await Profile.from(config.pool, req.auth.email);
+            const api = await TAKAPI.init(new URL(config.server.api), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
 
             const query = {};
             for (const q in req.query) query[q] = String(req.query[q]);
@@ -132,7 +134,7 @@ export default async function router(schema: any, config: Config) {
 
     await schema.get('/marti/mission', {
         name: 'List Missions',
-        group: 'Marti',
+        group: 'MartiMissions',
         auth: 'user',
         description: 'Helper API to list missions',
         query: {
@@ -158,9 +160,9 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            if (!req.auth.email) throw new Err(400, null, 'Missions can only be listed by a JWT authenticated user');
-
-            const api = await TAKAPI.init(new URL(config.MartiAPI), new APIAuthToken(req.auth.token));
+            if (!req.auth.email) throw new Err(400, null, 'Groups can only be listed by an authenticated user');
+            const profile = await Profile.from(config.pool, req.auth.email);
+            const api = await TAKAPI.init(new URL(config.server.api), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
 
             const query = {};
             for (const q in req.query) query[q] = String(req.query[q]);
@@ -173,7 +175,7 @@ export default async function router(schema: any, config: Config) {
 
     await schema.get('/marti/missions/:name/contacts', {
         name: 'Mission Contacts',
-        group: 'Marti',
+        group: 'MartiMissions',
         auth: 'user',
         ':name': 'string',
         description: 'List contacts associated with a mission',
@@ -198,9 +200,38 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            if (!req.auth.email) throw new Err(400, null, 'Missions can only be listed by a JWT authenticated user');
+            if (!req.auth.email) throw new Err(400, null, 'Groups can only be listed by an authenticated user');
+            const profile = await Profile.from(config.pool, req.auth.email);
+            const api = await TAKAPI.init(new URL(config.server.api), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
 
-            const api = await TAKAPI.init(new URL(config.MartiAPI), new APIAuthToken(req.auth.token));
+            const missions = await api.Mission.contacts(String(req.params.name));
+
+            return res.json(missions);
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
+
+    await schema.get('/marti/missions/:name/contents/missionpackage', {
+        name: 'Mission Contacts',
+        group: 'MartiMissions',
+        auth: 'user',
+        ':name': 'string',
+        description: 'Upload a Mission Package',
+        query: {
+            type: 'object',
+            properties: {
+                creatorUid: { type: 'string' }
+            }
+        },
+        res: 'res.Marti.json'
+    }, async (req: AuthRequest, res: Response) => {
+        try {
+            await Auth.is_auth(req);
+
+            if (!req.auth.email) throw new Err(400, null, 'Groups can only be listed by an authenticated user');
+            const profile = await Profile.from(config.pool, req.auth.email);
+            const api = await TAKAPI.init(new URL(config.server.api), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
 
             const missions = await api.Mission.contacts(String(req.params.name));
 

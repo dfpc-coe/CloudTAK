@@ -5,7 +5,6 @@ import Profile from '../lib/types/profile.js';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
 import TAKAPI, {
-    APIAuthToken,
     APIAuthPassword,
     APIAuthCertificate
 } from '../lib/tak-api.js';
@@ -30,8 +29,7 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            if (!req.auth.email) throw new Err(400, null, 'Groups can only be listed by a JWT authenticated user');
-
+            if (!req.auth.email) throw new Err(400, null, 'Groups can only be listed by an authenticated user');
             const profile = await Profile.from(config.pool, req.auth.email);
             const api = await TAKAPI.init(new URL(config.server.api), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
 
@@ -77,8 +75,7 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            if (!req.auth.email) throw new Err(400, null, 'Groups can only be listed by a JWT authenticated user');
-
+            if (!req.auth.email) throw new Err(400, null, 'Groups can only be listed by an authenticated user');
             const profile = await Profile.from(config.pool, req.auth.email);
             const api = await TAKAPI.init(new URL(config.server.api), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
 
@@ -102,8 +99,7 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            if (!req.auth.email) throw new Err(400, null, 'Contacts can only be listed by a JWT authenticated user');
-
+            if (!req.auth.email) throw new Err(400, null, 'Groups can only be listed by an authenticated user');
             const profile = await Profile.from(config.pool, req.auth.email);
             const api = await TAKAPI.init(new URL(config.server.api), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
 
