@@ -108,7 +108,7 @@
                                     </div>
                                 </div>
                                 <div class='ms-auto btn-list'>
-                                    <a :href='downloadFile(content.data)' :download='content.data.name + ".zip"'><IconDownload class='cursor-pointer'/></a>
+                                    <a :href='downloadFile(content.data)' :download='content.data.name + ".zip"' v-tooltip='"Download Asset"'><IconDownload class='cursor-pointer'/></a>
                                 </div>
                             </div>
                         </template>
