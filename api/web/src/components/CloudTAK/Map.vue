@@ -13,8 +13,8 @@
             <IconLockAccess v-else-if='!radial.cot' @click='locked.splice(0, locked.length)' :size='40' class='cursor-pointer'/>
 
             <div class='mt-3'>
-                <IconSquarePlus size='40' @click='map.setZoom(map.getZoom() + 1);' class='cursor-pointer'/>
-                <IconSquareMinus size='40' @click='map.setZoom(map.getZoom() - 1);' class='cursor-pointer'/>
+                <IconPlus size='40' @click='map.setZoom(map.getZoom() + 1);' class='cursor-pointer'/>
+                <IconMinus size='40' @click='map.setZoom(map.getZoom() - 1);' class='cursor-pointer'/>
             </div>
         </div>
 
@@ -69,8 +69,8 @@ import mapgl from 'maplibre-gl'
 import * as terraDraw from 'terra-draw';
 import {
     IconMenu2,
-    IconSquarePlus,
-    IconSquareMinus,
+    IconPlus,
+    IconMinus,
     IconFocus2,
     IconLockAccess,
     IconPencil,
@@ -436,8 +436,8 @@ export default {
         }
     },
     components: {
-        IconSquarePlus,
-        IconSquareMinus,
+        IconMinus,
+        IconPlus,
         IconFocus2,
         IconLockAccess,
         RadialMenu,
