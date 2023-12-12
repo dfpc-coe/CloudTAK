@@ -95,6 +95,7 @@
                                 mode='Mission'
                                 :config='{"id": mission.name }'
                                 @cancel='upload = false'
+                                @done='upload = false'
                             />
                         </template>
                         <TablerNone v-else-if='!mission.contents.length' :create='false'/>
