@@ -142,6 +142,8 @@ export default {
         this.$nextTick(() => {
             return this.mountMap();
         });
+
+        await this.fetchImports();
     },
     data: function() {
         return {
@@ -171,6 +173,7 @@ export default {
             },
             basemaps: { total: 0, basemaps: [] },
             iconsets: { total: 0, iconsets: [] },
+            imports: { total: 0, imports: [] },
         }
     },
     beforeUnmount: function() {
@@ -227,6 +230,9 @@ export default {
         },
         fetchBaseMaps: async function() {
             this.basemaps = await window.std('/api/basemap');
+        },
+        fetchImports: async function() {
+            this.imports = await window.std('/api/import');
         },
         Iconfetchsets: async function() {
             this.iconsets = await window.std('/api/iconset');

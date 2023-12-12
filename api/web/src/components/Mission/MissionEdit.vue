@@ -91,8 +91,8 @@
                     </template>
                     <template v-else-if='mode === "contents"'>
                         <template v-if='upload'>
-                            <Upload
-
+                            <UploadImport
+                                @cancel='upload = false'
                             />
                         </template>
                         <TablerNone v-else-if='!mission.contents.length' :create='false'/>
@@ -139,7 +139,7 @@ import {
     IconRefresh,
 } from '@tabler/icons-vue';
 import Alert from '../util/Alert.vue';
-import Upload from '../util/Upload.vue';
+import UploadImport from '../util/UploadImport.vue';
 import {
     TablerNone,
     TablerDelete,
@@ -231,7 +231,7 @@ export default {
     },
     components: {
         TablerNone,
-        Upload,
+        UploadImport,
         Alert,
         IconPlus,
         IconArticle,

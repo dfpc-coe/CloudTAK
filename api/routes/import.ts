@@ -11,7 +11,7 @@ import crypto from 'node:crypto';
 import { sql } from 'slonik';
 
 export default async function router(schema: any, config: Config) {
-    await schema.put('/import', {
+    await schema.post('/import', {
         name: 'Import',
         group: 'Import',
         auth: 'user',
@@ -39,14 +39,15 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            const import = await Import.generate(config.pool, {
+            const imp = await Import.generate(config.pool, {
+                id: crypto.randomUUID(),
                 name: req.body.name,
                 username: req.auth.email,
                 mode: req.body.mode,
                 config: req.body.config
             });
 
-            return res.json(import)
+            return res.json(imp)
         } catch (err) {
             return Err.respond(err, res);
         }
