@@ -36,22 +36,22 @@
                             </div>
                                 <ul class="dropdown-menu" aria-labelledby='userMenuButton'>
                                     <div class='d-flex mx-2 cursor-pointer'>
-                                        <IconNetwork class='my-2'/><a @click='$router.push("/connection")' class="cursor-pointer dropdown-item">Connections</a>
+                                        <IconNetwork class='my-2'/><a @click='$router.push("/connection")' class="cursor-pointer dropdown-item hover-dark">Connections</a>
                                     </div>
                                     <div class='d-flex mx-2 cursor-pointer'>
-                                        <IconBuildingBroadcastTower class='my-2'/><a @click='$router.push("/layer")' class="cursor-pointer dropdown-item">Layers</a>
+                                        <IconBuildingBroadcastTower class='my-2'/><a @click='$router.push("/layer")' class="cursor-pointer dropdown-item hover-dark">Layers</a>
                                     </div>
                                     <div class='d-flex mx-2 cursor-pointer'>
-                                        <IconDatabase class='my-2'/><a @click='$router.push("/data")' class="cursor-pointer dropdown-item">Data</a>
+                                        <IconDatabase class='my-2'/><a @click='$router.push("/data")' class="cursor-pointer dropdown-item hover-dark">Data</a>
                                     </div>
                                     <div class='d-flex mx-2 cursor-pointer'>
-                                        <IconMap class='my-2'/><a @click='$router.push("/basemap")' class="cursor-pointer dropdown-item">Basemaps</a>
+                                        <IconMap class='my-2'/><a @click='$router.push("/basemap")' class="cursor-pointer dropdown-item hover-dark">Basemaps</a>
                                     </div>
                                     <div class='d-flex mx-2 cursor-pointer'>
-                                        <IconPhoto class='my-2'/><a @click='$router.push("/iconset")' class="cursor-pointer dropdown-item">Iconsets</a>
+                                        <IconPhoto class='my-2'/><a @click='$router.push("/iconset")' class="cursor-pointer dropdown-item hover-dark">Iconsets</a>
                                     </div>
                                     <div class='d-flex mx-2 cursor-pointer'>
-                                        <IconSettings class='my-2'/><a @click='$router.push("/admin")' class="cursor-pointer dropdown-item">Admin</a>
+                                        <IconSettings class='my-2'/><a @click='$router.push("/admin")' class="cursor-pointer dropdown-item hover-dark">Admin</a>
                                     </div>
                                 </ul>
                             </div>
@@ -70,7 +70,8 @@
         </TablerModal>
     </template>
 
-    <router-view :user='user'/>
+    <TablerLoading v-if='loading' desc='Loading CloudTAK'/>
+    <router-view v-else :user='user'/>
 
     <TablerError v-if='err' :err='err' @close='err = null'/>
     <LoginModal v-if='login' @close='login = null' @login='login=null'/>
@@ -108,6 +109,7 @@ import {
 } from '@tabler/icons-vue';
 import {
     TablerModal,
+    TablerLoading,
     TablerError
 } from '@tak-ps/vue-tabler';
 
@@ -115,6 +117,7 @@ export default {
     name: 'Tak-PS-ETL',
     data: function() {
         return {
+            loading: true,
             upload: false,
             dragTimer: false,
             login: false,
@@ -169,13 +172,16 @@ export default {
             this.$router.push("/login");
         },
         getLogin: async function() {
+            this.loading = true;
             try {
                 this.user = await window.std('/api/login');
             } catch (err) {
                 this.user = null;
                 delete localStorage.token;
                 if (this.$route.name !== 'login') this.$router.push("/login");
+                this.loading = false;
             }
+            this.loading = false;
         },
         getServer: async function() {
             this.server = await window.std('/api/server');
@@ -199,6 +205,7 @@ export default {
         IconDatabase,
         TablerError,
         TablerModal,
+        TablerLoading,
         IconBuildingBroadcastTower,
         IconAdjustments,
         IconPhoto,
