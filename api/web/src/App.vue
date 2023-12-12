@@ -13,18 +13,18 @@
             <div v-if='user' class='ms-auto'>
                 <div class='btn-list'>
                     <a href="/docs/" class="btn btn-dark" target="_blank" rel="noreferrer">
-                        <CodeIcon/>Docs
+                        <IconCode/>Docs
                     </a>
                     <div class='dropdown'>
                         <div type="button" id="userProfileButton" data-bs-toggle="dropdown" aria-expanded="false" class='btn btn-dark'>
-                            <UserIcon/>
+                            <IconUser/>
                             </div>
                                 <ul class="dropdown-menu" aria-labelledby='userProfileButton'>
                                     <div class='d-flex mx-2 cursor-pointer'>
-                                        <UserIcon class='my-2'/><a @click='$router.push("/profile")' class="cursor-pointer dropdown-item">Profile</a>
+                                        <IconUser class='my-2'/><a @click='$router.push("/profile")' class="cursor-pointer dropdown-item">Profile</a>
                                     </div>
                                     <div class='d-flex mx-2 cursor-pointer'>
-                                        <LogoutIcon class='my-2'/><a @click='logout' class="curdor-pointer dropdown-item">Logout</a>
+                                        <IconLogout class='my-2'/><a @click='logout' class="curdor-pointer dropdown-item">Logout</a>
                                     </div>
                                 </ul>
                             </div>
@@ -32,26 +32,26 @@
                     </div>
                     <div class='dropdown'>
                         <div type="button" id="userMenuButton" data-bs-toggle="dropdown" aria-expanded="false" class='btn btn-dark'>
-                            <MenuIcon/>
+                            <IconMenu/>
                             </div>
                                 <ul class="dropdown-menu" aria-labelledby='userMenuButton'>
                                     <div class='d-flex mx-2 cursor-pointer'>
-                                        <NetworkIcon class='my-2'/><a @click='$router.push("/connection")' class="cursor-pointer dropdown-item">Connections</a>
+                                        <IconNetwork class='my-2'/><a @click='$router.push("/connection")' class="cursor-pointer dropdown-item">Connections</a>
                                     </div>
                                     <div class='d-flex mx-2 cursor-pointer'>
-                                        <BuildingBroadcastTowerIcon class='my-2'/><a @click='$router.push("/layer")' class="cursor-pointer dropdown-item">Layers</a>
+                                        <IconBuildingBroadcastTower class='my-2'/><a @click='$router.push("/layer")' class="cursor-pointer dropdown-item">Layers</a>
                                     </div>
                                     <div class='d-flex mx-2 cursor-pointer'>
-                                        <DatabaseIcon class='my-2'/><a @click='$router.push("/data")' class="cursor-pointer dropdown-item">Data</a>
+                                        <IconDatabase class='my-2'/><a @click='$router.push("/data")' class="cursor-pointer dropdown-item">Data</a>
                                     </div>
                                     <div class='d-flex mx-2 cursor-pointer'>
-                                        <MapIcon class='my-2'/><a @click='$router.push("/basemap")' class="cursor-pointer dropdown-item">Basemaps</a>
+                                        <IconMap class='my-2'/><a @click='$router.push("/basemap")' class="cursor-pointer dropdown-item">Basemaps</a>
                                     </div>
                                     <div class='d-flex mx-2 cursor-pointer'>
-                                        <PhotoIcon class='my-2'/><a @click='$router.push("/iconset")' class="cursor-pointer dropdown-item">Iconsets</a>
+                                        <IconPhoto class='my-2'/><a @click='$router.push("/iconset")' class="cursor-pointer dropdown-item">Iconsets</a>
                                     </div>
                                     <div class='d-flex mx-2 cursor-pointer'>
-                                        <SettingsIcon class='my-2'/><a @click='$router.push("/admin")' class="cursor-pointer dropdown-item">Admin</a>
+                                        <IconSettings class='my-2'/><a @click='$router.push("/admin")' class="cursor-pointer dropdown-item">Admin</a>
                                     </div>
                                 </ul>
                             </div>
@@ -93,19 +93,19 @@ import '@tabler/core/dist/css/tabler.min.css';
 import UploadImport from './components/util/UploadImport.vue'
 import LoginModal from './components/util/LoginModal.vue'
 import {
-    CodeIcon,
-    HomeIcon,
-    LogoutIcon,
-    MenuIcon,
-    UserIcon,
-    MapIcon,
-    PhotoIcon,
-    NetworkIcon,
-    SettingsIcon,
-    DatabaseIcon,
-    BuildingBroadcastTowerIcon,
-    AdjustmentsIcon,
-} from 'vue-tabler-icons';
+    IconCode,
+    IconHome,
+    IconLogout,
+    IconMenu,
+    IconUser,
+    IconMap,
+    IconPhoto,
+    IconNetwork,
+    IconSettings,
+    IconDatabase,
+    IconBuildingBroadcastTower,
+    IconAdjustments,
+} from '@tabler/icons-vue';
 import {
     TablerModal,
     TablerError
@@ -188,20 +188,20 @@ export default {
     components: {
         LoginModal,
         UploadImport,
-        HomeIcon,
-        CodeIcon,
-        SettingsIcon,
-        LogoutIcon,
-        MenuIcon,
-        UserIcon,
-        MapIcon,
-        NetworkIcon,
-        DatabaseIcon,
+        IconHome,
+        IconCode,
+        IconSettings,
+        IconLogout,
+        IconMenu,
+        IconUser,
+        IconMap,
+        IconNetwork,
+        IconDatabase,
         TablerError,
         TablerModal,
-        BuildingBroadcastTowerIcon,
-        AdjustmentsIcon,
-        PhotoIcon,
+        IconBuildingBroadcastTower,
+        IconAdjustments,
+        IconPhoto,
     }
 }
 </script>

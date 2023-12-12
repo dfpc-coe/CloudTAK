@@ -8,11 +8,11 @@
         <div class='modal-header' :class='{
             "px-0 mx-2": !modal
         }'>
-            <CircleArrowLeftIcon v-if='!modal' @click='$emit("close")' class='cursor-pointer'/>
+            <IconCircleArrowLeft v-if='!modal' @click='$emit("close")' class='cursor-pointer'/>
             <div class='modal-title'>Missions</div>
             <div class='btn-list'>
-                <PlusIcon @click='$emit("create")' class='cursor-pointer' v-tooltip='"Create Mission"'/>
-                <RefreshIcon v-if='!loading' @click='fetchMissions' class='cursor-pointer' v-tooltip='"Refresh"'/>
+                <IconPlus @click='$emit("create")' class='cursor-pointer' v-tooltip='"Create Mission"'/>
+                <IconRefresh v-if='!loading' @click='fetchMissions' class='cursor-pointer' v-tooltip='"Refresh"'/>
             </div>
         </div>
     </div>
@@ -28,8 +28,8 @@
                 :class='{ "hover-dark": !modal, "hover-light": modal }'
             >
                 <div class='col-auto d-flex justify-content-center align-items-center'>
-                    <LockIcon v-if='mission.passwordProtected'/>
-                    <LockOpenIcon v-else/>
+                    <IconLock v-if='mission.passwordProtected'/>
+                    <IconLockOpen v-else/>
                 </div>
                 <div class='col-auto row'>
                     <div class='col-12'>
@@ -49,12 +49,12 @@
 
 <script>
 import {
-    PlusIcon,
-    LockIcon,
-    LockOpenIcon,
-    RefreshIcon,
-    CircleArrowLeftIcon,
-} from 'vue-tabler-icons';
+    IconPlus,
+    IconLock,
+    IconLockOpen,
+    IconRefresh,
+    IconCircleArrowLeft,
+} from '@tabler/icons-vue';
 import Alert from '../util/Alert.vue';
 import {
     TablerLoading
@@ -96,11 +96,11 @@ export default {
     components: {
         Alert,
         TablerLoading,
-        CircleArrowLeftIcon,
-        RefreshIcon,
-        PlusIcon,
-        LockIcon,
-        LockOpenIcon
+        IconCircleArrowLeft,
+        IconRefresh,
+        IconPlus,
+        IconLock,
+        IconLockOpen
     }
 }
 </script>

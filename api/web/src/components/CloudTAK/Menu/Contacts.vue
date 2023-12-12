@@ -2,10 +2,10 @@
 <div class='row'>
     <div class='col-12 border-bottom border-light'>
         <div class='modal-header px-0 mx-2'>
-            <CircleArrowLeftIcon @click='$emit("close")' class='cursor-pointer'/>
+            <IconCircleArrowLeft @click='$emit("close")' class='cursor-pointer'/>
             <div class='modal-title'>Contacts</div>
             <div class='btn-list'>
-                <RefreshIcon v-if='!loading' @click='fetchList' class='cursor-pointer' v-tooltip='"Refresh"'/>
+                <IconRefresh v-if='!loading' @click='fetchList' class='cursor-pointer' v-tooltip='"Refresh"'/>
             </div>
         </div>
     </div>
@@ -16,7 +16,7 @@
             <div :key='a.id' v-for='a of visibleContacts' class="col-lg-12">
                 <div class='col-12 row py-2 px-2 d-flex align-items-center hover-dark cursor-pointer'>
                     <div class='col-auto'>
-                        <CircleFilledIcon :class='{
+                        <IconCircleFilled :class='{
                             "text-yellow": a.team === "Yellow",
                             "text-cyan": a.team === "Cyan",
                             "text-lime": a.team === "Green",
@@ -51,10 +51,10 @@ import {
 } from '@tak-ps/vue-tabler';
 
 import {
-    RefreshIcon,
-    CircleFilledIcon,
-    CircleArrowLeftIcon
-} from 'vue-tabler-icons';
+    IconRefresh,
+    IconCircleFilled,
+    IconCircleArrowLeft
+} from '@tabler/icons-vue';
 
 export default {
     name: 'Contacts',
@@ -92,9 +92,9 @@ export default {
     components: {
         TablerNone,
         TablerLoading,
-        RefreshIcon,
-        CircleFilledIcon,
-        CircleArrowLeftIcon,
+        IconRefresh,
+        IconCircleFilled,
+        IconCircleArrowLeft,
     }
 }
 </script>

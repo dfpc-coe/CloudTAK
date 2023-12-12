@@ -23,10 +23,10 @@
 
                             <div class='ms-auto'>
                                 <div class='btn-list'>
-                                    <AccessPointIcon @click='modal.mission = true' v-if='data.mission' class='cursor-pointer text-green' v-tooltip='"Mission Sync On"'/>
-                                    <AccessPointOffIcon @click='modal.mission = true' v-else class='cursor-pointer text-red' v-tooltip='"Mission Sync Off"'/>
+                                    <IconAccessPoint @click='modal.mission = true' v-if='data.mission' class='cursor-pointer text-green' v-tooltip='"Mission Sync On"'/>
+                                    <IconAccessPointOff @click='modal.mission = true' v-else class='cursor-pointer text-red' v-tooltip='"Mission Sync Off"'/>
 
-                                    <SettingsIcon class='cursor-pointer' @click='$router.push(`/data/${data.id}/edit`)' v-tooltip='"Edit"'/>
+                                    <IconSettings class='cursor-pointer' @click='$router.push(`/data/${data.id}/edit`)' v-tooltip='"Edit"'/>
                                 </div>
                             </div>
                         </div>
@@ -74,10 +74,10 @@ import {
     TablerBreadCrumb,
 } from '@tak-ps/vue-tabler'
 import {
-    SettingsIcon,
-    AccessPointIcon,
-    AccessPointOffIcon,
-} from 'vue-tabler-icons'
+    IconSettings,
+    IconAccessPoint,
+    IconAccessPointOff,
+} from '@tabler/icons-vue'
 
 export default {
     name: 'DataSingle',
@@ -124,7 +124,7 @@ export default {
         }
     },
     components: {
-        SettingsIcon,
+        IconSettings,
         DataLocation,
         PageFooter,
         TablerLoading,
@@ -132,8 +132,8 @@ export default {
         DataTransforms,
         TablerBreadCrumb,
         TablerMarkdown,
-        AccessPointIcon,
-        AccessPointOffIcon,
+        IconAccessPoint,
+        IconAccessPointOff,
         MissionModal
     }
 }

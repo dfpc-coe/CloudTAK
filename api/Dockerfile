@@ -1,4 +1,4 @@
-FROM nginx:stable-alpine3.17
+FROM nginx:alpine3.18
 
 EXPOSE 5000
 

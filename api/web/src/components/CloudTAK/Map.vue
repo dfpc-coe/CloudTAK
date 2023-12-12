@@ -3,18 +3,18 @@
     <TablerLoading v-if='loading.main'/>
     <template v-else>
         <div class='position-absolute top-0 end-0 text-white py-2' style='z-index: 1; width: 60px; background-color: rgba(0, 0, 0, 0.5);'>
-            <Menu2Icon v-if='!cot && !menu.main' @click='menu.main = true' size='40' class='cursor-pointer'/>
-            <XIcon v-else-if='!cot && menu.main' @click='menu.main = false' size='40' class='cursor-pointer bg-dark'/>
-            <XIcon v-if='cot' @click='cot = false' size='40' class='cursor-pointer bg-dark'/>
+            <IconMenu2 v-if='!cot && !menu.main' @click='menu.main = true' size='40' class='cursor-pointer'/>
+            <IconX v-else-if='!cot && menu.main' @click='menu.main = false' size='40' class='cursor-pointer bg-dark'/>
+            <IconX v-if='cot' @click='cot = false' size='40' class='cursor-pointer bg-dark'/>
         </div>
 
         <div class='position-absolute top-0 beginning-0 text-white py-2 mx-2' style='z-index: 1; width: 60px; background-color: rgba(0, 0, 0, 0.5)'>
-            <Focus2Icon v-if='!radial.cot && !locked.length' @click='getLocation' :size='40' class='cursor-pointer'/>
-            <LockAccessIcon v-else-if='!radial.cot' @click='locked.splice(0, locked.length)' :size='40' class='cursor-pointer'/>
+            <IconFocus2 v-if='!radial.cot && !locked.length' @click='getLocation' :size='40' class='cursor-pointer'/>
+            <IconLockAccess v-else-if='!radial.cot' @click='locked.splice(0, locked.length)' :size='40' class='cursor-pointer'/>
 
             <div class='mt-3'>
-                <SquarePlusIcon size='40' @click='map.setZoom(map.getZoom() + 1);' class='cursor-pointer'/>
-                <SquareMinusIcon size='40' @click='map.setZoom(map.getZoom() - 1);' class='cursor-pointer'/>
+                <IconSquarePlus size='40' @click='map.setZoom(map.getZoom() + 1);' class='cursor-pointer'/>
+                <IconSquareMinus size='40' @click='map.setZoom(map.getZoom() - 1);' class='cursor-pointer'/>
             </div>
         </div>
 
@@ -24,14 +24,14 @@
         >
             <TablerDropdown>
                 <template #default>
-                    <PencilIcon @click='menu.draw = true' size='40' class='cursor-pointer'/>
+                    <IconPencil @click='menu.draw = true' size='40' class='cursor-pointer'/>
                 </template>
                 <template #dropdown>
                     <div class='btn-list'>
-                        <PointIcon @click='startDraw("point")' class='cursor-pointer'/>
-                        <LineIcon @click='startDraw("linestring")' class='cursor-pointer'/>
-                        <PolygonIcon @click='startDraw("polygon")' class='cursor-pointer'/>
-                        <VectorIcon @click='startDraw("rectangle")' class='cursor-pointer'/>
+                        <IconPoint @click='startDraw("point")' class='cursor-pointer'/>
+                        <IconLine @click='startDraw("linestring")' class='cursor-pointer'/>
+                        <IconPolygon @click='startDraw("polygon")' class='cursor-pointer'/>
+                        <IconVector @click='startDraw("rectangle")' class='cursor-pointer'/>
                     </div>
                 </template>
             </TablerDropdown>
@@ -68,18 +68,18 @@ import * as pmtiles from 'pmtiles';
 import mapgl from 'maplibre-gl'
 import * as terraDraw from 'terra-draw';
 import {
-    Menu2Icon,
-    SquarePlusIcon,
-    SquareMinusIcon,
-    Focus2Icon,
-    LockAccessIcon,
-    PencilIcon,
-    XIcon,
-    PointIcon,
-    LineIcon,
-    PolygonIcon,
-    VectorIcon,
-} from 'vue-tabler-icons';
+    IconMenu2,
+    IconSquarePlus,
+    IconSquareMinus,
+    IconFocus2,
+    IconLockAccess,
+    IconPencil,
+    IconX,
+    IconPoint,
+    IconLine,
+    IconPolygon,
+    IconVector,
+} from '@tabler/icons-vue';
 import {
     TablerDropdown,
     TablerLoading
@@ -101,7 +101,7 @@ export default {
     },
     mounted: async function() {
         await this.fetchBaseMaps();
-        await this.fetchIconsets();
+        await this.Iconfetchsets();
         this.loading.main = false;
 
         const url = window.stdurl('/api');
@@ -228,7 +228,7 @@ export default {
         fetchBaseMaps: async function() {
             this.basemaps = await window.std('/api/basemap');
         },
-        fetchIconsets: async function() {
+        Iconfetchsets: async function() {
             this.iconsets = await window.std('/api/iconset');
         },
         handleRadial: function(event) {
@@ -436,19 +436,19 @@ export default {
         }
     },
     components: {
-        SquarePlusIcon,
-        SquareMinusIcon,
-        Focus2Icon,
-        LockAccessIcon,
+        IconSquarePlus,
+        IconSquareMinus,
+        IconFocus2,
+        IconLockAccess,
         RadialMenu,
-        PointIcon,
-        LineIcon,
-        PolygonIcon,
-        VectorIcon,
+        IconPoint,
+        IconLine,
+        IconPolygon,
+        IconVector,
         TablerDropdown,
-        Menu2Icon,
-        PencilIcon,
-        XIcon,
+        IconMenu2,
+        IconPencil,
+        IconX,
         TablerLoading,
         CloudTAKMenu,
         CloudTAKCoTView

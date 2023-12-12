@@ -10,13 +10,13 @@
                         <div class='ms-auto'>
                             <div class='btn-list'>
                                 <a @click='query = !query' class="cursor-pointer btn btn-secondary">
-                                    <SearchIcon/>
+                                    <IconSearch/>
                                 </a>
                                 <a @click='$router.push("/layer/new")' class="cursor-pointer btn btn-primary">
                                     New Layer
                                 </a>
                                 <a @click='$router.push("/layer/admin")' class="cursor-pointer btn btn-secondary">
-                                    <SettingsIcon/>
+                                    <IconSettings/>
                                 </a>
                             </div>
                         </div>
@@ -36,7 +36,7 @@
                             <div class="input-icon mb-3">
                                 <input v-model='paging.filter' type="text" class="form-control" placeholder="Search…">
                                 <span class="input-icon-addon">
-                                    <SearchIcon/>
+                                    <IconSearch/>
                                 </span>
                             </div>
                         </div>
@@ -62,7 +62,7 @@
 
                                     <div class='ms-auto'>
                                         <div class='btn-list'>
-                                            <SettingsIcon
+                                            <IconSettings
                                                 class='cursor-pointer'
                                                 v-tooltip='"Edit Layer"' 
                                                 @click='$router.push(`/layer/${layer.id}/edit`)'
@@ -100,9 +100,9 @@ import {
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import {
-    SettingsIcon,
-    SearchIcon
-} from 'vue-tabler-icons'
+    IconSettings,
+    IconSearch
+} from '@tabler/icons-vue'
 
 export default {
     name: 'Layers',
@@ -162,8 +162,8 @@ export default {
     components: {
         TablerNone,
         TablerPager,
-        SettingsIcon,
-        SearchIcon,
+        IconSettings,
+        IconSearch,
         PageFooter,
         TablerBreadCrumb, 
         TablerLoading,

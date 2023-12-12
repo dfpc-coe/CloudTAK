@@ -139,8 +139,8 @@
 import PageFooter from './PageFooter.vue';
 import EsriPortal from './util/EsriPortal.vue';
 import {
-    PlusIcon,
-} from 'vue-tabler-icons';
+    IconPlus,
+} from '@tabler/icons-vue';
 import {
     TablerBreadCrumb,
     TablerEnum,
@@ -219,7 +219,7 @@ export default {
         }
     },
     components: {
-        PlusIcon,
+        IconPlus,
         TablerDelete,
         TablerBreadCrumb,
         TablerEnum,

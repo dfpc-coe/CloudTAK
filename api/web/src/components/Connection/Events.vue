@@ -5,10 +5,10 @@
 
         <div class='ms-auto'>
             <div class='btn-list'>
-                <TrashIcon v-tooltip='"Clear Events"'  @click='events = []' class='cursor-pointer'/>
+                <IconTrash v-tooltip='"Clear Events"'  @click='events = []' class='cursor-pointer'/>
 
-                <PlayerPlayIcon v-tooltip='"Play Events"' @click='paused = false' class='cursor-pointer' v-if='paused'/>
-                <PlayerPauseIcon v-tooltip='"Pause Events"' @click='paused = true' class='cursor-pointer' v-else/>
+                <IconPlayerPlay v-tooltip='"Play Events"' @click='paused = false' class='cursor-pointer' v-if='paused'/>
+                <IconPlayerPause v-tooltip='"Pause Events"' @click='paused = true' class='cursor-pointer' v-else/>
             </div>
         </div>
     </div>
@@ -18,10 +18,10 @@
 
 <script>
 import {
-    TrashIcon,
-    PlayerPlayIcon,
-    PlayerPauseIcon
-} from 'vue-tabler-icons';
+    IconTrash,
+    IconPlayerPlay,
+    IconPlayerPause
+} from '@tabler/icons-vue';
 
 export default {
     name: 'ConnectionEvents',
@@ -53,9 +53,9 @@ export default {
         });
     },
     components: {
-        TrashIcon,
-        PlayerPauseIcon,
-        PlayerPlayIcon
+        IconTrash,
+        IconPlayerPause,
+        IconPlayerPlay
     }
 }
 </script>

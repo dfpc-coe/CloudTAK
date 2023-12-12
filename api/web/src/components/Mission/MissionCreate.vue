@@ -5,8 +5,8 @@
         <div class='modal-header'>
             <div class='row'>
                 <div class='col-auto'>
-                    <LockIcon v-if='mission.passwordProtected'/>
-                    <LockOpenIcon v-else/>
+                    <IconLock v-if='mission.passwordProtected'/>
+                    <IconLockOpen v-else/>
                 </div>
                 <div class='col-auto row'>
                     <div class='col-12'>
@@ -25,7 +25,7 @@
                     <label class='px-2 w-100'>Groups (Channels)</label>
                     <div class='mx-1 d-flex' style='padding-right: 15px;'>
                         <input type='text' class='form-control' disabled :value='mission.groups.length ? mission.groups.join(", ") : "None"'/>
-                        <button @click='modal.groups = true' class='btn btn-sm'><ListSearchIcon class='cursor-pointer mx-2'/></button>
+                        <button @click='modal.groups = true' class='btn btn-sm'><IconListSearch class='cursor-pointer mx-2'/></button>
                     </div>
                 </div>
 
@@ -34,8 +34,8 @@
                 </TablerInput>
 
                 <label @click='advanced = !advanced' class='subheader mt-3 cursor-pointer'>
-                    <SquareChevronRightIcon v-if='!advanced'/>
-                    <ChevronDownIcon v-else/>
+                    <IconSquareChevronRight v-if='!advanced'/>
+                    <IconChevronDown v-else/>
                     Advanced Options
                 </label>
 
@@ -69,12 +69,12 @@
 
 <script>
 import {
-    LockIcon,
-    LockOpenIcon,
-    ListSearchIcon,
-    SquareChevronRightIcon,
-    ChevronDownIcon,
-} from 'vue-tabler-icons';
+    IconLock,
+    IconLockOpen,
+    IconListSearch,
+    IconSquareChevronRight,
+    IconChevronDown,
+} from '@tabler/icons-vue';
 import GroupSelect from '../util/GroupSelectModal.vue';
 import Alert from '../util/Alert.vue';
 import {
@@ -135,8 +135,8 @@ export default {
         }
     },
     components: {
-        SquareChevronRightIcon,
-        ChevronDownIcon,
+        IconSquareChevronRight,
+        IconChevronDown,
         GroupSelect,
         TablerNone,
         Alert,
@@ -144,9 +144,9 @@ export default {
         TablerInput,
         TablerEnum,
         TablerToggle,
-        ListSearchIcon,
-        LockIcon,
-        LockOpenIcon
+        IconListSearch,
+        IconLock,
+        IconLockOpen
     }
 }
 </script>

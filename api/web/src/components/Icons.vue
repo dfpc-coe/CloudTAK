@@ -21,9 +21,9 @@
                             <h3 class='card-title'>Iconsets</h3>
 
                             <div class='ms-auto btn-list'>
-                                <FileUploadIcon v-if='!upload' @click='upload = true' v-tooltip='"Zip Upload"' class='cursor-pointer'/>
-                                <PlusIcon v-tooltip='"Manual Creation"' @click='$router.push(`/iconset/new`)' class='cursor-pointer'/>
-                                <RefreshIcon v-tooltip='"Refresh"' @click='fetchList' class='cursor-pointer'/>
+                                <IconFileUpload v-if='!upload' @click='upload = true' v-tooltip='"Zip Upload"' class='cursor-pointer'/>
+                                <IconPlus v-tooltip='"Manual Creation"' @click='$router.push(`/iconset/new`)' class='cursor-pointer'/>
+                                <IconRefresh v-tooltip='"Refresh"' @click='fetchList' class='cursor-pointer'/>
                             </div>
                         </div>
                         <TablerLoading v-if='loading'/>
@@ -58,7 +58,7 @@
                 </div>
 
                 <div class="col-lg-12">
-                    <CombinedIcons v-if='list.iconsets.length'/>
+                    <IconCombineds v-if='list.iconsets.length'/>
                 </div>
             </div>
         </div>
@@ -71,18 +71,18 @@
 <script>
 import PageFooter from './PageFooter.vue';
 import Upload from './util/Upload.vue';
-import CombinedIcons from './cards/Icons.vue'
+import IconCombineds from './cards/Icons.vue'
 import {
     TablerNone,
     TablerBreadCrumb,
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import {
-    RefreshIcon,
-    SearchIcon,
-    FileUploadIcon,
-    PlusIcon
-} from 'vue-tabler-icons'
+    IconRefresh,
+    IconSearch,
+    IconFileUpload,
+    IconPlus
+} from '@tabler/icons-vue'
 
 export default {
     name: 'Icons',
@@ -125,15 +125,15 @@ export default {
     },
     components: {
         Upload,
-        PlusIcon,
-        FileUploadIcon,
-        CombinedIcons,
+        IconPlus,
+        IconFileUpload,
+        IconCombineds,
         TablerNone,
-        SearchIcon,
+        IconSearch,
         PageFooter,
         TablerBreadCrumb,
         TablerLoading,
-        RefreshIcon,
+        IconRefresh,
     }
 }
 </script>

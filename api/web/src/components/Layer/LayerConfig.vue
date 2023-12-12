@@ -3,7 +3,7 @@
     <div class='card-header'>
         <h3 class='card-title'>Layer Config</h3>
         <div class='ms-auto btn-list'>
-            <SettingsIcon v-if='disabled' @click='disabled = false' class='cursor-pointer'/>
+            <IconSettings v-if='disabled' @click='disabled = false' class='cursor-pointer'/>
         </div>
     </div>
 
@@ -16,7 +16,7 @@
                     <div v-if='!disabled' class='ms-auto'>
                         <div class='dropdown'>
                             <div class="dropdown-toggle" type="button" id="dropdownCron" data-bs-toggle="dropdown" aria-expanded="false">
-                                <SettingsIcon width='16' height='16' class='cursor-pointer dropdown-toggle'/>
+                                <IconSettings width='16' height='16' class='cursor-pointer dropdown-toggle'/>
                             </div>
                             <ul class="dropdown-menu px-1 py-1" aria-labelledby="dropdownCron">
                                 <li class='py-1' @click='config.cron = "rate(1 minute)"'>rate(1 minute)</li>
@@ -39,7 +39,7 @@
                     <div class='ms-auto'>
                         <div class='btn-list'>
                             <div>
-                                <RefreshIcon
+                                <IconRefresh
                                     v-if='!newTaskVersion && !loading.version'
                                     @click='latestVersion'
                                     v-tooltip='"Check for new version"'
@@ -56,7 +56,7 @@
                                 </span>
                             </div>
                             <div v-if='!disabled'>
-                                <SettingsIcon @click='taskmodal = true' width='16' height='16' class='cursor-pointer'/>
+                                <IconSettings @click='taskmodal = true' width='16' height='16' class='cursor-pointer'/>
                             </div>
                         </div>
                     </div>
@@ -83,10 +83,10 @@
                     <div class='col-12 d-flex'>
                         <div class='btn-group' role="group">
                             <input :disabled='disabled' v-model='destination' value='connection' type="radio" class="btn-check" name="connection-toolbar" id="connection-toolbar-connection" autocomplete="off">
-                            <label for="connection-toolbar-connection" class="btn btn-icon"><BuildingBroadcastTowerIcon/></label>
+                            <label for="connection-toolbar-connection" class="btn btn-icon"><IconBuildingBroadcastTower/></label>
 
                             <input :disabled='disabled' v-model='destination' value='data' type="radio" class="btn-check" name="connection-toolbar" id="connection-toolbar-data" autocomplete="off">
-                            <label for="connection-toolbar-data" class="btn btn-icon"><DatabaseIcon/></label>
+                            <label for="connection-toolbar-data" class="btn btn-icon"><IconDatabase/></label>
                         </div>
                         <ConnectionSelect
                             v-if='destination === "connection"'
@@ -126,11 +126,11 @@ import {
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import {
-    RefreshIcon,
-    SettingsIcon,
-    BuildingBroadcastTowerIcon,
-    DatabaseIcon,
-} from 'vue-tabler-icons'
+    IconRefresh,
+    IconSettings,
+    IconBuildingBroadcastTower,
+    IconDatabase,
+} from '@tabler/icons-vue'
 
 export default {
     name: 'LayerConfig',
@@ -241,12 +241,12 @@ export default {
     },
     components: {
         TablerLoading,
-        RefreshIcon,
-        SettingsIcon,
+        IconRefresh,
+        IconSettings,
         DataSelect,
         ConnectionSelect,
-        BuildingBroadcastTowerIcon,
-        DatabaseIcon,
+        IconBuildingBroadcastTower,
+        IconDatabase,
         TaskModal,
         TablerInput
     }

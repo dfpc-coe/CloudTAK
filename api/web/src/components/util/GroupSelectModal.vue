@@ -9,8 +9,8 @@
             <TablerLoading v-if='loading.groups'  desc='Loading Channels'/>
             <template v-else>
                 <div @click='updateGroup(group)' :key='group.name' v-for='group in list.data' class='col-12 cursor-pointer'>
-                    <CircleFilledIcon  v-if='selected.has(group.name)' class='cursor-pointer'/>
-                    <CircleIcon v-else class='cursor-pointer'/>
+                    <IconCircleFilled  v-if='selected.has(group.name)' class='cursor-pointer'/>
+                    <IconCircle v-else class='cursor-pointer'/>
                     <span v-text='group.name' class='mx-2'/>
                 </div>
                 <div class="col-12 mt-3">
@@ -28,9 +28,9 @@ import {
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import {
-    CircleIcon,
-    CircleFilledIcon
-} from 'vue-tabler-icons';
+    IconCircle,
+    IconCircleFilled
+} from '@tabler/icons-vue';
 
 export default {
     name: 'GroupSelectModal',
@@ -77,8 +77,8 @@ export default {
         },
     },
     components: {
-        CircleIcon,
-        CircleFilledIcon,
+        IconCircle,
+        IconCircleFilled,
         TablerModal,
         TablerInput,
         TablerLoading

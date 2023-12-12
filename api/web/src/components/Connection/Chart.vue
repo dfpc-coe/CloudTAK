@@ -4,7 +4,7 @@
         <h2 class='card-title'>Connection Throughput</h2>
 
         <div class='ms-auto btn-list'>
-            <RefreshIcon @click='fetchData' class='cursor-pointer'/>
+            <IconRefresh @click='fetchData' class='cursor-pointer'/>
         </div>
     </div>
     <div class='card-body'>
@@ -17,8 +17,8 @@
 <script>
 import ApexCharts from 'apexcharts';
 import {
-    RefreshIcon
-} from 'vue-tabler-icons'
+    IconRefresh
+} from '@tabler/icons-vue'
 import {
     TablerLoading
 } from '@tak-ps/vue-tabler';
@@ -101,7 +101,7 @@ export default {
         }
     },
     components: {
-        RefreshIcon,
+        IconRefresh,
         TablerLoading
     }
 }

@@ -4,7 +4,7 @@
         <h1 class='card-title'>Sink Logging</h1>
 
         <div class='ms-auto btn-list'>
-            <RefreshIcon @click='fetchData' class='cursor-pointer'/>
+            <IconRefresh @click='fetchData' class='cursor-pointer'/>
         </div>
     </div>
     <div class='card-body'>
@@ -20,8 +20,8 @@ import {
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import {
-    RefreshIcon
-} from 'vue-tabler-icons';
+    IconRefresh
+} from '@tabler/icons-vue';
 
 export default {
     name: 'ConnectionSinkChart',
@@ -107,7 +107,7 @@ export default {
         }
     },
     components: {
-        RefreshIcon,
+        IconRefresh,
         TablerLoading
     }
 }

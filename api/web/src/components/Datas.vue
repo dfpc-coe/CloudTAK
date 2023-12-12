@@ -10,7 +10,7 @@
                         <div class='ms-auto'>
                             <div class='btn-list'>
                                 <a @click='query.shown = !query.shown' class="cursor-pointer btn btn-secondary">
-                                    <SearchIcon/>
+                                    <IconSearch/>
                                 </a>
 
                                 <a @click='$router.push("/data/new")' class="cursor-pointer btn btn-primary">
@@ -34,7 +34,7 @@
                             <div class="input-icon mb-3">
                                 <input v-model='query.search' type="text" class="form-control" placeholder="Search…">
                                 <span class="input-icon-addon">
-                                    <SearchIcon/>
+                                    <IconSearch/>
                                 </span>
                             </div>
                         </div>
@@ -57,10 +57,10 @@
 
                                 <div class='ms-auto'>
                                     <div class='btn-list'>
-                                        <AccessPointIcon v-if='data.mission' class='text-green' v-tooltip='"Mission Sync On"'/>
-                                        <AccessPointOffIcon v-else class='text-red' v-tooltip='"Mission Sync Off"'/>
+                                        <IconAccessPoint v-if='data.mission' class='text-green' v-tooltip='"Mission Sync On"'/>
+                                        <IconAccessPointOff v-else class='text-red' v-tooltip='"Mission Sync Off"'/>
 
-                                        <SettingsIcon class='cursor-pointer' @click='$router.push(`/data/${data.id}/edit`)'/>
+                                        <IconSettings class='cursor-pointer' @click='$router.push(`/data/${data.id}/edit`)'/>
                                     </div>
                                 </div>
                             </div>
@@ -88,11 +88,11 @@ import {
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import {
-    SettingsIcon,
-    SearchIcon,
-    AccessPointIcon,
-    AccessPointOffIcon,
-} from 'vue-tabler-icons'
+    IconSettings,
+    IconSearch,
+    IconAccessPoint,
+    IconAccessPointOff,
+} from '@tabler/icons-vue'
 
 export default {
     name: 'Datas',
@@ -142,11 +142,11 @@ export default {
         }
     },
     components: {
-        AccessPointIcon,
-        AccessPointOffIcon,
+        IconAccessPoint,
+        IconAccessPointOff,
         TablerNone,
-        SettingsIcon,
-        SearchIcon,
+        IconSettings,
+        IconSearch,
         PageFooter,
         TablerBreadCrumb,
         TablerMarkdown,

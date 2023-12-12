@@ -58,27 +58,27 @@
             </div>
             <div class='row py-2 px-2'>
                 <div @click='mode = "settings"' class='cursor-pointer col-12 py-2 px-2 d-flex align-items-center hover-dark'>
-                    <SettingsIcon size='32'/>
+                    <IconSettings size='32'/>
                     <span class='mx-2' style='font-size: 18px;'>Settings</span>
                 </div>
                 <div @click='mode = "overlays"' class='cursor-pointer col-12 py-2 px-2 d-flex align-items-center hover-dark'>
-                    <BoxMultipleIcon size='32'/>
+                    <IconBoxMultiple size='32'/>
                     <span class='mx-2' style='font-size: 18px;'>Overlays</span>
                 </div>
                 <div @click='mode = "contacts"' class='cursor-pointer col-12 py-2 px-2 d-flex align-items-center hover-dark'>
-                    <UsersIcon size='32'/>
+                    <IconUsers size='32'/>
                     <span class='mx-2' style='font-size: 18px;'>Contacts</span>
                 </div>
                 <div @click='mode = "basemaps"' class='cursor-pointer col-12 py-2 px-2 d-flex align-items-center hover-dark'>
-                    <MapIcon size='32'/>
+                    <IconMap size='32'/>
                     <span class='mx-2' style='font-size: 18px;'>BaseMaps</span>
                 </div>
                 <div @click='mode = "missions"' class='cursor-pointer col-12 py-2 px-2 d-flex align-items-center hover-dark'>
-                    <AmbulanceIcon size='32'/>
+                    <IconAmbulance size='32'/>
                     <span class='mx-2' style='font-size: 18px;'>Mission Sync</span>
                 </div>
                 <div @click='mode = "channels"' class='cursor-pointer col-12 py-2 px-2 d-flex align-items-center hover-dark'>
-                    <AffiliateIcon size='32'/>
+                    <IconAffiliate size='32'/>
                     <span class='mx-2' style='font-size: 18px;'>Channels</span>
                 </div>
             </div>
@@ -89,13 +89,13 @@
 
 <script>
 import {
-    MapIcon,
-    UsersIcon,
-    SettingsIcon,
-    AmbulanceIcon,
-    BoxMultipleIcon,
-    AffiliateIcon,
-} from 'vue-tabler-icons';
+    IconMap,
+    IconUsers,
+    IconSettings,
+    IconAmbulance,
+    IconBoxMultiple,
+    IconAffiliate,
+} from '@tabler/icons-vue';
 import MenuBasemaps from './Menu/Basemaps.vue';
 import MenuOverlays from './Menu/Overlays.vue';
 import MenuDatas from './Menu/Datas.vue';
@@ -118,7 +118,7 @@ export default {
         }
     },
     components: {
-        BoxMultipleIcon,
+        IconBoxMultiple,
         MenuBasemaps,
         MenuSettings,
         MenuOverlays,
@@ -126,11 +126,11 @@ export default {
         MenuChannels,
         MenuMissions,
         MenuDatas,
-        AffiliateIcon,
-        AmbulanceIcon,
-        SettingsIcon,
-        UsersIcon,
-        MapIcon
+        IconAffiliate,
+        IconAmbulance,
+        IconSettings,
+        IconUsers,
+        IconMap
     }
 }
 </script>

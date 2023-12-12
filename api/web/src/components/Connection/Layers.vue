@@ -4,7 +4,7 @@
         <h2 class='card-title'>Layers</h2>
 
         <div class='ms-auto btn-list'>
-            <PlusIcon v-tooltip='"Create Layer"' @click='$router.push("/layer/new")' class='cursor-pointer'/>
+            <IconPlus v-tooltip='"Create Layer"' @click='$router.push("/layer/new")' class='cursor-pointer'/>
         </div>
     </div>
 
@@ -38,8 +38,8 @@
 import TableFooter from '../util/TableFooter.vue';
 import Alert from '../util/Alert.vue';
 import {
-    PlusIcon
-} from 'vue-tabler-icons';
+    IconPlus
+} from '@tabler/icons-vue';
 import {
     TablerNone,
     TablerLoading
@@ -99,7 +99,7 @@ export default {
     components: {
         TablerNone,
         Alert,
-        PlusIcon,
+        IconPlus,
         TablerLoading,
         TableFooter,
         LayerStatus,

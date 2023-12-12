@@ -10,10 +10,10 @@
                 </div>
             </div>
             <div class='col-auto btn-list my-2 ms-auto d-flex align-items-center mx-2'>
-                <ZoomPanIcon @click='zoomTo' class='cursor-pointer' v-tooltip='"Zoom To"'/>
+                <IconZoomPan @click='zoomTo' class='cursor-pointer' v-tooltip='"Zoom To"'/>
 
-                <CodeIcon v-if='mode === "default"' @click='mode = "raw"' class='cursor-pointer' v-tooltip='"Raw View"'/>
-                <XIcon v-if='mode === "raw"' @click='mode = "default"' class='cursor-pointer' v-tooltip='"Default View"'/>
+                <IconCode v-if='mode === "default"' @click='mode = "raw"' class='cursor-pointer' v-tooltip='"Raw View"'/>
+                <IconX v-if='mode === "raw"' @click='mode = "default"' class='cursor-pointer' v-tooltip='"Default View"'/>
             </div>
         </div>
 
@@ -52,10 +52,10 @@ import CoTStyle from './util/CoTStyle.vue';
 import Coordinate from './util/Coordinate.vue';
 import Speed from './util/Speed.vue';
 import {
-    XIcon,
-    ZoomPanIcon,
-    CodeIcon
-} from 'vue-tabler-icons';
+    IconX,
+    IconZoomPan,
+    IconCode
+} from '@tabler/icons-vue';
 
 export default {
     name: 'CloudTAKCoTView',
@@ -90,10 +90,10 @@ export default {
         }
     },
     components: {
-        XIcon,
-        CodeIcon,
+        IconX,
+        IconCode,
         CoTStyle,
-        ZoomPanIcon,
+        IconZoomPan,
         Speed,
         Coordinate,
         TablerInput,

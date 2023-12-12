@@ -20,8 +20,8 @@
                         <div class='card-header d-flex'>
                             <h1 class='card-title'>Layer Alerts</h1>
                             <div class='ms-auto btn-list'>
-                                <TrashIcon @click='deleteAlerts()' class='cursor-pointer'/>
-                                <RefreshIcon @click='query' class='cursor-pointer'/>
+                                <IconTrash @click='deleteAlerts()' class='cursor-pointer'/>
+                                <IconRefresh @click='query' class='cursor-pointer'/>
                             </div>
                         </div>
 
@@ -42,11 +42,11 @@
                                             "text-yellow": alert.priority === "yellow",
                                             "text-red": alert.priority === "red"
                                         }'>
-                                            <AlertCircleIcon class='mx-auto my-auto'/>
+                                            <IconAlertCircle class='mx-auto my-auto'/>
                                         </div>
                                         <span v-text='alert.description'/>
                                         <div class='ms-auto my-1'>
-                                            <TrashIcon @click='deleteAlerts(alert.id)' class='cursor-pointer'/>
+                                            <IconTrash @click='deleteAlerts(alert.id)' class='cursor-pointer'/>
                                         </div>
                                     </div>
                                 </div>
@@ -65,10 +65,10 @@
 <script>
 import PageFooter from './PageFooter.vue';
 import {
-    TrashIcon,
-    RefreshIcon,
-    AlertCircleIcon,
-} from 'vue-tabler-icons';
+    IconTrash,
+    IconRefresh,
+    IconAlertCircle,
+} from '@tabler/icons-vue';
 import {
     TablerNone,
     TablerLoading,
@@ -118,11 +118,11 @@ export default {
     components: {
         TablerNone,
         PageFooter,
-        TrashIcon,
-        RefreshIcon,
+        IconTrash,
+        IconRefresh,
         TablerBreadCrumb,
         TablerLoading,
-        AlertCircleIcon,
+        IconAlertCircle,
     }
 }
 </script>

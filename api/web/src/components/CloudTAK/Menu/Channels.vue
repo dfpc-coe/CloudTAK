@@ -2,10 +2,10 @@
 <div class='row'>
     <div class='col-12 border-bottom border-light'>
         <div class='modal-header px-0 mx-2'>
-            <CircleArrowLeftIcon @click='$emit("close")' class='cursor-pointer'/>
+            <IconCircleArrowLeft @click='$emit("close")' class='cursor-pointer'/>
             <div class='modal-title'>Channels</div>
             <div class='btn-list'>
-                <RefreshIcon v-if='!loading' @click='fetchList' class='cursor-pointer' v-tooltip='"Refresh"'/>
+                <IconRefresh v-if='!loading' @click='fetchList' class='cursor-pointer' v-tooltip='"Refresh"'/>
             </div>
         </div>
     </div>
@@ -15,8 +15,8 @@
         <template v-else>
             <div :key='ch.name' v-for='ch in processChannels' class="col-lg-12 hover-dark">
                 <div class='col-12 py-2 px-2 d-flex align-items-center'>
-                    <EyeIcon v-if='ch.active' @click='setStatus(ch, false)' v-tooltip='"Disable"' class='cursor-pointer'/>
-                    <EyeOffIcon v-else @click='setStatus(ch, true)' v-tooltip='"Enable"' class='cursor-pointer'/>
+                    <IconEye v-if='ch.active' @click='setStatus(ch, false)' v-tooltip='"Disable"' class='cursor-pointer'/>
+                    <IconEyeOff v-else @click='setStatus(ch, true)' v-tooltip='"Enable"' class='cursor-pointer'/>
                     <span class="mx-2" v-text='ch.name'></span>
                 </div>
             </div>
@@ -32,11 +32,11 @@ import {
 } from '@tak-ps/vue-tabler';
 
 import {
-    CircleArrowLeftIcon,
-    RefreshIcon,
-    EyeIcon,
-    EyeOffIcon,
-} from 'vue-tabler-icons';
+    IconCircleArrowLeft,
+    IconRefresh,
+    IconEye,
+    IconEyeOff,
+} from '@tabler/icons-vue';
 
 export default {
     name: 'Channels',
@@ -98,12 +98,12 @@ export default {
         },
     },
     components: {
-        EyeIcon,
-        EyeOffIcon,
-        RefreshIcon,
+        IconEye,
+        IconEyeOff,
+        IconRefresh,
         TablerNone,
         TablerLoading,
-        CircleArrowLeftIcon,
+        IconCircleArrowLeft,
     }
 }
 </script>

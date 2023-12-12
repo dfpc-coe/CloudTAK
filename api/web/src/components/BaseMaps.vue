@@ -10,7 +10,7 @@
                         <div class='ms-auto'>
                             <div class='btn-list'>
                                 <a @click='query = !query' class="cursor-pointer btn btn-secondary">
-                                    <SearchIcon/>
+                                    <IconSearch/>
                                 </a>
 
                                 <a @click='$router.push("/basemap/new")' class="cursor-pointer btn btn-primary">
@@ -34,7 +34,7 @@
                             <div class="input-icon mb-3">
                                 <input v-model='paging.filter' type="text"  class="form-control" placeholder="Search…">
                                 <span class="input-icon-addon">
-                                    <SearchIcon/>
+                                    <IconSearch/>
                                 </span>
                             </div>
                         </div>
@@ -58,9 +58,9 @@
 
                                     <div class='ms-auto'>
                                         <div class='btn-list'>
-                                            <Share2Icon v-tooltip='"Share BaseMap"' class='cursor-pointer' @click='share(basemap)'/>
-                                            <DownloadIcon v-tooltip='"Download TAK XML"' class='cursor-pointer' @click='download(basemap)'/>
-                                            <SettingsIcon v-tooltip='"Edit Basemap"' class='cursor-pointer' @click='$router.push(`/basemap/${basemap.id}/edit`)'/>
+                                            <IconShare2 v-tooltip='"Share BaseMap"' class='cursor-pointer' @click='share(basemap)'/>
+                                            <IconDownload v-tooltip='"Download TAK XML"' class='cursor-pointer' @click='download(basemap)'/>
+                                            <IconSettings v-tooltip='"Edit Basemap"' class='cursor-pointer' @click='$router.push(`/basemap/${basemap.id}/edit`)'/>
                                         </div>
                                     </div>
                                 </div>
@@ -104,11 +104,11 @@ import {
 import timeDiff from '../timediff.js';
 import GroupSelectModal from './util/GroupSelectModal.vue';
 import {
-    Share2Icon,
-    SettingsIcon,
-    DownloadIcon,
-    SearchIcon
-} from 'vue-tabler-icons'
+    IconShare2,
+    IconSettings,
+    IconDownload,
+    IconSearch
+} from '@tabler/icons-vue'
 
 export default {
     name: 'BaseMaps',
@@ -167,11 +167,11 @@ export default {
     components: {
         TablerNone,
         TablerPager,
-        Share2Icon,
-        SettingsIcon,
-        SearchIcon,
+        IconShare2,
+        IconSettings,
+        IconSearch,
         PageFooter,
-        DownloadIcon,
+        IconDownload,
         TablerBreadCrumb,
         GroupSelectModal,
         TablerLoading,
