@@ -15,7 +15,48 @@ export default async function router(schema: any, config: Config) {
         name: 'Import',
         group: 'Import',
         auth: 'user',
-        description: 'Import TAK assets and attempt to automatically handle them',
+        description: 'Import an unknown asset into the imports manager',
+        body: {
+            type: 'object',
+            required: ['name'],
+            additionalProperties: false,
+            properties: {
+                name: { type: 'string' },
+                mode: {
+                    type: 'string',
+                    enum: [
+                        'Unknown',
+                        'Mission'
+                    ]
+                },
+                config: {
+                    type: 'object'
+                }
+            }
+        },
+        res: "imports.json"
+    }, async (req: AuthRequest, res: Response) => {
+        try {
+            await Auth.is_auth(req);
+
+            const import = await Import.generate(config.pool, {
+                name: req.body.name,
+                username: req.auth.email,
+                mode: req.body.mode,
+                config: req.body.config
+            });
+
+            return res.json(import)
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
+
+    await schema.put('/import', {
+        name: 'Import',
+        group: 'Import',
+        auth: 'user',
+        description: 'Import an unknown asset into the imports manager',
         res: {
             type: 'object',
             required: ['imports'],
@@ -57,7 +98,6 @@ export default async function router(schema: any, config: Config) {
                 }
             });
 
-            let buffer: Buffer;
             const uploads = [];
             bb.on('file', async (fieldname, file, blob) => {
                 uploads.push((async function() {
@@ -69,6 +109,7 @@ export default async function router(schema: any, config: Config) {
 
                     await Import.generate(config.pool, {
                         name: res.file,
+                        username: req.auth.email,
                         id: res.uid
                     });
 
