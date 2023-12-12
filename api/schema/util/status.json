@@ -1,6 +1,7 @@
 {
     "type": "string",
     "enum": [
+        "Empty",
         "Pending",
         "Running",
         "Success",
