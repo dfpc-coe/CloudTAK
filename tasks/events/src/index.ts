@@ -21,7 +21,6 @@ interface Event {
 export const handler = async (
     event: any
 ): Promise<void> => {
-
     for (const record of event.Records) {
         if (record.s3) {
             await s3Event(record as Lambda.S3EventRecord)
@@ -50,42 +49,47 @@ async function s3Event(record: Lambda.S3EventRecord) {
             md.ID = path.parse(md.Key).name;
 
             await updateImport(md, { status: 'Running' });
+            const imported = await fetchImport(md);
 
-            const s3 = new S3.S3Client({ region: process.env.AWS_DEFAULT_REGION || 'us-east-1' });
+            if (imported.mode === 'Mission') {
 
-            await pipeline(
-                // @ts-ignore
-                (await s3.send(new S3.GetObjectCommand({
-                    Bucket: md.Bucket,
-                    Key: md.Key
-                }))).Body,
-                fs.createWriteStream(md.Local)
-            );
+            } else if (imported.mode === 'Unknown') {
+                const s3 = new S3.S3Client({ region: process.env.AWS_DEFAULT_REGION || 'us-east-1' });
 
-            if (md.Ext === '.zip') {
-                const zip = new StreamZip.async({
-                    file: path.resolve(os.tmpdir(), md.Local),
-                    skipEntryNameValidation: true
-                });
+                await pipeline(
+                    // @ts-ignore
+                    (await s3.send(new S3.GetObjectCommand({
+                        Bucket: md.Bucket,
+                        Key: md.Key
+                    }))).Body,
+                    fs.createWriteStream(md.Local)
+                );
 
-                const preentries = await zip.entries();
+                if (md.Ext === '.zip') {
+                    const zip = new StreamZip.async({
+                        file: path.resolve(os.tmpdir(), md.Local),
+                        skipEntryNameValidation: true
+                    });
 
-                const indexes = [];
-                for (const entrykey in preentries) {
-                    const entry = preentries[entrykey];
+                    const preentries = await zip.entries();
 
-                    if (path.parse(entry.name).ext === '.xml') {
-                        indexes.push(entry);
+                    const indexes = [];
+                    for (const entrykey in preentries) {
+                        const entry = preentries[entrykey];
+
+                        if (path.parse(entry.name).ext === '.xml') {
+                            indexes.push(entry);
+                        }
                     }
-                }
 
-                for (const index of indexes) {
-                    await processIndex(md, String(await zip.entryData(index)), zip);
+                    for (const index of indexes) {
+                        await processIndex(md, String(await zip.entryData(index)), zip);
+                    }
+                } else if (md.Ext === '.xml') {
+                    await processIndex(md, String(await fsp.readFile(md.Local)));
+                } else {
+                    throw new Error('Unable to parse Index');
                 }
-            } else if (md.Ext === '.xml') {
-                await processIndex(md, String(await fsp.readFile(md.Local)));
-            } else {
-                throw new Error('Unable to parse Index');
             }
         } catch (err) {
             console.error(err);
@@ -130,6 +134,17 @@ async function fetchData(event: Event) {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${event.Token}`
         }
+    });
+
+    return await res.json();
+}
+
+async function fetchImport(event: Event) {
+    const res = await fetch(new URL(`/api/import/${event.ID}`, process.env.TAK_ETL_API), {
+        method: 'GET',
+        headers: {
+            'Authorization': `Bearer ${event.Token}`
+        },
     });
 
     return await res.json();

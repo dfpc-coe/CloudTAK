@@ -17,8 +17,6 @@
         "@aws-sdk/lib-storage": "^3.456.0",
         "@tmcw/togeojson": "^5.5.0",
         "@xmldom/xmldom": "^0.8.6",
-        "form-data-encoder": "^2.1.4",
-        "formdata-node": "^5.0.0",
         "geojson-precision": "^1.0.0",
         "jsonwebtoken": "^9.0.0"
     },
