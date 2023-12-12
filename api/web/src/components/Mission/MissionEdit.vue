@@ -92,6 +92,8 @@
                     <template v-else-if='mode === "contents"'>
                         <template v-if='upload'>
                             <UploadImport
+                                mode='Mission'
+                                :config='{"id": mission.name }'
                                 @cancel='upload = false'
                             />
                         </template>

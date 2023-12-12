@@ -51,6 +51,9 @@
                                         <IconPhoto class='my-2'/><a @click='$router.push("/iconset")' class="cursor-pointer dropdown-item hover-dark">Iconsets</a>
                                     </div>
                                     <div class='d-flex mx-2 cursor-pointer'>
+                                        <IconFileImport class='my-2'/><a @click='$router.push("/import")' class="cursor-pointer dropdown-item hover-dark">Imports</a>
+                                    </div>
+                                    <div class='d-flex mx-2 cursor-pointer'>
                                         <IconSettings class='my-2'/><a @click='$router.push("/admin")' class="cursor-pointer dropdown-item hover-dark">Admin</a>
                                     </div>
                                 </ul>
@@ -70,8 +73,12 @@
         </TablerModal>
     </template>
 
-    <TablerLoading v-if='loading' desc='Loading CloudTAK'/>
-    <router-view v-else :user='user'/>
+    <TablerLoading v-if='loading && !$route.path.includes("login")' desc='Loading CloudTAK'/>
+    <router-view
+        v-else
+        @login='getLogin'
+        :user='user'
+    />
 
     <TablerError v-if='err' :err='err' @close='err = null'/>
     <LoginModal v-if='login' @close='login = null' @login='login=null'/>
@@ -100,6 +107,7 @@ import {
     IconMenu,
     IconUser,
     IconMap,
+    IconFileImport,
     IconPhoto,
     IconNetwork,
     IconSettings,
@@ -203,6 +211,7 @@ export default {
         IconMap,
         IconNetwork,
         IconDatabase,
+        IconFileImport,
         TablerError,
         TablerModal,
         TablerLoading,

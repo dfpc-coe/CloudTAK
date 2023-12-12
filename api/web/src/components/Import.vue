@@ -20,7 +20,7 @@
                         <div class='card-header'>
                             <h3 class='card-title'>
                                 <div class='d-flex'>
-                                    <Status :status='imported.status'/>
+                                    <Status v-if='!loading' :status='imported.status'/>
                                     <div class='d-flex align-items-center'>Import <span class='mx-2' v-text='imported.id'/></div>
                                 </div>
                             </h3>

@@ -69,7 +69,9 @@ export default async function router(schema: any, config: Config) {
                 throw new Err(400, null, 'Unsupported Content-Type');
             }
 
-            const imported = await Import.from(config.pool, req.params.import);
+            const imported = await Import.from(config.pool, req.params.import, {
+                column: 'id'
+            });
 
             if (imported.status !== 'Empty') throw new Err(400, null, 'An asset is already associated with this import');
             if (imported.username !== req.auth.email) throw new Err(400, null, 'You did not create this import');
@@ -196,7 +198,9 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            const imported = await Import.from(config.pool, req.params.import);
+            const imported = await Import.from(config.pool, req.params.import, {
+                column: 'id'
+            });
 
             return res.json(imported);
         } catch (err) {
@@ -216,7 +220,11 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            const imported = await Import.commit(config.pool, req.params.import, {
+            const imported = await Import.from(config.pool, req.params.import, {
+                column: 'id'
+            });
+
+            await imported.commit({
                 ...req.body,
                 updated: sql`Now()`
             });

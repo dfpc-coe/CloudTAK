@@ -4,7 +4,7 @@
     "status-orange": status === "Warn",
     "status-green": status === "Success",
     "status-red": status === "Fail",
-    "status-dark": status === "Unknown",
+    "status-dark": status === "Unknown" || status === "Empty",
 }'>
     <span class="status-indicator-circle"></span>
     <span class="status-indicator-circle"></span>
