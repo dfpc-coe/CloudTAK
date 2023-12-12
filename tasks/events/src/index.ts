@@ -41,8 +41,12 @@ async function s3Event(record: Lambda.S3EventRecord) {
         Key: decodeURIComponent(record.s3.object.key.replace(/\+/g, ' ')),
         Ext: path.parse(decodeURIComponent(record.s3.object.key.replace(/\+/g, ' '))).ext,
         Local: path.resolve(os.tmpdir(), `input${path.parse(decodeURIComponent(record.s3.object.key.replace(/\+/g, ' '))).ext}`),
-    }
+    };
 
+    return await genericEvent(md)
+}
+
+async function genericEvent(md: Event) {
     console.log(`ok - New file detected in s3://${md.Bucket}/${md.Key}`);
     if (md.Key.startsWith('import/')) {
         try {
@@ -235,4 +239,27 @@ async function processIndex(event: Event, xmlstr: string, zip?: StreamZipAsync) 
             result: { url: `/iconset/${iconset.uid}` }
         });
     }
+}
+
+if (import.meta.url === `file://${process.argv[1]}`) {
+    try {
+        const dotfile = new URL('../.env', import.meta.url);
+        fs.accessSync(dotfile);
+        Object.assign(process.env, JSON.parse(String(fs.readFileSync(dotfile))));
+        console.log('ok - .env file loaded');
+    } catch (err) {
+        console.log('ok - no .env file loaded');
+    }
+
+
+    if (!process.env.KEY) throw new Error('KEY env var must be set');
+    if (!process.env.BUCKET) throw new Error('BUCKET env var must be set');
+
+    await genericEvent({
+        Token: jwt.sign({ access: 'event' }, 'coe-wildland-fire'),
+        Bucket: process.env.BUCKET,
+        Key: process.env.KEY,
+        Ext: path.parse(process.env.KEY).ext,
+        Local: path.resolve(os.tmpdir(), `input${path.parse(process.env.KEY).ext}`),
+    });
 }
