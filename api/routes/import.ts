@@ -43,6 +43,7 @@ export default async function router(schema: any, config: Config) {
                 id: crypto.randomUUID(),
                 name: req.body.name,
                 username: req.auth.email,
+                status: 'Empty',
                 mode: req.body.mode,
                 config: req.body.config
             });
@@ -53,11 +54,63 @@ export default async function router(schema: any, config: Config) {
         }
     });
 
+    await schema.put('/import/:import', {
+        name: 'Import',
+        group: 'Import',
+        auth: 'user',
+        ':import': 'string',
+        description: 'Import an asset into a previously configured import container',
+        res: 'imports.json'
+    }, async (req: AuthRequest, res: Response) => {
+        try {
+            await Auth.is_auth(req);
+
+            if (!req.headers['content-type'].startsWith('multipart/form-data')) {
+                throw new Err(400, null, 'Unsupported Content-Type');
+            }
+
+            const imported = await Import.from(config.pool, req.params.import);
+
+            if (imported.status !== 'Empty') throw new Err(400, null, 'An asset is already associated with this import');
+            if (imported.username !== req.auth.email) throw new Err(400, null, 'You did not create this import');
+
+            const bb = busboy({
+                headers: req.headers,
+                limits: { files: 1 }
+            });
+
+            const uploads = [];
+            bb.on('file', async (fieldname, file, blob) => {
+                uploads.push((async function() {
+                    const res = {
+                        file: blob.filename,
+                        ext: path.parse(blob.filename).ext,
+                    };
+
+                    await imported.commit({ status: 'Pending' });
+                    await S3.put(`import/${imported.id}${res.ext}`, file)
+
+                    return res;
+                })())
+            }).on('finish', async () => {
+                try {
+                    return res.json(imported)
+                } catch (err) {
+                    Err.respond(err, res);
+                }
+            });
+
+            return req.pipe(bb);
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
+
     await schema.put('/import', {
         name: 'Import',
         group: 'Import',
         auth: 'user',
-        description: 'Import an unknown asset into the imports manager',
+        description: 'Import up to 5 unknown assets into the imports manager at a time',
         res: {
             type: 'object',
             required: ['imports'],
@@ -94,9 +147,7 @@ export default async function router(schema: any, config: Config) {
 
             const bb = busboy({
                 headers: req.headers,
-                limits: {
-                    files: 1
-                }
+                limits: { files: 5 }
             });
 
             const uploads = [];
