@@ -48,11 +48,11 @@
                                     </div>
                                     <div class="datagrid-item">
                                         <div class="datagrid-title">Center</div>
-                                        <div class="datagrid-content" v-text='basemap.center.coordinates.join(",") || "Unknown"'></div>
+                                        <div class="datagrid-content" v-text='basemap.center ? basemap.center.coordinates.join(",") : "Unknown"'></div>
                                     </div>
                                     <div class="datagrid-item">
                                         <div class="datagrid-title">Bounds</div>
-                                        <div class="datagrid-content" v-text='basemap.bounds.bounds || "Unknown"'></div>
+                                        <div class="datagrid-content" v-text='basemap.bounds ? basemap.bounds.bounds : "Unknown"'></div>
                                     </div>
                                 </div>
 

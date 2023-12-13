@@ -45,6 +45,7 @@
         "@turf/meta": "^6.5.0",
         "ajv": "^8.11.2",
         "ajv-formats": "^2.1.1",
+        "archiver": "^6.0.1",
         "array-includes-with-glob": "^5.0.9",
         "bree": "^9.1.3",
         "busboy": "^1.6.0",
