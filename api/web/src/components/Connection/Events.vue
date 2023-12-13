@@ -1,5 +1,5 @@
 <template>
-<div class='card'>
+<div>
     <div class='card-header'>
         <h3 class='card-title'>Connection Events</h3>
 
@@ -25,14 +25,9 @@ import {
 
 export default {
     name: 'ConnectionEvents',
-    props: {
-        ws: {
-            type: Object,
-            required: true
-        }
-    },
     data: function() {
         return {
+            ws: null,
             paused: false,
             events: []
         };
@@ -42,7 +37,22 @@ export default {
             return this.events.join('\n');
         }
     },
+    unmounted: function() {
+        this.ws.close();
+    },
     mounted: function() {
+        const url = window.stdurl('/api');
+        url.searchParams.append('connection', this.$route.params.connectionid);
+        url.searchParams.append('token', localStorage.token);
+        if (window.location.hostname === 'localhost') {
+            url.protocol = 'ws:';
+        } else {
+            url.protocol = 'wss:';
+        }
+
+        this.ws = new WebSocket(url);
+        this.ws.addEventListener('error', (err) => { this.$emit('err') });
+
         this.ws.addEventListener('message', (msg) => {
             msg = JSON.parse(msg.data);
             if (this.paused) return;

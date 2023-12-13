@@ -1,5 +1,5 @@
 <template>
-<div class='card'>
+<div>
     <div class='card-header'>
         <h2 class='card-title'>Connection Throughput</h2>
 

@@ -1,5 +1,5 @@
 <template>
-<div class="card">
+<div>
     <div class='card-header d-flex'>
         <h2 class='card-title'>Layers</h2>
 
@@ -28,7 +28,10 @@
                 </tr>
             </tbody>
         </table>
-        <TableFooter :limit='paging.limit' :total='list.total' @page='paging.page = $event'/>
+
+        <div class='position-absolute bottom-0 start-0 end-0'>
+            <TableFooter :limit='paging.limit' :total='list.total' @page='paging.page = $event'/>
+        </div>
     </div>
 </div>
 

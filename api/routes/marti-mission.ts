@@ -2,6 +2,7 @@ import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
 import Profile from '../lib/types/profile.js';
+import S3 from '../lib/aws/s3.js';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
 import TAKAPI, {
@@ -212,16 +213,21 @@ export default async function router(schema: any, config: Config) {
         }
     });
 
-    await schema.get('/marti/missions/:name/contents/missionpackage', {
-        name: 'Mission Contacts',
+    await schema.post('/marti/missions/:name/upload', {
+        name: 'Mission Upload',
         group: 'MartiMissions',
         auth: 'user',
         ':name': 'string',
         description: 'Upload a Mission Package',
-        query: {
+        body: {
             type: 'object',
+            additionalProperties: false,
+            required: ['s3'],
             properties: {
-                creatorUid: { type: 'string' }
+                s3: {
+                    type: 'string',
+                    description: 'ETL managed Bucket key path to upload'
+                }
             }
         },
         res: 'res.Marti.json'
@@ -229,13 +235,14 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            if (!req.auth.email) throw new Err(400, null, 'Groups can only be listed by an authenticated user');
+            // TODO allow machine users to upload
+            if (!req.auth.email) throw new Err(400, null, 'Content can only be uploaded by an authenticated user');
             const profile = await Profile.from(config.pool, req.auth.email);
             const api = await TAKAPI.init(new URL(config.server.api), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
 
-            const missions = await api.Mission.contacts(String(req.params.name));
+            const content = await api.Mission.upload(req.params.name, profile.username, await S3.get(String(req.body.s3)));
 
-            return res.json(missions);
+            return res.json(content);
         } catch (err) {
             return Err.respond(err, res);
         }

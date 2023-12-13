@@ -67,12 +67,39 @@ const router = new VueRouter.createRouter({
         { path: '/connection', name: 'connections', component: () => import('./components/Connections.vue') },
         { path: '/connection/new', name: 'connection-new', component: () => import('./components/ConnectionEdit.vue') },
 
-        { path: '/connection/:connectionid/sink', name: 'connection-sinks', component: () => import('./components/ConnectionSinks.vue') },
         { path: '/connection/:connectionid/sink/new', name: 'connection-sink-new', component: () => import('./components/ConnectionSinkEdit.vue') },
         { path: '/connection/:connectionid/sink/:sinkid', name: 'connection-sink', component: () => import('./components/ConnectionSink.vue') },
         { path: '/connection/:connectionid/sink/:sinkid/edit', name: 'connection-sink-edit', component: () => import('./components/ConnectionSinkEdit.vue') },
 
-        { path: '/connection/:connectionid', name: 'connection', component: () => import('./components/Connection.vue') },
+        {
+            path: '/connection/:connectionid',
+            name: 'connection',
+            component: () => import('./components/Connection.vue'),
+            children: [{
+                path: '',
+                name: 'connection-default',
+                redirect: to => {
+                    return { name: 'connection-layer' };
+                }
+            },{
+                path: 'layer',
+                name: 'connection-layer',
+                component: () => import('./components/Connection/ConnectionLayer.vue')
+            },{
+                path: 'data',
+                name: 'connection-data',
+                component: () => import('./components/Connection/ConnectionData.vue')
+            },{
+                path: 'sink',
+                name: 'connection-sink',
+                component: () => import('./components/Connection/ConnectionSink.vue')
+            },{
+                path: 'health',
+                name: 'connection-health',
+                component: () => import('./components/Connection/ConnectionHealth.vue')
+            }]
+        },
+
         { path: '/connection/:connectionid/edit', name: 'connection-edit', component: () => import('./components/ConnectionEdit.vue') },
 
         { path: '/basemap', name: 'basemaps', component: () => import('./components/BaseMaps.vue') },
