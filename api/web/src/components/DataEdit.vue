@@ -24,6 +24,11 @@
                         <div class="card-body">
                             <div class='row row-cards'>
                                 <div class="col-md-12">
+                                    <ConnectionSelect
+                                        v-model='data.connection'
+                                    />
+                                </div>
+                                <div class="col-md-12">
                                     <TablerInput
                                         label='Data Name'
                                         description='The human readable name of the Data Layer'
@@ -70,6 +75,7 @@
 
 <script>
 import PageFooter from './PageFooter.vue';
+import ConnectionSelect from './util/ConnectionSelect.vue';
 import {
     TablerBreadCrumb,
     TablerInput,
@@ -145,6 +151,7 @@ export default {
         }
     },
     components: {
+        ConnectionSelect,
         PageFooter,
         TablerBreadCrumb,
         TablerToggle,
