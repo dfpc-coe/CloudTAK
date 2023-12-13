@@ -18,7 +18,7 @@
                 </tr>
             </thead>
             <tbody>
-                <tr @click='$router.push(`/data/${$route.params.dataid}/job/${job.id}`)' :key='job.created' v-for='job in list.list' class='cursor-pointer'>
+                <tr @click='$router.push(`/connection/${$route.params.connectionid}/data/${$route.params.dataid}/job/${job.id}`)' :key='job.created' v-for='job in list.list' class='cursor-pointer'>
                     <td v-text='job.asset'></td>
                     <td v-text='job.status'></td>
                     <td>
