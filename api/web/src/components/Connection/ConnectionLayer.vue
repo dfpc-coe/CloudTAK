@@ -29,7 +29,7 @@
             </tbody>
         </table>
 
-        <div class='position-absolute bottom-0 start-0 end-0'>
+        <div class=''>
             <TableFooter :limit='paging.limit' :total='list.total' @page='paging.page = $event'/>
         </div>
     </div>
