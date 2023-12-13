@@ -119,7 +119,7 @@ export default {
                 method: 'DELETE'
             });
 
-            this.$router.push('/data');
+            this.$router.push('/connection/${$route.params.connectionid}/data');
         },
         create: async function() {
             for (const field of ['name', 'description']) {
@@ -143,7 +143,7 @@ export default {
 
                 this.loading.data = false;
 
-                this.$router.push(`/data/${create.id}`);
+                this.$router.push(`/connection/${$route.params.connectionid}/data/${create.id}`);
             } catch (err) {
                 this.loading.data = false;
                 throw err;
