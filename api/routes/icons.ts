@@ -9,6 +9,7 @@ import Icon from '../lib/types/icon.js';
 import Config from '../lib/config.js';
 import Sprites from '../lib/sprites.js';
 import Cacher from '../lib/cacher.js';
+import archiver from 'archiver';
 
 export default async function router(schema, config: Config) {
     // Eventually look at replacing this with memcached?
@@ -83,14 +84,45 @@ export default async function router(schema, config: Config) {
         auth: 'user',
         description: 'Get Iconset',
         ':iconset': 'string',
+        query: {
+            type: 'object',
+            properties: {
+                format: {
+                    type: 'string',
+                    enum: ['json', 'zip'],
+                    default: 'json'
+                },
+                download: {
+                    type: 'boolean'
+                }
+            }
+        },
         res: 'iconsets.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req);
+            await Auth.is_auth(req, true);
 
             const iconset = await Iconset.from(config.pool, req.params.iconset);
 
-            return res.json(iconset);
+            if (req.query.download) {
+                res.setHeader('Content-Disposition', `attachment; filename="${iconset.name}.${req.query.format}"`);
+            }
+
+            if (req.query.format === 'zip') {
+                const archive = archiver('zip', {
+                    zlib: { level: 9 } // Sets the compression level.
+                })
+
+                archive.pipe(res);
+
+                for (const icon of (await Icon.list(config.pool, { limit: 1000, iconset: req.params.iconset })).icons) {
+                    archive.append(Buffer.from(icon.data, 'base64'), { name: icon.name });
+                }
+
+                archive.finalize();
+            } else {
+                return res.json(iconset);
+            }
         } catch (err) {
             return Err.respond(err, res);
         }

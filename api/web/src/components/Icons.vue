@@ -50,7 +50,14 @@
                                 </tr></thead>
                                 <tbody><tr @click='$router.push(`/iconset/${iconset.uid}`)' :key='iconset.uid' v-for='iconset in list.iconsets'>
                                     <td v-text='iconset.name'></td>
-                                    <td v-text='iconset.uid'></td>
+                                    <td>
+                                        <div class='d-flex'>
+                                            <span v-text='iconset.uid'/>
+                                            <div class='ms-auto'>
+                                                <IconDownload v-tooltip='"Download TAK Zip"' class='cursor-pointer' @click='download(iconset)'/>
+                                            </div>
+                                        </div>
+                                    </td>
                                 </tr></tbody>
                             </table>
                         </div>
@@ -80,6 +87,7 @@ import {
 import {
     IconRefresh,
     IconSearch,
+    IconDownload,
     IconFileUpload,
     IconPlus
 } from '@tabler/icons-vue'
@@ -113,6 +121,9 @@ export default {
                 Authorization: `Bearer ${localStorage.token}`
             };
         },
+        download: async function(iconset) {
+            window.location.href = window.stdurl(`api/iconset/${iconset.uid}?format=zip&download=true&token=${localStorage.token}`);
+        },
         uploadURL: function() {
             return window.stdurl(`/api/import`);
         },
@@ -126,6 +137,7 @@ export default {
     components: {
         Upload,
         IconPlus,
+        IconDownload,
         IconFileUpload,
         IconCombineds,
         TablerNone,
