@@ -42,9 +42,6 @@
                                         <IconBuildingBroadcastTower class='my-2'/><a @click='$router.push("/layer")' class="cursor-pointer dropdown-item">Layers</a>
                                     </div>
                                     <div class='d-flex mx-2 cursor-pointer hover-dark'>
-                                        <IconDatabase class='my-2'/><a @click='$router.push("/data")' class="cursor-pointer dropdown-item">Data</a>
-                                    </div>
-                                    <div class='d-flex mx-2 cursor-pointer hover-dark'>
                                         <IconMap class='my-2'/><a @click='$router.push("/basemap")' class="cursor-pointer dropdown-item">Basemaps</a>
                                     </div>
                                     <div class='d-flex mx-2 cursor-pointer hover-dark'>
@@ -111,7 +108,6 @@ import {
     IconPhoto,
     IconNetwork,
     IconSettings,
-    IconDatabase,
     IconBuildingBroadcastTower,
     IconAdjustments,
 } from '@tabler/icons-vue';
@@ -210,7 +206,6 @@ export default {
         IconUser,
         IconMap,
         IconNetwork,
-        IconDatabase,
         IconFileImport,
         TablerError,
         TablerModal,

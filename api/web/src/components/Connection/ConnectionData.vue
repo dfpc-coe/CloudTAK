@@ -10,7 +10,7 @@
 
     <Alert v-if='err' title='ETL Server Error' :err='err.message' :compact='true'/>
     <TablerLoading v-else-if='loading'/>
-    <TablerNone v-else-if='!list.sinks.length' :create='false' label='Data'/>
+    <TablerNone v-else-if='!list.data.length' :create='false' label='Data'/>
     <div v-else class='table-resposive'>
         <table class='table card-table table-vcenter datatable table-hover'>
             <thead>
@@ -19,10 +19,14 @@
                 </tr>
             </thead>
             <tbody class='table-tbody'>
-                <tr @click='$router.push(`/connection/${connection.id}/sink/${sink.id}`)' :key='sink.id' v-for='sink of list.sinks' class='cursor-pointer'>
+                <tr @click='$router.push(`/connection/${connection.id}/data/${data.id}`)' :key='data.id' v-for='data of list.data' class='cursor-pointer'>
                     <td>
                         <div class='d-flex'>
-                            <span class='mt-2' v-text='sink.name'/>
+                            <span class='mt-2' v-text='data.name'/>
+                            <div class='ms-auto'>
+                                <IconAccessPoint @click='modal.mission = true' v-if='data.mission' class='cursor-pointer text-green' v-tooltip='"Mission Sync On"'/>
+                                <IconAccessPointOff @click='modal.mission = true' v-else class='cursor-pointer text-red' v-tooltip='"Mission Sync Off"'/>
+                            </div>
                         </div>
                     </td>
                 </tr>
@@ -42,6 +46,8 @@ import {
     TablerLoading
 } from '@tak-ps/vue-tabler'
 import {
+    IconAccessPoint,
+    IconAccessPointOff,
     IconPlus
 } from '@tabler/icons-vue';
 
@@ -64,29 +70,30 @@ export default {
             },
             list: {
                 total: 0,
-                sinks: []
+                data: []
             },
         }
     },
     mounted: async function() {
-        await this.listSinks();
+        await this.listData();
     },
     watch: {
-       'paging.page': async function() {
-           await this.listSinks();
-       },
-       'paging.filter': async function() {
-           await this.listSinks();
-       },
+        paging: {
+            deep: true,
+            handler: async function() {
+                await this.listData();
+            },
+        }
     },
     methods: {
-        listSinks: async function() {
+        listData: async function() {
             this.loading = true;
             try {
-                const url = window.stdurl(`/api/connection/${this.connection.id}/sink`);
+                const url = window.stdurl(`/api/data`);
                 url.searchParams.append('limit', this.paging.limit);
                 url.searchParams.append('page', this.paging.page);
                 url.searchParams.append('filter', this.paging.filter);
+                url.searchParams.append('connection', this.$route.params.connectionid);
                 this.list = await window.std(url);
             } catch (err) {
                 this.err = err;
@@ -95,6 +102,8 @@ export default {
         }
     },
     components: {
+        IconAccessPoint,
+        IconAccessPointOff,
         TablerNone,
         Alert,
         IconPlus,
