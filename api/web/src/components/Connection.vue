@@ -79,7 +79,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-12 col-md-9 position-relative">
+                            <div class="col-12 col-md-9">
                                 <router-view
                                     :connection='connection'
                                 />

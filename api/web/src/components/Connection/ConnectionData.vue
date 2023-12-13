@@ -1,27 +1,16 @@
 <template>
-<div class="card">
+<div>
     <div class='card-header d-flex'>
         Data Stores
 
         <div class='ms-auto'>
-            <div class='dropdown'>
-                <div type="button" id="connectionSinkButton" data-bs-toggle="dropdown" aria-expanded="false">
-                    <IconPlus v-tooltip='"Create Sink"' class='cursor-pointer'/>
-                    </div>
-                        <ul class="dropdown-menu" aria-labelledby='connectionSinkButton'>
-                            <div @click='$router.push(`/connection/${$route.params.connectionid}/sink/new`)' class='d-flex mx-2 my-2 cursor-pointer'>
-                                ArcGIS Server
-                            </div>
-                        </ul>
-                    </div>
-                <div>
-            </div>
+            <IconPlus @click='$router.push("/data/new")' v-tooltip='"Create Store"' class='cursor-pointer'/>
         </div>
     </div>
 
     <Alert v-if='err' title='ETL Server Error' :err='err.message' :compact='true'/>
     <TablerLoading v-else-if='loading'/>
-    <TablerNone v-else-if='!list.sinks.length' :create='false' label='Sinks' :compact='true'/>
+    <TablerNone v-else-if='!list.sinks.length' :create='false' label='Data'/>
     <div v-else class='table-resposive'>
         <table class='table card-table table-vcenter datatable table-hover'>
             <thead>
