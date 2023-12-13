@@ -24,11 +24,6 @@
                         <div class="card-body">
                             <div class='row row-cards'>
                                 <div class="col-md-12">
-                                    <ConnectionSelect
-                                        v-model='data.connection'
-                                    />
-                                </div>
-                                <div class="col-md-12">
                                     <TablerInput
                                         label='Data Name'
                                         description='The human readable name of the Data Layer'
@@ -75,7 +70,6 @@
 
 <script>
 import PageFooter from './PageFooter.vue';
-import ConnectionSelect from './util/ConnectionSelect.vue';
 import {
     TablerBreadCrumb,
     TablerInput,
@@ -119,7 +113,7 @@ export default {
                 method: 'DELETE'
             });
 
-            this.$router.push('/connection/${$route.params.connectionid}/data');
+            this.$router.push(`/connection/${this.$route.params.connectionid}/data`);
         },
         create: async function() {
             for (const field of ['name', 'description']) {
@@ -131,19 +125,22 @@ export default {
 
             try {
                 let url, method;
+                const body = JSON.parse(JSON.stringify(this.data));
+
                 if (this.$route.params.dataid) {
                     url = window.stdurl(`/api/data/${this.$route.params.dataid}`);
                     method = 'PATCH'
                 } else {
                     url = window.stdurl(`/api/data`);
                     method = 'POST'
+                    body.connection = parseInt(this.$route.params.connectionid);
                 }
 
-                const create = await window.std(url, { method, body: this.data });
+                const create = await window.std(url, { method, body });
 
                 this.loading.data = false;
 
-                this.$router.push(`/connection/${$route.params.connectionid}/data/${create.id}`);
+                this.$router.push(`/connection/${this.$route.params.connectionid}/data/${create.id}`);
             } catch (err) {
                 this.loading.data = false;
                 throw err;
@@ -151,7 +148,6 @@ export default {
         }
     },
     components: {
-        ConnectionSelect,
         PageFooter,
         TablerBreadCrumb,
         TablerToggle,

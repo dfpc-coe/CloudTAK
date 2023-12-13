@@ -4,7 +4,7 @@
         Data Stores
 
         <div class='ms-auto'>
-            <IconPlus @click='$router.push("/data/new")' v-tooltip='"Create Store"' class='cursor-pointer'/>
+            <IconPlus @click='$router.push(`/connection/${connection.id}/data/new`)' v-tooltip='"Create Store"' class='cursor-pointer'/>
         </div>
     </div>
 
