@@ -127,6 +127,8 @@ export default class S3 {
             try {
                 const list = await this.list(key);
 
+                if (!list.length) return;
+
                 await s3.send(new S3AWS.DeleteObjectsCommand({
                     Bucket: process.env.ASSET_BUCKET,
                     Delete: {

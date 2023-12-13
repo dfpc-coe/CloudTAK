@@ -49,7 +49,7 @@
                                 </div>
                                 <div class='d-flex'>
                                     <div v-if='$route.params.dataid'>
-                                        <TablerDelete @delete='deleteLayer' label='Delete Data'/>
+                                        <TablerDelete @delete='deleteData' label='Delete Data'/>
                                     </div>
                                     <div class='ms-auto'>
                                         <a v-if='$route.params.dataid' @click='create' class="cursor-pointer btn btn-primary">Update Data</a>
@@ -74,6 +74,7 @@ import {
     TablerBreadCrumb,
     TablerInput,
     TablerToggle,
+    TablerDelete,
     TablerLoading
 } from '@tak-ps/vue-tabler';
 
@@ -108,7 +109,7 @@ export default {
             this.data = await window.std(`/api/data/${this.$route.params.dataid}`);
             this.loading.data = false;
         },
-        deleteLayer: async function() {
+        deleteData: async function() {
             await window.std(`/api/data/${this.$route.params.dataid}`, {
                 method: 'DELETE'
             });
@@ -151,6 +152,7 @@ export default {
         PageFooter,
         TablerBreadCrumb,
         TablerToggle,
+        TablerDelete,
         TablerInput,
         TablerLoading
     }
