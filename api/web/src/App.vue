@@ -35,26 +35,26 @@
                             <IconMenu/>
                             </div>
                                 <ul class="dropdown-menu" aria-labelledby='userMenuButton'>
-                                    <div class='d-flex mx-2 cursor-pointer'>
-                                        <IconNetwork class='my-2'/><a @click='$router.push("/connection")' class="cursor-pointer dropdown-item hover-dark">Connections</a>
+                                    <div class='d-flex mx-2 cursor-pointer hover-dark'>
+                                        <IconNetwork class='my-2'/><a @click='$router.push("/connection")' class="cursor-pointer dropdown-item">Connections</a>
                                     </div>
-                                    <div class='d-flex mx-2 cursor-pointer'>
-                                        <IconBuildingBroadcastTower class='my-2'/><a @click='$router.push("/layer")' class="cursor-pointer dropdown-item hover-dark">Layers</a>
+                                    <div class='d-flex mx-2 cursor-pointer hover-dark'>
+                                        <IconBuildingBroadcastTower class='my-2'/><a @click='$router.push("/layer")' class="cursor-pointer dropdown-item">Layers</a>
                                     </div>
-                                    <div class='d-flex mx-2 cursor-pointer'>
-                                        <IconDatabase class='my-2'/><a @click='$router.push("/data")' class="cursor-pointer dropdown-item hover-dark">Data</a>
+                                    <div class='d-flex mx-2 cursor-pointer hover-dark'>
+                                        <IconDatabase class='my-2'/><a @click='$router.push("/data")' class="cursor-pointer dropdown-item">Data</a>
                                     </div>
-                                    <div class='d-flex mx-2 cursor-pointer'>
-                                        <IconMap class='my-2'/><a @click='$router.push("/basemap")' class="cursor-pointer dropdown-item hover-dark">Basemaps</a>
+                                    <div class='d-flex mx-2 cursor-pointer hover-dark'>
+                                        <IconMap class='my-2'/><a @click='$router.push("/basemap")' class="cursor-pointer dropdown-item">Basemaps</a>
                                     </div>
-                                    <div class='d-flex mx-2 cursor-pointer'>
-                                        <IconPhoto class='my-2'/><a @click='$router.push("/iconset")' class="cursor-pointer dropdown-item hover-dark">Iconsets</a>
+                                    <div class='d-flex mx-2 cursor-pointer hover-dark'>
+                                        <IconPhoto class='my-2'/><a @click='$router.push("/iconset")' class="cursor-pointer dropdown-item">Iconsets</a>
                                     </div>
-                                    <div class='d-flex mx-2 cursor-pointer'>
-                                        <IconFileImport class='my-2'/><a @click='$router.push("/import")' class="cursor-pointer dropdown-item hover-dark">Imports</a>
+                                    <div class='d-flex mx-2 cursor-pointer hover-dark'>
+                                        <IconFileImport class='my-2'/><a @click='$router.push("/import")' class="cursor-pointer dropdown-item">Imports</a>
                                     </div>
-                                    <div class='d-flex mx-2 cursor-pointer'>
-                                        <IconSettings class='my-2'/><a @click='$router.push("/admin")' class="cursor-pointer dropdown-item hover-dark">Admin</a>
+                                    <div class='d-flex mx-2 cursor-pointer hover-dark'>
+                                        <IconSettings class='my-2'/><a @click='$router.push("/admin")' class="cursor-pointer dropdown-item">Admin</a>
                                     </div>
                                 </ul>
                             </div>

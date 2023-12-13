@@ -1,7 +1,7 @@
 <template>
 <div class="card">
     <div class='card-header d-flex'>
-        Connection Sinks
+        Data Stores
 
         <div class='ms-auto'>
             <div class='dropdown'>

@@ -16,6 +16,15 @@ export default class {
         });
     }
 
+    async upload(name: string, creatorUid: string, body: Readable) {
+        const url = new URL(`/Marti/api/missions/${encodeURIComponent(name)}/contents/missionpackage`, this.api.url);
+
+        return await this.api.fetch(url, {
+            method: 'PUT',
+            body
+        });
+    }
+
     async list(query: {
         passwordProtected?: string;
         defaultRole?: string;
