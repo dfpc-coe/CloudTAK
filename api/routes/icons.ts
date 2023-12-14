@@ -135,7 +135,7 @@ export default async function router(schema, config: Config) {
 
                 for (const icon of (await Icon.list(config.pool, { limit: 1000, iconset: req.params.iconset })).icons) {
                     archive.append(Buffer.from(icon.data, 'base64'), { name: icon.name });
-                    xmljson.iconset.icon.push({ $: { name: icon.name, type2525b: icon.type2525b } })
+                    xmljson.iconset.icon.push({ $: { name: path.parse(icon.name).base, type2525b: icon.type2525b } })
                 }
 
                 res.setHeader('Content-Type', 'text/xml');
