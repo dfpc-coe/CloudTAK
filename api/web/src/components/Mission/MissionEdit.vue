@@ -153,6 +153,9 @@ import {
 export default {
     name: 'MissionEdit',
     props: {
+        connection: {
+            type: Number
+        },
         initial: {
             type: Object
         },
@@ -196,7 +199,9 @@ export default {
         fetchContacts: async function() {
             try {
                 this.loading.users = true;
-                this.contacts = await window.std(`/api/marti/missions/${this.mission.name}/contacts`);
+                const url = await window.stdurl(`/api/marti/missions/${this.mission.name}/contacts`);
+                if (this.connection) url.searchParams.append('connection', this.connection);
+                this.contacts = await window.std(url);
             } catch (err) {
                 this.err = err;
             }
@@ -206,6 +211,7 @@ export default {
             try {
                 this.loading.delete = true;
                 const url = window.stdurl(`/api/marti/missions/${this.mission.name}`);
+                if (this.connection) url.searchParams.append('connection', this.connection);
                 const list = await window.std(url, {
                     method: 'DELETE'
                 });
@@ -222,6 +228,7 @@ export default {
                 const url = window.stdurl(`/api/marti/missions/${this.mission.name}`);
                 url.searchParams.append('changes', 'true');
                 url.searchParams.append('logs', 'true');
+                if (this.connection) url.searchParams.append('connection', this.connection);
                 const list = await window.std(url);
                 if (list.data.length !== 1) throw new Error('Mission Error');
                 this.mission = list.data[0];
