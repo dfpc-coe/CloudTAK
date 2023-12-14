@@ -10,6 +10,7 @@ import Config from '../lib/config.js';
 import Sprites from '../lib/sprites.js';
 import Cacher from '../lib/cacher.js';
 import archiver from 'archiver';
+import xml2js from 'xml2js';
 
 export default async function router(schema, config: Config) {
     // Eventually look at replacing this with memcached?
@@ -115,9 +116,34 @@ export default async function router(schema, config: Config) {
 
                 archive.pipe(res);
 
+                const xmljson = {
+                    iconset: {
+                        $: {
+                            version: 1,
+                            defaultFriendly: iconset.defaultFriendly,
+                            defaultHostile: iconset.defaultHostile,
+                            defaultNeutral: iconset.defaultNeutral,
+                            defaultUnknown: iconset.defaultUnknown,
+                            name: iconset.name,
+                            defaultGroup: iconset.defaultGroup,
+                            skipResize: 'false',
+                            uid: iconset.uid
+                        },
+                        icon: []
+                    }
+                };
+
                 for (const icon of (await Icon.list(config.pool, { limit: 1000, iconset: req.params.iconset })).icons) {
                     archive.append(Buffer.from(icon.data, 'base64'), { name: icon.name });
+                    xmljson.iconset.icon.push({ $: { name: icon.name, type2525b: icon.type2525b } })
                 }
+
+                res.setHeader('Content-Type', 'text/xml');
+
+                const builder = new xml2js.Builder();
+                const xml = builder.buildObject(xmljson);
+
+                archive.append(Buffer.from(xml), { name: 'iconset.xml' });
 
                 archive.finalize();
             } else {
