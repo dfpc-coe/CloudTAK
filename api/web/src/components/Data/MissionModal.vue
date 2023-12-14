@@ -4,6 +4,7 @@
     <button type="button" class="btn-close" @click='close' aria-label="Close"></button>
     <template v-if='create'>
         <MissionCreate
+            :connection='connection'
             @mission='mission = $event'
             @close='mission = null'
         />
@@ -12,12 +13,14 @@
         <MissionEdit
             :initial='mission'
             :selectable='selectable'
+            :connection='connection'
             @select='$emit("select", $event)'
             @close='mission = null'
         />
     </template>
     <template v-else>
         <MissionList
+            :connection='connection'
             @mission='mission = $event'
             @create='create = true'
         />
@@ -49,7 +52,8 @@ export default {
     data: function() {
         return {
             create: false,
-            mission: this.initial || null
+            mission: this.initial || null,
+            connection: Number(this.$route.params.connectionid)
         }
     },
     watch: {

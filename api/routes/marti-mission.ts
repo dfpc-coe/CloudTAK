@@ -2,6 +2,7 @@ import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
 import Profile from '../lib/types/profile.js';
+import Connection from '../lib/types/connection.js';
 import S3 from '../lib/aws/s3.js';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
@@ -21,6 +22,9 @@ export default async function router(schema: any, config: Config) {
         query: {
             type: 'object',
             properties: {
+                connection: {
+                    type: 'integer'
+                },
                 password: {
                     type: 'boolean',
                     default: false,
@@ -40,9 +44,14 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            if (!req.auth.email) throw new Err(400, null, 'Groups can only be listed by an authenticated user');
-            const profile = await Profile.from(config.pool, req.auth.email);
-            const api = await TAKAPI.init(new URL(config.server.api), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
+            let auth;
+            if (req.query.connection) {
+                auth = (await Connection.from(config.pool, req.query.connection)).auth;
+            } else {
+                if (!req.auth.email) throw new Err(400, null, 'Groups can only be listed by an authenticated user');
+                auth = (await Profile.from(config.pool, req.auth.email)).auth;
+            }
+            const api = await TAKAPI.init(new URL(config.server.api), new APIAuthCertificate(auth.cert, auth.key));
 
             const query = {};
             for (const q in req.query) query[q] = String(req.query[q]);
@@ -62,6 +71,9 @@ export default async function router(schema: any, config: Config) {
         query: {
             type: 'object',
             properties: {
+                connection: {
+                    type: 'integer'
+                },
                 creatorUid: {
                     type: 'string'
                 },
@@ -75,9 +87,14 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            if (!req.auth.email) throw new Err(400, null, 'Groups can only be listed by an authenticated user');
-            const profile = await Profile.from(config.pool, req.auth.email);
-            const api = await TAKAPI.init(new URL(config.server.api), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
+            let auth;
+            if (req.query.connection) {
+                auth = (await Connection.from(config.pool, req.query.connection)).auth;
+            } else {
+                if (!req.auth.email) throw new Err(400, null, 'Groups can only be listed by an authenticated user');
+                auth = (await Profile.from(config.pool, req.auth.email)).auth;
+            }
+            const api = await TAKAPI.init(new URL(config.server.api), new APIAuthCertificate(auth.cert, auth.key));
 
             const query = {};
             for (const q in req.query) query[q] = String(req.query[q]);
@@ -98,6 +115,7 @@ export default async function router(schema: any, config: Config) {
             type: 'object',
             additionalProperties: false,
             properties: {
+                connection: { type: 'integer' },
                 creatorUid: { type: 'string' },
                 group: { type: 'array', items: { type: 'string' } },
                 description: { type: 'string' },
@@ -120,9 +138,14 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            if (!req.auth.email) throw new Err(400, null, 'Groups can only be listed by an authenticated user');
-            const profile = await Profile.from(config.pool, req.auth.email);
-            const api = await TAKAPI.init(new URL(config.server.api), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
+            let auth;
+            if (req.query.connection) {
+                auth = (await Connection.from(config.pool, req.query.connection)).auth;
+            } else {
+                if (!req.auth.email) throw new Err(400, null, 'Groups can only be listed by an authenticated user');
+                auth = (await Profile.from(config.pool, req.auth.email)).auth;
+            }
+            const api = await TAKAPI.init(new URL(config.server.api), new APIAuthCertificate(auth.cert, auth.key));
 
             const query = {};
             for (const q in req.query) query[q] = String(req.query[q]);
@@ -141,6 +164,9 @@ export default async function router(schema: any, config: Config) {
         query: {
             type: 'object',
             properties: {
+                connection: {
+                    type: 'integer'
+                },
                 passwordProtected: {
                     type: 'boolean',
                     default: false,
@@ -161,9 +187,14 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            if (!req.auth.email) throw new Err(400, null, 'Groups can only be listed by an authenticated user');
-            const profile = await Profile.from(config.pool, req.auth.email);
-            const api = await TAKAPI.init(new URL(config.server.api), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
+            let auth;
+            if (req.query.connection) {
+                auth = (await Connection.from(config.pool, req.query.connection)).auth;
+            } else {
+                if (!req.auth.email) throw new Err(400, null, 'Groups can only be listed by an authenticated user');
+                auth = (await Profile.from(config.pool, req.auth.email)).auth;
+            }
+            const api = await TAKAPI.init(new URL(config.server.api), new APIAuthCertificate(auth.cert, auth.key));
 
             const query = {};
             for (const q in req.query) query[q] = String(req.query[q]);
@@ -180,6 +211,13 @@ export default async function router(schema: any, config: Config) {
         auth: 'user',
         ':name': 'string',
         description: 'List contacts associated with a mission',
+        query: {
+            type: 'object',
+            additionalProperties: false,
+            properties: {
+                connection: { type: 'integer' },
+            }
+        },
         res: {
             type: 'array',
             items: {
@@ -201,9 +239,14 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            if (!req.auth.email) throw new Err(400, null, 'Groups can only be listed by an authenticated user');
-            const profile = await Profile.from(config.pool, req.auth.email);
-            const api = await TAKAPI.init(new URL(config.server.api), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
+            let auth;
+            if (req.query.connection) {
+                auth = (await Connection.from(config.pool, req.query.connection)).auth;
+            } else {
+                if (!req.auth.email) throw new Err(400, null, 'Groups can only be listed by an authenticated user');
+                auth = (await Profile.from(config.pool, req.auth.email)).auth;
+            }
+            const api = await TAKAPI.init(new URL(config.server.api), new APIAuthCertificate(auth.cert, auth.key));
 
             const missions = await api.Mission.contacts(String(req.params.name));
 
@@ -219,6 +262,13 @@ export default async function router(schema: any, config: Config) {
         auth: 'user',
         ':name': 'string',
         description: 'Upload a Mission Package',
+        query: {
+            type: 'object',
+            additionalProperties: false,
+            properties: {
+                connection: { type: 'integer' },
+            }
+        },
         body: {
             type: 'object',
             additionalProperties: false,
@@ -235,12 +285,20 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            // TODO allow machine users to upload
-            if (!req.auth.email) throw new Err(400, null, 'Content can only be uploaded by an authenticated user');
-            const profile = await Profile.from(config.pool, req.auth.email);
-            const api = await TAKAPI.init(new URL(config.server.api), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
+            let auth;
+            let callsign = '';
+            if (req.query.connection) {
+                auth = (await Connection.from(config.pool, req.query.connection)).auth;
+                callsign = `ETL: Connection ${req.query.connection}`;
+            } else {
+                if (!req.auth.email) throw new Err(400, null, 'Groups can only be listed by an authenticated user');
 
-            const content = await api.Mission.upload(req.params.name, profile.username, await S3.get(String(req.body.s3)));
+                const profile = await Profile.from(config.pool, req.auth.email);
+                callsign = profile.username;
+                auth = profile.auth;
+            }
+            const api = await TAKAPI.init(new URL(config.server.api), new APIAuthCertificate(auth.cert, auth.key));
+            const content = await api.Mission.upload(req.params.name, callsign, await S3.get(String(req.body.s3)));
 
             return res.json(content);
         } catch (err) {

@@ -63,6 +63,9 @@ import {
 export default {
     name: 'MissionList',
     props: {
+        connection: {
+            type: Number
+        },
         modal: {
             type: Boolean,
             default: true
@@ -86,6 +89,7 @@ export default {
                 this.loading = true;
                 const url = window.stdurl('/api/marti/mission');
                 url.searchParams.append('passwordProtected', 'true');
+                if (this.connection) url.searchParams.append('connection', this.connection);
                 this.list = await window.std(url);
             } catch (err) {
                 this.err = err;

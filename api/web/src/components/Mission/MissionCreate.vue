@@ -87,6 +87,11 @@ import {
 
 export default {
     name: 'MissionCreate',
+    props: {
+        connection: {
+            type: Number
+        }
+    },
     data: function() {
         return {
             err: null,
@@ -122,6 +127,7 @@ export default {
                 url.searchParams.append('group', this.mission.groups.join(','));
                 url.searchParams.append('description', this.mission.description);
                 if (this.mission.passwordProtected) url.searchParams.append('password', this.mission.password);
+                if (this.connection) url.searchParams.append('connection', this.connection);
 
                 const res = await window.std(url, {
                     method: 'POST',
