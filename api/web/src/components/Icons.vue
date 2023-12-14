@@ -54,7 +54,7 @@
                                         <div class='d-flex'>
                                             <span v-text='iconset.uid'/>
                                             <div class='ms-auto'>
-                                                <IconDownload v-tooltip='"Download TAK Zip"' class='cursor-pointer' @click='download(iconset)'/>
+                                                <IconDownload v-tooltip='"Download TAK Zip"' class='cursor-pointer' @click.stop='download(iconset)'/>
                                             </div>
                                         </div>
                                     </td>
