@@ -31,7 +31,7 @@
                 <div v-text='cot.properties.remarks || "None"' class='bg-gray-500 rounded mx-2 py-2 px-2'/>
             </div>
 
-            <template v-if='cot.properties.type.toLowerCase().startsWith("u-d")'>
+            <template v-if='isUserDrawn'>
                 <CoTStyle v-model='feat'/>
             </template>
         </template>
@@ -69,6 +69,14 @@ export default {
             required: true
         }
     },
+    watch: {
+        feat: {
+            deep: true,
+            handler: function() {
+                this.updateStyle();
+            }
+        }
+    },
     data: function() {
         return {
             mode: 'default',
@@ -76,12 +84,41 @@ export default {
             icon: null
         }
     },
+    mounted: function() {
+        if (this.isUserDrawn) {
+            if (this.map.getLayer('cots-poly-edit')) this.map.removeLayer('cots-poly-edit');
+
+            this.map.addLayer({
+                id: 'cots-poly-edit',
+                type: 'fill',
+                source: 'cots',
+                filter: ['==', ['get', 'id'], this.cot.properties.id],
+                paint: {
+                    'fill-color': '#000',
+                    'fill-opacity': 0.5
+                },
+            });
+        }
+    },
+    ummounted: function() {
+        if (this.isUserDrawn) {
+            this.map.removeLayer('cots-poly-edit');
+        }
+    },
     computed: {
+        isUserDrawn: function() {
+            return this.cot.properties.type.toLowerCase().startsWith("u-d");
+        },
         center: function() {
             return JSON.parse(this.cot.properties.center);
         }
     },
     methods: {
+        updateStyle: function() {
+            this.map.setPaintProperty('cots-poly-edit', 'fill-color', this.feat.properties.fill);
+            this.map.setPaintProperty('cots-poly-edit', 'fill-opacity', this.feat.properties['fill-opacity']);
+
+        },
         zoomTo: function() {
             this.map.flyTo({
                 center: this.center,
