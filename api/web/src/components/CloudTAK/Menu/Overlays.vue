@@ -71,9 +71,13 @@ export default {
     methods: {
         flipVisible: async function(layer) {
             if (layer.visible) {
-                this.map.setLayoutProperty(layer.layer.id, 'visibility', 'none');
+                for (const l of layer.layers) {
+                    this.map.setLayoutProperty(l.id, 'visibility', 'none');
+                }
             } else {
-                this.map.setLayoutProperty(layer.layer.id, 'visibility', 'visible');
+                for (const l of layer.layers) {
+                    this.map.setLayoutProperty(l.id, 'visibility', 'visible');
+                }
             }
 
             await this.genList();
@@ -99,7 +103,14 @@ export default {
                 layer = this.map.getLayer(layer);
 
                 let name = layer.id
-                if (layer.id === 'cots') name = 'CoT Icons';
+                let layers = [ layer ];
+
+                if (layer.id === 'cots') {
+                    name = 'CoT Icons';
+                    for (const post of [ 'text', 'line', 'poly' ]) {
+                        layers.push(this.map.getLayer(`cots-${post}`));
+                    }
+                }
 
                 const res = {
                     name,
@@ -107,7 +118,7 @@ export default {
                     bounds: null,
                     opacity: 1,
                     type: layer.type,
-                    layer
+                    layers
                 }
 
                 if (layer.id.startsWith('data-')) {
