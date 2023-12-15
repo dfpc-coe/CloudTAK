@@ -21,7 +21,7 @@
                 <TablerRange label='Line Thickness' v-model='feat.properties["stroke-width"]' :min="1" :max="6" :step="1"/>
             </div>
             <div class='col-md-12 darken round'>
-                <TablerRange label='Line Opacity' v-model='feat.properties["stroke-opacity"]' :min="0" :max="256" :step="1"/>
+                <TablerRange label='Line Opacity' v-model='feat.properties["stroke-opacity"]' :min='0' :max='1' :step='0.1'/>
             </div>
         </template>
         <template v-if='feat.geometry.type === "Polygon"'>
@@ -29,7 +29,7 @@
                 <TablerColour label='Fill Color' v-model='feat.properties.fill'/>
             </div>
             <div class='col-md-12 darken round'>
-                <TablerRange label='Fill Opacity' v-model='feat.properties["fill-opacity"]' :min="0" :max="256" :step="1"/>
+                <TablerRange label='Fill Opacity' v-model='feat.properties["fill-opacity"]' :min='0' :max='1' :step='0.1'/>
             </div>
         </template>
     </div>
