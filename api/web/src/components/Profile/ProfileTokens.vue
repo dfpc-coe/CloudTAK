@@ -4,7 +4,8 @@
         <h3 class="card-title">API Tokens</h3>
 
         <div class='ms-auto btn-list'>
-            <IconPlus @click='token={}' class='cursor-pointer'/>
+            <IconPlus @click='token={}' class='cursor-pointer' v-tooltip='"New Token"'/>
+            <IconRefresh @click='fetch' class='cursor-pointer' v-tooltip='"Refresh"'/>
         </div>
     </div>
 
@@ -42,6 +43,7 @@
 import TokenModal from './TokenModal.vue';
 import {
     IconPlus,
+    IconRefresh,
     IconCheck,
     IconTrash
 } from '@tabler/icons-vue';
@@ -79,6 +81,7 @@ export default {
         TokenModal,
         TablerNone,
         IconPlus,
+        IconRefresh,
         IconCheck,
         IconTrash,
         TablerEpoch,
