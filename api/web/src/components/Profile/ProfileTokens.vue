@@ -11,7 +11,7 @@
     <TablerNone v-if='!list.tokens.length' :create='false' label='Tokens'/>
     <TablerLoading v-else-if='loading'/>
     <div v-else class="table-responsive">
-        <table class="table card-table table-vcenter">
+        <table class="table table-hover card-table table-vcenter cursor-pointer">
             <thead>
                 <tr>
                     <th>Token Name</th>
@@ -20,39 +20,28 @@
                 </tr>
             </thead>
             <tbody>
-                <tr :key='token.id' v-for='(token, tokenit) in list.tokens'>
-                    <td>
-                        <template v-if='token._edit'>
-                            <TablerInput v-on:keyup.enter='saveToken(token, tokenit)' v-model='token.name'/>
-                        </template>
-                        <template v-else>
-                            <span v-text='token.name'/>
-                        </template>
-                    </td>
-                    <td><TablerEpoch :date='token.created'/></td>
-                    <td>
-                        <div class='d-flex'>
-                            <TablerEpoch :date='token.updated'/>
-                            <div v-if='token._edit' class='ms-auto btn-list'>
-                                <IconCheck @click='saveToken(token, tokenit)' class='cursor-pointer'/>
-                                <IconTrash @click='deleteToken(token, tokenit)' class='cursor-pointer'/>
-                            </div>
-                            <div v-else class='ms-auto btn-list'>
-                                <IconPencil @click='token._edit = true' class='cursor-pointer'/>
-                            </div>
-                        </div>
-                    </td>
+                <tr @click='token = t' :key='t.id' v-for='(t, tokenit) in list.tokens'>
+                    <td v-text='t.name'/>
+                    <td><TablerEpoch :date='t.created'/></td>
+                    <td><TablerEpoch :date='t.updated'/></td>
                 </tr>
             </tbody>
         </table>
     </div>
+
+    <TokenModal
+        v-if='token'
+        :token='token'
+        @close='token = false'
+        @refresh='fetch'
+    />
 </div>
 </template>
 
 <script>
+import TokenModal from './TokenModal.vue';
 import {
     IconPlus,
-    IconPencil,
     IconCheck,
     IconTrash
 } from '@tabler/icons-vue';
@@ -68,6 +57,7 @@ export default {
     data: function() {
         return {
             loading: true,
+            token: false,
             list: {
                 total: 0,
                 tokens: []
@@ -79,33 +69,10 @@ export default {
     },
     methods: {
         fetch: async function() {
+            this.token = false;
             this.loading = true;
             this.list = await window.std('/api/token');
             this.loading = false;
-        },
-        saveToken: async function(token, tokenit) {
-            if (token.id) {
-                const newtoken = await window.std(`/api/token/${token.id}`, {
-                    method: 'PATCH',
-                    body: token
-                });
-                this.list.tokens.splice(tokenit, 1, newtoken);
-            } else {
-                const newtoken = await window.std('/api/token', {
-                    method: 'POST',
-                    body: token
-                });
-                this.list.tokens.splice(tokenit, 1, newtoken);
-            }
-        },
-        deleteToken: async function(token, tokenit) {
-            if (token.id) {
-                const newtoken = await window.std(`/api/token/${token.id}`, {
-                    method: 'DELETE',
-                });
-            }
-
-            this.list.tokens.splice(tokenit, 1);
         },
         push: function() {
             this.list.tokens.splice(0, 0, {
@@ -117,9 +84,9 @@ export default {
         }
     },
     components: {
+        TokenModal,
         TablerNone,
         IconPlus,
-        IconPencil,
         IconCheck,
         IconTrash,
         TablerEpoch,
