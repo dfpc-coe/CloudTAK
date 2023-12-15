@@ -86,11 +86,15 @@ export default {
             this.map.fitBounds(layer.bounds);
         },
         updateOpacity: function(layer) {
-            this.map.setPaintProperty(layer.layer.id, 'raster-opacity', Number(layer.opacity))
+            for (const l of layer.layers) {
+                this.map.setPaintProperty(l.id, 'raster-opacity', Number(layer.opacity))
+            }
         },
         removeLayer: async function(layer) {
-            this.map.removeLayer(layer.layer.id);
-            this.map.removeSource(layer.layer.id);
+            for (const l of layer.layers) {
+                this.map.removeLayer(l.id);
+                this.map.removeSource(l.id);
+            }
             await this.genList()
         },
         genList: async function() {
