@@ -93,7 +93,7 @@
                         <template v-if='upload'>
                             <UploadImport
                                 mode='Mission'
-                                :config='{"id": mission.name }'
+                                :config='genConfig()'
                                 @cancel='upload = false'
                                 @done='upload = false'
                             />
@@ -118,9 +118,9 @@
                         <pre v-else v-text='mission.logs'/>
                     </template>
                 </div>
-                <div v-if='selectable' class='modal-footer'>
-                    <button @click='$emit("select", mission)' class='btn btn-primary'>Select</button>
-                </div>
+            </div>
+            <div v-if='selectable' class='modal-footer'>
+                <button @click='$emit("select", mission)' class='btn btn-primary'>Select</button>
             </div>
         </template>
     </template>
@@ -195,6 +195,12 @@ export default {
     methods: {
         downloadFile: function(file) {
             return window.stdurl(`/api/marti/api/files/${file.hash}?token=${localStorage.token}`);
+        },
+        genConfig: function() {
+            return {
+                id: this.mission.name,
+                token: localStorage.token
+            }
         },
         fetchContacts: async function() {
             try {

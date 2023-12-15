@@ -1,6 +1,7 @@
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
+import bodyparser from 'body-parser';
 import Profile from '../lib/types/profile.js';
 import Connection from '../lib/types/connection.js';
 import S3 from '../lib/aws/s3.js';
@@ -269,21 +270,15 @@ export default async function router(schema: any, config: Config) {
                 connection: { type: 'integer' },
             }
         },
-        body: {
-            type: 'object',
-            additionalProperties: false,
-            required: ['s3'],
-            properties: {
-                s3: {
-                    type: 'string',
-                    description: 'ETL managed Bucket key path to upload'
-                }
-            }
-        },
         res: 'res.Marti.json'
-    }, async (req: AuthRequest, res: Response) => {
+    }, bodyparser.raw({
+        type: '*/*',
+        limit: '50mb'
+    }), async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(req);
+
+            console.error(req);
 
             let auth;
             let callsign = '';
@@ -298,7 +293,7 @@ export default async function router(schema: any, config: Config) {
                 auth = profile.auth;
             }
             const api = await TAKAPI.init(new URL(config.server.api), new APIAuthCertificate(auth.cert, auth.key));
-            const content = await api.Mission.upload(req.params.name, callsign, await S3.get(String(req.body.s3)));
+            const content = await api.Mission.upload(req.params.name, callsign, req.body);
 
             return res.json(content);
         } catch (err) {

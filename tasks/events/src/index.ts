@@ -55,20 +55,32 @@ async function genericEvent(md: Event) {
             await updateImport(md, { status: 'Running' });
             const imported = await fetchImport(md);
 
+            const s3 = new S3.S3Client({ region: process.env.AWS_DEFAULT_REGION || 'us-east-1' });
+
+            await pipeline(
+                // @ts-ignore
+                (await s3.send(new S3.GetObjectCommand({
+                    Bucket: md.Bucket,
+                    Key: md.Key
+                }))).Body,
+                fs.createWriteStream(md.Local)
+            );
+
             if (imported.mode === 'Mission') {
+                if (!imported.config.id) throw new Error('No mission name defined');
+                if (!imported.config.token) throw new Error('No token defined');
 
+                const res = await fetch(new URL(`/api/marti/missions/${encodeURIComponent(imported.config.id)}/upload`, process.env.TAK_ETL_API), {
+                    method: 'POST',
+                    duplex: 'half',
+                    headers: {
+                        'Authorization': `Bearer ${imported.config.token}`
+                    },
+                    body: fs.createReadStream(md.Local)
+                });
+
+                console.error(await res.json());
             } else if (imported.mode === 'Unknown') {
-                const s3 = new S3.S3Client({ region: process.env.AWS_DEFAULT_REGION || 'us-east-1' });
-
-                await pipeline(
-                    // @ts-ignore
-                    (await s3.send(new S3.GetObjectCommand({
-                        Bucket: md.Bucket,
-                        Key: md.Key
-                    }))).Body,
-                    fs.createWriteStream(md.Local)
-                );
-
                 if (md.Ext === '.zip') {
                     const zip = new StreamZip.async({
                         file: path.resolve(os.tmpdir(), md.Local),
@@ -164,7 +176,7 @@ async function updateImport(event: Event, body: object) {
         body: JSON.stringify(body)
     });
 
-    console.log(await res.text());
+    return await res.json();
 }
 
 async function processIndex(event: Event, xmlstr: string, zip?: StreamZipAsync) {
