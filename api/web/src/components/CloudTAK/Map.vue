@@ -130,6 +130,7 @@ export default {
                 msg.data.properties.icon = `${msg.data.properties.type}`;
             }
 
+
             // MapLibre Opacity must be of range 0-1
             if (msg.data.properties['fill-opacity']) msg.data.properties['fill-opacity'] = msg.data.properties['fill-opacity'] / 255;
             else msg.data.properties['fill-opacity'] = 255;
@@ -357,6 +358,7 @@ export default {
                         },
                         layout: {
                             'icon-size': 1,
+                            'icon-rotate': ['get', 'course'],
                             'icon-allow-overlap': true,
                             'icon-image': '{icon}',
                             'icon-anchor': 'bottom',
