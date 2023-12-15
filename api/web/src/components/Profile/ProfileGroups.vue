@@ -2,6 +2,10 @@
 <div>
     <div class="card-header">
         <h3 class="card-title">User Groups</h3>
+
+        <div class='ms-auto btn-list'>
+            <IconRefresh @click='fetch' class='cursor-pointer' v-tooltip='"Refresh"'/>
+        </div>
     </div>
     <TablerLoading v-if='loading'/>
     <TablerNone v-else-if='!list.data.length' :create='false'/>
@@ -25,6 +29,9 @@
 </template>
 
 <script>
+import {
+    IconRefresh
+} from '@tabler/icons-vue';
 import {
     TablerNone,
     TablerLoading
@@ -51,6 +58,7 @@ export default {
         },
     },
     components: {
+        IconRefresh,
         TablerNone,
         TablerLoading
     }
