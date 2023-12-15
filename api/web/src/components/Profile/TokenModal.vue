@@ -3,7 +3,7 @@
     <div class="modal-status bg-yellow"></div>
     <button type="button" class="btn-close" @click='$emit("close")' aria-label="Close"></button>
     <div class='modal-header'>
-        <div class='modal-title' v-text='token ? "Edit Token" : "New Token"'/>
+        <div class='modal-title' v-text='token.id ? "Edit Token" : "New Token"'/>
 
         <div class='ms-auto btn-list'>
             <TablerDelete v-if='editToken.id' @delete='deleteToken' displaytype='icon'/>
@@ -11,12 +11,16 @@
     </div>
 
     <div class='modal-body row'>
-        <div class='col-12'>
+        <div v-if='!code' class='col-12'>
             <TablerInput label='Token Name' v-model='editToken.name'/>
+        </div>
+        <div v-else class='col-12'>
+            <pre v-text='code'/>
         </div>
     </div>
     <div class='modal-footer'>
-        <button @click='saveToken' class='btn btn-primary'>Save</button>
+        <button v-if='!code' @click='saveToken' class='btn btn-primary'>Save</button>
+        <button v-else @click='$emit("refresh")' class='btn btn-primary'>Close</button>
     </div>
 </TablerModal>
 </template>
@@ -37,12 +41,14 @@ export default {
         }
     },
     data: function() {
-        if (this.token) {
+        if (this.token.id) {
             return {
+                code: false,
                 editToken: JSON.parse(JSON.stringify(this.token))
             }
         } else {
             return {
+                code: false,
                 editToken: {
                     name: ''
                 }
@@ -70,6 +76,8 @@ export default {
                     method: 'POST',
                     body: this.editToken
                 });
+
+                this.code = newtoken.token;
             }
         },
     },

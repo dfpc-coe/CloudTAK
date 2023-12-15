@@ -4,7 +4,7 @@
         <h3 class="card-title">API Tokens</h3>
 
         <div class='ms-auto btn-list'>
-            <IconPlus @click='push()' class='cursor-pointer'/>
+            <IconPlus @click='token={}' class='cursor-pointer'/>
         </div>
     </div>
 
@@ -74,14 +74,6 @@ export default {
             this.list = await window.std('/api/token');
             this.loading = false;
         },
-        push: function() {
-            this.list.tokens.splice(0, 0, {
-                _edit: true,
-                name: '',
-                updated: +new Date(),
-                created: +new Date()
-            });
-        }
     },
     components: {
         TokenModal,
