@@ -153,7 +153,7 @@ export default {
                     this.map.removeSource(id);
                     a.visible = false;
                 } else {
-                    const url = window.stdurl(`/api/profile/asset/${a.visualized}/tile`);
+                    const url = window.stdurl(`/api/profile/asset/${encodeURIComponent(a.visualized)}/tile`);
                     url.searchParams.append('token', localStorage.token);
                     this.map.addSource(id, { type: 'raster', tileSize: 256, url: String(url) });
                     this.map.addLayer({ id, 'type': 'raster', 'source': id }, 'cots');
