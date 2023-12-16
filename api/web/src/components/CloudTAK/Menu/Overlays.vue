@@ -5,7 +5,7 @@
             <IconCircleArrowLeft @click='$emit("close")' class='cursor-pointer'/>
             <div class='modal-title'>Overlays</div>
             <div class='btn-list'>
-                <IconPlus @click='$emit("datas")' class='cursor-pointer'/>
+                <IconPlus @click='$emit("datas")' class='cursor-pointer' v-tooltip='"Add Overlay"'/>
             </div>
         </div>
     </div>
