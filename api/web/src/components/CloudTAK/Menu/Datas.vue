@@ -20,7 +20,7 @@
     </div>
 
     <TablerLoading v-if='loading'/>
-    <template v-if='mode === "user"'>
+    <template v-else-if='mode === "user"'>
         <div :key='a.id' v-for='a in assetList.assets' class="col-lg-12">
             <div class='col-12 py-2 px-2 d-flex align-items-center'>
                 <IconEyeXIcon v-if='!a.visualized' v-tooltip='"No Viz Layer"'/>
@@ -32,6 +32,11 @@
     </template>
     <template v-else-if='mode === "data"'>
         <template v-if='data'>
+            <div class='col-12 d-flex py-2'>
+                <IconCircleArrowLeft @click='data = null' class='cursor-pointer'/>
+                <div class='modal-title mx-2' v-text='data.name'></div>
+            </div>
+
             <div :key='a.id' v-for='a in assetList.assets' class="col-lg-12">
                 <div class='col-12 py-2 px-2 d-flex align-items-center'>
                     <IconEyeXIcon v-if='!a.visualized' v-tooltip='"No Viz Layer"'/>
@@ -49,9 +54,9 @@
             />
             <template v-else>
                 <div class='modal-body mx-3 my-2'>
-                    <div :key='d.id' v-for='d in list.data' class='cursor-pointer col-12 row py-2 rounded hover-dark'>
+                    <div @click='data = d' :key='d.id' v-for='d in list.data' class='cursor-pointer col-12 row py-2 rounded hover-dark'>
                         <div class='col-12 py-2 px-2 d-flex align-items-center'>
-                            <IconFolder/><span @click='data = d' class="cursor-pointer mx-2" v-text='d.name'></span>
+                            <IconFolder/><span class="mx-2" v-text='d.name'></span>
                         </div>
                     </div>
                     <div class="col-lg-12">
