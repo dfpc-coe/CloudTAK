@@ -23,7 +23,7 @@
                         </div>
                         <div class="card-body">
                             <TablerLoading v-if='loading.iconset' desc='Loading Iconset'/>
-                            <TablerSchema v-else :schema='schema' v-model='iconset'/>
+                            <TablerSchema v-else :schema='schema' v-model='icon'/>
 
                             <div class='d-flex'>
                                 <div class='ms-auto'>
@@ -61,9 +61,11 @@ export default {
                 iconset: true
             },
             schema: {},
-            iconset: {
-
-            }
+            icon: {
+                name: '',
+                data: ''
+            },
+            iconset: {}
         }
     },
     mounted: async function() {
@@ -78,18 +80,18 @@ export default {
     methods: {
         fetch: async function() {
             this.loading.iconset = true;
-            this.layer = await window.std(`/api/iconset/${this.$route.params.icon}`);
+            this.iconset = await window.std(`/api/iconset/${this.$route.params.icon}`);
             this.loading.iconset = false;
         },
         submit: async function() {
             const url = await window.stdurl(`/api/iconset/${this.$route.params.icon}/icon`);
 
-            const iconset = await window.std(url, {
+            await window.std(url, {
                 method: 'POST',
                 body: this.icon
             });
 
-            this.$router.push(`/iconset/${iconset.uid}`);
+            this.$router.push(`/iconset/${this.iconset.uid}`);
         },
         fetchSchema: async function() {
             const url = await window.stdurl(`/api/schema`);

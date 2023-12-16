@@ -3,15 +3,11 @@
     "additionalProperties": false,
     "required": [
         "name",
-        "path",
         "data"
     ],
     "properties": {
         "name": {
             "$ref": "./icons/name.json"
-        },
-        "path": {
-            "$ref": "./icons/path.json"
         },
         "data": {
             "$ref": "./icons/data.json"
