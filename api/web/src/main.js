@@ -135,6 +135,7 @@ const router = new VueRouter.createRouter({
         { path: '/iconset/new', name: 'icon-new', component: () => import('./components/IconEdit.vue') },
         { path: '/iconset/:icon', name: 'icon', component: () => import('./components/Icon.vue') },
         { path: '/iconset/:icon/edit', name: 'icon-edit', component: () => import('./components/IconEdit.vue') },
+        { path: '/iconset/:icon/icon', name: 'icon-new', component: () => import('./components/IconUpload.vue') },
 
         { path: '/import', name: 'imports', component: () => import('./components/Imports.vue') },
         { path: '/import/:import', name: 'import', component: () => import('./components/Import.vue') },
