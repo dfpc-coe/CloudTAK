@@ -23,7 +23,7 @@
     <template v-else-if='mode === "user"'>
         <div :key='a.id' v-for='a in assetList.assets' class="col-lg-12">
             <div class='col-12 py-2 px-2 d-flex align-items-center'>
-                <IconEyeXIcon v-if='!a.visualized' v-tooltip='"No Viz Layer"'/>
+                <IconEyeX v-if='!a.visualized' v-tooltip='"No Viz Layer"'/>
                 <IconEye v-else-if='a.visible' @click='flipVisible(a)' class='cursor-pointer'/>
                 <IconEyeOff v-else @click='flipVisible(a)' class='cursor-pointer'/>
                 <span class="mx-2 cursor-pointer" v-text='a.name'></span>
@@ -39,7 +39,7 @@
 
             <div :key='a.id' v-for='a in assetList.assets' class="col-lg-12">
                 <div class='col-12 py-2 px-2 d-flex align-items-center'>
-                    <IconEyeXIcon v-if='!a.visualized' v-tooltip='"No Viz Layer"'/>
+                    <IconEyeX v-if='!a.visualized' v-tooltip='"No Viz Layer"'/>
                     <IconEye v-else-if='a.visible' @click='flipVisible(a)' class='cursor-pointer'/>
                     <IconEyeOff v-else @click='flipVisible(a)' class='cursor-pointer'/>
                     <span class="mx-2 cursor-pointer" v-text='a.name'></span>
