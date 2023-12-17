@@ -74,7 +74,7 @@ import {
     IconTransform,
 } from '@tabler/icons-vue'
 import Alert from '../util/Alert.vue';
-import TransformModal from '../Data/TransformModal.vue';
+import TransformModal from './TransformModal.vue';
 import Upload from '../util/Upload.vue';
 import {
     TablerNone,
