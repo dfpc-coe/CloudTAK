@@ -20,7 +20,7 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            const list = await Batch.list(config, `profile-${email.replace('@', '_at_').replace(/[^a-zA-Z0-9]/g, '_')}`);
+            const list = await Batch.list(config, `profile-${req.auth.email.replace('@', '_at_').replace(/[^a-zA-Z0-9]/g, '_')}`);
 
             return res.json({
                 total: list.length,
