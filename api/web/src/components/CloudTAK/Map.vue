@@ -3,12 +3,17 @@
     <TablerLoading v-if='loading.main'/>
     <template v-else>
         <div class='position-absolute top-0 end-0 text-white py-2' style='z-index: 1; width: 60px; background-color: rgba(0, 0, 0, 0.5);'>
+
             <IconMenu2 v-if='!cot && !menu.main' @click='menu.main = true' size='40' class='cursor-pointer'/>
             <IconX v-else-if='!cot && menu.main' @click='menu.main = false' size='40' class='cursor-pointer bg-dark'/>
             <IconX v-if='cot' @click='cot = false' size='40' class='cursor-pointer bg-dark'/>
         </div>
 
         <div class='position-absolute top-0 beginning-0 text-white py-2 mx-2' style='z-index: 1; width: 60px; background-color: rgba(0, 0, 0, 0.5)'>
+            <div @click='map.setBearing(0)' style='padding-bottom: 10px;' class='cursor-pointer'>
+                <svg width="40" height="40" :transform='`rotate(${360 - bearing})`' viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" /><path d="M12 8l-4 4" /><path d="M12 8v8" /><path d="M16 12l-4 -4" /></svg>
+                <div class='text-center' v-text='`${Math.round(bearing)}°`'></div>
+            </div>
             <IconFocus2 v-if='!radial.cot && !locked.length' @click='getLocation' :size='40' class='cursor-pointer'/>
             <IconLockAccess v-else-if='!radial.cot' @click='locked.splice(0, locked.length)' :size='40' class='cursor-pointer'/>
 
@@ -159,6 +164,7 @@ export default {
                 y: 0,
                 cot: null
             },
+            bearing: 0,         // Updated By Map, used to set the compass icon direction as the map's bearing changes
             locked: [],         // Lock the map view to a given CoT - The last element is the currently locked value
                                 //   this is an array so that things like the radial menu can temporarily lock state but remember the previous lock value when they are closed
             edit: false,        // If a radial.cot is set and edit is true then load the cot into terra-draw
@@ -384,6 +390,7 @@ export default {
             for (const layer of ['cots', 'cots-poly', 'cots-line']) {
                 this.map.on('mouseenter', layer, () => { this.map.getCanvas().style.cursor = 'pointer'; })
                 this.map.on('mouseleave', layer, () => { this.map.getCanvas().style.cursor = ''; })
+                this.map.on('rotate', () => { this.bearing = this.map.getBearing() })
                 this.map.on('click', layer, (e) => {
                     const flyTo = { speed: Infinity };
                     if (e.features[0].geometry.type === 'Point') {
