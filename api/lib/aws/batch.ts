@@ -92,17 +92,17 @@ export default class Batch {
         }
     }
 
-    static async list(config: Config, data: any): Promise<BatchJob[]> {
+    static async list(config: Config, prefix: string): Promise<BatchJob[]> {
         const batch = new AWSBatch.BatchClient({ region: process.env.AWS_DEFAULT_REGION });
 
         const jobs = (await batch.send(new AWSBatch.ListJobsCommand({
             jobQueue: `${config.StackName}-queue`,
             filters: [{
                 name: 'JOB_NAME',
-                values: [`data-${data.id}-*`]
+                values: [`${prefix}-*`]
             }]
         }))).jobSummaryList.map((job) => {
-            const name = job.jobName.replace(`data-${data.id}-`, '');
+            const name = job.jobName.replace(`${prefix}-`, '');
             let asset: string[] = [...name];
             asset[name.lastIndexOf('_')] = '.';
 
