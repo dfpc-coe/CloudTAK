@@ -121,6 +121,10 @@ const router = new VueRouter.createRouter({
                 name: 'profile-groups',
                 component: () => import('./components/Profile/ProfileGroups.vue')
             },{
+                path: 'jobs',
+                name: 'profile-jobs',
+                component: () => import('./components/Profile/ProfileJobs.vue')
+            },{
                 path: 'files',
                 name: 'profile-files',
                 component: () => import('./components/Profile/ProfileFiles.vue')

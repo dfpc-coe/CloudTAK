@@ -9,20 +9,18 @@ import { AuthRequest } from '@tak-ps/blueprint-login';
 import Config from '../lib/config.js';
 
 export default async function router(schema: any, config: Config) {
-    await schema.get('/data/:dataid/job', {
+    await schema.get('/profile/job', {
         name: 'List Jobs',
         auth: 'user',
-        group: 'DataJobs',
-        description: 'List Data Jobs',
+        group: 'ProfileJobs',
+        description: 'List Profile Jobs',
         ':dataid': 'integer',
-        res: 'res.ListDataJobs.json'
+        res: 'res.ListProfileJobs.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(req);
 
-            const data = await Data.from(config.pool, req.params.dataid);
-
-            const list = await Batch.list(config, `data-${data.id}`);
+            const list = await Batch.list(config, `user-${req.auth.email.replace(/[^a-zA-Z0-9]/g, '_')}`);
 
             return res.json({
                 total: list.length,
@@ -33,21 +31,20 @@ export default async function router(schema: any, config: Config) {
         }
     });
 
-    await schema.get('/data/:dataid/job/:jobid', {
+    await schema.get('/profile/job/:jobid', {
         name: 'List Jobs',
         auth: 'user',
-        group: 'DataJobs',
-        description: 'List Data Jobs',
-        ':dataid': 'integer',
+        group: 'ProfileJobs',
+        description: 'List Profile Jobs',
         ':jobid': 'string',
-        res: 'res.DataJob.json'
+        res: 'res.ProfileJob.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(req);
 
-            const data = await Data.from(config.pool, req.params.dataid);
-
             const job = await Batch.job(config, req.params.jobid);
+
+            // TODO Ensure jobname contains email address of user requesting it
 
             return res.json(job)
         } catch (err) {
@@ -55,21 +52,20 @@ export default async function router(schema: any, config: Config) {
         }
     });
 
-    await schema.get('/data/:dataid/job/:jobid/logs', {
+    await schema.get('/profile/job/:jobid/logs', {
         name: 'List Logs',
         auth: 'user',
-        group: 'DataJobLogs',
-        description: 'List Data Job Logs',
-        ':dataid': 'integer',
+        group: 'ProfileJobs',
+        description: 'List Profile Job Logs',
         ':jobid': 'string',
-        res: 'res.DataJobLogs.json'
+        res: 'res.ProfileJobLogs.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(req);
 
-            const data = await Data.from(config.pool, req.params.dataid);
-
             const job = await Batch.job(config, req.params.jobid);
+
+            // TODO Ensure jobname contains email address of user requesting it
 
             if (job.logstream) {
                 const logs = await Logs.list(job.logstream);

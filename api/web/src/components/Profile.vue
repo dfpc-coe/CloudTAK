@@ -33,6 +33,10 @@
                                             "active": $route.name === "profile-files",
                                             "cursor-pointer": $route.name !== "profile-files"
                                         }'><IconFiles/><span class='mx-3'>Files</span></span>
+                                        <span @click='$router.push(`/profile/jobs`)' class="list-group-item list-group-item-action d-flex align-items-center" :class='{
+                                            "active": $route.name === "profile-jobs",
+                                            "cursor-pointer": $route.name !== "profile-jobs"
+                                        }'><IconTransform/><span class='mx-3'>Jobs</span></span>
                                     </div>
                                 </div>
                             </div>
@@ -57,6 +61,7 @@ import {
 } from '@tak-ps/vue-tabler';
 import {
     IconRobot,
+    IconTransform,
     IconFiles,
     IconAffiliate
 } from '@tabler/icons-vue';
@@ -66,6 +71,7 @@ export default {
     components: {
         IconRobot,
         PageFooter,
+        IconTransform,
         IconAffiliate,
         IconFiles,
         TablerBreadCrumb
