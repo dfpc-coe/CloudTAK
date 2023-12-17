@@ -37,7 +37,7 @@ export default async function router(schema: any, config: Config) {
 
                 return {
                     name: a.Key.replace(`profile/${req.auth.email}/`, ''),
-                    visualized: path.parse(a.Key.replace(`profile/${req.auth.email}/`, '')).name + '.pmtiles',
+                    visualized: isViz ? path.parse(a.Key.replace(`profile/${req.auth.email}/`, '')).name + '.pmtiles' : false,
                     updated: new Date(a.LastModified).getTime(),
                     etag: JSON.parse(a.ETag),
                     size: a.Size
