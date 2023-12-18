@@ -1,5 +1,6 @@
 import { createApp } from 'vue'
 import * as VueRouter from 'vue-router'
+import { createPinia } from 'pinia'
 
 import 'floating-vue/dist/style.css'
 import FloatingVue from 'floating-vue'
@@ -159,7 +160,9 @@ const router = new VueRouter.createRouter({
 window.api = window.location.origin
 
 const app = createApp(App);
+const pinia = createPinia()
 app.config.devtools = true
 app.use(router);
+app.use(pinia);
 app.use(FloatingVue);
 app.mount('#app');
