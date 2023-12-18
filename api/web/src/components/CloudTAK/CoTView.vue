@@ -43,6 +43,8 @@
 </template>
 
 <script>
+import { useMapStore } from '/src/stores/map.js';
+const mapStore = useMapStore();
 import {
     TablerInput,
     TablerEnum
@@ -82,9 +84,9 @@ export default {
     },
     mounted: function() {
         if (this.isUserDrawn) {
-            if (this.map.getLayer('cots-poly-edit')) this.map.removeLayer('cots-poly-edit');
+            if (mapStore.map.getLayer('cots-poly-edit')) mapStore.map.removeLayer('cots-poly-edit');
 
-            this.map.addLayer({
+            mapStore.map.addLayer({
                 id: 'cots-poly-edit',
                 type: 'fill',
                 source: 'cots',
@@ -98,7 +100,7 @@ export default {
     },
     ummounted: function() {
         if (this.isUserDrawn) {
-            this.map.removeLayer('cots-poly-edit');
+            mapStore.map.removeLayer('cots-poly-edit');
         }
     },
     computed: {
@@ -111,12 +113,12 @@ export default {
     },
     methods: {
         updateStyle: function() {
-            this.map.setPaintProperty('cots-poly-edit', 'fill-color', this.feat.properties.fill);
-            this.map.setPaintProperty('cots-poly-edit', 'fill-opacity', this.feat.properties['fill-opacity']);
+            mapStore.map.setPaintProperty('cots-poly-edit', 'fill-color', this.feat.properties.fill);
+            mapStore.map.setPaintProperty('cots-poly-edit', 'fill-opacity', this.feat.properties['fill-opacity']);
 
         },
         zoomTo: function() {
-            this.map.flyTo({
+            mapStore.map.flyTo({
                 center: this.center,
                 zoom: 14
             })
