@@ -113,7 +113,11 @@ export default {
 
         window.addEventListener('keydown', (e) => {
             if (e.key == 'Escape') {
-                this.radial.cot = false;
+                if (this.radial.cot) {
+                    this.radial.cot = false;
+                } else if (this.menu.main) {
+                    this.menu.main = false;
+                }
             }
         });
 
