@@ -58,12 +58,6 @@ import {
 
 export default {
     name: 'Contacts',
-    props: {
-        map: {
-            type: Object,
-            required: true
-        }
-    },
     data: function() {
         return {
             err: false,

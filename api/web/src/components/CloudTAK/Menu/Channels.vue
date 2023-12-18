@@ -40,12 +40,6 @@ import {
 
 export default {
     name: 'Channels',
-    props: {
-        map: {
-            type: Object,
-            required: true
-        }
-    },
     data: function() {
         return {
             err: false,

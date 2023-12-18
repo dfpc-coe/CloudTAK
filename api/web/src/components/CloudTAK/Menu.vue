@@ -6,38 +6,32 @@
 >
     <template v-if='mode === "settings"'>
         <MenuSettings
-            :map='map'
             @close='mode = null'
         />
     </template>
     <template v-else-if='mode === "missions"'>
         <MenuMissions
-            :map='map'
             @close='mode = null'
         />
     </template>
     <template v-else-if='mode === "channels"'>
         <MenuChannels
-            :map='map'
             @close='mode = null'
             @reset='$emit("reset")'
         />
     </template>
     <template v-else-if='mode === "contacts"'>
         <MenuContacts
-            :map='map'
             @close='mode = null'
         />
     </template>
     <template v-else-if='mode === "datas"'>
         <MenuDatas
-            :map='map'
             @close='mode = null'
         />
     </template>
     <template v-else-if='mode === "overlays"'>
         <MenuOverlays
-            :map='map'
             @close='mode = null'
             @datas='mode = "datas"'
         />
@@ -107,12 +101,6 @@ import MenuChannels from './Menu/Channels.vue';
 
 export default {
     name: 'CloudTAKMenu',
-    props: {
-        map: {
-            type: Object,
-            required: true
-        }
-    },
     data: function() {
         return {
             mode: null

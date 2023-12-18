@@ -23,12 +23,6 @@ import {
 
 export default {
     name: 'Settings',
-    props: {
-        map: {
-            type: Object,
-            required: true
-        }
-    },
     data: function() {
         return {
         }

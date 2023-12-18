@@ -70,6 +70,9 @@
 </template>
 
 <script>
+import { useMapStore } from '/src/stores/map.js';
+const mapStore = useMapStore();
+
 import {
     TablerNone,
     TablerPager,
@@ -89,12 +92,6 @@ import {
 
 export default {
     name: 'Datas',
-    props: {
-        map: {
-            type: Object,
-            required: true
-        }
-    },
     data: function() {
         return {
             mode: 'data',
@@ -149,8 +146,8 @@ export default {
             if (this.mode === 'user') {
                 const id = `profile-${a.name.replace(/\..*$/, '')}`;
                 if (a.visible) {
-                    this.map.removeLayer(id);
-                    this.map.removeSource(id);
+                    mapStore.map.removeLayer(id);
+                    mapStore.map.removeSource(id);
                     a.visible = false;
                 } else {
                     const url = window.stdurl(`/api/profile/asset/${encodeURIComponent(a.visualized)}/tile`);
@@ -161,8 +158,8 @@ export default {
             } else {
                 const id = `data-${this.data.id}-${a.name.replace(/\..*$/, '')}`;
                 if (a.visible) {
-                    this.map.removeLayer(id);
-                    this.map.removeSource(id);
+                    mapStore.map.removeLayer(id);
+                    mapStore.map.removeSource(id);
                     a.visible = false;
                 } else {
                     const url = window.stdurl(`/api/data/${this.data.id}/asset/${a.visualized}/tile`);
@@ -177,13 +174,13 @@ export default {
             console.error(res);
 
             if (new URL(res.tiles[0]).pathname.endsWith('.mvt')) {
-                if (this.map.getSource(id)) {
-                    this.map.removeSource(id);
+                if (mapStore.map.getSource(id)) {
+                    mapStore.map.removeSource(id);
                 }
 
-                this.map.addSource(id, { type: 'vector', url: String(url) });
+                mapStore.map.addSource(id, { type: 'vector', url: String(url) });
 
-                this.map.addLayer({
+                mapStore.map.addLayer({
                     id: `${id}-poly`,
                     type: 'fill',
                     source: id,
@@ -196,7 +193,7 @@ export default {
                     }
                 });
 
-                this.map.addLayer({
+                mapStore.map.addLayer({
                     id: `${id}-polyline`,
                     type: 'line',
                     source: id,
@@ -213,7 +210,7 @@ export default {
                     }
                 });
 
-                this.map.addLayer({
+                mapStore.map.addLayer({
                     id: `${id}-line`,
                     type: 'line',
                     source: id,
@@ -230,7 +227,7 @@ export default {
                     }
                 });
 
-                this.map.addLayer({
+                mapStore.map.addLayer({
                     id: id,
                     type: 'circle',
                     source: id,
@@ -243,8 +240,8 @@ export default {
                     }
                 });
             } else {
-                this.map.addSource(id, { type: 'raster', tileSize: 256, url: String(url) });
-                this.map.addLayer({ id, 'type': 'raster', 'source': id }, 'cots');
+                mapStore.map.addSource(id, { type: 'raster', tileSize: 256, url: String(url) });
+                mapStore.map.addLayer({ id, 'type': 'raster', 'source': id }, 'cots');
             }
             a.visible = true;
         },
@@ -265,7 +262,7 @@ export default {
             url.searchParams.append('page', this.paging.page);
             const assetList = await window.std(url);
 
-            const layers = this.map.getLayersOrder();
+            const layers = mapStore.map.getLayersOrder();
             for (const asset of assetList.assets) {
                 const id = `profile-${asset.name.replace(/\..*$/, '')}`;
                 if (layers.indexOf(id) !== -1) asset.visible = true;
@@ -283,7 +280,7 @@ export default {
             url.searchParams.append('page', this.paging.page);
             const assetList = await window.std(url);
 
-            const layers = this.map.getLayersOrder();
+            const layers = mapStore.map.getLayersOrder();
             for (const asset of assetList.assets) {
                 const id = `data-${this.data.id}-${asset.name.replace(/\..*$/, '')}`;
                 if (layers.indexOf(id) !== -1) asset.visible = true;

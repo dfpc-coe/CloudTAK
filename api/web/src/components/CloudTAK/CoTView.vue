@@ -63,10 +63,6 @@ export default {
         cot: {
             type: Object,
             required: true
-        },
-        map: {
-            type: Object,
-            required: true
         }
     },
     watch: {

@@ -90,9 +90,8 @@ import CloudTAKMenu from './Menu.vue';
 import CloudTAKCoTView from './CoTView.vue';
 import RadialMenu from './RadialMenu/RadialMenu.vue';
 import moment from 'moment';
-import { useMapStore } from '/src/stores/map.js';
 import { mapState } from 'pinia'
-
+import { useMapStore } from '/src/stores/map.js';
 const mapStore = useMapStore();
 
 export default {
