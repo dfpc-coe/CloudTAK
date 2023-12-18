@@ -49,15 +49,11 @@ import {
     IconEye,
     IconMap
 } from '@tabler/icons-vue';
+import { useMapStore } from '/src/stores/map.js';
+const mapStore = useMapStore();
 
 export default {
     name: 'Overlays',
-    props: {
-        map: {
-            type: Object,
-            required: true
-        }
-    },
     data: function() {
         return {
             err: false,
@@ -72,39 +68,39 @@ export default {
         flipVisible: async function(layer) {
             if (layer.visible) {
                 for (const l of layer.layers) {
-                    this.map.setLayoutProperty(l.id, 'visibility', 'none');
+                    mapStore.map.setLayoutProperty(l.id, 'visibility', 'none');
                 }
             } else {
                 for (const l of layer.layers) {
-                    this.map.setLayoutProperty(l.id, 'visibility', 'visible');
+                    mapStore.map.setLayoutProperty(l.id, 'visibility', 'visible');
                 }
             }
 
             await this.genList();
         },
         zoomTo: function(layer) {
-            this.map.fitBounds(layer.bounds);
+            mapStore.map.fitBounds(layer.bounds);
         },
         updateOpacity: function(layer) {
             for (const l of layer.layers) {
-                this.map.setPaintProperty(l.id, 'raster-opacity', Number(layer.opacity))
+                mapStore.map.setPaintProperty(l.id, 'raster-opacity', Number(layer.opacity))
             }
         },
         removeLayer: async function(layer) {
             for (const l of layer.layers) {
-                this.map.removeLayer(l.id);
-                this.map.removeSource(l.id);
+                mapStore.map.removeLayer(l.id);
+                mapStore.map.removeSource(l.id);
             }
             await this.genList()
         },
         genList: async function() {
-            const order = this.map.getLayersOrder()
+            const order = mapStore.map.getLayersOrder()
             this.layers = order.filter((layer) => {
                 return !['background'].includes(layer);
             }).filter((layer) => {
                 return !(layer.startsWith('cots-') || layer.startsWith('td-'))
             }).map((layer) => {
-                layer = this.map.getLayer(layer);
+                layer = mapStore.map.getLayer(layer);
 
                 let name = layer.id
                 let layers = [ layer ];
@@ -112,13 +108,13 @@ export default {
                 if (layer.id === 'cots') {
                     name = 'CoT Icons';
                     for (const post of [ 'text', 'line', 'poly' ]) {
-                        layers.push(this.map.getLayer(`cots-${post}`));
+                        layers.push(mapStore.map.getLayer(`cots-${post}`));
                     }
                 }
 
                 const res = {
                     name,
-                    visible: this.map.getLayoutProperty(layer.id, 'visibility') !== 'none',
+                    visible: mapStore.map.getLayoutProperty(layer.id, 'visibility') !== 'none',
                     bounds: null,
                     opacity: 1,
                     type: layer.type,
@@ -126,7 +122,7 @@ export default {
                 }
 
                 if (layer.id.startsWith('data-')) {
-                    const source = this.map.getSource(layer.source);
+                    const source = mapStore.map.getSource(layer.source);
                     if (source.bounds) res.bounds = source.bounds;
                 }
 
