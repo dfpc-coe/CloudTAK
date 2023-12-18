@@ -145,7 +145,7 @@ export default {
        }
     },
     methods: {
-        flipVisible: function(a) {
+        flipVisible: async function(a) {
             if (this.mode === 'user') {
                 const id = `profile-${a.name.replace(/\..*$/, '')}`;
                 if (a.visible) {
@@ -155,9 +155,8 @@ export default {
                 } else {
                     const url = window.stdurl(`/api/profile/asset/${encodeURIComponent(a.visualized)}/tile`);
                     url.searchParams.append('token', localStorage.token);
-                    this.map.addSource(id, { type: 'raster', tileSize: 256, url: String(url) });
-                    this.map.addLayer({ id, 'type': 'raster', 'source': id }, 'cots');
-                    a.visible = true;
+
+                    await this.createOverlay(id, url, a);
                 }
             } else {
                 const id = `data-${this.data.id}-${a.name.replace(/\..*$/, '')}`;
@@ -168,11 +167,86 @@ export default {
                 } else {
                     const url = window.stdurl(`/api/data/${this.data.id}/asset/${a.visualized}/tile`);
                     url.searchParams.append('token', localStorage.token);
-                    this.map.addSource(id, { type: 'raster', tileSize: 256, url: String(url) });
-                    this.map.addLayer({ id, 'type': 'raster', 'source': id }, 'cots');
-                    a.visible = true;
+
+                    await this.createOverlay(id, url, a)
                 }
             }
+        },
+        createOverlay: async function(id, url, a) {
+            const res = await window.std(url);
+            console.error(res);
+
+            if (new URL(res.tiles[0]).pathname.endsWith('.mvt')) {
+                if (this.map.getSource(id)) {
+                    this.map.removeSource(id);
+                }
+
+                this.map.addSource(id, { type: 'vector', url: String(url) });
+
+                this.map.addLayer({
+                    id: `${id}-poly`,
+                    type: 'fill',
+                    source: id,
+                    'source-layer': 'out',
+                    filter: ["==", "$type", "Polygon"],
+                    layout: {},
+                    paint: {
+                        'fill-opacity': 0.1,
+                        'fill-color': '#00FF00'
+                    }
+                });
+
+                this.map.addLayer({
+                    id: `${id}-polyline`,
+                    type: 'line',
+                    source: id,
+                    'source-layer': 'out',
+                    filter: ["==", "$type", "Polygon"],
+                    layout: {
+                        'line-join': 'round',
+                        'line-cap': 'round'
+                    },
+                    paint: {
+                        'line-color': '#00FF00',
+                        'line-width': 1,
+                        'line-opacity': 0.75
+                    }
+                });
+
+                this.map.addLayer({
+                    id: `${id}-line`,
+                    type: 'line',
+                    source: id,
+                    'source-layer': 'out',
+                    filter: ["==", "$type", "LineString"],
+                    layout: {
+                        'line-join': 'round',
+                        'line-cap': 'round'
+                    },
+                    'paint': {
+                        'line-color': '#00FF00',
+                        'line-width': 1,
+                        'line-opacity': 0.75
+                    }
+                });
+
+                this.map.addLayer({
+                    id: id,
+                    type: 'circle',
+                    source: id,
+                    'source-layer': 'out',
+                    filter: ["==", "$type", "Point"],
+                    paint: {
+                        'circle-color': '#00FF00',
+                        'circle-radius': 2.5,
+                        'circle-opacity': 0.75
+                    }
+                });
+            } else {
+                this.map.addSource(id, { type: 'raster', tileSize: 256, url: String(url) });
+                this.map.addLayer({ id, 'type': 'raster', 'source': id }, 'cots');
+            }
+            a.visible = true;
         },
         fetchDataList: async function() {
             this.loading = true;
