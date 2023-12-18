@@ -134,19 +134,10 @@ export default {
     errorCaptured: function(err) {
         if (err.message === '401') {
             this.login = true;
+        } else if (String(err) === 'Error: Authentication Required') {
+            this.$router.push('/login');
         } else {
             this.err = err;
-        }
-    },
-    watch: {
-        async $route() {
-            if (!this.mounted) return;
-            if (localStorage.token) {
-                await this.getLogin();
-                if (!this.server) await this.getServer();
-                return;
-            }
-            if (this.$route.name !== 'login') this.$router.push("/login");
         }
     },
     mounted: async function() {
@@ -185,6 +176,9 @@ export default {
                 if (this.$route.name !== 'login') this.$router.push("/login");
                 this.loading = false;
             }
+
+            await this.getServer()
+
             this.loading = false;
         },
         getServer: async function() {
