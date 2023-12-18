@@ -10,9 +10,11 @@
         }'>
             <IconCircleArrowLeft v-if='!modal' @click='$emit("close")' class='cursor-pointer'/>
             <div class='modal-title'>Missions</div>
-            <div class='btn-list' v-if='!loading'>
-                <IconPlus @click='$emit("create")' class='cursor-pointer' v-tooltip='"Create Mission"'/>
-                <IconRefresh @click='fetchMissions' class='cursor-pointer' v-tooltip='"Refresh"'/>
+            <div class='btn-list'>
+                <template v-if='!loading'>
+                    <IconPlus @click='$emit("create")' class='cursor-pointer' v-tooltip='"Create Mission"'/>
+                    <IconRefresh @click='fetchMissions' class='cursor-pointer' v-tooltip='"Refresh"'/>
+                </template>
             </div>
         </div>
     </div>
