@@ -9,7 +9,7 @@
     </div>
 
     <div class="btn-group w-100 py-2" role="group">
-        <input @change="mode = 'user'" :checked='mode === "data"' value='data' type="radio" class="btn-check" name="mode-select" id="data" autocomplete="off">
+        <input @change="mode = 'data'" :checked='mode === "data"' value='data' type="radio" class="btn-check" name="mode-select" id="data" autocomplete="off">
         <label for="data" class="btn btn-icon" v-tooltip='"Data Store"'>
             <IconDatabase/>
         </label>
@@ -120,10 +120,12 @@ export default {
     watch: {
         mode: async function() {
             if (this.mode === 'user') {
-                delete this.data;
+                this.data = false;
                 await this.fetchUserAssetList();
-            } else {
+            } else if (this.data) {
                 await this.fetchAssetList();
+            } else {
+                await this.fetchDataList();
             }
         },
         data: async function() {
