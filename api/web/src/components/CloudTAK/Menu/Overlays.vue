@@ -22,7 +22,7 @@
                 <span class='mx-2' v-text='layer.name'/>
 
                 <div class='ms-auto btn-list'>
-                    <IconMaximize v-if='layer.bounds' @click='zoomTo(layer)' class='cursor-pointer' v-tooltip='"Zoom To Overlay"'/>
+                    <IconMaximize v-if='Array.isArray(layer.bounds)' @click='zoomTo(layer)' class='cursor-pointer' v-tooltip='"Zoom To Overlay"'/>
                     <TablerDelete v-if='layer.name.startsWith("data-")' displaytype='icon' @delete='removeLayer(layer)' v-tooltip='"Delete Overlay"' class='text-dark'/>
                 </div>
             </div>

@@ -311,6 +311,7 @@ export default {
             mapStore.init(this.$refs.map, basemap);
 
             mapStore.map.once('load', () => {
+                mapStore.initLayers(basemap);
                 mapStore.initDraw();
 
                 for (const iconset of this.iconsets.iconsets) {

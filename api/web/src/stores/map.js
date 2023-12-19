@@ -10,6 +10,7 @@ export const useMapStore = defineStore('cloudtak', {
 
         return {
             map: false,
+            container: false,
             bearing: 0,
             radial: {
                 // Settings related to the Radial menu - shown if radial.cot is not null
@@ -22,19 +23,26 @@ export const useMapStore = defineStore('cloudtak', {
         }
     },
     actions: {
-        addLayer: function(name, type, layers) {
-            for (const layer of this.layers) {
-                if (layer.name === name) return;
+        addLayer: function(layer, layers, before) {
+            if (!layer.name) throw new Error('Layer Name must be set');
+
+            for (const l of this.layers) {
+                if (l.name === layer.name) {
+                    return;
+                }
             }
 
-            this.layers.push({
-                name: name,
-                visible: 'visible',
-                bounds: null,
-                opacity: 1,
-                type: type,
-                layers: layers
-            });
+            if (!layer.visible) layer.visible = 'visible';
+            if (!layer.bounds) layer.bounds = null;
+            if (isNaN(layer.opacity)) layer.opacity = 1;
+            if (!layer.type) layer.type === 'raster';
+
+            layer.layers = layers;
+
+            this.layers.push(layer);
+            for (const l of layer.layers) {
+                this.map.addLayer(l, before);
+            }
         },
         updateLayer: function(newLayer) {
             for (let i = 0; i < this.layers.length; i++) {
@@ -44,15 +52,15 @@ export const useMapStore = defineStore('cloudtak', {
                 }
             }
 
-            for (const lid of newLayer.layers) {
+            for (const l of newLayer.layers) {
                 if (newLayer.type === 'raster') {
-                    this.map.setPaintProperty(lid, 'raster-opacity', Number(newLayer.opacity))
+                    this.map.setPaintProperty(l.id, 'raster-opacity', Number(newLayer.opacity))
                 }
 
                 if (newLayer.visible === 'none') {
-                    this.map.setLayoutProperty(lid, 'visibility', 'none');
+                    this.map.setLayoutProperty(l.id, 'visibility', 'none');
                 } else if (newLayer.visible === 'visible') {
-                    this.map.setLayoutProperty(lid, 'visibility', 'visible');
+                    this.map.setLayoutProperty(l.id, 'visibility', 'visible');
                 }
             }
         },
@@ -72,8 +80,10 @@ export const useMapStore = defineStore('cloudtak', {
             }
         },
         init: function(container, basemap) {
+            this.container = container;
+
             this.map = new mapgl.Map({
-                container,
+                container: this.container,
                 fadeDuration: 0,
                 zoom: 8,
                 center: [-105.91873757464982, 39.2473040734323],
@@ -100,66 +110,75 @@ export const useMapStore = defineStore('cloudtak', {
                         id: 'background',
                         type: 'background',
                         paint: { 'background-color': 'rgb(4,7,14)' }
-                    },{
-                        id: 'basemap',
-                        type: 'raster',
-                        source: 'basemap',
-                        minzoom: basemap.minzoom,
-                        maxzoom: basemap.maxzoom
-                    },{
-                        id: 'cots-poly',
-                        type: 'fill',
-                        source: 'cots',
-                        filter: [ 'all', ['==', '$type', 'Polygon']],
-                        paint: {
-                            'fill-color': ['get', 'fill'],
-                            'fill-opacity': ['get', 'fill-opacity']
-                        },
-                    },{
-                        id: 'cots-line',
-                        type: 'line',
-                        source: 'cots',
-                        paint: {
-                            'line-color': ['get', 'stroke'],
-                            'line-opacity': ['get', 'stroke-opacity'],
-                            'line-width': ['get', 'stroke-width'],
-                        },
-                    },{
-                        id: 'cots',
-                        type: 'symbol',
-                        source: 'cots',
-                        paint: {
-                            'icon-opacity': ['get', 'icon-opacity'],
-                            'icon-halo-color': '#ffffff',
-                            'icon-halo-width': 4
-                        },
-                        layout: {
-                            'icon-size': 1,
-                            'icon-rotate': ['get', 'course'],
-                            'icon-allow-overlap': true,
-                            'icon-image': '{icon}',
-                            'icon-anchor': 'bottom',
-                        }
-                    },{
-                        id: 'cots-text',
-                        type: 'symbol',
-                        source: 'cots',
-                        paint: {
-                            'text-color': '#ffffff',
-                            'text-halo-color': '#000000',
-                            'text-halo-width': 2,
-                        },
-                        layout: {
-                            'text-offset': [0, 1],
-                            'text-font': ['Open Sans Bold'],
-                            'text-field':  '{callsign}'
-                        }
                     }]
                 }
             });
 
-            this.addLayer('Basemap', 'raster', ['basemap']);
-            this.addLayer('CoT Icons', 'vector', ['cots', 'cots-poly', 'cots-line', 'cots-text']);
+        },
+        initLayers: function(basemap) {
+            this.addLayer({
+                name: 'Basemap',
+                type: 'raster',
+            }, [{
+                id: 'basemap',
+                type: 'raster',
+                source: 'basemap',
+                minzoom: basemap.minzoom,
+                maxzoom: basemap.maxzoom
+            }]);
+
+            this.addLayer({
+                name: 'CoT Icons',
+                type: 'vector'
+            }, [{
+                id: 'cots-poly',
+                type: 'fill',
+                source: 'cots',
+                filter: [ 'all', ['==', '$type', 'Polygon']],
+                paint: {
+                    'fill-color': ['get', 'fill'],
+                    'fill-opacity': ['get', 'fill-opacity']
+                }
+            },{
+                id: 'cots-line',
+                type: 'line',
+                source: 'cots',
+                paint: {
+                    'line-color': ['get', 'stroke'],
+                    'line-opacity': ['get', 'stroke-opacity'],
+                    'line-width': ['get', 'stroke-width'],
+                },
+            },{
+                id: 'cots',
+                type: 'symbol',
+                source: 'cots',
+                paint: {
+                    'icon-opacity': ['get', 'icon-opacity'],
+                    'icon-halo-color': '#ffffff',
+                    'icon-halo-width': 4
+                },
+                layout: {
+                    'icon-size': 1,
+                    'icon-rotate': ['get', 'course'],
+                    'icon-allow-overlap': true,
+                    'icon-image': '{icon}',
+                    'icon-anchor': 'bottom',
+                }
+            },{
+                id: 'cots-text',
+                type: 'symbol',
+                source: 'cots',
+                paint: {
+                    'text-color': '#ffffff',
+                    'text-halo-color': '#000000',
+                    'text-halo-width': 2,
+                },
+                layout: {
+                    'text-offset': [0, 1],
+                    'text-font': ['Open Sans Bold'],
+                    'text-field':  '{callsign}'
+                }
+            }]);
 
             for (const layer of ['cots', 'cots-poly', 'cots-line']) {
                 this.map.on('mouseenter', layer, () => { this.map.getCanvas().style.cursor = 'pointer'; })
@@ -178,13 +197,12 @@ export const useMapStore = defineStore('cloudtak', {
                     if (this.map.getZoom() < 3) flyTo.zoom = 4;
                     this.map.flyTo(flyTo)
 
-                    this.radial.x = container.clientWidth / 2;
-                    this.radial.y = container.clientHeight / 2;
+                    this.radial.x = this.container.clientWidth / 2;
+                    this.radial.y = this.container.clientHeight / 2;
 
                     this.radial.cot = e.features[0];
                 });
             }
-
         },
         initDraw: function() {
             this.draw = new terraDraw.TerraDraw({
