@@ -15,10 +15,10 @@
                     <TablerInput label='User Callsign' v-model='profile.tak_callsign'/>
                 </div>
                 <div class='col-12'>
-                    <TablerInput label='User Group' v-model='profile.tak_group'/>
+                    <TablerEnum label='User Group' v-model='profile.tak_group' :options='profileSchema.properties.tak_group.enum'/>
                 </div>
                 <div class='col-12'>
-                    <TablerInput label='User Role' v-model='profile.tak_role'/>
+                    <TablerEnum label='User Role' v-model='profile.tak_role' :options='profileSchema.properties.tak_role.enum'/>
                 </div>
                 <div class='col-12 d-flex py-3'>
                     <div class='ms-auto'>
@@ -53,6 +53,7 @@ import {
 } from '@tabler/icons-vue';
 import {
     TablerInput,
+    TablerEnum,
     TablerLoading
 } from '@tak-ps/vue-tabler';
 
@@ -63,6 +64,7 @@ export default {
             loading: false,
             mode: 'settings',
             profile: {},
+            profileSchema: {}
         }
     },
     watch: {
@@ -72,7 +74,15 @@ export default {
             }
         }
     },
+    mounted: async function() {
+        await this.fetchProfileSchema();
+    },
     methods: {
+        fetchProfileSchema: async function() {
+            this.loading = true;
+            this.profileSchema = (await window.std('/api/schema?method=PATCH&url=/profile')).body
+            this.loading = false;
+        },
         fetchProfile: async function() {
             this.loading = true;
             this.profile = await window.std('/api/profile')
@@ -92,6 +102,7 @@ export default {
     components: {
         IconUserCog,
         TablerInput,
+        TablerEnum,
         TablerLoading,
         IconCircleArrowLeft
     }
