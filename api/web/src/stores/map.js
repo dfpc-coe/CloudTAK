@@ -17,10 +17,60 @@ export const useMapStore = defineStore('cloudtak', {
                 y: 0,
                 cot: null
             },
+            layers: [],
             draw: false
         }
     },
     actions: {
+        addLayer: function(name, type, layers) {
+            for (const layer of this.layers) {
+                if (layer.name === name) return;
+            }
+
+            this.layers.push({
+                name: name,
+                visible: 'visible',
+                bounds: null,
+                opacity: 1,
+                type: type,
+                layers: layers
+            });
+        },
+        updateLayer: function(newLayer) {
+            for (let i = 0; i < this.layers.length; i++) {
+                if (this.layers[i].name === newLayer.name) {
+                    this.layers[i] = newLayer;
+                    break;
+                }
+            }
+
+            for (const lid of newLayer.layers) {
+                if (newLayer.type === 'raster') {
+                    this.map.setPaintProperty(lid, 'raster-opacity', Number(newLayer.opacity))
+                }
+
+                if (newLayer.visible === 'none') {
+                    this.map.setLayoutProperty(lid, 'visibility', 'none');
+                } else if (newLayer.visible === 'visible') {
+                    this.map.setLayoutProperty(lid, 'visibility', 'visible');
+                }
+            }
+        },
+        removeLayer: function(name) {
+            for (let i = 0; i < this.layers.length; i++) {
+                if (this.layers[i].name === name) {
+                    const layer = this.layers[i];
+
+                    for (const l of layer.layers) {
+                        this.map.removeLayer(l);
+                        this.map.removeSource(l);
+                    }
+
+                    this.layers.splice(i, 1)
+                    break;
+                }
+            }
+        },
         init: function(container, basemap) {
             this.map = new mapgl.Map({
                 container,
@@ -107,6 +157,9 @@ export const useMapStore = defineStore('cloudtak', {
                     }]
                 }
             });
+
+            this.addLayer('Basemap', 'raster', ['basemap']);
+            this.addLayer('CoT Icons', 'vector', ['cots', 'cots-poly', 'cots-line', 'cots-text']);
 
             for (const layer of ['cots', 'cots-poly', 'cots-line']) {
                 this.map.on('mouseenter', layer, () => { this.map.getCanvas().style.cursor = 'pointer'; })

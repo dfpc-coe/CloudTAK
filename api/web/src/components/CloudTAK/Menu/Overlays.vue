@@ -12,7 +12,7 @@
     <div :key='layer.name' v-for='layer in layers' class="col-lg-12">
         <div class='row col-12 py-2 px-2 d-flex'>
             <div class='col-12 d-flex align-items-center'>
-                <IconEye v-if='layer.visible' @click='flipVisible(layer)' class='cursor-pointer' v-tooltip='"Hide Layer"'/>
+                <IconEye v-if='layer.visible === "visible"' @click='flipVisible(layer)' class='cursor-pointer' v-tooltip='"Hide Layer"'/>
                 <IconEyeOff v-else @click='flipVisible(layer)' class='cursor-pointer' v-tooltip='"Show Layer"'/>
 
                 <span class='mx-2'>
@@ -50,6 +50,7 @@ import {
     IconMap
 } from '@tabler/icons-vue';
 import { useMapStore } from '/src/stores/map.js';
+import { mapState } from 'pinia'
 const mapStore = useMapStore();
 
 export default {
@@ -58,77 +59,30 @@ export default {
         return {
             err: false,
             loading: true,
-            layers: []
         }
     },
-    mounted: async function() {
-        await this.genList();
+    computed: {
+        ...mapState(useMapStore, ['layers'])
     },
     methods: {
+        removeLayer: async function(layer) {
+            mapState.removeLayer(layer.name);
+        },
         flipVisible: async function(layer) {
-            if (layer.visible) {
-                for (const l of layer.layers) {
-                    mapStore.map.setLayoutProperty(l.id, 'visibility', 'none');
-                }
+            if (layer.visible === 'visible') {
+                layer.visible = 'none';
+                mapStore.updateLayer(layer)
             } else {
-                for (const l of layer.layers) {
-                    mapStore.map.setLayoutProperty(l.id, 'visibility', 'visible');
-                }
+                layer.visible = 'visible';
+                mapStore.updateLayer(layer)
             }
-
-            await this.genList();
         },
         zoomTo: function(layer) {
             mapStore.map.fitBounds(layer.bounds);
         },
         updateOpacity: function(layer) {
-            for (const l of layer.layers) {
-                mapStore.map.setPaintProperty(l.id, 'raster-opacity', Number(layer.opacity))
-            }
+            mapStore.updateLayer(layer)
         },
-        removeLayer: async function(layer) {
-            for (const l of layer.layers) {
-                mapStore.map.removeLayer(l.id);
-                mapStore.map.removeSource(l.id);
-            }
-            await this.genList()
-        },
-        genList: async function() {
-            const order = mapStore.map.getLayersOrder()
-            this.layers = order.filter((layer) => {
-                return !['background'].includes(layer);
-            }).filter((layer) => {
-                return !(layer.startsWith('cots-') || layer.startsWith('td-'))
-            }).map((layer) => {
-                layer = mapStore.map.getLayer(layer);
-
-                let name = layer.id
-                let layers = [ layer ];
-
-                if (layer.id === 'cots') {
-                    name = 'CoT Icons';
-                    for (const post of [ 'text', 'line', 'poly' ]) {
-                        layers.push(mapStore.map.getLayer(`cots-${post}`));
-                    }
-                }
-
-                const res = {
-                    name,
-                    visible: mapStore.map.getLayoutProperty(layer.id, 'visibility') !== 'none',
-                    bounds: null,
-                    opacity: 1,
-                    type: layer.type,
-                    layers
-                }
-
-                if (layer.id.startsWith('data-')) {
-                    const source = mapStore.map.getSource(layer.source);
-                    if (source.bounds) res.bounds = source.bounds;
-                }
-
-                return res;
-            })
-        }
     },
     components: {
         TablerRange,
