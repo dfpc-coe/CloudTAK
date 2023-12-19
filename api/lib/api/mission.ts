@@ -18,6 +18,7 @@ export default class {
 
     async upload(name: string, creatorUid: string, body: Readable) {
         const url = new URL(`/Marti/api/missions/${encodeURIComponent(name)}/contents/missionpackage`, this.api.url);
+        url.searchParams.append('creatorUid', creatorUid);
 
         return await this.api.fetch(url, {
             method: 'PUT',
