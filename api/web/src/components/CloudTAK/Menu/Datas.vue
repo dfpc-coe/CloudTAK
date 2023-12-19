@@ -173,16 +173,21 @@ export default {
         },
         createOverlay: async function(id, url, a) {
             const res = await window.std(url);
-            console.error(res);
 
             if (new URL(res.tiles[0]).pathname.endsWith('.mvt')) {
                 if (mapStore.map.getSource(id)) {
                     mapStore.map.removeSource(id);
                 }
 
-                mapStore.map.addSource(id, { type: 'vector', url: String(url) });
+                mapStore.map.addSource(id, {
+                    type: 'vector',
+                    url: String(url)
+                });
 
-                mapStore.map.addLayer({
+                mapStore.addLayer({
+                    name: id,
+                    type: 'vector'
+                }, [{
                     id: `${id}-poly`,
                     type: 'fill',
                     source: id,
@@ -193,9 +198,7 @@ export default {
                         'fill-opacity': 0.1,
                         'fill-color': '#00FF00'
                     }
-                });
-
-                mapStore.map.addLayer({
+                },{
                     id: `${id}-polyline`,
                     type: 'line',
                     source: id,
@@ -210,9 +213,7 @@ export default {
                         'line-width': 1,
                         'line-opacity': 0.75
                     }
-                });
-
-                mapStore.map.addLayer({
+                },{
                     id: `${id}-line`,
                     type: 'line',
                     source: id,
@@ -227,9 +228,7 @@ export default {
                         'line-width': 1,
                         'line-opacity': 0.75
                     }
-                });
-
-                mapStore.map.addLayer({
+                },{
                     id: id,
                     type: 'circle',
                     source: id,
@@ -240,13 +239,18 @@ export default {
                         'circle-radius': 2.5,
                         'circle-opacity': 0.75
                     }
-                });
-
-                mapStore.addLayer(id, 'vector', [id, `${id}-line`, `${id}-polyline`, `${id}-poly`]);
+                }]);
             } else {
                 mapStore.map.addSource(id, { type: 'raster', tileSize: 256, url: String(url) });
-                mapStore.map.addLayer({ id, 'type': 'raster', 'source': id }, 'cots');
-                mapStore.addLayer(id, 'raster', [id]);
+
+                mapStore.addLayer({
+                    name: id,
+                    type: 'raster'
+                }, [{
+                    id,
+                    'type': 'raster',
+                    'source': id
+                }], 'cots');
             }
             a.visible = true;
         },
