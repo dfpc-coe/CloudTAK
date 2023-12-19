@@ -241,9 +241,12 @@ export default {
                         'circle-opacity': 0.75
                     }
                 });
+
+                mapStore.addLayer(id, 'vector', [id, `${id}-line`, `${id}-polyline`, `${id}-poly`]);
             } else {
                 mapStore.map.addSource(id, { type: 'raster', tileSize: 256, url: String(url) });
                 mapStore.map.addLayer({ id, 'type': 'raster', 'source': id }, 'cots');
+                mapStore.addLayer(id, 'raster', [id]);
             }
             a.visible = true;
         },

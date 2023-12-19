@@ -25,7 +25,7 @@ export default async function router(schema: any, config: Config) {
                 return res.json({
                     status: 'configured',
                     ...config.server,
-                    auth: config.server.auth.cert && config.server.auth.key
+                    auth: config.server.auth.cert && config.server.auth.key,
                 });
             }
         } catch (err) {
