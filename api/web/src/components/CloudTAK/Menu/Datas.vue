@@ -152,6 +152,7 @@ export default {
                     mapStore.map.removeSource(id);
                     a.visible = false;
                 } else {
+                    a.visible = true;
                     const url = window.stdurl(`/api/profile/asset/${encodeURIComponent(a.visualized)}/tile`);
                     url.searchParams.append('token', localStorage.token);
 
@@ -164,6 +165,7 @@ export default {
                     mapStore.map.removeSource(id);
                     a.visible = false;
                 } else {
+                    a.visible = true;
                     const url = window.stdurl(`/api/data/${this.data.id}/asset/${a.visualized}/tile`);
                     url.searchParams.append('token', localStorage.token);
 
@@ -172,6 +174,7 @@ export default {
             }
         },
         createOverlay: async function(id, url, a) {
+            this.loading = true;
             const res = await window.std(url);
 
             if (new URL(res.tiles[0]).pathname.endsWith('.mvt')) {
@@ -186,6 +189,7 @@ export default {
 
                 mapStore.addLayer({
                     name: id,
+                    source: id,
                     type: 'vector'
                 }, [{
                     id: `${id}-poly`,
@@ -245,6 +249,7 @@ export default {
 
                 mapStore.addLayer({
                     name: id,
+                    source: id,
                     type: 'raster'
                 }, [{
                     id,
@@ -252,7 +257,9 @@ export default {
                     'source': id
                 }], 'cots');
             }
-            a.visible = true;
+
+            this.loading = false;
+            this.$emit('mode', 'overlays');
         },
         fetchDataList: async function() {
             this.loading = true;

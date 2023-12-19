@@ -25,6 +25,7 @@ export const useMapStore = defineStore('cloudtak', {
     actions: {
         addLayer: function(layer, layers, before) {
             if (!layer.name) throw new Error('Layer Name must be set');
+            if (!layer.source) throw new Error('Layer Source must be set');
 
             for (const l of this.layers) {
                 if (l.name === layer.name) {
@@ -33,7 +34,6 @@ export const useMapStore = defineStore('cloudtak', {
             }
 
             if (!layer.visible) layer.visible = 'visible';
-            if (!layer.bounds) layer.bounds = null;
             if (isNaN(layer.opacity)) layer.opacity = 1;
             if (!layer.type) layer.type === 'raster';
 
@@ -118,6 +118,7 @@ export const useMapStore = defineStore('cloudtak', {
         initLayers: function(basemap) {
             this.addLayer({
                 name: 'Basemap',
+                source: 'basemap',
                 type: 'raster',
             }, [{
                 id: 'basemap',
@@ -129,6 +130,7 @@ export const useMapStore = defineStore('cloudtak', {
 
             this.addLayer({
                 name: 'CoT Icons',
+                source: 'cots',
                 type: 'vector'
             }, [{
                 id: 'cots-poly',
