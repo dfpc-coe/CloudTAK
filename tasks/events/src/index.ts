@@ -163,7 +163,9 @@ async function fetchImport(event: Event) {
         },
     });
 
-    return await res.json();
+    const resbody = await res.json();
+    if (!res.ok) throw new Error(`HTTP ${res.status}: ${resbody.message}`);
+    return resbody;
 }
 
 async function updateImport(event: Event, body: object) {
@@ -176,7 +178,9 @@ async function updateImport(event: Event, body: object) {
         body: JSON.stringify(body)
     });
 
-    return await res.json();
+    const resbody = await res.json();
+    if (!res.ok) throw new Error(`HTTP ${res.status}: ${resbody.message}`);
+    return resbody;
 }
 
 async function processIndex(event: Event, xmlstr: string, zip?: StreamZipAsync) {
