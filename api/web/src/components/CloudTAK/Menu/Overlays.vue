@@ -22,8 +22,14 @@
                 <span class='mx-2' v-text='layer.name'/>
 
                 <div class='ms-auto btn-list'>
-                    <IconMaximize v-if='Array.isArray(layer.bounds)' @click='zoomTo(layer)' class='cursor-pointer' v-tooltip='"Zoom To Overlay"'/>
-                    <TablerDelete v-if='layer.name.startsWith("data-")' displaytype='icon' @delete='removeLayer(layer)' v-tooltip='"Delete Overlay"' class='text-dark'/>
+                    <IconMaximize v-if='getSource(layer).bounds' @click='zoomTo(getSource(layer).bounds)' class='cursor-pointer' v-tooltip='"Zoom To Overlay"'/>
+                    <TablerDelete
+                        v-if='layer.name.startsWith("data-")'
+                        data-bs-theme="light"
+                        displaytype='icon'
+                        @delete='removeLayer(layer)'
+                        v-tooltip='"Delete Overlay"'
+                    />
                 </div>
             </div>
 
@@ -68,6 +74,9 @@ export default {
         removeLayer: async function(layer) {
             mapState.removeLayer(layer.name);
         },
+        getSource: function(layer) {
+            return mapStore.map.getSource(layer.source)
+        },
         flipVisible: async function(layer) {
             if (layer.visible === 'visible') {
                 layer.visible = 'none';
@@ -77,8 +86,8 @@ export default {
                 mapStore.updateLayer(layer)
             }
         },
-        zoomTo: function(layer) {
-            mapStore.map.fitBounds(layer.bounds);
+        zoomTo: function(bounds) {
+            mapStore.map.fitBounds(bounds);
         },
         updateOpacity: function(layer) {
             mapStore.updateLayer(layer)

@@ -28,6 +28,7 @@
     <template v-else-if='mode === "datas"'>
         <MenuDatas
             @close='mode = null'
+            @mode='mode = $event'
         />
     </template>
     <template v-else-if='mode === "overlays"'>
