@@ -1,5 +1,21 @@
 {
     "type": "string",
     "description": "",
-    "$comment": "text"
+    "$comment": "text",
+    "enum": [
+        "White",
+        "Yellow",
+        "Orange",
+        "Magenta",
+        "Red",
+        "Maroon",
+        "Purple",
+        "Dark Blue",
+        "Blue",
+        "Cyan",
+        "Teal",
+        "Green",
+        "Dark Green",
+        "Brown"
+    ]
 }

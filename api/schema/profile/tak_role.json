@@ -1,5 +1,15 @@
 {
     "type": "string",
     "description": "",
-    "$comment": "text"
+    "$comment": "text",
+    "enum": [
+        "Team Member",
+        "Team Lead",
+        "HQ",
+        "Sniper",
+        "Medic",
+        "Forward Observer",
+        "RTO",
+        "K9"
+    ]
 }
