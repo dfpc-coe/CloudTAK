@@ -164,7 +164,7 @@ export const useMapStore = defineStore('cloudtak', {
                     'icon-rotate': ['get', 'course'],
                     'icon-allow-overlap': true,
                     'icon-image': '{icon}',
-                    'icon-anchor': 'bottom',
+                    'icon-anchor': 'center',
                 }
             },{
                 id: 'cots-text',
@@ -176,7 +176,7 @@ export const useMapStore = defineStore('cloudtak', {
                     'text-halo-width': 2,
                 },
                 layout: {
-                    'text-offset': [0, 1],
+                    'text-offset': [0, 2],
                     'text-font': ['Open Sans Bold'],
                     'text-field':  '{callsign}'
                 }
