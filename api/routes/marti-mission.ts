@@ -262,7 +262,8 @@ export default async function router(schema: any, config: Config) {
         group: 'MartiMissions',
         auth: 'user',
         ':name': 'string',
-        description: 'Upload a Mission Package',
+        ':hash': 'string',
+        description: 'Create an upload',
         query: {
             type: 'object',
             additionalProperties: false,
@@ -281,7 +282,7 @@ export default async function router(schema: any, config: Config) {
             await Auth.is_auth(req);
 
             let auth;
-            let creatorUid = '';
+            let creatorUid;
             if (req.query.connection) {
                 auth = (await Connection.from(config.pool, req.query.connection)).auth;
                 creatorUid = `CloudTAK-Conn-${req.query.connection}`;
@@ -289,13 +290,14 @@ export default async function router(schema: any, config: Config) {
                 if (!req.auth.email) throw new Err(400, null, 'Groups can only be listed by an authenticated user');
 
                 const profile = await Profile.from(config.pool, req.auth.email);
-                creatorUid = profile.username;
                 auth = profile.auth;
+                creatorUid = profile.username;
             }
 
             const name = String(req.query.name);
 
             const api = await TAKAPI.init(new URL(config.server.api), new APIAuthCertificate(auth.cert, auth.key));
+
             const content = await api.Files.upload({
                 name: name,
                 contentType: req.headers['content-type'],
@@ -304,7 +306,49 @@ export default async function router(schema: any, config: Config) {
                 creatorUid: creatorUid,
             }, req.body);
 
+
             const missionContent = await api.Mission.attachContents(req.params.name, [content.Hash]);
+
+            return res.json(missionContent);
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
+
+    await schema.delete('/marti/missions/:name/upload/:hash', {
+        name: 'Mission Upload Delete',
+        group: 'MartiMissions',
+        auth: 'user',
+        ':name': 'string',
+        ':hash': 'string',
+        description: 'Delete an upload by hash',
+        query: {
+            type: 'object',
+            additionalProperties: false,
+            properties: {
+                connection: { type: 'integer' },
+            }
+        },
+        res: 'res.Marti.json'
+    }, async (req: AuthRequest, res: Response) => {
+        try {
+            await Auth.is_auth(req);
+
+            let auth;
+            if (req.query.connection) {
+                auth = (await Connection.from(config.pool, req.query.connection)).auth;
+            } else {
+                if (!req.auth.email) throw new Err(400, null, 'Groups can only be listed by an authenticated user');
+
+                const profile = await Profile.from(config.pool, req.auth.email);
+                auth = profile.auth;
+            }
+
+            const name = String(req.query.name);
+
+            const api = await TAKAPI.init(new URL(config.server.api), new APIAuthCertificate(auth.cert, auth.key));
+
+            const missionContent = await api.Mission.detachContents(req.params.name, req.params.hash);
 
             return res.json(missionContent);
         } catch (err) {

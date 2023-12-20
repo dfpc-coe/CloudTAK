@@ -9,6 +9,31 @@ import TAKAPI, {
 } from '../lib/tak-api.js';
 
 export default async function router(schema: any, config: Config) {
+    await schema.delete('/marti/api/files/:hash', {
+        name: 'delete File',
+        group: 'MartiFiles',
+        auth: 'user',
+        ':hash': 'string',
+        description: 'Helper API to delete files by file hash',
+        res: 'res.Standard.json'
+    }, async (req: AuthRequest, res: Response) => {
+        try {
+            await Auth.is_auth(req, true);
+
+            if (!req.auth.email) throw new Err(400, null, 'Files can only be deleted by a JWT authenticated user');
+
+            const api = await TAKAPI.init(new URL(config.MartiAPI), new APIAuthToken(req.auth.token));
+            const file = await api.Files.delete(req.params.hash);
+
+            return res.json({
+                status: 200,
+                message: 'File Deleted'
+            });
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
+
     await schema.get('/marti/api/files/:hash', {
         name: 'Download File',
         group: 'MartiFiles',

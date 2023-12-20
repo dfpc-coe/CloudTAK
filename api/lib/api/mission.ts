@@ -16,6 +16,15 @@ export default class {
         });
     }
 
+    async detachContents(name: string, hash: string) {
+        const url = new URL(`/Marti/api/missions/${encodeURIComponent(name)}/contents`, this.api.url);
+        url.searchParams.append('hash', hash);
+
+        return await this.api.fetch(url, {
+            method: 'DELETE',
+        });
+    }
+
     async attachContents(name: string, hashes: string[]) {
         const url = new URL(`/Marti/api/missions/${encodeURIComponent(name)}/contents`, this.api.url);
 
