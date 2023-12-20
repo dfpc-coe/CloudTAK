@@ -1,7 +1,6 @@
 import os from 'node:os';
 import { fetch } from 'undici';
 import fsp from 'node:fs/promises';
-import mime from 'mime';
 import fs from 'node:fs';
 import Lambda from "aws-lambda";
 import { Readable } from 'node:stream';
@@ -22,7 +21,9 @@ interface Event {
 }
 
 export const handler = async (
-    event: any
+    event: {
+        Records: Lambda.SQSRecord | Lambda.S3EventRecord
+    }
 ): Promise<void> => {
     for (const record of event.Records) {
         if (record.s3) {
@@ -58,6 +59,8 @@ async function genericEvent(md: Event) {
             await updateImport(md, { status: 'Running' });
             const imported = await fetchImport(md);
 
+            console.error('Import', JSON.stringify(imported));
+
             const s3 = new S3.S3Client({ region: process.env.AWS_DEFAULT_REGION || 'us-east-1' });
 
             await pipeline(
@@ -69,13 +72,12 @@ async function genericEvent(md: Event) {
                 fs.createWriteStream(md.Local)
             );
 
-            let result = {};
+            const result = {};
             if (imported.mode === 'Mission') {
                 if (!imported.config.id) throw new Error('No mission name defined');
                 if (!imported.config.token) throw new Error('No token defined');
 
                 const {size} = fs.statSync(md.Local);
-                const type = mime.getType(md.Key);
 
                 const url = new URL(`/api/marti/missions/${encodeURIComponent(imported.config.id)}/upload`, process.env.TAK_ETL_API);
                 url.searchParams.append('name', imported.name);

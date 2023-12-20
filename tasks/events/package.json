@@ -12,7 +12,6 @@
         "@aws-sdk/client-batch": "^3.213.0",
         "@aws-sdk/client-s3": "^3.213.0",
         "jsonwebtoken": "^9.0.2",
-        "mime": "^4.0.1",
         "node-stream-zip": "^1.15.0",
         "tiny-async-pool": "^2.1.0",
         "undici": "^6.1.0",
