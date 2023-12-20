@@ -3,6 +3,7 @@ import { Upload } from '@aws-sdk/lib-storage';
 import Err from '@openaddresses/batch-error';
 import { Response } from 'express';
 import { Readable } from 'node:stream';
+import process from 'node:process';
 
 /**
  * @class

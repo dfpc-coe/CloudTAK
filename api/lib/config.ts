@@ -2,10 +2,11 @@ import SecretsManager from '@aws-sdk/client-secrets-manager';
 import type EventsPool from './events-pool.js';
 import ConnectionPool, { ConnectionWebSocket } from './connection-pool.js';
 // @ts-ignore
-import Server from './types/Server.js';
+import Server from './types/server.js';
 // @ts-ignore
 import { Pool } from '@openaddresses/batch-generic';
 import Cacher from './cacher.js';
+import process from 'node:process';
 
 interface ConfigArgs {
     silent: boolean,

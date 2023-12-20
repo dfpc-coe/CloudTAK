@@ -1,5 +1,6 @@
 import SQS from '@aws-sdk/client-sqs';
 import Err from '@openaddresses/batch-error';
+import process from 'node:process';
 
 /**
  * @class

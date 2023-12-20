@@ -1,5 +1,5 @@
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 import cors from 'cors';
 import jwt from 'jsonwebtoken';
 import express, { Request, Response } from 'express';
@@ -19,6 +19,7 @@ import Server from './lib/types/server.js';
 import Config from './lib/config.js';
 import Profile from './lib/types/profile.js';
 import TAKAPI, { APIAuthPassword } from './lib/tak-api.js';
+import process from 'node:process';
 
 const args = minimist(process.argv, {
     boolean: [

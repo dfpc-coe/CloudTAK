@@ -2,6 +2,7 @@ import DynamoDB from '@aws-sdk/client-dynamodb';
 import DynamoDBDoc from "@aws-sdk/lib-dynamodb";
 import Err from '@openaddresses/batch-error';
 import { coordEach } from '@turf/meta';
+import process from 'node:process';
 
 export interface DynamoItem {
     Id: string;
