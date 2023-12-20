@@ -5,6 +5,7 @@ import AWSBatch from '@aws-sdk/client-batch';
 import Config from '../config.js';
 import jwt from 'jsonwebtoken';
 import Err from '@openaddresses/batch-error';
+import process from 'node:process';
 
 export interface BatchJob {
     id: string;
