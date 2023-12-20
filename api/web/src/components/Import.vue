@@ -45,7 +45,7 @@
                             </div>
                             <TablerNone v-if='imported.status === "Empty"' :create='false'/>
                             <TablerLoading v-else-if='loading' desc='Running Import'/>
-                            <template v-else-if='imported.status === "Error"'>
+                            <template v-else-if='imported.status === "Fail"'>
                                 <pre v-text='imported.error'/>
                             </template>
                         </div>
