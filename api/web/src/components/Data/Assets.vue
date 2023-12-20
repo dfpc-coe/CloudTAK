@@ -4,8 +4,8 @@
         <h3 class='card-title'>Data Assets</h3>
 
         <div class='ms-auto btn-list'>
-            <PlusIcon @click='upload = true' class='cursor-pointer' v-tooltip='"Upload"'/>
-            <RefreshIcon @click='fetchList' class='cursor-pointer' v-tooltip='"Refresh"'/>
+            <IconPlus @click='upload = true' class='cursor-pointer' v-tooltip='"Upload"'/>
+            <IconRefresh @click='fetchList' class='cursor-pointer' v-tooltip='"Refresh"'/>
         </div>
     </div>
 
@@ -23,13 +23,13 @@
                     <td>
                         <div class='d-flex'>
                             <div class='btn-list'>
-                                <MapIcon v-if='asset.visualized' v-tooltip='"Visualizable"' class='cursor-pointer'/>
+                                <IconMap v-if='asset.visualized' v-tooltip='"Visualizable"' class='cursor-pointer'/>
                             </div>
 
                             <span v-text='asset.name' class='mx-2'/>
 
-                            <RefreshDotIcon v-if='data.mission && asset.sync' class='text-green' v-tooltip='"Syncing"'/>
-                            <RefreshOffIcon v-else-if='data.mission && !asset.sync'/>
+                            <IconRefreshDot v-if='data.mission && asset.sync' class='text-green' v-tooltip='"Syncing"'/>
+                            <IconRefreshOff v-else-if='data.mission && !asset.sync'/>
                         </div>
                     </td>
                     <td>
@@ -39,8 +39,8 @@
                         <TablerEpoch :date='asset.updated'/>
                         <div class='ms-auto btn-list'>
                             <TablerDelete displaytype='icon' @delete='deleteAsset(asset)' v-tooltip='"Delete Asset"'/>
-                            <TransformIcon v-if='!asset.name.endsWith(".pmtiles")' @click='initTransform(asset)' v-tooltip='"Convert Asset"' class='cursor-pointer'/>
-                            <DownloadIcon @click='downloadAsset(asset)' class='cursor-pointer' v-tooltip='"Download Asset"'/>
+                            <IconTransform v-if='!asset.name.endsWith(".pmtiles")' @click='initTransform(asset)' v-tooltip='"Convert Asset"' class='cursor-pointer'/>
+                            <IconDownload @click='downloadAsset(asset)' class='cursor-pointer' v-tooltip='"Download Asset"'/>
                         </div>
                     </td>
                 </tr>
@@ -68,14 +68,14 @@
 
 <script>
 import {
-    RefreshDotIcon,
-    RefreshOffIcon,
-    PlusIcon,
-    MapIcon,
-    RefreshIcon,
-    DownloadIcon,
-    TransformIcon,
-} from 'vue-tabler-icons'
+    IconRefreshDot,
+    IconRefreshOff,
+    IconPlus,
+    IconMap,
+    IconRefresh,
+    IconDownload,
+    IconTransform,
+} from '@tabler/icons-vue'
 import Alert from '../util/Alert.vue';
 import TransformModal from './TransformModal.vue';
 import Upload from '../util/Upload.vue';
@@ -164,13 +164,13 @@ export default {
         TablerNone,
         Upload,
         Alert,
-        PlusIcon,
-        MapIcon,
-        RefreshIcon,
-        TransformIcon,
-        RefreshDotIcon,
-        RefreshOffIcon,
-        DownloadIcon,
+        IconPlus,
+        IconMap,
+        IconRefresh,
+        IconTransform,
+        IconRefreshDot,
+        IconRefreshOff,
+        IconDownload,
         TablerDelete,
         TablerLoading,
         TablerBytes,

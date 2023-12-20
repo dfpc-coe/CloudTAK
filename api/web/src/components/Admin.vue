@@ -23,7 +23,7 @@
                                 <h3 class='card-title'>TAK Server Configuration</h3>
                                 <div class='ms-auto'>
                                     <div class='btn-list'>
-                                        <SettingsIcon v-tooltip='"Configure Server"' class='cursor-pointer' @click='edit = true'/>
+                                        <IconSettings v-tooltip='"Configure Server"' class='cursor-pointer' @click='edit = true'/>
                                     </div>
                                 </div>
                             </div>
@@ -60,7 +60,7 @@
                             <div class='card-header'>
                                 <h3 class='card-title'>Admin Certificate</h3>
                                 <div v-if='regen && edit' class='ms-auto btn-list'>
-                                    <PlusIcon @click='modal.upload = true' class='cursor-pointer' v-tooltip='"Upload P12"'/>
+                                    <IconPlus @click='modal.upload = true' class='cursor-pointer' v-tooltip='"Upload P12"'/>
                                 </div>
                             </div>
                             <div class='card-body row'>
@@ -85,7 +85,7 @@
                                 <template v-else>
                                     <div class='px-3 py-3'>
                                         <div class='d-flex justify-content-center'>
-                                            <LockIcon width='50' height='50'/>
+                                            <IconLock width='50' height='50'/>
                                         </div>
                                         <div class='d-flex justify-content-center my-3'>
                                             Once Certificates are uploaded they cannot be viewed
@@ -134,10 +134,10 @@ import {
     TablerInput
 } from '@tak-ps/vue-tabler';
 import {
-    PlusIcon,
-    LockIcon,
-    SettingsIcon
-} from 'vue-tabler-icons';
+    IconPlus,
+    IconLock,
+    IconSettings
+} from '@tabler/icons-vue';
 import timeDiff from '../timediff.js';
 
 export default {
@@ -246,12 +246,12 @@ export default {
     },
     components: {
         PageFooter,
-        SettingsIcon,
+        IconSettings,
         TablerBreadCrumb,
         TablerLoading,
         TablerInput,
-        LockIcon,
-        PlusIcon,
+        IconLock,
+        IconPlus,
         Upload
     }
 }

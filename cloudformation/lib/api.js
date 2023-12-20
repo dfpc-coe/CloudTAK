@@ -291,6 +291,7 @@ export default {
         },
         TaskDefinition: {
             Type: 'AWS::ECS::TaskDefinition',
+            DependsOn: ['SigningSecret'],
             Properties: {
                 Family: cf.stackName,
                 Cpu: 1024,

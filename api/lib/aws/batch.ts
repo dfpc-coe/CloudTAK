@@ -5,6 +5,7 @@ import AWSBatch from '@aws-sdk/client-batch';
 import Config from '../config.js';
 import jwt from 'jsonwebtoken';
 import Err from '@openaddresses/batch-error';
+import process from 'node:process';
 
 export interface BatchJob {
     id: string;
@@ -22,7 +23,7 @@ export default class Batch {
     static async submitUser(config: Config, email: string, asset: string, task: object): Promise<AWSBatch.SubmitJobCommandOutput> {
         const batch = new AWSBatch.BatchClient({ region: process.env.AWS_DEFAULT_REGION });
 
-        let jobName = `user-${email}-${asset.replace(/[^a-zA-Z0-9]/g, '_').slice(0, 50)}`;
+        let jobName = `profile-${email.replace('@', '_at_').replace(/[^a-zA-Z0-9]/g, '_')}-${asset.replace(/[^a-zA-Z0-9]/g, '_').slice(0, 50)}`;
 
         const batchres = await batch.send(new AWSBatch.SubmitJobCommand({
             jobName,
@@ -32,8 +33,8 @@ export default class Batch {
                 environment: [
                     { name: 'ETL_API',      value:  config.API_URL },
                     { name: 'ETL_BUCKET',   value:  config.Bucket },
-                    { name: 'ETL_TOKEN',    value: jwt.sign({ access: 'user', user: email }, config.SigningSecret) },
-                    { name: 'ETL_TYPE',     value: 'user' },
+                    { name: 'ETL_TOKEN',    value: jwt.sign({ access: 'profile', profle: email }, config.SigningSecret) },
+                    { name: 'ETL_TYPE',     value: 'profile' },
                     { name: 'ETL_ID',       value: email },
                     { name: 'ETL_TASK',     value: JSON.stringify({ asset: asset, config: task }) },
                 ]
@@ -92,17 +93,17 @@ export default class Batch {
         }
     }
 
-    static async list(config: Config, data: any): Promise<BatchJob[]> {
+    static async list(config: Config, prefix: string): Promise<BatchJob[]> {
         const batch = new AWSBatch.BatchClient({ region: process.env.AWS_DEFAULT_REGION });
 
         const jobs = (await batch.send(new AWSBatch.ListJobsCommand({
             jobQueue: `${config.StackName}-queue`,
             filters: [{
                 name: 'JOB_NAME',
-                values: [`data-${data.id}-*`]
+                values: [`${prefix}-*`]
             }]
         }))).jobSummaryList.map((job) => {
-            const name = job.jobName.replace(`data-${data.id}-`, '');
+            const name = job.jobName.replace(`${prefix}-`, '');
             let asset: string[] = [...name];
             asset[name.lastIndexOf('_')] = '.';
 

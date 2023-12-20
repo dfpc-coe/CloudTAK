@@ -40,7 +40,7 @@
                     "description": "If the Data is attached to a mission, signify if the asset is syncing with the mission"
                 },
                 "visualized": {
-                    "type": "string"
+                    "type": ["string", "boolean"]
                 },
                 "updated": {
                     "type": "integer"

@@ -6,6 +6,7 @@ import Auth from '../lib/auth.js';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
 import Config from '../lib/config.js';
+import S3 from '../lib/aws/s3.js';
 
 export default async function router(schema: any, config: Config) {
     await schema.get('/data', {
@@ -143,7 +144,9 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            const data = await Data.from(config.pool, req.params.layerid);
+            const data = await Data.from(config.pool, req.params.dataid);
+
+            await S3.del(`data-${data.id}/`, { recurse: true });
 
             await data.delete();
 

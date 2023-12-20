@@ -23,7 +23,7 @@
 
                             <div class='ms-auto'>
                                 <div class='btn-list'>
-                                    <RefreshIcon @click='fetchLogs' class='cursor-pointer'/>
+                                    <IconRefresh @click='fetchLogs' class='cursor-pointer'/>
                                 </div>
                             </div>
                         </div>
@@ -47,8 +47,8 @@ import {
     TablerBreadCrumb
 } from '@tak-ps/vue-tabler'
 import {
-    RefreshIcon
-} from 'vue-tabler-icons';
+    IconRefresh
+} from '@tabler/icons-vue';
 
 export default {
     name: 'DataJob',
@@ -84,7 +84,7 @@ export default {
     },
     components: {
         PageFooter,
-        RefreshIcon,
+        IconRefresh,
         TablerLoading,
         TablerBreadCrumb
     }

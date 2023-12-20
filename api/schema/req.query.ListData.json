@@ -8,6 +8,10 @@
         "page": {
             "$ref": "./util/page.json"
         },
+        "connection": {
+            "type": "integer",
+            "description": "Filter by a connection id"
+        },
         "filter": {
             "type": "string",
             "default": "",

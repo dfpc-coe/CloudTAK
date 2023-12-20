@@ -1,4 +1,5 @@
 import TAKAPI from '../tak-api.js';
+import { Readable } from 'node:stream'
 
 export default class {
     api: TAKAPI;
@@ -12,6 +13,36 @@ export default class {
 
         return await this.api.fetch(url, {
             method: 'GET'
+        });
+    }
+
+    async detachContents(name: string, hash: string) {
+        const url = new URL(`/Marti/api/missions/${encodeURIComponent(name)}/contents`, this.api.url);
+        url.searchParams.append('hash', hash);
+
+        return await this.api.fetch(url, {
+            method: 'DELETE',
+        });
+    }
+
+    async attachContents(name: string, hashes: string[]) {
+        const url = new URL(`/Marti/api/missions/${encodeURIComponent(name)}/contents`, this.api.url);
+
+        return await this.api.fetch(url, {
+            method: 'PUT',
+            body: {
+                hashes: hashes
+            }
+        });
+    }
+
+    async upload(name: string, creatorUid: string, body: Readable) {
+        const url = new URL(`/Marti/api/missions/${encodeURIComponent(name)}/contents/missionpackage`, this.api.url);
+        url.searchParams.append('creatorUid', creatorUid);
+
+        return await this.api.fetch(url, {
+            method: 'PUT',
+            body
         });
     }
 

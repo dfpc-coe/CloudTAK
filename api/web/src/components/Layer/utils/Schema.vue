@@ -30,9 +30,9 @@
             <div class='d-flex'>
                 <label class='form-label' v-text='key'/>
                 <div class='ms-auto'>
-                    <TrashIcon v-if='!disabled && schema.properties[key].display === "table" && schema.properties[key].items.properties' @click='this.data[key].splice(0, this.data[key].length)' class='cursor-pointer'/>
-                    <DatabaseImportIcon v-if='!disabled && schema.properties[key].display === "table" && schema.properties[key].items.properties' @click='importModal(Object.keys(schema.properties[key].items.properties), data[key])' class='cursor-pointer'/>
-                    <PlusIcon v-if='!disabled' @click='push(key)' class='cursor-pointer'/>
+                    <IconTrash v-if='!disabled && schema.properties[key].display === "table" && schema.properties[key].items.properties' @click='this.data[key].splice(0, this.data[key].length)' class='cursor-pointer'/>
+                    <IconDatabaseImport v-if='!disabled && schema.properties[key].display === "table" && schema.properties[key].items.properties' @click='importModal(Object.keys(schema.properties[key].items.properties), data[key])' class='cursor-pointer'/>
+                    <IconPlus v-if='!disabled' @click='push(key)' class='cursor-pointer'/>
                 </div>
             </div>
 
@@ -58,8 +58,8 @@
                                                     <TablerInput v-model='arr[prop]' class='w-full'/>
                                                 </div>
                                                 <div class='ms-auto btn-list' style='padding-left: 12px;'>
-                                                    <CheckIcon @click='removeEdit(key, arr, i)' class='my-1 cursor-pointer'/>
-                                                    <TrashIcon @click='remove(key, arr, i)' class='my-1 cursor-pointer'/>
+                                                    <IconCheck @click='removeEdit(key, arr, i)' class='my-1 cursor-pointer'/>
+                                                    <IconTrash @click='remove(key, arr, i)' class='my-1 cursor-pointer'/>
                                                 </div>
                                             </div>
                                         </template>
@@ -72,7 +72,7 @@
                                             <div class='d-flex'>
                                                 <span v-text='arr[prop]' class='w-full'/>
                                                 <div class='ms-auto' style='padding-left: 12px;'>
-                                                    <PencilIcon @click='edit[key].set(arr, true)' class='my-1 cursor-pointer'/>
+                                                    <IconPencil @click='edit[key].set(arr, true)' class='my-1 cursor-pointer'/>
                                                 </div>
                                             </div>
                                         </template>
@@ -92,7 +92,7 @@
                     <div class='d-flex'>
                         <div class='mx-2 my-2'>Entry <span v-text='i + 1'/></div>
                         <div class='ms-auto mx-2 my-2'>
-                            <TrashIcon v-if='!disabled' @click='data[key].splice(i, 1)' class='cursor-pointer'/>
+                            <IconTrash v-if='!disabled' @click='data[key].splice(i, 1)' class='cursor-pointer'/>
                         </div>
                     </div>
 
@@ -123,12 +123,12 @@ import {
 } from '@tak-ps/vue-tabler';
 import UploadCSV from '../../util/UploadCSV.vue';
 import {
-    PlusIcon,
-    TrashIcon,
-    CheckIcon,
-    PencilIcon,
-    DatabaseImportIcon,
-} from 'vue-tabler-icons'
+    IconPlus,
+    IconTrash,
+    IconCheck,
+    IconPencil,
+    IconDatabaseImport,
+} from '@tabler/icons-vue'
 
 export default {
     name: 'Schema',
@@ -230,11 +230,11 @@ export default {
         }
     },
     components: {
-        PlusIcon,
-        PencilIcon,
-        DatabaseImportIcon,
-        TrashIcon,
-        CheckIcon,
+        IconPlus,
+        IconPencil,
+        IconDatabaseImport,
+        IconTrash,
+        IconCheck,
         TablerInput,
         TablerToggle,
         TablerEnum,

@@ -22,6 +22,15 @@
         },
         "name": {
             "$ref": "./imports/name.json"
+        },
+        "username": {
+            "$ref": "./imports/username.json"
+        },
+        "mode": {
+            "$ref": "./imports/mode.json"
+        },
+        "config": {
+            "$ref": "./imports/config.json"
         }
     },
     "required": [
@@ -31,6 +40,9 @@
         "status",
         "error",
         "result",
-        "name"
+        "name",
+        "username",
+        "mode",
+        "config"
     ]
 }

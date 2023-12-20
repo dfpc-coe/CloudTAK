@@ -1,11 +1,11 @@
-FROM nginx:stable-alpine3.17
+FROM nginx:alpine3.18
 
 EXPOSE 5000
 
 ENV HOME=/home/etl
 WORKDIR $HOME
 
-RUN apk add nodejs-current npm memcached python3 make bash g++ openssl
+RUN apk add nodejs npm memcached python3 make bash g++ openssl
 
 WORKDIR $HOME/api
 

@@ -3,6 +3,7 @@ import { Upload } from '@aws-sdk/lib-storage';
 import Err from '@openaddresses/batch-error';
 import { Response } from 'express';
 import { Readable } from 'node:stream';
+import process from 'node:process';
 
 /**
  * @class
@@ -126,6 +127,8 @@ export default class S3 {
         } else {
             try {
                 const list = await this.list(key);
+
+                if (!list.length) return;
 
                 await s3.send(new S3AWS.DeleteObjectsCommand({
                     Bucket: process.env.ASSET_BUCKET,

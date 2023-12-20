@@ -4,9 +4,9 @@
         <h3 class='card-title'>Layer Schema</h3>
 
         <div class='ms-auto btn-list'>
-            <PlusIcon v-if='!disabled' v-tooltip='"Manual Addition"' @click='create = true' class='cursor-pointer'/>
-            <WorldDownloadIcon v-if='!disabled' v-tooltip='"Automated Schema"' @click='fetchSchema' class='cursor-pointer'/>
-            <SettingsIcon @click='disabled = false' class='cursor-pointer'/>
+            <IconPlus v-if='!disabled' v-tooltip='"Manual Addition"' @click='create = true' class='cursor-pointer'/>
+            <IconWorldDownload v-if='!disabled' v-tooltip='"Automated Schema"' @click='fetchSchema' class='cursor-pointer'/>
+            <IconSettings @click='disabled = false' class='cursor-pointer'/>
         </div>
     </div>
 
@@ -29,16 +29,16 @@
                     <td>
                         <span class='mx-3'>
                             <template v-if='field.type === "string"'>
-                                <AlphabetLatinIcon/>
+                                <IconAlphabetLatin/>
                             </template>
                             <template v-else-if='field.type === "number"'>
-                                <DecimalIcon/>
+                                <IconDecimal/>
                             </template>
                             <template v-else-if='field.type === "integer"'>
-                                <Sort09Icon/>
+                                <IconSort09/>
                             </template>
                             <template v-else>
-                                <BinaryIcon/>
+                                <IconBinary/>
                             </template>
                         </span>
                         <span v-text='field.name'/>
@@ -50,7 +50,7 @@
                         <div class='d-flex'>
                             <span v-if='field.required' class='badge mx-1 mb-1 bg-red text-white'>Required</span>
                             <div class='ms-auto'>
-                                <TrashIcon v-if='!disabled' @click.stop='schema.splice(field_it, 1)' class='cursor-pointer'/>
+                                <IconTrash v-if='!disabled' @click.stop='schema.splice(field_it, 1)' class='cursor-pointer'/>
                             </div>
                         </div>
                     </td>
@@ -85,16 +85,16 @@ import {
     TablerEnum,
 } from '@tak-ps/vue-tabler';
 import {
-    AlphabetLatinIcon,
-    Sort09Icon,
-    PlusIcon,
-    RefreshIcon,
-    SettingsIcon,
-    DecimalIcon,
-    BinaryIcon,
-    TrashIcon,
-    WorldDownloadIcon,
-} from 'vue-tabler-icons'
+    IconAlphabetLatin,
+    IconSort09,
+    IconPlus,
+    IconRefresh,
+    IconSettings,
+    IconDecimal,
+    IconBinary,
+    IconTrash,
+    IconWorldDownload,
+} from '@tabler/icons-vue'
 
 export default {
     name: 'LayerSchema',
@@ -199,20 +199,20 @@ export default {
     },
     components: {
         TablerNone,
-        AlphabetLatinIcon,
-        Sort09Icon,
-        DecimalIcon,
+        IconAlphabetLatin,
+        IconSort09,
+        IconDecimal,
         TablerInput,
         TablerToggle,
         TablerEnum,
         TablerLoading,
-        PlusIcon,
-        RefreshIcon,
-        SettingsIcon,
-        BinaryIcon,
+        IconPlus,
+        IconRefresh,
+        IconSettings,
+        IconBinary,
         LayerSchemaModal,
-        TrashIcon,
-        WorldDownloadIcon,
+        IconTrash,
+        IconWorldDownload,
     }
 }
 </script>

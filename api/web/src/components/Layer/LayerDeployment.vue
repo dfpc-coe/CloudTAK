@@ -4,7 +4,7 @@
         <h3 class='card-title'>Layer Deployment</h3>
         <div class='ms-auto'>
             <div class='btn-list'>
-                <PlayerPlayIcon
+                <IconPlayerPlay
                     v-if='mode !== "logs"'
                     @click='invoke'
                     v-tooltip='"Manually Run"'
@@ -12,7 +12,7 @@
                     class='cursor-pointer'
                 />
 
-                <ArticleIcon
+                <IconArticle
                     v-if='mode !== "logs"'
                     @click='mode = "logs"'
                     v-tooltip='"View Logs"'
@@ -20,7 +20,7 @@
                     class='cursor-pointer'
                 />
 
-                <CloudUploadIcon
+                <IconCloudUpload
                     v-if='mode !== "logs"'
                     @click='redeploy'
                     v-tooltip='"Redeploy"'
@@ -28,7 +28,7 @@
                     class='cursor-pointer'
                 />
 
-                <CircleDotIcon
+                <IconCircleDot
                     v-if='mode !== "status"'
                     @click='mode = "status"'
                     v-tooltip='"View Stack"'
@@ -36,7 +36,7 @@
                     class='cursor-pointer'
                 />
 
-                <RefreshIcon
+                <IconRefresh
                     v-if='!loading.small'
                     @click='refresh'
                     v-tooltip='"Refresh"'
@@ -92,12 +92,12 @@ import {
 } from '@tak-ps/vue-tabler';
 import Alert from '../util/Alert.vue';
 import {
-    ArticleIcon,
-    PlayerPlayIcon,
-    CircleDotIcon,
-    RefreshIcon,
-    CloudUploadIcon,
-} from 'vue-tabler-icons';
+    IconArticle,
+    IconPlayerPlay,
+    IconCircleDot,
+    IconRefresh,
+    IconCloudUpload,
+} from '@tabler/icons-vue';
 
 export default {
     name: 'LayerDeployment',
@@ -227,12 +227,12 @@ export default {
     },
     components: {
         Alert,
-        ArticleIcon,
-        PlayerPlayIcon,
-        CircleDotIcon,
-        RefreshIcon,
+        IconArticle,
+        IconPlayerPlay,
+        IconCircleDot,
+        IconRefresh,
         TablerLoading,
-        CloudUploadIcon,
+        IconCloudUpload,
     }
 }
 </script>

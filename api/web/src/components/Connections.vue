@@ -10,7 +10,7 @@
                         <div class='ms-auto'>
                             <div class='btn-list'>
                                 <a @click='query = !query' class="cursor-pointer btn btn-secondary">
-                                    <SearchIcon/>
+                                    <IconSearch/>
                                 </a>
 
                                 <a @click='$router.push("/connection/new")' class="cursor-pointer btn btn-primary">
@@ -34,7 +34,7 @@
                             <div class="input-icon mb-3">
                                 <input v-model='paging.filter' type="text"  class="form-control" placeholder="Search…">
                                 <span class="input-icon-addon">
-                                    <SearchIcon/>
+                                    <IconSearch/>
                                 </span>
                             </div>
                         </div>
@@ -60,7 +60,7 @@
 
                                     <div class='ms-auto'>
                                         <div class='btn-list'>
-                                            <SettingsIcon class='cursor-pointer' @click='$router.push(`/connection/${connection.id}/edit`)'/>
+                                            <IconSettings class='cursor-pointer' @click='$router.push(`/connection/${connection.id}/edit`)'/>
                                         </div>
                                     </div>
                                 </div>
@@ -95,9 +95,9 @@ import {
     TablerNone,
 } from '@tak-ps/vue-tabler';
 import {
-    SettingsIcon,
-    SearchIcon
-} from 'vue-tabler-icons'
+    IconSettings,
+    IconSearch
+} from '@tabler/icons-vue'
 
 export default {
     name: 'Connections',
@@ -145,8 +145,8 @@ export default {
     components: {
         TablerNone,
         TablerPager,
-        SettingsIcon,
-        SearchIcon,
+        IconSettings,
+        IconSearch,
         PageFooter,
         TablerBreadCrumb,
         ConnectionStatus,

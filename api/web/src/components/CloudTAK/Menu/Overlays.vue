@@ -2,28 +2,34 @@
 <div class='row'>
     <div class='col-12 border-bottom border-light'>
         <div class='modal-header px-0 mx-2'>
-            <CircleArrowLeftIcon @click='$emit("close")' class='cursor-pointer'/>
+            <IconCircleArrowLeft @click='$emit("close")' class='cursor-pointer'/>
             <div class='modal-title'>Overlays</div>
             <div class='btn-list'>
-                <PlusIcon @click='$emit("datas")' class='cursor-pointer'/>
+                <IconPlus @click='$emit("datas")' class='cursor-pointer' v-tooltip='"Add Overlay"'/>
             </div>
         </div>
     </div>
     <div :key='layer.name' v-for='layer in layers' class="col-lg-12">
         <div class='row col-12 py-2 px-2 d-flex'>
             <div class='col-12 d-flex align-items-center'>
-                <EyeIcon v-if='layer.visible' @click='flipVisible(layer)' class='cursor-pointer' v-tooltip='"Hide Layer"'/>
-                <EyeOffIcon v-else @click='flipVisible(layer)' class='cursor-pointer' v-tooltip='"Show Layer"'/>
+                <IconEye v-if='layer.visible === "visible"' @click='flipVisible(layer)' class='cursor-pointer' v-tooltip='"Hide Layer"'/>
+                <IconEyeOff v-else @click='flipVisible(layer)' class='cursor-pointer' v-tooltip='"Show Layer"'/>
 
                 <span class='mx-2'>
-                    <MapIcon v-if='layer.type === "raster"' v-tooltip='"Raster"'/>
-                    <VectorIcon v-else v-tooltip='"Vector"'/>
+                    <IconMap v-if='layer.type === "raster"' v-tooltip='"Raster"'/>
+                    <IconVector v-else v-tooltip='"Vector"'/>
                 </span>
                 <span class='mx-2' v-text='layer.name'/>
 
                 <div class='ms-auto btn-list'>
-                    <MaximizeIcon v-if='layer.bounds' @click='zoomTo(layer)' class='cursor-pointer' v-tooltip='"Zoom To Overlay"'/>
-                    <TablerDelete v-if='layer.name.startsWith("data-")' displaytype='icon' @delete='removeLayer(layer)' v-tooltip='"Delete Overlay"' class='text-dark'/>
+                    <IconMaximize v-if='getSource(layer).bounds' @click='zoomTo(getSource(layer).bounds)' class='cursor-pointer' v-tooltip='"Zoom To Overlay"'/>
+                    <TablerDelete
+                        v-if='layer.name.startsWith("data-")'
+                        data-bs-theme="light"
+                        displaytype='icon'
+                        @delete='removeLayer(layer)'
+                        v-tooltip='"Delete Overlay"'
+                    />
                 </div>
             </div>
 
@@ -41,94 +47,62 @@ import {
     TablerRange
 } from '@tak-ps/vue-tabler';
 import {
-    CircleArrowLeftIcon,
-    MaximizeIcon,
-    VectorIcon,
-    EyeOffIcon,
-    PlusIcon,
-    EyeIcon,
-    MapIcon
-} from 'vue-tabler-icons';
+    IconCircleArrowLeft,
+    IconMaximize,
+    IconVector,
+    IconEyeOff,
+    IconPlus,
+    IconEye,
+    IconMap
+} from '@tabler/icons-vue';
+import { useMapStore } from '/src/stores/map.js';
+import { mapState } from 'pinia'
+const mapStore = useMapStore();
 
 export default {
     name: 'Overlays',
-    props: {
-        map: {
-            type: Object,
-            required: true
-        }
-    },
     data: function() {
         return {
             err: false,
             loading: true,
-            layers: []
         }
     },
-    mounted: async function() {
-        await this.genList();
+    computed: {
+        ...mapState(useMapStore, ['layers'])
     },
     methods: {
-        flipVisible: async function(layer) {
-            if (layer.visible) {
-                this.map.setLayoutProperty(layer.layer.id, 'visibility', 'none');
-            } else {
-                this.map.setLayoutProperty(layer.layer.id, 'visibility', 'visible');
-            }
-
-            await this.genList();
+        removeLayer: async function(layer) {
+            mapState.removeLayer(layer.name);
         },
-        zoomTo: function(layer) {
-            this.map.fitBounds(layer.bounds);
+        getSource: function(layer) {
+            return mapStore.map.getSource(layer.source)
+        },
+        flipVisible: async function(layer) {
+            if (layer.visible === 'visible') {
+                layer.visible = 'none';
+                mapStore.updateLayer(layer)
+            } else {
+                layer.visible = 'visible';
+                mapStore.updateLayer(layer)
+            }
+        },
+        zoomTo: function(bounds) {
+            mapStore.map.fitBounds(bounds);
         },
         updateOpacity: function(layer) {
-            this.map.setPaintProperty(layer.layer.id, 'raster-opacity', Number(layer.opacity))
+            mapStore.updateLayer(layer)
         },
-        removeLayer: async function(layer) {
-            this.map.removeLayer(layer.layer.id);
-            this.map.removeSource(layer.layer.id);
-            await this.genList()
-        },
-        genList: async function() {
-            const order = this.map.getLayersOrder()
-            this.layers = order.filter((layer) => {
-                return !['background'].includes(layer);
-            }).filter((layer) => {
-                return !(layer.endsWith('-poly') || layer.endsWith('-line') || layer.endsWith('-text') || layer.startsWith('td-'))
-            }).map((layer) => {
-                layer = this.map.getLayer(layer);
-
-                let name = layer.id
-                if (layer.id === 'cots') name = 'CoT Icons';
-
-                const res = {
-                    name,
-                    visible: this.map.getLayoutProperty(layer.id, 'visibility') !== 'none',
-                    bounds: null,
-                    opacity: 1,
-                    type: layer.type,
-                    layer
-                }
-
-                if (layer.id.startsWith('data-')) {
-                    const source = this.map.getSource(layer.source);
-                    if (source.bounds) res.bounds = source.bounds;
-                }
-
-                return res;
-            })
-        }
     },
     components: {
         TablerRange,
         TablerDelete,
-        MaximizeIcon,
-        CircleArrowLeftIcon,
-        EyeIcon,
-        EyeOffIcon,
-        PlusIcon,
-        VectorIcon,
-        MapIcon
+        IconMaximize,
+        IconCircleArrowLeft,
+        IconEye,
+        IconEyeOff,
+        IconPlus,
+        IconVector,
+        IconMap
     }
 }
 </script>

@@ -1,7 +1,7 @@
 <template>
 <div class='d-flex justify-content-center align-items-center' style='width: 36px;'>
     <template v-if='!layer.enabled'>
-        <PlayerPauseIcon/>
+        <IconPlayerPause/>
     </template>
     <template v-else>
         <span class="status-indicator status-indicator-animated" :class='{
@@ -19,8 +19,8 @@
 
 <script>
 import {
-    PlayerPauseIcon
-} from 'vue-tabler-icons';
+    IconPlayerPause
+} from '@tabler/icons-vue';
 
 export default {
     name: 'LayerStatus',
@@ -28,7 +28,7 @@ export default {
         layer: Object
     },
     components: {
-        PlayerPauseIcon
+        IconPlayerPause
     }
 }
 </script>

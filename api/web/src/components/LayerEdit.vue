@@ -62,7 +62,7 @@
                                         <TablerInput v-model='layer.cron' :error='errors.cron' placeholder='Cron Expression'>
                                             <div class='dropdown'>
                                                 <div class="dropdown-toggle" type="button" id="dropdownCron" data-bs-toggle="dropdown" aria-expanded="false">
-                                                    <SettingsIcon width='16' height='16' class='cursor-pointer dropdown-toggle'/>
+                                                    <IconSettings width='16' height='16' class='cursor-pointer dropdown-toggle'/>
                                                 </div>
                                                 <ul class="dropdown-menu px-1 py-1" aria-labelledby="dropdownCron">
                                                     <li class='py-1 cursor-pointer' @click='layer.cron = "rate(1 minute)"'>rate(1 minute)</li>
@@ -79,7 +79,7 @@
                                         </div>
                                         <TablerInput v-model='layer.task' :error='errors.task' placeholder='Schedule Task'>
                                             <div class='ms-auto btn-list'>
-                                                <SettingsIcon @click='taskmodal = true' width='16' height='16' class='cursor-pointer'/>
+                                                <IconSettings @click='taskmodal = true' width='16' height='16' class='cursor-pointer'/>
                                             </div>
                                         </TablerInput>
                                     </div>
@@ -91,10 +91,10 @@
                                             <div class='col-12 d-flex'>
                                                 <div class='btn-group' role="group">
                                                     <input :disabled='disabled' v-model='destination' value='connection' type="radio" class="btn-check" name="connection-toolbar" id="connection-toolbar-connection" autocomplete="off">
-                                                    <label for="connection-toolbar-connection" class="btn btn-icon"><BuildingBroadcastTowerIcon/></label>
+                                                    <label for="connection-toolbar-connection" class="btn btn-icon"><IconBuildingBroadcastTower/></label>
 
                                                     <input :disabled='disabled' v-model='destination' value='data' type="radio" class="btn-check" name="connection-toolbar" id="connection-toolbar-data" autocomplete="off">
-                                                    <label for="connection-toolbar-data" class="btn btn-icon"><DatabaseIcon/></label>
+                                                    <label for="connection-toolbar-data" class="btn btn-icon"><IconDatabase/></label>
                                                 </div>
                                                 <ConnectionSelect
                                                     v-if='destination === "connection"'
@@ -147,10 +147,10 @@ import {
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import {
-    SettingsIcon,
-    BuildingBroadcastTowerIcon,
-    DatabaseIcon,
-} from 'vue-tabler-icons';
+    IconSettings,
+    IconBuildingBroadcastTower,
+    IconDatabase,
+} from '@tabler/icons-vue';
 import TaskModal from './Layer/utils/TaskModal.vue';
 
 export default {
@@ -272,9 +272,9 @@ export default {
         TablerInput,
         TablerDelete,
         TablerLoading,
-        SettingsIcon,
-        BuildingBroadcastTowerIcon,
-        DatabaseIcon,
+        IconSettings,
+        IconBuildingBroadcastTower,
+        IconDatabase,
         TaskModal,
     }
 }

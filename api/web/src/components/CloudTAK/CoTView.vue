@@ -10,10 +10,10 @@
                 </div>
             </div>
             <div class='col-auto btn-list my-2 ms-auto d-flex align-items-center mx-2'>
-                <ZoomPanIcon @click='zoomTo' class='cursor-pointer' v-tooltip='"Zoom To"'/>
+                <IconZoomPan @click='zoomTo' class='cursor-pointer' v-tooltip='"Zoom To"'/>
 
-                <CodeIcon v-if='mode === "default"' @click='mode = "raw"' class='cursor-pointer' v-tooltip='"Raw View"'/>
-                <XIcon v-if='mode === "raw"' @click='mode = "default"' class='cursor-pointer' v-tooltip='"Default View"'/>
+                <IconCode v-if='mode === "default"' @click='mode = "raw"' class='cursor-pointer' v-tooltip='"Raw View"'/>
+                <IconX v-if='mode === "raw"' @click='mode = "default"' class='cursor-pointer' v-tooltip='"Default View"'/>
             </div>
         </div>
 
@@ -31,7 +31,7 @@
                 <div v-text='cot.properties.remarks || "None"' class='bg-gray-500 rounded mx-2 py-2 px-2'/>
             </div>
 
-            <template v-if='cot.properties.type.toLowerCase().startsWith("u-d")'>
+            <template v-if='isUserDrawn'>
                 <CoTStyle v-model='feat'/>
             </template>
         </template>
@@ -43,6 +43,8 @@
 </template>
 
 <script>
+import { useMapStore } from '/src/stores/map.js';
+const mapStore = useMapStore();
 import {
     TablerInput,
     TablerEnum
@@ -52,10 +54,10 @@ import CoTStyle from './util/CoTStyle.vue';
 import Coordinate from './util/Coordinate.vue';
 import Speed from './util/Speed.vue';
 import {
-    XIcon,
-    ZoomPanIcon,
-    CodeIcon
-} from 'vue-tabler-icons';
+    IconX,
+    IconZoomPan,
+    IconCode
+} from '@tabler/icons-vue';
 
 export default {
     name: 'CloudTAKCoTView',
@@ -63,10 +65,14 @@ export default {
         cot: {
             type: Object,
             required: true
-        },
-        map: {
-            type: Object,
-            required: true
+        }
+    },
+    watch: {
+        feat: {
+            deep: true,
+            handler: function() {
+                this.updateStyle();
+            }
         }
     },
     data: function() {
@@ -76,24 +82,53 @@ export default {
             icon: null
         }
     },
+    mounted: function() {
+        if (this.isUserDrawn) {
+            if (mapStore.map.getLayer('cots-poly-edit')) mapStore.map.removeLayer('cots-poly-edit');
+
+            mapStore.map.addLayer({
+                id: 'cots-poly-edit',
+                type: 'fill',
+                source: 'cots',
+                filter: ['==', ['get', 'id'], this.cot.properties.id],
+                paint: {
+                    'fill-color': '#000',
+                    'fill-opacity': 0.5
+                },
+            });
+        }
+    },
+    ummounted: function() {
+        if (this.isUserDrawn) {
+            mapStore.map.removeLayer('cots-poly-edit');
+        }
+    },
     computed: {
+        isUserDrawn: function() {
+            return this.cot.properties.type.toLowerCase().startsWith("u-d");
+        },
         center: function() {
             return JSON.parse(this.cot.properties.center);
         }
     },
     methods: {
+        updateStyle: function() {
+            mapStore.map.setPaintProperty('cots-poly-edit', 'fill-color', this.feat.properties.fill);
+            mapStore.map.setPaintProperty('cots-poly-edit', 'fill-opacity', this.feat.properties['fill-opacity']);
+
+        },
         zoomTo: function() {
-            this.map.flyTo({
+            mapStore.map.flyTo({
                 center: this.center,
                 zoom: 14
             })
         }
     },
     components: {
-        XIcon,
-        CodeIcon,
+        IconX,
+        IconCode,
         CoTStyle,
-        ZoomPanIcon,
+        IconZoomPan,
         Speed,
         Coordinate,
         TablerInput,

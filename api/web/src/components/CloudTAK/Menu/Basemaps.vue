@@ -2,11 +2,11 @@
 <div class='row'>
     <div class='col-12 border-bottom border-light'>
         <div class='modal-header px-0 mx-2'>
-            <CircleArrowLeftIcon @click='$emit("close")' class='cursor-pointer'/>
+            <IconCircleArrowLeft @click='$emit("close")' class='cursor-pointer'/>
             <div class='modal-title'>BaseMaps</div>
             <div class='btn-list'>
-                <PlusIcon @click='$router.push("/basemap/new")' class='cursor-pointer' v-tooltip='"Create BaseMap"'/>
-                <RefreshIcon v-if='!loading' @click='fetchList' class='cursor-pointer' v-tooltip='"Refresh"'/>
+                <IconPlus @click='$router.push("/basemap/new")' class='cursor-pointer' v-tooltip='"Create BaseMap"'/>
+                <IconRefresh v-if='!loading' @click='fetchList' class='cursor-pointer' v-tooltip='"Refresh"'/>
             </div>
         </div>
     </div>
@@ -24,8 +24,8 @@
 
                     <div class='ms-auto'>
                         <div class='btn-list'>
-                            <Share2Icon v-if='false' v-tooltip='"Share BaseMap"' class='cursor-pointer' @click='share(basemap)'/>
-                            <SettingsIcon v-tooltip='"Edit Basemap"' class='cursor-pointer' @click='$router.push(`/basemap/${basemap.id}/edit`)'/>
+                            <IconShare2 v-if='false' v-tooltip='"Share BaseMap"' class='cursor-pointer' @click='share(basemap)'/>
+                            <IconSettings v-tooltip='"Edit Basemap"' class='cursor-pointer' @click='$router.push(`/basemap/${basemap.id}/edit`)'/>
                         </div>
                     </div>
                 </div>
@@ -46,14 +46,14 @@ import {
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import {
-    Share2Icon,
-    CircleArrowLeftIcon,
-    PlusIcon,
-    RefreshIcon,
-    SettingsIcon,
-    DownloadIcon,
-    SearchIcon
-} from 'vue-tabler-icons'
+    IconShare2,
+    IconCircleArrowLeft,
+    IconPlus,
+    IconRefresh,
+    IconSettings,
+    IconDownload,
+    IconSearch
+} from '@tabler/icons-vue'
 
 export default {
     name: 'BaseMaps',
@@ -106,13 +106,13 @@ export default {
     components: {
         TablerNone,
         TablerPager,
-        CircleArrowLeftIcon,
-        Share2Icon,
-        SettingsIcon,
-        PlusIcon,
-        RefreshIcon,
-        SearchIcon,
-        DownloadIcon,
+        IconCircleArrowLeft,
+        IconShare2,
+        IconSettings,
+        IconPlus,
+        IconRefresh,
+        IconSearch,
+        IconDownload,
         TablerLoading,
     }
 }

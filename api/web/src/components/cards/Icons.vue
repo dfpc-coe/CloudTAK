@@ -7,7 +7,7 @@
             <div class="input-icon">
                 <input v-model='paging.filter' type="text" class="form-control" placeholder="Search…">
                 <span class="input-icon-addon">
-                    <SearchIcon/>
+                    <IconSearch/>
                 </span>
             </div>
         </div>
@@ -54,11 +54,11 @@ import {
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import {
-    SearchIcon
-} from 'vue-tabler-icons'
+    IconSearch
+} from '@tabler/icons-vue'
 
 export default {
-    name: 'CombinedIcons',
+    name: 'IconCombineds',
     props: {
         iconset: {
             type: String
@@ -110,7 +110,7 @@ export default {
     components: {
         TablerNone,
         TablerPager,
-        SearchIcon,
+        IconSearch,
         TablerLoading
     }
 }

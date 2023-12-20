@@ -31,8 +31,8 @@ async function nativeDecompress(
 
 // Lambda needs to run with 512MB, empty function takes about 70
 const CACHE = new pmtiles.ResolvedValueCache(undefined, undefined, nativeDecompress);
-const TILE = /^\/(?<NAME>[0-9a-zA-Z\/!\-_\.\*\'\(\)]+)\/(?<Z>\d+)\/(?<X>\d+)\/(?<Y>\d+).(?<EXT>[a-z]+)$/;
-const META = /^\/(?<NAME>[0-9a-zA-Z\/!\-_\.\*\'\(\)]+)$/;
+const TILE = /^\/(?<NAME>[0-9a-zA-Z\/!\-@_\.\*\'\(\)]+)\/(?<Z>\d+)\/(?<X>\d+)\/(?<Y>\d+).(?<EXT>[a-z]+)$/;
+const META = /^\/(?<NAME>[0-9a-zA-Z\/!\-@_\.\*\'\(\)]+)$/;
 
 export const tile_path = (
     path: string,

@@ -35,8 +35,8 @@
                                             <input disabled v-model='sink.enabled' class="form-check-input" type="checkbox">
                                         </label>
                                     </div>
-                                    <RefreshIcon class='cursor-pointer' @click='fetch'/>
-                                    <SettingsIcon class='cursor-pointer' @click='$router.push(`/connection/${$route.params.connectionid}/sink/${$route.params.sinkid}/edit`)'/>
+                                    <IconRefresh class='cursor-pointer' @click='fetch'/>
+                                    <IconSettings class='cursor-pointer' @click='$router.push(`/connection/${$route.params.connectionid}/sink/${$route.params.sinkid}/edit`)'/>
                                 </div>
                             </div>
                         </div>
@@ -76,9 +76,9 @@
 import PageFooter from './PageFooter.vue';
 import timeDiff from '../timediff.js';
 import {
-    RefreshIcon,
-    SettingsIcon
-} from 'vue-tabler-icons'
+    IconRefresh,
+    IconSettings
+} from '@tabler/icons-vue'
 import EsriPortal from './util/EsriPortal.vue';
 import ConnectionSinkChart from './ConnectionSink/Chart.vue';
 import {
@@ -109,8 +109,8 @@ export default {
         },
     },
     components: {
-        RefreshIcon,
-        SettingsIcon,
+        IconRefresh,
+        IconSettings,
         PageFooter,
         Alert,
         EsriPortal,

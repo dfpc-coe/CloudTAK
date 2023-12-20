@@ -21,9 +21,9 @@
                             <h3 class='card-title'>Iconsets</h3>
 
                             <div class='ms-auto btn-list'>
-                                <FileUploadIcon v-if='!upload' @click='upload = true' v-tooltip='"Zip Upload"' class='cursor-pointer'/>
-                                <PlusIcon v-tooltip='"Manual Creation"' @click='$router.push(`/iconset/new`)' class='cursor-pointer'/>
-                                <RefreshIcon v-tooltip='"Refresh"' @click='fetchList' class='cursor-pointer'/>
+                                <IconFileUpload v-if='!upload' @click='upload = true' v-tooltip='"Zip Upload"' class='cursor-pointer'/>
+                                <IconPlus v-tooltip='"Manual Creation"' @click='$router.push(`/iconset/new`)' class='cursor-pointer'/>
+                                <IconRefresh v-tooltip='"Refresh"' @click='fetchList' class='cursor-pointer'/>
                             </div>
                         </div>
                         <TablerLoading v-if='loading'/>
@@ -50,7 +50,14 @@
                                 </tr></thead>
                                 <tbody><tr @click='$router.push(`/iconset/${iconset.uid}`)' :key='iconset.uid' v-for='iconset in list.iconsets'>
                                     <td v-text='iconset.name'></td>
-                                    <td v-text='iconset.uid'></td>
+                                    <td>
+                                        <div class='d-flex'>
+                                            <span v-text='iconset.uid'/>
+                                            <div class='ms-auto'>
+                                                <IconDownload v-tooltip='"Download TAK Zip"' class='cursor-pointer' @click.stop='download(iconset)'/>
+                                            </div>
+                                        </div>
+                                    </td>
                                 </tr></tbody>
                             </table>
                         </div>
@@ -58,7 +65,7 @@
                 </div>
 
                 <div class="col-lg-12">
-                    <CombinedIcons v-if='list.iconsets.length'/>
+                    <IconCombineds v-if='list.iconsets.length'/>
                 </div>
             </div>
         </div>
@@ -71,18 +78,19 @@
 <script>
 import PageFooter from './PageFooter.vue';
 import Upload from './util/Upload.vue';
-import CombinedIcons from './cards/Icons.vue'
+import IconCombineds from './cards/Icons.vue'
 import {
     TablerNone,
     TablerBreadCrumb,
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import {
-    RefreshIcon,
-    SearchIcon,
-    FileUploadIcon,
-    PlusIcon
-} from 'vue-tabler-icons'
+    IconRefresh,
+    IconSearch,
+    IconDownload,
+    IconFileUpload,
+    IconPlus
+} from '@tabler/icons-vue'
 
 export default {
     name: 'Icons',
@@ -113,6 +121,9 @@ export default {
                 Authorization: `Bearer ${localStorage.token}`
             };
         },
+        download: async function(iconset) {
+            window.location.href = window.stdurl(`api/iconset/${iconset.uid}?format=zip&download=true&token=${localStorage.token}`);
+        },
         uploadURL: function() {
             return window.stdurl(`/api/import`);
         },
@@ -125,15 +136,16 @@ export default {
     },
     components: {
         Upload,
-        PlusIcon,
-        FileUploadIcon,
-        CombinedIcons,
+        IconPlus,
+        IconDownload,
+        IconFileUpload,
+        IconCombineds,
         TablerNone,
-        SearchIcon,
+        IconSearch,
         PageFooter,
         TablerBreadCrumb,
         TablerLoading,
-        RefreshIcon,
+        IconRefresh,
     }
 }
 </script>

@@ -18,7 +18,7 @@
             <div v-if='!disabled' class='ms-auto'>
                 <div class="dropdown">
                     <div class="dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
-                        <SettingsIcon
+                        <IconSettings
                             class='cursor-pointer dropdown-toggle'
                         />
                     </div>
@@ -54,8 +54,8 @@
 
 <script>
 import {
-    SettingsIcon
-} from 'vue-tabler-icons';
+    IconSettings
+} from '@tabler/icons-vue';
 import {
     TablerLoading
 } from '@tak-ps/vue-tabler';
@@ -106,7 +106,7 @@ export default {
         },
     },
     components: {
-        SettingsIcon,
+        IconSettings,
         ConnectionStatus,
         TablerLoading
     }

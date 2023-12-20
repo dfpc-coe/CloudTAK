@@ -38,8 +38,6 @@
     </div>
 
     <PageFooter/>
-
-    <TaskModal v-if='taskmodal' :task='layer.task' @close='taskmodal = false' @task='taskmodal = false; layer.task = $event'/>
 </div>
 </template>
 
@@ -52,8 +50,8 @@ import {
     TablerSchema
 } from '@tak-ps/vue-tabler';
 import {
-    SettingsIcon,
-} from 'vue-tabler-icons';
+    IconSettings,
+} from '@tabler/icons-vue';
 
 export default {
     name: 'IconEdit',
@@ -79,9 +77,9 @@ export default {
     },
     methods: {
         fetch: async function() {
-            this.loading.layer = true;
-            this.layer = await window.std(`/api/iconset/${this.$route.params.icon}`);
-            this.loading.layer = false;
+            this.loading.iconset = true;
+            this.iconset = await window.std(`/api/iconset/${this.$route.params.icon}`);
+            this.loading.iconset = false;
         },
         submit: async function() {
             const url = await window.stdurl(`/api/iconset/${this.$route.params.icon ||''}`);
@@ -99,7 +97,7 @@ export default {
             url.searchParams.append('url', this.$route.params.icon ? '/iconset/:iconset' : '/iconset');
             this.schema = (await window.std(url)).body;
         },
-        deleteIconset: async function() {
+        Icondeleteset: async function() {
             await window.std(`/api/iconset/${this.$route.params.icon}`, {
                 method: 'DELETE'
             });
@@ -113,7 +111,7 @@ export default {
         TablerDelete,
         TablerLoading,
         TablerSchema,
-        SettingsIcon,
+        IconSettings,
     }
 }
 </script>

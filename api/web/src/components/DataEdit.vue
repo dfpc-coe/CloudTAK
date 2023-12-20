@@ -49,7 +49,7 @@
                                 </div>
                                 <div class='d-flex'>
                                     <div v-if='$route.params.dataid'>
-                                        <TablerDelete @delete='deleteLayer' label='Delete Data'/>
+                                        <TablerDelete @delete='deleteData' label='Delete Data'/>
                                     </div>
                                     <div class='ms-auto'>
                                         <a v-if='$route.params.dataid' @click='create' class="cursor-pointer btn btn-primary">Update Data</a>
@@ -74,6 +74,7 @@ import {
     TablerBreadCrumb,
     TablerInput,
     TablerToggle,
+    TablerDelete,
     TablerLoading
 } from '@tak-ps/vue-tabler';
 
@@ -108,12 +109,12 @@ export default {
             this.data = await window.std(`/api/data/${this.$route.params.dataid}`);
             this.loading.data = false;
         },
-        deleteLayer: async function() {
+        deleteData: async function() {
             await window.std(`/api/data/${this.$route.params.dataid}`, {
                 method: 'DELETE'
             });
 
-            this.$router.push('/data');
+            this.$router.push(`/connection/${this.$route.params.connectionid}/data`);
         },
         create: async function() {
             for (const field of ['name', 'description']) {
@@ -125,19 +126,22 @@ export default {
 
             try {
                 let url, method;
+                const body = JSON.parse(JSON.stringify(this.data));
+
                 if (this.$route.params.dataid) {
                     url = window.stdurl(`/api/data/${this.$route.params.dataid}`);
                     method = 'PATCH'
                 } else {
                     url = window.stdurl(`/api/data`);
                     method = 'POST'
+                    body.connection = parseInt(this.$route.params.connectionid);
                 }
 
-                const create = await window.std(url, { method, body: this.data });
+                const create = await window.std(url, { method, body });
 
                 this.loading.data = false;
 
-                this.$router.push(`/data/${create.id}`);
+                this.$router.push(`/connection/${this.$route.params.connectionid}/data/${create.id}`);
             } catch (err) {
                 this.loading.data = false;
                 throw err;
@@ -148,6 +152,7 @@ export default {
         PageFooter,
         TablerBreadCrumb,
         TablerToggle,
+        TablerDelete,
         TablerInput,
         TablerLoading
     }

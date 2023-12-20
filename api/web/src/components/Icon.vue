@@ -21,6 +21,8 @@
                             <h3 class='card-title'>Iconset <span v-text='iconset.name'/></h3>
 
                             <div class='ms-auto btn-list'>
+                                <IconPlus v-tooltip='"Create Icon"' @click='$router.push(`/iconset/${$route.params.icon}/icon`)' class='cursor-pointer'/>
+                                <IconDownload v-tooltip='"Download TAK Zip"' class='cursor-pointer' @click.stop='download'/>
                                 <TablerDelete displaytype='icon' @delete='deleteIconset'/>
                             </div>
                         </div>
@@ -48,6 +50,10 @@ import {
     TablerBreadCrumb,
     TablerLoading
 } from '@tak-ps/vue-tabler';
+import {
+    IconPlus,
+    IconDownload
+} from '@tabler/icons-vue';
 
 export default {
     name: 'Icon',
@@ -63,6 +69,9 @@ export default {
         await this.fetch();
     },
     methods: {
+        download: async function() {
+            window.location.href = window.stdurl(`api/iconset/${this.iconset.uid}?format=zip&download=true&token=${localStorage.token}`);
+        },
         fetch: async function() {
             this.loading = true;
             const url = window.stdurl(`/api/iconset/${this.$route.params.icon}`);
@@ -79,6 +88,8 @@ export default {
         }
     },
     components: {
+        IconPlus,
+        IconDownload,
         CombinedIcons,
         TablerDelete,
         TablerNone,

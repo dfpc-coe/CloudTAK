@@ -16,4 +16,15 @@ export default class {
             method: 'GET'
         });
     }
+
+    async update(query: {
+        clientUid?: string;
+    }, body: object[]) {
+        const url = new URL(`/Marti/api/groups/active`, this.api.url);
+        for (const q in query) url.searchParams.append(q, query[q]);
+        return await this.api.fetch(url, {
+            method: 'PUT',
+            body
+        });
+    }
 }

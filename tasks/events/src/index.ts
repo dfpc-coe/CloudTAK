@@ -1,7 +1,9 @@
 import os from 'node:os';
+import { fetch } from 'undici';
 import fsp from 'node:fs/promises';
 import fs from 'node:fs';
 import Lambda from "aws-lambda";
+import { Readable } from 'node:stream';
 import path from 'node:path';
 import S3 from "@aws-sdk/client-s3";
 import StreamZip, { StreamZipAsync } from 'node-stream-zip'
@@ -19,9 +21,10 @@ interface Event {
 }
 
 export const handler = async (
-    event: any
+    event: {
+        Records: Lambda.SQSRecord | Lambda.S3EventRecord
+    }
 ): Promise<void> => {
-
     for (const record of event.Records) {
         if (record.s3) {
             await s3Event(record as Lambda.S3EventRecord)
@@ -42,14 +45,21 @@ async function s3Event(record: Lambda.S3EventRecord) {
         Key: decodeURIComponent(record.s3.object.key.replace(/\+/g, ' ')),
         Ext: path.parse(decodeURIComponent(record.s3.object.key.replace(/\+/g, ' '))).ext,
         Local: path.resolve(os.tmpdir(), `input${path.parse(decodeURIComponent(record.s3.object.key.replace(/\+/g, ' '))).ext}`),
-    }
+    };
 
+    return await genericEvent(md)
+}
+
+async function genericEvent(md: Event) {
     console.log(`ok - New file detected in s3://${md.Bucket}/${md.Key}`);
     if (md.Key.startsWith('import/')) {
         try {
             md.ID = path.parse(md.Key).name;
 
             await updateImport(md, { status: 'Running' });
+            const imported = await fetchImport(md);
+
+            console.error('Import', JSON.stringify(imported));
 
             const s3 = new S3.S3Client({ region: process.env.AWS_DEFAULT_REGION || 'us-east-1' });
 
@@ -62,31 +72,59 @@ async function s3Event(record: Lambda.S3EventRecord) {
                 fs.createWriteStream(md.Local)
             );
 
-            if (md.Ext === '.zip') {
-                const zip = new StreamZip.async({
-                    file: path.resolve(os.tmpdir(), md.Local),
-                    skipEntryNameValidation: true
+            const result = {};
+            if (imported.mode === 'Mission') {
+                if (!imported.config.id) throw new Error('No mission name defined');
+                if (!imported.config.token) throw new Error('No token defined');
+
+                const {size} = fs.statSync(md.Local);
+
+                const url = new URL(`/api/marti/missions/${encodeURIComponent(imported.config.id)}/upload`, process.env.TAK_ETL_API);
+                url.searchParams.append('name', imported.name);
+                const res = await fetch(url, {
+                    method: 'POST',
+                    duplex: 'half',
+                    headers: {
+                        'Authorization': `Bearer ${imported.config.token}`,
+                        'Content-Length': size,
+                        'Content-Type': 'application/octet-stream'
+                    },
+                    body: Readable.toWeb(fs.createReadStream(md.Local))
                 });
 
-                const preentries = await zip.entries();
+                console.error(JSON.stringify(await res.json()));
+            } else if (imported.mode === 'Unknown') {
+                if (md.Ext === '.zip') {
+                    const zip = new StreamZip.async({
+                        file: path.resolve(os.tmpdir(), md.Local),
+                        skipEntryNameValidation: true
+                    });
 
-                const indexes = [];
-                for (const entrykey in preentries) {
-                    const entry = preentries[entrykey];
+                    const preentries = await zip.entries();
 
-                    if (path.parse(entry.name).ext === '.xml') {
-                        indexes.push(entry);
+                    const indexes = [];
+                    for (const entrykey in preentries) {
+                        const entry = preentries[entrykey];
+
+                        if (path.parse(entry.name).ext === '.xml') {
+                            indexes.push(entry);
+                        }
                     }
-                }
 
-                for (const index of indexes) {
-                    await processIndex(md, String(await zip.entryData(index)), zip);
+                    for (const index of indexes) {
+                        await processIndex(md, String(await zip.entryData(index)), zip);
+                    }
+                } else if (md.Ext === '.xml') {
+                    await processIndex(md, String(await fsp.readFile(md.Local)));
+                } else {
+                    throw new Error('Unable to parse Index');
                 }
-            } else if (md.Ext === '.xml') {
-                await processIndex(md, String(await fsp.readFile(md.Local)));
-            } else {
-                throw new Error('Unable to parse Index');
             }
+
+            await updateImport(md, {
+                status: 'Success',
+                result
+            });
         } catch (err) {
             console.error(err);
 
@@ -135,6 +173,19 @@ async function fetchData(event: Event) {
     return await res.json();
 }
 
+async function fetchImport(event: Event) {
+    const res = await fetch(new URL(`/api/import/${event.ID}`, process.env.TAK_ETL_API), {
+        method: 'GET',
+        headers: {
+            'Authorization': `Bearer ${event.Token}`
+        },
+    });
+
+    const resbody = await res.json();
+    if (!res.ok) throw new Error(`HTTP ${res.status}: ${resbody.message}`);
+    return resbody;
+}
+
 async function updateImport(event: Event, body: object) {
     const res = await fetch(new URL(`/api/import/${event.ID}`, process.env.TAK_ETL_API), {
         method: 'PATCH',
@@ -145,7 +196,9 @@ async function updateImport(event: Event, body: object) {
         body: JSON.stringify(body)
     });
 
-    console.log(await res.text());
+    const resbody = await res.json();
+    if (!res.ok) throw new Error(`HTTP ${res.status}: ${resbody.message}`);
+    return resbody;
 }
 
 async function processIndex(event: Event, xmlstr: string, zip?: StreamZipAsync) {
@@ -220,4 +273,27 @@ async function processIndex(event: Event, xmlstr: string, zip?: StreamZipAsync) 
             result: { url: `/iconset/${iconset.uid}` }
         });
     }
+}
+
+if (import.meta.url === `file://${process.argv[1]}`) {
+    try {
+        const dotfile = new URL('../.env', import.meta.url);
+        fs.accessSync(dotfile);
+        Object.assign(process.env, JSON.parse(String(fs.readFileSync(dotfile))));
+        console.log('ok - .env file loaded');
+    } catch (err) {
+        console.log('ok - no .env file loaded');
+    }
+
+
+    if (!process.env.KEY) throw new Error('KEY env var must be set');
+    if (!process.env.BUCKET) throw new Error('BUCKET env var must be set');
+
+    await genericEvent({
+        Token: jwt.sign({ access: 'event' }, 'coe-wildland-fire'),
+        Bucket: process.env.BUCKET,
+        Key: process.env.KEY,
+        Ext: path.parse(process.env.KEY).ext,
+        Local: path.resolve(os.tmpdir(), `input${path.parse(process.env.KEY).ext}`),
+    });
 }
