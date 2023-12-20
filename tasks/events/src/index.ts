@@ -92,7 +92,7 @@ async function genericEvent(md: Event) {
                     body: Readable.toWeb(fs.createReadStream(md.Local))
                 });
 
-                console.error(await res.json());
+                console.error(JSON.stringify(await res.json()));
             } else if (imported.mode === 'Unknown') {
                 if (md.Ext === '.zip') {
                     const zip = new StreamZip.async({

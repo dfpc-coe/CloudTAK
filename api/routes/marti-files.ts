@@ -39,6 +39,13 @@ export default async function router(schema: any, config: Config) {
         group: 'MartiFiles',
         auth: 'user',
         ':hash': 'string',
+        query: {
+            type: 'object',
+            additionalProperties: false,
+            properties: {
+                name: { type: 'string' }
+            }
+        },
         description: 'Helper API to download files by file hash',
     }, async (req: AuthRequest, res: Response) => {
         try {
@@ -48,7 +55,7 @@ export default async function router(schema: any, config: Config) {
 
             const api = await TAKAPI.init(new URL(config.MartiAPI), new APIAuthToken(req.auth.token));
 
-            res.setHeader('Content-Disposition', `attachment; filename="${req.params.hash}.zip"`);
+            res.setHeader('Content-Disposition', `attachment; filename="${req.query.name || req.params.hash}"`);
 
             const file = await api.Files.download(req.params.hash);
 
