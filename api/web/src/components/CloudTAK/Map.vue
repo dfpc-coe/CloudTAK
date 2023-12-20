@@ -120,41 +120,7 @@ export default {
             }
         });
 
-        const url = window.stdurl('/api');
-        url.searchParams.append('format', 'geojson');
-        url.searchParams.append('connection', this.user.email);
-        url.searchParams.append('token', localStorage.token);
-        if (window.location.hostname === 'localhost') {
-            url.protocol = 'ws:';
-        } else {
-            url.protocol = 'wss:';
-        }
-
-        this.ws = new WebSocket(url);
-        this.ws.addEventListener('error', (err) => { this.$emit('err') });
-        this.ws.addEventListener('message', (msg) => {
-            msg = JSON.parse(msg.data);
-            if (msg.type !== 'cot') return;
-
-            //Vector Tiles only support integer IDs
-            msg.data.properties.id = msg.data.id;
-
-            if (msg.data.properties.icon) {
-                // Format of icon needs to change for spritesheet
-                msg.data.properties.icon = msg.data.properties.icon.replace('/', ':').replace(/.png$/, '');
-            } else {
-                msg.data.properties.icon = `${msg.data.properties.type}`;
-            }
-
-
-            // MapLibre Opacity must be of range 0-1
-            if (msg.data.properties['fill-opacity']) msg.data.properties['fill-opacity'] = msg.data.properties['fill-opacity'] / 255;
-            else msg.data.properties['fill-opacity'] = 255;
-            if (msg.data.properties['stroke-opacity']) msg.data.properties['stroke-opacity'] = msg.data.properties['stroke-opacity'] / 255;
-            else msg.data.properties['stroke-opacity'] = 255;
-
-            this.cots.set(msg.data.id, msg.data);
-        });
+        this.connectSocket();
 
         this.$nextTick(() => {
             return this.mountMap();
@@ -221,6 +187,46 @@ export default {
         }
     },
     methods: {
+        connectSocket: function() {
+            const url = window.stdurl('/api');
+            url.searchParams.append('format', 'geojson');
+            url.searchParams.append('connection', this.user.email);
+            url.searchParams.append('token', localStorage.token);
+            if (window.location.hostname === 'localhost') {
+                url.protocol = 'ws:';
+            } else {
+                url.protocol = 'wss:';
+            }
+
+            this.ws = new WebSocket(url);
+            this.ws.addEventListener('error', (err) => { this.$emit('err') });
+            this.ws.addEventListener('close', () => {
+                this.connectSocket();
+            })
+            this.ws.addEventListener('message', (msg) => {
+                msg = JSON.parse(msg.data);
+                if (msg.type !== 'cot') return;
+
+                //Vector Tiles only support integer IDs
+                msg.data.properties.id = msg.data.id;
+
+                if (msg.data.properties.icon) {
+                    // Format of icon needs to change for spritesheet
+                    msg.data.properties.icon = msg.data.properties.icon.replace('/', ':').replace(/.png$/, '');
+                } else {
+                    msg.data.properties.icon = `${msg.data.properties.type}`;
+                }
+
+
+                // MapLibre Opacity must be of range 0-1
+                if (msg.data.properties['fill-opacity']) msg.data.properties['fill-opacity'] = msg.data.properties['fill-opacity'] / 255;
+                else msg.data.properties['fill-opacity'] = 255;
+                if (msg.data.properties['stroke-opacity']) msg.data.properties['stroke-opacity'] = msg.data.properties['stroke-opacity'] / 255;
+                else msg.data.properties['stroke-opacity'] = 255;
+
+                this.cots.set(msg.data.id, msg.data);
+            });
+        },
         setBearing: function(bearing=0) {
             mapStore.map.setBearing(bearing);
         },
