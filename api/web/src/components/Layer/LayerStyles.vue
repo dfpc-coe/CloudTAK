@@ -3,21 +3,21 @@
     <div class='card-header'>
         <h3 class='card-title'>Style Overrides</h3>
         <div class='ms-auto btn-list'>
-            <SettingsIcon v-if='disabled' @click='disabled = false' class='cursor-pointer'/>
+            <IconSettings v-if='disabled' @click='disabled = false' class='cursor-pointer'/>
             <template v-else>
                 <div class='row d-flex mx-2'>
                     <div class="btn-group" role="group">
                         <input v-model='mode' type="radio" class="btn-check" name="type-toolbar" value='basic'>
                         <label @click='mode="basic"' class="btn btn-icon px-3">
-                            <AbcIcon/> Basic
+                            <IconAbc/> Basic
                         </label>
                         <input v-model='mode' type="radio" class="btn-check" name="type-toolbar" value='query'>
                         <label @click='mode="query"' class="btn btn-icon px-3">
-                            <CodeIcon/> Query
+                            <IconCode/> Query
                         </label>
                         <input v-model='mode' type="radio" class="btn-check" name="type-toolbar" value='disabled'>
                         <label @click='mode="disabled"' class="btn btn-icon px-3">
-                            <BrushOffIcon/> Disabled
+                            <IconBrushOff/> Disabled
                         </label>
                     </div>
                 </div>
@@ -45,18 +45,18 @@
                 <div class='ms-auto btn-list'>
                     <template v-if='mode === "query" && !disabled'>
                         <button @click='help("query")' class='btn'>
-                            <HelpIcon/>
+                            <IconHelp/>
                         </button>
                         <button v-if='query === null' @click='newQuery' class='btn'>
-                            <PlusIcon/>
+                            <IconPlus/>
                         </button>
                     </template>
                     <template v-else-if='mode === "query"'>
                         <button @click='help("query")' class='btn'>
-                            <HelpIcon/>
+                            <IconHelp/>
                         </button>
                         <button v-if='query' @click='query = null' class='btn'>
-                            <XIcon/>
+                            <IconX/>
                         </button>
                     </template>
                 </div>
@@ -69,7 +69,7 @@
                                 <div class='d-flex'>
                                     <div class='align-self-center' v-text='q.query'></div>
                                     <div class='ms-auto'>
-                                        <div v-if='!disabled' @click.stop='queries.splice(q_idx, 1)' class='btn'><TrashIcon/></div>
+                                        <div v-if='!disabled' @click.stop='queries.splice(q_idx, 1)' class='btn'><IconTrash/></div>
                                     </div>
                                 </div>
                             </div>
@@ -119,15 +119,15 @@
 <script>
 import jsonata from 'jsonata';
 import {
-    XIcon,
-    AbcIcon,
-    CodeIcon,
-    PlusIcon,
-    HelpIcon,
-    TrashIcon,
-    SettingsIcon,
-    BrushOffIcon,
-} from 'vue-tabler-icons'
+    IconX,
+    IconAbc,
+    IconCode,
+    IconPlus,
+    IconHelp,
+    IconTrash,
+    IconSettings,
+    IconBrushOff,
+} from '@tabler/icons-vue'
 import {
     TablerInput,
     TablerNone,
@@ -237,19 +237,19 @@ export default {
         }
     },
     components: {
-        XIcon,
-        CodeIcon,
-        AbcIcon,
-        PlusIcon,
-        HelpIcon,
+        IconX,
+        IconCode,
+        IconAbc,
+        IconPlus,
+        IconHelp,
         StyleSingle,
         TablerInput,
         TablerToggle,
-        TrashIcon,
+        IconTrash,
         TablerLoading,
         TablerNone,
-        SettingsIcon,
-        BrushOffIcon,
+        IconSettings,
+        IconBrushOff,
     }
 }
 </script>

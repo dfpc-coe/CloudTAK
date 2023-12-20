@@ -2,7 +2,6 @@ import Err from '@openaddresses/batch-error';
 import busboy from 'busboy';
 import fs from 'node:fs/promises';
 import path from 'path';
-import Profile from '../lib/types/profile.js';
 import Auth from '../lib/auth.js';
 import S3 from '../lib/aws/s3.js';
 import Stream from 'node:stream';
@@ -27,7 +26,7 @@ export default async function router(schema: any, config: Config) {
 
             const viz = new Map() ;
             let assets = [];
-            (await S3.list(`user/${req.auth.email}/`)).map((l) => {
+            (await S3.list(`profile/${req.auth.email}/`)).map((l) => {
                 if (path.parse(l.Key).ext === '.pmtiles') viz.set(path.parse(l.Key).name, l)
                 else assets.push(l)
             });
@@ -37,16 +36,16 @@ export default async function router(schema: any, config: Config) {
                 if (isViz) viz.delete(path.parse(a.Key).name);
 
                 return {
-                    name: a.Key.replace(`user/${req.auth.email}/`, ''),
-                    visualized: path.parse(a.Key.replace(`user/${req.auth.email}/`, '')).name + '.pmtiles',
+                    name: a.Key.replace(`profile/${req.auth.email}/`, ''),
+                    visualized: isViz ? path.parse(a.Key.replace(`profile/${req.auth.email}/`, '')).name + '.pmtiles' : false,
                     updated: new Date(a.LastModified).getTime(),
                     etag: JSON.parse(a.ETag),
                     size: a.Size
                 };
             }).concat(Array.from(viz.values()).map((a) => {
                 return {
-                    name: a.Key.replace(`user/${req.auth.email}/`, ''),
-                    visualized: a.Key.replace(`user/${req.auth.email}/`, ''),
+                    name: a.Key.replace(`profile/${req.auth.email}/`, ''),
+                    visualized: a.Key.replace(`profile/${req.auth.email}/`, ''),
                     updated: new Date(a.LastModified).getTime(),
                     etag: JSON.parse(a.ETag),
                     size: a.Size
@@ -56,7 +55,7 @@ export default async function router(schema: any, config: Config) {
             return res.json({
                 total: assets.length,
                 tiles: {
-                    url: String(new URL(`${config.PMTILES_URL}/tiles/user/${req.auth.email}/`))
+                    url: String(new URL(`${config.PMTILES_URL}/tiles/profile/${req.auth.email}/`))
                 },
                 assets
             });
@@ -65,7 +64,7 @@ export default async function router(schema: any, config: Config) {
         }
     });
 
-    await schema.post('/user/asset', {
+    await schema.post('/profile/asset', {
         name: 'Create Asset',
         auth: 'user',
         group: 'UserAssets',
@@ -95,7 +94,7 @@ export default async function router(schema: any, config: Config) {
                 const passThrough = new Stream.PassThrough();
                 file.pipe(passThrough);
 
-                assets.push(S3.put(`user/${req.auth.email}/${blob.filename}`, passThrough));
+                assets.push(S3.put(`profile/${req.auth.email}/${blob.filename}`, passThrough));
             } catch (err) {
                 return Err.respond(err, res);
             }
@@ -120,7 +119,7 @@ export default async function router(schema: any, config: Config) {
         return req.pipe(bb);
     });
 
-    await schema.post('/user/asset/:asset.:ext', {
+    await schema.post('/profile/asset/:asset.:ext', {
         name: 'Convert Asset',
         auth: 'user',
         group: 'UserAssets',
@@ -144,7 +143,7 @@ export default async function router(schema: any, config: Config) {
         }
     });
 
-    await schema.delete('/user/asset/:asset.:ext', {
+    await schema.delete('/profile/asset/:asset.:ext', {
         name: 'Delete Asset',
         auth: 'user',
         group: 'UserAssets',
@@ -156,7 +155,7 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            await S3.del(`user/${req.auth.email}/${req.params.asset}.${req.params.ext}`);
+            await S3.del(`profile/${req.auth.email}/${req.params.asset}.${req.params.ext}`);
 
             return res.json({
                 status: 200,
@@ -167,7 +166,7 @@ export default async function router(schema: any, config: Config) {
         }
     });
 
-    await schema.get('/user/asset/:asset.:ext', {
+    await schema.get('/profile/asset/:asset.:ext', {
         name: 'Raw Asset',
         auth: 'user',
         group: 'UserAssets',
@@ -178,7 +177,7 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req, true);
 
-            const stream = await S3.get(`user/${req.auth.email}/${req.params.asset}.${req.params.ext}`);
+            const stream = await S3.get(`profile/${req.auth.email}/${req.params.asset}.${req.params.ext}`);
 
             stream.pipe(res);
         } catch (err) {
@@ -186,7 +185,7 @@ export default async function router(schema: any, config: Config) {
         }
     });
 
-    await schema.get('/user/asset/:asset.pmtiles/tile', {
+    await schema.get('/profile/asset/:asset.pmtiles/tile', {
         name: 'PMTiles TileJSON',
         auth: 'user',
         group: 'UserAssets',
@@ -196,8 +195,8 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req, true);
 
-            const token = jwt.sign({ access: 'user' }, config.SigningSecret)
-            const url = new URL(`${config.PMTILES_URL}/tiles/user/${req.auth.email}/${req.params.asset}`);
+            const token = jwt.sign({ access: 'profile' }, config.SigningSecret)
+            const url = new URL(`${config.PMTILES_URL}/tiles/profile/${req.auth.email}/${req.params.asset}`);
             url.searchParams.append('token', token);
 
             return res.redirect(String(url));

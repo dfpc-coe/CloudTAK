@@ -397,8 +397,6 @@ export default async function router(schema: any, config: Config) {
                         return res.json({ status: 200, message: 'No features found' });
                     }
 
-                    for (const cot of cots) console.error(JSON.stringify(cot.raw));
-
                     pooledClient.tak.write(cots);
                     for (const cot of cots) config.conns.cot(pooledClient.conn, cot);
 

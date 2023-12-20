@@ -20,15 +20,39 @@
                         <div class='card-header'>
                             <h3 class='card-title'>
                                 <div class='d-flex'>
-                                    <Status :status='imported.status'/>
+                                    <Status v-if='!loading' :status='imported.status'/>
                                     <div class='d-flex align-items-center'>Import <span class='mx-2' v-text='imported.id'/></div>
                                 </div>
                             </h3>
                             <div class='ms-auto btn-list'>
-                                <RefreshIcon @click='fetch' v-tooltip='`Refresh Import`' class='cursor-pointer'/>
+                                <IconRefresh @click='fetch' v-tooltip='`Refresh Import`' class='cursor-pointer'/>
                             </div>
                         </div>
-                        <TablerLoading v-if='loading'/>
+                        <div class='card-body'>
+                            <div class='datagrid'>
+                                <div class="datagrid-item pb-2">
+                                    <div class="datagrid-title">Username</div>
+                                    <div class="datagrid-content" v-text='imported.username'></div>
+                                </div>
+                                <div class="datagrid-item pb-2">
+                                    <div class="datagrid-title">Mode</div>
+                                    <div class="datagrid-content" v-text='imported.mode'></div>
+                                </div>
+                                <div class="datagrid-item pb-2">
+                                    <div class="datagrid-title">Filename</div>
+                                    <div class="datagrid-content" v-text='imported.name'></div>
+                                </div>
+                            </div>
+                            <TablerNone v-if='imported.status === "Empty"' :create='false'/>
+                            <TablerLoading v-else-if='loading' desc='Running Import'/>
+                            <template v-else-if='imported.status === "Fail"'>
+                                <pre v-text='imported.error'/>
+                            </template>
+                        </div>
+                        <div class="card-footer d-flex">
+                            Created <span v-text='timeDiff(imported.created)' class='mx-2'/>
+                            <div class='ms-auto'>Last updated <span v-text='timeDiff(imported.updated)'/></div>
+                        </div>
                     </div>
                 </div>
 
@@ -51,14 +75,15 @@ import {
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import {
-    RefreshIcon
-} from 'vue-tabler-icons';
+    IconRefresh
+} from '@tabler/icons-vue';
 
 export default {
     name: 'Import',
     data: function() {
         return {
             loading: true,
+            interval: false,
             imported: {
                 id: ''
             }
@@ -66,18 +91,43 @@ export default {
     },
     mounted: async function() {
         await this.fetch();
+
+        this.interval = setInterval(() => {
+            this.fetch()
+        }, 1000);
+    },
+    unmounted: function() {
+        if (this.interval) clearInterval(this.interval);
     },
     methods: {
         fetch: async function() {
             this.loading = true;
             const url = window.stdurl(`/api/import/${this.$route.params.import}`);
             this.imported = await window.std(url);
-            this.loading = false;
-        }
+            if (this.imported.status === 'Failed' || this.imported.status === 'Success') {
+                if (this.interval) clearInterval(this.interval);
+                this.loading = false;
+            }
+        },
+        timeDiff: function(updated) {
+            const msPerMinute = 60 * 1000;
+            const msPerHour = msPerMinute * 60;
+            const msPerDay = msPerHour * 24;
+            const msPerMonth = msPerDay * 30;
+            const msPerYear = msPerDay * 365;
+            const elapsed = +(new Date()) - updated;
+
+            if (elapsed < msPerMinute) return Math.round(elapsed/1000) + ' seconds ago';
+            if (elapsed < msPerHour) return Math.round(elapsed/msPerMinute) + ' minutes ago';
+            if (elapsed < msPerDay ) return Math.round(elapsed/msPerHour ) + ' hours ago';
+            if (elapsed < msPerMonth) return '~' + Math.round(elapsed/msPerDay) + ' days ago';
+            if (elapsed < msPerYear) return '~' + Math.round(elapsed/msPerMonth) + ' months ago';
+            return '~' + Math.round(elapsed/msPerYear ) + ' years ago';
+        },
     },
     components: {
         Status,
-        RefreshIcon,
+        IconRefresh,
         TablerNone,
         PageFooter,
         TablerBreadCrumb,

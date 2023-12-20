@@ -1,5 +1,6 @@
 import AWSECR from '@aws-sdk/client-ecr';
 import Err from '@openaddresses/batch-error';
+import process from 'node:process';
 
 /**
  * @class

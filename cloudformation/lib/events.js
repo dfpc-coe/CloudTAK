@@ -4,6 +4,7 @@ export default {
     Resources: {
         EventLambda: {
             Type: 'AWS::Lambda::Function',
+            DependsOn: ['SigningSecret'],
             Properties: {
                 FunctionName: cf.join([cf.stackName, '-events']),
                 MemorySize: 512,

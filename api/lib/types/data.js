@@ -11,6 +11,7 @@ export default class Data extends Generic {
         query.sort = Params.string(query.sort, { default: 'created' });
         query.order = Params.order(query.order);
         query.filter = Params.string(query.filter, { default: '' });
+        query.connection = Params.integer(query.connection);
 
         try {
             const pgres = await pool.query(sql`
@@ -20,10 +21,11 @@ export default class Data extends Generic {
                     data_mission.id IS NOT NULL AS mission
                 FROM
                     ${sql.identifier([this._table])}
-                        LEFT JOIN 
+                        LEFT JOIN
                             data_mission ON data.id = data_mission.data
                 WHERE
                     name ~* ${query.filter}
+                    AND (${query.connection}::BIGINT IS NULL OR connection = ${query.connection}::BIGINT)
                 ORDER BY
                     id DESC
                 LIMIT

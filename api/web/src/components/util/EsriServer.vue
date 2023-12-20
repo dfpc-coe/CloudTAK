@@ -4,10 +4,10 @@
         <h1 class='subheader px-3 col-9 text-truncate' v-text='server'></h1>
 
         <div class='ms-auto btn-list mx-3'>
-            <RefreshIcon v-if='!disabled && !err && !loading' @click='getList' v-tooltip='"Refresh"' class='cursor-pointer'/>
+            <IconRefresh v-if='!disabled && !err && !loading' @click='getList' v-tooltip='"Refresh"' class='cursor-pointer'/>
 
-            <ArrowBackIcon v-if='!disabled && !err && !loading' @click='back' v-tooltip='"Back"' class='cursor-pointer'/>
-            <XIcon v-if='!disabled' @click='$emit("close")' v-tooltip='"Close Explorer"' class='cursor-pointer'/>
+            <IconArrowBack v-if='!disabled && !err && !loading' @click='back' v-tooltip='"Back"' class='cursor-pointer'/>
+            <IconX v-if='!disabled' @click='$emit("close")' v-tooltip='"Close Explorer"' class='cursor-pointer'/>
         </div>
     </div>
 
@@ -28,11 +28,11 @@
                     <tbody><tr @click='listpath.push(l)' :key='l.id' v-for='l in list'>
                         <td>
                             <template v-if='l.type === "folder"'>
-                                <FolderIcon/>
+                                <IconFolder/>
                                 <span v-text='l.name' class='mx-3'/>
                             </template>
                             <template v-else>
-                                <MapIcon/>
+                                <IconMap/>
                                 <span v-text='l.name' class='mx-3'/>
                             </template>
                         </td>
@@ -70,9 +70,9 @@
                     <tbody><tr @click='!disabled && (layer && layer.id === lyr.id) ? layer = nulll : layer = lyr' :key='lyr.id' v-for='lyr in container.layers'>
                         <td>
                             <div class='d-flex'>
-                                <MapIcon/><span v-text='lyr.name' class='mx-3'/>
+                                <IconMap/><span v-text='lyr.name' class='mx-3'/>
                                 <div class='ms-auto btn-list'>
-                                    <CheckIcon v-if='layer && layer.id === lyr.id'/>
+                                    <IconCheck v-if='layer && layer.id === lyr.id'/>
                                     <TablerDelete v-if='!readonly && !disabled' @delete='deleteLayer(lyr)' displaytype='icon' label='Delete Layer'/>
                                 </div>
                             </div>
@@ -92,13 +92,13 @@ import {
     TablerNone,
 } from '@tak-ps/vue-tabler';
 import {
-    MapIcon,
-    RefreshIcon,
-    XIcon,
-    FolderIcon,
-    ArrowBackIcon,
-    CheckIcon
-} from 'vue-tabler-icons';
+    IconMap,
+    IconRefresh,
+    IconX,
+    IconFolder,
+    IconArrowBack,
+    IconCheck
+} from '@tabler/icons-vue';
 import Alert from './Alert.vue';
 
 export default {
@@ -268,13 +268,13 @@ export default {
     },
     components: {
         Alert,
-        XIcon,
+        IconX,
         TablerNone,
-        MapIcon,
-        FolderIcon,
-        RefreshIcon,
-        CheckIcon,
-        ArrowBackIcon,
+        IconMap,
+        IconFolder,
+        IconRefresh,
+        IconCheck,
+        IconArrowBack,
         TablerLoading,
         TablerDelete,
     }

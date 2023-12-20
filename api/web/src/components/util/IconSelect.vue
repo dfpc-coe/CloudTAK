@@ -2,7 +2,7 @@
 <div class='row'>
     <div class='col-12 d-flex my-1'>
         <span v-if='description' class='align-self-center'>
-            <InfoSquareIcon @click='help = true' size='20' class='cursor-pointer'/>
+            <IconInfoSquare @click='help = true' size='20' class='cursor-pointer'/>
             <TablerHelp v-if='help' @click='help = false' :label='label || placeholder' :description='description'/>
         </span>
         <div class="align-self-center px-2" :class='{ "required": required }' >Icon Select</div>
@@ -25,12 +25,12 @@
             <div v-if='!disabled' class='ms-auto'>
                 <TablerDropdown>
                     <template #default>
-                        <SettingsIcon class='cursor-pointer dropdown-toggle'/>
+                        <IconSettings class='cursor-pointer dropdown-toggle'/>
                     </template>
                     <template #dropdown>
                         <label class='w-100 subheader d-flex'>
                             <span class='mx-2 d-flex justify-content-center align-items-center'>Iconsets</span>
-                            <SearchIcon @click.stop.prevent='params.showFilter = !params.showFilter' class='ms-auto cursor-pointer mx-2'/>
+                            <IconSearch @click.stop.prevent='params.showFilter = !params.showFilter' class='ms-auto cursor-pointer mx-2'/>
                         </label>
                         <TablerEnum v-model='params.iconset' :options='setsName'/>
                         <TablerInput v-if='params.showFilter' placeholder='Icon Search' v-model='params.filter'/>
@@ -59,10 +59,10 @@
 
 <script>
 import {
-    InfoSquareIcon,
-    SearchIcon,
-    SettingsIcon
-} from 'vue-tabler-icons';
+    IconInfoSquare,
+    IconSearch,
+    IconSettings
+} from '@tabler/icons-vue';
 import {
     TablerHelp,
     TablerEnum,
@@ -126,7 +126,7 @@ export default {
         'params': {
             deep: true,
             handler: async function() {
-                await this.listIcons();
+                await this.Iconlists();
             },
         },
         modelValue: function() {
@@ -135,8 +135,8 @@ export default {
     },
     mounted: async function() {
         if (this.modelValue) await this.fetch();
-        await this.listIconsets();
-        await this.listIcons();
+        await this.Iconlistsets();
+        await this.Iconlists();
     },
     methods: {
         iconurl: function(icon) {
@@ -149,14 +149,14 @@ export default {
             const icon = this.modelValue.split('/').splice(1).join('/');
             this.selected = await window.std(`/api/iconset/${iconset}/icon/${encodeURIComponent(icon)}`);
         },
-        listIconsets: async function() {
+        Iconlistsets: async function() {
             this.loading.iconsets = true;
             const url = window.stdurl('/api/iconset');
             this.sets = (await window.std(url)).iconsets;
             this.params.iconset = this.sets[0].name;
             this.loading.iconsets = false;
         },
-        listIcons: async function() {
+        Iconlists: async function() {
             this.loading.icons = true;
             let url = window.stdurl(`/api/icon`);
             if (this.params.iconset) {
@@ -176,9 +176,9 @@ export default {
         TablerHelp,
         TablerInput,
         TablerDropdown,
-        InfoSquareIcon,
-        SearchIcon,
-        SettingsIcon,
+        IconInfoSquare,
+        IconSearch,
+        IconSettings,
         TablerEnum,
         TablerLoading
     }

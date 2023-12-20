@@ -1,5 +1,6 @@
 import Err from '@openaddresses/batch-error';
 import CloudWatch from '@aws-sdk/client-cloudwatch';
+import process from 'node:process';
 
 /**
  * @class

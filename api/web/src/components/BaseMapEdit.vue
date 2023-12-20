@@ -22,8 +22,8 @@
                             <h3 v-else class='card-title'>New BaseMap</h3>
 
                             <div v-if='!loading && !mode.upload && !mode.tilejson' class='ms-auto btn-list'>
-                                <FileUploadIcon @click='mode.upload = true' v-tooltip='"XML Upload"' class='cursor-pointer'/>
-                                <FileImportIcon @click='mode.tilejson = true' v-tooltip='"TileJSON Import"' class='cursor-pointer'/>
+                                <IconFileUpload @click='mode.upload = true' v-tooltip='"XML Upload"' class='cursor-pointer'/>
+                                <IconFileImport @click='mode.tilejson = true' v-tooltip='"TileJSON Import"' class='cursor-pointer'/>
                             </div>
                         </div>
                         <div class="card-body">
@@ -116,9 +116,9 @@
 import PageFooter from './PageFooter.vue';
 import Upload from './util/Upload.vue';
 import {
-    FileImportIcon,
-    FileUploadIcon
-} from 'vue-tabler-icons';
+    IconFileImport,
+    IconFileUpload
+} from '@tabler/icons-vue';
 import {
     TablerBreadCrumb,
     TablerDelete,
@@ -150,8 +150,8 @@ export default {
                 minzoom: 0,
                 maxzoom: 16,
                 format: 'png',
-                bounds: [],
-                center: []
+                bounds: [-180, -90, 180, 90 ],
+                center: [0, 0]
             }
         }
     },
@@ -244,8 +244,8 @@ export default {
     },
     components: {
         Upload,
-        FileUploadIcon,
-        FileImportIcon,
+        IconFileUpload,
+        IconFileImport,
         TablerLoading,
         TablerBreadCrumb,
         TablerDelete,

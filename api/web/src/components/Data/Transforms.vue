@@ -3,7 +3,7 @@
     <div class='card-header d-flex'>
         <h3 class='card-title'>Data Transforms</h3>
         <div class='ms-auto btn-list'>
-            <RefreshIcon @click='fetchList' class='cursor-pointer'/>
+            <IconRefresh @click='fetchList' class='cursor-pointer'/>
         </div>
     </div>
 
@@ -18,7 +18,7 @@
                 </tr>
             </thead>
             <tbody>
-                <tr @click='$router.push(`/data/${$route.params.dataid}/job/${job.id}`)' :key='job.created' v-for='job in list.list' class='cursor-pointer'>
+                <tr @click='$router.push(`/connection/${$route.params.connectionid}/data/${$route.params.dataid}/job/${job.id}`)' :key='job.created' v-for='job in list.list' class='cursor-pointer'>
                     <td v-text='job.asset'></td>
                     <td v-text='job.status'></td>
                     <td>
@@ -45,8 +45,8 @@
 <script>
 import Alert from '../util/Alert.vue';
 import {
-    RefreshIcon
-} from 'vue-tabler-icons';
+    IconRefresh
+} from '@tabler/icons-vue';
 import {
     TablerNone,
     TablerLoading,
@@ -85,7 +85,7 @@ export default {
     components: {
         TablerNone,
         Alert,
-        RefreshIcon,
+        IconRefresh,
         TablerLoading,
         TablerEpoch,
     }

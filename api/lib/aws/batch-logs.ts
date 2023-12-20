@@ -1,4 +1,5 @@
 import CloudWatchLogs from '@aws-sdk/client-cloudwatch-logs';
+import process from 'node:process';
 
 /**
  * @class

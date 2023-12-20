@@ -4,11 +4,11 @@
         <h3 class='card-title'>Environment</h3>
         <div class='ms-auto btn-list'>
             <template v-if='!raw && disabled'>
-                <CodeIcon @click='raw = true' v-tooltip='"Raw View"' class='cursor-pointer'/>
-                <SettingsIcon @click='disabled = false' class='cursor-pointer'/>
+                <IconCode @click='raw = true' v-tooltip='"Raw View"' class='cursor-pointer'/>
+                <IconSettings @click='disabled = false' class='cursor-pointer'/>
             </template>
             <template v-else-if='raw'>
-                <XIcon @click='raw = false' v-tooltip='"Close View"' class='cursor-pointer'/>
+                <IconX @click='raw = false' v-tooltip='"Close View"' class='cursor-pointer'/>
             </template>
         </div>
     </div>
@@ -48,11 +48,11 @@ import {
 import LayerEnvironmentArcGIS from './LayerEnvironmentArcGIS.vue';
 import Schema from './utils/Schema.vue';
 import {
-    XIcon,
-    PlusIcon,
-    CodeIcon,
-    SettingsIcon,
-} from 'vue-tabler-icons'
+    IconX,
+    IconPlus,
+    IconCode,
+    IconSettings,
+} from '@tabler/icons-vue'
 
 export default {
     name: 'LayerEnvironment',
@@ -116,10 +116,10 @@ export default {
     },
     components: {
         Schema,
-        PlusIcon,
-        CodeIcon,
-        XIcon,
-        SettingsIcon,
+        IconPlus,
+        IconCode,
+        IconX,
+        IconSettings,
         TablerInput,
         TablerLoading,
         LayerEnvironmentArcGIS

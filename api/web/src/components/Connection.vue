@@ -17,6 +17,7 @@
             <div class='row row-deck row-cards'>
                 <div class="col-lg-12">
                     <TablerLoading v-if='loading.connection'/>
+
                     <div v-else class="card">
                         <div class="card-header">
                             <ConnectionStatus :connection='connection'/>
@@ -25,8 +26,8 @@
 
                             <div class='ms-auto'>
                                 <div class='btn-list'>
-                                    <RefreshIcon class='cursor-pointer' @click='refresh' v-tooltip='"Refresh"' />
-                                    <SettingsIcon class='cursor-pointer' @click='$router.push(`/connection/${connection.id}/edit`)' v-tooltip='"Edit"'/>
+                                    <IconRefresh class='cursor-pointer' @click='refresh' v-tooltip='"Refresh"' />
+                                    <IconSettings class='cursor-pointer' @click='$router.push(`/connection/${connection.id}/edit`)' v-tooltip='"Edit"'/>
                                 </div>
                             </div>
                         </div>
@@ -52,24 +53,44 @@
                     </div>
                 </div>
 
-                <div class="col-lg-6 col-12">
-                    <ConnectionLayers v-if='connection.id' :connection='connection'/>
-                </div>
-
-                <div class="col-lg-6 col-12">
-                    <ConnectionSinks v-if='connection.id' :connection='connection'/>
-                </div>
-
-                <div class="col-lg-12">
-                    <ConnectionChart v-if='connection.id' :connection='connection'/>
-                </div>
-
-                <div class="col-lg-12">
-                    <ConnectionEvents :ws='ws' v-if='connection.id' :connection='connection'/>
+                <div v-if='!loading.connection' class='col-lg-12'>
+                    <div class='card'>
+                        <div class='row g-0'>
+                            <div class="col-12 col-md-3 border-end">
+                                <div class="card-body">
+                                    <h4 class="subheader">Connection Sections</h4>
+                                    <div class="list-group list-group-transparent">
+                                        <span @click='$router.push(`/connection/${$route.params.connectionid}/layer`)' class="list-group-item list-group-item-action d-flex align-items-center" :class='{
+                                            "active": $route.name === "connection-layer",
+                                            "cursor-pointer": $route.name !== "connection-layer"
+                                        }'><IconBuildingBroadcastTower/><span class='mx-3'>Layers</span></span>
+                                        <span @click='$router.push(`/connection/${$route.params.connectionid}/data`)' class="list-group-item list-group-item-action d-flex align-items-center" :class='{
+                                            "active": $route.name === "connection-data",
+                                            "cursor-pointer": $route.name !== "connection-data"
+                                        }'><IconDatabase/><span class='mx-3'>Data Store</span></span>
+                                        <span @click='$router.push(`/connection/${$route.params.connectionid}/sink`)' class="list-group-item list-group-item-action d-flex align-items-center" :class='{
+                                            "active": $route.name === "connection-sink",
+                                            "cursor-pointer": $route.name !== "connection-sink"
+                                        }'><IconOutbound/><span class='mx-3'>Outbounds Sinks</span></span>
+                                        <span @click='$router.push(`/connection/${$route.params.connectionid}/health`)' class="list-group-item list-group-item-action d-flex align-items-center" :class='{
+                                            "active": $route.name === "connection-health",
+                                            "cursor-pointer": $route.name !== "connection-health"
+                                        }'><IconCloudDataConnection/><span class='mx-3'>Health &amp; Metrics</span></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-9">
+                                <router-view
+                                    :connection='connection'
+                                />
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
+
     <PageFooter/>
 </div>
 </template>
@@ -77,15 +98,15 @@
 <script>
 import PageFooter from './PageFooter.vue';
 import ConnectionStatus from './Connection/Status.vue';
-import ConnectionLayers from './Connection/Layers.vue';
-import ConnectionSinks from './Connection/Sinks.vue';
-import ConnectionChart from './Connection/Chart.vue';
-import ConnectionEvents from './Connection/Events.vue';
 import timeDiff from '../timediff.js';
 import {
-    RefreshIcon,
-    SettingsIcon
-} from 'vue-tabler-icons'
+    IconRefresh,
+    IconDatabase,
+    IconOutbound,
+    IconCloudDataConnection,
+    IconBuildingBroadcastTower,
+    IconSettings
+} from '@tabler/icons-vue'
 import {
     TablerBreadCrumb,
     TablerMarkdown,
@@ -101,7 +122,6 @@ export default {
                 channels: true,
             },
             err: null,
-            ws: null,
             channels: [],
             connection: {}
         }
@@ -115,24 +135,9 @@ export default {
         }
     },
     mounted: async function() {
-        const url = window.stdurl('/api');
-        url.searchParams.append('connection', this.$route.params.connectionid);
-        url.searchParams.append('token', localStorage.token);
-        if (window.location.hostname === 'localhost') {
-            url.protocol = 'ws:';
-        } else {
-            url.protocol = 'wss:';
-        }
-
-        this.ws = new WebSocket(url);
-        this.ws.addEventListener('error', (err) => { this.$emit('err') });
-
         await this.fetch();
         await this.fetchChannels();
 
-    },
-    unmounted: function() {
-        this.ws.close();
     },
     methods: {
         timeDiff(update) {
@@ -155,17 +160,17 @@ export default {
         }
     },
     components: {
-        SettingsIcon,
-        RefreshIcon,
+        IconSettings,
+        IconRefresh,
+        IconDatabase,
+        IconBuildingBroadcastTower,
+        IconCloudDataConnection,
+        IconOutbound,
         PageFooter,
         TablerBreadCrumb,
         TablerMarkdown,
         TablerLoading,
         ConnectionStatus,
-        ConnectionLayers,
-        ConnectionSinks,
-        ConnectionChart,
-        ConnectionEvents
     }
 }
 </script>

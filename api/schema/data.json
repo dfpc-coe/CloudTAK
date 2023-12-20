@@ -19,6 +19,9 @@
         },
         "auto_transform": {
             "$ref": "./data/auto_transform.json"
+        },
+        "connection": {
+            "$ref": "./data/connection.json"
         }
     },
     "required": [
@@ -27,6 +30,7 @@
         "updated",
         "name",
         "description",
-        "auto_transform"
+        "auto_transform",
+        "connection"
     ]
 }

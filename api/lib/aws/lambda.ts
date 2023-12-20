@@ -4,6 +4,7 @@ import AWSLambda from '@aws-sdk/client-lambda';
 import Config from '../config.js';
 import jwt from 'jsonwebtoken';
 import Schedule from '../schedule.js';
+import process from 'node:process';
 
 /**
  * @class

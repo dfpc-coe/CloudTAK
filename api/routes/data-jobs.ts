@@ -22,7 +22,7 @@ export default async function router(schema: any, config: Config) {
 
             const data = await Data.from(config.pool, req.params.dataid);
 
-            const list = await Batch.list(config, data);
+            const list = await Batch.list(config, `data-${data.id}`);
 
             return res.json({
                 total: list.length,

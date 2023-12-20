@@ -1,5 +1,5 @@
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 import cors from 'cors';
 import jwt from 'jsonwebtoken';
 import express, { Request, Response } from 'express';
@@ -19,6 +19,7 @@ import Server from './lib/types/server.js';
 import Config from './lib/config.js';
 import Profile from './lib/types/profile.js';
 import TAKAPI, { APIAuthPassword } from './lib/tak-api.js';
+import process from 'node:process';
 
 const args = minimist(process.argv, {
     boolean: [
@@ -81,6 +82,9 @@ export default async function server(config: Config) {
     config.pool = await Pool.connect(process.env.POSTGRES || args.postgres || 'postgres://postgres@localhost:5432/tak_ps_etl', {
         schemas: {
             dir: new URL('./schema', import.meta.url)
+        },
+        parsing: {
+            geometry: true
         }
     });
 
@@ -229,7 +233,6 @@ export default async function server(config: Config) {
             if (!params.get('token')) throw new Error('Token Parameter Required');
 
             const auth = tokenParser(params.get('token'), config.SigningSecret);
-            console.error(auth);
 
             // Connect to MachineUser Connection if it is an integer
             if (!isNaN(parseInt(params.get('connection')))) {
@@ -241,6 +244,8 @@ export default async function server(config: Config) {
 
                 if (!config.conns.has(params.get('connection'))) {
                     const profile = await Profile.from(config.pool, params.get('connection'));
+                    if (!profile.auth.cert || !profile.auth.key) throw new Error('No Cert Found on profile');
+
                     config.conns.add({
                         id: params.get('connection'),
                         name: params.get('connection'),

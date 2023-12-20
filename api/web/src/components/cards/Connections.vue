@@ -4,7 +4,7 @@
         <div class="row align-items-center">
             <div class="col-auto">
                 <span @click='$router.push("/connection")' class="bg-primary text-white avatar cursor-pointer">
-                    <NetworkIcon/>
+                    <IconNetwork/>
                 </span>
             </div>
             <div class="col">
@@ -27,8 +27,8 @@
 
 <script>
 import {
-    NetworkIcon
-} from 'vue-tabler-icons';
+    IconNetwork
+} from '@tabler/icons-vue';
 import {
     TablerLoading
 } from '@tak-ps/vue-tabler';
@@ -58,7 +58,7 @@ export default {
         }
     },
     components: {
-        NetworkIcon,
+        IconNetwork,
         TablerLoading
     }
 }
