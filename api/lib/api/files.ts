@@ -29,6 +29,7 @@ export default class {
         altitude?: string;
     }, body: Readable) {
         const url = new URL(`/Marti/sync/upload`, this.api.url);
+        url.searchParams.append('name', opts.name)
         url.searchParams.append('keywords', opts.keywords.join(','))
         url.searchParams.append('creatorUid', opts.creatorUid)
         if (opts.altitude) url.searchParams.append('altitude', opts.altitude);
