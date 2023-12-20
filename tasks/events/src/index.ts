@@ -69,6 +69,7 @@ async function genericEvent(md: Event) {
                 fs.createWriteStream(md.Local)
             );
 
+            let result = {};
             if (imported.mode === 'Mission') {
                 if (!imported.config.id) throw new Error('No mission name defined');
                 if (!imported.config.token) throw new Error('No token defined');
@@ -117,6 +118,11 @@ async function genericEvent(md: Event) {
                     throw new Error('Unable to parse Index');
                 }
             }
+
+            await updateImport(event, {
+                status: 'Success',
+                result
+            });
         } catch (err) {
             console.error(err);
 
