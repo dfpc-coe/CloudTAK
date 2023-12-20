@@ -266,8 +266,10 @@ export default async function router(schema: any, config: Config) {
         query: {
             type: 'object',
             additionalProperties: false,
+            required: ['name'],
             properties: {
                 connection: { type: 'integer' },
+                name: { type: 'string' }
             }
         },
         res: 'res.Marti.json'
@@ -275,27 +277,37 @@ export default async function router(schema: any, config: Config) {
         type: '*/*',
         limit: '50mb'
     }), async (req: AuthRequest, res: Response) => {
+        console.error(req);
         try {
             await Auth.is_auth(req);
 
-            console.error(req);
-
             let auth;
-            let callsign = '';
+            let creatorUid = '';
             if (req.query.connection) {
                 auth = (await Connection.from(config.pool, req.query.connection)).auth;
-                callsign = `ETL: Connection ${req.query.connection}`;
+                creatorUid = `CloudTAK-Conn-${req.query.connection}`;
             } else {
                 if (!req.auth.email) throw new Err(400, null, 'Groups can only be listed by an authenticated user');
 
                 const profile = await Profile.from(config.pool, req.auth.email);
-                callsign = profile.username;
+                creatorUid = profile.username;
                 auth = profile.auth;
             }
-            const api = await TAKAPI.init(new URL(config.server.api), new APIAuthCertificate(auth.cert, auth.key));
-            const content = await api.Mission.upload(req.params.name, callsign, req.body);
 
-            return res.json(content);
+            const name = String(req.query.name);
+
+            const api = await TAKAPI.init(new URL(config.server.api), new APIAuthCertificate(auth.cert, auth.key));
+            const content = await api.Files.upload({
+                name: name,
+                contentType: req.headers['content-type'],
+                contentLength: Number(req.headers['content-length']),
+                keywords: [],
+                creatorUid: creatorUid,
+            }, req.body);
+
+            const missionContent = await api.Mission.attachContents(req.params.name, [content.Hash]);
+
+            return res.json(missionContent);
         } catch (err) {
             return Err.respond(err, res);
         }

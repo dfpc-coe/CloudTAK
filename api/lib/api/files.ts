@@ -1,4 +1,5 @@
 import TAKAPI from '../tak-api.js';
+import { Readable } from 'node:stream';
 
 export default class {
     api: TAKAPI;
@@ -15,6 +16,33 @@ export default class {
         }, true);
 
         return res.body.getReader();
+    }
+
+    async upload(opts: {
+        name: string;
+        contentType: string;
+        contentLength: number;
+        keywords: string[];
+        creatorUid: string;
+        latitude?: string;
+        longitude?: string;
+        altitude?: string;
+    }, body: Readable) {
+        const url = new URL(`/Marti/sync/upload`, this.api.url);
+        url.searchParams.append('keywords', opts.keywords.join(','))
+        url.searchParams.append('creatorUid', opts.creatorUid)
+        if (opts.altitude) url.searchParams.append('altitude', opts.altitude);
+        if (opts.longitude) url.searchParams.append('longitude', opts.longitude);
+        if (opts.latitude) url.searchParams.append('latitude', opts.latitude);
+
+        return await this.api.fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': opts.contentType,
+                'Content-Length': opts.contentLength
+            },
+            body
+        });
     }
 
     async count() {
