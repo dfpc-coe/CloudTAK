@@ -121,7 +121,7 @@ async function genericEvent(md: Event) {
                 }
             }
 
-            await updateImport(event, {
+            await updateImport(md, {
                 status: 'Success',
                 result
             });
