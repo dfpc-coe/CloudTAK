@@ -277,7 +277,6 @@ export default async function router(schema: any, config: Config) {
         type: '*/*',
         limit: '50mb'
     }), async (req: AuthRequest, res: Response) => {
-        console.error(req);
         try {
             await Auth.is_auth(req);
 
