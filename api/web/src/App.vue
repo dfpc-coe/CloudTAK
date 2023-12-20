@@ -6,8 +6,8 @@
                 <img @click='$router.push("/")' class='cursor-pointer' height='50' width='50' src='/logo.png'>
             </div>
             <div class="col mx-2">
-                <div class="page-pretitle">TAK Public Safety</div>
-                <h2 class="page-title">ETL Data Layers</h2>
+                <div class="page-pretitle">Colorado - DFPC - CoE</div>
+                <h2 class="page-title">CloudTAK</h2>
             </div>
 
             <div v-if='user' class='ms-auto'>
