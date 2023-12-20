@@ -1,5 +1,6 @@
 import TAKAPI from '../tak-api.js';
 import { Readable } from 'node:stream';
+import mime from 'mime';
 
 export default class {
     api: TAKAPI;
@@ -9,7 +10,8 @@ export default class {
     }
 
     async download(hash: string) {
-        const url = new URL(`/Marti/api/files/${hash}`, this.api.url);
+        const url = new URL(`/Marti/sync/content`, this.api.url);
+        url.searchParams.append('hash', hash);
 
         const res = await this.api.fetch(url, {
             method: 'GET'
@@ -29,8 +31,8 @@ export default class {
 
     async upload(opts: {
         name: string;
-        contentType: string;
         contentLength: number;
+        contentType?: string;
         keywords: string[];
         creatorUid: string;
         latitude?: string;
@@ -53,7 +55,7 @@ export default class {
         const res = await this.api.fetch(url, {
             method: 'POST',
             headers: {
-                'Content-Type': opts.contentType,
+                'Content-Type': opts.contentType ? opts.contentType : mime.getType(opts.name),
                 'Content-Length': opts.contentLength
             },
             body

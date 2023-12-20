@@ -109,7 +109,7 @@
                                 </div>
                                 <div class='ms-auto btn-list'>
                                     <TablerDelete @delete='deleteFile(content.data)' displaytype='icon'/>
-                                    <a :href='downloadFile(content.data)' :download='content.data.name + ".zip"' v-tooltip='"Download Asset"'><IconDownload class='cursor-pointer'/></a>
+                                    <a :href='downloadFile(content.data)' v-tooltip='"Download Asset"'><IconDownload class='cursor-pointer'/></a>
                                 </div>
                             </div>
                         </template>
@@ -195,7 +195,10 @@ export default {
     },
     methods: {
         downloadFile: function(file) {
-            return window.stdurl(`/api/marti/api/files/${file.hash}?token=${localStorage.token}`);
+            const url = window.stdurl(`/api/marti/api/files/${file.hash}`)
+            url.searchParams.append('token', localStorage.token);
+            url.searchParams.append('name', file.name);
+            return url;
         },
         deleteFile: async function(file) {
             await window.std(`/api/marti/missions/${this.mission.name}/upload/${file.hash}`, {

@@ -300,7 +300,6 @@ export default async function router(schema: any, config: Config) {
 
             const content = await api.Files.upload({
                 name: name,
-                contentType: req.headers['content-type'],
                 contentLength: Number(req.headers['content-length']),
                 keywords: [],
                 creatorUid: creatorUid,
