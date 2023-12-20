@@ -35,7 +35,7 @@ export default class {
         if (opts.longitude) url.searchParams.append('longitude', opts.longitude);
         if (opts.latitude) url.searchParams.append('latitude', opts.latitude);
 
-        return await this.api.fetch(url, {
+        const res = await this.api.fetch(url, {
             method: 'POST',
             headers: {
                 'Content-Type': opts.contentType,
@@ -43,6 +43,8 @@ export default class {
             },
             body
         });
+
+        return JSON.parse(res);
     }
 
     async count() {

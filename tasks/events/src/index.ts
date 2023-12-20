@@ -76,10 +76,8 @@ async function genericEvent(md: Event) {
                 const {size} = fs.statSync(md.Local);
                 const type = mime.getType(md.Key);
 
-console.error(size);
-
                 const url = new URL(`/api/marti/missions/${encodeURIComponent(imported.config.id)}/upload`, process.env.TAK_ETL_API);
-                url.searchParams.append('name', 'test.kml');
+                url.searchParams.append('name', imported.name);
                 const res = await fetch(url, {
                     method: 'POST',
                     duplex: 'half',
