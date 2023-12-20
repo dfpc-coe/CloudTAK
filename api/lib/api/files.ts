@@ -36,7 +36,7 @@ export default class {
         latitude?: string;
         longitude?: string;
         altitude?: string;
-    }, body: Readable) {
+    }, body: Readable | Buffer) {
         const url = new URL(`/Marti/sync/upload`, this.api.url);
         url.searchParams.append('name', opts.name)
         url.searchParams.append('keywords', opts.keywords.join(','))
@@ -44,6 +44,11 @@ export default class {
         if (opts.altitude) url.searchParams.append('altitude', opts.altitude);
         if (opts.longitude) url.searchParams.append('longitude', opts.longitude);
         if (opts.latitude) url.searchParams.append('latitude', opts.latitude);
+
+        if (body instanceof Buffer) {
+            body = Readable.from(body as Buffer);
+        }
+        body as Readable;
 
         const res = await this.api.fetch(url, {
             method: 'POST',
