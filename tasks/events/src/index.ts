@@ -1,7 +1,10 @@
 import os from 'node:os';
+import { fetch } from 'undici';
 import fsp from 'node:fs/promises';
+import mime from 'mime';
 import fs from 'node:fs';
 import Lambda from "aws-lambda";
+import { Readable } from 'node:stream';
 import path from 'node:path';
 import S3 from "@aws-sdk/client-s3";
 import StreamZip, { StreamZipAsync } from 'node-stream-zip'
@@ -70,13 +73,22 @@ async function genericEvent(md: Event) {
                 if (!imported.config.id) throw new Error('No mission name defined');
                 if (!imported.config.token) throw new Error('No token defined');
 
-                const res = await fetch(new URL(`/api/marti/missions/${encodeURIComponent(imported.config.id)}/upload`, process.env.TAK_ETL_API), {
+                const {size} = fs.statSync(md.Local);
+                const type = mime.getType(md.Key);
+
+console.error(size);
+
+                const url = new URL(`/api/marti/missions/${encodeURIComponent(imported.config.id)}/upload`, process.env.TAK_ETL_API);
+                url.searchParams.append('name', 'test.kml');
+                const res = await fetch(url, {
                     method: 'POST',
                     duplex: 'half',
                     headers: {
-                        'Authorization': `Bearer ${imported.config.token}`
+                        'Authorization': `Bearer ${imported.config.token}`,
+                        'Content-Length': size,
+                        'Content-Type': 'application/octet-stream'
                     },
-                    body: fs.createReadStream(md.Local)
+                    body: Readable.toWeb(fs.createReadStream(md.Local))
                 });
 
                 console.error(await res.json());

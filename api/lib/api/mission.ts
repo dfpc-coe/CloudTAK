@@ -16,6 +16,17 @@ export default class {
         });
     }
 
+    async attachContents(name: string, hashes: string[]) {
+        const url = new URL(`/Marti/api/missions/${encodeURIComponent(name)}/contents`, this.api.url);
+
+        return await this.api.fetch(url, {
+            method: 'PUT',
+            body: {
+                hashes: hashes
+            }
+        });
+    }
+
     async upload(name: string, creatorUid: string, body: Readable) {
         const url = new URL(`/Marti/api/missions/${encodeURIComponent(name)}/contents/missionpackage`, this.api.url);
         url.searchParams.append('creatorUid', creatorUid);
