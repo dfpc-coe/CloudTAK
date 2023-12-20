@@ -18,6 +18,15 @@ export default class {
         return res.body.getReader();
     }
 
+    async delete(hash: string) {
+        const url = new URL(`/Marti/sync/delete`, this.api.url);
+        url.searchParams.append('hash', hash)
+
+        return await this.api.fetch(url, {
+            method: 'DELETE',
+        });
+    }
+
     async upload(opts: {
         name: string;
         contentType: string;
