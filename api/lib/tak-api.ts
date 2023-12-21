@@ -1,4 +1,5 @@
 import Mission from './api/mission.js';
+import MissionLog from './api/mission-log.js';
 import Credentials from './api/credentials.js';
 import Contacts from './api/contacts.js';
 import Files from './api/files.js';
@@ -136,6 +137,7 @@ export default class TAKAPI {
     auth: APIAuth;
     url: URL;
     Mission: Mission;
+    MissionLog: MissionLog;
     Credentials: Credentials;
     Contacts: Contacts;
     Group: Group;
@@ -149,6 +151,7 @@ export default class TAKAPI {
         await api.auth.init(api.url);
 
         api.Mission = new Mission(api);
+        api.MissionLog = new MissionLog(api);
         api.Credentials = new Credentials(api);
         api.Contacts = new Contacts(api);
         api.Group = new Group(api);
