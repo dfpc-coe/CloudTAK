@@ -56,6 +56,8 @@ import {
     TablerEnum,
     TablerLoading
 } from '@tak-ps/vue-tabler';
+import { useProfileStore } from '/src/stores/profile.js';
+const profileStore = useProfileStore();
 
 export default {
     name: 'Settings',
@@ -67,15 +69,10 @@ export default {
             profileSchema: {}
         }
     },
-    watch: {
-        mode: async function() {
-            if (this.mode === 'callsign') {
-                await this.fetchProfile();
-            }
-        }
-    },
     mounted: async function() {
         await this.fetchProfileSchema();
+        await profileStore.load();
+        this.profile = JSON.parse(JSON.stringify(profileStore.profile));
     },
     methods: {
         fetchProfileSchema: async function() {
@@ -83,18 +80,9 @@ export default {
             this.profileSchema = (await window.std('/api/schema?method=PATCH&url=/profile')).body
             this.loading = false;
         },
-        fetchProfile: async function() {
-            this.loading = true;
-            this.profile = await window.std('/api/profile')
-            this.loading = false;
-        },
         updateProfile: async function() {
             this.loading = true;
-            this.profile = await window.std('/api/profile', {
-                method: 'PATCH',
-                body: this.profile
-            })
-
+            await profileStore.update(this.profile);
             this.mode = 'settings';
             this.loading = false;
         }
