@@ -12,6 +12,7 @@
     </div>
     <div class="card-body">
         <TablerLoading v-if='loading.logs || loading.job' desc='Loading Job Logs'/>
+        <TablerNone v-else-if='!logs.length' label='Logs' :create='false'/>
         <template v-else>
             <pre v-text='logs'></pre>
         </template>
@@ -22,6 +23,7 @@
 <script>
 import {
     TablerLoading,
+    TablerNone,
 } from '@tak-ps/vue-tabler'
 import Status from '../util/Status.vue';
 import {
@@ -76,6 +78,7 @@ export default {
         IconRefresh,
         IconCircleArrowLeft,
         TablerLoading,
+        TablerNone
     }
 }
 </script>
