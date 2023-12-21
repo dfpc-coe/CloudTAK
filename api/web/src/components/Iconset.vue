@@ -56,7 +56,7 @@ import {
 } from '@tabler/icons-vue';
 
 export default {
-    name: 'Icon',
+    name: 'Iconset',
     data: function() {
         return {
             loading: true,

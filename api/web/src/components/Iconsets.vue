@@ -93,7 +93,7 @@ import {
 } from '@tabler/icons-vue'
 
 export default {
-    name: 'Icons',
+    name: 'Iconsets',
     data: function() {
         return {
             err: false,
