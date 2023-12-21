@@ -2,6 +2,7 @@
 <div>
     <div class="card-header">
         <IconCircleArrowLeft @click='$router.push("/profile/jobs")' class='cursor-pointer' v-tooltip='"Back"'/>
+        <Status :status='job.status'/>
         <h2 class='card-title mx-2'>Job Logs</h2>
         <div class='ms-auto'>
             <div class='btn-list'>
@@ -22,6 +23,7 @@
 import {
     TablerLoading,
 } from '@tak-ps/vue-tabler'
+import Status from '../util/Status.vue';
 import {
     IconRefresh,
     IconCircleArrowLeft
@@ -47,7 +49,16 @@ export default {
     methods: {
         fetch: async function() {
             this.loading.job = true;
-            this.job = await window.std(`/api/profile/job/${this.$route.params.jobid}`);
+            const job = await window.std(`/api/profile/job/${this.$route.params.jobid}`);
+            if (job.status === 'SUBMITTED') job.status = 'Unknown';
+            if (job.status === 'PENDING') job.status = 'Pending';
+            if (job.status === 'RUNNABLE') job.status = 'Pending';
+            if (job.status === 'STARTING') job.status = 'Pending';
+            if (job.status === 'RUNNING') job.status = 'Warn';
+            if (job.status === 'FAILED') job.status = 'Fail';
+            if (job.status === 'SUCCEEDED') job.status = 'Success';
+            this.job = job;
+
             this.loading.job = false;
         },
         fetchLogs: async function() {
@@ -61,6 +72,7 @@ export default {
         }
     },
     components: {
+        Status,
         IconRefresh,
         IconCircleArrowLeft,
         TablerLoading,
