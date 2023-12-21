@@ -10,6 +10,7 @@ import Stream from 'node:stream';
 import Batch from '../lib/aws/batch.js';
 import jwt from 'jsonwebtoken';
 import { includesWithGlob } from "array-includes-with-glob";
+import assetList from '../lib/asset.js';
 
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
@@ -37,33 +38,9 @@ export default async function router(schema: any, config: Config) {
                 data.mission = false;
             }
 
-            const viz = new Map() ;
-            let assets = [];
-            (await S3.list(`data/${data.id}/`)).map((l) => {
-                if (path.parse(l.Key).ext === '.pmtiles') viz.set(path.parse(l.Key).name, l)
-                else assets.push(l)
-            });
+            const list = await assetList(config, `data/${data.id}/`);
 
-            assets = assets.map((a) => {
-                const isViz = viz.get(path.parse(a.Key).name);
-                if (isViz) viz.delete(path.parse(a.Key).name);
-
-                return {
-                    name: a.Key.replace(`data/${data.id}/`, ''),
-                    visualized: isViz ? path.parse(a.Key.replace(`data/${data.id}/`, '')).name + '.pmtiles' : false,
-                    updated: new Date(a.LastModified).getTime(),
-                    etag: JSON.parse(a.ETag),
-                    size: a.Size
-                };
-            }).concat(Array.from(viz.values()).map((a) => {
-                return {
-                    name: a.Key.replace(`data/${data.id}/`, ''),
-                    visualized: a.Key.replace(`data/${data.id}/`, ''),
-                    updated: new Date(a.LastModified).getTime(),
-                    etag: JSON.parse(a.ETag),
-                    size: a.Size
-                };
-            })).map((a: any) => {
+            list.assets = list.assets.map((a: any) => {
                 if (!data.mission) {
                     a.sync = false;
                 } else {
@@ -76,13 +53,7 @@ export default async function router(schema: any, config: Config) {
                 return a;
             });
 
-            return res.json({
-                total: assets.length,
-                tiles: {
-                    url: String(new URL(`${config.PMTILES_URL}/tiles/data/${data.id}/`))
-                },
-                assets
-            });
+            return res.json(list);
         } catch (err) {
             return Err.respond(err, res);
         }
