@@ -2,7 +2,7 @@
 <div>
     <div class="card-header">
         <IconCircleArrowLeft @click='$router.push("/profile/jobs")' class='cursor-pointer' v-tooltip='"Back"'/>
-        <h2 class='card-title'>Job Logs</h2>
+        <h2 class='card-title mx-2'>Job Logs</h2>
         <div class='ms-auto'>
             <div class='btn-list'>
                 <IconRefresh @click='fetchLogs' class='cursor-pointer'/>
@@ -23,7 +23,8 @@ import {
     TablerLoading,
 } from '@tak-ps/vue-tabler'
 import {
-    IconRefresh
+    IconRefresh,
+    IconCircleArrowLeft
 } from '@tabler/icons-vue';
 
 export default {
@@ -61,6 +62,7 @@ export default {
     },
     components: {
         IconRefresh,
+        IconCircleArrowLeft,
         TablerLoading,
     }
 }
