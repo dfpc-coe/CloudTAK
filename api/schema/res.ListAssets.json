@@ -28,6 +28,7 @@
                 "sync",
                 "updated",
                 "visualized",
+                "vectorized",
                 "etag",
                 "size"
             ],
@@ -40,6 +41,9 @@
                     "description": "If the Data is attached to a mission, signify if the asset is syncing with the mission"
                 },
                 "visualized": {
+                    "type": ["string", "boolean"]
+                },
+                "vectorized": {
                     "type": ["string", "boolean"]
                 },
                 "updated": {
