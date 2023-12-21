@@ -75,7 +75,19 @@ export default {
             try {
                 this.loading.list = true;
                 this.err = null;
-                this.list = await window.std(`/api/data/${this.$route.params.dataid}/job`);
+                const list = await window.std(`/api/data/${this.$route.params.dataid}/job`);
+                list.list = list.list.map((l) => {
+                    if (l.status === 'SUBMITTED') l.status = 'Unknown';
+                    if (l.status === 'PENDING') l.status = 'Pending';
+                    if (l.status === 'RUNNABLE') l.status = 'Pending';
+                    if (l.status === 'STARTING') l.status = 'Pending';
+                    if (l.status === 'RUNNING') l.status = 'Warn';
+                    if (l.status === 'FAILED') l.status = 'Fail';
+                    if (l.status === 'SUCCEEDED') l.status = 'Success';
+                    return l;
+                });
+
+                this.list = list;
                 this.loading.list = false;
             } catch (err) {
                 this.err = err;
