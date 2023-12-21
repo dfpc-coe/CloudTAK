@@ -37,7 +37,7 @@
                         <TablerEpoch :date='asset.updated'/>
                         <div class='ms-auto btn-list'>
                             <TablerDelete displaytype='icon' @delete='deleteAsset(asset)' v-tooltip='"Delete Asset"'/>
-                            <IconTransform v-if='!asset.name.endsWith(".pmtiles")' @click='initTransform(asset)' v-tooltip='"Convert Asset"' class='cursor-pointer'/>
+                            <IconTransform v-if='!asset.visualized' @click='initTransform(asset)' v-tooltip='"Convert Asset"' class='cursor-pointer'/>
                             <IconDownload @click='downloadAsset(asset)' class='cursor-pointer' v-tooltip='"Download Asset"'/>
                         </div>
                     </td>

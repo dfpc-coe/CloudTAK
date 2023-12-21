@@ -23,7 +23,8 @@
                     <td>
                         <div class='d-flex'>
                             <div class='btn-list'>
-                                <IconMap v-if='asset.visualized' v-tooltip='"Visualizable"' class='cursor-pointer'/>
+                                <IconMap v-if='asset.visualized' v-tooltip='"Visualizable"'/>
+                                <IconMapOff v-else v-tooltip='"Not Cloud Optimized"'/>
                             </div>
 
                             <span v-text='asset.name' class='mx-2'/>
@@ -39,7 +40,7 @@
                         <TablerEpoch :date='asset.updated'/>
                         <div class='ms-auto btn-list'>
                             <TablerDelete displaytype='icon' @delete='deleteAsset(asset)' v-tooltip='"Delete Asset"'/>
-                            <IconTransform v-if='!asset.name.endsWith(".pmtiles")' @click='initTransform(asset)' v-tooltip='"Convert Asset"' class='cursor-pointer'/>
+                            <IconTransform v-if='!asset.visualized' @click='initTransform(asset)' v-tooltip='"Convert Asset"' class='cursor-pointer'/>
                             <IconDownload @click='downloadAsset(asset)' class='cursor-pointer' v-tooltip='"Download Asset"'/>
                         </div>
                     </td>
@@ -72,6 +73,7 @@ import {
     IconRefreshOff,
     IconPlus,
     IconMap,
+    IconMapOff,
     IconRefresh,
     IconDownload,
     IconTransform,
@@ -166,6 +168,7 @@ export default {
         Alert,
         IconPlus,
         IconMap,
+        IconMapOff,
         IconRefresh,
         IconTransform,
         IconRefreshDot,
