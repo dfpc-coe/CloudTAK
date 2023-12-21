@@ -22,6 +22,9 @@
         },
         "tak_role": {
             "$ref": "./profile/tak_role.json"
+        },
+        "tak_loc": {
+            "$ref": "./profile/tak_loc.json"
         }
     },
     "required": [
@@ -31,6 +34,7 @@
         "updated",
         "tak_callsign",
         "tak_group",
-        "tak_role"
+        "tak_role",
+        "tak_loc"
     ]
 }

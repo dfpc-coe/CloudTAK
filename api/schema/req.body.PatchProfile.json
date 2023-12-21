@@ -10,6 +10,24 @@
         },
         "tak_role": {
             "$ref": "./profile/tak_role.json"
+        },
+        "tak_loc": {
+            "type": "object",
+            "required": ["type", "coordinates"],
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "enum": ["Point"]
+                },
+                "coordinates": {
+                    "type": "array",
+                    "minItems": 2,
+                    "maxItems": 2,
+                    "items": {
+                        "type": "number"
+                    }
+                }
+            }
         }
     }
 }
