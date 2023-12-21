@@ -27,6 +27,9 @@
                 <template v-else-if='mode === "contents"'>
                     <IconPlus v-if='!upload' @click='upload = true' v-tooltip='"Upload File"' class='cursor-pointer'/>
                 </template>
+                <template v-else-if='mode === "logs"'>
+                    <IconPlus @click='createLog = ""' v-tooltip='"Create Log"' class='cursor-pointer'/>
+                </template>
 
                 <IconRefresh v-if='!loading.initial' @click='fetchMission' class='cursor-pointer' v-tooltip='"Refresh"'/>
             </div>
@@ -115,8 +118,26 @@
                         </template>
                     </template>
                     <template v-else-if='mode === "logs"'>
-                        <TablerNone v-if='!mission.logs.length' :create='false'/>
-                        <pre v-else v-text='mission.logs'/>
+                        <TablerLoading v-if='loading.logs'/>
+                        <template v-else-if='createLog !== false'>
+                            <TablerInput label='Create Log' :rows='4' v-model='createLog'/>
+
+                            <div class='d-flex my-2'>
+                                <div class='ms-auto'>
+                                    <button @click='submitLog' class='btn btn-primary'>Save Log</button>
+                                </div>
+                            </div>
+                        </template>
+                        <TablerNone v-else-if='!mission.logs.length' :create='false'/>
+                        <div v-else class='rows'>
+                            <div :key='log.id' v-for='log in mission.logs' class='col-12'>
+                                <div class='d-flex'>
+                                    <label class='subheader' v-text='log.creatorUid'/>
+                                    <label class='subheader ms-auto' v-text='log.created'/>
+                                </div>
+                                <pre v-text='log.content || "None"'/>
+                            </div>
+                        </div>
                     </template>
                 </div>
             </div>
@@ -171,9 +192,11 @@ export default {
             mode: 'info',
             password: '',
             upload: false,
+            createLog: false,
             loading: {
                 initial: !this.initial.passwordProtected,
                 mission: !this.initial.passwordProtected,
+                logs: false,
                 users: true,
                 delete: false
             },
@@ -199,6 +222,18 @@ export default {
             url.searchParams.append('token', localStorage.token);
             url.searchParams.append('name', file.name);
             return url;
+        },
+        submitLog: async function(file) {
+            this.loading.logs = true;
+            await window.std(`/api/marti/missions/${this.mission.name}/log`, {
+                method: 'POST',
+                body: {
+                    content: this.createLog
+                }
+            });
+            this.createLog = false;
+            this.loading.logs = false;
+            this.fetchMission();
         },
         deleteFile: async function(file) {
             await window.std(`/api/marti/missions/${this.mission.name}/upload/${file.hash}`, {
