@@ -23,7 +23,7 @@
             </div>
         </div>
 
-        <div v-if='false'
+        <div v-if='isLoaded'
             class='position-absolute top-0 text-white py-2'
             style='z-index: 1; width: 60px; right: 60px; background-color: rgba(0, 0, 0, 0.5)'
         >
@@ -32,11 +32,11 @@
                     <IconPencil @click='menu.draw = true' size='40' class='cursor-pointer'/>
                 </template>
                 <template #dropdown>
-                    <div class='btn-list'>
-                        <IconPoint @click='startDraw("point")' class='cursor-pointer'/>
-                        <IconLine @click='startDraw("linestring")' class='cursor-pointer'/>
-                        <IconPolygon @click='startDraw("polygon")' class='cursor-pointer'/>
-                        <IconVector @click='startDraw("rectangle")' class='cursor-pointer'/>
+                    <div class='btn-list my-2'>
+                        <IconPoint      size='35' @click='startDraw("point")' class='cursor-pointer'/>
+                        <IconLine       size='35' @click='startDraw("linestring")' class='cursor-pointer'/>
+                        <IconPolygon    size='35' @click='startDraw("polygon")' class='cursor-pointer'/>
+                        <IconVector     size='35' @click='startDraw("rectangle")' class='cursor-pointer'/>
                     </div>
                 </template>
             </TablerDropdown>
@@ -103,7 +103,7 @@ export default {
         }
     },
     computed: {
-        ...mapState(useMapStore, ['bearing', 'radial'])
+        ...mapState(useMapStore, ['bearing', 'radial', 'isLoaded'])
     },
     mounted: async function() {
         await this.fetchBaseMaps();
