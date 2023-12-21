@@ -21,7 +21,7 @@
                             <h3 class='card-title'>Iconset <span v-text='iconset.name'/></h3>
 
                             <div class='ms-auto btn-list'>
-                                <IconPlus v-tooltip='"Create Icon"' @click='$router.push(`/iconset/${$route.params.icon}/icon`)' class='cursor-pointer'/>
+                                <IconPlus v-tooltip='"Create Icon"' @click='$router.push(`/iconset/${$route.params.iconset}/icon`)' class='cursor-pointer'/>
                                 <IconDownload v-tooltip='"Download TAK Zip"' class='cursor-pointer' @click.stop='download'/>
                                 <TablerDelete displaytype='icon' @delete='deleteIconset'/>
                             </div>
@@ -74,13 +74,13 @@ export default {
         },
         fetch: async function() {
             this.loading = true;
-            const url = window.stdurl(`/api/iconset/${this.$route.params.icon}`);
+            const url = window.stdurl(`/api/iconset/${this.$route.params.iconset}`);
             this.iconset = await window.std(url);
             this.loading = false;
         },
         deleteIconset: async function() {
             this.loading = true;
-            const url = window.stdurl(`/api/iconset/${this.$route.params.icon}`);
+            const url = window.stdurl(`/api/iconset/${this.$route.params.iconset}`);
             this.iconset = await window.std(url, {
                 method: 'DELETE'
             });
