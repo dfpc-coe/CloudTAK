@@ -8,17 +8,25 @@ export default class LogGroup {
     static async list(stream: string) {
         const cwl = new CloudWatchLogs.CloudWatchLogsClient({ region: process.env.AWS_DEFAULT_REGION });
 
-        return {
-            logs: (await cwl.send(new CloudWatchLogs.GetLogEventsCommand({
-                logStreamName: stream,
-                logGroupName: `/aws/batch/job`,
-                startFromHead: true,
-            }))).events.map((log) => {
-                return {
-                    message: log.message,
-                    timestamp: log.timestamp
-                }
-            })
+        try {
+            return {
+                logs: (await cwl.send(new CloudWatchLogs.GetLogEventsCommand({
+                    logStreamName: stream,
+                    logGroupName: `/aws/batch/job`,
+                    startFromHead: true,
+                }))).events.map((log) => {
+                    return {
+                        message: log.message,
+                        timestamp: log.timestamp
+                    }
+                })
+            }
+        } catch (err) {
+            if (err.message.contains('The specified log stream does not exist')) {
+                return { logs: [] }
+            } else {
+                throw err;
+            }
         }
     }
 };
