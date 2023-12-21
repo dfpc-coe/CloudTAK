@@ -9,6 +9,14 @@
             <IconX v-if='cot' @click='cot = false' size='40' class='cursor-pointer bg-dark'/>
         </div>
 
+        <div v-if='profile' class='position-absolute bottom-0 begin-0 text-white py-2' style='z-index: 1; width: 200px; background-color: rgba(0, 0, 0, 0.5);'>
+            <div class='mx-2 d-flex'>
+                <IconLocationOff/>
+                <IconLocation/>
+                <div v-text='profile.tak_callsign'></div>
+            </div>
+        </div>
+
         <div class='position-absolute top-0 beginning-0 text-white py-2 mx-2' style='z-index: 1; width: 60px; background-color: rgba(0, 0, 0, 0.5)'>
             <div @click='setBearing(0)' style='padding-bottom: 10px;' class='cursor-pointer'>
                 <svg width="40" height="40" :transform='`rotate(${360 - bearing})`' viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" /><path d="M12 8l-4 4" /><path d="M12 8v8" /><path d="M16 12l-4 -4" /></svg>
@@ -68,6 +76,8 @@
 
 <script>
 import {
+    IconLocationOff,
+    IconLocation,
     IconMenu2,
     IconPlus,
     IconMinus,
@@ -92,7 +102,9 @@ import RadialMenu from './RadialMenu/RadialMenu.vue';
 import moment from 'moment';
 import { mapState, mapActions } from 'pinia'
 import { useMapStore } from '/src/stores/map.js';
+import { useProfileStore } from '/src/stores/profile.js';
 const mapStore = useMapStore();
+const profileStore = useProfileStore();
 
 export default {
     name: 'CloudTAK',
@@ -103,9 +115,12 @@ export default {
         }
     },
     computed: {
-        ...mapState(useMapStore, ['bearing', 'radial', 'isLoaded'])
+        ...mapState(useMapStore, ['bearing', 'radial', 'isLoaded']),
+        ...mapState(useProfileStore, ['profile'])
     },
     mounted: async function() {
+        await profileStore.load();
+
         await this.fetchBaseMaps();
         await this.Iconfetchsets();
         this.loading.main = false;
@@ -348,6 +363,8 @@ export default {
         }
     },
     components: {
+        IconLocationOff,
+        IconLocation,
         IconMinus,
         IconPlus,
         IconFocus2,
