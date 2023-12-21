@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import * as pmtiles from 'pmtiles';
 import mapgl from 'maplibre-gl'
 import * as terraDraw from 'terra-draw';
+import pointOnFeature from '@turf/point-on-feature';
 
 export const useMapStore = defineStore('cloudtak', {
     state: () => {
@@ -11,6 +12,7 @@ export const useMapStore = defineStore('cloudtak', {
         return {
             map: false,
             container: false,
+            isLoaded: false,
             bearing: 0,
             radial: {
                 // Settings related to the Radial menu - shown if radial.cot is not null
@@ -113,7 +115,6 @@ export const useMapStore = defineStore('cloudtak', {
                     }]
                 }
             });
-
         },
         initLayers: function(basemap) {
             this.addLayer({
@@ -216,6 +217,7 @@ export const useMapStore = defineStore('cloudtak', {
                     new terraDraw.TerraDrawRectangleMode()
                 ]
             });
+            this.isLoaded = true;
         }
     },
 })
