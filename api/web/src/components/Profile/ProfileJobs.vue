@@ -1,7 +1,7 @@
 <template>
 <div>
     <div class='card-header d-flex'>
-        <h3 class='card-title'>Data Transforms</h3>
+        <h3 class='card-title'>Asset Transforms</h3>
         <div class='ms-auto btn-list'>
             <IconRefresh @click='fetchList' class='cursor-pointer'/>
         </div>
