@@ -23,7 +23,8 @@
                     <td>
                         <div class='d-flex'>
                             <div class='btn-list'>
-                                <IconMap v-if='asset.visualized' v-tooltip='"Visualizable"' class='cursor-pointer'/>
+                                <IconMap v-if='asset.visualized' v-tooltip='"Visualizable"'/>
+                                <IconMapOff v-else v-tooltip='"Not Cloud Optimized"'/>
                             </div>
 
                             <span v-text='asset.name' class='mx-2'/>
@@ -69,6 +70,7 @@ import {
     IconRefreshOff,
     IconPlus,
     IconMap,
+    IconMapOff,
     IconRefresh,
     IconDownload,
     IconTransform,
@@ -157,6 +159,7 @@ export default {
         Alert,
         IconPlus,
         IconMap,
+        IconMapOff,
         IconRefresh,
         IconTransform,
         IconRefreshDot,
