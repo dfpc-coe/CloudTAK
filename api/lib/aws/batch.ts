@@ -114,6 +114,8 @@ export default class Batch {
                 created: job.createdAt,
                 updated: job.stoppedAt,
             };
+        }).sort((a, b) => {
+            return b.created - a.created;
         });
 
         return jobs;
