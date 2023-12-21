@@ -69,7 +69,7 @@ export default {
     mounted: async function() {
         await this.fetchSchema();
 
-        if (this.$route.params.icon) {
+        if (this.$route.params.iconset) {
             await this.fetch();
         } else {
             this.loading.iconset = false;
@@ -78,14 +78,14 @@ export default {
     methods: {
         fetch: async function() {
             this.loading.iconset = true;
-            this.iconset = await window.std(`/api/iconset/${this.$route.params.icon}`);
+            this.iconset = await window.std(`/api/iconset/${this.$route.params.iconset}`);
             this.loading.iconset = false;
         },
         submit: async function() {
-            const url = await window.stdurl(`/api/iconset/${this.$route.params.icon ||''}`);
+            const url = await window.stdurl(`/api/iconset/${this.$route.params.iconset ||''}`);
 
             const iconset = await window.std(url, {
-                method: this.$route.params.icon ? 'PATCH' : 'POST',
+                method: this.$route.params.iconset ? 'PATCH' : 'POST',
                 body: this.iconset
             });
 
@@ -93,12 +93,12 @@ export default {
         },
         fetchSchema: async function() {
             const url = await window.stdurl(`/api/schema`);
-            url.searchParams.append('method', this.$route.params.icon ? 'PATCH' : 'POST');
-            url.searchParams.append('url', this.$route.params.icon ? '/iconset/:iconset' : '/iconset');
+            url.searchParams.append('method', this.$route.params.iconset ? 'PATCH' : 'POST');
+            url.searchParams.append('url', this.$route.params.iconset ? '/iconset/:iconset' : '/iconset');
             this.schema = (await window.std(url)).body;
         },
         Icondeleteset: async function() {
-            await window.std(`/api/iconset/${this.$route.params.icon}`, {
+            await window.std(`/api/iconset/${this.$route.params.iconset}`, {
                 method: 'DELETE'
             });
 
