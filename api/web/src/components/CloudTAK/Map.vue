@@ -2,22 +2,28 @@
 <div class="row position-relative" style='height: calc(100vh - 58px) !important;'>
     <TablerLoading v-if='loading.main'/>
     <template v-else>
-        <div class='position-absolute top-0 end-0 text-white py-2' style='z-index: 1; width: 60px; background-color: rgba(0, 0, 0, 0.5);'>
-
+        <div v-if='mode === "Default"' class='position-absolute top-0 end-0 text-white py-2' style='z-index: 1; width: 60px; background-color: rgba(0, 0, 0, 0.5);'>
             <IconMenu2 v-if='!cot && !menu.main' @click='menu.main = true' size='40' class='cursor-pointer'/>
             <IconX v-else-if='!cot && menu.main' @click='menu.main = false' size='40' class='cursor-pointer bg-dark'/>
             <IconX v-if='cot' @click='cot = false' size='40' class='cursor-pointer bg-dark'/>
         </div>
 
         <div v-if='profile' class='position-absolute bottom-0 begin-0 text-white py-2' style='z-index: 1; width: 200px; background-color: rgba(0, 0, 0, 0.5);'>
-            <div class='mx-2 d-flex'>
-                <IconLocationOff/>
-                <IconLocation/>
-                <div v-text='profile.tak_callsign'></div>
+            <div class='d-flex align-items-center'>
+                <div class='mx-2 hover-dark rounded py-2 px-2 cursor-pointer' v-tooltip='"Set Location"'>
+                    <IconLocationOff @click='setLocation' v-if='!profile.tak_loc'/>
+                    <IconLocation @click='setLocation' v-else/>
+                </div>
+                <div
+                    v-text='profile.tak_callsign'
+                    @click='toLocation'
+                    class='mx-2 cursor-pointer hover-dark px-2 py-2 rounded'
+                    v-tooltip='"To Location"'
+                ></div>
             </div>
         </div>
 
-        <div class='position-absolute top-0 beginning-0 text-white py-2 mx-2' style='z-index: 1; width: 60px; background-color: rgba(0, 0, 0, 0.5)'>
+        <div v-if='mode === "Default"' class='position-absolute top-0 beginning-0 text-white py-2 mx-2' style='z-index: 1; width: 60px; background-color: rgba(0, 0, 0, 0.5)'>
             <div @click='setBearing(0)' style='padding-bottom: 10px;' class='cursor-pointer'>
                 <svg width="40" height="40" :transform='`rotate(${360 - bearing})`' viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" /><path d="M12 8l-4 4" /><path d="M12 8v8" /><path d="M16 12l-4 -4" /></svg>
                 <div v-if='bearing !== 0' class='text-center' v-text='`${Math.round(bearing)}°`'></div>
@@ -31,7 +37,7 @@
             </div>
         </div>
 
-        <div v-if='isLoaded'
+        <div v-if='isLoaded && mode === "Default"'
             class='position-absolute top-0 text-white py-2'
             style='z-index: 1; width: 60px; right: 60px; background-color: rgba(0, 0, 0, 0.5)'
         >
@@ -51,12 +57,12 @@
         </div>
 
         <CloudTAKMenu
-            v-if='menu.main'
+            v-if='menu.main && mode === "Default"'
             @basemap='setBasemap($event)'
             @reset='deleteCOT()'
         />
         <CloudTAKCoTView
-            v-if='cot'
+            v-if='cot && mode === "Default"'
             :cot='cot'
         />
         <div ref="map" style='vh-100'></div>
@@ -120,7 +126,6 @@ export default {
     },
     mounted: async function() {
         await profileStore.load();
-
         await this.fetchBaseMaps();
         await this.Iconfetchsets();
         this.loading.main = false;
@@ -145,6 +150,7 @@ export default {
     },
     data: function() {
         return {
+            mode: 'Default',
             menu: {
                 // Menu State Functions - true for shown
                 main: false,
@@ -202,6 +208,25 @@ export default {
         }
     },
     methods: {
+        toLocation: function() {
+            if (!profileStore.profile.tak_loc) throw new Error('No Location Set');
+            mapStore.map.flyTo({
+                center: profileStore.profile.tak_loc.coordinates,
+                zoom: 14
+            });
+        },
+        setLocation: function() {
+            this.mode = 'SetLocation';
+            mapStore.map.getCanvas().style.cursor = 'pointer'
+            mapStore.map.once('click', async (e) => {
+                mapStore.map.getCanvas().style.cursor = ''
+                this.mode = 'Default';
+                await profileStore.update({
+                    tak_loc: { type: 'Point', coordinates: [e.lngLat.lng, e.lngLat.lat] }
+                })
+                this.setYou();
+            });
+        },
         connectSocket: function() {
             const url = window.stdurl('/api');
             url.searchParams.append('format', 'geojson');
@@ -309,7 +334,10 @@ export default {
 
             if (this.locked.length && this.cots.has(this.locked[this.locked.length - 1])) {
                 const flyTo = { center: this.cots.get(this.locked[this.locked.length - 1]).properties.center, speed: Infinity };
-                mapStore.map.flyTo(flyTo)
+                mapStore.map.flyTo({
+                    center: [position.coords.longitude, position.coords.latitude],
+                    zoom: 14
+                });
             }
         },
         setBasemap: function(basemap) {
@@ -325,6 +353,18 @@ export default {
                 maxzoom: basemap.maxzoom
             }, 'cots');
         },
+        setYou: function() {
+            if (profileStore.profile.tak_loc) {
+                mapStore.map.getSource('you').setData({
+                    type: 'FeatureCollection',
+                    features: [{
+                        type: 'Feature',
+                        properties: {},
+                        geometry: profileStore.profile.tak_loc
+                    }]
+                });
+            }
+        },
         mountMap: function() {
             const basemap = this.basemaps.basemaps[0];
             basemap.url = String(window.stdurl(`/api/basemap/${basemap.id}/tiles/`)) + `{z}/{x}/{y}?token=${localStorage.token}`;
@@ -338,6 +378,8 @@ export default {
                 for (const iconset of this.iconsets.iconsets) {
                     mapStore.map.addSprite(iconset.uid, String(window.stdurl(`/api/icon/sprite?token=${localStorage.token}&iconset=${iconset.uid}`)))
                 }
+
+                this.setYou();
 
                 mapStore.draw.on('finish', (id) => {
                     const feat = mapStore.draw._store.store[id];

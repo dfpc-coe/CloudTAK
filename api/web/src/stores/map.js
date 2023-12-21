@@ -106,6 +106,11 @@ export const useMapStore = defineStore('cloudtak', {
                             type: 'geojson',
                             cluster: false,
                             data: { type: 'FeatureCollection', features: [] }
+                        },
+                        you: {
+                            type: 'geojson',
+                            cluster: false,
+                            data: { type: 'FeatureCollection', features: [] }
                         }
                     },
                     layers: [{
@@ -181,6 +186,20 @@ export const useMapStore = defineStore('cloudtak', {
                     'text-font': ['Open Sans Bold'],
                     'text-field':  '{callsign}'
                 }
+            }]);
+
+            this.addLayer({
+                name: 'Your Location',
+                source: 'you',
+                type: 'vector'
+            }, [{
+                id: 'you',
+                type: 'circle',
+                source: 'you',
+                paint: {
+                    'circle-radius': 10,
+                    'circle-color': '#0000f6',
+                },
             }]);
 
             for (const layer of ['cots', 'cots-poly', 'cots-line']) {

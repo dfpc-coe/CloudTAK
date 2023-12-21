@@ -19,6 +19,9 @@
         },
         "tak_role": {
             "$ref": "./profile/tak_role.json"
+        },
+        "tak_loc": {
+            "type": ["null", "object"]
         }
     },
     "required": [
