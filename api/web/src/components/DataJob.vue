@@ -28,7 +28,8 @@
                             </div>
                         </div>
                         <div class="card-body">
-                            <pre v-text='logs'></pre>
+                            <TablerNone v-if='!logs.length' label='Logs' :create='false'/>
+                            <pre v-else v-text='logs'></pre>
                         </div>
                     </div>
                 </div>
@@ -43,6 +44,7 @@
 <script>
 import PageFooter from './PageFooter.vue';
 import {
+    TablerNone,
     TablerLoading,
     TablerBreadCrumb
 } from '@tak-ps/vue-tabler'
@@ -85,6 +87,7 @@ export default {
     components: {
         PageFooter,
         IconRefresh,
+        TablerNone,
         TablerLoading,
         TablerBreadCrumb
     }
