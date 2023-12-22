@@ -17,6 +17,10 @@ export const useProfileStore = defineStore('profile', {
                     how: 'm-g',
                     callsign: this.profile.tak_callsign,
                     droid: this.profile.tak_callsign,
+                    contact:{
+                        endpoint:"*:-1:stcp",
+                        callsign: this.profile.tak_callsign,
+                    },
                     group: {
                         name: this.profile.tak_group,
                         role: this.profile.tak_role

@@ -410,7 +410,6 @@ export default {
 
                 this.timer = window.setInterval(() => {
                     if (!mapStore.map) return;
-                    this.sendCOT(profileStore.CoT());
                     this.updateCOT();
                 }, 500);
             });
