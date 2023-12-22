@@ -268,6 +268,7 @@ export default async function router(schema, config: Config) {
             const icon = await Icon.from(config.pool, req.params.iconset, req.params.icon);
 
             if (req.body.name && path.parse(req.body.name).ext !== '.png') throw new Err(400, null, 'Name must have .png extension');
+            if (req.body.name) req.body.path = `${icon.iconset}/${req.body.name}`;
 
             if (req.body.type2525b === '') delete req.body.type2525b;
             await icon.commit(req.body);
