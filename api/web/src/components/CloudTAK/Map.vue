@@ -8,7 +8,7 @@
             <IconX v-if='cot' @click='cot = false' size='40' class='cursor-pointer bg-dark'/>
         </div>
 
-        <div v-if='profile' class='position-absolute bottom-0 begin-0 text-white py-2' style='z-index: 1; width: 200px; background-color: rgba(0, 0, 0, 0.5);'>
+        <div v-if='profile' class='position-absolute bottom-0 begin-0 text-white' style='z-index: 1; width: 200px; background-color: rgba(0, 0, 0, 0.5);'>
             <div class='d-flex align-items-center'>
                 <div class='mx-2 hover-dark rounded py-2 px-2 cursor-pointer' v-tooltip='"Set Location"'>
                     <IconLocationOff @click='setLocation' v-if='!profile.tak_loc'/>
@@ -17,7 +17,7 @@
                 <div
                     v-text='profile.tak_callsign'
                     @click='toLocation'
-                    class='mx-2 cursor-pointer hover-dark px-2 py-2 rounded'
+                    class='mx-1 my-1 cursor-pointer hover-dark px-2 py-2 rounded'
                     v-tooltip='"To Location"'
                 ></div>
             </div>
@@ -163,6 +163,7 @@ export default {
             cots: new Map(),    // Store all on-screen CoT messages
             ws: null,           // WebSocket Connection for CoT events
             timer: null,        // Interval for pushing GeoJSON Map Updates (CoT)
+            timerSelf: null,    // Interval for pushing your location to the server
             loading: {
                 // Any Loading related states
                 main: true
@@ -174,6 +175,7 @@ export default {
     },
     beforeUnmount: function() {
         if (this.timer) window.clearInterval(this.timer);
+        if (this.timerSelf) window.clearInterval(this.timerSelf);
         if (this.ws) this.ws.close();
 
         if (mapStore.map) {
@@ -323,6 +325,10 @@ export default {
             }
             this.updateCOT();
         },
+        sendCOT: function(cot) {
+            if (!this.ws) return;
+            this.ws.send(JSON.stringify(cot));
+        },
         updateCOT: function() {
             mapStore.map.getSource('cots').setData({
                 type: 'FeatureCollection',
@@ -355,6 +361,7 @@ export default {
         },
         setYou: function() {
             if (profileStore.profile.tak_loc) {
+                this.sendCOT(profileStore.CoT());
                 mapStore.map.getSource('you').setData({
                     type: 'FeatureCollection',
                     features: [{
@@ -397,8 +404,13 @@ export default {
                     this.updateCOT();
                 });
 
+                this.timerSelf = window.setInterval(() => {
+                    this.sendCOT(profileStore.CoT());
+                }, 2000);
+
                 this.timer = window.setInterval(() => {
                     if (!mapStore.map) return;
+                    this.sendCOT(profileStore.CoT());
                     this.updateCOT();
                 }, 500);
             });
