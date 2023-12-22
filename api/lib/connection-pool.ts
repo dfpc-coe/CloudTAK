@@ -21,7 +21,6 @@ export class ConnectionWebSocket {
             this.ws.on('message', (msg) => {
                 try {
                     const cot = CoT.from_geojson(JSON.parse(String(msg)));
-console.error(cot.to_xml());
                     this.client.tak.write([cot]);
                 } catch (err) {
                     this.ws.send(JSON.stringify({
