@@ -130,6 +130,11 @@ export default {
         ...mapState(useProfileStore, ['profile'])
     },
     mounted: async function() {
+        window.addEventListener('error', (evt) => {
+            evt.preventDefault();
+            this.$emit('err', new Error(evt.message));
+        });
+
         await profileStore.load();
         await this.fetchBaseMaps();
         await this.Iconfetchsets();
@@ -213,6 +218,8 @@ export default {
             if (this.cot) this.radial.cot = null;
         }
     },
+    errorCaptured: function(err, vm, info) {
+    },
     methods: {
         toLocation: function() {
             if (!profileStore.profile.tak_loc) throw new Error('No Location Set');
@@ -248,14 +255,6 @@ export default {
             this.ws.addEventListener('error', (err) => { this.$emit('err') });
             this.ws.addEventListener('close', () => {
                 this.connectSocket();
-            });
-            this.ws.addEventListener('add', () => {
-                if (this.timerSelf) return;
-                this.timerSelf = window.setInterval(() => {
-                    if (profileStore.profile.tak_loc) {
-                        this.sendCOT(profileStore.CoT());
-                    }
-                }, 2000);
             });
             this.ws.addEventListener('message', (msg) => {
                 msg = JSON.parse(msg.data);
@@ -322,7 +321,7 @@ export default {
             this.updateCOT();
         },
         sendCOT: function(cot) {
-            if (!this.ws) return;
+            if (!this.ws || this.ws.readyState !== WebSocket.OPEN) return;
             this.ws.send(JSON.stringify(cot));
         },
         updateCOT: function() {
@@ -350,7 +349,7 @@ export default {
             }, 'cots');
         },
         setYou: function() {
-            if (profileStore.profile.tak_loc && this.timerSelf) {
+            if (profileStore.profile.tak_loc) {
                 this.sendCOT(profileStore.CoT());
                 mapStore.map.getSource('you').setData({
                     type: 'FeatureCollection',
@@ -396,6 +395,11 @@ export default {
                     this.updateCOT();
                 });
 
+                this.timerSelf = window.setInterval(() => {
+                    if (profileStore.profile.tak_loc) {
+                        this.sendCOT(profileStore.CoT());
+                    }
+                }, 2000);
 
                 this.timer = window.setInterval(() => {
                     if (!mapStore.map) return;
