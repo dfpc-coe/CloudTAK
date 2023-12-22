@@ -56,27 +56,7 @@ export default {
     data: function() {
         return {
             feat: this.modelValue,
-            point: {
-                icon: '',
-                color: '#d63939',
-            },
-            line: {
-                stroke: '#d63939',
-                'stroke-style': 'solid',
-                'stroke-opacity': 256,
-                'stroke-width': 3,
-            },
-            polygon: {
-                stroke: '#d63939',
-                'stroke-style': 'solid',
-                'stroke-opacity': 256,
-                'stroke-width': 3,
-                'fill': '#d63939',
-                'fill-opacity': 256,
-            }
         };
-    },
-    mounted: function() {
     },
     methods: {
         format: function() {

@@ -130,6 +130,7 @@ export default {
         ...mapState(useProfileStore, ['profile'])
     },
     mounted: async function() {
+        // ensure uncaught errors in the stack are captured into vue context
         window.addEventListener('error', (evt) => {
             evt.preventDefault();
             this.$emit('err', new Error(evt.message));
@@ -328,11 +329,11 @@ export default {
             mapStore.map.getSource('cots').setData(cotStore.collection())
 
             if (this.locked.length && cotStore.has(this.locked[this.locked.length - 1])) {
-                const flyTo = { center: cotStore.get(this.locked[this.locked.length - 1]).properties.center, speed: Infinity };
-                mapStore.map.flyTo({
-                    center: [position.coords.longitude, position.coords.latitude],
-                    zoom: 14
-                });
+                const flyTo = {
+                    center: cotStore.get(this.locked[this.locked.length - 1]).properties.center,
+                    speed: Infinity
+                };
+                mapStore.map.flyTo(flyTo);
             }
         },
         setBasemap: function(basemap) {
@@ -380,12 +381,24 @@ export default {
                 mapStore.draw.on('finish', (id) => {
                     const feat = mapStore.draw._store.store[id];
 
-                    if (mapStore.draw.getMode() === 'polygon') {
+                    if (mapStore.draw.getMode() === 'polygon' || mapStore.draw.getMode() === 'rectangle') {
                         feat.id = id;
                         feat.properties.id = id;
                         feat.properties.type = 'u-d-f';
                         feat.properties.fill = '#ff0000'
-                        feat.properties['fill-opacity'] = 0.5;
+                        feat.properties['fill-opacity'] = 255;
+                        feat.properties.center = pointOnFeature(feat.geometry).geometry.coordinates;
+                    } else if (mapStore.draw.getMode() === 'line') {
+                        feat.id = id;
+                        feat.properties.id = id;
+                        feat.properties.type = 'u-d-f';
+                        feat.properties.line = '#ff0000'
+                        feat.properties['line-opacity'] = 255;
+                        feat.properties.center = pointOnFeature(feat.geometry).geometry.coordinates;
+                    } else if (mapStore.draw.getMode() === 'point') {
+                        feat.id = id;
+                        feat.properties.id = id;
+                        feat.properties.type = 'u-d-p';
                         feat.properties.center = pointOnFeature(feat.geometry).geometry.coordinates;
                     }
 
