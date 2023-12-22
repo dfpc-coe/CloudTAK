@@ -12,17 +12,17 @@
         </div>
     </div>
 
-    <TablerLoading v-if='loading.iconset' desc='Loading Iconset'/>
+    <TablerLoading v-if='loading.icon' desc='Loading Icon'/>
     <div v-else class='page-body'>
         <div class='container-xl'>
             <div class='row row-deck row-cards'>
                 <div class="col-lg-12">
                     <div class="card">
                         <div class='card-header'>
-                            <h3 class='card-title'>Iconset <span v-text='iconset.uid'/></h3>
+                            <h3 class='card-title'>Icon <span v-text='$route.params.icon || "New Icon"'/></h3>
                         </div>
                         <div class="card-body">
-                            <TablerLoading v-if='loading.iconset' desc='Loading Iconset'/>
+                            <TablerLoading v-if='loading.icon' desc='Loading Icon'/>
                             <TablerSchema v-else :schema='schema' v-model='icon'/>
 
                             <div class='d-flex'>
@@ -58,14 +58,13 @@ export default {
     data: function() {
         return {
             loading: {
-                iconset: true
+                icon: true
             },
             schema: {},
             icon: {
                 name: '',
                 data: ''
             },
-            iconset: {}
         }
     },
     mounted: async function() {
@@ -74,22 +73,31 @@ export default {
         if (this.$route.params.icon) {
             await this.fetch();
         } else {
-            this.loading.iconset = false;
+            this.loading.icon = false;
         }
     },
     methods: {
         fetch: async function() {
-            this.loading.iconset = true;
-            this.iconset = await window.std(`/api/iconset/${this.$route.params.iconset}`);
-            this.loading.iconset = false;
+            this.loading.icon = true;
+            this.icon = await window.std(`/api/iconset/${this.$route.params.iconset}/icon/${encodeURIComponent(this.$route.params.icon)}`);
+            this.loading.icon = false;
         },
         submit: async function() {
-            const url = await window.stdurl(`/api/iconset/${this.$route.params.iconset}/icon`);
+            if (this.$route.params.icon) {
+                const url = await window.stdurl(`/api/iconset/${this.$route.params.iconset}/icon/${encodeURIComponent(this.$route.params.icon)}`);
 
-            await window.std(url, {
-                method: 'POST',
-                body: this.icon
-            });
+                await window.std(url, {
+                    method: 'PATCH',
+                    body: this.icon
+                });
+            } else {
+                const url = await window.stdurl(`/api/iconset/${this.$route.params.iconset}/icon`);
+
+                await window.std(url, {
+                    method: 'POST',
+                    body: this.icon
+                });
+            }
 
             this.$router.push(`/iconset/${this.$route.params.iconset}`);
         },

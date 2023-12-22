@@ -168,6 +168,8 @@ export default async function router(schema, config: Config) {
 
             const iconset = await Iconset.from(config.pool, req.params.iconset);
 
+            if (path.parse(req.body.name).ext !== '.png') throw new Err(400, null, 'Name must have .png extension');
+
             const icon = await Icon.generate(config.pool, {
                 ...req.body,
                 path: `${iconset.uid}/${req.body.name}`,
@@ -237,6 +239,39 @@ export default async function router(schema, config: Config) {
         try {
             await Auth.is_auth(req);
             const icon = await Icon.from(config.pool, req.params.iconset, req.params.icon);
+            return res.json(icon);
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
+
+    await schema.patch('/iconset/:iconset/icon/:icon', {
+        name: 'Update Icon',
+        group: 'Icons',
+        auth: 'user',
+        ':iconset': 'string',
+        ':icon': 'string',
+        description: 'Update Icon in Iconset',
+        body: {
+            type: 'object',
+            additionalProperties: false,
+            properties: {
+                name: { type: 'string' },
+                data: { type: 'string' },
+                type2525b: { type: ['string', 'null'] },
+            }
+        },
+        res: 'icons.json'
+    }, async (req: AuthRequest, res: Response) => {
+        try {
+            await Auth.is_auth(req);
+            const icon = await Icon.from(config.pool, req.params.iconset, req.params.icon);
+
+            if (req.body.name && path.parse(req.body.name).ext !== '.png') throw new Err(400, null, 'Name must have .png extension');
+
+            if (req.body.type2525b === '') delete req.body.type2525b;
+            await icon.commit(req.body);
+
             return res.json(icon);
         } catch (err) {
             return Err.respond(err, res);

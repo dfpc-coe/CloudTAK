@@ -22,6 +22,7 @@
 
                             <div class='ms-auto btn-list'>
                                 <TablerDelete displaytype='icon' @delete='deleteIcon'/>
+                                <IconSettings @click='$router.push(`/iconset/${$route.params.iconset}/icon/${encodeURIComponent($route.params.icon)}/edit`)' class='cursor-pointer'/>
                             </div>
                         </div>
                         <div class='card-body'>
@@ -71,7 +72,7 @@ import {
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import {
-    IconPlus,
+    IconSettings,
     IconDownload
 } from '@tabler/icons-vue';
 
@@ -110,7 +111,7 @@ export default {
         }
     },
     components: {
-        IconPlus,
+        IconSettings,
         IconDownload,
         CombinedIcons,
         TablerDelete,

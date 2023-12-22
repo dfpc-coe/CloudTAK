@@ -22,6 +22,9 @@
         },
         "path": {
             "$ref": "./icons/path.json"
+        },
+        "id": {
+            "$ref": "./icons/id.json"
         }
     },
     "required": [
@@ -31,6 +34,7 @@
         "created",
         "updated",
         "data",
-        "path"
+        "path",
+        "id"
     ]
 }
