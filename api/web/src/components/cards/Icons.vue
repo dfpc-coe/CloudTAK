@@ -21,8 +21,8 @@
         />
         <template v-else>
             <div class='row g-1'>
-                <div :key='icon.id' v-for='icon in list.icons' class="col-sm-2">
-                    <div class="card card-sm">
+                <div @click='$router.push(`/iconset/${icon.iconset}/icon/${encodeURIComponent(icon.name)}`)' :key='icon.name' v-for='icon in list.icons' class="col-sm-2">
+                    <div class="card card-sm hover-light cursor-pointer">
                         <div class='col-12'>
                             <div class='d-flex justify-content-center mt-3'>
                                 <img :src='iconurl(icon)' height='32' width='32'>

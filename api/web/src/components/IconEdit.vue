@@ -91,7 +91,7 @@ export default {
                 body: this.icon
             });
 
-            this.$router.push(`/iconset/${this.iconset.uid}`);
+            this.$router.push(`/iconset/${this.$route.params.iconset}`);
         },
         fetchSchema: async function() {
             const url = await window.stdurl(`/api/schema`);

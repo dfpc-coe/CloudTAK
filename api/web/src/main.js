@@ -142,9 +142,10 @@ const router = new VueRouter.createRouter({
 
         { path: '/iconset', name: 'icons', component: () => import('./components/Iconsets.vue') },
         { path: '/iconset/new', name: 'iconset-new', component: () => import('./components/IconsetEdit.vue') },
-        { path: '/iconset/:iconset', name: 'icon', component: () => import('./components/Iconset.vue') },
-        { path: '/iconset/:iconset/edit', name: 'icon-edit', component: () => import('./components/IconsetEdit.vue') },
-        { path: '/iconset/:iconset/icon', name: 'icon-new', component: () => import('./components/IconUpload.vue') },
+        { path: '/iconset/:iconset', name: 'iconset', component: () => import('./components/Iconset.vue') },
+        { path: '/iconset/:iconset/edit', name: 'iconset-edit', component: () => import('./components/IconsetEdit.vue') },
+        { path: '/iconset/:iconset/icon', name: 'icon-new', component: () => import('./components/IconEdit.vue') },
+        { path: '/iconset/:iconset/icon/:icon', name: 'icon', component: () => import('./components/Icon.vue') },
 
         { path: '/import', name: 'imports', component: () => import('./components/Imports.vue') },
         { path: '/import/:import', name: 'import', component: () => import('./components/Import.vue') },
