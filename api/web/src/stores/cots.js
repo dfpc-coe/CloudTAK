@@ -5,10 +5,21 @@ import moment from 'moment';
 export const useCOTStore = defineStore('cots', {
     state: () => {
         return {
+            archive: new Map(), // Store all archived CoT messages
             cots: new Map(),    // Store all on-screen CoT messages
         }
     },
     actions: {
+        loadArchive: function() {
+            const archive = JSON.parse(localStorage.getItem('archive') || '[]');
+            for (const a of archive) {
+                this.archive.set(a.id, a);
+                this.cots.set(a.id, a);
+            }
+        },
+        saveArchive: function() {
+            localStorage.setItem('archive', JSON.stringify(Array.from(this.archive.values())))
+        },
         collection: function() {
             return {
                 type: 'FeatureCollection',
@@ -26,6 +37,10 @@ export const useCOTStore = defineStore('cots', {
         },
         delete: function(id) {
             this.cots.delete(id);
+            if (this.archive.has(id)) {
+                this.archive.delete(id);
+                this.saveArchive();
+            }
         },
         clear: function() {
             this.cots.clear();
@@ -70,9 +85,13 @@ export const useCOTStore = defineStore('cots', {
                 }
             }
 
-
-
             this.cots.set(feat.id, feat);
+
+            if (feat.properties.archive) {
+                this.archive.set(feat.id, feat);
+                this.saveArchive();
+            }
+
         }
     }
 })
