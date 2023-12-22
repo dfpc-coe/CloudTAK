@@ -11,9 +11,10 @@ export const useProfileStore = defineStore('profile', {
             return {
                 type: 'Feature',
                 properties: {
-                    type: 'a-f-G',
+                    type: 'a-f-G-E-V-C',
+                    how: 'm-g',
                     callsign: this.profile.tak_callsign,
-                    droid: this.profile.tak_callsign
+                    droid: `ANDROID-${this.profile.tak_callsign}`
                 },
                 geometry: this.profile.tak_loc
             }
