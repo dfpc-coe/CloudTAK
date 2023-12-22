@@ -42,6 +42,22 @@ export default class Icon extends Generic {
         }
     }
 
+    static async delete(pool, iconset, name) {
+        try {
+            const pgres = await pool.query(sql`
+                DELETE FROM
+                    ${sql.identifier([this._table])}
+                WHERE
+                    name = ${name}
+                    AND iconset = ${iconset}
+            `);
+
+            return true;
+        } catch (err) {
+            throw new Err(500, err, 'Failed to delete icon');
+        }
+    }
+
     static async from(pool, iconset, name) {
         try {
             const pgres = await pool.query(sql`
