@@ -307,9 +307,9 @@ export default {
         },
         deleteCOT: function(cot) {
             if (cot) {
-                this.cotStore.delete(cot.properties.id)
+                cotStore.delete(cot.properties.id)
             } else {
-                this.cotStore.clear();
+                cotStore.clear();
             }
             this.updateCOT();
         },
@@ -320,8 +320,8 @@ export default {
         updateCOT: function() {
             mapStore.map.getSource('cots').setData(cotStore.collection())
 
-            if (this.locked.length && this.cotStore.has(this.locked[this.locked.length - 1])) {
-                const flyTo = { center: this.cotStore.get(this.locked[this.locked.length - 1]).properties.center, speed: Infinity };
+            if (this.locked.length && cotStore.has(this.locked[this.locked.length - 1])) {
+                const flyTo = { center: cotStore.get(this.locked[this.locked.length - 1]).properties.center, speed: Infinity };
                 mapStore.map.flyTo({
                     center: [position.coords.longitude, position.coords.latitude],
                     zoom: 14
