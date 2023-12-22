@@ -247,6 +247,7 @@ export default {
             })
             this.ws.addEventListener('message', (msg) => {
                 msg = JSON.parse(msg.data);
+                if (msg.type === 'Error') throw new Error(msg.properties.message);
                 if (msg.type !== 'cot') return;
 
                 //Vector Tiles only support integer IDs
