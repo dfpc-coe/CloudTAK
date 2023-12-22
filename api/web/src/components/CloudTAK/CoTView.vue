@@ -61,6 +61,8 @@ import {
     IconZoomPan,
     IconCode
 } from '@tabler/icons-vue';
+import { useCOTStore } from '/src/stores/cots.js';
+const cotStore = useCOTStore();
 
 export default {
     name: 'CloudTAKCoTView',
@@ -81,7 +83,7 @@ export default {
     data: function() {
         return {
             mode: 'default',
-            feat: this.cot,
+            feat: cotStore.get(this.cot.properties.id),
             icon: null
         }
     },
@@ -122,6 +124,8 @@ export default {
             mapStore.map.removeLayer('cots-edit-fill');
             mapStore.map.removeLayer('cots-edit-line');
         }
+
+        cotStore.update(this.feat);
     },
     computed: {
         isUserDrawn: function() {
@@ -133,7 +137,6 @@ export default {
     },
     methods: {
         updateStyle: function() {
-            console.error(JSON.stringify(this.feat.properties))
             mapStore.map.setPaintProperty('cots-edit-fill', 'fill-color', this.feat.properties.fill);
             mapStore.map.setPaintProperty('cots-edit-fill', 'fill-opacity', Number(this.feat.properties['fill-opacity']));
             mapStore.map.setPaintProperty('cots-edit-line', 'line-color', this.feat.properties.stroke);
