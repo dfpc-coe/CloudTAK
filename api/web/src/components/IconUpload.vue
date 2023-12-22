@@ -80,11 +80,11 @@ export default {
     methods: {
         fetch: async function() {
             this.loading.iconset = true;
-            this.iconset = await window.std(`/api/iconset/${this.$route.params.icon}`);
+            this.iconset = await window.std(`/api/iconset/${this.$route.params.iconset}`);
             this.loading.iconset = false;
         },
         submit: async function() {
-            const url = await window.stdurl(`/api/iconset/${this.$route.params.icon}/icon`);
+            const url = await window.stdurl(`/api/iconset/${this.$route.params.iconset}/icon`);
 
             await window.std(url, {
                 method: 'POST',
