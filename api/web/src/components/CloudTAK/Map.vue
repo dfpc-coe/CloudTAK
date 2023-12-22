@@ -65,7 +65,10 @@
             v-if='cot && mode === "Default"'
             :cot='cot'
         />
-        <div ref="map" style='vh-100'></div>
+        <div
+            ref="map"
+            style='width: 100%;'
+        ></div>
     </template>
 
     <RadialMenu
@@ -109,7 +112,9 @@ import moment from 'moment';
 import { mapState, mapActions } from 'pinia'
 import { useMapStore } from '/src/stores/map.js';
 import { useProfileStore } from '/src/stores/profile.js';
+import { useCOTStore } from '/src/stores/cots.js';
 const mapStore = useMapStore();
+const cotStore = useCOTStore();
 const profileStore = useProfileStore();
 
 export default {
@@ -160,7 +165,6 @@ export default {
                                 //   this is an array so that things like the radial menu can temporarily lock state but remember the previous lock value when they are closed
             edit: false,        // If a radial.cot is set and edit is true then load the cot into terra-draw
             cot: null,          // Show the CoT Viewer sidebar
-            cots: new Map(),    // Store all on-screen CoT messages
             ws: null,           // WebSocket Connection for CoT events
             timer: null,        // Interval for pushing GeoJSON Map Updates (CoT)
             timerSelf: null,    // Interval for pushing your location to the server
@@ -250,24 +254,7 @@ export default {
                 if (msg.type === 'Error') throw new Error(msg.properties.message);
                 if (msg.type !== 'cot') return;
 
-                //Vector Tiles only support integer IDs
-                msg.data.properties.id = msg.data.id;
-
-                if (msg.data.properties.icon) {
-                    // Format of icon needs to change for spritesheet
-                    msg.data.properties.icon = msg.data.properties.icon.replace('/', ':').replace(/.png$/, '');
-                } else {
-                    msg.data.properties.icon = `${msg.data.properties.type}`;
-                }
-
-
-                // MapLibre Opacity must be of range 0-1
-                if (msg.data.properties['fill-opacity']) msg.data.properties['fill-opacity'] = msg.data.properties['fill-opacity'] / 255;
-                else msg.data.properties['fill-opacity'] = 255;
-                if (msg.data.properties['stroke-opacity']) msg.data.properties['stroke-opacity'] = msg.data.properties['stroke-opacity'] / 255;
-                else msg.data.properties['stroke-opacity'] = 255;
-
-                this.cots.set(msg.data.id, msg.data);
+                cotStore.add(msg.data);
             });
         },
         setBearing: function(bearing=0) {
@@ -320,9 +307,9 @@ export default {
         },
         deleteCOT: function(cot) {
             if (cot) {
-                this.cots.delete(cot.properties.id)
+                this.cotStore.delete(cot.properties.id)
             } else {
-                this.cots.clear();
+                this.cotStore.clear();
             }
             this.updateCOT();
         },
@@ -331,16 +318,10 @@ export default {
             this.ws.send(JSON.stringify(cot));
         },
         updateCOT: function() {
-            mapStore.map.getSource('cots').setData({
-                type: 'FeatureCollection',
-                features: Array.from(this.cots.values()).map((cot) => {
-                    cot.properties['icon-opacity'] = moment().subtract(5, 'minutes').isBefore(moment(cot.properties.stale)) ? 1 : 0.5;
-                    return cot;
-                })
-            });
+            mapStore.map.getSource('cots').setData(cotStore.collection())
 
-            if (this.locked.length && this.cots.has(this.locked[this.locked.length - 1])) {
-                const flyTo = { center: this.cots.get(this.locked[this.locked.length - 1]).properties.center, speed: Infinity };
+            if (this.locked.length && this.cotStore.has(this.locked[this.locked.length - 1])) {
+                const flyTo = { center: this.cotStore.get(this.locked[this.locked.length - 1]).properties.center, speed: Infinity };
                 mapStore.map.flyTo({
                     center: [position.coords.longitude, position.coords.latitude],
                     zoom: 14
@@ -381,32 +362,34 @@ export default {
 
             mapStore.map.once('load', () => {
                 mapStore.initLayers(basemap);
-                mapStore.initDraw();
 
                 for (const iconset of this.iconsets.iconsets) {
                     mapStore.map.addSprite(iconset.uid, String(window.stdurl(`/api/icon/sprite?token=${localStorage.token}&iconset=${iconset.uid}`)))
                 }
 
+                mapStore.initDraw();
                 this.setYou();
 
                 mapStore.draw.on('finish', (id) => {
                     const feat = mapStore.draw._store.store[id];
 
                     if (mapStore.draw.getMode() === 'polygon') {
+                        feat.id = id;
                         feat.properties.id = id;
                         feat.properties.type = 'u-d-f';
                         feat.properties.fill = '#ff0000'
+                        feat.properties['fill-opacity'] = 0.5;
                         feat.properties.center = pointOnFeature(feat.geometry).geometry.coordinates;
                     }
 
                     mapStore.draw._store.delete([id]);
                     mapStore.draw.stop();
-                    this.cots.set(id, feat);
+                    cotStore.add(feat);
                     this.updateCOT();
                 });
 
                 this.timerSelf = window.setInterval(() => {
-                    if (profileStore.profile.tak_loc) {   
+                    if (profileStore.profile.tak_loc) {
                         this.sendCOT(profileStore.CoT());
                     }
                 }, 2000);
