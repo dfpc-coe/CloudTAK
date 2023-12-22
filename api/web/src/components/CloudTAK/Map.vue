@@ -248,7 +248,15 @@ export default {
             this.ws.addEventListener('error', (err) => { this.$emit('err') });
             this.ws.addEventListener('close', () => {
                 this.connectSocket();
-            })
+            });
+            this.ws.addEventListener('add', () => {
+                if (this.timerSelf) return;
+                this.timerSelf = window.setInterval(() => {
+                    if (profileStore.profile.tak_loc) {
+                        this.sendCOT(profileStore.CoT());
+                    }
+                }, 2000);
+            });
             this.ws.addEventListener('message', (msg) => {
                 msg = JSON.parse(msg.data);
                 if (msg.type === 'Error') throw new Error(msg.properties.message);
@@ -342,7 +350,7 @@ export default {
             }, 'cots');
         },
         setYou: function() {
-            if (profileStore.profile.tak_loc) {
+            if (profileStore.profile.tak_loc && this.timerSelf) {
                 this.sendCOT(profileStore.CoT());
                 mapStore.map.getSource('you').setData({
                     type: 'FeatureCollection',
@@ -388,11 +396,6 @@ export default {
                     this.updateCOT();
                 });
 
-                this.timerSelf = window.setInterval(() => {
-                    if (profileStore.profile.tak_loc) {
-                        this.sendCOT(profileStore.CoT());
-                    }
-                }, 2000);
 
                 this.timer = window.setInterval(() => {
                     if (!mapStore.map) return;
