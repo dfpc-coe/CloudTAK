@@ -103,7 +103,6 @@ import {
     TablerDropdown,
     TablerLoading
 } from '@tak-ps/vue-tabler';
-import pointOnFeature from '@turf/point-on-feature';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import CloudTAKMenu from './Menu.vue';
 import CloudTAKCoTView from './CoTView.vue';
@@ -385,21 +384,14 @@ export default {
                         feat.id = id;
                         feat.properties.id = id;
                         feat.properties.type = 'u-d-f';
-                        feat.properties.fill = '#ff0000'
-                        feat.properties['fill-opacity'] = 255;
-                        feat.properties.center = pointOnFeature(feat.geometry).geometry.coordinates;
-                    } else if (mapStore.draw.getMode() === 'line') {
+                    } else if (mapStore.draw.getMode() === 'linestring') {
                         feat.id = id;
                         feat.properties.id = id;
                         feat.properties.type = 'u-d-f';
-                        feat.properties.line = '#ff0000'
-                        feat.properties['line-opacity'] = 255;
-                        feat.properties.center = pointOnFeature(feat.geometry).geometry.coordinates;
                     } else if (mapStore.draw.getMode() === 'point') {
                         feat.id = id;
                         feat.properties.id = id;
                         feat.properties.type = 'u-d-p';
-                        feat.properties.center = pointOnFeature(feat.geometry).geometry.coordinates;
                     }
 
                     mapStore.draw._store.delete([id]);

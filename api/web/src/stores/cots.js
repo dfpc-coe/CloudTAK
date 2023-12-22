@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+import pointOnFeature from '@turf/point-on-feature';
 import moment from 'moment';
 
 export const useCOTStore = defineStore('cots', {
@@ -33,7 +34,11 @@ export const useCOTStore = defineStore('cots', {
             //Vector Tiles only support integer IDs
             feat.properties.id = feat.id;
 
-            if (feat.geometry.type.contains('Point')) {
+            if (!feat.properties.center) {
+                feat.properties.center = pointOnFeature(feat.geometry).geometry.coordinates;
+            }
+
+            if (feat.geometry.type.includes('Point')) {
                 if (feat.properties.icon) {
                     // Format of icon needs to change for spritesheet
                     feat.properties.icon = feat.properties.icon.replace('/', ':').replace(/.png$/, '');
@@ -42,7 +47,7 @@ export const useCOTStore = defineStore('cots', {
                 }
 
                 feat.properties.color = '#d63939';
-            } else if (feat.geometry.type.contains('Line') || feat.geometry.type.contains('Polygon')) {
+            } else if (feat.geometry.type.includes('Line') || feat.geometry.type.includes('Polygon')) {
                 if (!feat.properties['stroke']) feat.properties.stroke = '#d63939';
                 if (!feat.properties['stroke-style']) feat.properties['stroke-style'] = 'solid';
                 if (!feat.properties['stroke-width']) feat.properties['stroke-width'] = 3;
@@ -54,7 +59,7 @@ export const useCOTStore = defineStore('cots', {
                     feat.properties['stroke-opacity'] = 1;
                 }
 
-                if (feat.geometry.type.contains('Polygon')) {
+                if (feat.geometry.type.includes('Polygon')) {
                     if (!feat.properties['fill']) feat.properties.fill = '#d63939';
 
                     if (feat.properties['fill-opacity']) {
