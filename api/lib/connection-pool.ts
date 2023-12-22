@@ -11,10 +11,18 @@ import TAK, { CoT } from '@tak-ps/node-tak';
 export class ConnectionWebSocket {
     ws: WebSocket;
     format: string;
+    client?: ConnectionClient;
 
-    constructor(ws: WebSocket, format = 'raw') {
+    constructor(ws: WebSocket, format = 'raw', client?: ConnectionClient) {
         this.ws = ws;
         this.format = format;
+        if (client) {
+            this.client = client;
+            this.ws.on('message', (msg) => {
+                const cot = CoT.from_geojson(JSON.parse(String(msg)));
+                this.client.tak.write([cot]);
+            });
+        }
     }
 }
 
@@ -136,7 +144,7 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
         }
     }
 
-    async add(conn: Connection, ephemeral=false) {
+    async add(conn: Connection, ephemeral=false): Promise<ConnectionClient> {
         const tak = await TAK.connect(conn.id, new URL(this.#server.url), conn.auth);
         const connClient = new ConnectionClient(conn, tak, ephemeral);
         this.set(conn.id, connClient);
@@ -164,6 +172,8 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
             console.error(`not ok - ${conn.id} @ error:${err}`);
             this.retry(connClient);
         });
+
+        return connClient;
     }
 
     async retry(connClient: ConnectionClient) {

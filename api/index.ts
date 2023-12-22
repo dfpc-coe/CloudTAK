@@ -234,19 +234,17 @@ export default async function server(config: Config) {
 
             const auth = tokenParser(params.get('token'), config.SigningSecret);
 
+            if (!config.wsClients.has(params.get('connection'))) config.wsClients.set(params.get('connection'), [])
+
             // Connect to MachineUser Connection if it is an integer
             if (!isNaN(parseInt(params.get('connection')))) {
-                if (!config.wsClients.has(params.get('connection'))) config.wsClients.set(params.get('connection'), [])
                 config.wsClients.get(params.get('connection')).push(new ConnectionWebSocket(ws, params.get('format')));
             } else if (params.get('connection') === auth.email) {
-                if (!config.wsClients.has(params.get('connection'))) config.wsClients.set(params.get('connection'), [])
-                config.wsClients.get(params.get('connection')).push(new ConnectionWebSocket(ws, params.get('format')));
-
                 if (!config.conns.has(params.get('connection'))) {
                     const profile = await Profile.from(config.pool, params.get('connection'));
                     if (!profile.auth.cert || !profile.auth.key) throw new Error('No Cert Found on profile');
 
-                    config.conns.add({
+                    const client = await config.conns.add({
                         id: params.get('connection'),
                         name: params.get('connection'),
                         created: new Date(),
@@ -254,6 +252,11 @@ export default async function server(config: Config) {
                         enabled: true,
                         auth: profile.auth
                     }, true);
+
+                    config.wsClients.get(params.get('connection')).push(new ConnectionWebSocket(ws, params.get('format'), client));
+                } else {
+                    const client = config.conns.get(params.get('connection'));
+                    config.wsClients.get(params.get('connection')).push(new ConnectionWebSocket(ws, params.get('format'), client));
                 }
             } else {
                 throw new Error('Unauthorized');
