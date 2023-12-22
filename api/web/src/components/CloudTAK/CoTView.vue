@@ -1,5 +1,8 @@
 <template>
-<div class='position-absolute end-0 bottom-0 text-white py-2 bg-dark' style='z-index: 1; width: 400px; top: 50px;'>
+<div
+    class='position-absolute end-0 bottom-0 text-white py-2 bg-dark'
+    style='z-index: 1; width: 400px; top: 56px;'
+>
     <div class='row g-2'>
         <div class='col-12 row border-light border-bottom'>
             <div class='col-auto row card-header my-2'>
@@ -84,23 +87,40 @@ export default {
     },
     mounted: function() {
         if (this.isUserDrawn) {
-            if (mapStore.map.getLayer('cots-poly-edit')) mapStore.map.removeLayer('cots-poly-edit');
+            if (mapStore.map.getLayer('cots-edit-fill')) {
+                mapStore.map.removeLayer('cots-edit-fill');
+            }
+            if (mapStore.map.getLayer('cots-edit-line')) {
+                mapStore.map.removeLayer('cots-edit-line');
+            }
 
             mapStore.map.addLayer({
-                id: 'cots-poly-edit',
+                id: 'cots-edit-fill',
                 type: 'fill',
                 source: 'cots',
                 filter: ['==', ['get', 'id'], this.cot.properties.id],
                 paint: {
-                    'fill-color': '#000',
-                    'fill-opacity': 0.5
+                    'fill-color': this.cot.properties.fill,
+                    'fill-opacity': this.cot.properties['fill-opacity']
+                },
+            });
+            mapStore.map.addLayer({
+                id: 'cots-edit-line',
+                type: 'line',
+                source: 'cots',
+                filter: ['==', ['get', 'id'], this.cot.properties.id],
+                paint: {
+                    'line-color': this.cot.properties.stroke,
+                    'line-opacity': this.cot.properties['stroke-opacity'],
+                    'line-width': this.cot.properties['stroke-width']
                 },
             });
         }
     },
     ummounted: function() {
         if (this.isUserDrawn) {
-            mapStore.map.removeLayer('cots-poly-edit');
+            mapStore.map.removeLayer('cots-edit-fill');
+            mapStore.map.removeLayer('cots-edit-line');
         }
     },
     computed: {
@@ -113,9 +133,12 @@ export default {
     },
     methods: {
         updateStyle: function() {
-            mapStore.map.setPaintProperty('cots-poly-edit', 'fill-color', this.feat.properties.fill);
-            mapStore.map.setPaintProperty('cots-poly-edit', 'fill-opacity', this.feat.properties['fill-opacity']);
-
+            console.error(JSON.stringify(this.feat.properties))
+            mapStore.map.setPaintProperty('cots-edit-fill', 'fill-color', this.feat.properties.fill);
+            mapStore.map.setPaintProperty('cots-edit-fill', 'fill-opacity', Number(this.feat.properties['fill-opacity']));
+            mapStore.map.setPaintProperty('cots-edit-line', 'line-color', this.feat.properties.stroke);
+            mapStore.map.setPaintProperty('cots-edit-line', 'line-width', Number(this.feat.properties['stroke-width']));
+            mapStore.map.setPaintProperty('cots-edit-line', 'line-opacity', Number(this.feat.properties['stroke-opacity']));
         },
         zoomTo: function() {
             mapStore.map.flyTo({
