@@ -33,19 +33,39 @@ export const useCOTStore = defineStore('cots', {
             //Vector Tiles only support integer IDs
             feat.properties.id = feat.id;
 
-            if (feat.properties.icon) {
-                // Format of icon needs to change for spritesheet
-                feat.properties.icon = feat.properties.icon.replace('/', ':').replace(/.png$/, '');
-            } else {
-                feat.properties.icon = `${feat.properties.type}`;
+            if (feat.geometry.type.contains('Point')) {
+                if (feat.properties.icon) {
+                    // Format of icon needs to change for spritesheet
+                    feat.properties.icon = feat.properties.icon.replace('/', ':').replace(/.png$/, '');
+                } else {
+                    feat.properties.icon = `${feat.properties.type}`;
+                }
+
+                feat.properties.color = '#d63939';
+            } else if (feat.geometry.type.contains('Line') || feat.geometry.type.contains('Polygon')) {
+                if (!feat.properties['stroke']) feat.properties.stroke = '#d63939';
+                if (!feat.properties['stroke-style']) feat.properties['stroke-style'] = 'solid';
+                if (!feat.properties['stroke-width']) feat.properties['stroke-width'] = 3;
+
+                // MapLibre Opacity must be of range 0-1
+                if (feat.properties['stroke-opacity']) {
+                    feat.properties['stroke-opacity'] = feat.properties['stroke-opacity'] / 255;
+                } else {
+                    feat.properties['stroke-opacity'] = 1;
+                }
+
+                if (feat.geometry.type.contains('Polygon')) {
+                    if (!feat.properties['fill']) feat.properties.fill = '#d63939';
+
+                    if (feat.properties['fill-opacity']) {
+                        feat.properties['fill-opacity'] = feat.properties['fill-opacity'] / 255;
+                    } else {
+                        feat.properties['fill-opacity'] = 1;
+                    }
+                }
             }
 
 
-            // MapLibre Opacity must be of range 0-1
-            if (feat.properties['fill-opacity']) feat.properties['fill-opacity'] = feat.properties['fill-opacity'] / 255;
-            else feat.properties['fill-opacity'] = 1;
-            if (feat.properties['stroke-opacity']) feat.properties['stroke-opacity'] = feat.properties['stroke-opacity'] / 255;
-            else feat.properties['stroke-opacity'] = 1;
 
             this.cots.set(feat.id, feat);
         }
