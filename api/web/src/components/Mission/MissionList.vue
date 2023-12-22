@@ -20,6 +20,7 @@
     </div>
     <div class='modal-body mx-3 my-2'>
         <TablerLoading v-if='loading' desc='Loading Missions'/>
+        <TablerNone v-else-if='!list.data.length' label='Missions' :create='false'/>
         <Alert v-else-if='err' :err='err'/>
         <template v-else>
             <div
@@ -59,6 +60,7 @@ import {
 } from '@tabler/icons-vue';
 import Alert from '../util/Alert.vue';
 import {
+    TablerNone,
     TablerLoading
 } from '@tak-ps/vue-tabler';
 
@@ -101,6 +103,7 @@ export default {
     },
     components: {
         Alert,
+        TablerNone,
         TablerLoading,
         IconCircleArrowLeft,
         IconRefresh,
