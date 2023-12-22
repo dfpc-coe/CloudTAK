@@ -136,6 +136,7 @@ export default {
         });
 
         await profileStore.load();
+        await cotStore.loadArchive();
         await this.fetchBaseMaps();
         await this.Iconfetchsets();
         this.loading.main = false;
@@ -217,8 +218,6 @@ export default {
         cot: function() {
             if (this.cot) this.radial.cot = null;
         }
-    },
-    errorCaptured: function(err, vm, info) {
     },
     methods: {
         toLocation: function() {
@@ -380,17 +379,13 @@ export default {
                 mapStore.draw.on('finish', (id) => {
                     const feat = mapStore.draw._store.store[id];
 
+                    feat.id = id;
+                    feat.properties.archive = true;
                     if (mapStore.draw.getMode() === 'polygon' || mapStore.draw.getMode() === 'rectangle') {
-                        feat.id = id;
-                        feat.properties.id = id;
                         feat.properties.type = 'u-d-f';
                     } else if (mapStore.draw.getMode() === 'linestring') {
-                        feat.id = id;
-                        feat.properties.id = id;
                         feat.properties.type = 'u-d-f';
                     } else if (mapStore.draw.getMode() === 'point') {
-                        feat.id = id;
-                        feat.properties.id = id;
                         feat.properties.type = 'u-d-p';
                     }
 
