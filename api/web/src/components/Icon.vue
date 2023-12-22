@@ -102,11 +102,11 @@ export default {
         },
         deleteIcon: async function() {
             this.loading = true;
-            const url = window.stdurl(`/api/iconset/${this.$route.params.iconset}/icon/${this.$route.params.icon}`);
+            const url = window.stdurl(`/api/iconset/${this.$route.params.iconset}/icon/${encodeURIComponent(this.$route.params.icon)}`);
             this.iconset = await window.std(url, {
                 method: 'DELETE'
             });
-            this.$router.push(`/iconset/${this.$params.iconset}`);
+            this.$router.push(`/iconset/${this.$route.params.iconset}`);
         }
     },
     components: {
