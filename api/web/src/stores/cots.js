@@ -10,6 +10,9 @@ export const useCOTStore = defineStore('cots', {
         }
     },
     actions: {
+        /**
+         * Load Archived CoTs from localStorage
+         */
         loadArchive: function() {
             const archive = JSON.parse(localStorage.getItem('archive') || '[]');
             for (const a of archive) {
@@ -17,9 +20,16 @@ export const useCOTStore = defineStore('cots', {
                 this.cots.set(a.id, a);
             }
         },
+        /**
+         * Save Archived CoTs from localStorage - called automatically every time an
+         * archived CoT changes
+         */
         saveArchive: function() {
             localStorage.setItem('archive', JSON.stringify(Array.from(this.archive.values())))
         },
+        /**
+         * Return CoTs as a FeatureCollection
+         */
         collection: function() {
             return {
                 type: 'FeatureCollection',
@@ -29,12 +39,27 @@ export const useCOTStore = defineStore('cots', {
                 })
             }
         },
+        /**
+         * Update a feature that exists in the store - bypasses feature standardization
+         */
+        update: function(feat) {
+            this.cots.set(id, feat);
+        },
+        /**
+         * Return a CoT by ID if it exists
+         */
         get: function(id) {
             return this.cots.get(id);
         },
+        /**
+         * Returns if the CoT is present in the store given the ID
+         */
         has: function(id) {
             return this.cots.has(id);
         },
+        /**
+         * Remove a given CoT from the store
+         */
         delete: function(id) {
             this.cots.delete(id);
             if (this.archive.has(id)) {
@@ -42,9 +67,17 @@ export const useCOTStore = defineStore('cots', {
                 this.saveArchive();
             }
         },
+        /**
+         * Empty the store
+         */
         clear: function() {
             this.cots.clear();
+            this.archive.clear();
+            localStorage.removeItem('archive');
         },
+        /**
+         * Add a CoT GeoJSON to the store and modify props to meet MapLibre style requirements
+         */
         add: function(feat) {
             //Vector Tiles only support integer IDs
             feat.properties.id = feat.id;
