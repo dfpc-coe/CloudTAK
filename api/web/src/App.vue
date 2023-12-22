@@ -73,6 +73,7 @@
     <TablerLoading v-if='loading && !$route.path.includes("login")' desc='Loading CloudTAK'/>
     <router-view
         v-else
+        @err='err = $event'
         @login='getLogin'
         :user='user'
     />
