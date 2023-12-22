@@ -406,7 +406,9 @@ export default {
                 });
 
                 this.timerSelf = window.setInterval(() => {
-                    this.sendCOT(profileStore.CoT());
+                    if (profileStore.profile.tak_loc) {   
+                        this.sendCOT(profileStore.CoT());
+                    }
                 }, 2000);
 
                 this.timer = window.setInterval(() => {
