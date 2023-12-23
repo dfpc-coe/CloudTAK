@@ -64,7 +64,7 @@ export default {
                 closeOnClick: true,
                 menuItems: this.menuItems,
                 onClick: (item) => {
-                    this.$emit('click', `${this.mode}:${item}`);
+                    this.$emit('click', `${this.mode}:${item.id}`);
                 },
                 onClose: () => {
                     this.$emit('close')
@@ -78,7 +78,7 @@ export default {
             this.menuItems.splice(0, this.menuItems.length);
             if (this.mode === 'cot') {
                 this.menuItems.push({ id: 'edit', icon: '#radial-pencil' })
-                this.menuItems.push({ id: 'cot', icon: '#radial-view' })
+                this.menuItems.push({ id: 'view', icon: '#radial-view' })
                 this.menuItems.push({ id: 'delete', icon: '#radial-trash' })
             } else if (this.mode === 'context') {
                 this.menuItems.push({ id: 'new', icon: '#radial-pencil-plus' })

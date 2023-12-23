@@ -58,7 +58,6 @@
 
         <CloudTAKMenu
             v-if='menu.main && mode === "Default"'
-            @basemap='setBasemap($event)'
             @reset='deleteCOT()'
         />
         <CloudTAKCoTView
@@ -301,18 +300,19 @@ export default {
             this.iconsets = await window.std('/api/iconset');
         },
         handleRadial: function(event) {
-            if (event.id === 'cot:cot') {
+            if (event === 'cot:view') {
                 const cot = this.radial.cot;
                 this.closeRadial()
                 this.cot = cot;
-            } else if (event.id === 'cot:delete') {
+            } else if (event === 'cot:delete') {
                 const cot = this.radial.cot;
                 this.closeRadial()
                 this.deleteCOT(cot);
-            } else if (event.id === 'cot:edit') {
+            } else if (event === 'cot:edit') {
                 //this.edit = true;
             } else {
                 this.closeRadial()
+                throw new Error(`Unimplemented Radial Action: ${event}`);
             }
         },
         deleteCOT: function(cot) {
@@ -337,19 +337,6 @@ export default {
                 };
                 mapStore.map.flyTo(flyTo);
             }
-        },
-        setBasemap: function(basemap) {
-            mapStore.map.removeLayer('basemap')
-            mapStore.map.removeSource('basemap')
-            const url = String(window.stdurl(`/api/basemap/${basemap.id}/tiles/`)) + `{z}/{x}/{y}?token=${localStorage.token}`;
-            mapStore.map.addSource('basemap', { type: 'raster', tileSize: 256, tiles: [ url ] });
-            mapStore.map.addLayer({
-                id: 'basemap',
-                type: 'raster',
-                source: 'basemap',
-                minzoom: basemap.minzoom,
-                maxzoom: basemap.maxzoom
-            }, 'cots');
         },
         setYou: function() {
             if (profileStore.profile.tak_loc) {
