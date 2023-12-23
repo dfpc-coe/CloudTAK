@@ -372,6 +372,7 @@ export default {
 
                     feat.id = id;
                     feat.properties.archive = true;
+                    feat.properties.callsign = 'New Feature'
                     if (mapStore.draw.getMode() === 'polygon' || mapStore.draw.getMode() === 'rectangle') {
                         feat.properties.type = 'u-d-f';
                     } else if (mapStore.draw.getMode() === 'linestring') {
