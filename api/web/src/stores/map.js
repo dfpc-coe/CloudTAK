@@ -15,7 +15,7 @@ export const useMapStore = defineStore('cloudtak', {
             isLoaded: false,
             bearing: 0,
             radial: {
-                // Settings related to the Radial menu - shown if radial.cot is not null
+                mode: null,
                 x: 0,
                 y: 0,
                 cot: null
@@ -123,7 +123,7 @@ export const useMapStore = defineStore('cloudtak', {
         },
         initLayers: function(basemap) {
             this.addLayer({
-                name: 'Basemap',
+                name: basemap.name,
                 source: 'basemap',
                 type: 'raster',
             }, [{
@@ -202,6 +202,20 @@ export const useMapStore = defineStore('cloudtak', {
                 },
             }]);
 
+            this.map.on('contextmenu', (e) => {
+                this.radial.mode = 'context';
+                const flyTo = {
+                    speed: Infinity,
+                    center: [e.lngLat.lng, e.lngLat.lat]
+                };
+
+                if (this.map.getZoom() < 3) flyTo.zoom = 4;
+                this.map.flyTo(flyTo)
+
+                this.radial.x = this.container.clientWidth / 2;
+                this.radial.y = this.container.clientHeight / 2;
+            });
+
             for (const layer of ['cots', 'cots-poly', 'cots-line']) {
                 this.map.on('mouseenter', layer, () => { this.map.getCanvas().style.cursor = 'pointer'; })
                 this.map.on('mouseleave', layer, () => { this.map.getCanvas().style.cursor = ''; })
@@ -223,6 +237,7 @@ export const useMapStore = defineStore('cloudtak', {
                     this.radial.y = this.container.clientHeight / 2;
 
                     this.radial.cot = e.features[0];
+                    this.radial.mode = 'cot';
                 });
             }
         },
