@@ -255,7 +255,7 @@ export default {
                     id,
                     'type': 'raster',
                     'source': id
-                }], 'cots');
+                }], 'CoT Icons');
             }
 
             this.loading = false;
