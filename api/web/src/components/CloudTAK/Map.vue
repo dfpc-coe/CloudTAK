@@ -72,11 +72,11 @@
     </template>
 
     <RadialMenu
-        v-if='radial.cot'
-        @close='radial.cot = null'
+        v-if='radial.mode'
+        @close='closeRadial'
         @click='handleRadial($event)'
+        :mode='radial.mode'
         :x='radial.x'
-        :cot='radial.cot'
         :y='radial.y'
         ref='radial'
     />
@@ -143,8 +143,8 @@ export default {
 
         window.addEventListener('keydown', (e) => {
             if (e.key == 'Escape') {
-                if (this.radial.cot) {
-                    this.radial.cot = false;
+                if (this.radial.mode) {
+                    this.closeRadial()
                 } else if (this.menu.main) {
                     this.menu.main = false;
                 }
@@ -216,10 +216,14 @@ export default {
             }
         },
         cot: function() {
-            if (this.cot) this.radial.cot = null;
+            if (this.cot) this.closeRadial();
         }
     },
     methods: {
+        closeRadial: function() {
+            mapStore.radial.mode = null;
+            mapStore.radial.cot = null;
+        },
         toLocation: function() {
             if (!profileStore.profile.tak_loc) throw new Error('No Location Set');
             mapStore.map.flyTo({
@@ -297,18 +301,18 @@ export default {
             this.iconsets = await window.std('/api/iconset');
         },
         handleRadial: function(event) {
-            if (event.id === 'cot') {
+            if (event.id === 'cot:cot') {
                 const cot = this.radial.cot;
-                this.radial.cot = null;
+                this.closeRadial()
                 this.cot = cot;
-            } else if (event.id === 'delete') {
+            } else if (event.id === 'cot:delete') {
                 const cot = this.radial.cot;
-                this.radial.cot = null;
+                this.closeRadial()
                 this.deleteCOT(cot);
-            } else if (event.id === 'edit') {
+            } else if (event.id === 'cot:edit') {
                 //this.edit = true;
             } else {
-                this.radial.cot = null;
+                this.closeRadial()
             }
         },
         deleteCOT: function(cot) {
