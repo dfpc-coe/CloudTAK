@@ -40,7 +40,6 @@
     <template v-else-if='mode === "basemaps"'>
         <MenuBasemaps
             @close='mode = null'
-            @basemap='$emit("basemap", $event)'
         />
     </template>
     <template v-else>

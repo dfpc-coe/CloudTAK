@@ -18,15 +18,13 @@
             @create='$router.push("/basemap/new")'
         />
         <template v-else>
-            <div :key='basemap.id' v-for='basemap in list.basemaps' class="col-12 hover-dark">
-                <div class="d-flex">
-                    <a @click='$emit("basemap", basemap)' class="card-title cursor-pointer" v-text='basemap.name'></a>
+            <div @click='setBasemap(basemap)' :key='basemap.id' v-for='basemap in list.basemaps' class="col-12 hover-dark cursor-pointer">
+                <div class="d-flex align-items-center my-2">
+                    <span class='mx-2' style='font-size: 18px;' v-text='basemap.name'/>
 
-                    <div class='ms-auto'>
-                        <div class='btn-list'>
-                            <IconShare2 v-if='false' v-tooltip='"Share BaseMap"' class='cursor-pointer' @click='share(basemap)'/>
-                            <IconSettings v-tooltip='"Edit Basemap"' class='cursor-pointer' @click='$router.push(`/basemap/${basemap.id}/edit`)'/>
-                        </div>
+                    <div class='ms-auto btn-list'>
+                        <IconShare2 v-if='false' v-tooltip='"Share BaseMap"' class='cursor-pointer' @click='share(basemap)'/>
+                        <IconSettings v-tooltip='"Edit Basemap"' class='cursor-pointer' @click='$router.push(`/basemap/${basemap.id}/edit`)'/>
                     </div>
                 </div>
             </div>
@@ -54,6 +52,8 @@ import {
     IconDownload,
     IconSearch
 } from '@tabler/icons-vue'
+import { useMapStore } from '/src/stores/map.js';
+const mapStore = useMapStore();
 
 export default {
     name: 'BaseMaps',
@@ -89,6 +89,19 @@ export default {
        },
     },
     methods: {
+        setBasemap: function(basemap) {
+            mapStore.map.removeLayer('basemap')
+            mapStore.map.removeSource('basemap')
+            const url = String(window.stdurl(`/api/basemap/${basemap.id}/tiles/`)) + `{z}/{x}/{y}?token=${localStorage.token}`;
+            mapStore.map.addSource('basemap', { type: 'raster', tileSize: 256, tiles: [ url ] });
+            mapStore.map.addLayer({
+                id: 'basemap',
+                type: 'raster',
+                source: 'basemap',
+                minzoom: basemap.minzoom,
+                maxzoom: basemap.maxzoom
+            }, 'cots');
+        },
         share: function(basemap) {
             this.shareModal.basemap = basemap;
             this.shareModal.shown = true;
