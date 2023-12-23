@@ -29,11 +29,7 @@ export const useMapStore = defineStore('cloudtak', {
             if (!layer.name) throw new Error('Layer Name must be set');
             if (!layer.source) throw new Error('Layer Source must be set');
 
-            for (const l of this.layers) {
-                if (l.name === layer.name) {
-                    return;
-                }
-            }
+            if (this.getLayerPos(layer.name) !== false) return;
 
             if (!layer.visible) layer.visible = 'visible';
             if (isNaN(layer.opacity)) layer.opacity = 1;
@@ -41,18 +37,22 @@ export const useMapStore = defineStore('cloudtak', {
 
             layer.layers = layers;
 
-            this.layers.push(layer);
+            const beforePos = this.getLayerPos(before)
+            if (before && beforePos !== false) {
+                before = this.layers[beforePos].layers[0].id;
+                this.layers.splice(beforePos, 0, layer);
+            } else {
+                this.layers.push(layer);
+            }
+
             for (const l of layer.layers) {
                 this.map.addLayer(l, before);
             }
         },
         updateLayer: function(newLayer) {
-            for (let i = 0; i < this.layers.length; i++) {
-                if (this.layers[i].name === newLayer.name) {
-                    this.layers[i] = newLayer;
-                    break;
-                }
-            }
+            const pos = this.getLayerPos(newLayer.name);
+            if (pos === false) return
+            this.layers[pos] = newLayer;
 
             for (const l of newLayer.layers) {
                 if (newLayer.type === 'raster') {
@@ -66,20 +66,38 @@ export const useMapStore = defineStore('cloudtak', {
                 }
             }
         },
-        removeLayer: function(name) {
+        removeLayerBySource: function(source) {
+            const pos = this.getLayerPos(source, 'source');
+            if (pos === false) return
+            const layer = this.layers[pos];
+
+            for (const l of layer.layers) {
+                this.map.removeLayer(l.id);
+            }
+            this.map.removeSource(source);
+
+            this.layers.splice(pos, 1)
+        },
+        getLayerPos: function(name, key='name') {
             for (let i = 0; i < this.layers.length; i++) {
-                if (this.layers[i].name === name) {
-                    const layer = this.layers[i];
-
-                    for (const l of layer.layers) {
-                        this.map.removeLayer(l);
-                        this.map.removeSource(l);
-                    }
-
-                    this.layers.splice(i, 1)
-                    break;
+                if (this.layers[i][key] === name) {
+                    return i;
                 }
             }
+
+            return false
+        },
+        removeLayer: function(name) {
+            const pos = this.getLayerPos(name);
+            if (pos === false) return;
+            const layer = this.layers[pos];
+
+            for (const l of layer.layers) {
+                this.map.removeLayer(l.id);
+                this.map.removeSource(l.source);
+            }
+
+            this.layers.splice(i, 1)
         },
         init: function(container, basemap) {
             this.container = container;

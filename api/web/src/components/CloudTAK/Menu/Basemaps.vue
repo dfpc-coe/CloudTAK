@@ -90,17 +90,21 @@ export default {
     },
     methods: {
         setBasemap: function(basemap) {
-            mapStore.map.removeLayer('basemap')
-            mapStore.map.removeSource('basemap')
+            mapStore.removeLayerBySource('basemap')
+
             const url = String(window.stdurl(`/api/basemap/${basemap.id}/tiles/`)) + `{z}/{x}/{y}?token=${localStorage.token}`;
             mapStore.map.addSource('basemap', { type: 'raster', tileSize: 256, tiles: [ url ] });
-            mapStore.map.addLayer({
+            mapStore.addLayer({
+                name: basemap.name,
+                type: 'raster',
+                source: 'basemap',
+            }, [{
                 id: 'basemap',
                 type: 'raster',
                 source: 'basemap',
                 minzoom: basemap.minzoom,
                 maxzoom: basemap.maxzoom
-            }, 'cots');
+            }], 'CoT Icons');
         },
         share: function(basemap) {
             this.shareModal.basemap = basemap;
