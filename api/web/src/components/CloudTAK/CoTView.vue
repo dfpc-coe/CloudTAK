@@ -119,7 +119,7 @@ export default {
             });
         }
     },
-    ummounted: function() {
+    unmounted: function() {
         if (this.isUserDrawn) {
             mapStore.map.removeLayer('cots-edit-fill');
             mapStore.map.removeLayer('cots-edit-line');
