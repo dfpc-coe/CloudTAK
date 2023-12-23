@@ -43,7 +43,12 @@ export const useCOTStore = defineStore('cots', {
          * Update a feature that exists in the store - bypasses feature standardization
          */
         update: function(feat) {
-            this.cots.set(id, feat);
+            this.cots.set(feat.id, feat);
+
+            if (feat.properties.archive) {
+                this.archive.set(feat.id, feat);
+                this.saveArchive();
+            }
         },
         /**
          * Return a CoT by ID if it exists
@@ -124,7 +129,6 @@ export const useCOTStore = defineStore('cots', {
                 this.archive.set(feat.id, feat);
                 this.saveArchive();
             }
-
         }
     }
 })
