@@ -19,6 +19,7 @@
             "default": "created",
             "enum": [
                 "id",
+                "type",
                 "created",
                 "updated",
                 "name",

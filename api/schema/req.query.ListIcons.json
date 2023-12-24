@@ -9,7 +9,8 @@
             "$ref": "./util/page.json"
         },
         "iconset": {
-            "type": "string"
+            "type": "string",
+            "description": "Limit icons to those contained in a given iconset"
         },
         "filter": {
             "type": "string",

@@ -4,6 +4,7 @@
         "format": {
             "type": "string",
             "default": "csv",
+            "description": "Format with which to respond",
             "enum": [
                 "csv",
                 "jsonld"

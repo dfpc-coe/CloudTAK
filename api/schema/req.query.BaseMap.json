@@ -4,6 +4,7 @@
     "properties": {
         "download": {
             "type": "boolean",
+            "description": "If true, set the Content-Disposition headers",
             "default": false
         },
         "format": {

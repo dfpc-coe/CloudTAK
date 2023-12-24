@@ -5,6 +5,7 @@
         "type": {
             "type": "string",
             "default": "schema:input",
+            "description": "Return either the input or output schema",
             "enum": [
                 "schema:input",
                 "schema:output"
