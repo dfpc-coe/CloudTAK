@@ -34,26 +34,32 @@
             ],
             "properties": {
                 "name": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "The filename of the asset"
                 },
                 "sync": {
                     "type": "boolean",
                     "description": "If the Data is attached to a mission, signify if the asset is syncing with the mission"
                 },
                 "visualized": {
-                    "type": ["string", "boolean"]
+                    "type": ["string", "boolean"],
+                    "description": "A string containing the path to a Cloud Optimized version of the asset has been generated, or false"
                 },
                 "vectorized": {
-                    "type": ["string", "boolean"]
+                    "type": ["string", "boolean"],
+                    "description": "A string containing the path to a GeoJSONLD Vectorized version of the asset has been generated or false"
                 },
                 "updated": {
-                    "type": "integer"
+                    "type": "integer",
+                    "description": "Timestamp at which the asset was last modified"
                 },
                 "etag": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "AWS S3 generated ETag of the asset"
                 },
                 "size": {
-                    "type": "integer"
+                    "type": "integer",
+                    "description": "Size in bytes of the asset"
                 }
             }
         }

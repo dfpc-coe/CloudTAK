@@ -37,7 +37,8 @@
             "description": "Field to sort order by"
         },
         "connection": {
-            "type": "integer"
+            "type": "integer",
+            "description": "Limit returned layers to those attached to a given connection"
         },
         "filter": {
             "type": "string",

@@ -19,19 +19,24 @@
             ],
             "properties": {
                 "id": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "Unique ID of the Job"
                 },
                 "asset": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "Asset name that the job is converting"
                 },
                 "status": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "Status of the Job Run"
                 },
                 "created": {
-                    "type": "integer"
+                    "type": "integer",
+                    "description": "Timestamp at which the job was created"
                 },
                 "updated": {
-                    "type": "integer"
+                    "type": "integer",
+                    "description": "Timestamp at which the job was last updated"
                 }
             }
         }
