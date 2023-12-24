@@ -236,16 +236,17 @@ export const useMapStore = defineStore('cloudtak', {
 
             for (const layer of ['cots', 'cots-poly', 'cots-line']) {
                 this.map.on('mouseenter', layer, () => {
-                    if (this.draw) return;
+                    console.error(this.draw.getMode())
+                    if (this.draw && this.draw.getMode() !== 'static') return;
                     this.map.getCanvas().style.cursor = 'pointer';
                 })
                 this.map.on('mouseleave', layer, () => {
-                    if (this.draw) return;
+                    if (this.draw && this.draw.getMode() !== 'static') return;
                     this.map.getCanvas().style.cursor = '';
                 })
                 this.map.on('rotate', () => { this.bearing = this.map.getBearing() })
                 this.map.on('click', layer, (e) => {
-                    if (this.draw) return;
+                    if (this.draw && this.draw.getMode() !== 'static') return;
                     const flyTo = { speed: Infinity };
                     if (e.features[0].geometry.type === 'Point') {
                         flyTo.center = e.features[0].geometry.coordinates;

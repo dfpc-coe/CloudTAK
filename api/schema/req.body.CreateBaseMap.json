@@ -9,13 +9,16 @@
             "$ref": "./basemaps/url.json"
         },
         "minzoom": {
-            "type": "integer"
+            "$ref": "./basemaps/minzoom.json"
         },
         "maxzoom": {
-            "type": "integer"
+            "$ref": "./basemaps/maxzoom.json"
         },
         "format": {
-            "type": "string"
+            "$ref": "./basemaps/format.json"
+        },
+        "type": {
+            "$ref": "./basemaps/type.json"
         },
         "bounds": {
             "type": "array",

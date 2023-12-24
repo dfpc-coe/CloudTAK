@@ -1,0 +1,10 @@
+{
+    "type": "string",
+    "description": "",
+    "$comment": "text",
+    "enum": [
+        "raster",
+        "raster-dem",
+        "vector"
+    ]
+}
