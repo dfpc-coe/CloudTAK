@@ -9,10 +9,6 @@
 
                         <div class='ms-auto'>
                             <div class='btn-list'>
-                                <a @click='query = !query' class="cursor-pointer btn btn-secondary">
-                                    <IconSearch/>
-                                </a>
-
                                 <a @click='$router.push("/basemap/new")' class="cursor-pointer btn btn-primary">
                                     New BaseMap
                                 </a>
@@ -27,15 +23,20 @@
     <div class='page-body'>
         <div class='container-xl'>
             <div class='row row-deck row-cards'>
-                <div v-if='query' class="col-lg-12">
+                <div class="col-12">
                     <div class="card">
                         <div class="card-body">
-                            <label class="form-label">BaseMap Search</label>
-                            <div class="input-icon mb-3">
-                                <input v-model='paging.filter' type="text"  class="form-control" placeholder="Search…">
-                                <span class="input-icon-addon">
-                                    <IconSearch/>
-                                </span>
+                            <div class='row g-2'>
+                                <div class='col-12'>
+                                    <label class="form-label">BaseMap Search</label>
+                                    <div class="input-icon mb-3">
+                                        <input v-model='paging.filter' type="text"  class="form-control" placeholder="Search…">
+                                        <span class="input-icon-addon"><IconSearch/></span>
+                                    </div>
+                                </div>
+                                <div class='col-12'>
+                                    <TablerEnum v-model='paging.type' :options='["Any", "Raster", "Raster-DEM", "Vector"]'/>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -51,9 +52,10 @@
                         @create='$router.push("/basemap/new")'
                     />
                     <template v-else>
-                        <div :key='basemap.id' v-for='basemap in list.basemaps' class="col-lg-12">
+                        <div :key='basemap.id' v-for='basemap in list.basemaps' class="col-md-12">
                             <div class="card">
                                 <div class="card-header">
+                                    <BaseMapBadge :type='basemap.type'/>
                                     <a @click='$router.push(`/basemap/${basemap.id}`)' class="card-title cursor-pointer" v-text='basemap.name'></a>
 
                                     <div class='ms-auto'>
@@ -97,10 +99,12 @@ import PageFooter from './PageFooter.vue';
 import BaseMapLocation from './BaseMap/Location.vue';
 import {
     TablerNone,
+    TablerEnum,
     TablerPager,
     TablerBreadCrumb,
     TablerLoading
 } from '@tak-ps/vue-tabler';
+import BaseMapBadge from './BaseMap/Badge.vue';
 import timeDiff from '../timediff.js';
 import GroupSelectModal from './util/GroupSelectModal.vue';
 import {
@@ -116,13 +120,13 @@ export default {
         return {
             err: false,
             loading: true,
-            query: false,
             shareModal: {
                 shown: false,
                 basemap: null
             },
             paging: {
                 filter: '',
+                type: 'Any',
                 limit: 10,
                 page: 0
             },
@@ -136,12 +140,12 @@ export default {
         await this.fetchList();
     },
     watch: {
-       'paging.page': async function() {
-           await this.fetchList();
-       },
-       'paging.filter': async function() {
-           await this.fetchList();
-       },
+       paging: {
+            deep: true,
+            handler: async function() {
+               await this.fetchList();
+           },
+       }
     },
     methods: {
         share: function(basemap) {
@@ -157,7 +161,8 @@ export default {
         fetchList: async function() {
             this.loading = true;
             const url = window.stdurl('/api/basemap');
-            if (this.query && this.paging.filter) url.searchParams.append('filter', this.paging.filter);
+            if (this.paging.filter) url.searchParams.append('filter', this.paging.filter);
+            if (this.paging.type !== 'Any') url.searchParams.append('type', this.paging.type.toLowerCase());
             url.searchParams.append('limit', this.paging.limit);
             url.searchParams.append('page', this.paging.page);
             this.list = await window.std(url);
@@ -166,6 +171,7 @@ export default {
     },
     components: {
         TablerNone,
+        TablerEnum,
         TablerPager,
         IconShare2,
         IconSettings,
@@ -175,7 +181,8 @@ export default {
         TablerBreadCrumb,
         GroupSelectModal,
         TablerLoading,
-        BaseMapLocation
+        BaseMapLocation,
+        BaseMapBadge
     }
 }
 </script>

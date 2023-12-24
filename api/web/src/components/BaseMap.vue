@@ -22,6 +22,7 @@
                     <div class="col-lg-12">
                         <div class="card">
                             <div class="card-header">
+                                <BaseMapBadge :type='basemap.type'/>
                                 <h3 class="card-title" v-text='basemap.name'></h3>
 
                                 <div class='ms-auto'>
@@ -82,6 +83,7 @@
 <script>
 import PageFooter from './PageFooter.vue';
 import GroupSelectModal from './util/GroupSelectModal.vue';
+import BaseMapBadge from './BaseMap/Badge.vue';
 import {
     TablerBreadCrumb,
     TablerLoading
@@ -127,7 +129,8 @@ export default {
         TablerBreadCrumb,
         BaseMapLocation,
         TablerLoading,
-        GroupSelectModal
+        GroupSelectModal,
+        BaseMapBadge
     }
 }
 </script>

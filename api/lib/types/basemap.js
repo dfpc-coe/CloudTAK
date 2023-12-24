@@ -14,6 +14,7 @@ export default class BaseMap extends Generic {
         query.sort = Params.string(query.sort, { default: 'created' });
         query.order = Params.order(query.order);
         query.filter = Params.string(query.filter, { default: '' });
+        query.type = Params.string(query.type);
 
         try {
             const pgres = await pool.query(sql`
@@ -24,6 +25,7 @@ export default class BaseMap extends Generic {
                     ${sql.identifier([this._table])}
                 WHERE
                     name ~* ${query.filter}
+                    AND (${query.type}::TEXT IS NULL or ${query.type}::TEXT = type)
                 ORDER BY
                     ${sql.identifier([this._table, query.sort])} ${query.order}
                 LIMIT

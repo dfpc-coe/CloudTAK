@@ -121,12 +121,12 @@ export default {
         await this.fetchList();
     },
     watch: {
-       'paging.page': async function() {
-           await this.fetchList();
-       },
-       'paging.filter': async function() {
-           await this.fetchList();
-       },
+        paging: {
+            deep: true,
+            handler: async function() {
+                await this.fetchList();
+            },
+        }
     },
     methods: {
         timeDiff(update) {

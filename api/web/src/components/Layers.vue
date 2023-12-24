@@ -123,12 +123,12 @@ export default {
         }
     },
     watch: {
-       'paging.page': async function() {
-           await this.fetchList();
-       },
-       'paging.filter': async function() {
-           await this.fetchList();
-       },
+        paging: {
+            deep: true,
+            handler: async function() {
+                await this.fetchList();
+            },
+        }
     },
     mounted: async function() {
         await this.fetchList();
