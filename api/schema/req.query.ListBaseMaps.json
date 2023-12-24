@@ -11,6 +11,9 @@
         "order": {
             "$ref": "./util/order.json"
         },
+        "type": {
+            "$ref": "./basemaps/type.json"
+        },
         "sort": {
             "type": "string",
             "default": "created",
