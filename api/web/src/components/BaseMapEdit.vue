@@ -57,11 +57,18 @@
                             </template>
                             <template v-else>
                                 <div class='row row-cards'>
-                                    <div class="col-md-12 mt-3">
+                                    <div class="col-12 col-md-9 mt-3">
                                         <TablerInput
                                             label='BaseMap Name'
                                             v-model='basemap.name'
                                             :error='errors.name'
+                                        />
+                                    </div>
+                                    <div class="col-12 col-md-3 mt-3">
+                                        <TablerEnum
+                                            label='BaseMap Type'
+                                            v-model='basemap.type'
+                                            :options='["raster", "raster-dem", "vector"]'
                                         />
                                     </div>
                                     <div class="col-md-12">
@@ -123,6 +130,7 @@ import {
     TablerBreadCrumb,
     TablerDelete,
     TablerLoading,
+    TablerEnum,
     TablerInput
 } from '@tak-ps/vue-tabler';
 
@@ -250,6 +258,7 @@ export default {
         TablerBreadCrumb,
         TablerDelete,
         TablerInput,
+        TablerEnum,
         PageFooter,
     }
 }

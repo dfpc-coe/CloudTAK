@@ -382,6 +382,7 @@ export default {
                     }
 
                     mapStore.draw._store.delete([id]);
+                    mapStore.draw.setMode('static');
                     mapStore.draw.stop();
                     cotStore.add(feat);
                     this.updateCOT();

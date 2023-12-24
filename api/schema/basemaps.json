@@ -31,6 +31,9 @@
         },
         "format": {
             "$ref": "./basemaps/format.json"
+        },
+        "type": {
+            "$ref": "./basemaps/type.json"
         }
     },
     "required": [
@@ -43,6 +46,7 @@
         "center",
         "minzoom",
         "maxzoom",
-        "format"
+        "format",
+        "type"
     ]
 }
