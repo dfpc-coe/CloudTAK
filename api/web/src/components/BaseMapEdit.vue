@@ -216,8 +216,8 @@ export default {
                 if (this.$route.params.basemapid) {
                     const basemap = JSON.parse(JSON.stringify(this.basemap));
 
-                    if (!basemap.bounds) delete basemap.bounds;
-                    if (!basemap.center) delete basemap.center;
+                    if (!basemap.bounds.length) delete basemap.bounds;
+                    if (!basemap.center.length) delete basemap.center;
 
                     const create = await window.std(`/api/basemap/${this.$route.params.basemapid}`, {
                         method: 'PATCH',
