@@ -136,8 +136,6 @@ export default {
 
         await profileStore.load();
         await cotStore.loadArchive();
-        await this.fetchBaseMaps();
-        await this.Iconfetchsets();
         this.loading.main = false;
 
         window.addEventListener('keydown', (e) => {
@@ -152,11 +150,9 @@ export default {
 
         this.connectSocket();
 
-        this.$nextTick(() => {
-            return this.mountMap();
+        this.$nextTick(async () => {
+            return await this.mountMap();
         });
-
-        await this.fetchImports();
     },
     data: function() {
         return {
@@ -177,9 +173,7 @@ export default {
                 // Any Loading related states
                 main: true
             },
-            basemaps: { total: 0, basemaps: [] },
             iconsets: { total: 0, iconsets: [] },
-            imports: { total: 0, imports: [] },
         }
     },
     beforeUnmount: function() {
@@ -283,21 +277,11 @@ export default {
                     center: [position.coords.longitude, position.coords.latitude],
                     zoom: 14
                 });
-                console.error(position);
             });
         },
         startDraw: function(type) {
             mapStore.draw.start();
             mapStore.draw.setMode(type);
-        },
-        fetchBaseMaps: async function() {
-            this.basemaps = await window.std('/api/basemap');
-        },
-        fetchImports: async function() {
-            this.imports = await window.std('/api/import');
-        },
-        Iconfetchsets: async function() {
-            this.iconsets = await window.std('/api/iconset');
         },
         handleRadial: function(event) {
             if (event === 'cot:view') {
@@ -351,16 +335,34 @@ export default {
                 });
             }
         },
-        mountMap: function() {
-            const basemap = this.basemaps.basemaps[0];
-            basemap.url = String(window.stdurl(`/api/basemap/${basemap.id}/tiles/`)) + `{z}/{x}/{y}?token=${localStorage.token}`;
+        mountMap: async function() {
+            let basemap, terrain;
+
+            const burl = window.stdurl('/api/basemap');
+            burl.searchParams.append('type', 'raster');
+            const basemaps = await window.std(burl);
+            if (basemaps.basemaps.length > 0) {
+                basemap = basemaps.basemaps[0];
+                basemap.url = String(window.stdurl(`/api/basemap/${basemap.id}/tiles/`)) + `{z}/{x}/{y}?token=${localStorage.token}`;
+            }
+
+            const turl = window.stdurl('/api/basemap');
+            turl.searchParams.append('type', 'raster-dem');
+            /*
+            const terrains = await window.std(turl);
+            if (terrains.basemaps.length > 0) {
+                terrain = terrains.basemaps[0];
+                terrain.url = String(window.stdurl(`/api/basemap/${terrain.id}/tiles/`)) + `{z}/{x}/{y}?token=${localStorage.token}`;
+            }
+            */
 
             mapStore.init(this.$refs.map, basemap);
 
-            mapStore.map.once('load', () => {
+            mapStore.map.once('load', async () => {
                 mapStore.initLayers(basemap);
 
-                for (const iconset of this.iconsets.iconsets) {
+                const iconsets = await window.std('/api/iconset');
+                for (const iconset of iconsets.iconsets) {
                     mapStore.map.addSprite(iconset.uid, String(window.stdurl(`/api/icon/sprite?token=${localStorage.token}&iconset=${iconset.uid}`)))
                 }
 

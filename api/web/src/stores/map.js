@@ -99,13 +99,16 @@ export const useMapStore = defineStore('cloudtak', {
 
             this.layers.splice(i, 1)
         },
-        init: function(container, basemap) {
+        init: function(container, basemap, terrain) {
             this.container = container;
 
-            this.map = new mapgl.Map({
+            const init = {
                 container: this.container,
                 fadeDuration: 0,
                 zoom: 8,
+                pitch: 0,
+                bearing: 0,
+                maxPitch: 85,
                 center: [-105.91873757464982, 39.2473040734323],
                 style: {
                     version: 8,
@@ -115,11 +118,6 @@ export const useMapStore = defineStore('cloudtak', {
                         url: String(window.stdurl(`/api/icon/sprite?token=${localStorage.token}&iconset=default`))
                     }],
                     sources: {
-                        basemap: {
-                            type: 'raster',
-                            tileSize: 256,
-                            tiles: [ basemap.url ]
-                        },
                         cots: {
                             type: 'geojson',
                             cluster: false,
@@ -137,7 +135,29 @@ export const useMapStore = defineStore('cloudtak', {
                         paint: { 'background-color': 'rgb(4,7,14)' }
                     }]
                 }
-            });
+            };
+
+            if (basemap) {
+                init.style.sources.basemap = {
+                    type: 'raster',
+                    tileSize: 256,
+                    tiles: [ basemap.url ]
+                }
+            }
+
+            if (terrain) {
+                init.style.sources.terrain = {
+                    type: 'raster-dem',
+                    tileSize: 256,
+                    tiles: [ terrain.url ]
+                }
+
+                init.style.terrain = {
+                    source: 'terrain',
+                }
+            }
+
+            this.map = new mapgl.Map(init);
         },
         initLayers: function(basemap) {
             this.addLayer({
@@ -236,7 +256,6 @@ export const useMapStore = defineStore('cloudtak', {
 
             for (const layer of ['cots', 'cots-poly', 'cots-line']) {
                 this.map.on('mouseenter', layer, () => {
-                    console.error(this.draw.getMode())
                     if (this.draw && this.draw.getMode() !== 'static') return;
                     this.map.getCanvas().style.cursor = 'pointer';
                 })
