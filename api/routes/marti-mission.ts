@@ -305,7 +305,6 @@ export default async function router(schema: any, config: Config) {
                 creatorUid: creatorUid,
             }, req.body);
 
-
             const missionContent = await api.Mission.attachContents(req.params.name, [content.Hash]);
 
             return res.json(missionContent);
