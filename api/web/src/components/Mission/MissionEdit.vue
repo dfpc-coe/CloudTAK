@@ -239,6 +239,8 @@ export default {
             await window.std(`/api/marti/missions/${this.mission.name}/upload/${file.hash}`, {
                 method: 'DELETE'
             });
+
+            this.fetchMission();
         },
         genConfig: function() {
             return {
