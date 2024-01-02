@@ -39,6 +39,9 @@ export default {
             type: String,
             default: 'Unknown'
         },
+        modeid: {
+            type: String
+        },
         config: {
             type: Object,
             default: {}
@@ -67,6 +70,7 @@ export default {
                 body: {
                     name: this.name,
                     mode: this.mode,
+                    mode_id: this.modeid,
                     config: this.config
                 }
             });

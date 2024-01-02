@@ -31,6 +31,9 @@
         },
         "config": {
             "$ref": "./imports/config.json"
+        },
+        "mode_id": {
+            "$ref": "./imports/mode_id.json"
         }
     },
     "required": [
@@ -43,6 +46,7 @@
         "name",
         "username",
         "mode",
-        "config"
+        "config",
+        "mode_id"
     ]
 }

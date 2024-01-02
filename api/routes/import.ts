@@ -24,10 +24,16 @@ export default async function router(schema: any, config: Config) {
                 name: { type: 'string' },
                 mode: {
                     type: 'string',
+                    default: 'Unknown',
+                    description: 'Import to a given subasset or attempt to determine where to import',
                     enum: [
                         'Unknown',
                         'Mission'
                     ]
+                },
+                mode_id: {
+                    type: 'string',
+                    description: 'ID of the subasset if given - don\'t set for an unknown mode'
                 },
                 config: {
                     type: 'object'
@@ -45,6 +51,7 @@ export default async function router(schema: any, config: Config) {
                 username: req.auth.email,
                 status: 'Empty',
                 mode: req.body.mode,
+                mode_id: req.body.mode_id,
                 config: req.body.config
             });
 

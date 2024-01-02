@@ -31,7 +31,7 @@
                     <IconPlus @click='createLog = ""' v-tooltip='"Create Log"' class='cursor-pointer'/>
                 </template>
 
-                <IconRefresh v-if='!loading.initial' @click='fetchMission' class='cursor-pointer' v-tooltip='"Refresh"'/>
+                <IconRefresh v-if='!loading.initial' @click='refresh' class='cursor-pointer' v-tooltip='"Refresh"'/>
             </div>
         </div>
         <TablerLoading v-if='loading.mission' desc='Loading Mission'/>
@@ -96,6 +96,7 @@
                         <template v-if='upload'>
                             <UploadImport
                                 mode='Mission'
+                                :modeid='mission.guid'
                                 :config='genConfig()'
                                 @cancel='upload = false'
                                 @done='upload = false'
@@ -114,6 +115,14 @@
                                     <TablerDelete @delete='deleteFile(content.data)' displaytype='icon'/>
                                     <a :href='downloadFile(content.data)' v-tooltip='"Download Asset"'><IconDownload class='cursor-pointer'/></a>
                                 </div>
+                            </div>
+                        </template>
+
+                        <template v-if='imports.length'>
+                            <label class='subheader'>Imports</label>
+
+                            <div @click='$router.push(`/import/${imp.id}`)' :key='imp.id' v-for='imp in imports' class='col-12 d-flex align-items-center hover-light cursor-pointer rounded'>
+                                <Status :status='imp.status'/><span class='mx-2' v-text='imp.name'/>
                             </div>
                         </template>
                     </template>
@@ -165,6 +174,7 @@ import {
 } from '@tabler/icons-vue';
 import Alert from '../util/Alert.vue';
 import UploadImport from '../util/UploadImport.vue';
+import Status from '../util/Status.vue';
 import {
     TablerNone,
     TablerDelete,
@@ -204,19 +214,29 @@ export default {
                 name: this.initial.name || 'Unknown',
                 passwordProtected: this.initial.passwordProtected,
             },
+            imports: [],
             contacts: []
         }
     },
     mounted: async function() {
         if (!this.mission.passwordProtected) {
-            await this.fetchMission();
-
-            await Promise.all([
-                this.fetchContacts()
-            ]);
+            await this.refresh();
+        }
+    },
+    watch: {
+        upload: async function() {
+            if (!this.upload) await this.refresh();
         }
     },
     methods: {
+        refresh: async function() {
+            await this.fetchMission();
+
+            await Promise.all([
+                this.fetchContacts(),
+                this.fetchImports()
+            ]);
+        },
         downloadFile: function(file) {
             const url = window.stdurl(`/api/marti/api/files/${file.hash}`)
             url.searchParams.append('token', localStorage.token);
@@ -247,6 +267,17 @@ export default {
                 id: this.mission.name,
                 token: localStorage.token
             }
+        },
+        fetchImports: async function() {
+            try {
+                const url = await window.stdurl(`/api/import`);
+                url.searchParams.append('mode', 'Mission');
+                url.searchParams.append('mode_id', this.mission.guid);
+                this.imports = (await window.std(url)).imports;
+            } catch (err) {
+                this.err = err;
+            }
+            this.loading.users = false;
         },
         fetchContacts: async function() {
             try {
@@ -292,6 +323,7 @@ export default {
         }
     },
     components: {
+        Status,
         TablerNone,
         UploadImport,
         Alert,
