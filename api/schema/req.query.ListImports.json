@@ -2,6 +2,12 @@
     "type": "object",
     "additionalProperties": false,
     "properties": {
+        "mode": {
+            "type": "string"
+        },
+        "mode_id": {
+            "type": "string"
+        },
         "limit": {
             "$ref": "./util/limit.json"
         },

@@ -13,6 +13,8 @@ export default class Import extends Generic {
         query.page = Params.integer(query.page, { default: 0 });
         query.sort = Params.string(query.sort, { default: 'created' });
         query.order = Params.order(query.order);
+        query.mode = Params.string(query.string);
+        query.mode_id = Params.string(query.mode_id);
 
         try {
             const pgres = await pool.query(sql`
@@ -21,6 +23,9 @@ export default class Import extends Generic {
                     *
                 FROM
                     ${sql.identifier([this._table])}
+                WHERE
+                    (${query.mode}::TEXT IS NULL OR ${query.mode}::TEXT = mode)
+                    AND (${query.mode_id}::TEXT IS NULL OR ${query.mode_id}::TEXT = mode_id)
                 ORDER BY
                     ${sql.identifier([this._table, query.sort])} ${query.order}
                 LIMIT
@@ -31,7 +36,7 @@ export default class Import extends Generic {
 
             return this.deserialize_list(pgres);
         } catch (err) {
-            throw new Err(500, err, 'Failed to list iconsets');
+            throw new Err(500, err, 'Failed to list imports');
         }
     }
 
