@@ -71,8 +71,6 @@ export default {
                 }
             });
 
-            console.error('IMPORTED', imported);
-
             return new Promise((resolve, reject) => {
                 const xhr = new XMLHttpRequest()
                 const formData = new FormData()

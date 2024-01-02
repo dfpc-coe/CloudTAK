@@ -89,7 +89,7 @@ export default async function router(schema: any, config: Config) {
                         ext: path.parse(blob.filename).ext,
                     };
 
-                    await imported.commit({ status: 'Pending' });
+                    await imported.commit({ status: 'Pending' }, { column: 'id' });
                     await S3.put(`import/${imported.id}${res.ext}`, file)
 
                     return res;
