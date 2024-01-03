@@ -9,10 +9,6 @@
 
                         <div class='ms-auto'>
                             <div class='btn-list'>
-                                <a @click='query = !query' class="cursor-pointer btn btn-secondary">
-                                    <IconSearch/>
-                                </a>
-
                                 <a @click='$router.push("/connection/new")' class="cursor-pointer btn btn-primary">
                                     New Connection
                                 </a>
@@ -27,7 +23,7 @@
     <div class='page-body'>
         <div class='container-xl'>
             <div class='row row-deck row-cards'>
-                <div v-if='query' class="col-lg-12">
+                <div class="col-lg-12">
                     <div class="card">
                         <div class="card-body">
                             <label class="form-label">Connection Search</label>
@@ -105,7 +101,6 @@ export default {
         return {
             err: false,
             loading: true,
-            query: false,
             paging: {
                 filter: '',
                 limit: 10,
@@ -135,7 +130,7 @@ export default {
         fetchList: async function() {
             this.loading = true;
             const url = window.stdurl('/api/connection');
-            if (this.query && this.paging.filter) url.searchParams.append('filter', this.paging.filter);
+            url.searchParams.append('filter', this.paging.filter);
             url.searchParams.append('limit', this.paging.limit);
             url.searchParams.append('page', this.paging.page);
             this.list = await window.std(url);
