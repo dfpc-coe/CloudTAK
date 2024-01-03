@@ -59,7 +59,7 @@ export default class {
         });
     }
 
-    async getGuid(name: string, query: {
+    async getGuid(guid: string, query: {
         password?: string;
         changes?: string;
         logs?: string;
