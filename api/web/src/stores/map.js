@@ -269,7 +269,7 @@ export const useMapStore = defineStore('cloudtak', {
                 this.radial.y = this.container.clientHeight / 2;
             });
 
-            for (const layer of ['cots', 'cots-poly', 'cots-line']) {
+            for (const layer of ['cots', 'cots-poly', 'cots-group', 'cots-line']) {
                 this.map.on('mouseenter', layer, () => {
                     if (this.draw && this.draw.getMode() !== 'static') return;
                     this.map.getCanvas().style.cursor = 'pointer';
