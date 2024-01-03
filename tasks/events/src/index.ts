@@ -3,10 +3,10 @@ import { fetch } from 'undici';
 import fsp from 'node:fs/promises';
 import fs from 'node:fs';
 import Lambda from "aws-lambda";
-import { Readable } from 'node:stream';
 import path from 'node:path';
 import S3 from "@aws-sdk/client-s3";
 import StreamZip, { StreamZipAsync } from 'node-stream-zip'
+import { includesWithGlob } from "array-includes-with-glob";
 import { pipeline } from 'node:stream/promises';
 import xml2js from 'xml2js';
 import jwt from 'jsonwebtoken';
@@ -129,12 +129,28 @@ async function genericEvent(md: Event) {
 
         const data = await API.fetchData(md);
 
-        if (!data.auto_transform) {
-            console.log(`ok - Data ${md.ID} has auto-transform turned off`);
-            return;
+        if (data.mission && !['.geojsonld', '.pmtiles'].includes(md.Ext)) {
+            let sync = false;
+            for (const glob of data.mission.assets) {
+                sync = includesWithGlob([md.ID], glob);
+                if (sync) break;
+            }
+
+            if (sync) {
+                const res = await API.uploadMission(md, {
+                    name: data.mission.mission,
+                    filename: md.ID
+                });
+                console.error(JSON.stringify(res));
+            }
         }
 
-        await API.transformData(md);
+        if (data.auto_transform) {
+            await API.transformData(md);
+        } else {
+            console.log(`ok - Data ${md.ID} has auto-transform turned off`);
+        }
+
     } else {
         throw new Error('Unknown Import Type');
     }
