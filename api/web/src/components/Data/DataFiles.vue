@@ -21,7 +21,7 @@
             <tbody>
                 <tr :key='asset.name' v-for='asset in list.assets'>
                     <td>
-                        <div class='d-flex'>
+                        <div class='d-flex align-items-center'>
                             <div class='btn-list'>
                                 <IconMap v-if='asset.visualized' v-tooltip='"Visualizable"'/>
                                 <IconMapOff v-else v-tooltip='"Not Cloud Optimized"'/>
