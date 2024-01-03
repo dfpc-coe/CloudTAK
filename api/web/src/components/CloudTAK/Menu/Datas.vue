@@ -199,8 +199,8 @@ export default {
                     filter: ["==", "$type", "Polygon"],
                     layout: {},
                     paint: {
-                        'fill-opacity': 0.1,
-                        'fill-color': '#00FF00'
+                        'fill-opacity': ["number", ["get", "fill-opacity"], 1],
+                        'fill-color': ["string", ["get", "fill"], "#00FF00"]
                     }
                 },{
                     id: `${id}-polyline`,
@@ -213,9 +213,9 @@ export default {
                         'line-cap': 'round'
                     },
                     paint: {
-                        'line-color': '#00FF00',
-                        'line-width': 1,
-                        'line-opacity': 0.75
+                        'line-color': ["string", ["get", "stroke"], "#00FF00"],
+                        'line-width': ["number", ["get", "stroke-width"], 3],
+                        'line-opacity': ["number", ["get", "stroke-opacity"], 1]
                     }
                 },{
                     id: `${id}-line`,
@@ -239,9 +239,9 @@ export default {
                     'source-layer': 'out',
                     filter: ["==", "$type", "Point"],
                     paint: {
-                        'circle-color': '#00FF00',
-                        'circle-radius': 2.5,
-                        'circle-opacity': 0.75
+                        'circle-color': ["string", ["get", "circle-color"], "#00FF00"],
+                        'circle-radius': ["string", ["get", "circle-radius"], 2.5],
+                        'circle-opacity': ["string", ["get", "circle-opacity"], 1]
                     }
                 }]);
             } else {
