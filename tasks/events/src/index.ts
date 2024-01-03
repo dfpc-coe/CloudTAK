@@ -17,6 +17,7 @@ export type Event = {
     Token: string;
     Bucket: string;
     Key: string;
+    Name: string;
     Ext: string;
     Local: string;
 }
@@ -44,6 +45,7 @@ async function s3Event(record: Lambda.S3EventRecord) {
         Token: jwt.sign({ access: 'event' }, String(process.env.SigningSecret)),
         Bucket: record.s3.bucket.name,
         Key: decodeURIComponent(record.s3.object.key.replace(/\+/g, ' ')),
+        Name: path.parse(decodeURIComponent(record.s3.object.key.replace(/\+/g, ' '))).name,
         Ext: path.parse(decodeURIComponent(record.s3.object.key.replace(/\+/g, ' '))).ext,
         Local: path.resolve(os.tmpdir(), `input${path.parse(decodeURIComponent(record.s3.object.key.replace(/\+/g, ' '))).ext}`),
     };
@@ -63,7 +65,6 @@ async function genericEvent(md: Event) {
             console.error('Import', JSON.stringify(imported));
 
             const s3 = new S3.S3Client({ region: process.env.AWS_DEFAULT_REGION || 'us-east-1' });
-
             await pipeline(
                 // @ts-ignore
                 (await s3.send(new S3.GetObjectCommand({
@@ -132,20 +133,34 @@ async function genericEvent(md: Event) {
         if (data.mission && !['.geojsonld', '.pmtiles'].includes(md.Ext)) {
             let sync = false;
             for (const glob of data.mission.assets) {
-                sync = includesWithGlob([md.ID], glob);
+                sync = includesWithGlob([md.Name], glob);
                 if (sync) break;
             }
 
             if (sync) {
+                console.log(`ok - Data ${md.Key} syncing with ${data.mission.mission}`);
+                const s3 = new S3.S3Client({ region: process.env.AWS_DEFAULT_REGION || 'us-east-1' });
+                await pipeline(
+                    // @ts-ignore
+                    (await s3.send(new S3.GetObjectCommand({
+                        Bucket: md.Bucket,
+                        Key: md.Key
+                    }))).Body,
+                    fs.createWriteStream(md.Local)
+                );
+
                 const res = await API.uploadMission(md, {
                     name: data.mission.mission,
-                    filename: md.ID
+                    filename: md.Name,
+                    connection: data.connection
                 });
+
+                console.log(JSON.stringify(res));
             } else {
-                console.log(`ok - Data ${md.ID} does not match mission sync globs`);
+                console.log(`ok - Data ${md.Key} does not match mission sync globs`);
             }
         } else {
-                console.log(`ok - Data ${md.ID} has no mission assigned or is a geojsonld or pmtiles file`);
+                console.log(`ok - Data ${md.Key} has no mission assigned or is a geojsonld or pmtiles file`);
         }
 
         if (data.auto_transform) {
@@ -251,6 +266,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
         Token: jwt.sign({ access: 'event' }, 'coe-wildland-fire'),
         Bucket: process.env.BUCKET,
         Key: process.env.KEY,
+        Name: path.parse(process.env.KEY).name,
         Ext: path.parse(process.env.KEY).ext,
         Local: path.resolve(os.tmpdir(), `input${path.parse(process.env.KEY).ext}`),
     });

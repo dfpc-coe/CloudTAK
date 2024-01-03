@@ -11,11 +11,13 @@ export default class API {
         name: string;
         filename: string;
         token?: string;
+        connection?: number;
     }) {
         const {size} = fs.statSync(event.Local);
 
         const url = new URL(`/api/marti/missions/${encodeURIComponent(mission.name)}/upload`, process.env.TAK_ETL_API);
         url.searchParams.append('name', mission.filename);
+        if (mission.connection) url.searchParams.append('connection', String(mission.connection));
         const res = await fetch(url, {
             method: 'POST',
             duplex: 'half',
@@ -48,6 +50,7 @@ export default class API {
         created: number;
         updated: number;
         description: string;
+        connection: number;
         auto_transform: boolean;
         mission?: {
             id: number;
