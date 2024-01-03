@@ -9,38 +9,39 @@
             </div>
         </div>
     </div>
-    <div class='row py-2 px-2'>
-        <TablerLoading v-if='loading'/>
-        <TablerNone v-else-if='!contacts.length' :create='false'/>
-        <template v-else>
-            <div :key='a.id' v-for='a of visibleContacts' class="col-lg-12">
-                <div class='col-12 row py-2 px-2 d-flex align-items-center hover-dark cursor-pointer'>
-                    <div class='col-auto'>
-                        <IconCircleFilled :class='{
-                            "text-yellow": a.team === "Yellow",
-                            "text-cyan": a.team === "Cyan",
-                            "text-lime": a.team === "Green",
-                            "text-red": a.team === "Red",
-                            "text-purple": a.team === "Purple",
-                            "text-orange": a.team === "Orange",
-                            "text-azure": a.team === "Blue",
-                            "text-dribble": a.team === "Magenta",
-                            "text-white": a.team === "White",
-                            "text-pinterest": a.team === "Maroon",
-                            "text-blue": a.team === "Dark Blue",
-                            "text-teal": a.team === "Teal",
-                            "text-green": a.team === "Dark Green",
-                            "text-google": a.team === "Brown",
-                        }'/>
-                    </div>
-                    <div class='col-auto'>
-                        <div v-text='a.callsign'></div>
-                        <div v-text='a.notes.trim()' class='subheader'></div>
-                    </div>
+    <TablerLoading v-if='loading'/>
+    <TablerNone v-else-if='!contacts.length' :create='false'/>
+    <template v-else>
+        <div :key='a.id' v-for='a of visibleContacts' class="col-lg-12">
+            <div class='col-12 row py-2 px-2 d-flex align-items-center hover-dark cursor-pointer'>
+                <div class='col-auto'>
+                    <IconCircleFilled :class='{
+                        "text-yellow": a.team === "Yellow",
+                        "text-cyan": a.team === "Cyan",
+                        "text-lime": a.team === "Green",
+                        "text-red": a.team === "Red",
+                        "text-purple": a.team === "Purple",
+                        "text-orange": a.team === "Orange",
+                        "text-azure": a.team === "Blue",
+                        "text-dribble": a.team === "Magenta",
+                        "text-white": a.team === "White",
+                        "text-pinterest": a.team === "Maroon",
+                        "text-blue": a.team === "Dark Blue",
+                        "text-teal": a.team === "Teal",
+                        "text-green": a.team === "Dark Green",
+                        "text-google": a.team === "Brown",
+                    }'/>
+                </div>
+                <div class='col-auto'>
+                    <div v-text='a.callsign'></div>
+                    <div v-text='a.notes.trim()' class='subheader'></div>
+                </div>
+                <div class='col-auto ms-auto'>
+                    <IconZoomPan @click='flyTo(a)' v-if='isZoomable(a)' v-tooltip='"Zoom To"' class='cursor-pointer'/>
                 </div>
             </div>
-        </template>
-    </div>
+        </div>
+    </template>
 </div>
 </template>
 
@@ -49,12 +50,16 @@ import {
     TablerNone,
     TablerLoading
 } from '@tak-ps/vue-tabler';
-
 import {
+    IconZoomPan,
     IconRefresh,
     IconCircleFilled,
     IconCircleArrowLeft
 } from '@tabler/icons-vue';
+import { useCOTStore } from '/src/stores/cots.js';
+const cotStore = useCOTStore();
+import { useMapStore } from '/src/stores/map.js';
+const mapStore = useMapStore();
 
 export default {
     name: 'Contacts',
@@ -76,6 +81,19 @@ export default {
         }
     },
     methods: {
+        isZoomable: function(contact) {
+            return cotStore.cots.has(contact.uid);
+        },
+        flyTo: function(contact) {
+            const flyTo = {
+                speed: Infinity,
+                center: cotStore.cots.get(contact.uid).geometry.coordinates,
+                zoom: 16
+            };
+
+            if (mapStore.map.getZoom() < 3) flyTo.zoom = 4;
+            mapStore.map.flyTo(flyTo)
+        },
         fetchList: async function() {
             this.loading = true;
             const url = window.stdurl('/api/marti/api/contacts/all');
@@ -84,6 +102,7 @@ export default {
         },
     },
     components: {
+        IconZoomPan,
         TablerNone,
         TablerLoading,
         IconRefresh,
