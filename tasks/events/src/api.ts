@@ -53,7 +53,7 @@ export default class API {
             id: number;
             mission: string;
             enabled: boolean;
-            data: integer;
+            data: number;
             assets: string[];
         }
     }> {
@@ -65,15 +65,8 @@ export default class API {
             }
         });
 
-        const resbody = await res.json() as {
-            [k: string]: string | boolean;
-        };
-        
-        return {
-            name: String(resbody.name),
-            description: String(resbody.description),
-            auto_transform: Boolean(resbody.auto_transform)
-        }
+        const resbody = await res.json() as any;
+        return resbody;
     }
 
     static async fetchImport(event: Event): Promise<{

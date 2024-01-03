@@ -121,7 +121,12 @@
                         <template v-if='imports.length'>
                             <label class='subheader'>Imports</label>
 
-                            <div @click='$router.push(`/import/${imp.id}`)' :key='imp.id' v-for='imp in imports' class='col-12 d-flex align-items-center hover-light cursor-pointer rounded'>
+                            <div
+                                @click='$router.push(`/import/${imp.id}`)'
+                                :key='imp.id'
+                                v-for='imp in imports'
+                                class='col-12 d-flex align-items-center hover-light cursor-pointer rounded'
+                            >
                                 <Status :status='imp.status'/><span class='mx-2' v-text='imp.name'/>
                             </div>
                         </template>
@@ -273,7 +278,9 @@ export default {
                 const url = await window.stdurl(`/api/import`);
                 url.searchParams.append('mode', 'Mission');
                 url.searchParams.append('mode_id', this.mission.guid);
-                this.imports = (await window.std(url)).imports;
+                this.imports = (await window.std(url)).imports.filter((i) => {
+                    return !['Success'].includes(i.status);
+                });
             } catch (err) {
                 this.err = err;
             }
