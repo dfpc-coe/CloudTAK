@@ -43,9 +43,19 @@ export default class API {
     }
 
     static async fetchData(event: Event): Promise<{
+        id: number;
         name: string;
+        created: number;
+        updated: number;
         description: string;
         auto_transform: boolean;
+        mission?: {
+            id: number;
+            mission: string;
+            enabled: boolean;
+            data: integer;
+            assets: string[];
+        }
     }> {
         const res = await fetch(new URL(`/api/data/${event.ID}`, process.env.TAK_ETL_API), {
             method: 'GET',
