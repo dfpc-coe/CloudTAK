@@ -228,9 +228,9 @@ export default {
                         'line-cap': 'round'
                     },
                     'paint': {
-                        'line-color': '#00FF00',
-                        'line-width': 1,
-                        'line-opacity': 0.75
+                        'line-color': ["string", ["get", "stroke"], "#00FF00"],
+                        'line-width': ["number", ["get", "stroke-width"], 3],
+                        'line-opacity': ["number", ["get", "stroke-opacity"], 1]
                     }
                 },{
                     id: id,
