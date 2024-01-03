@@ -195,9 +195,24 @@ export const useMapStore = defineStore('cloudtak', {
                     'line-width': ['get', 'stroke-width'],
                 },
             },{
+                id: 'cots-group',
+                type: 'circle',
+                source: 'cots',
+                filter: [ 'all', 
+                    ['==', '$type', 'Point'],
+                    ['has', 'color']
+                ],
+                paint: {
+                    'circle-color': ['get', 'color'],
+                    'circle-stroke-color': '#ffffff',
+                    'circle-stroke-width': 2,
+                    'circle-radius': 10
+                },
+            },{
                 id: 'cots',
                 type: 'symbol',
                 source: 'cots',
+                filter: [ 'all', ['==', '$type', 'Point'] ],
                 paint: {
                     'icon-opacity': ['get', 'icon-opacity'],
                     'icon-halo-color': '#ffffff',

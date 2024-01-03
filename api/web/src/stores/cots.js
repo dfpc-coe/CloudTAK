@@ -92,14 +92,45 @@ export const useCOTStore = defineStore('cots', {
             }
 
             if (feat.geometry.type.includes('Point')) {
-                if (feat.properties.icon) {
+                if (feat.properties.group) {
+                    feat.properties['icon-opacity'] = 0;
+
+                    if (feat.properties.group.name === 'Yellow') {
+                        feat.properties.color = '#f59f00';
+                    } else if (feat.properties.group.name === 'Orange') {
+                        feat.properties.color = '#f76707';
+                    } else if (feat.properties.group.name === 'Magenta') {
+                        feat.properties.color = '#ea4c89';
+                    } else if (feat.properties.group.name === 'Red') {
+                        feat.properties.color = '#d63939';
+                    } else if (feat.properties.group.name === 'Maroon') {
+                        feat.properties.color = '#bd081c';
+                    } else if (feat.properties.group.name === 'Purple') {
+                        feat.properties.color = '#ae3ec9';
+                    } else if (feat.properties.group.name === 'Dark Blue') {
+                        feat.properties.color = '#0054a6';
+                    } else if (feat.properties.group.name === 'Blue') {
+                        feat.properties.color = '#4299e1';
+                    } else if (feat.properties.group.name === 'Cyan') {
+                        feat.properties.color = '#17a2b8';
+                    } else if (feat.properties.group.name === 'Teal') {
+                        feat.properties.color = '#0ca678';
+                    } else if (feat.properties.group.name === 'Green') {
+                        feat.properties.color = '#74b816';
+                    } else if (feat.properties.group.name === 'Dark Green') {
+                        feat.properties.color = '#2fb344';
+                    } else if (feat.properties.group.name === 'Brown') {
+                        feat.properties.color = '#dc4e41';
+                    } else {
+                        feat.properties.color = '#ffffff';
+                    }
+
+                } else if (feat.properties.icon) {
                     // Format of icon needs to change for spritesheet
                     feat.properties.icon = feat.properties.icon.replace('/', ':').replace(/.png$/, '');
                 } else {
                     feat.properties.icon = `${feat.properties.type}`;
                 }
-
-                feat.properties.color = '#d63939';
             } else if (feat.geometry.type.includes('Line') || feat.geometry.type.includes('Polygon')) {
                 if (!feat.properties['stroke']) feat.properties.stroke = '#d63939';
                 if (!feat.properties['stroke-style']) feat.properties['stroke-style'] = 'solid';
