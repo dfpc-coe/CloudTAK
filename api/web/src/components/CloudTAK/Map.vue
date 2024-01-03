@@ -111,8 +111,8 @@ import { mapState, mapActions } from 'pinia'
 import { useMapStore } from '/src/stores/map.js';
 import { useProfileStore } from '/src/stores/profile.js';
 import { useCOTStore } from '/src/stores/cots.js';
-const mapStore = useMapStore();
 const cotStore = useCOTStore();
+const mapStore = useMapStore();
 const profileStore = useProfileStore();
 
 export default {
