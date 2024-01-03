@@ -84,6 +84,8 @@ async function genericEvent(md: Event) {
                     filename: imported.name,
                     token: imported.config.token
                 });
+
+                if (res.status !== 200) throw new Error(res.message);
                 console.error(JSON.stringify(res));
             } else if (imported.mode === 'Unknown') {
                 if (md.Ext === '.zip') {
@@ -155,6 +157,7 @@ async function genericEvent(md: Event) {
                     connection: data.connection
                 });
 
+                if (res.status !== 200) throw new Error(res.message);
                 console.log(JSON.stringify(res));
             } else {
                 console.log(`ok - Data ${md.Key} does not match mission sync globs`);
