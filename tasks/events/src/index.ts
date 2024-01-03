@@ -78,7 +78,11 @@ async function genericEvent(md: Event) {
                 if (!imported.config.id) throw new Error('No mission name defined');
                 if (!imported.config.token) throw new Error('No token defined');
 
-                const res = await API.uploadMission(md, imported);
+                const res = await API.uploadMission(md, {
+                    name: imported.config.id,
+                    filename: imported.name,
+                    token: imported.config.token
+                });
                 console.error(JSON.stringify(res));
             } else if (imported.mode === 'Unknown') {
                 if (md.Ext === '.zip') {
