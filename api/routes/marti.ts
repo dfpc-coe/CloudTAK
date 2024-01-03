@@ -2,6 +2,7 @@ import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
 import Profile from '../lib/types/profile.js';
+import Connection from '../lib/types/connection.js';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
 import TAKAPI, {
@@ -18,6 +19,10 @@ export default async function router(schema: any, config: Config) {
         query: {
             type: 'object',
             properties: {
+                connection: {
+                    type: 'integer',
+                    description: 'Use Connection auth'
+                },
                 useCache: {
                     type: 'boolean',
                     description: 'This tells TAK server to return the users cached group selection vs the groups that came directly from the auth backend.'
@@ -29,9 +34,16 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            if (!req.auth.email) throw new Err(400, null, 'Groups can only be listed by an authenticated user');
-            const profile = await Profile.from(config.pool, req.auth.email);
-            const api = await TAKAPI.init(new URL(config.server.api), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
+            let api;
+            if (req.query.connection) {
+                const connection = await Connection.from(config.pool, req.query.connection);
+                api = await TAKAPI.init(new URL(config.server.api), new APIAuthCertificate(connection.auth.cert, connection.auth.key));
+
+            } else {
+                if (!req.auth.email) throw new Err(400, null, 'Groups can only be listed by an authenticated user');
+                const profile = await Profile.from(config.pool, req.auth.email);
+                api = await TAKAPI.init(new URL(config.server.api), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
+            }
 
             const query = {};
             for (const q in req.query) query[q] = String(req.query[q]);
@@ -90,7 +102,7 @@ export default async function router(schema: any, config: Config) {
     });
 
     await schema.get('/marti/api/contacts/all', {
-        name: 'List Groups',
+        name: 'List Contacts',
         group: 'Marti',
         auth: 'user',
         description: 'Helper API to list contacts',

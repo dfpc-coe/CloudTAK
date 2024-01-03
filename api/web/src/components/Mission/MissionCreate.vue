@@ -62,6 +62,7 @@
     <GroupSelect
         v-if='modal.groups'
         v-model='mission.groups'
+        :connection='connection'
         @close='modal.groups = false'
     />
 </div>
