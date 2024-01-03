@@ -80,7 +80,7 @@
                     <div class='col-12'>
                         <label>Data Destination</label>
                     </div>
-                    <div class='col-12 d-flex'>
+                    <div class='col-12 d-flex align-items-center'>
                         <div class='btn-group' role="group">
                             <input :disabled='disabled' v-model='destination' value='connection' type="radio" class="btn-check" name="connection-toolbar" id="connection-toolbar-connection" autocomplete="off">
                             <label for="connection-toolbar-connection" class="btn btn-icon"><IconBuildingBroadcastTower/></label>

@@ -6,9 +6,9 @@
     <template v-else>
         <div class='d-flex'>
             <template v-if='selected.id'>
-                <div @click='$router.push(`/connection/${selected.id}`)' class='d-flex cursor-pointer'>
+                <div @click='$router.push(`/connection/${selected.id}`)' class='d-flex cursor-pointer align-items-center'>
                     <ConnectionStatus :connection='selected'/>
-                    <span class='mt-2' v-text='selected.name'/>
+                    <span class='mx-2' v-text='selected.name'/>
                 </div>
             </template>
             <template v-else>
