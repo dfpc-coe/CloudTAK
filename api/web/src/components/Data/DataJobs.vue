@@ -1,5 +1,5 @@
 <template>
-<div class='card'>
+<div>
     <div class='card-header d-flex'>
         <h3 class='card-title'>Data Transforms</h3>
         <div class='ms-auto btn-list'>
@@ -54,7 +54,7 @@ import {
 } from '@tak-ps/vue-tabler';
 
 export default {
-    name: 'DataTransforms',
+    name: 'DataJobs',
     data: function() {
         return {
             err: null,
