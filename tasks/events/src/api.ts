@@ -7,26 +7,24 @@ import path from 'node:path';
 import { Event } from './index.js'
 
 export default class API {
-    static async uploadMission(md: Event, imported: {
+    static async uploadMission(event: Event, mission: {
         name: string;
-        config: {
-            id: string;
-            token: string;
-        }
+        filename: string;
+        token?: string;
     }) {
-        const {size} = fs.statSync(md.Local);
+        const {size} = fs.statSync(event.Local);
 
-        const url = new URL(`/api/marti/missions/${encodeURIComponent(imported.config.id)}/upload`, process.env.TAK_ETL_API);
-        url.searchParams.append('name', imported.name);
+        const url = new URL(`/api/marti/missions/${encodeURIComponent(mission.name)}/upload`, process.env.TAK_ETL_API);
+        url.searchParams.append('name', mission.filename);
         const res = await fetch(url, {
             method: 'POST',
             duplex: 'half',
             headers: {
-                'Authorization': `Bearer ${imported.config.token}`,
+                'Authorization': `Bearer ${mission.token ? mission.token : event.Token}`,
                 'Content-Length': String(size),
                 'Content-Type': 'application/octet-stream'
             },
-            body: Readable.toWeb(fs.createReadStream(md.Local))
+            body: Readable.toWeb(fs.createReadStream(event.Local))
         });
 
         return await res.json();
