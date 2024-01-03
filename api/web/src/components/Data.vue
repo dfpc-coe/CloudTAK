@@ -19,7 +19,13 @@
                 <div class="col-lg-12">
                     <div class="card">
                         <div class="card-header">
-                            <a @click='$router.push(`/connection/${$route.params.connectionid}/data/${data.id}`)' class="card-title cursor-pointer" v-text='data.name'></a>
+                            <ConnectionStatus :connection='connection'/>
+
+                            <a @click='$router.push(`/connection/${connection.id}`)' class="card-title cursor-pointer mx-2" v-text='connection.name'></a>
+
+                            <span class='mx-1'>-</span>
+
+                            <div class='card-title mx-1' v-text='data.name'></div>
 
                             <div class='ms-auto'>
                                 <div class='btn-list'>
@@ -37,10 +43,28 @@
                     </div>
                 </div>
                 <div class="col-lg-12">
-                    <DataAsset :data='data' @assets='assets = $event'/>
-                </div>
-                <div class="col-lg-12">
-                    <DataTransforms/>
+                    <div class='card'>
+                        <div class='row g-0'>
+                            <div class="col-12 col-md-3 border-end">
+                                <div class="card-body">
+                                    <h4 class="subheader">Data Sections</h4>
+                                    <div class="list-group list-group-transparent">
+                                        <span @click='$router.push(`/connection/${$route.params.connectionid}/data/${$route.params.dataid}/files`)' class="list-group-item list-group-item-action d-flex align-items-center" :class='{
+                                            "active": $route.name === "data-files",
+                                            "cursor-pointer": $route.name !== "data-files"
+                                        }'><IconFiles/><span class='mx-3'>Files</span></span>
+                                        <span @click='$router.push(`/connection/${$route.params.connectionid}/data/${$route.params.dataid}/jobs`)' class="list-group-item list-group-item-action d-flex align-items-center" :class='{
+                                            "active": $route.name === "data-jobs",
+                                            "cursor-pointer": $route.name !== "data-jobs"
+                                        }'><IconTransform/><span class='mx-3'>Jobs</span></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-9">
+                                <router-view/>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -63,9 +87,6 @@
 <script>
 import MissionModal from './Data/MissionModal.vue';
 import PageFooter from './PageFooter.vue';
-import DataAsset from './Data/Assets.vue';
-import DataLocation from './Data/Location.vue';
-import DataTransforms from './Data/Transforms.vue';
 import timeDiff from '../timediff.js';
 import {
     TablerModal,
@@ -74,10 +95,13 @@ import {
     TablerBreadCrumb,
 } from '@tak-ps/vue-tabler'
 import {
+    IconFiles,
+    IconTransform,
     IconSettings,
     IconAccessPoint,
     IconAccessPointOff,
 } from '@tabler/icons-vue'
+import ConnectionStatus from './Connection/Status.vue';
 
 export default {
     name: 'DataSingle',
@@ -91,10 +115,12 @@ export default {
                 data: true
             },
             assets: {},
+            connection: {},
             data: {},
         }
     },
     mounted: async function() {
+        await this.fetchConnection();
         await this.fetch();
     },
     methods: {
@@ -117,6 +143,9 @@ export default {
                 throw new Error('Updating missions not yet supported');
             }
         },
+        fetchConnection: async function() {
+            this.connection = await window.std(`/api/connection/${this.$route.params.connectionid}`);
+        },
         fetch: async function() {
             this.loading.data = true;
             this.data = await window.std(`/api/data/${this.$route.params.dataid}`);
@@ -124,16 +153,16 @@ export default {
         }
     },
     components: {
+        IconFiles,
+        IconTransform,
         IconSettings,
-        DataLocation,
         PageFooter,
         TablerLoading,
-        DataAsset,
-        DataTransforms,
         TablerBreadCrumb,
         TablerMarkdown,
         IconAccessPoint,
         IconAccessPointOff,
+        ConnectionStatus,
         MissionModal
     }
 }
