@@ -141,8 +141,11 @@ async function genericEvent(md: Event) {
                     name: data.mission.mission,
                     filename: md.ID
                 });
-                console.error(JSON.stringify(res));
+            } else {
+                console.log(`ok - Data ${md.ID} does not match mission sync globs`);
             }
+        } else {
+                console.log(`ok - Data ${md.ID} has no mission assigned or is a geojsonld or pmtiles file`);
         }
 
         if (data.auto_transform) {
