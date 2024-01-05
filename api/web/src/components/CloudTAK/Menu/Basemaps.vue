@@ -96,6 +96,7 @@ export default {
             mapStore.map.addSource('basemap', { type: 'raster', tileSize: 256, tiles: [ url ] });
             mapStore.addLayer({
                 name: basemap.name,
+                before: 'CoT Icons',
                 type: 'raster',
                 source: 'basemap',
             }, [{
@@ -104,7 +105,7 @@ export default {
                 source: 'basemap',
                 minzoom: basemap.minzoom,
                 maxzoom: basemap.maxzoom
-            }], 'CoT Icons');
+            }]);
         },
         share: function(basemap) {
             this.shareModal.basemap = basemap;

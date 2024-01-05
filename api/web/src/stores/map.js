@@ -25,28 +25,60 @@ export const useMapStore = defineStore('cloudtak', {
         }
     },
     actions: {
-        addLayer: function(layer, layers, before) {
+        addLayer: function(layer, layers, config = {}) {
             if (!layer.name) throw new Error('Layer Name must be set');
             if (!layer.source) throw new Error('Layer Source must be set');
+            if (!layer.clickable) layer.clickable = [];
 
             if (this.getLayerPos(layer.name) !== false) return;
 
             if (!layer.visible) layer.visible = 'visible';
             if (isNaN(layer.opacity)) layer.opacity = 1;
-            if (!layer.type) layer.type === 'raster';
+            if (!layer.type) layer.type = 'raster';
 
             layer.layers = layers;
 
-            const beforePos = this.getLayerPos(before)
-            if (before && beforePos !== false) {
-                before = this.layers[beforePos].layers[0].id;
-                this.layers.splice(beforePos, 0, layer);
+            const beforePos = this.getLayerPos(layer.before)
+            if (layer.before && beforePos !== false) {
+                layer.before = this.layers[beforePos].layers[0].id;
+                this.layers.splice(layer.before, 0, layer);
             } else {
                 this.layers.push(layer);
             }
 
             for (const l of layer.layers) {
-                this.map.addLayer(l, before);
+                this.map.addLayer(l, layer.before);
+            }
+
+            for (const click of layer.clickable) {
+                this.map.on('mouseenter', click.id, () => {
+                    if (this.draw && this.draw.getMode() !== 'static') return;
+                    this.map.getCanvas().style.cursor = 'pointer';
+                })
+                this.map.on('mouseleave', click.id, () => {
+                    if (this.draw && this.draw.getMode() !== 'static') return;
+                    this.map.getCanvas().style.cursor = '';
+                })
+                this.map.on('click', click.id, (e) => {
+                    if (this.draw && this.draw.getMode() !== 'static') return;
+                    const flyTo = { speed: Infinity };
+                    if (e.features[0].geometry.type === 'Point') {
+                        flyTo.center = e.features[0].geometry.coordinates;
+                    } else {
+                        flyTo.center = pointOnFeature(e.features[0].geometry).geometry.coordinates;
+                    }
+
+                    // This is required to ensure the map has nowhere to flyTo - ie the whole world is shown
+                    // and then the radial menu won't actually be on the CoT when the CoT is clicked
+                    if (this.map.getZoom() < 3) flyTo.zoom = 4;
+                    this.map.flyTo(flyTo)
+
+                    this.radial.x = this.container.clientWidth / 2;
+                    this.radial.y = this.container.clientHeight / 2;
+
+                    this.radial.cot = e.features[0];
+                    this.radial.mode = click.type;
+                });
             }
         },
         updateLayer: function(newLayer) {
@@ -175,7 +207,13 @@ export const useMapStore = defineStore('cloudtak', {
             this.addLayer({
                 name: 'CoT Icons',
                 source: 'cots',
-                type: 'vector'
+                type: 'vector',
+                clickable: [
+                    { id: 'cots', type: 'cot' },
+                    { id: 'cots-poly', type: 'cot' },
+                    { id: 'cots-group', type: 'cot' },
+                    { id: 'cots-line', type: 'cot' }
+                ]
             }, [{
                 id: 'cots-poly',
                 type: 'fill',
@@ -192,13 +230,13 @@ export const useMapStore = defineStore('cloudtak', {
                 paint: {
                     'line-color': ['get', 'stroke'],
                     'line-opacity': ['get', 'stroke-opacity'],
-                    'line-width': ['get', 'stroke-width'],
+                    'line-width': ['*', 2, ['get', 'stroke-width']],
                 },
             },{
                 id: 'cots-group',
                 type: 'circle',
                 source: 'cots',
-                filter: [ 'all', 
+                filter: [ 'all',
                     ['==', '$type', 'Point'],
                     ['has', 'color']
                 ],
@@ -255,6 +293,7 @@ export const useMapStore = defineStore('cloudtak', {
                 },
             }]);
 
+            this.map.on('rotate', () => { this.bearing = this.map.getBearing() })
             this.map.on('contextmenu', (e) => {
                 this.radial.mode = 'context';
                 const flyTo = {
@@ -269,37 +308,6 @@ export const useMapStore = defineStore('cloudtak', {
                 this.radial.y = this.container.clientHeight / 2;
             });
 
-            for (const layer of ['cots', 'cots-poly', 'cots-group', 'cots-line']) {
-                this.map.on('mouseenter', layer, () => {
-                    if (this.draw && this.draw.getMode() !== 'static') return;
-                    this.map.getCanvas().style.cursor = 'pointer';
-                })
-                this.map.on('mouseleave', layer, () => {
-                    if (this.draw && this.draw.getMode() !== 'static') return;
-                    this.map.getCanvas().style.cursor = '';
-                })
-                this.map.on('rotate', () => { this.bearing = this.map.getBearing() })
-                this.map.on('click', layer, (e) => {
-                    if (this.draw && this.draw.getMode() !== 'static') return;
-                    const flyTo = { speed: Infinity };
-                    if (e.features[0].geometry.type === 'Point') {
-                        flyTo.center = e.features[0].geometry.coordinates;
-                    } else {
-                        flyTo.center = pointOnFeature(e.features[0].geometry).geometry.coordinates;
-                    }
-
-                    // This is required to ensure the map has nowhere to flyTo - ie the whole world is shown
-                    // and then the radial menu won't actually be on the CoT when the CoT is clicked
-                    if (this.map.getZoom() < 3) flyTo.zoom = 4;
-                    this.map.flyTo(flyTo)
-
-                    this.radial.x = this.container.clientWidth / 2;
-                    this.radial.y = this.container.clientHeight / 2;
-
-                    this.radial.cot = e.features[0];
-                    this.radial.mode = 'cot';
-                });
-            }
         },
         initDraw: function() {
             this.draw = new terraDraw.TerraDraw({

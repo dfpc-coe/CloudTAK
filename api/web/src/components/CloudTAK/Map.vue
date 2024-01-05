@@ -3,9 +3,8 @@
     <TablerLoading v-if='loading.main'/>
     <template v-else>
         <div v-if='mode === "Default"' class='position-absolute top-0 end-0 text-white py-2' style='z-index: 1; width: 60px; background-color: rgba(0, 0, 0, 0.5);'>
-            <IconMenu2 v-if='!cot && !menu.main' @click='menu.main = true' size='40' class='cursor-pointer'/>
-            <IconX v-else-if='!cot && menu.main' @click='menu.main = false' size='40' class='cursor-pointer bg-dark'/>
-            <IconX v-if='cot' @click='cot = false' size='40' class='cursor-pointer bg-dark'/>
+            <IconMenu2 v-if='noMenuShown' @click='menu.main = true' size='40' class='cursor-pointer'/>
+            <IconX v-if='!noMenuShown' @click='menu.main = cot = feat = false' size='40' class='cursor-pointer bg-dark'/>
         </div>
 
         <div v-if='profile' class='position-absolute bottom-0 begin-0 text-white' style='z-index: 1; width: 200px; background-color: rgba(0, 0, 0, 0.5);'>
@@ -64,6 +63,10 @@
             v-if='cot && mode === "Default"'
             :cot='cot'
         />
+        <CloudTAKFeatView
+            v-if='feat && mode === "Default"'
+            :feat='feat'
+        />
         <div
             ref="map"
             style='width: 100%;'
@@ -105,6 +108,7 @@ import {
 import 'maplibre-gl/dist/maplibre-gl.css';
 import CloudTAKMenu from './Menu.vue';
 import CloudTAKCoTView from './CoTView.vue';
+import CloudTAKFeatView from './FeatView.vue';
 import RadialMenu from './RadialMenu/RadialMenu.vue';
 import moment from 'moment';
 import { mapState, mapActions } from 'pinia'
@@ -125,7 +129,10 @@ export default {
     },
     computed: {
         ...mapState(useMapStore, ['bearing', 'radial', 'isLoaded']),
-        ...mapState(useProfileStore, ['profile'])
+        ...mapState(useProfileStore, ['profile']),
+        noMenuShown: function() {
+            return !this.cot && !this.feat && !this.menu.main
+        }
     },
     mounted: async function() {
         // ensure uncaught errors in the stack are captured into vue context
@@ -166,6 +173,7 @@ export default {
                                 //   this is an array so that things like the radial menu can temporarily lock state but remember the previous lock value when they are closed
             edit: false,        // If a radial.cot is set and edit is true then load the cot into terra-draw
             cot: null,          // Show the CoT Viewer sidebar
+            feat: null,         // Show the Feat Viewer sidebar
             ws: null,           // WebSocket Connection for CoT events
             timer: null,        // Interval for pushing GeoJSON Map Updates (CoT)
             timerSelf: null,    // Interval for pushing your location to the server
@@ -294,6 +302,9 @@ export default {
                 this.deleteCOT(cot);
             } else if (event === 'cot:edit') {
                 //this.edit = true;
+            } else if (event === 'feat:view') {
+                this.feat = this.radial.cot;
+                this.closeRadial()
             } else {
                 this.closeRadial()
                 throw new Error(`Unimplemented Radial Action: ${event}`);
@@ -421,7 +432,8 @@ export default {
         IconX,
         TablerLoading,
         CloudTAKMenu,
-        CloudTAKCoTView
+        CloudTAKCoTView,
+        CloudTAKFeatView,
     }
 }
 </script>
