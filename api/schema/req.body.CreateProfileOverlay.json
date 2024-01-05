@@ -2,6 +2,8 @@
     "type": "object",
     "additionalProperties": false,
     "required": [
+        "url",
+        "name",
         "mode",
         "mode_id"
     ],
@@ -23,6 +25,9 @@
         },
         "mode_id": {
             "$ref": "./profile_overlays/mode_id.json"
+        },
+        "name": {
+            "$ref": "./profile_overlays/name.json"
         },
         "url": {
             "$ref": "./profile_overlays/url.json"

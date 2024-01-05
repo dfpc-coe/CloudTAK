@@ -220,7 +220,7 @@ export const useMapStore = defineStore('cloudtak', {
                     id: layer.id,
                     url: layer.url,
                     save: true,
-                    name: layer.name || id,
+                    name: layer.name || layer.id,
                     mode: layer.id.split('-')[0],
                     mode_id:  Number(layer.id.split('-')[1]),
                     source: layer.id,
@@ -429,7 +429,12 @@ export const useMapStore = defineStore('cloudtak', {
         },
         initOverlays: async function() {
             for (const overlay of (await window.std('/api/profile/overlay')).overlays) {
-                console.error(overlay);
+                const url = window.stdurl(overlay.url);
+                url.searchParams.append('token', localStorage.token);
+                overlay.url = String(url);
+                overlay.id = `${overlay.mode}-${overlay.mode_id}-${overlay.id}`;
+                overlay.save = true;
+                await this.addDefaultLayer(overlay)
             }
         },
         initDraw: function() {

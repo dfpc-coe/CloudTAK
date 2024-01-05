@@ -5,6 +5,9 @@
         "id": {
             "$ref": "./profile_overlays/id.json"
         },
+        "name": {
+            "$ref": "./profile_overlays/name.json"
+        },
         "username": {
             "$ref": "./profile_overlays/username.json"
         },
@@ -38,6 +41,7 @@
     },
     "required": [
         "id",
+        "name",
         "username",
         "created",
         "updated",
