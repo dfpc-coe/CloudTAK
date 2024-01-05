@@ -9,7 +9,7 @@
         </div>
     </div>
 
-    <TablerNone v-if='!list.tokens.length' :create='false' label='Tokens'/>
+    <TablerNone v-if='!tokens.items.length' :create='false' label='Tokens'/>
     <TablerLoading v-else-if='loading'/>
     <div v-else class="table-responsive">
         <table class="table table-hover card-table table-vcenter cursor-pointer">
@@ -21,7 +21,7 @@
                 </tr>
             </thead>
             <tbody>
-                <tr @click='token = t' :key='t.id' v-for='(t, tokenit) in list.tokens'>
+                <tr @click='token = t' :key='t.id' v-for='(t, tokenit) in tokens.items'>
                     <td v-text='t.name'/>
                     <td><TablerEpoch :date='t.created'/></td>
                     <td><TablerEpoch :date='t.updated'/></td>
@@ -60,9 +60,9 @@ export default {
         return {
             loading: true,
             token: false,
-            list: {
+            tokens: {
                 total: 0,
-                tokens: []
+                items: []
             }
         }
     },
@@ -73,7 +73,7 @@ export default {
         fetch: async function() {
             this.token = false;
             this.loading = true;
-            this.list = await window.std('/api/token');
+            this.tokens = await window.std('/api/token');
             this.loading = false;
         },
     },

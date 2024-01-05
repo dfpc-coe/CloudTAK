@@ -3,7 +3,7 @@ function up(knex) {
         CREATE TABLE profile_overlays (
             id          BIGSERIAL PRIMARY KEY,
             name        TEXT NOT NULL,
-            username    TEXT REFERENCES profile(username),
+            username    TEXT NOT NULL REFERENCES profile(username),
             created     TIMESTAMPTZ NOT NULL DEFAULT Now(),
             updated     TIMESTAMPTZ NOT NULL DEFAULT Now(),
             pos         BIGINT NOT NULL DEFAULT 5,
