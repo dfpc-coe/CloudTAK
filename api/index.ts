@@ -21,6 +21,10 @@ import Profile from './lib/types/profile.js';
 import TAKAPI, { APIAuthPassword } from './lib/tak-api.js';
 import process from 'node:process';
 
+import * as pgschema from './lib/schema.js';
+import postgres from 'postgres';
+import { drizzle } from 'drizzle-orm/postgres-js';
+
 const args = minimist(process.argv, {
     boolean: [
         'silent',   // Turn off logging as much as possible
@@ -62,15 +66,6 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     await server(config);
 }
 
-/**
- * @apiDefine user User
- *   A user must be logged in to use this endpoint
- */
-/**
- * @apiDefine public Public
- *   This API endpoint does not require authentication
- */
-
 export default async function server(config: Config) {
     config.cacher = new Cacher(args.nocache, config.silent);
 
@@ -79,6 +74,7 @@ export default async function server(config: Config) {
     } catch (err) {
         console.log(`ok - failed to flush cache: ${err.message}`);
     }
+
     config.pool = await Pool.connect(process.env.POSTGRES || args.postgres || 'postgres://postgres@localhost:5432/tak_ps_etl', {
         schemas: {
             dir: new URL('./schema', import.meta.url)
@@ -87,6 +83,10 @@ export default async function server(config: Config) {
             geometry: true
         }
     });
+
+    const queryConnection = postgres(process.env.POSTGRES || args.postgres || 'postgres://postgres@localhost:5432/tak_ps_etl');
+    config.pg = drizzle(queryConnection, { schema: pgschema });
+
 
     try {
         config.server = await Server.from(config.pool, 1);

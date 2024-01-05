@@ -7,6 +7,7 @@ import Server from './types/server.js';
 import { Pool } from '@openaddresses/batch-generic';
 import Cacher from './cacher.js';
 import process from 'node:process';
+import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 
 interface ConfigArgs {
     silent: boolean,
@@ -40,6 +41,7 @@ export default class Config {
     wsClients: Map<string, ConnectionWebSocket[]>;
     Bucket?: string;
     pool?: Pool;
+    pg?: PostgresJsDatabase<typeof import("/home/null/Development/dfpc-coe/etl/api/lib/schema")>;
     cacher?: Cacher;
     conns?: ConnectionPool;
     server?: Server;
