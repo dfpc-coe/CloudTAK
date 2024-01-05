@@ -1,0 +1,28 @@
+{
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+        "mode",
+        "mode_path"
+    ],
+    "properties": {
+        "pos": {
+            "$ref": "./profile_overlays/pos.json"
+        },
+        "type": {
+            "$ref": "./profile_overlays/type.json"
+        },
+        "opacity": {
+            "$ref": "./profile_overlays/opacity.json"
+        },
+        "visible": {
+            "$ref": "./profile_overlays/visible.json"
+        },
+        "mode": {
+            "$ref": "./profile_overlays/mode.json"
+        },
+        "mode_path": {
+            "$ref": "./profile_overlays/mode_path.json"
+        }
+    }
+}
