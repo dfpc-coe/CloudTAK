@@ -10,7 +10,8 @@ function up(knex) {
             opacity     FLOAT NOT NULL DEFAULT 1,
             visible     BOOLEAN NOT NULL DEFAULT True,
             mode        TEXT NOT NULL,
-            mode_path   TEXT NOT NULL
+            mode_id     BIGINT NOT NULL,
+            url         TEXT NOT NULL
         );
     `);
 }

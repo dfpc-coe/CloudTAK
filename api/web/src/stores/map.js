@@ -90,6 +90,7 @@ export const useMapStore = defineStore('cloudtak', {
             if (layer.save) {
                 await this.saveLayer({
                     ...layer,
+                    url: new URL(layer.url).pathname,
                     visible: layer.visible === 'visible' ? true : false
                 });
             }
