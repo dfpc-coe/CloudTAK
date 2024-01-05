@@ -3,7 +3,7 @@
     "additionalProperties": false,
     "required": [
         "mode",
-        "mode_path"
+        "mode_id"
     ],
     "properties": {
         "pos": {
@@ -21,8 +21,11 @@
         "mode": {
             "$ref": "./profile_overlays/mode.json"
         },
-        "mode_path": {
-            "$ref": "./profile_overlays/mode_path.json"
+        "mode_id": {
+            "$ref": "./profile_overlays/mode_id.json"
+        },
+        "url": {
+            "$ref": "./profile_overlays/url.json"
         }
     }
 }

@@ -31,6 +31,9 @@
         },
         "mode_id": {
             "$ref": "./profile_overlays/mode_id.json"
+        },
+        "url": {
+            "$ref": "./profile_overlays/url.json"
         }
     },
     "required": [
@@ -43,6 +46,7 @@
         "opacity",
         "visible",
         "mode",
-        "mode_id"
+        "mode_id",
+        "url"
     ]
 }
