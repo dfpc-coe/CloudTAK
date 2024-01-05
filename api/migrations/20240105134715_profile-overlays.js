@@ -2,6 +2,7 @@ function up(knex) {
     return knex.schema.raw(`
         CREATE TABLE profile_overlays (
             id          BIGSERIAL PRIMARY KEY,
+            name        TEXT NOT NULL,
             username    TEXT REFERENCES profile(username),
             created     TIMESTAMPTZ NOT NULL DEFAULT Now(),
             updated     TIMESTAMPTZ NOT NULL DEFAULT Now(),
