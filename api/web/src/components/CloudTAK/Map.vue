@@ -377,6 +377,8 @@ export default {
                     mapStore.map.addSprite(iconset.uid, String(window.stdurl(`/api/icon/sprite?token=${localStorage.token}&iconset=${iconset.uid}`)))
                 }
 
+                await mapStore.initOverlays();
+
                 mapStore.initDraw();
                 this.setYou();
 

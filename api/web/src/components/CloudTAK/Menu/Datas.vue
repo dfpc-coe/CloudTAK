@@ -178,16 +178,9 @@ export default {
             const res = await window.std(url);
 
             if (new URL(res.tiles[0]).pathname.endsWith('.mvt')) {
-                if (mapStore.map.getSource(id)) {
-                    mapStore.map.removeSource(id);
-                }
-
-                mapStore.map.addSource(id, {
-                    type: 'vector',
-                    url: String(url)
-                });
-
-                mapStore.addLayer({
+                await mapStore.addDefaultLayer({
+                    id,
+                    url: url,
                     name: id,
                     source: id,
                     type: 'vector',
@@ -198,73 +191,22 @@ export default {
                         { id: `${id}-line`, type: 'feat' },
                         { id: id, type: 'feat' }
                     ]
-                }, [{
-                    id: `${id}-poly`,
-                    type: 'fill',
-                    source: id,
-                    'source-layer': 'out',
-                    filter: ["==", "$type", "Polygon"],
-                    layout: {},
-                    paint: {
-                        'fill-opacity': ["number", ["get", "fill-opacity"], 1],
-                        'fill-color': ["string", ["get", "fill"], "#00FF00"]
-                    }
-                },{
-                    id: `${id}-polyline`,
-                    type: 'line',
-                    source: id,
-                    'source-layer': 'out',
-                    filter: ["==", "$type", "Polygon"],
-                    layout: {
-                        'line-join': 'round',
-                        'line-cap': 'round'
-                    },
-                    paint: {
-                        'line-color': ["string", ["get", "stroke"], "#00FF00"],
-                        'line-width': ["number", ["get", "stroke-width"], 3],
-                        'line-opacity': ["number", ["get", "stroke-opacity"], 1]
-                    }
-                },{
-                    id: `${id}-line`,
-                    type: 'line',
-                    source: id,
-                    'source-layer': 'out',
-                    filter: ["==", "$type", "LineString"],
-                    layout: {
-                        'line-join': 'round',
-                        'line-cap': 'round'
-                    },
-                    'paint': {
-                        'line-color': ["string", ["get", "stroke"], "#00FF00"],
-                        'line-width': ["*", 2, ["number", ["get", "stroke-width"], 3]],
-                        'line-opacity': ["number", ["get", "stroke-opacity"], 1]
-                    }
-                },{
-                    id: id,
-                    type: 'circle',
-                    source: id,
-                    'source-layer': 'out',
-                    filter: ["==", "$type", "Point"],
-                    paint: {
-                        'circle-color': ["string", ["get", "circle-color"], "#00FF00"],
-                        'circle-radius': ["number", ["get", "circle-radius"], 4],
-                        'circle-opacity': ["number", ["get", "circle-opacity"], 1]
-                    }
-                }], {
                 });
             } else {
-                mapStore.map.addSource(id, { type: 'raster', tileSize: 256, url: String(url) });
-
-                mapStore.addLayer({
+                await mapStore.addDefaultLayer({
+                    id,
+                    url: url,
                     name: id,
                     source: id,
-                    type: 'raster',
-                    before: 'CoT Icons'
-                }, [{
-                    id,
-                    'type': 'raster',
-                    'source': id
-                }]);
+                    type: 'vector',
+                    before: 'CoT Icons',
+                    clickable: [
+                        { id: `${id}-poly`, type: 'feat' },
+                        { id: `${id}-polyline`, type: 'feat' },
+                        { id: `${id}-line`, type: 'feat' },
+                        { id: id, type: 'feat' }
+                    ]
+                });
             }
 
             this.loading = false;
