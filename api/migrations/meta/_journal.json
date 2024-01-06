@@ -1,0 +1,13 @@
+{
+  "version": "5",
+  "dialect": "pg",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1704512005259,
+      "tag": "0000_premium_baron_strucker",
+      "breakpoints": true
+    }
+  ]
+}
