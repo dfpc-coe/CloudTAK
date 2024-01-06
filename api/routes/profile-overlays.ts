@@ -5,6 +5,7 @@ import Auth from '../lib/auth.js';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
 import Config from '../lib/config.js';
+import { sql, eq } from 'drizzle-orm';
 
 export default async function router(schema: any, config: Config) {
     await schema.get('/profile/overlay', {
