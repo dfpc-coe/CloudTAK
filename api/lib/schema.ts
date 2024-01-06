@@ -12,7 +12,7 @@ import {
     varchar
 } from 'drizzle-orm/pg-core';
 
-export const Basemap; = pgTable('basemaps', {
+export const Basemap = pgTable('basemaps', {
     id: serial('id').primaryKey(),
     created: timestamp('created').notNull().default(sql`Now()`),
     updated: timestamp('updated').notNull().default(sql`Now()`),
@@ -33,11 +33,11 @@ export const Import = pgTable('imports', {
     name: varchar('name').notNull(),
     status: varchar('status').notNull().default('Pending'),
     error: varchar('error'),
-    result: json('result').notNull().default(`'{}'::JSON`),
+    result: json('result').notNull().default({}),
     username: varchar('username').notNull().references(() => Profile.username),
     mode: varchar('mode').notNull().default('Unknown'),
     mode_id: varchar('mode_id'),
-    config: json('config').notNull().default(`'{}'::JSON`)
+    config: json('config').notNull().default({})
 });
 
 export const Iconset = pgTable('iconsets', {
@@ -72,7 +72,7 @@ export const Connection = pgTable('connections', {
     name: varchar('name').notNull(),
     description: varchar('description').notNull().default(''),
     enabled: boolean('enabled').notNull().default(true),
-    auth: json('auth').notNull().default(sql`'{}'::JSON`),
+    auth: json('auth').notNull().default({}),
 });
 
 export const ConnectionSink = pgTable('connection_sinks', {
@@ -85,7 +85,7 @@ export const ConnectionSink = pgTable('connection_sinks', {
         mode: 'number'
     }).notNull().references(() => Connection.id),
     type: varchar('name').notNull(),
-    body: json('body').notNull().default(sql`'{}'::JSON`),
+    body: json('body').notNull().default({}),
     logging: boolean('logging').notNull().default(false)
 });
 
@@ -108,7 +108,7 @@ export const DataMission = pgTable('data_mission', {
     data: bigint('data', {
         mode: 'number'
     }).notNull().references(() => Data.id),
-    assets: json('assets').notNull().default(sql`'["*"]'::JSON`)
+    assets: json('assets').notNull().default(["*"])
 });
 
 export const Layer = pgTable('layers', {
@@ -119,7 +119,7 @@ export const Layer = pgTable('layers', {
     description: varchar('description').notNull().default(''),
     enabled: boolean('enabled').notNull().default(true),
     enabled_styles: boolean('enabled_styles').notNull().default(false),
-    styles: jsonb('styles').notNull().default(sql`'{}'::JSONB`),
+    styles: jsonb('styles').notNull().default({}),
     logging: boolean('logging').notNull().default(true),
     stale: integer('stale').notNull().default(20000),
     task: varchar('task').notNull(),
@@ -127,13 +127,13 @@ export const Layer = pgTable('layers', {
         mode: 'number'
     }).notNull().references(() => Connection.id),
     cron: varchar('cron'),
-    environment: jsonb('styles').notNull().default(sql`'{}'::JSONB`),
+    environment: jsonb('styles').notNull().default({}),
     memory: integer('memory').notNull().default(128),
     timeout: integer('timeout').notNull().default(128),
     data: bigint('data', {
         mode: 'number'
     }).notNull().references(() => Data.id),
-    schema: jsonb('schema').notNull().default(sql`'{}'::JSONB`)
+    schema: jsonb('schema').notNull().default({})
 });
 
 export const LayerAlert = pgTable('layer_alerts', {
@@ -156,7 +156,7 @@ export const Server = pgTable('servers', {
     updated: timestamp('updated').notNull().default(sql`Now()`),
     name: varchar('name').notNull().default('Default'),
     url: varchar('url').notNull(),
-    auth: json('auth').notNull().default(sql`'{}'::JSON`),
+    auth: json('auth').notNull().default({}),
     api: varchar('api').notNull().default(''),
 });
 
@@ -171,7 +171,7 @@ export const Token = pgTable('tokens', {
 
 export const Profile = pgTable('profile', {
     username: varchar('username').primaryKey(),
-    auth: json('auth').notNull().default(sql`'{}'::JSON`),
+    auth: json('auth').notNull().default({}),
     created: timestamp('created').notNull().default(sql`Now()`),
     updated: timestamp('updated').notNull().default(sql`Now()`),
     tak_callsign: varchar('tak_callsign').notNull().default('CloudTAK User'),
