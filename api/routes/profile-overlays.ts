@@ -1,13 +1,16 @@
 import Err from '@openaddresses/batch-error';
 import Profile from '../lib/types/profile.js';
-import ProfileOverlay from '../lib/types/profile-overlay.js';
 import Auth from '../lib/auth.js';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
 import Config from '../lib/config.js';
-import { sql, eq } from 'drizzle-orm';
+import { type InferSelectModel } from 'drizzle-orm';
+import { ProfileOverlay } from '../lib/schema.js';
+import Modeler from '../lib/drizzle.js';
 
 export default async function router(schema: any, config: Config) {
+    const OverlayModel = new Modeler<InferSelectModel<typeof ProfileOverlay>>(config.pg, ProfileOverlay);
+
     await schema.get('/profile/overlay', {
         name: 'Get Overlays',
         auth: 'user',
@@ -18,7 +21,7 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            const overlays = await ProfileOverlay.list(config.pool, req.query);
+            const overlays = await OverlayModel.list(req.query);
 
             return res.json(overlays);
         } catch (err) {
@@ -37,7 +40,7 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            const overlay = await ProfileOverlay.generate(config.pool, {
+            const overlay = await OverlayModel.generate({
                 username: req.auth.email,
                 ...req.body
             });
