@@ -1,12 +1,16 @@
 import Err from '@openaddresses/batch-error';
-import Server from '../lib/types/server.js';
 import Auth from '../lib/auth.js';
 import { sql } from 'slonik';
 import Config from '../lib/config.js';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
+import { Server } from '../lib/schema.js';
+import Modeler from '../lib/drizzle.js';
+import { type InferSelectModel } from 'drizzle-orm';
 
 export default async function router(schema: any, config: Config) {
+    const ServerModel = new Modeler<InferSelectModel<typeof Server>>(config.pg, Server);
+
     await schema.get('/server', {
         name: 'Get Server',
         group: 'Server',
@@ -46,7 +50,7 @@ export default async function router(schema: any, config: Config) {
 
             if (config.server) throw new Err(400, null, 'Cannot post to an existing server');
 
-            config.server = await Server.generate(config.pool, req.body);
+            config.server = await ServerModel.generate(req.body);
             await config.conns.refresh(config.pool, config.server);
 
             return res.json({
@@ -72,7 +76,7 @@ export default async function router(schema: any, config: Config) {
 
             if (!config.server) throw new Err(400, null, 'Cannot patch a server that hasn\'t been created');
 
-            config.server = await config.server.commit({
+            config.server = await ServerModel.commit(config.server.id, {
                 ...req.body,
                 updated: sql`Now()`,
             });

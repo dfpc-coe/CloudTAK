@@ -1,3 +1,5 @@
+CREATE EXTENSION IF NOT EXISTS postgis;
+
 CREATE TABLE IF NOT EXISTS "basemaps" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"created" timestamp DEFAULT Now() NOT NULL,
@@ -145,7 +147,7 @@ CREATE TABLE IF NOT EXISTS "profile_overlays" (
 	"url" varchar NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE IF NOT EXISTS "servers" (
+CREATE TABLE IF NOT EXISTS "server" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"created" timestamp DEFAULT Now() NOT NULL,
 	"updated" timestamp DEFAULT Now() NOT NULL,

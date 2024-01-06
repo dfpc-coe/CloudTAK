@@ -52,7 +52,7 @@ export default async function router(schema: any, config: Config) {
                 if (!req.auth.email) throw new Err(400, null, 'Groups can only be listed by an authenticated user');
                 auth = (await Profile.from(config.pool, req.auth.email)).auth;
             }
-            const api = await TAKAPI.init(new URL(config.server.api), new APIAuthCertificate(auth.cert, auth.key));
+            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
             const query = {};
             for (const q in req.query) query[q] = String(req.query[q]);
@@ -95,7 +95,7 @@ export default async function router(schema: any, config: Config) {
                 if (!req.auth.email) throw new Err(400, null, 'Groups can only be listed by an authenticated user');
                 auth = (await Profile.from(config.pool, req.auth.email)).auth;
             }
-            const api = await TAKAPI.init(new URL(config.server.api), new APIAuthCertificate(auth.cert, auth.key));
+            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
             const query = {};
             for (const q in req.query) query[q] = String(req.query[q]);
@@ -146,7 +146,7 @@ export default async function router(schema: any, config: Config) {
                 if (!req.auth.email) throw new Err(400, null, 'Groups can only be listed by an authenticated user');
                 auth = (await Profile.from(config.pool, req.auth.email)).auth;
             }
-            const api = await TAKAPI.init(new URL(config.server.api), new APIAuthCertificate(auth.cert, auth.key));
+            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
             const query = {};
             for (const q in req.query) query[q] = String(req.query[q]);
@@ -195,7 +195,7 @@ export default async function router(schema: any, config: Config) {
                 if (!req.auth.email) throw new Err(400, null, 'Groups can only be listed by an authenticated user');
                 auth = (await Profile.from(config.pool, req.auth.email)).auth;
             }
-            const api = await TAKAPI.init(new URL(config.server.api), new APIAuthCertificate(auth.cert, auth.key));
+            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
             const query = {};
             for (const q in req.query) query[q] = String(req.query[q]);
@@ -247,7 +247,7 @@ export default async function router(schema: any, config: Config) {
                 if (!req.auth.email) throw new Err(400, null, 'Groups can only be listed by an authenticated user');
                 auth = (await Profile.from(config.pool, req.auth.email)).auth;
             }
-            const api = await TAKAPI.init(new URL(config.server.api), new APIAuthCertificate(auth.cert, auth.key));
+            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
             const missions = await api.Mission.contacts(String(req.params.name));
 
@@ -296,7 +296,7 @@ export default async function router(schema: any, config: Config) {
 
             const name = String(req.query.name);
 
-            const api = await TAKAPI.init(new URL(config.server.api), new APIAuthCertificate(auth.cert, auth.key));
+            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
             const content = await api.Files.upload({
                 name: name,
@@ -344,7 +344,7 @@ export default async function router(schema: any, config: Config) {
 
             const name = String(req.query.name);
 
-            const api = await TAKAPI.init(new URL(config.server.api), new APIAuthCertificate(auth.cert, auth.key));
+            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
             const missionContent = await api.Mission.detachContents(req.params.name, req.params.hash);
 

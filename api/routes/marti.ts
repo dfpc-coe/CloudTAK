@@ -37,12 +37,12 @@ export default async function router(schema: any, config: Config) {
             let api;
             if (req.query.connection) {
                 const connection = await Connection.from(config.pool, req.query.connection);
-                api = await TAKAPI.init(new URL(config.server.api), new APIAuthCertificate(connection.auth.cert, connection.auth.key));
+                api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(connection.auth.cert, connection.auth.key));
 
             } else {
                 if (!req.auth.email) throw new Err(400, null, 'Groups can only be listed by an authenticated user');
                 const profile = await Profile.from(config.pool, req.auth.email);
-                api = await TAKAPI.init(new URL(config.server.api), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
+                api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
             }
 
             const query = {};
@@ -89,7 +89,7 @@ export default async function router(schema: any, config: Config) {
 
             if (!req.auth.email) throw new Err(400, null, 'Groups can only be listed by an authenticated user');
             const profile = await Profile.from(config.pool, req.auth.email);
-            const api = await TAKAPI.init(new URL(config.server.api), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
+            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
 
             const query = {};
             for (const q in req.query) query[q] = String(req.query[q]);
@@ -113,7 +113,7 @@ export default async function router(schema: any, config: Config) {
 
             if (!req.auth.email) throw new Err(400, null, 'Groups can only be listed by an authenticated user');
             const profile = await Profile.from(config.pool, req.auth.email);
-            const api = await TAKAPI.init(new URL(config.server.api), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
+            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
 
             const contacts = await api.Contacts.list();
 
@@ -134,7 +134,7 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            const api = await TAKAPI.init(new URL(config.server.api), new APIAuthPassword(req.body.username, req.body.password));
+            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthPassword(req.body.username, req.body.password));
 
             const certs = await api.Credentials.generate();
 

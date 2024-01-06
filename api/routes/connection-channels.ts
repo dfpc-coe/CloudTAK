@@ -19,7 +19,7 @@ export default async function router(schema: any, config: Config) {
             await Auth.is_auth(req);
             const conn = await Connection.from(config.pool, req.params.connectionid);
 
-            const api = await TAKAPI.init(new URL(config.server.api), new APIAuthCertificate(conn.auth.cert, conn.auth.key));
+            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(conn.auth.cert, conn.auth.key));
 
             const list = await api.Group.list({
                 useCache: 'true'

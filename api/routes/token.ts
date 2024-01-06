@@ -7,8 +7,8 @@ import Config from '../lib/config.js';
 import { promisify } from 'util';
 import crypto from 'crypto';
 import Modeler from '../lib/drizzle.js';
-import { sql, eq } from 'drizzle-orm';
 import { type InferSelectModel } from 'drizzle-orm';
+import { sql } from 'drizzle-orm';
 
 const randomBytes = promisify(crypto.randomBytes);
 
