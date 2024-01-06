@@ -52,7 +52,7 @@ export default async function router(schema: any, config: Config) {
                 auth = (await Profile.from(config.pool, req.auth.email)).auth;
                 creatorUid = req.auth.email;
             }
-            const api = await TAKAPI.init(new URL(config.server.api), new APIAuthCertificate(auth.cert, auth.key));
+            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
             const mission = await api.MissionLog.create(req.params.name, {
                 creatorUid: creatorUid,

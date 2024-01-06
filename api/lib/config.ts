@@ -2,12 +2,12 @@ import SecretsManager from '@aws-sdk/client-secrets-manager';
 import type EventsPool from './events-pool.js';
 import ConnectionPool, { ConnectionWebSocket } from './connection-pool.js';
 // @ts-ignore
-import Server from './types/server.js';
-// @ts-ignore
 import { Pool } from '@openaddresses/batch-generic';
 import Cacher from './cacher.js';
+import { Server } from './schema.js';
 import process from 'node:process';
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
+import { type InferSelectModel } from 'drizzle-orm';
 
 interface ConfigArgs {
     silent: boolean,
@@ -44,7 +44,7 @@ export default class Config {
     pg?: PostgresJsDatabase<typeof import("/home/null/Development/dfpc-coe/etl/api/lib/schema")>;
     cacher?: Cacher;
     conns?: ConnectionPool;
-    server?: Server;
+    server?: InferSelectModel<typeof Server>;
     events?: EventsPool;
 
     static async env(args: ConfigArgs) {

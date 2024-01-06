@@ -1,7 +1,6 @@
 import { sql } from 'drizzle-orm';
 import {
     json,
-    jsonb,
     bigint,
     boolean,
     integer,
@@ -119,7 +118,7 @@ export const Layer = pgTable('layers', {
     description: varchar('description').notNull().default(''),
     enabled: boolean('enabled').notNull().default(true),
     enabled_styles: boolean('enabled_styles').notNull().default(false),
-    styles: jsonb('styles').notNull().default({}),
+    styles: json('styles').notNull().default({}),
     logging: boolean('logging').notNull().default(true),
     stale: integer('stale').notNull().default(20000),
     task: varchar('task').notNull(),
@@ -127,13 +126,13 @@ export const Layer = pgTable('layers', {
         mode: 'number'
     }).notNull().references(() => Connection.id),
     cron: varchar('cron'),
-    environment: jsonb('styles').notNull().default({}),
+    environment: json('styles').notNull().default({}),
     memory: integer('memory').notNull().default(128),
     timeout: integer('timeout').notNull().default(128),
     data: bigint('data', {
         mode: 'number'
     }).notNull().references(() => Data.id),
-    schema: jsonb('schema').notNull().default({})
+    schema: json('schema').notNull().default({})
 });
 
 export const LayerAlert = pgTable('layer_alerts', {
@@ -150,13 +149,16 @@ export const LayerAlert = pgTable('layer_alerts', {
     hidden: boolean('hidden').notNull().default(false)
 });
 
-export const Server = pgTable('servers', {
+export const Server = pgTable('server', {
     id: serial('id').primaryKey(),
     created: timestamp('created').notNull().default(sql`Now()`),
     updated: timestamp('updated').notNull().default(sql`Now()`),
     name: varchar('name').notNull().default('Default'),
     url: varchar('url').notNull(),
-    auth: json('auth').notNull().default({}),
+    auth: json('auth').$type<{
+        cert?: string;
+        key?: string;
+    }>().notNull().default({}),
     api: varchar('api').notNull().default(''),
 });
 
