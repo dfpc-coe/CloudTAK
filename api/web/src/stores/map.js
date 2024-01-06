@@ -428,7 +428,7 @@ export const useMapStore = defineStore('cloudtak', {
             });
         },
         initOverlays: async function() {
-            for (const overlay of (await window.std('/api/profile/overlay')).overlays) {
+            for (const overlay of (await window.std('/api/profile/overlay')).items) {
                 const url = window.stdurl(overlay.url);
                 url.searchParams.append('token', localStorage.token);
                 overlay.url = String(url);
