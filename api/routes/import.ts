@@ -8,9 +8,13 @@ import { AuthRequest } from '@tak-ps/blueprint-login';
 import Import from '../lib/types/import.js';
 import S3 from '../lib/aws/s3.js';
 import crypto from 'node:crypto';
-import { sql } from 'slonik';
+import Modeler from '../lib/drizzle.js';
+import { type InferSelectModel } from 'drizzle-orm';
+import { sql } from 'drizzle-orm';
 
 export default async function router(schema: any, config: Config) {
+    const ImportModel = new Modeler<InferSelectModel<typeof Import>>(config.pg, Import);
+
     await schema.post('/import', {
         name: 'Import',
         group: 'Import',
@@ -45,7 +49,7 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            const imp = await Import.generate(config.pool, {
+            const imp = await ImportModel.generate({
                 id: crypto.randomUUID(),
                 name: req.body.name,
                 username: req.auth.email,
@@ -76,9 +80,7 @@ export default async function router(schema: any, config: Config) {
                 throw new Err(400, null, 'Unsupported Content-Type');
             }
 
-            const imported = await Import.from(config.pool, req.params.import, {
-                column: 'id'
-            });
+            const imported = await ImportModel.from(String(req.params.import));
 
             if (imported.status !== 'Empty') throw new Err(400, null, 'An asset is already associated with this import');
             if (imported.username !== req.auth.email) throw new Err(400, null, 'You did not create this import');
@@ -96,7 +98,9 @@ export default async function router(schema: any, config: Config) {
                         ext: path.parse(blob.filename).ext,
                     };
 
-                    await imported.commit({ status: 'Pending' }, { column: 'id' });
+                    await ImportModel.commit(imported.id, {
+                        status: 'Pending'
+                    });
                     await S3.put(`import/${imported.id}${res.ext}`, file)
 
                     return res;
@@ -168,7 +172,7 @@ export default async function router(schema: any, config: Config) {
                         uid: crypto.randomUUID()
                     };
 
-                    await Import.generate(config.pool, {
+                    await ImportModel.generate({
                         name: res.file,
                         username: req.auth.email,
                         id: res.uid
@@ -205,9 +209,7 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            const imported = await Import.from(config.pool, req.params.import, {
-                column: 'id'
-            });
+            const imported = await Import.from(String(req.params.import));
 
             return res.json(imported);
         } catch (err) {
@@ -227,11 +229,7 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            const imported = await Import.from(config.pool, req.params.import, {
-                column: 'id'
-            });
-
-            await imported.commit({
+            const imported = await ImportModel.commit(String(req.params.import), {
                 ...req.body,
                 updated: sql`Now()`
             });
@@ -253,7 +251,10 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            const list = await Import.list(config.pool, req.query);
+            const list = await ImportModel.list({
+                limit: Number(req.query.limit),
+                page: Number(req.query.page)
+            });
 
             return res.json(list);
         } catch (err) {
