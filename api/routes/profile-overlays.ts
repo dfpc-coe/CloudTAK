@@ -21,7 +21,9 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            const overlays = await OverlayModel.list(req.query);
+            const overlays = await OverlayModel.list({
+                limit: Number(req.query.limit)
+            });
 
             return res.json(overlays);
         } catch (err) {

@@ -20,12 +20,16 @@ export default class Drizzle<T> {
         this.generic = generic;
     }
 
-    async list(query: any): Promise<GenericList<T>> {
+    async list(query: {
+        limit?: number
+        page?: number
+    }): Promise<GenericList<T>> {
         const pgres = await this.pool.select({
             count: sql<number>`count(*) OVER()`.as('count'),
             generic: this.generic
         }).from(this.generic)
-            .limit(isNaN(Number(query.limit)) ? 10 : Number(query.limit))
+            .limit(query.limit || 10)
+            .offset(query.page || 0)
 
         if (pgres.length === 0) {
             return { total: 0, items: [] };
@@ -44,7 +48,7 @@ export default class Drizzle<T> {
         }
 
         if (!primaryKey) throw new Err(500, null, `Cannot use from ${this.generic.name}#from without primaryKey`);
-        const generic = await this.pool.query.Token.findFirst({
+        const generic = await this.pool.query[this.generic.name].findFirst({
             where: eq(primaryKey, id)
         });
 
