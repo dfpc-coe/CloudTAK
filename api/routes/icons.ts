@@ -4,15 +4,18 @@ import fs from 'node:fs/promises';
 import Err from '@openaddresses/batch-error';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
-import Iconset from '../lib/types/iconset.ts';
 import Icon from '../lib/types/icon.ts';
 import Config from '../lib/config.ts';
 import Sprites from '../lib/sprites.ts';
 import Cacher from '../lib/cacher.ts';
 import archiver from 'archiver';
 import xml2js from 'xml2js';
+import { Iconset } from '../lib/schema.ts';
+import Modeler from '../lib/drizzle.ts';
 
 export default async function router(schema, config: Config) {
+    const IconsetModel = new Modeler(config.pg, Iconset);
+
     // Eventually look at replacing this with memcached?
     const SpriteMap = {
         default: {
@@ -32,7 +35,15 @@ export default async function router(schema, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            const list = await Iconset.list(config.pool, req.query);
+            const list = await IconsetModel.list({
+                limit: Number(req.query.limit),
+                page: Number(req.query.page),
+                order: String(req.query.order),
+                sort: String(req.query.sort),
+                where: sql`
+                    name ~* ${req.query.filter}
+                `
+            });
 
             return res.json(list);
         } catch (err) {
@@ -51,7 +62,7 @@ export default async function router(schema, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            const iconset = await Iconset.generate(config.pool, req.body);
+            const iconset = await IconsetModel.generate(req.body);
 
             return res.json(iconset);
         } catch (err) {
@@ -71,7 +82,7 @@ export default async function router(schema, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            const iconset = await Iconset.commit(config.pool, req.params.iconset, req.body);
+            const iconset = await IconsetModel.commit(String(req.params.iconset), req.body);
 
             return res.json(iconset);
         } catch (err) {
@@ -103,7 +114,7 @@ export default async function router(schema, config: Config) {
         try {
             await Auth.is_auth(req, true);
 
-            const iconset = await Iconset.from(config.pool, req.params.iconset);
+            const iconset = await IconsetModel.from(String(req.params.iconset));
 
             if (req.query.download) {
                 res.setHeader('Content-Disposition', `attachment; filename="${iconset.name}.${req.query.format}"`);
@@ -166,7 +177,7 @@ export default async function router(schema, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            const iconset = await Iconset.from(config.pool, req.params.iconset);
+            const iconset = await IconsetModel.from(String(req.params.iconset);
 
             if (path.parse(req.body.name).ext !== '.png') throw new Err(400, null, 'Name must have .png extension');
 
@@ -194,7 +205,7 @@ export default async function router(schema, config: Config) {
             await Auth.is_auth(req);
 
             await Icon.delete(config.pool, req.params.iconset, { column: 'iconset' });
-            await Iconset.delete(config.pool, req.params.iconset);
+            await IconsetModel.delete(String(req.params.iconset));
 
             return res.json({
                 status: 200,
