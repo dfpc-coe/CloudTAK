@@ -1,6 +1,5 @@
 import path from 'node:path';
 import Err from '@openaddresses/batch-error';
-import BaseMap from '../lib/types/basemap.ts';
 import Auth from '../lib/auth.ts';
 import Cacher from '../lib/cacher.ts';
 import busboy from 'busboy';
@@ -12,6 +11,10 @@ import xml2js from 'xml2js';
 import { Stream, Readable } from 'node:stream';
 import stream2buffer from '../lib/stream.ts';
 import bboxPolygon from '@turf/bbox-polygon';
+import { Basemap } from '../lib/schema.ts';
+import Modeler from '../lib/drizzle.ts';
+import { type InferSelectModel } from 'drizzle-orm';
+import { sql } from 'drizzle-orm';
 
 export default async function router(schema: any, config: Config) {
     await schema.put('/basemap', {

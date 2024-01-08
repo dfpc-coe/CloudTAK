@@ -1,8 +1,8 @@
 import Connection from './types/connection.js';
-import Server from './types/server.js';
-import Sinks from './sinks.js';
-import Config from './config.js';
-import Metrics from './aws/metric.js';
+import Server from './types/server.ts';
+import Sinks from './sinks.ts';
+import Config from './config.ts';
+import Metrics from './aws/metric.ts';
 // @ts-ignore
 import { Pool } from '@openaddresses/batch-generic';
 import { WebSocket } from 'ws';

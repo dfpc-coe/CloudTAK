@@ -1,8 +1,8 @@
 import Err from '@openaddresses/batch-error';
 import path from 'path';
-import S3 from '../lib/aws/s3.js';
+import S3 from '../lib/aws/s3.ts';
 
-import Config from '../lib/config.js';
+import Config from '../lib/config.ts';
 
 export default async function AssetList(config: Config, prefix: string) {
     try {

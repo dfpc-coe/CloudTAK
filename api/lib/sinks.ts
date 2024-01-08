@@ -1,12 +1,12 @@
 //@ts-ignore
 import Connection from './types/connection.js';
-import Config from './config.js';
+import Config from './config.ts';
 import { CoT } from '@tak-ps/node-tak';
 //@ts-ignore
 import ConnectionSink from './types/connection-sink.js';
-import ESRISink from './sinks/esri.js';
-import HookQueue from './aws/hooks.js';
-import Cacher from './cacher.js';
+import ESRISink from './sinks/esri.ts';
+import HookQueue from './aws/hooks.ts';
+import Cacher from './cacher.ts';
 
 export default class Sinks extends Map<string, any> {
     config: Config;

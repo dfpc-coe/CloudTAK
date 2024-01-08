@@ -1,10 +1,10 @@
-import SinkInterface from '../sink.js';
+import SinkInterface from '../sink.ts';
 // @ts-ignore
-import ConnectionSink from '../types/connection-sink.js';
+import ConnectionSink from '../types/connection-sink.ts';
 import Err from '@openaddresses/batch-error';
-import { EsriBase, EsriProxyPortal } from '../esri.js';
-import Cacher from '../cacher.js';
-import Config from '../config.js';
+import { EsriBase, EsriProxyPortal } from '../esri.ts';
+import Cacher from '../cacher.ts';
+import Config from '../config.ts';
 
 export default class ESRI extends SinkInterface {
     static sink_name(): string {

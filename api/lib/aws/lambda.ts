@@ -1,9 +1,9 @@
 // @ts-ignore
 import cf from '@openaddresses/cloudfriend';
 import AWSLambda from '@aws-sdk/client-lambda';
-import Config from '../config.js';
+import Config from '../config.ts';
 import jwt from 'jsonwebtoken';
-import Schedule from '../schedule.js';
+import Schedule from '../schedule.ts';
 import process from 'node:process';
 
 /**

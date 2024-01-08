@@ -1,6 +1,6 @@
 import jsonata from 'jsonata';
 import { Feature } from 'geojson';
-import Layer from './types/layer.js';
+import { Layer } from './schema.ts';
 import handlebars from 'handlebars';
 import Err from '@openaddresses/batch-error';
 

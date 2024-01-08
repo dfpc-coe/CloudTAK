@@ -1,5 +1,5 @@
 import CloudWatchLogs from '@aws-sdk/client-cloudwatch-logs';
-import Config from '../config.js';
+import Config from '../config.ts';
 import process from 'node:process';
 
 /**
