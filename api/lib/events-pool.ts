@@ -1,6 +1,6 @@
 // @ts-ignore
 import Layer from './types/layer.js';
-import Schedule from './schedule.js';
+import Schedule from './schedule.ts';
 // @ts-ignore
 import { Pool } from '@openaddresses/batch-schema';
 import Bree from 'bree';

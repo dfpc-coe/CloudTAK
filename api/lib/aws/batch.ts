@@ -1,8 +1,8 @@
 // @ts-ignore
 import cf from '@openaddresses/cloudfriend';
-import Data from '../types/data.js';
+import Data from '../types/data.ts';
 import AWSBatch from '@aws-sdk/client-batch';
-import Config from '../config.js';
+import Config from '../config.ts';
 import jwt from 'jsonwebtoken';
 import Err from '@openaddresses/batch-error';
 import process from 'node:process';

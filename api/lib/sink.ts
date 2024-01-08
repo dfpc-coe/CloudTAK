@@ -1,6 +1,6 @@
 // @ts-ignore
-import ConnectionSink from './types/connection-sink.js';
-import Config from './config.js';
+import ConnectionSink from './types/connection-sink.ts';
+import Config from './config.ts';
 
 export default class SinkInterface {
     static sink_name(): string {
