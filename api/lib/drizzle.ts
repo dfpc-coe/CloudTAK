@@ -3,24 +3,28 @@ import {
     eq,
     asc,
     desc,
-    SQL
+    SQL,
+    Table,
+    TableConfig,
+    Column
 } from 'drizzle-orm';
-import { pgTable, PgColumn, PgTableWithColumns } from 'drizzle-orm/pg-core';
+import { PgColumn, PgTableWithColumns } from 'drizzle-orm/pg-core';
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import Err from '@openaddresses/batch-error';
+import { type InferSelectModel } from 'drizzle-orm';
 
 export interface GenericList<T> {
     total: number;
     items: Array<T>
 }
 
-export default class Drizzle<T> {
-    generic: PgTableWithColumns<any>;
+export default class Drizzle<T extends Table<TableConfig<Column<any, object, object>>>> {
     pool: PostgresJsDatabase<typeof import("/home/null/Development/dfpc-coe/etl/api/lib/schema")>;
+    generic: PgTableWithColumns<any>;
 
     constructor(
         pool: PostgresJsDatabase<typeof import("/home/null/Development/dfpc-coe/etl/api/lib/schema")>,
-        generic: PgTableWithColumns<any>
+        generic: T
     ) {
         this.pool = pool;
         this.generic = generic;
@@ -48,7 +52,7 @@ export default class Drizzle<T> {
         order?: string;
         sort?: string;
         where?: SQL<unknown>;
-    }): Promise<GenericList<T>> {
+    }): Promise<GenericList<InferSelectModel<T>>> {
         const order = query.sort && query.sort === 'asc' ? asc : desc;
         const orderBy = order(query.sort ? this.#key(query.sort) : this.#primaryKey());
 
@@ -66,12 +70,12 @@ export default class Drizzle<T> {
         } else {
             return {
                 total: pgres[0].count,
-                items: pgres.map((t) => { return t.generic as T })
+                items: pgres.map((t) => { return t.generic as InferSelectModel<T> })
             };
         }
     }
 
-    async from(id: unknown): Promise<T> {
+    async from(id: unknown): Promise<InferSelectModel<T>> {
         const primaryKey = this.#primaryKey(true);
 
         const generic = await this.pool.query[this.generic.name].findFirst({
@@ -80,10 +84,10 @@ export default class Drizzle<T> {
 
         if (!generic) throw new Err(404, null, `${this.generic.name} Not Found`);
 
-        return generic as T;
+        return generic as InferSelectModel<T>;
     }
 
-    async commit(id: unknown, values: object): Promise<T> {
+    async commit(id: unknown, values: object): Promise<InferSelectModel<T>> {
         const primaryKey = this.#primaryKey(true);
 
         const generic = await this.pool.update(this.generic)
@@ -91,21 +95,21 @@ export default class Drizzle<T> {
             .where(eq(primaryKey, id))
             .returning();
 
-        return generic as T;
+        return generic as InferSelectModel<T>;
     }
 
-    async generate(values: object): Promise<T> {
+    async generate(values: object): Promise<InferSelectModel<T>> {
         const generic = await this.pool.insert(this.generic)
             .values(values)
             .returning();
 
-        return generic as T;
+        return generic as InferSelectModel<T>;
     }
 
     async delete(id: unknown): Promise<void> {
         const primaryKey = this.#primaryKey(true);
 
-        const generic = await this.pool.delete(this.generic)
+        await this.pool.delete(this.generic)
             .where(eq(primaryKey, id))
     }
 }

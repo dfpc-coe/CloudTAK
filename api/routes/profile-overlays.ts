@@ -4,12 +4,11 @@ import Auth from '../lib/auth.ts';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
 import Config from '../lib/config.ts';
-import { type InferSelectModel } from 'drizzle-orm';
 import { ProfileOverlay } from '../lib/schema.ts';
 import Modeler from '../lib/drizzle.ts';
 
 export default async function router(schema: any, config: Config) {
-    const OverlayModel = new Modeler<InferSelectModel<typeof ProfileOverlay>>(config.pg, ProfileOverlay);
+    const OverlayModel = new Modeler<typeof ProfileOverlay>(config.pg, ProfileOverlay);
 
     await schema.get('/profile/overlay', {
         name: 'Get Overlays',

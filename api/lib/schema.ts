@@ -7,7 +7,6 @@ import {
     timestamp,
     pgTable,
     serial,
-    uniqueIndex,
     varchar
 } from 'drizzle-orm/pg-core';
 

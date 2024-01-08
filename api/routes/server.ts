@@ -6,10 +6,9 @@ import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
 import { Server } from '../lib/schema.ts';
 import Modeler from '../lib/drizzle.ts';
-import { type InferSelectModel } from 'drizzle-orm';
 
 export default async function router(schema: any, config: Config) {
-    const ServerModel = new Modeler<InferSelectModel<typeof Server>>(config.pg, Server);
+    const ServerModel = new Modeler<typeof Server>(config.pg, Server);
 
     await schema.get('/server', {
         name: 'Get Server',
