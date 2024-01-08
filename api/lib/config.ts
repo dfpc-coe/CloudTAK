@@ -5,9 +5,9 @@ import ConnectionPool, { ConnectionWebSocket } from './connection-pool.ts';
 import { Pool } from '@openaddresses/batch-generic';
 import Cacher from './cacher.ts';
 import { Server } from './schema.ts';
+import { type InferSelectModel } from 'drizzle-orm';
 import process from 'node:process';
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
-import { type InferSelectModel } from 'drizzle-orm';
 
 interface ConfigArgs {
     silent: boolean,
