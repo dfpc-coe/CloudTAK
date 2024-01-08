@@ -1,5 +1,5 @@
 {
-  "id": "43c4c43c-54e4-48de-afbb-d6b936449aad",
+  "id": "0febc029-748a-4084-a4fd-09fd30f3fb0d",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "5",
   "dialect": "pg",
@@ -497,7 +497,7 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "serial",
+          "type": "varchar",
           "primaryKey": true,
           "notNull": true
         },
@@ -641,10 +641,10 @@
         },
         "styles": {
           "name": "styles",
-          "type": "jsonb",
+          "type": "json",
           "primaryKey": false,
           "notNull": true,
-          "default": "'{}'::jsonb"
+          "default": "'{}'::json"
         },
         "logging": {
           "name": "logging",
@@ -700,10 +700,10 @@
         },
         "schema": {
           "name": "schema",
-          "type": "jsonb",
+          "type": "json",
           "primaryKey": false,
           "notNull": true,
-          "default": "'{}'::jsonb"
+          "default": "'{}'::json"
         }
       },
       "indexes": {},
@@ -986,8 +986,8 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "servers": {
-      "name": "servers",
+    "server": {
+      "name": "server",
       "schema": "",
       "columns": {
         "id": {

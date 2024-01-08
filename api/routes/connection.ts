@@ -1,11 +1,11 @@
 import Err from '@openaddresses/batch-error';
-import Connection from '../lib/types/connection.js';
-import Auth from '../lib/auth.js';
+import { Connection } from '../lib/schema.ts';
+import Auth from '../lib/auth.ts';
 import { sql } from 'slonik';
-import Config from '../lib/config.js';
+import Config from '../lib/config.ts';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
-import CW from '../lib/aws/metric.js';
+import CW from '../lib/aws/metric.ts';
 
 export default async function router(schema: any, config: Config) {
     const cw = new CW(config.StackName);

@@ -1,14 +1,14 @@
 import path from 'node:path';
 import Err from '@openaddresses/batch-error';
-import Auth from '../lib/auth.js';
+import Auth from '../lib/auth.ts';
 import busboy from 'busboy';
-import Config from '../lib/config.js';
+import Config from '../lib/config.ts';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
-import Import from '../lib/types/import.js';
-import S3 from '../lib/aws/s3.js';
+import { Import } from '../lib/schema.ts';
+import S3 from '../lib/aws/s3.ts'
 import crypto from 'node:crypto';
-import Modeler from '../lib/drizzle.js';
+import Modeler from '../lib/drizzle.ts';
 import { type InferSelectModel } from 'drizzle-orm';
 import { sql } from 'drizzle-orm';
 
@@ -209,7 +209,7 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            const imported = await Import.from(String(req.params.import));
+            const imported = await ImportModel.from(String(req.params.import));
 
             return res.json(imported);
         } catch (err) {
@@ -253,7 +253,13 @@ export default async function router(schema: any, config: Config) {
 
             const list = await ImportModel.list({
                 limit: Number(req.query.limit),
-                page: Number(req.query.page)
+                page: Number(req.query.page),
+                order: String(req.query.order),
+                sort: String(req.query.sort),
+                where: sql`
+                    (${req.query.mode}::TEXT IS NULL OR ${req.query.mode}::TEXT = mode)
+                    AND (${req.query.mode_id}::TEXT IS NULL OR ${req.query.mode_id}::TEXT = mode_id)
+                `
             });
 
             return res.json(list);

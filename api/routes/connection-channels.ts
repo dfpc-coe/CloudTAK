@@ -1,10 +1,10 @@
 import Err from '@openaddresses/batch-error';
-import Connection from '../lib/types/connection.js';
-import Auth from '../lib/auth.js';
-import Config from '../lib/config.js';
+import Connection from '../lib/types/connection.ts';
+import Auth from '../lib/auth.ts';
+import Config from '../lib/config.ts';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
-import TAKAPI, { APIAuthCertificate, } from '../lib/tak-api.js';
+import TAKAPI, { APIAuthCertificate, } from '../lib/tak-api.ts';
 
 export default async function router(schema: any, config: Config) {
     await schema.get('/connection/:connectionid/channel', {

@@ -1,12 +1,12 @@
 import Err from '@openaddresses/batch-error';
-import Data from '../lib/types/data.js';
-import DataMission from '../lib/types/data-mission.js';
+import Data from '../lib/types/data.ts';
+import DataMission from '../lib/types/data-mission.ts';
 import { sql } from 'slonik';
-import Auth from '../lib/auth.js';
+import Auth from '../lib/auth.ts';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
-import Config from '../lib/config.js';
-import S3 from '../lib/aws/s3.js';
+import Config from '../lib/config.ts';
+import S3 from '../lib/aws/s3.ts';
 
 export default async function router(schema: any, config: Config) {
     await schema.get('/data', {

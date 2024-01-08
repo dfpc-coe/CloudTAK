@@ -1,12 +1,12 @@
 import Err from '@openaddresses/batch-error';
-import Profile from '../lib/types/profile.js';
-import Auth from '../lib/auth.js';
+import Profile from '../lib/types/profile.ts';
+import Auth from '../lib/auth.ts';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
-import Config from '../lib/config.js';
+import Config from '../lib/config.ts';
 import { type InferSelectModel } from 'drizzle-orm';
-import { ProfileOverlay } from '../lib/schema.js';
-import Modeler from '../lib/drizzle.js';
+import { ProfileOverlay } from '../lib/schema.ts';
+import Modeler from '../lib/drizzle.ts';
 
 export default async function router(schema: any, config: Config) {
     const OverlayModel = new Modeler<InferSelectModel<typeof ProfileOverlay>>(config.pg, ProfileOverlay);

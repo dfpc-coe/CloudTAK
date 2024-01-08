@@ -8,6 +8,27 @@
         "mode_id": {
             "type": "string"
         },
+        "order": {
+            "$ref": "./util/order.json"
+        },
+        "sort": {
+            "type": "string",
+            "default": "created",
+            "enum": [
+                "id",
+                "created",
+                "updated",
+                "status",
+                "error",
+                "result",
+                "name",
+                "username",
+                "mode",
+                "mode_id",
+                "config"
+            ],
+            "description": "Field to sort order by"
+        },
         "limit": {
             "$ref": "./util/limit.json"
         },

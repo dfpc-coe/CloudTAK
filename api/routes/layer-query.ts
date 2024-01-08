@@ -1,9 +1,9 @@
 import Err from '@openaddresses/batch-error';
-import Dynamo from '../lib/aws/dynamo.js';
-import Config from '../lib/config.js';
-import Cacher from '../lib/cacher.js';
-import Auth from '../lib/auth.js';
-import Layer from '../lib/types/layer.js';
+import Dynamo from '../lib/aws/dynamo.ts';
+import Config from '../lib/config.ts';
+import Cacher from '../lib/cacher.ts';
+import Auth from '../lib/auth.ts';
+import Layer from '../lib/types/layer.ts';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
 

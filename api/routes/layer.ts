@@ -1,23 +1,23 @@
 import { check } from '@placemarkio/check-geojson';
 import bodyparser from 'body-parser';
 import Err from '@openaddresses/batch-error';
-import Layer from '../lib/types/layer.js';
-import Data from '../lib/types/data.js';
+import Layer from '../lib/types/layer.ts';
+import Data from '../lib/types/data.ts';
 import { CoT } from '@tak-ps/node-tak';
-import { Item as QueueItem } from '../lib/queue.js'
-import Cacher from '../lib/cacher.js';
+import { Item as QueueItem } from '../lib/queue.ts'
+import Cacher from '../lib/cacher.ts';
 import { sql } from 'slonik';
-import Auth from '../lib/auth.js';
-import Lambda from '../lib/aws/lambda.js';
-import CloudFormation from '../lib/aws/cloudformation.js';
-import Style from '../lib/style.js';
-import Alarm from '../lib/aws/alarm.js';
-import DDBQueue from '../lib/queue.js';
+import Auth from '../lib/auth.ts';
+import Lambda from '../lib/aws/lambda.ts';
+import CloudFormation from '../lib/aws/cloudformation.ts';
+import Style from '../lib/style.ts';
+import Alarm from '../lib/aws/alarm.ts';
+import DDBQueue from '../lib/queue.ts';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
-import Config from '../lib/config.js';
-import Schedule from '../lib/schedule.js';
-import S3 from '../lib/aws/s3.js';
+import Config from '../lib/config.ts';
+import Schedule from '../lib/schedule.ts';
+import S3 from '../lib/aws/s3.ts';
 import { Feature } from 'geojson';
 
 export default async function router(schema: any, config: Config) {

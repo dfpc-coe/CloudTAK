@@ -17,7 +17,7 @@ export const Basemap = pgTable('basemaps', {
     updated: timestamp('updated').notNull().default(sql`Now()`),
     name: varchar('name').notNull(),
     url: varchar('url').notNull(),
-    //TODO bounds 
+    //TODO bounds
     // TODO center
     minzoom: integer('minzoom').notNull().default(0),
     maxzoom: integer('maxzoom').notNull().default(16),
@@ -25,8 +25,19 @@ export const Basemap = pgTable('basemaps', {
     type: varchar('type').notNull().default('raster')
 });
 
+export const Profile = pgTable('profile', {
+    username: varchar('username').primaryKey(),
+    auth: json('auth').notNull().default({}),
+    created: timestamp('created').notNull().default(sql`Now()`),
+    updated: timestamp('updated').notNull().default(sql`Now()`),
+    tak_callsign: varchar('tak_callsign').notNull().default('CloudTAK User'),
+    tak_group: varchar('tak_group').notNull().default('Orange'),
+    tak_role: varchar('tak_role').notNull().default('Team Member'),
+    // tak_loc TODO ADD GEOMETRY
+});
+
 export const Import = pgTable('imports', {
-    id: serial('id').primaryKey(),
+    id: varchar('id').primaryKey(),
     created: timestamp('created').notNull().default(sql`Now()`),
     updated: timestamp('updated').notNull().default(sql`Now()`),
     name: varchar('name').notNull(),
@@ -169,17 +180,6 @@ export const Token = pgTable('tokens', {
     token: varchar('token').notNull(),
     created: timestamp('created').notNull().default(sql`Now()`),
     updated: timestamp('updated').notNull().default(sql`Now()`),
-});
-
-export const Profile = pgTable('profile', {
-    username: varchar('username').primaryKey(),
-    auth: json('auth').notNull().default({}),
-    created: timestamp('created').notNull().default(sql`Now()`),
-    updated: timestamp('updated').notNull().default(sql`Now()`),
-    tak_callsign: varchar('tak_callsign').notNull().default('CloudTAK User'),
-    tak_group: varchar('tak_group').notNull().default('Orange'),
-    tak_role: varchar('tak_role').notNull().default('Team Member'),
-    // tak_loc TODO ADD GEOMETRY
 });
 
 export const ProfileOverlay = pgTable('profile_overlays', {

@@ -1,12 +1,12 @@
 import Err from '@openaddresses/batch-error';
-import Auth from '../lib/auth.js';
-import Config from '../lib/config.js';
+import Auth from '../lib/auth.ts';
+import Config from '../lib/config.ts';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
 import TAKAPI, {
     APIAuthToken,
     APIAuthPassword
-} from '../lib/tak-api.js';
+} from '../lib/tak-api.ts';
 
 export default async function router(schema: any, config: Config) {
     await schema.delete('/marti/api/files/:hash', {

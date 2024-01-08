@@ -1,17 +1,17 @@
 import Err from '@openaddresses/batch-error';
-import Auth from '../lib/auth.js';
-import Config from '../lib/config.js';
+import Auth from '../lib/auth.ts';
+import Config from '../lib/config.ts';
 import bodyparser from 'body-parser';
-import Profile from '../lib/types/profile.js';
-import Connection from '../lib/types/connection.js';
-import S3 from '../lib/aws/s3.js';
+import Profile from '../lib/types/profile.ts';
+import Connection from '../lib/types/connection.ts';
+import S3 from '../lib/aws/s3.ts';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
 import TAKAPI, {
     APIAuthToken,
     APIAuthCertificate,
     APIAuthPassword
-} from '../lib/tak-api.js';
+} from '../lib/tak-api.ts';
 
 export default async function router(schema: any, config: Config) {
     await schema.post('/marti/missions/:name/log', {

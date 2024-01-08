@@ -41,7 +41,7 @@ export class APIAuthPassword extends APIAuth {
 
         if (!authres.ok) throw new Err(400, new Error(await authres.text()), 'Non-200 Response from Auth Server - Token');
 
-        const body = await authres.json();
+        const body: any = await authres.json();
         this.jwt = body.access_token
     }
 

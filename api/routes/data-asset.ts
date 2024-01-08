@@ -2,19 +2,19 @@ import Err from '@openaddresses/batch-error';
 import busboy from 'busboy';
 import fs from 'node:fs/promises';
 import path from 'path';
-import Data from '../lib/types/data.js';
-import DataMission from '../lib/types/data-mission.js';
-import Auth from '../lib/auth.js';
-import S3 from '../lib/aws/s3.js';
+import Data from '../lib/types/data.ts';
+import DataMission from '../lib/types/data-mission.ts';
+import Auth from '../lib/auth.ts';
+import S3 from '../lib/aws/s3.ts';
 import Stream from 'node:stream';
-import Batch from '../lib/aws/batch.js';
+import Batch from '../lib/aws/batch.ts';
 import jwt from 'jsonwebtoken';
 import { includesWithGlob } from "array-includes-with-glob";
-import assetList from '../lib/asset.js';
+import assetList from '../lib/asset.ts';
 
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
-import Config from '../lib/config.js';
+import Config from '../lib/config.ts';
 
 export default async function router(schema: any, config: Config) {
     await schema.get('/data/:dataid/asset', {
