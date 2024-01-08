@@ -7,13 +7,12 @@ import Config from '../lib/config.ts';
 import { promisify } from 'util';
 import crypto from 'crypto';
 import Modeler from '../lib/drizzle.ts';
-import { type InferSelectModel } from 'drizzle-orm';
 import { sql } from 'drizzle-orm';
 
 const randomBytes = promisify(crypto.randomBytes);
 
 export default async function router(schema: any, config: Config) {
-    const TokenModel = new Modeler<InferSelectModel<typeof Token>>(config.pg, Token);
+    const TokenModel = new Modeler<typeof Token>(config.pg, Token);
 
     await schema.get('/token', {
         name: 'List Tokens',

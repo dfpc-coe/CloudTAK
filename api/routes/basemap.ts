@@ -13,7 +13,6 @@ import stream2buffer from '../lib/stream.ts';
 import bboxPolygon from '@turf/bbox-polygon';
 import { Basemap } from '../lib/schema.ts';
 import Modeler from '../lib/drizzle.ts';
-import { type InferSelectModel } from 'drizzle-orm';
 import { sql } from 'drizzle-orm';
 
 export default async function router(schema: any, config: Config) {

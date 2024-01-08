@@ -9,11 +9,10 @@ import { Import } from '../lib/schema.ts';
 import S3 from '../lib/aws/s3.ts'
 import crypto from 'node:crypto';
 import Modeler from '../lib/drizzle.ts';
-import { type InferSelectModel } from 'drizzle-orm';
 import { sql } from 'drizzle-orm';
 
 export default async function router(schema: any, config: Config) {
-    const ImportModel = new Modeler<InferSelectModel<typeof Import>>(config.pg, Import);
+    const ImportModel = new Modeler(config.pg, Import);
 
     await schema.post('/import', {
         name: 'Import',
