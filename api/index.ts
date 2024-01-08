@@ -15,11 +15,11 @@ import EventsPool from './lib/events-pool.js';
 import { WebSocket, WebSocketServer } from 'ws';
 import Cacher from './lib/cacher.js';
 import BlueprintLogin, { tokenParser } from '@tak-ps/blueprint-login';
-import Server from './lib/types/server.js';
 import Config from './lib/config.js';
 import Profile from './lib/types/profile.js';
 import TAKAPI, { APIAuthPassword } from './lib/tak-api.js';
 import process from 'node:process';
+import Modeler from './lib/drizzle.ts';
 
 import * as pgschema from './lib/schema.js';
 import postgres from 'postgres';
@@ -91,7 +91,8 @@ export default async function server(config: Config) {
 
 
     try {
-        config.server = await Server.from(config.pool, 1);
+        const ServerModel = new Modeler(config.pg, pgschema.Server);
+        config.server = await ServerModel.from(1);
     } catch (err) {
         console.log(`ok - no server config found: ${err.message}`);
         config.server = null;

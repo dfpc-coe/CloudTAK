@@ -1,5 +1,5 @@
 import Connection from './types/connection.js';
-import Server from './types/server.ts';
+import { Server } from './schema.ts';
 import Sinks from './sinks.ts';
 import Config from './config.ts';
 import Metrics from './aws/metric.ts';
@@ -7,6 +7,7 @@ import Metrics from './aws/metric.ts';
 import { Pool } from '@openaddresses/batch-generic';
 import { WebSocket } from 'ws';
 import TAK, { CoT } from '@tak-ps/node-tak';
+import { type InferSelectModel } from 'drizzle-orm';
 
 export class ConnectionWebSocket {
     ws: WebSocket;
@@ -56,7 +57,7 @@ class ConnectionClient {
  * @class
  */
 export default class ConnectionPool extends Map<number | string, ConnectionClient> {
-    #server: Server;
+    #server: InferSelectModel<typeof Server>;
     pool: Pool;
     wsClients: Map<string, ConnectionWebSocket[]>;
     metrics: Metrics;
@@ -67,7 +68,7 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
 
     constructor(
         config: Config,
-        server: Server,
+        server: InferSelectModel<typeof Server>,
         wsClients: Map<string, ConnectionWebSocket[]> = new Map(),
         stackName: string,
         local=false
@@ -84,7 +85,7 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
         this.nosinks = config.nosinks;
     }
 
-    async refresh(pool: Pool, server: Server) {
+    async refresh(pool: Pool, server: InferSelectModel<typeof Server>) {
         this.#server = server;
 
         for (const conn of this.keys()) {
