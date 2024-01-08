@@ -1,14 +1,14 @@
-import Auth from '../lib/auth.js';
+import Auth from '../lib/auth.ts';
 import path from 'node:path';
 import fs from 'node:fs/promises';
 import Err from '@openaddresses/batch-error';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
-import Iconset from '../lib/types/iconset.js';
-import Icon from '../lib/types/icon.js';
-import Config from '../lib/config.js';
-import Sprites from '../lib/sprites.js';
-import Cacher from '../lib/cacher.js';
+import Iconset from '../lib/types/iconset.ts';
+import Icon from '../lib/types/icon.ts';
+import Config from '../lib/config.ts';
+import Sprites from '../lib/sprites.ts';
+import Cacher from '../lib/cacher.ts';
 import archiver from 'archiver';
 import xml2js from 'xml2js';
 

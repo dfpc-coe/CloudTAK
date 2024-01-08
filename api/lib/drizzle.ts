@@ -1,5 +1,11 @@
-import { sql, eq } from 'drizzle-orm';
-import { pgTable, PgTableWithColumns } from 'drizzle-orm/pg-core';
+import {
+    sql,
+    eq,
+    asc,
+    desc,
+    SQL
+} from 'drizzle-orm';
+import { pgTable, PgColumn, PgTableWithColumns } from 'drizzle-orm/pg-core';
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import Err from '@openaddresses/batch-error';
 
@@ -20,14 +26,38 @@ export default class Drizzle<T> {
         this.generic = generic;
     }
 
+    #primaryKey(required = false): PgColumn | null {
+        let primaryKey;
+        for (const key in this.generic) {
+            if (this.generic[key].primary) primaryKey = this.generic[key];
+        }
+
+        if (required && !primaryKey) throw new Err(500, null, `Cannot access ${this.generic.name} without primaryKey`);
+
+        return primaryKey || null;
+    }
+
+    #key(key: string): PgColumn {
+        if (this.generic[key]) return this.generic[key];
+        throw new Err(500, null, `Cannot access ${this.generic.name}.${key} as it does not exist`);
+    }
+
     async list(query: {
-        limit?: number
-        page?: number
+        limit?: number;
+        page?: number;
+        order?: string;
+        sort?: string;
+        where?: SQL<unknown>;
     }): Promise<GenericList<T>> {
+        const order = query.sort && query.sort === 'asc' ? asc : desc;
+        const orderBy = order(query.sort ? this.#key(query.sort) : this.#primaryKey());
+
         const pgres = await this.pool.select({
             count: sql<number>`count(*) OVER()`.as('count'),
             generic: this.generic
         }).from(this.generic)
+            .where(query.where)
+            .orderBy(orderBy)
             .limit(query.limit || 10)
             .offset(query.page || 0)
 
@@ -42,12 +72,8 @@ export default class Drizzle<T> {
     }
 
     async from(id: unknown): Promise<T> {
-        let primaryKey;
-        for (const key in this.generic) {
-            if (this.generic[key].primary) primaryKey = this.generic[key];
-        }
+        const primaryKey = this.#primaryKey(true);
 
-        if (!primaryKey) throw new Err(500, null, `Cannot use from ${this.generic.name}#from without primaryKey`);
         const generic = await this.pool.query[this.generic.name].findFirst({
             where: eq(primaryKey, id)
         });
@@ -58,11 +84,7 @@ export default class Drizzle<T> {
     }
 
     async commit(id: unknown, values: object): Promise<T> {
-        let primaryKey;
-        for (const key in this.generic) {
-            if (this.generic[key].primary) primaryKey = this.generic[key];
-        }
-        if (!primaryKey) throw new Err(500, null, `Cannot use from ${this.generic.name}#from without primaryKey`);
+        const primaryKey = this.#primaryKey(true);
 
         const generic = await this.pool.update(this.generic)
             .set(values)
@@ -81,11 +103,8 @@ export default class Drizzle<T> {
     }
 
     async delete(id: unknown): Promise<void> {
-        let primaryKey;
-        for (const key in this.generic) {
-            if (this.generic[key].primary) primaryKey = this.generic[key];
-        }
-        if (!primaryKey) throw new Err(500, null, `Cannot use from ${this.generic.name}#from without primaryKey`);
+        const primaryKey = this.#primaryKey(true);
+
         const generic = await this.pool.delete(this.generic)
             .where(eq(primaryKey, id))
     }

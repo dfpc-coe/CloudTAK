@@ -1,10 +1,10 @@
 import Err from '@openaddresses/batch-error';
-import Profile from '../lib/types/profile.js';
-import Auth from '../lib/auth.js';
+import Profile from '../lib/types/profile.ts';
+import Auth from '../lib/auth.ts';
 
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
-import Config from '../lib/config.js';
+import Config from '../lib/config.ts';
 
 export default async function router(schema: any, config: Config) {
     await schema.get('/profile', {

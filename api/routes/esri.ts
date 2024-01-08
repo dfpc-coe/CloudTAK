@@ -1,7 +1,7 @@
 import Err from '@openaddresses/batch-error';
-import Auth from '../lib/auth.js';
-import Config from '../lib/config.js';
-import ConnectionSink from '../lib/types/connection-sink.js';
+import Auth from '../lib/auth.ts';
+import Config from '../lib/config.ts';
+import ConnectionSink from '../lib/types/connection-sink.ts';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
 import {

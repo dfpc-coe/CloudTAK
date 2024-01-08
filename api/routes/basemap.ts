@@ -1,17 +1,16 @@
 import path from 'node:path';
 import Err from '@openaddresses/batch-error';
-import BaseMap from '../lib/types/basemap.js';
-import Data from '../lib/types/data.js';
-import Auth from '../lib/auth.js';
-import Cacher from '../lib/cacher.js';
+import BaseMap from '../lib/types/basemap.ts';
+import Auth from '../lib/auth.ts';
+import Cacher from '../lib/cacher.ts';
 import busboy from 'busboy';
 import { sql } from 'slonik';
-import Config from '../lib/config.js';
+import Config from '../lib/config.ts';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
 import xml2js from 'xml2js';
 import { Stream, Readable } from 'node:stream';
-import stream2buffer from '../lib/stream.js';
+import stream2buffer from '../lib/stream.ts';
 import bboxPolygon from '@turf/bbox-polygon';
 
 export default async function router(schema: any, config: Config) {

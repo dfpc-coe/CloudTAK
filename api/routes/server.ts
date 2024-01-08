@@ -1,11 +1,11 @@
 import Err from '@openaddresses/batch-error';
-import Auth from '../lib/auth.js';
+import Auth from '../lib/auth.ts';
 import { sql } from 'slonik';
-import Config from '../lib/config.js';
+import Config from '../lib/config.ts';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
-import { Server } from '../lib/schema.js';
-import Modeler from '../lib/drizzle.js';
+import { Server } from '../lib/schema.ts';
+import Modeler from '../lib/drizzle.ts';
 import { type InferSelectModel } from 'drizzle-orm';
 
 export default async function router(schema: any, config: Config) {

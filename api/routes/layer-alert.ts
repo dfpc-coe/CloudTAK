@@ -1,12 +1,12 @@
 import Err from '@openaddresses/batch-error';
-import Layer from '../lib/types/layer.js';
-import LayerAlert from '../lib/types/layer-alert.js';
-import Cacher from '../lib/cacher.js';
+import Layer from '../lib/types/layer.ts';
+import LayerAlert from '../lib/types/layer-alert.ts';
+import Cacher from '../lib/cacher.ts';
 import { sql } from 'slonik';
-import Auth from '../lib/auth.js';
+import Auth from '../lib/auth.ts';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
-import Config from '../lib/config.js';
+import Config from '../lib/config.ts';
 
 export default async function router(schema: any, config: Config) {
     await schema.get('/layer/:layerid/alert', {

@@ -1,5 +1,3 @@
-CREATE EXTENSION IF NOT EXISTS postgis;
-
 CREATE TABLE IF NOT EXISTS "basemaps" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"created" timestamp DEFAULT Now() NOT NULL,
@@ -77,7 +75,7 @@ CREATE TABLE IF NOT EXISTS "iconsets" (
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "imports" (
-	"id" serial PRIMARY KEY NOT NULL,
+	"id" varchar PRIMARY KEY NOT NULL,
 	"created" timestamp DEFAULT Now() NOT NULL,
 	"updated" timestamp DEFAULT Now() NOT NULL,
 	"name" varchar NOT NULL,
@@ -98,7 +96,7 @@ CREATE TABLE IF NOT EXISTS "layers" (
 	"description" varchar DEFAULT '' NOT NULL,
 	"enabled" boolean DEFAULT true NOT NULL,
 	"enabled_styles" boolean DEFAULT false NOT NULL,
-	"styles" jsonb DEFAULT '{}'::jsonb NOT NULL,
+	"styles" json DEFAULT '{}'::json NOT NULL,
 	"logging" boolean DEFAULT true NOT NULL,
 	"stale" integer DEFAULT 20000 NOT NULL,
 	"task" varchar NOT NULL,
@@ -107,7 +105,7 @@ CREATE TABLE IF NOT EXISTS "layers" (
 	"memory" integer DEFAULT 128 NOT NULL,
 	"timeout" integer DEFAULT 128 NOT NULL,
 	"data" bigint NOT NULL,
-	"schema" jsonb DEFAULT '{}'::jsonb NOT NULL
+	"schema" json DEFAULT '{}'::json NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "layer_alerts" (

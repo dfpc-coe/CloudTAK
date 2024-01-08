@@ -1,12 +1,12 @@
 import Err from '@openaddresses/batch-error';
-import Data from '../lib/types/data.js';
-import Auth from '../lib/auth.js';
-import Batch from '../lib/aws/batch.js';
-import Logs from '../lib/aws/batch-logs.js';
+import Data from '../lib/types/data.ts';
+import Auth from '../lib/auth.tss';
+import Batch from '../lib/aws/batch.ts';
+import Logs from '../lib/aws/batch-logs.ts';
 
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
-import Config from '../lib/config.js';
+import Config from '../lib/config.ts';
 
 export default async function router(schema: any, config: Config) {
     await schema.get('/data/:dataid/job', {

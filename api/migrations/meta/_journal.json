@@ -5,15 +5,8 @@
     {
       "idx": 0,
       "version": "5",
-      "when": 1704512005259,
-      "tag": "0000_premium_baron_strucker",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "5",
-      "when": 1704584210142,
-      "tag": "0001_moaning_silk_fever",
+      "when": 1704729338785,
+      "tag": "0000_common_chamber",
       "breakpoints": true
     }
   ]
