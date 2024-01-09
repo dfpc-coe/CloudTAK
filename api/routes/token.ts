@@ -19,12 +19,21 @@ export default async function router(schema: any, config: Config) {
         group: 'Token',
         auth: 'user',
         description: 'List all tokens associated with the requester\'s account',
+        query: 'req.query.ListTokens.json',
         res: 'res.ListTokens.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(req);
 
-            const list = await TokenModel.list(req.query);
+            const list = await TokenModel.list({
+                limit: Number(req.query.limit),
+                page: Number(req.query.page),
+                order: String(req.query.order),
+                sort: String(req.query.sort),
+                where: sql`
+                    name ~* ${req.query.filter}
+                `
+            });
 
             return res.json(list);
         } catch (err) {

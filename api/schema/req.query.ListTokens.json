@@ -18,16 +18,10 @@
                 "id",
                 "created",
                 "updated",
-                "name",
-                "description",
-                "auto_transform",
-                "connection"
+                "email",
+                "name"
             ],
             "description": "Field to sort order by"
-        },
-        "connection": {
-            "type": "integer",
-            "description": "Filter by a connection id"
         },
         "filter": {
             "type": "string",
