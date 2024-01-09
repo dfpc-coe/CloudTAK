@@ -248,8 +248,9 @@ export default async function server(config: Config) {
                     if (!profile.auth.cert || !profile.auth.key) throw new Error('No Cert Found on profile');
 
                     const client = await config.conns.add({
-                        id: params.get('connection'),
+                        id: Number(params.get('connection')),
                         name: params.get('connection'),
+                        description: params.get('connection'),
                         created: new Date(),
                         updated: new Date(),
                         enabled: true,

@@ -1,13 +1,15 @@
 import Err from '@openaddresses/batch-error';
 import { Connection } from '../lib/schema.ts';
 import Auth from '../lib/auth.ts';
-import { sql } from 'slonik';
+import { sql } from 'drizzle-orm';
 import Config from '../lib/config.ts';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
 import CW from '../lib/aws/metric.ts';
+import Modeler from '../lib/drizzle.ts';
 
 export default async function router(schema: any, config: Config) {
+    const ConnectionModel = new Modeler(config.pg, Connection);
     const cw = new CW(config.StackName);
 
     await schema.get('/connection', {
@@ -21,19 +23,30 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            const list = await Connection.list(config.pool, req.query);
-
-            list.connections.map((conn: any) => {
-                conn.status = config.conns.status(conn.id);
+            const list = await ConnectionModel.list({
+                limit: Number(req.query.limit),
+                page: Number(req.query.page),
+                order: String(req.query.order),
+                sort: String(req.query.sort),
+                where: sql`
+                    name ~* ${req.query.filter}
+                `
             });
 
-            list.status = { dead: 0, live: 0, unknown: 0 };
-            for (const conn of config.conns.values()) {
-                if (!conn.tak) list.status.unknown++;
-                else list.status[conn.tak.open]++;
+            const json = {
+                total: list.total,
+                status: { dead: 0, live: 0, unknown: 0 },
+                items: list.items.map((conn: any) => {
+                    conn.status = config.conns.status(conn.id);
+                })
             }
 
-            return res.json(list);
+            for (const conn of config.conns.values()) {
+                if (!conn.tak) json.status.unknown++;
+                else json.status.live++;
+            }
+
+            return res.json(json);
         } catch (err) {
             return Err.respond(err, res);
         }
@@ -51,12 +64,14 @@ export default async function router(schema: any, config: Config) {
             await Auth.is_auth(req);
 
             if (!config.server) throw new Err(400, null, 'TAK Server must be configured before a connection can be made');
-            const conn = await Connection.generate(config.pool, req.body);
+            const conn = await ConnectionModel.generate(req.body);
 
             if (conn.enabled) await config.conns.add(conn);
 
-            conn.status = config.conns.status(conn.id);
-            return res.json(conn);
+            return res.json({
+                status: config.conns.status(conn.id),
+                ...conn
+            });
         } catch (err) {
             return Err.respond(err, res);
         }
@@ -73,7 +88,7 @@ export default async function router(schema: any, config: Config) {
     }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(req);
-            const conn = await Connection.commit(config.pool, req.params.connectionid, {
+            const conn = await ConnectionModel.commit(parseInt(req.params.connectionid), {
                 updated: sql`Now()`,
                 ...req.body
             });
@@ -85,8 +100,10 @@ export default async function router(schema: any, config: Config) {
                 await config.conns.add(conn);
             }
 
-            conn.status = config.conns.status(conn.id);
-            return res.json(conn);
+            return res.json({
+                status: config.conns.status(conn.id),
+                ...conn
+            });
         } catch (err) {
             return Err.respond(err, res);
         }
@@ -103,10 +120,12 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            const conn = (await Connection.from(config.pool, req.params.connectionid)).serialize();
-            conn.status = config.conns.status(conn.id);
+            const conn = await ConnectionModel.from(parseInt(req.params.connectionid));
 
-            return res.json(conn);
+            return res.json({
+                status: config.conns.status(conn.id),
+                ...conn
+            });
         } catch (err) {
             return Err.respond(err, res);
         }
@@ -123,7 +142,7 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            const conn = await Connection.from(config.pool, req.params.connectionid);
+            const conn = await ConnectionModel.from(parseInt(req.params.connectionid));
 
             if (!conn.enabled) throw new Err(400, null, 'Connection is not currently enabled');
 
@@ -134,10 +153,10 @@ export default async function router(schema: any, config: Config) {
                 await config.conns.add(conn);
             }
 
-            const json = conn.serialize()
-            json.status = config.conns.status(conn.id);
-
-            return res.json(json);
+            return res.json({
+                status: config.conns.status(conn.id),
+                ...conn
+            });
         } catch (err) {
             return Err.respond(err, res);
         }
@@ -154,7 +173,7 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            await Connection.delete(config.pool, req.params.connectionid);
+            await ConnectionModel.delete(parseInt(req.params.connectionid));
 
             config.conns.delete(parseInt(req.params.connectionid));
 
@@ -195,7 +214,7 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            const conn = await Connection.from(config.pool, req.params.connectionid);
+            const conn = await ConnectionModel.from(parseInt(req.params.connectionid));
 
             const stats = await cw.connection(conn.id);
 

@@ -1,5 +1,4 @@
-import Connection from './types/connection.js';
-import { Server } from './schema.ts';
+import { Server, Connection } from './schema.ts';
 import Sinks from './sinks.ts';
 import Config from './config.ts';
 import Metrics from './aws/metric.ts';
@@ -37,13 +36,17 @@ export class ConnectionWebSocket {
 }
 
 class ConnectionClient {
-    conn: Connection;
+    conn: InferSelectModel<typeof Connection>;
     tak: TAK;
     retry: number;
     initial: boolean;
     ephemeral: boolean;
 
-    constructor(conn: Connection, tak: TAK, ephemeral = false) {
+    constructor(
+        conn: InferSelectModel<typeof Connection>,
+        tak: TAK,
+        ephemeral = false
+    ) {
         this.tak = tak;
         this.conn = conn;
         this.retry = 0;
@@ -99,12 +102,12 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
      * Page through connections and start a connection for each one
      */
     async init(): Promise<void> {
-        const conns: Connection[] = [];
+        const conns: InferSelectModel<typeof Connection>[] = [];
 
         const stream = await Connection.stream(this.pool);
 
         return new Promise((resolve, reject) => {
-            stream.on('data', (conn: Connection) => {
+            stream.on('data', (conn: InferSelectModel<typeof Connection>) => {
                 if (conn.enabled && !this.local) {
                     conns.push(this.add(conn));
                 }
@@ -134,7 +137,7 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
      * This is also called externally by the layer/:layer/cot API as CoTs
      * aren't rebroadcast to the submitter by the TAK Server
      */
-    async cot(conn: Connection, cot: CoT, ephemeral=false) {
+    async cot(conn: InferSelectModel<typeof Connection>, cot: CoT, ephemeral=false) {
         if (this.wsClients.has(String(conn.id))) {
             for (const client of this.wsClients.get(String(conn.id))) {
                 if (client.format == 'geojson') {
@@ -154,7 +157,7 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
         }
     }
 
-    async add(conn: Connection, ephemeral=false): Promise<ConnectionClient> {
+    async add(conn: InferSelectModel<typeof Connection>, ephemeral=false): Promise<ConnectionClient> {
         const tak = await TAK.connect(conn.id, new URL(this.#server.url), conn.auth);
         const connClient = new ConnectionClient(conn, tak, ephemeral);
         this.set(conn.id, connClient);
