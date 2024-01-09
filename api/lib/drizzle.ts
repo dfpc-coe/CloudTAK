@@ -1,13 +1,5 @@
-import {
-    sql,
-    eq,
-    asc,
-    desc,
-    SQL,
-    Table,
-    TableConfig,
-    Column
-} from 'drizzle-orm';
+import { sql, eq, asc, desc } from 'drizzle-orm';
+import { SQL, Table, TableConfig, Column } from 'drizzle-orm';
 import { PgColumn, PgTableWithColumns } from 'drizzle-orm/pg-core';
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import Err from '@openaddresses/batch-error';
@@ -75,11 +67,11 @@ export default class Drizzle<T extends Table<TableConfig<Column<any, object, obj
         }
     }
 
-    async from(id: unknown): Promise<InferSelectModel<T>> {
-        const primaryKey = this.#primaryKey(true);
+    async from(id: unknown | SQL<unknown>): Promise<InferSelectModel<T>> {
+        const key = this.#primaryKey(true);
 
         const generic = await this.pool.query[this.generic.name].findFirst({
-            where: eq(primaryKey, id)
+            where: eq(key, id)
         });
 
         if (!generic) throw new Err(404, null, `${this.generic.name} Not Found`);
@@ -106,10 +98,13 @@ export default class Drizzle<T extends Table<TableConfig<Column<any, object, obj
         return generic as InferSelectModel<T>;
     }
 
-    async delete(id: unknown): Promise<void> {
-        const primaryKey = this.#primaryKey(true);
+    async delete(id: unknown, opts: {
+        column?: string;
+    } = {}): Promise<void> {
+        let key = this.#primaryKey(true);
+        if (opts.column) key = this.#key(opts.column);
 
         await this.pool.delete(this.generic)
-            .where(eq(primaryKey, id))
+            .where(eq(key, id))
     }
 }
