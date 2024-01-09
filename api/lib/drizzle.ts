@@ -38,6 +38,15 @@ export default class Drizzle<T extends Table<TableConfig<Column<any, object, obj
         throw new Err(500, null, `Cannot access ${this.generic.name}.${key} as it does not exist`);
     }
 
+    async iter*(query: {
+        limit?: number;
+        page?: number;
+        order?: string;
+        sort?: string;
+        where?: SQL<unknown>;
+    }): Promise<GenericList<InferSelectModel<T>>> {
+    }
+
     async list(query: {
         limit?: number;
         page?: number;
@@ -70,13 +79,14 @@ export default class Drizzle<T extends Table<TableConfig<Column<any, object, obj
     async from(id: unknown | SQL<unknown>): Promise<InferSelectModel<T>> {
         const key = this.#primaryKey(true);
 
-        const generic = await this.pool.query[this.generic.name].findFirst({
-            where: eq(key, id)
-        });
+        const pgres = await this.pool.select()
+            .from(this.generic)
+            .where(eq(key, id))
+            .limit(1)
 
-        if (!generic) throw new Err(404, null, `${this.generic.name} Not Found`);
+        if (pgres.length !== 1) throw new Err(404, null, `${this.generic.name} Not Found`);
 
-        return generic as InferSelectModel<T>;
+        return pgres[0] as InferSelectModel<T>;
     }
 
     async commit(id: unknown, values: object): Promise<InferSelectModel<T>> {

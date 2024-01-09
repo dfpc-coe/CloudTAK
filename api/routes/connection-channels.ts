@@ -1,5 +1,5 @@
 import Err from '@openaddresses/batch-error';
-import Connection from '../lib/types/connection.ts';
+import Connection from '../lib/types/connection.js';
 import Auth from '../lib/auth.ts';
 import Config from '../lib/config.ts';
 import { Response } from 'express';
