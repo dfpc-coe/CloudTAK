@@ -1,5 +1,4 @@
 import Err from '@openaddresses/batch-error';
-import Data from '../lib/types/data.ts';
 import Auth from '../lib/auth.ts';
 import Batch from '../lib/aws/batch.ts';
 import Logs from '../lib/aws/batch-logs.ts';

@@ -2,7 +2,6 @@ import { check } from '@placemarkio/check-geojson';
 import bodyparser from 'body-parser';
 import Err from '@openaddresses/batch-error';
 import Layer from '../lib/types/layer.js';
-import Data from '../lib/types/data.js';
 import { CoT } from '@tak-ps/node-tak';
 import { Item as QueueItem } from '../lib/queue.ts'
 import Cacher from '../lib/cacher.ts';
@@ -19,8 +18,12 @@ import Config from '../lib/config.ts';
 import Schedule from '../lib/schedule.ts';
 import S3 from '../lib/aws/s3.ts';
 import { Feature } from 'geojson';
+import { Data } from '../lib/schema.ts';
+import Modeler from '../lib/drizzle.ts';
 
 export default async function router(schema: any, config: Config) {
+    const DataModel = new Modeler(config.pg, Data);
+
     const alarm = new Alarm(config.StackName);
     const ddb = new DDBQueue(config.StackName);
     ddb.on('error', (err) => { console.error(err); });
@@ -420,7 +423,7 @@ export default async function router(schema: any, config: Config) {
                 }
             } else if (layer.data) {
                 if (req.headers['content-type'] === 'application/json') {
-                    const data = await Data.from(config.pool, layer.data);
+                    const data = await DataModel.from(layer.data);
                     S3.put(`data/${data.id}/layer-${layer.id}.geojson`, JSON.stringify(req.body));
                 } else {
                     throw new Err(400, null, 'Only Content-Type application/json is currently supported');

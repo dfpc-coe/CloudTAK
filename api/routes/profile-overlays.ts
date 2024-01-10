@@ -1,5 +1,4 @@
 import Err from '@openaddresses/batch-error';
-import Profile from '../lib/types/profile.ts';
 import Auth from '../lib/auth.ts';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
@@ -8,7 +7,7 @@ import { ProfileOverlay } from '../lib/schema.ts';
 import Modeler from '../lib/drizzle.ts';
 
 export default async function router(schema: any, config: Config) {
-    const OverlayModel = new Modeler<typeof ProfileOverlay>(config.pg, ProfileOverlay);
+    const OverlayModel = new Modeler(config.pg, ProfileOverlay);
 
     await schema.get('/profile/overlay', {
         name: 'Get Overlays',

@@ -1,4 +1,6 @@
 import { sql } from 'drizzle-orm';
+import { StyleContainer } from './style.ts';
+
 import {
     json,
     bigint,
@@ -134,7 +136,7 @@ export const Layer = pgTable('layers', {
     description: varchar('description').notNull().default(''),
     enabled: boolean('enabled').notNull().default(true),
     enabled_styles: boolean('enabled_styles').notNull().default(false),
-    styles: json('styles').notNull().default({}),
+    styles: json('styles').$type<StyleContainer>().notNull().default({}),
     logging: boolean('logging').notNull().default(true),
     stale: integer('stale').notNull().default(20000),
     task: varchar('task').notNull(),

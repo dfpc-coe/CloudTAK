@@ -16,7 +16,6 @@ import { WebSocket, WebSocketServer } from 'ws';
 import Cacher from './lib/cacher.js';
 import BlueprintLogin, { tokenParser } from '@tak-ps/blueprint-login';
 import Config from './lib/config.js';
-import Profile from './lib/types/profile.js';
 import TAKAPI, { APIAuthPassword } from './lib/tak-api.js';
 import process from 'node:process';
 import Modeler from './lib/drizzle.ts';
@@ -150,14 +149,15 @@ export default async function server(config: Config) {
         group: config.AuthGroup,
         api: config.local ? 'http://localhost:5001' : config.MartiAPI
     });
+    const ProfileModel = new Modeler(config.pg, pgschema.Profile);
 
     login.on('login', async (user) => {
         let profile;
         try {
-            profile = await Profile.from(config.pool, user.username);
+            profile = await ProfileModel.from(user.username);
         } catch (err) {
             if (err.status === 404) {
-                profile = await Profile.generate(config.pool, { username: user.username });
+                profile = await ProfileModel.generate({ username: user.username });
             } else {
                 console.error(err);
             }
@@ -166,7 +166,7 @@ export default async function server(config: Config) {
         if (!profile.auth.cert || !profile.auth.key) {
             try {
             const api = await TAKAPI.init(new URL(config.MartiAPI), new APIAuthPassword(user.username, user.password));
-            await profile.commit({ auth: await api.Credentials.generate() });
+            await ProfileModel.commit(profile.username, { auth: await api.Credentials.generate() });
             } catch (err) {
                 console.error(err);
             }
@@ -244,7 +244,7 @@ export default async function server(config: Config) {
                 config.wsClients.get(params.get('connection')).push(new ConnectionWebSocket(ws, params.get('format')));
             } else if (params.get('connection') === auth.email) {
                 if (!config.conns.has(params.get('connection'))) {
-                    const profile = await Profile.from(config.pool, params.get('connection'));
+                    const profile = await ProfileModel.from(params.get('connection'));
                     if (!profile.auth.cert || !profile.auth.key) throw new Error('No Cert Found on profile');
 
                     const client = await config.conns.add({

@@ -1,16 +1,19 @@
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.ts';
 import Config from '../lib/config.ts';
-import Profile from '../lib/types/profile.ts';
-import Connection from '../lib/types/connection.ts';
+import { Profile } from '../lib/schema.ts';
+import Connection from '../lib/types/connection.js';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
+import Modeler from '../lib/drizzle.ts';
 import TAKAPI, {
     APIAuthPassword,
     APIAuthCertificate
 } from '../lib/tak-api.ts';
 
 export default async function router(schema: any, config: Config) {
+    const ProfileModel = new Modeler(config.pg, Profile);
+
     await schema.get('/marti/group', {
         name: 'List Groups',
         group: 'Marti',
@@ -41,7 +44,7 @@ export default async function router(schema: any, config: Config) {
 
             } else {
                 if (!req.auth.email) throw new Err(400, null, 'Groups can only be listed by an authenticated user');
-                const profile = await Profile.from(config.pool, req.auth.email);
+                const profile = await ProfileModel.from(req.auth.email);
                 api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
             }
 
@@ -88,7 +91,7 @@ export default async function router(schema: any, config: Config) {
             await Auth.is_auth(req);
 
             if (!req.auth.email) throw new Err(400, null, 'Groups can only be listed by an authenticated user');
-            const profile = await Profile.from(config.pool, req.auth.email);
+            const profile = await ProfileModel.from(req.auth.email);
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
 
             const query = {};
@@ -112,7 +115,7 @@ export default async function router(schema: any, config: Config) {
             await Auth.is_auth(req);
 
             if (!req.auth.email) throw new Err(400, null, 'Groups can only be listed by an authenticated user');
-            const profile = await Profile.from(config.pool, req.auth.email);
+            const profile = await ProfileModel.from(req.auth.email);
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
 
             const contacts = await api.Contacts.list();
