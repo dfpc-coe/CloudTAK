@@ -4,7 +4,7 @@ import fs from 'node:fs/promises';
 import Err from '@openaddresses/batch-error';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
-import Icon from '../lib/types/icon.ts';
+import Icon from '../lib/types/icon.js';
 import Config from '../lib/config.ts';
 import Sprites from '../lib/sprites.ts';
 import Cacher from '../lib/cacher.ts';
@@ -12,6 +12,7 @@ import archiver from 'archiver';
 import xml2js from 'xml2js';
 import { Iconset } from '../lib/schema.ts';
 import Modeler from '../lib/drizzle.ts';
+import { sql } from 'drizzle-orm';
 
 export default async function router(schema, config: Config) {
     const IconsetModel = new Modeler(config.pg, Iconset);
@@ -131,12 +132,12 @@ export default async function router(schema, config: Config) {
                     iconset: {
                         $: {
                             version: 1,
-                            defaultFriendly: iconset.defaultFriendly,
-                            defaultHostile: iconset.defaultHostile,
-                            defaultNeutral: iconset.defaultNeutral,
-                            defaultUnknown: iconset.defaultUnknown,
+                            defaultFriendly: iconset.default_friendly,
+                            defaultHostile: iconset.default_hostile,
+                            defaultNeutral: iconset.default_neutral,
+                            defaultUnknown: iconset.default_unknown,
                             name: iconset.name,
-                            defaultGroup: iconset.defaultGroup,
+                            defaultGroup: iconset.default_group,
                             skipResize: 'false',
                             uid: iconset.uid
                         },
@@ -177,7 +178,7 @@ export default async function router(schema, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            const iconset = await IconsetModel.from(String(req.params.iconset);
+            const iconset = await IconsetModel.from(String(req.params.iconset));
 
             if (path.parse(req.body.name).ext !== '.png') throw new Err(400, null, 'Name must have .png extension');
 
