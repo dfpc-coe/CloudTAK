@@ -3,7 +3,7 @@ import Dynamo from '../lib/aws/dynamo.ts';
 import Config from '../lib/config.ts';
 import Cacher from '../lib/cacher.ts';
 import Auth from '../lib/auth.ts';
-import Layer from '../lib/types/layer.ts';
+import Layer from '../lib/types/layer.js';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
 

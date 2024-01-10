@@ -1,6 +1,6 @@
 import Err from '@openaddresses/batch-error';
-import Layer from '../lib/types/layer.ts';
-import LayerAlert from '../lib/types/layer-alert.ts';
+import Layer from '../lib/types/layer.js';
+import LayerAlert from '../lib/types/layer-alert.js';
 import Cacher from '../lib/cacher.ts';
 import { sql } from 'slonik';
 import Auth from '../lib/auth.ts';

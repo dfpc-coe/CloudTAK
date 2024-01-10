@@ -3,9 +3,25 @@ import { Data, DataMission } from '../lib/schema.ts';
 import Auth from '../lib/auth.ts';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
+import { type InferSelectModel } from 'drizzle-orm';
 import Config from '../lib/config.ts';
 import S3 from '../lib/aws/s3.ts';
 import Modeler from '../lib/drizzle.ts';
+import { sql, eq } from 'drizzle-orm';
+
+export async function augment(Model, data: InferSelectModel<typeof Data>): Promise<object> {
+    let mission = false;
+    try {
+        mission = await Model.from(eq(DataMission.data, data.id))
+    } catch (err) {
+        mission = false;
+    }
+
+    return {
+        ...data,
+        mission
+    }
+}
 
 export default async function router(schema: any, config: Config) {
     const DataModel = new Modeler(config.pg, Data);
@@ -75,15 +91,7 @@ export default async function router(schema: any, config: Config) {
                 ...req.body
             });
 
-            try {
-                data.mission = await DataMissionModel.from(parseInt(req.params.dataid), {
-                    column: 'data'
-                })
-            } catch (err) {
-                data.mission = false;
-            }
-
-            return res.json(data);
+            return res.json(await augment(DataMissionModel, data));
         } catch (err) {
             return Err.respond(err, res);
         }
@@ -100,19 +108,8 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            let data = await Data.from(config.pool, req.params.dataid);
-
-            data = data.serialize();
-
-            try {
-                data.mission = await DataMission.from(config.pool, req.params.dataid, {
-                    column: 'data'
-                });
-            } catch (err) {
-                data.mission = false;
-            }
-
-            return res.json(data);
+            let data = await DataModel.from(parseInt(req.params.dataid));
+            return res.json(await augment(DataMissionModel, data));
         } catch (err) {
             return Err.respond(err, res);
         }
@@ -130,15 +127,17 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            let data = await Data.from(config.pool, req.params.dataid);
-            data = data.serialize();
+            let data = await DataModel.from(parseInt(req.params.dataid));
 
-            data.mission = await DataMission.generate(config.pool, {
+            const mission = await DataMissionModel.generate({
                 ...req.body,
                 data: req.params.dataid
             });
 
-            return res.json(data);
+            return res.json({
+                ...data,
+                mission
+            });
         } catch (err) {
             return Err.respond(err, res);
         }
@@ -155,11 +154,9 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            const data = await Data.from(config.pool, req.params.dataid);
+            await S3.del(`data-${String(req.params.dataid)}/`, { recurse: true });
 
-            await S3.del(`data-${data.id}/`, { recurse: true });
-
-            await data.delete();
+            await DataModel.delete(parseInt(req.params.dataid));
 
             return res.json({
                 status: 200,

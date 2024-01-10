@@ -1,14 +1,16 @@
 import Err from '@openaddresses/batch-error';
-import Data from '../lib/types/data.ts';
-import Auth from '../lib/auth.tss';
+import Auth from '../lib/auth.ts';
 import Batch from '../lib/aws/batch.ts';
 import Logs from '../lib/aws/batch-logs.ts';
-
+import { Data } from '../lib/schema.ts';
+import Modeler from '../lib/drizzle.ts';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
 import Config from '../lib/config.ts';
 
 export default async function router(schema: any, config: Config) {
+    const DataModel = new Modeler(config.pg, Data);
+
     await schema.get('/data/:dataid/job', {
         name: 'List Jobs',
         auth: 'user',
@@ -20,7 +22,7 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            const data = await Data.from(config.pool, req.params.dataid);
+            const data = await DataModel.from(parseInt(req.params.dataid));
 
             const list = await Batch.list(config, `data-${data.id}`);
 
@@ -45,7 +47,7 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            const data = await Data.from(config.pool, req.params.dataid);
+            const data = await DataModel.from(parseInt(req.params.dataid));
 
             const job = await Batch.job(config, req.params.jobid);
 
@@ -67,7 +69,7 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            const data = await Data.from(config.pool, req.params.dataid);
+            const data = await DataModel.from(parseInt(req.params.dataid));
 
             const job = await Batch.job(config, req.params.jobid);
 

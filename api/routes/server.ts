@@ -50,7 +50,7 @@ export default async function router(schema: any, config: Config) {
             if (config.server) throw new Err(400, null, 'Cannot post to an existing server');
 
             config.server = await ServerModel.generate(req.body);
-            await config.conns.refresh(config.pool, config.server);
+            await config.conns.refresh(config.server);
 
             return res.json({
                 status: 'configured',
@@ -80,7 +80,7 @@ export default async function router(schema: any, config: Config) {
                 updated: sql`Now()`,
             });
 
-            await config.conns.refresh(config.pool, config.server);
+            await config.conns.refresh(config.server);
 
             return res.json({
                 status: 'configured',

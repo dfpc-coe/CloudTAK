@@ -2,12 +2,73 @@ import { sql, eq, asc, desc } from 'drizzle-orm';
 import { SQL, Table, TableConfig, Column } from 'drizzle-orm';
 import { PgColumn, PgTableWithColumns } from 'drizzle-orm/pg-core';
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
+import { EventEmitter } from 'events';
 import Err from '@openaddresses/batch-error';
 import { type InferSelectModel } from 'drizzle-orm';
 
 export interface GenericList<T> {
     total: number;
     items: Array<T>
+}
+
+export type GenericListInput = {
+    limit?: number;
+    page?: number;
+    order?: string;
+    sort?: string;
+    where?: SQL<unknown>;
+}
+
+export type GenericStreamInput = {
+    where?: SQL<unknown>;
+}
+
+export class GenericEmitter<T extends Table<TableConfig<Column<any, object, object>>>> extends EventEmitter {
+    pool: PostgresJsDatabase<typeof import("/home/null/Development/dfpc-coe/etl/api/lib/schema")>;
+    generic: PgTableWithColumns<any>;
+    query: GenericStreamInput;
+
+    constructor(
+        pool: PostgresJsDatabase<typeof import("/home/null/Development/dfpc-coe/etl/api/lib/schema")>,
+        generic: T,
+        query: GenericStreamInput
+    ) {
+        super();
+
+        this.pool = pool;
+        this.generic = generic;
+        this.query = query;
+    }
+
+    async start() {
+        try {
+            const count = await this.pool.select({
+                count: sql<number>`count(*) OVER()`.as('count')
+            }).from(this.generic)
+                .where(this.query.where)
+
+            this.emit('count', count[0].count);
+
+            let it = 0;
+            let pgres = [];
+            do {
+                pgres = await this.pool.select()
+                    .from(this.generic)
+                    .where(this.query.where)
+                    .limit(100)
+                    .offset(100 * it)
+                ++it;
+
+                for (const row of pgres) {
+                    this.emit('data', row);
+                } 
+            } while(pgres.length);
+
+            this.emit('end');
+        } catch (err) {
+            this.emit('error', err);
+        }
+    }
 }
 
 export default class Drizzle<T extends Table<TableConfig<Column<any, object, object>>>> {
@@ -38,22 +99,13 @@ export default class Drizzle<T extends Table<TableConfig<Column<any, object, obj
         throw new Err(500, null, `Cannot access ${this.generic.name}.${key} as it does not exist`);
     }
 
-    async iter*(query: {
-        limit?: number;
-        page?: number;
-        order?: string;
-        sort?: string;
-        where?: SQL<unknown>;
-    }): Promise<GenericList<InferSelectModel<T>>> {
+    stream(query: GenericStreamInput = {}): GenericEmitter<T> {
+        const generic = new GenericEmitter(this.pool, this.generic, query);
+        generic.start();
+        return generic;
     }
 
-    async list(query: {
-        limit?: number;
-        page?: number;
-        order?: string;
-        sort?: string;
-        where?: SQL<unknown>;
-    }): Promise<GenericList<InferSelectModel<T>>> {
+    async list(query: GenericListInput): Promise<GenericList<InferSelectModel<T>>> {
         const order = query.sort && query.sort === 'asc' ? asc : desc;
         const orderBy = order(query.sort ? this.#key(query.sort) : this.#primaryKey());
 
@@ -64,7 +116,7 @@ export default class Drizzle<T extends Table<TableConfig<Column<any, object, obj
             .where(query.where)
             .orderBy(orderBy)
             .limit(query.limit || 10)
-            .offset(query.page || 0)
+            .offset((query.page || 0) * (query.limit || 10))
 
         if (pgres.length === 0) {
             return { total: 0, items: [] };

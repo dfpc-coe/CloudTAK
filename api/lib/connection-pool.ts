@@ -1,12 +1,13 @@
+import Err from '@openaddresses/batch-error';
 import { Server, Connection } from './schema.ts';
 import Sinks from './sinks.ts';
 import Config from './config.ts';
 import Metrics from './aws/metric.ts';
-// @ts-ignore
-import { Pool } from '@openaddresses/batch-generic';
 import { WebSocket } from 'ws';
 import TAK, { CoT } from '@tak-ps/node-tak';
 import { type InferSelectModel } from 'drizzle-orm';
+import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
+import Modeler from './drizzle.ts';
 
 export class ConnectionWebSocket {
     ws: WebSocket;
@@ -61,7 +62,7 @@ class ConnectionClient {
  */
 export default class ConnectionPool extends Map<number | string, ConnectionClient> {
     #server: InferSelectModel<typeof Server>;
-    pool: Pool;
+    pg: PostgresJsDatabase<typeof import("/home/null/Development/dfpc-coe/etl/api/lib/schema")>;;
     wsClients: Map<string, ConnectionWebSocket[]>;
     metrics: Metrics;
     sinks: Sinks;
@@ -83,12 +84,12 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
         this.local = local,
         this.metrics = new Metrics(stackName);
         if (config.nometrics) this.metrics.paused = true;
-        this.pool = config.pool;
+        this.pg = config.pg;
         this.sinks = new Sinks(config);
         this.nosinks = config.nosinks;
     }
 
-    async refresh(pool: Pool, server: InferSelectModel<typeof Server>) {
+    async refresh(server: InferSelectModel<typeof Server>) {
         this.#server = server;
 
         for (const conn of this.keys()) {
@@ -102,12 +103,13 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
      * Page through connections and start a connection for each one
      */
     async init(): Promise<void> {
-        const conns: InferSelectModel<typeof Connection>[] = [];
+        const conns: Promise<ConnectionClient>[] = [];
 
-        const stream = await Connection.stream(this.pool);
+        const ConnectionModel = new Modeler(this.pg, Connection);
+        const stream = ConnectionModel.stream();
 
         return new Promise((resolve, reject) => {
-            stream.on('data', (conn: InferSelectModel<typeof Connection>) => {
+            stream.on('data', async (conn: InferSelectModel<typeof Connection>) => {
                 if (conn.enabled && !this.local) {
                     conns.push(this.add(conn));
                 }
@@ -158,7 +160,11 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
     }
 
     async add(conn: InferSelectModel<typeof Connection>, ephemeral=false): Promise<ConnectionClient> {
-        const tak = await TAK.connect(conn.id, new URL(this.#server.url), conn.auth);
+        if (!conn.auth || !conn.auth.cert || !conn.auth.key) throw new Err(400, null, 'Connection must have auth.cert & auth.key');
+        const tak = await TAK.connect(conn.id, new URL(this.#server.url), {
+            key: conn.auth.key,
+            cert: conn.auth.cert
+        });
         const connClient = new ConnectionClient(conn, tak, ephemeral);
         this.set(conn.id, connClient);
 
