@@ -6,7 +6,7 @@ import Lambda from '../lib/aws/lambda.ts';
 import CloudFormation from '../lib/aws/cloudformation.ts';
 import Logs from '../lib/aws/lambda-logs.ts';
 
-import Layer from '../lib/types/layer.ts';
+import Layer from '../lib/types/layer.js';
 import semver from 'semver-sort';
 import Cacher from '../lib/cacher.ts';
 import Config from '../lib/config.ts';

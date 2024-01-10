@@ -3,6 +3,28 @@ import { Feature } from 'geojson';
 import { Layer } from './schema.ts';
 import handlebars from 'handlebars';
 import Err from '@openaddresses/batch-error';
+import { type InferSelectModel } from 'drizzle-orm';
+
+export type StyleContainer = {
+    line?: StyleLine;
+    point?: StylePoint;
+    polygon?: StylePolygon;
+    queries?: Array<StyleSingle>;
+}
+
+export type StyleSingle = {
+    query: string;
+    styles: {
+        line?: StyleLine;
+        point?: StylePoint;
+        polygon?: StylePolygon;
+    }
+}
+
+export type StylePoint = object;
+export type StyleLine = object;
+export type StylePolygon = object;
+
 
 /**
  * Apply layer styling to CoT Messages
@@ -11,9 +33,9 @@ import Err from '@openaddresses/batch-error';
  * @prop layer - Layer object
  */
 export default class Style {
-    layer: Layer;
+    layer: InferSelectModel<typeof Layer>;
 
-    constructor(layer: Layer) {
+    constructor(layer: InferSelectModel<typeof Layer>) {
         this.layer = layer;
     }
 

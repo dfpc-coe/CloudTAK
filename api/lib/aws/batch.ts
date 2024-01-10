@@ -1,11 +1,12 @@
 // @ts-ignore
 import cf from '@openaddresses/cloudfriend';
-import Data from '../types/data.ts';
 import AWSBatch from '@aws-sdk/client-batch';
 import Config from '../config.ts';
 import jwt from 'jsonwebtoken';
 import Err from '@openaddresses/batch-error';
 import process from 'node:process';
+import { Data } from '../schema.ts';
+import { type InferSelectModel } from 'drizzle-orm';
 
 export interface BatchJob {
     id: string;
@@ -44,7 +45,7 @@ export default class Batch {
         return batchres;
     }
 
-    static async submitData(config: Config, data: Data, asset: string, task: object): Promise<AWSBatch.SubmitJobCommandOutput> {
+    static async submitData(config: Config, data: InferSelectModel<typeof Data>, asset: string, task: object): Promise<AWSBatch.SubmitJobCommandOutput> {
         const batch = new AWSBatch.BatchClient({ region: process.env.AWS_DEFAULT_REGION });
 
         let jobName = `data-${data.id}-${asset.replace(/[^a-zA-Z0-9]/g, '_').slice(0, 50)}`;
