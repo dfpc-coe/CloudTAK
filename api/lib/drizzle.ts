@@ -23,9 +23,9 @@ export type GenericStreamInput = {
     where?: SQL<unknown>;
 }
 
-export class GenericEmitter<T extends Table<TableConfig<Column<any, object, object>>>> extends EventEmitter {
+export class GenericEmitter<T extends Table<TableConfig<Column<unknown, object, object>>>> extends EventEmitter {
     pool: PostgresJsDatabase<typeof import("/home/null/Development/dfpc-coe/etl/api/lib/schema")>;
-    generic: PgTableWithColumns<any>;
+    generic: PgTableWithColumns<unknown>;
     query: GenericStreamInput;
 
     constructor(
@@ -71,9 +71,9 @@ export class GenericEmitter<T extends Table<TableConfig<Column<any, object, obje
     }
 }
 
-export default class Drizzle<T extends Table<TableConfig<Column<any, object, object>>>> {
+export default class Drizzle<T extends Table<TableConfig<Column<unknown, object, object>>>> {
     pool: PostgresJsDatabase<typeof import("/home/null/Development/dfpc-coe/etl/api/lib/schema")>;
-    generic: PgTableWithColumns<any>;
+    generic: PgTableWithColumns<unknown>;
 
     constructor(
         pool: PostgresJsDatabase<typeof import("/home/null/Development/dfpc-coe/etl/api/lib/schema")>,

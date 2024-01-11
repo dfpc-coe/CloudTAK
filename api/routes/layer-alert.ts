@@ -1,16 +1,16 @@
 import Err from '@openaddresses/batch-error';
-import LayerAlert from '../lib/types/layer-alert.js';
 import Cacher from '../lib/cacher.ts';
-import { sql } from 'slonik';
 import Auth from '../lib/auth.ts';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
 import Config from '../lib/config.ts';
 import Modeler from '../lib/drizzle.ts';
-import { Layer } from '../lib/schema.ts';
+import { Layer, LayerAlert } from '../lib/schema.ts';
+import { sql, eq } from 'drizzle-orm';
 
 export default async function router(schema: any, config: Config) {
     const LayerModel = new Modeler(config.pg, Layer);
+    const AlertModel = new Modeler(config.pg, LayerAlert);
 
     await schema.get('/layer/:layerid/alert', {
         name: 'List Alerts',
@@ -28,7 +28,16 @@ export default async function router(schema: any, config: Config) {
                 return await LayerModel.from(parseInt(req.params.layerid))
             });
 
-            const list = await LayerAlert.list(config.pool, layer.id, req.query);
+            const list = await AlertModel.list({
+                limit: Number(req.query.limit),
+                page: Number(req.query.page),
+                order: String(req.query.order),
+                sort: String(req.query.sort),
+                where: sql`
+                    title ~* ${String(req.query.filter)}::TEXT
+                    AND ${layer.id} = layer
+                `
+            });
 
             res.json(list);
         } catch (err) {
@@ -52,12 +61,16 @@ export default async function router(schema: any, config: Config) {
                 return await LayerModel.from(parseInt(req.params.layerid))
             });
 
-            const list = await LayerAlert.generate(config.pool, {
-                ...req.body,
-                layer: layer.id
-            });
+            req.body.layer = layer.id;
+            const alert = config.pg.insert(LayerAlert)
+                .values(req.body)
+                .onConflictDoUpdate({
+                    target: [LayerAlert.layer, LayerAlert.title],
+                    set: req.body
+                })
+                .returning()
 
-            res.json(list);
+            res.json(alert);
         } catch (err) {
             return Err.respond(err, res);
         }
@@ -78,9 +91,7 @@ export default async function router(schema: any, config: Config) {
                 return await LayerModel.from(parseInt(req.params.layerid))
             });
 
-            const list = await LayerAlert.delete(config.pool, layer.id, {
-                column: 'layer'
-            });
+            const list = await AlertModel.delete(eq(layer.id, LayerAlert.layer))
 
             res.json({
                 status: 200,
@@ -107,11 +118,10 @@ export default async function router(schema: any, config: Config) {
                 return await LayerModel.from(parseInt(req.params.layerid))
             });
 
-            const alert = await LayerAlert.from(config.pool, req.params.alertid);
-
+            const alert = await AlertModel.from(parseInt(req.params.alertid));
             if (alert.layer !== layer.id) throw new Err(400, null, 'Alert does not belong to this layer');
 
-            await alert.delete();
+            await AlertModel.delete(parseInt(req.params.alertid));
 
             res.json({
                 status: 200,

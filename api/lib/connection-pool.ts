@@ -62,7 +62,7 @@ class ConnectionClient {
  */
 export default class ConnectionPool extends Map<number | string, ConnectionClient> {
     #server: InferSelectModel<typeof Server>;
-    pg: PostgresJsDatabase<typeof import("/home/null/Development/dfpc-coe/etl/api/lib/schema")>;;
+    pg: PostgresJsDatabase<typeof import("/home/null/Development/dfpc-coe/etl/api/lib/schema")>;
     wsClients: Map<string, ConnectionWebSocket[]>;
     metrics: Metrics;
     sinks: Sinks;

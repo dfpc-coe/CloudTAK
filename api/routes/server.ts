@@ -1,6 +1,6 @@
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.ts';
-import { sql } from 'slonik';
+import { sql } from 'drizzle-orm';
 import Config from '../lib/config.ts';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
