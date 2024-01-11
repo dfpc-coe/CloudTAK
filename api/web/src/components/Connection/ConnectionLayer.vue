@@ -10,7 +10,7 @@
 
     <Alert v-if='err' title='ETL Server Error' :err='err.message' :compact='true'/>
     <TablerLoading v-else-if='loading'/>
-    <TablerNone v-else-if='!list.layers.length' :create='false' label='Layers' :compact='true'/>
+    <TablerNone v-else-if='!list.items.length' :create='false' label='Layers' :compact='true'/>
     <div v-else class='table-resposive'>
         <table class='table card-table table-vcenter datatable table-hover'>
             <thead>
@@ -19,7 +19,7 @@
                 </tr>
             </thead>
             <tbody class='table-tbody'>
-                <tr @click='$router.push(`/layer/${layer.id}`)' :key='layer.id' v-for='layer of list.layers' class='cursor-pointer'>
+                <tr @click='$router.push(`/layer/${layer.id}`)' :key='layer.id' v-for='layer of list.items' class='cursor-pointer'>
                     <td>
                         <div class='d-flex align-items-center'>
                             <LayerStatus :layer='layer'/><div class='mx-2' v-text='layer.name'></div>
@@ -68,7 +68,7 @@ export default {
             },
             list: {
                 total: 0,
-                layers: []
+                items: []
             },
         }
     },

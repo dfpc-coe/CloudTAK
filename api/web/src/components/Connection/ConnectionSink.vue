@@ -21,7 +21,7 @@
 
     <Alert v-if='err' title='ETL Server Error' :err='err.message' :compact='true'/>
     <TablerLoading v-else-if='loading'/>
-    <TablerNone v-else-if='!list.sinks.length' :create='false' label='Sinks'/>
+    <TablerNone v-else-if='!list.items.length' :create='false' label='Sinks'/>
     <div v-else class='table-resposive'>
         <table class='table card-table table-vcenter datatable table-hover'>
             <thead>
@@ -30,7 +30,7 @@
                 </tr>
             </thead>
             <tbody class='table-tbody'>
-                <tr @click='$router.push(`/connection/${connection.id}/sink/${sink.id}`)' :key='sink.id' v-for='sink of list.sinks' class='cursor-pointer'>
+                <tr @click='$router.push(`/connection/${connection.id}/sink/${sink.id}`)' :key='sink.id' v-for='sink of list.items' class='cursor-pointer'>
                     <td>
                         <div class='d-flex'>
                             <span class='mt-2' v-text='sink.name'/>
@@ -75,7 +75,7 @@ export default {
             },
             list: {
                 total: 0,
-                sinks: []
+                items: []
             },
         }
     },

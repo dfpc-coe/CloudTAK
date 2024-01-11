@@ -110,7 +110,7 @@ export default class Drizzle<T extends Table<TableConfig<Column<ColumnBaseConfig
         const orderBy = order(query.sort ? this.#key(query.sort) : this.#primaryKey());
 
         const pgres = await this.pool.select({
-            count: sql<number>`count(*) OVER()`.as('count'),
+            count: sql<string>`count(*) OVER()`.as('count'),
             generic: this.generic
         }).from(this.generic)
             .where(query.where)
@@ -122,8 +122,10 @@ export default class Drizzle<T extends Table<TableConfig<Column<ColumnBaseConfig
             return { total: 0, items: [] };
         } else {
             return {
-                total: pgres[0].count,
-                items: pgres.map((t) => { return t.generic as InferSelectModel<T> })
+                total: parseInt(pgres[0].count),
+                items: pgres.map((t) => {
+                    return t.generic as InferSelectModel<T>
+                })
             };
         }
     }
