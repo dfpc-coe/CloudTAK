@@ -42,12 +42,12 @@
                 </template>
                 <template v-else>
                     <TablerNone
-                        v-if='!list.connections.length'
+                        v-if='!list.items.length'
                         label='Connections'
                         @create='$router.push("/connection/new")'
                     />
                     <template v-else>
-                        <div :key='connection.id' v-for='connection in list.connections' class="col-lg-12">
+                        <div :key='connection.id' v-for='connection in list.items' class="col-lg-12">
                             <div class="card">
                                 <div class="card-header">
                                     <ConnectionStatus :connection='connection'/>
@@ -108,7 +108,7 @@ export default {
             },
             list: {
                 total: 0,
-                connections: []
+                items: []
             }
         }
     },

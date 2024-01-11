@@ -2,14 +2,14 @@
     "type": "object",
     "required": [
         "total",
-        "icons"
+        "items"
     ],
     "additionalProperties": false,
     "properties": {
         "total": {
             "$ref": "./util/total.json"
         },
-        "icons": {
+        "items": {
             "type": "array",
             "items": {
                 "$ref": "./icons.json"

@@ -2,13 +2,13 @@
     "type": "object",
     "required": [
         "total",
-        "overlays"
+        "items"
     ],
     "properties": {
         "total": {
             "type": "integer"
         },
-        "overlays": {
+        "items": {
             "$ref": "./profile_overlays.json"
         }
     }

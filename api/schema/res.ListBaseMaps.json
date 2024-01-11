@@ -2,7 +2,7 @@
     "type": "object",
     "required": [
         "total",
-        "basemaps"
+        "items"
     ],
     "additionalProperties": false,
     "properties": {
@@ -10,7 +10,7 @@
             "type": "integer",
             "description": "Total number of basemaps related to the query"
         },
-        "basemaps": {
+        "items": {
             "type": "array",
             "description": "Array of basemap objects",
             "items":  {

@@ -2,13 +2,13 @@
     "type": "object",
     "required": [
         "total",
-        "list"
+        "items"
     ],
     "properties": {
         "total": {
             "type": "integer"
         },
-        "list": {
+        "items": {
             "type": "object",
             "required": [
                 "id",
