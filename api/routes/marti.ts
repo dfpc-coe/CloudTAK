@@ -1,8 +1,7 @@
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.ts';
 import Config from '../lib/config.ts';
-import { Profile } from '../lib/schema.ts';
-import Connection from '../lib/types/connection.js';
+import { Profile, Connection } from '../lib/schema.ts';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
 import Modeler from '../lib/drizzle.ts';
@@ -13,6 +12,7 @@ import TAKAPI, {
 
 export default async function router(schema: any, config: Config) {
     const ProfileModel = new Modeler(config.pg, Profile);
+    const ConnectionModel = new Modeler(config.pg, Connection);
 
     await schema.get('/marti/group', {
         name: 'List Groups',
@@ -39,7 +39,7 @@ export default async function router(schema: any, config: Config) {
 
             let api;
             if (req.query.connection) {
-                const connection = await Connection.from(config.pool, req.query.connection);
+                const connection = await ConnectionModel.from(parseInt(String(req.query.connection)));
                 api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(connection.auth.cert, connection.auth.key));
 
             } else {

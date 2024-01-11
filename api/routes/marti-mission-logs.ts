@@ -2,8 +2,7 @@ import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.ts';
 import Config from '../lib/config.ts';
 import bodyparser from 'body-parser';
-import { Profile } from '../lib/schema.ts';
-import Connection from '../lib/types/connection.js';
+import { Profile, Connection } from '../lib/schema.ts';
 import S3 from '../lib/aws/s3.ts';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
@@ -16,6 +15,7 @@ import TAKAPI, {
 
 export default async function router(schema: any, config: Config) {
     const ProfileModel = new Modeler(config.pg, Profile);
+    const ConnectionModel = new Modeler(config.pg, Connection);
 
     await schema.post('/marti/missions/:name/log', {
         name: 'Create Log',
@@ -48,7 +48,7 @@ export default async function router(schema: any, config: Config) {
             let auth;
             let creatorUid;
             if (req.query.connection) {
-                auth = (await Connection.from(config.pool, req.query.connection)).auth;
+                auth = (await ConnectionModel.from(parseInt(String(req.query.connection)))).auth;
                 creatorUid = `CloudTAK-Conn-${req.query.connection}`;
             } else {
                 if (!req.auth.email) throw new Err(400, null, 'Mission Log can only be modified by an authenticated user');
