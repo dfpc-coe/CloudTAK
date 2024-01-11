@@ -12,13 +12,16 @@ export type StyleContainer = {
     queries?: Array<StyleSingle>;
 }
 
-export type StyleSingle = {
+export type StyleSingleContainer = {
     query: string;
-    styles: {
-        line?: StyleLine;
-        point?: StylePoint;
-        polygon?: StylePolygon;
-    }
+    styles: StyleSingle
+}
+
+export type StyleSingle = {
+    line?: StyleLine;
+    point?: StylePoint;
+    polygon?: StylePolygon;
+
 }
 
 export type StylePoint = object;
@@ -39,7 +42,7 @@ export default class Style {
         this.layer = layer;
     }
 
-    static validate(styles: any) {
+    static validate(styles: StyleContainer) {
         try {
             if (styles.queries) {
                 for (const q of styles.queries) {
@@ -83,7 +86,7 @@ export default class Style {
         }
     }
 
-    #by_geom(style: any, feature: Feature) {
+    #by_geom(style: StyleSingle, feature: Feature) {
         if (feature.geometry.type === 'Point' && style.point) {
             if (!style.point.remarks) delete style.point.remarks;
             if (!style.point.callsign) delete style.point.callsign;

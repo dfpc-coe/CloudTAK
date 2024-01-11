@@ -14,12 +14,11 @@ export default class Auth {
     static async is_auth(req: AuthRequest, token = false) {
         if (token && req.token) req.auth = req.token;
 
-        // @ts-ignore
         if (!req.auth || !req.auth.access) {
             throw new Err(403, null, 'Authentication Required');
         }
 
-        // @ts-ignore
+        // @ts-expect-error TODO: Update auth type
         if (req.auth.disabled) {
             throw new Err(403, null, 'Account Disabled - Please Contact Us');
         }
@@ -36,9 +35,7 @@ export default class Auth {
     static async is_layer(req: AuthRequest, layer: number) {
         await this.is_auth(req);
 
-        // @ts-ignore
         if (req.auth.access !== 'cot')  throw new Err(400, null, 'Token must have "cot" access');
-        // @ts-ignore
         if (req.auth.layer !== layer)  throw new Err(400, null, 'Token is not valid for this layer');
 
         return true;
@@ -53,9 +50,8 @@ export default class Auth {
     static async is_data(req: AuthRequest, data: number) {
         await this.is_auth(req);
 
-        // @ts-ignore
         if (req.auth.access !== 'cot')  throw new Err(400, null, 'Token must have "data" access');
-        // @ts-ignore
+        // @ts-expect-error TODO: Update auth type
         if (req.auth.data !== data)  throw new Err(400, null, 'Token is not valid for this data source');
 
         return true;
