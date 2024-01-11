@@ -10,12 +10,13 @@ import Sprites from '../lib/sprites.ts';
 import Cacher from '../lib/cacher.ts';
 import archiver from 'archiver';
 import xml2js from 'xml2js';
-import { Iconset } from '../lib/schema.ts';
+import { Iconset, Icon } from '../lib/schema.ts';
 import Modeler from '../lib/drizzle.ts';
 import { sql } from 'drizzle-orm';
 
 export default async function router(schema, config: Config) {
     const IconsetModel = new Modeler(config.pg, Iconset);
+    const IconModel = new Modeler(config.pg, Icon);
 
     // Eventually look at replacing this with memcached?
     const SpriteMap = {
@@ -145,7 +146,10 @@ export default async function router(schema, config: Config) {
                     }
                 };
 
-                for (const icon of (await Icon.list(config.pool, { limit: 1000, iconset: req.params.iconset })).icons) {
+                for (const icon of (await Icon.list({
+                    limit: 1000,
+                    where: sql`iconset = ${String(req.params.iconset)}`
+                }).items) {
                     archive.append(Buffer.from(icon.data, 'base64'), { name: icon.name });
                     xmljson.iconset.icon.push({ $: { name: path.parse(icon.name).base, type2525b: icon.type2525b } })
                 }
@@ -182,7 +186,7 @@ export default async function router(schema, config: Config) {
 
             if (path.parse(req.body.name).ext !== '.png') throw new Err(400, null, 'Name must have .png extension');
 
-            const icon = await Icon.generate(config.pool, {
+            const icon = await IconModel.generate({
                 ...req.body,
                 path: `${iconset.uid}/${req.body.name}`,
                 iconset: iconset.uid
@@ -205,7 +209,7 @@ export default async function router(schema, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            await Icon.delete(config.pool, req.params.iconset, { column: 'iconset' });
+            await IconModel.delete(sql`iconset = ${req.params.iconset}`);
             await IconsetModel.delete(String(req.params.iconset));
 
             return res.json({
