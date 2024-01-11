@@ -2,14 +2,14 @@
     "type": "object",
     "required": [
         "total",
-        "imports"
+        "items"
     ],
     "additionalProperties": false,
     "properties": {
         "total": {
             "$ref": "./util/total.json"
         },
-        "imports": {
+        "items": {
             "type": "array",
             "items": {
                 "$ref": "./imports.json"

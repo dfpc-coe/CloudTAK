@@ -3,7 +3,7 @@
     "required": [
         "total",
         "status",
-        "layers"
+        "items"
     ],
     "additionalProperties": false,
     "properties": {
@@ -31,7 +31,7 @@
                 }
             }
         },
-        "layers": {
+        "items": {
             "type": "array",
             "description": "Array of layer objects",
             "items":  {

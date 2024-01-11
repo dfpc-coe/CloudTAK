@@ -3,7 +3,7 @@
     "required": [
         "total",
         "status",
-        "connections"
+        "items"
     ],
     "additionalProperties": false,
     "properties": {
@@ -31,7 +31,7 @@
                 }
             }
         },
-        "connections": {
+        "items": {
             "type": "array",
             "description": "Array of connection objects",
             "items":  {

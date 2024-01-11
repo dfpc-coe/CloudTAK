@@ -47,12 +47,12 @@
                 </template>
                 <template v-else>
                     <TablerNone
-                        v-if='!list.basemaps.length'
+                        v-if='!list.items.length'
                         label='BaseMaps'
                         @create='$router.push("/basemap/new")'
                     />
                     <template v-else>
-                        <div :key='basemap.id' v-for='basemap in list.basemaps' class="col-md-12">
+                        <div :key='basemap.id' v-for='basemap in list.items' class="col-md-12">
                             <div class="card">
                                 <div class="card-header">
                                     <BaseMapBadge :type='basemap.type'/>
@@ -132,7 +132,7 @@ export default {
             },
             list: {
                 total: 0,
-                basemaps: []
+                items: []
             }
         }
     },

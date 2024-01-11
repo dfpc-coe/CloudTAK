@@ -46,7 +46,7 @@ export default async function router(schema: any, config: Config) {
 
             return res.json({
                 total,
-                tasks: Object.fromEntries(tasks)
+                items: Object.fromEntries(tasks)
             });
         } catch (err) {
             return Err.respond(err, res);

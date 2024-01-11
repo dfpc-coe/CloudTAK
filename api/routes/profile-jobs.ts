@@ -23,7 +23,7 @@ export default async function router(schema: any, config: Config) {
 
             return res.json({
                 total: list.length,
-                list
+                items: list
             });
         } catch (err) {
             return Err.respond(err, res);
