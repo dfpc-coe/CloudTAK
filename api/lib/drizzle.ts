@@ -1,5 +1,5 @@
 import { sql, eq, asc, desc } from 'drizzle-orm';
-import { SQL, Table, TableConfig, Column } from 'drizzle-orm';
+import { SQL, Table, TableConfig, Column, ColumnBaseConfig, ColumnDataType } from 'drizzle-orm';
 import { PgColumn, PgTableWithColumns } from 'drizzle-orm/pg-core';
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import { EventEmitter } from 'events';
@@ -23,9 +23,9 @@ export type GenericStreamInput = {
     where?: SQL<unknown>;
 }
 
-export class GenericEmitter<T extends Table<TableConfig<Column<unknown, object, object>>>> extends EventEmitter {
+export class GenericEmitter<T extends Table<TableConfig<Column<ColumnBaseConfig<ColumnDataType, string>, object, object>>>> extends EventEmitter {
     pool: PostgresJsDatabase<typeof import("/home/null/Development/dfpc-coe/etl/api/lib/schema")>;
-    generic: PgTableWithColumns<unknown>;
+    generic: PgTableWithColumns<any>;
     query: GenericStreamInput;
 
     constructor(
@@ -71,9 +71,9 @@ export class GenericEmitter<T extends Table<TableConfig<Column<unknown, object, 
     }
 }
 
-export default class Drizzle<T extends Table<TableConfig<Column<unknown, object, object>>>> {
+export default class Drizzle<T extends Table<TableConfig<Column<ColumnBaseConfig<ColumnDataType, string>, object, object>>>> {
     pool: PostgresJsDatabase<typeof import("/home/null/Development/dfpc-coe/etl/api/lib/schema")>;
-    generic: PgTableWithColumns<unknown>;
+    generic: PgTableWithColumns<any>;
 
     constructor(
         pool: PostgresJsDatabase<typeof import("/home/null/Development/dfpc-coe/etl/api/lib/schema")>,
