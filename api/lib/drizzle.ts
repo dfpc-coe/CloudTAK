@@ -105,7 +105,7 @@ export default class Drizzle<T extends Table<TableConfig<Column<any, object, obj
         return generic;
     }
 
-    async list(query: GenericListInput): Promise<GenericList<InferSelectModel<T>>> {
+    async list(query: GenericListInput = {}): Promise<GenericList<InferSelectModel<T>>> {
         const order = query.sort && query.sort === 'asc' ? asc : desc;
         const orderBy = order(query.sort ? this.#key(query.sort) : this.#primaryKey());
 

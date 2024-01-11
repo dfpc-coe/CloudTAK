@@ -1,12 +1,12 @@
-//@ts-ignore
-import Connection from './types/connection.js';
 import Config from './config.ts';
 import { CoT } from '@tak-ps/node-tak';
-//@ts-ignore
-import ConnectionSink from './types/connection-sink.js';
 import ESRISink from './sinks/esri.ts';
 import HookQueue from './aws/hooks.ts';
 import Cacher from './cacher.ts';
+import { Connection, ConnectionSink } from './schema.ts';
+import { type InferSelectModel } from 'drizzle-orm';
+import { sql } from 'drizzle-orm';
+import Modeler from './drizzle.ts';
 
 export default class Sinks extends Map<string, any> {
     config: Config;
@@ -21,9 +21,16 @@ export default class Sinks extends Map<string, any> {
         this.set('ArcGIS', ESRISink);
     }
 
-    async cot(conn: Connection, cot: CoT): Promise<boolean> {
+    async cot(conn: InferSelectModel<typeof Connection>, cot: CoT): Promise<boolean> {
         const sinks = await this.config.cacher.get(Cacher.Miss({}, `connection-${conn.id}-sinks`), async () => {
-            return await ConnectionSink.list(this.config.pool, { connection: conn.id, enabled: true })
+            const ConnectionSinkModel = new Modeler(this.config.pg, ConnectionSink);
+
+            return await ConnectionSinkModel.list({
+                where: sql`
+                    connection = ${conn.id}
+                    AND enabled = True
+                `
+            });
         });
 
         for (const sink of sinks.sinks) {

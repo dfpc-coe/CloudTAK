@@ -3,11 +3,13 @@ import Dynamo from '../lib/aws/dynamo.ts';
 import Config from '../lib/config.ts';
 import Cacher from '../lib/cacher.ts';
 import Auth from '../lib/auth.ts';
-import Layer from '../lib/types/layer.js';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
+import { Layer } from '../lib/schema.ts';
+import Modeler from '../lib/drizzle.ts';
 
 export default async function router(schema: any, config: Config) {
+    const LayerModel = new Modeler(config.pg, Layer);
     const ddb = new Dynamo(config.StackName);
 
     await schema.get('/layer/:layerid/query', {
@@ -23,7 +25,7 @@ export default async function router(schema: any, config: Config) {
             await Auth.is_auth(req);
 
             const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
-                return (await Layer.from(config.pool, req.params.layerid)).serialize();
+                return await LayerModel.from(parseInt(req.params.layerid));
             });
 
             if (!layer.logging) throw new Err(400, null, 'Feature Logging has been disabled for this layer');
@@ -59,7 +61,7 @@ export default async function router(schema: any, config: Config) {
             await Auth.is_auth(req);
 
             const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
-                return (await Layer.from(config.pool, req.params.layerid)).serialize();
+                return await LayerModel.from(parseInt(req.params.layerid));
             });
 
             if (!layer.logging) throw new Err(400, null, 'Feature Logging has been disabled for this layer');

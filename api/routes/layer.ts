@@ -1,11 +1,9 @@
 import { check } from '@placemarkio/check-geojson';
 import bodyparser from 'body-parser';
 import Err from '@openaddresses/batch-error';
-import Layer from '../lib/types/layer.js';
 import { CoT } from '@tak-ps/node-tak';
 import { Item as QueueItem } from '../lib/queue.ts'
 import Cacher from '../lib/cacher.ts';
-import { sql } from 'slonik';
 import Auth from '../lib/auth.ts';
 import Lambda from '../lib/aws/lambda.ts';
 import CloudFormation from '../lib/aws/cloudformation.ts';
@@ -18,11 +16,13 @@ import Config from '../lib/config.ts';
 import Schedule from '../lib/schedule.ts';
 import S3 from '../lib/aws/s3.ts';
 import { Feature } from 'geojson';
-import { Data } from '../lib/schema.ts';
+import { Data, Layer } from '../lib/schema.ts';
 import Modeler from '../lib/drizzle.ts';
+import { sql } from 'drizzle-orm';
 
 export default async function router(schema: any, config: Config) {
     const DataModel = new Modeler(config.pg, Data);
+    const LayerModel = new Modeler(config.pg, Layer);
 
     const alarm = new Alarm(config.StackName);
     const ddb = new DDBQueue(config.StackName);
@@ -39,27 +39,30 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            const list = await Layer.list(config.pool, req.query);
+            const list = await LayerModel.list({
+                limit: Number(req.query.limit),
+                page: Number(req.query.page),
+                order: String(req.query.order),
+                sort: String(req.query.sort),
+                where: sql`
+                    name ~* ${req.query.filter}
+                    AND (${req.query.connection}::BIGINT IS NULL OR ${req.query.connection}::BIGINT = layers.connection)
+                `
+            });
 
-            if (config.StackName !== 'test') {
-                const alarms = await alarm.list();
+            const alarms = config.StackName !== 'test' ? await alarm.list() : new Map();
 
-                list.layers.map((layer: any) => {
-                    layer.status = alarms.get(layer.id) || 'unknown';
-                });
-
-                list.status = { healthy: 0, alarm: 0, unknown: 0 };
-                for (const state of alarms.values()) {
-                    list.status[state]++;
-                }
-            } else {
-                list.status = { healthy: 0, alarm: 0, unknown: 0 };
-                list.layers.map((layer: any) => {
-                    layer.status = 'unknown';
-                });
+            const status = { healthy: 0, alarm: 0, unknown: 0 };
+            for (const state of alarms.values()) {
+                status[state]++;
             }
 
-            res.json(list);
+            res.json({
+                status,
+                items: list.items.map((layer) => {
+                    return { status: alarms.get(layer.id) || 'unknown', ...layer }
+                })
+            });
         } catch (err) {
             return Err.respond(err, res);
         }
@@ -97,15 +100,13 @@ export default async function router(schema: any, config: Config) {
             }
 
             Schedule.is_valid(req.body.cron);
-            let layer = await Layer.generate(config.pool, req.body);
+            let layer = await LayerModel.generate(req.body);
 
             if (!Schedule.is_aws(layer.cron) && layer.enabled) {
                 config.events.add(layer.id, layer.cron);
             } else if (Schedule.is_aws(layer.cron) || !layer.enabled) {
                 await config.events.delete(layer.id);
             }
-
-            layer = layer.serialize();
 
             try {
                 const lambda = await Lambda.generate(config, layer);
@@ -114,13 +115,10 @@ export default async function router(schema: any, config: Config) {
                 console.error(err);
             }
 
-            if (config.StackName !== 'test') {
-                layer.status = await alarm.get(layer.id);
-            } else {
-                layer.status = 'unknown';
-            }
-
-            return res.json(layer);
+            return res.json({
+                status: config.StackName !== 'test' ? await alarm.get(layer.id) : 'unknown',
+                ...layer
+            });
         } catch (err) {
             return Err.respond(err, res);
         }
@@ -136,9 +134,11 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            const list = await Layer.list(config.pool);
+            // TODO there is a limit here to how many will be returned
+            // switch to an async iter or stream
+            const list = await LayerModel.list();
 
-            for (const layer of list.layers) {
+            for (const layer of list.items) {
                 const status = (await CloudFormation.status(config, layer.id)).status;
                 if (!status.endsWith('_COMPLETE')) continue;
 
@@ -177,7 +177,7 @@ export default async function router(schema: any, config: Config) {
 
             if (req.body.styles) {
                 await Style.validate(req.body.styles);
- 
+
                 if (req.body.styles && req.body.styles.queries) {
                     req.body.styles = {
                         queries: req.body.styles.queries
@@ -201,7 +201,7 @@ export default async function router(schema: any, config: Config) {
 
             if (req.body.cron) Schedule.is_valid(req.body.cron);
 
-            let layer = await Layer.from(config.pool, parseInt(req.params.layerid));
+            let layer = await LayerModel.from(parseInt(req.params.layerid));
 
             let changed = false;
             // Avoid Updating CF unless necessary as it blocks further updates until deployed
@@ -214,7 +214,7 @@ export default async function router(schema: any, config: Config) {
                 if (!status.endsWith('_COMPLETE')) throw new Err(400, null, 'Layer is still Deploying, Wait for Deploy to succeed before updating')
             }
 
-            await layer.commit({ updated: sql`Now()`, ...req.body });
+            layer = await LayerModel.commit(layer.id, { updated: sql`Now()`, ...req.body });
 
             if (changed) {
                 try {
@@ -235,17 +235,12 @@ export default async function router(schema: any, config: Config) {
                 await config.events.delete(layer.id);
             }
 
-            layer = layer.serialize();
-
             await config.cacher.del(`layer-${req.params.layerid}`);
 
-            if (config.StackName !== 'test') {
-                layer.status = await alarm.get(layer.id);
-            } else {
-                layer.status = 'unknown';
-            }
-
-            return res.json(layer);
+            return res.json({
+                status: config.StackName !== 'test' ? await alarm.get(layer.id) : 'unknown',
+                ...layer
+            });
         } catch (err) {
             return Err.respond(err, res);
         }
@@ -263,16 +258,13 @@ export default async function router(schema: any, config: Config) {
             await Auth.is_auth(req);
 
             const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
-                return (await Layer.from(config.pool, req.params.layerid)).serialize();
+                return await LayerModel.from(parseInt(req.params.layerid));
             });
 
-            if (config.StackName !== 'test') {
-                layer.status = await alarm.get(layer.id);
-            } else {
-                layer.status = 'unknown';
-            }
-
-            return res.json(layer);
+            return res.json({
+                status: config.StackName !== 'test' ? await alarm.get(layer.id) : 'unknown',
+                ...layer
+            });
         } catch (err) {
             return Err.respond(err, res);
         }
@@ -289,7 +281,7 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            const layer = await Layer.from(config.pool, req.params.layerid);
+            const layer = await LayerModel.from(parseInt(req.params.layerid));
 
             const status = (await CloudFormation.status(config, parseInt(req.params.layerid))).status;
             if (!status.endsWith('_COMPLETE')) throw new Err(400, null, 'Layer is still Deploying, Wait for Deploy to succeed before updating')
@@ -325,13 +317,13 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            const layer = await Layer.from(config.pool, req.params.layerid);
+            const layer = await LayerModel.from(parseInt(req.params.layerid));
 
             await CloudFormation.delete(config, layer.id);
 
             config.events.delete(layer.id);
 
-            await layer.delete();
+            await LayerModel.delete(parseInt(req.params.layerid));
 
             await config.cacher.del(`layer-${req.params.layerid}`);
 
@@ -362,7 +354,7 @@ export default async function router(schema: any, config: Config) {
             if (!req.headers['content-type']) throw new Err(400, null, 'Content-Type not set');
 
             const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
-                return (await Layer.from(config.pool, req.params.layerid)).serialize();
+                return await LayerModel.from(parseInt(req.params.layerid));
             });
 
             const style = new Style(layer);

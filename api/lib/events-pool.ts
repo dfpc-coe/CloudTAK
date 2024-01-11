@@ -1,9 +1,9 @@
-// @ts-ignore
-import Layer from './types/layer.js';
 import Schedule from './schedule.ts';
-// @ts-ignore
-import { Pool } from '@openaddresses/batch-schema';
 import Bree from 'bree';
+import { Layer } from './schema.ts';
+import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
+import { type InferSelectModel } from 'drizzle-orm';
+import Modeler from './drizzle.ts';
 
 /**
  * Maintain a pool of Events - this pool handles second level
@@ -36,17 +36,18 @@ export default class EventsPool {
     /**
      * Page through layers and add events as needed
      *
-     * @param pool        Postgres Pol
+     * @param pool        Postgres Pool
      */
-    async init(pool: Pool): Promise<void> {
-        const layers: Layer[] = [];
+    async init(pool: PostgresJsDatabase<typeof import("/home/null/Development/dfpc-coe/etl/api/lib/schema")>): Promise<void> {
+        const LayerModel = new Modeler(pool, Layer);
+        const layers: InferSelectModel<typeof Layer>[] = [];
 
-        const stream = await Layer.stream(pool);
+        const stream = await LayerModel.stream();
 
         await this.bree.start();
 
         return new Promise((resolve) => {
-            stream.on('data', (layer: Layer) => {
+            stream.on('data', (layer: InferSelectModel<typeof Layer>) => {
                 if (Schedule.is_aws(layer.cron)) return;
 
                 if (!layer.enabled) return;
