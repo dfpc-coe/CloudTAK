@@ -9,7 +9,7 @@ export type StyleContainer = {
     line?: StyleLine;
     point?: StylePoint;
     polygon?: StylePolygon;
-    queries?: Array<StyleSingle>;
+    queries?: Array<StyleSingleContainer>;
 }
 
 export type StyleSingleContainer = {
@@ -24,9 +24,30 @@ export type StyleSingle = {
 
 }
 
-export type StylePoint = object;
-export type StyleLine = object;
-export type StylePolygon = object;
+// Also note these are defined in schema/util/styles.json
+export type StylePoint = {
+    color?: string;
+    remarks?: string;
+    callsign?: string;
+};
+export type StyleLine = {
+    stroke?: string;
+    'stroke-style'?: string;
+    'stroke-opacity'?: string;
+    'stroke-width'?: string;
+    remarks?: string;
+    callsign?: string;
+};
+export type StylePolygon = {
+    stroke?: string;
+    'stroke-style'?: string;
+    'stroke-opacity'?: string;
+    'stroke-width'?: string;
+    fill?: string;
+    'fill-opacity'?: string;
+    remarks?: string;
+    callsign?: string;
+};
 
 
 /**
