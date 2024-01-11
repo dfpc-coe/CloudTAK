@@ -277,13 +277,13 @@ export default async function router(schema, config: Config) {
     }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(req);
-            const icon = await Icon.from(config.pool, req.params.iconset, req.params.icon);
+            let icon = await Icon.from(config.pool, req.params.iconset, req.params.icon);
 
             if (req.body.name && path.parse(req.body.name).ext !== '.png') throw new Err(400, null, 'Name must have .png extension');
             if (req.body.name) req.body.path = `${icon.iconset}/${req.body.name}`;
 
             if (req.body.type2525b === '') delete req.body.type2525b;
-            await icon.commit(req.body);
+            icon = await icon.commit(req.body);
 
             return res.json(icon);
         } catch (err) {

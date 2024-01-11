@@ -1,5 +1,4 @@
 import Err from '@openaddresses/batch-error';
-import Layer from '../lib/types/layer.js';
 import LayerAlert from '../lib/types/layer-alert.js';
 import Cacher from '../lib/cacher.ts';
 import { sql } from 'slonik';
@@ -7,8 +6,12 @@ import Auth from '../lib/auth.ts';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
 import Config from '../lib/config.ts';
+import Modeler from '../lib/drizzle.ts';
+import { Layer } from '../lib/schema.ts';
 
 export default async function router(schema: any, config: Config) {
+    const LayerModel = new Modeler(config.pg, Layer);
+
     await schema.get('/layer/:layerid/alert', {
         name: 'List Alerts',
         group: 'Layer Alerts',
@@ -22,7 +25,7 @@ export default async function router(schema: any, config: Config) {
             await Auth.is_auth(req);
 
             const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
-                return (await Layer.from(config.pool, req.params.layerid)).serialize();
+                return await LayerModel.from(parseInt(req.params.layerid))
             });
 
             const list = await LayerAlert.list(config.pool, layer.id, req.query);
@@ -46,7 +49,7 @@ export default async function router(schema: any, config: Config) {
             await Auth.is_layer(req, parseInt(req.params.layerid));
 
             const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
-                return (await Layer.from(config.pool, req.params.layerid)).serialize();
+                return await LayerModel.from(parseInt(req.params.layerid))
             });
 
             const list = await LayerAlert.generate(config.pool, {
@@ -72,7 +75,7 @@ export default async function router(schema: any, config: Config) {
             await Auth.is_auth(req);
 
             const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
-                return (await Layer.from(config.pool, req.params.layerid)).serialize();
+                return await LayerModel.from(parseInt(req.params.layerid))
             });
 
             const list = await LayerAlert.delete(config.pool, layer.id, {
@@ -101,7 +104,7 @@ export default async function router(schema: any, config: Config) {
             await Auth.is_auth(req);
 
             const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
-                return (await Layer.from(config.pool, req.params.layerid)).serialize();
+                return await LayerModel.from(parseInt(req.params.layerid))
             });
 
             const alert = await LayerAlert.from(config.pool, req.params.alertid);
