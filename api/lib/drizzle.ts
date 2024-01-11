@@ -61,7 +61,7 @@ export class GenericEmitter<T extends Table<TableConfig<Column<ColumnBaseConfig<
 
                 for (const row of pgres) {
                     this.emit('data', row);
-                } 
+                }
             } while(pgres.length);
 
             this.emit('end');

@@ -4,7 +4,6 @@ import fs from 'node:fs/promises';
 import Err from '@openaddresses/batch-error';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
-import Icon from '../lib/types/icon.js';
 import Config from '../lib/config.ts';
 import Sprites from '../lib/sprites.ts';
 import Cacher from '../lib/cacher.ts';
@@ -146,10 +145,10 @@ export default async function router(schema, config: Config) {
                     }
                 };
 
-                for (const icon of (await Icon.list({
+                for (const icon of (await IconModel.list({
                     limit: 1000,
                     where: sql`iconset = ${String(req.params.iconset)}`
-                }).items) {
+                })).items) {
                     archive.append(Buffer.from(icon.data, 'base64'), { name: icon.name });
                     xmljson.iconset.icon.push({ $: { name: path.parse(icon.name).base, type2525b: icon.type2525b } })
                 }
@@ -234,7 +233,16 @@ export default async function router(schema, config: Config) {
 
             req.query.filter = String(req.query.filter).toLowerCase();
 
-            const list = await Icon.list(config.pool, req.query);
+            const list = await IconModel.list({
+                limit: Number(req.query.limit),
+                page: Number(req.query.page),
+                order: String(req.query.order),
+                sort: String(req.query.sort),
+                where: sql`
+                    name ~* ${req.query.filter}
+                    (${req.query.iconset}::TEXT IS NULL OR ${req.query.iconset}::TEXT = iconset)
+                `
+            });
 
             return res.json(list)
 
@@ -254,7 +262,7 @@ export default async function router(schema, config: Config) {
     }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(req);
-            const icon = await Icon.from(config.pool, req.params.iconset, req.params.icon);
+            const icon = await IconModel.from(sql`${req.params.iconset} = iconset AND ${req.params.icon} = name`);
             return res.json(icon);
         } catch (err) {
             return Err.respond(err, res);
@@ -281,13 +289,13 @@ export default async function router(schema, config: Config) {
     }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(req);
-            let icon = await Icon.from(config.pool, req.params.iconset, req.params.icon);
+            let icon = await IconModel.from(sql`${req.params.iconset} = iconset AND ${req.params.icon} = name`);
 
             if (req.body.name && path.parse(req.body.name).ext !== '.png') throw new Err(400, null, 'Name must have .png extension');
             if (req.body.name) req.body.path = `${icon.iconset}/${req.body.name}`;
 
             if (req.body.type2525b === '') delete req.body.type2525b;
-            icon = await icon.commit(req.body);
+            icon = await IconModel.commit(icon.id, req.body);
 
             return res.json(icon);
         } catch (err) {
@@ -306,7 +314,7 @@ export default async function router(schema, config: Config) {
     }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(req);
-            const icon = await Icon.delete(config.pool, req.params.iconset, req.params.icon);
+            const icon = await IconModel.delete(sql`${req.params.iconset} = iconset AND ${req.params.icon} = name`);
             return res.json({
                 status: 200,
                 message: 'Icon Deleted'
@@ -327,7 +335,7 @@ export default async function router(schema, config: Config) {
         try {
             await Auth.is_auth(req, true);
 
-            const icon = await Icon.from(config.pool, req.params.iconset, req.params.icon);
+            const icon = await IconModel.from(sql`${req.params.iconset} = iconset AND ${req.params.icon} = name`);
             return res.status(200).send(Buffer.from(icon.data, 'base64'));
         } catch (err) {
             return Err.respond(err, res);
@@ -354,9 +362,11 @@ export default async function router(schema, config: Config) {
             if (SpriteMap[String(req.query.iconset)]) {
                 return res.json(SpriteMap[String(req.query.iconset)].json);
             } else {
-                const icons = await Icon.list(config.pool, {
+                const icons = await IconModel.list({
                     limit: 1000,
-                    ...req.query
+                    where: sql`
+                        (${req.query.iconset}::TEXT IS NULL OR ${req.query.iconset}::TEXT = iconset
+                    `
                 })
 
                 const sprites = await Sprites(icons);
@@ -391,9 +401,11 @@ export default async function router(schema, config: Config) {
             if (SpriteMap[String(req.query.iconset)]) {
                 return res.send(SpriteMap[String(req.query.iconset)].image);
             } else {
-                const icons = await Icon.list(config.pool, {
+                const icons = await IconModel.list({
                     limit: 1000,
-                    ...req.query
+                    where: sql`
+                        (${req.query.iconset}::TEXT IS NULL OR ${req.query.iconset}::TEXT = iconset
+                    `
                 })
                 const sprites = await Sprites(icons);
 
