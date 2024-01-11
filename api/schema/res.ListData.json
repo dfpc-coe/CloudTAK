@@ -10,7 +10,7 @@
             "type": "integer",
             "description": "Total number of data stores related to the query"
         },
-        "data": {
+        "items": {
             "type": "array",
             "description": "Array of data objects",
             "items":  {

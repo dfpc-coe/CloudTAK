@@ -36,8 +36,11 @@ export default async function router(schema: any, config: Config) {
             const json = {
                 total: list.total,
                 status: { dead: 0, live: 0, unknown: 0 },
-                items: list.items.map((conn: any) => {
-                    conn.status = config.conns.status(conn.id);
+                items: list.items.map((conn) => {
+                    return {
+                        status: config.conns.status(conn.id),
+                        ...conn
+                    }
                 })
             }
 
