@@ -7,7 +7,6 @@ import SwaggerUI from 'swagger-ui-express';
 import history, {Context} from 'connect-history-api-fallback';
 // @ts-ignore
 import Schema from '@openaddresses/batch-schema';
-// @ts-ignore
 import { Pool } from '@openaddresses/batch-generic';
 import minimist from 'minimist';
 import ConnectionPool, { ConnectionWebSocket, sleep } from './lib/connection-pool.js';
@@ -21,9 +20,6 @@ import process from 'node:process';
 import Modeler from './lib/drizzle.ts';
 
 import * as pgschema from './lib/schema.js';
-import postgres from 'postgres';
-import { drizzle } from 'drizzle-orm/postgres-js';
-import { migrate } from "drizzle-orm/postgres-js/migrator";
 
 const args = minimist(process.argv, {
     boolean: [
@@ -75,18 +71,19 @@ export default async function server(config: Config) {
         console.log(`ok - failed to flush cache: ${err.message}`);
     }
 
-    config.pool = await Pool.connect(process.env.POSTGRES || args.postgres || 'postgres://postgres@localhost:5432/tak_ps_etl', {
-        schemas: {
+    config.pg = await Pool.connect(process.env.POSTGRES || args.postgres || 'postgres://postgres@localhost:5432/tak_ps_etl', pgschema, {
+        jsonschema: {
             dir: new URL('./schema', import.meta.url)
         },
         parsing: {
             geometry: true
         }
-    });
-
+    })
+/*
     const queryConnection = postgres(process.env.POSTGRES || args.postgres || 'postgres://postgres@localhost:5432/tak_ps_etl');
     config.pg = drizzle(queryConnection, { schema: pgschema });
     await migrate(config.pg, { migrationsFolder: 'migrations' });
+*/
 
 
     try {
@@ -100,7 +97,7 @@ export default async function server(config: Config) {
     config.conns = new ConnectionPool(config, config.server, config.wsClients, config.StackName, config.local);
     await config.conns.init();
     config.events = new EventsPool(config.StackName);
-    if (!config.noevents) await config.events.init(config.pool);
+    if (!config.noevents) await config.events.init(config.pg);
 
     const app = express();
 
