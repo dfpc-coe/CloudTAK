@@ -1,8 +1,7 @@
 import SecretsManager from '@aws-sdk/client-secrets-manager';
 import type EventsPool from './events-pool.ts';
-import ConnectionPool, { ConnectionWebSocket } from './connection-pool.ts';
-// @ts-ignore
 import { Pool } from '@openaddresses/batch-generic';
+import ConnectionPool, { ConnectionWebSocket } from './connection-pool.ts';
 import Cacher from './cacher.ts';
 import { Server } from './schema.ts';
 import { type InferSelectModel } from 'drizzle-orm';
@@ -40,8 +39,7 @@ export default class Config {
     DynamoDB: string;
     wsClients: Map<string, ConnectionWebSocket[]>;
     Bucket?: string;
-    pool?: Pool;
-    pg?: PostgresJsDatabase<typeof import("/home/null/Development/dfpc-coe/etl/api/lib/schema")>;
+    pg?: Pool<typeof import("/home/null/Development/dfpc-coe/etl/api/lib/schema")>;
     cacher?: Cacher;
     conns?: ConnectionPool;
     server?: InferSelectModel<typeof Server>;
