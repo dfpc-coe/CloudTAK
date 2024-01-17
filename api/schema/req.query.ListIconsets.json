@@ -8,6 +8,27 @@
         "page": {
             "$ref": "./util/page.json"
         },
+        "order": {
+            "$ref": "./util/order.json"
+        },
+        "sort": {
+            "type": "string",
+            "default": "created",
+            "enum": [
+                "uid",
+                "version",
+                "name",
+                "default_group",
+                "default_friendly",
+                "default_hostile",
+                "default_neutral",
+                "default_unknown",
+                "skip_resize",
+                "created",
+                "updated"
+            ],
+            "description": "Field to sort order by"
+        },
         "filter": {
             "type": "string",
             "default": "",
