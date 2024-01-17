@@ -6,7 +6,7 @@ import { Profile, Connection } from '../lib/schema.ts';
 import S3 from '../lib/aws/s3.ts';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
-import Modeler from '../lib/drizzle.ts';
+import Modeler from '@openaddresses/batch-generic';
 import TAKAPI, {
     APIAuthToken,
     APIAuthCertificate,

@@ -6,7 +6,7 @@ import Cacher from './cacher.ts';
 import { Connection, ConnectionSink } from './schema.ts';
 import { type InferSelectModel } from 'drizzle-orm';
 import { sql } from 'drizzle-orm';
-import Modeler from './drizzle.ts';
+import Modeler from '@openaddresses/batch-generic';
 
 export default class Sinks extends Map<string, any> {
     config: Config;

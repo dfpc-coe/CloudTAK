@@ -5,7 +5,7 @@ import CF from '../lib/aws/cloudformation.ts';
 import Lambda from '../lib/aws/lambda.ts';
 import CloudFormation from '../lib/aws/cloudformation.ts';
 import Logs from '../lib/aws/lambda-logs.ts';
-import Modeler from '../lib/drizzle.ts';
+import Modeler from '@openaddresses/batch-generic';
 import { Layer } from '../lib/schema.ts';
 import semver from 'semver-sort';
 import Cacher from '../lib/cacher.ts';
