@@ -78,12 +78,6 @@ export default async function server(config: Config) {
             geometry: true
         }
     })
-/*
-    const queryConnection = postgres(process.env.POSTGRES || args.postgres || 'postgres://postgres@localhost:5432/tak_ps_etl');
-    config.pg = drizzle(queryConnection, { schema: pgschema });
-    await migrate(config.pg, { migrationsFolder: 'migrations' });
-*/
-
 
     try {
         const ServerModel = new Modeler(config.pg, pgschema.Server);
