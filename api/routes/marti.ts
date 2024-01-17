@@ -4,7 +4,7 @@ import Config from '../lib/config.ts';
 import { Profile, Connection } from '../lib/schema.ts';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
-import Modeler from '../lib/drizzle.ts';
+import Modeler from '@openaddresses/batch-generic';
 import TAKAPI, {
     APIAuthPassword,
     APIAuthCertificate

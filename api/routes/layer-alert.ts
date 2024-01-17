@@ -4,7 +4,7 @@ import Auth from '../lib/auth.ts';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
 import Config from '../lib/config.ts';
-import Modeler from '../lib/drizzle.ts';
+import Modeler from '@openaddresses/batch-generic';
 import { Layer, LayerAlert } from '../lib/schema.ts';
 import { sql, eq } from 'drizzle-orm';
 

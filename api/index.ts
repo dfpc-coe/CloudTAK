@@ -7,7 +7,7 @@ import SwaggerUI from 'swagger-ui-express';
 import history, {Context} from 'connect-history-api-fallback';
 // @ts-ignore
 import Schema from '@openaddresses/batch-schema';
-import { Pool } from '@openaddresses/batch-generic';
+import Modeler, { Pool } from '@openaddresses/batch-generic';
 import minimist from 'minimist';
 import ConnectionPool, { ConnectionWebSocket, sleep } from './lib/connection-pool.js';
 import EventsPool from './lib/events-pool.js';
@@ -17,7 +17,6 @@ import BlueprintLogin, { tokenParser } from '@tak-ps/blueprint-login';
 import Config from './lib/config.js';
 import TAKAPI, { APIAuthPassword } from './lib/tak-api.js';
 import process from 'node:process';
-import Modeler from './lib/drizzle.ts';
 
 import * as pgschema from './lib/schema.js';
 

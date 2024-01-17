@@ -3,7 +3,7 @@ import Bree from 'bree';
 import { Layer } from './schema.ts';
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import { type InferSelectModel } from 'drizzle-orm';
-import Modeler from './drizzle.ts';
+import Modeler from '@openaddresses/batch-generic';
 
 /**
  * Maintain a pool of Events - this pool handles second level

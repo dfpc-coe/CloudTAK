@@ -352,8 +352,8 @@ export default {
             const burl = window.stdurl('/api/basemap');
             burl.searchParams.append('type', 'raster');
             const basemaps = await window.std(burl);
-            if (basemaps.basemaps.length > 0) {
-                basemap = basemaps.basemaps[0];
+            if (basemaps.items.length > 0) {
+                basemap = basemaps.items[0];
                 basemap.url = String(window.stdurl(`/api/basemap/${basemap.id}/tiles/`)) + `{z}/{x}/{y}?token=${localStorage.token}`;
             }
 
@@ -361,8 +361,8 @@ export default {
             turl.searchParams.append('type', 'raster-dem');
             /*
             const terrains = await window.std(turl);
-            if (terrains.basemaps.length > 0) {
-                terrain = terrains.basemaps[0];
+            if (terrains.items.length > 0) {
+                terrain = terrains.items[0];
                 terrain.url = String(window.stdurl(`/api/basemap/${terrain.id}/tiles/`)) + `{z}/{x}/{y}?token=${localStorage.token}`;
             }
             */

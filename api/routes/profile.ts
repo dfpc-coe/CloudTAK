@@ -5,7 +5,7 @@ import Auth from '../lib/auth.ts';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
 import Config from '../lib/config.ts';
-import Modeler from '../lib/drizzle.ts';
+import Modeler from '@openaddresses/batch-generic';
 
 export default async function router(schema: any, config: Config) {
     const ProfileModel = new Modeler(config.pg, Profile);

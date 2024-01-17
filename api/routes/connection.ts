@@ -6,7 +6,7 @@ import Config from '../lib/config.ts';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
 import CW from '../lib/aws/metric.ts';
-import Modeler from '../lib/drizzle.ts';
+import Modeler from '@openaddresses/batch-generic';
 
 export default async function router(schema: any, config: Config) {
     const ConnectionModel = new Modeler(config.pg, Connection);

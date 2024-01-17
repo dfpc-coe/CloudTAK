@@ -6,7 +6,7 @@ import { AuthRequest } from '@tak-ps/blueprint-login';
 import { type InferSelectModel } from 'drizzle-orm';
 import Config from '../lib/config.ts';
 import S3 from '../lib/aws/s3.ts';
-import Modeler from '../lib/drizzle.ts';
+import Modeler from '@openaddresses/batch-generic';
 import { sql, eq } from 'drizzle-orm';
 
 export async function augment(Model, data: InferSelectModel<typeof Data>): Promise<object> {

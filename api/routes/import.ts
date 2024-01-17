@@ -8,7 +8,7 @@ import { AuthRequest } from '@tak-ps/blueprint-login';
 import { Import } from '../lib/schema.ts';
 import S3 from '../lib/aws/s3.ts'
 import crypto from 'node:crypto';
-import Modeler from '../lib/drizzle.ts';
+import Modeler from '@openaddresses/batch-generic';
 import { sql } from 'drizzle-orm';
 
 export default async function router(schema: any, config: Config) {

@@ -10,7 +10,7 @@ import Cacher from '../lib/cacher.ts';
 import archiver from 'archiver';
 import xml2js from 'xml2js';
 import { Iconset, Icon } from '../lib/schema.ts';
-import Modeler from '../lib/drizzle.ts';
+import Modeler from '@openaddresses/batch-generic';
 import { sql } from 'drizzle-orm';
 
 export default async function router(schema, config: Config) {

@@ -7,7 +7,7 @@ import { WebSocket } from 'ws';
 import TAK, { CoT } from '@tak-ps/node-tak';
 import { type InferSelectModel } from 'drizzle-orm';
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
-import Modeler from './drizzle.ts';
+import Modeler from '@openaddresses/batch-generic';
 
 export class ConnectionWebSocket {
     ws: WebSocket;

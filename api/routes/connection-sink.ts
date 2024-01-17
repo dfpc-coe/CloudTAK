@@ -5,7 +5,7 @@ import Config from '../lib/config.ts';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
 import { Connection, ConnectionSink } from '../lib/schema.ts';
-import Modeler from '../lib/drizzle.ts';
+import Modeler from '@openaddresses/batch-generic';
 import { sql } from 'drizzle-orm';
 
 export default async function router(schema: any, config: Config) {
