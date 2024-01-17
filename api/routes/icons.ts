@@ -10,7 +10,7 @@ import Cacher from '../lib/cacher.ts';
 import archiver from 'archiver';
 import xml2js from 'xml2js';
 import { Iconset, Icon } from '../lib/schema.ts';
-import Modeler from '@openaddresses/batch-generic';
+import Modeler, { Param } from '@openaddresses/batch-generic';
 import { sql } from 'drizzle-orm';
 
 export default async function router(schema, config: Config) {
@@ -240,7 +240,7 @@ export default async function router(schema, config: Config) {
                 sort: String(req.query.sort),
                 where: sql`
                     name ~* ${req.query.filter}
-                    (${req.query.iconset}::TEXT IS NULL OR ${req.query.iconset}::TEXT = iconset)
+                    AND (${Param(req.query.iconset)}::TEXT IS NULL OR ${Param(req.query.iconset)}::TEXT = iconset)
                 `
             });
 
@@ -335,7 +335,9 @@ export default async function router(schema, config: Config) {
         try {
             await Auth.is_auth(req, true);
 
-            const icon = await IconModel.from(sql`${req.params.iconset} = iconset AND ${req.params.icon} = name`);
+            const icon = await IconModel.from(sql`
+                (${req.params.iconset} = iconset AND ${req.params.icon} = name)
+            `);
             return res.status(200).send(Buffer.from(icon.data, 'base64'));
         } catch (err) {
             return Err.respond(err, res);
@@ -365,7 +367,7 @@ export default async function router(schema, config: Config) {
                 const icons = await IconModel.list({
                     limit: 1000,
                     where: sql`
-                        (${req.query.iconset}::TEXT IS NULL OR ${req.query.iconset}::TEXT = iconset
+                        (${Param(req.query.iconset)}::TEXT IS NULL OR ${Param(req.query.iconset)}::TEXT = iconset)
                     `
                 })
 
@@ -404,7 +406,7 @@ export default async function router(schema, config: Config) {
                 const icons = await IconModel.list({
                     limit: 1000,
                     where: sql`
-                        (${req.query.iconset}::TEXT IS NULL OR ${req.query.iconset}::TEXT = iconset
+                        (${Param(req.query.iconset)}::TEXT IS NULL OR ${Param(req.query.iconset)}::TEXT = iconset)
                     `
                 })
                 const sprites = await Sprites(icons);
