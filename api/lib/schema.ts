@@ -1,5 +1,6 @@
 import { sql } from 'drizzle-orm';
 import { StyleContainer } from './style.ts';
+import { geometry, GeometryType } from '@openaddresses/batch-generic';
 
 import {
     json,
@@ -18,8 +19,8 @@ export const Basemap = pgTable('basemaps', {
     updated: timestamp('updated').notNull().default(sql`Now()`),
     name: varchar('name').notNull(),
     url: varchar('url').notNull(),
-    //TODO bounds
-    // TODO center
+    bounds: geometry('bounds', { type: GeometryType.Polygon, srid: 4326 }),
+    center: geometry('center', { type: GeometryType.Point, srid: 4326 }),
     minzoom: integer('minzoom').notNull().default(0),
     maxzoom: integer('maxzoom').notNull().default(16),
     format: varchar('format').notNull().default('png'),
@@ -37,7 +38,7 @@ export const Profile = pgTable('profile', {
     tak_callsign: varchar('tak_callsign').notNull().default('CloudTAK User'),
     tak_group: varchar('tak_group').notNull().default('Orange'),
     tak_role: varchar('tak_role').notNull().default('Team Member'),
-    // tak_loc TODO ADD GEOMETRY
+    tak_loc: geometry('tak_loc', { srid: 4326, type: GeometryType.Point })
 });
 
 export const Import = pgTable('imports', {
