@@ -8,7 +8,7 @@ import { AuthRequest } from '@tak-ps/blueprint-login';
 import { Import } from '../lib/schema.ts';
 import S3 from '../lib/aws/s3.ts'
 import crypto from 'node:crypto';
-import Modeler from '@openaddresses/batch-generic';
+import Modeler, { Param } from '@openaddresses/batch-generic';
 import { sql } from 'drizzle-orm';
 
 export default async function router(schema: any, config: Config) {
@@ -256,8 +256,8 @@ export default async function router(schema: any, config: Config) {
                 order: String(req.query.order),
                 sort: String(req.query.sort),
                 where: sql`
-                    (${req.query.mode}::TEXT IS NULL OR ${req.query.mode}::TEXT = mode)
-                    AND (${req.query.mode_id}::TEXT IS NULL OR ${req.query.mode_id}::TEXT = mode_id)
+                    (${Param(req.query.mode)}::TEXT IS NULL OR ${Param(req.query.mode)}::TEXT = mode)
+                    AND (${Param(req.query.mode_id)}::TEXT IS NULL OR ${Param(req.query.mode_id)}::TEXT = mode_id)
                 `
             });
 

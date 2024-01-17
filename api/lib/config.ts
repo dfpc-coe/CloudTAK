@@ -6,7 +6,6 @@ import Cacher from './cacher.ts';
 import { Server } from './schema.ts';
 import { type InferSelectModel } from 'drizzle-orm';
 import process from 'node:process';
-import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 
 interface ConfigArgs {
     silent: boolean,
@@ -17,9 +16,6 @@ interface ConfigArgs {
     local: boolean
 }
 
-/**
- * @class
- */
 export default class Config {
     local: boolean;
     silent: boolean;

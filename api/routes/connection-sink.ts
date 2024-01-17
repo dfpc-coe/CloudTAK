@@ -5,7 +5,7 @@ import Config from '../lib/config.ts';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
 import { Connection, ConnectionSink } from '../lib/schema.ts';
-import Modeler from '@openaddresses/batch-generic';
+import Modeler, { Param } from '@openaddresses/batch-generic';
 import { sql } from 'drizzle-orm';
 
 export default async function router(schema: any, config: Config) {
@@ -31,9 +31,9 @@ export default async function router(schema: any, config: Config) {
                 order: String(req.query.order),
                 sort: String(req.query.sort),
                 where: sql`
-                    name ~* ${req.query.filter}
-                    AND connection = ${req.query.connection}
-                    AND (${req.query.enabled}::BOOLEAN IS NULL OR enabled = ${req.query.enabled}::BOOLEAN)
+                    name ~* ${Param(req.query.filter)}
+                    AND connection = ${Param(req.query.connection)}
+                    AND (${Param(req.query.enabled)}::BOOLEAN IS NULL OR enabled = ${Param(req.query.enabled)}::BOOLEAN)
                 `
             });
 

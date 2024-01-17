@@ -6,7 +6,7 @@ import { AuthRequest } from '@tak-ps/blueprint-login';
 import { type InferSelectModel } from 'drizzle-orm';
 import Config from '../lib/config.ts';
 import S3 from '../lib/aws/s3.ts';
-import Modeler from '@openaddresses/batch-generic';
+import Modeler, { Param } from '@openaddresses/batch-generic';
 import { sql, eq } from 'drizzle-orm';
 
 export async function augment(Model, data: InferSelectModel<typeof Data>): Promise<object> {
@@ -45,7 +45,7 @@ export default async function router(schema: any, config: Config) {
                 sort: String(req.query.sort),
                 where: sql`
                     name ~* ${req.query.filter}
-                    AND (${req.query.connection}::BIGINT IS NULL OR connection = ${req.query.connection}::BIGINT)
+                    AND (${Param(req.query.connection)}::BIGINT IS NULL OR connection = ${Param(req.query.connection)}::BIGINT)
                 `
             });
 
