@@ -278,7 +278,7 @@ export default {
                 const url = await window.stdurl(`/api/import`);
                 url.searchParams.append('mode', 'Mission');
                 url.searchParams.append('mode_id', this.mission.guid);
-                this.imports = (await window.std(url)).imports.filter((i) => {
+                this.imports = (await window.std(url)).items.filter((i) => {
                     return !['Success'].includes(i.status);
                 });
             } catch (err) {

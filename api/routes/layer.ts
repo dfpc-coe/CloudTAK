@@ -17,7 +17,7 @@ import Schedule from '../lib/schedule.ts';
 import S3 from '../lib/aws/s3.ts';
 import { Feature } from 'geojson';
 import { Data, Layer } from '../lib/schema.ts';
-import Modeler from '@openaddresses/batch-generic';
+import Modeler, { Param } from '@openaddresses/batch-generic';
 import { sql } from 'drizzle-orm';
 
 export default async function router(schema: any, config: Config) {
@@ -46,7 +46,7 @@ export default async function router(schema: any, config: Config) {
                 sort: String(req.query.sort),
                 where: sql`
                     name ~* ${req.query.filter}
-                    AND (${req.query.connection}::BIGINT IS NULL OR ${req.query.connection}::BIGINT = layers.connection)
+                    AND (${Param(req.query.connection)}::BIGINT IS NULL OR ${Param(req.query.connection)}::BIGINT = layers.connection)
                 `
             });
 

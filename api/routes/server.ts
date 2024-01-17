@@ -5,7 +5,7 @@ import Config from '../lib/config.ts';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
 import { Server } from '../lib/schema.ts';
-import Modeler from '@openaddresses/batch-generic';
+import Modeler, { Param } from '@openaddresses/batch-generic';
 
 export default async function router(schema: any, config: Config) {
     const ServerModel = new Modeler<typeof Server>(config.pg, Server);

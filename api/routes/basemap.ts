@@ -11,7 +11,7 @@ import { Readable } from 'node:stream';
 import stream2buffer from '../lib/stream.ts';
 import bboxPolygon from '@turf/bbox-polygon';
 import { Basemap } from '../lib/schema.ts';
-import Modeler from '@openaddresses/batch-generic';
+import Modeler, { Param } from '@openaddresses/batch-generic';
 import { sql } from 'drizzle-orm';
 
 export default async function router(schema: any, config: Config) {
@@ -130,8 +130,8 @@ export default async function router(schema: any, config: Config) {
                 order: String(req.query.order),
                 sort: String(req.query.sort),
                 where: sql`
-                    name ~* ${req.query.filter}
-                    AND (${req.query.type}::TEXT IS NULL or ${req.query.type}::TEXT = type)
+                    name ~* ${Param(req.query.filter)}
+                    AND (${Param(req.query.type)}::TEXT IS NULL or ${Param(req.query.type)}::TEXT = type)
                 `
             });
 

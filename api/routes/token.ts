@@ -6,7 +6,7 @@ import { Token } from '../lib/schema.ts';
 import Config from '../lib/config.ts';
 import { promisify } from 'util';
 import crypto from 'crypto';
-import Modeler from '@openaddresses/batch-generic';
+import Modeler, { Param } from '@openaddresses/batch-generic';
 import { sql } from 'drizzle-orm';
 
 const randomBytes = promisify(crypto.randomBytes);
