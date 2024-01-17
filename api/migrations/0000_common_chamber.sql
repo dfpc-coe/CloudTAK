@@ -1,3 +1,6 @@
+DROP TABLE IF EXISTS "knex_migrations"
+DROP TABLE IF EXISTS "knex_migrations_lock"
+
 CREATE TABLE IF NOT EXISTS "basemaps" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"created" timestamp DEFAULT Now() NOT NULL,
