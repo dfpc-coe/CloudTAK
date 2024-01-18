@@ -5,9 +5,19 @@ import Config from './config.js';
 import Metrics from './aws/metric.js';
 import { WebSocket } from 'ws';
 import TAK, { CoT } from '@tak-ps/node-tak';
-import { type InferSelectModel } from 'drizzle-orm';
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import Modeler from '@openaddresses/batch-generic';
+import { InferSelectModel } from 'drizzle-orm';
+
+export type EphemeralConnection = {
+    id: string;
+    name: string;
+    enabled: boolean;
+    auth: {
+        cert?: string;
+        key?: string;
+    }
+}
 
 export class ConnectionWebSocket {
     ws: WebSocket;
@@ -37,14 +47,14 @@ export class ConnectionWebSocket {
 }
 
 class ConnectionClient {
-    conn: InferSelectModel<typeof Connection>;
+    conn: InferSelectModel<typeof Connection> | EphemeralConnection;
     tak: TAK;
     retry: number;
     initial: boolean;
     ephemeral: boolean;
 
     constructor(
-        conn: InferSelectModel<typeof Connection>,
+        conn: InferSelectModel<typeof Connection> | EphemeralConnection,
         tak: TAK,
         ephemeral = false
     ) {
@@ -139,7 +149,7 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
      * This is also called externally by the layer/:layer/cot API as CoTs
      * aren't rebroadcast to the submitter by the TAK Server
      */
-    async cot(conn: InferSelectModel<typeof Connection>, cot: CoT, ephemeral=false) {
+    async cot(conn: InferSelectModel<typeof Connection> | EphemeralConnection, cot: CoT, ephemeral=false) {
         if (this.wsClients.has(String(conn.id))) {
             for (const client of this.wsClients.get(String(conn.id))) {
                 if (client.format == 'geojson') {
@@ -151,15 +161,16 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
         }
 
         if (!ephemeral && !this.nosinks && cot.is_atom()) {
+            const c = conn as InferSelectModel<typeof Connection>;
             try {
-                await this.sinks.cot(conn, cot);
+                await this.sinks.cot(c, cot);
             } catch (err) {
                 console.error('Error', err);
             }
         }
     }
 
-    async add(conn: InferSelectModel<typeof Connection>, ephemeral=false): Promise<ConnectionClient> {
+    async add(conn: InferSelectModel<typeof Connection> | EphemeralConnection, ephemeral=false): Promise<ConnectionClient> {
         if (!conn.auth || !conn.auth.cert || !conn.auth.key) throw new Err(400, null, 'Connection must have auth.cert & auth.key');
         const tak = await TAK.connect(conn.id, new URL(this.#server.url), {
             key: conn.auth.key,
@@ -182,7 +193,8 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
         }).on('ping', async () => {
             if (this.stackName !== 'test' && !ephemeral) {
                 try {
-                    await this.metrics.post(conn.id);
+                    const c = conn as InferSelectModel<typeof Connection>;
+                    await this.metrics.post(c.id);
                 } catch (err) {
                     console.error(`not ok - failed to push metrics - ${err}`);
                 }
