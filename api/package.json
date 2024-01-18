@@ -35,7 +35,7 @@
         "@aws-sdk/lib-storage": "^3.299.0",
         "@humanwhocodes/momoa": "^3.0.0",
         "@openaddresses/batch-error": "^2.1.4",
-        "@openaddresses/batch-generic": "^14.0.0",
+        "@openaddresses/batch-generic": "^15.0.0",
         "@openaddresses/batch-schema": "^9.0.0",
         "@openaddresses/cloudfriend": "^7.0.0",
         "@placemarkio/check-geojson": "^0.1.12",
