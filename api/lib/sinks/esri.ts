@@ -1,6 +1,6 @@
 import SinkInterface from '../sink.ts';
-// @ts-ignore
-import ConnectionSink from '../types/connection-sink.ts';
+import { ConnectionSink } from '../types/connection-sink.ts';
+import { type InferSelectModel } from 'drizzle-orm';
 import Err from '@openaddresses/batch-error';
 import { EsriBase, EsriProxyPortal } from '../esri.ts';
 import Cacher from '../cacher.ts';
@@ -11,7 +11,7 @@ export default class ESRI extends SinkInterface {
         return 'ArcGIS';
     }
 
-    static async secrets(config: Config, sink: ConnectionSink): Promise<any> {
+    static async secrets(config: Config, sink: InferSelectModel<ConnectionSink>): Promise<any> {
         let secrets: any = {};
         do {
             secrets = await config.cacher.get(Cacher.Miss({}, `connection-${sink.connection}-sink-${sink.id}-secrets`), async () => {
