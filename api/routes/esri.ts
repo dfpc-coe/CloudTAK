@@ -1,9 +1,9 @@
 import Err from '@openaddresses/batch-error';
-import Auth from '../lib/auth.ts';
-import Config from '../lib/config.ts';
+import Auth from '../lib/auth.js';
+import Config from '../lib/config.js';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
-import { ConnectionSink } from '../lib/schema.ts';
+import { ConnectionSink } from '../lib/schema.js';
 import Modeler from '@openaddresses/batch-generic';
 import {
     EsriType,

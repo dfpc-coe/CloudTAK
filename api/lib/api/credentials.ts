@@ -1,6 +1,6 @@
 import TAKAPI, {
     APIAuthPassword
-} from '../tak-api.ts';
+} from '../tak-api.js';
 import pem from 'pem';
 import xml2js from 'xml2js';
 

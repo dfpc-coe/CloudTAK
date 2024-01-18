@@ -1,10 +1,10 @@
 import Err from '@openaddresses/batch-error';
-import Auth from '../lib/auth.ts';
-import CW from '../lib/aws/metric.ts';
-import Config from '../lib/config.ts';
+import Auth from '../lib/auth.js';
+import CW from '../lib/aws/metric.js';
+import Config from '../lib/config.js';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
-import { Connection, ConnectionSink } from '../lib/schema.ts';
+import { Connection, ConnectionSink } from '../lib/schema.js';
 import Modeler, { Param } from '@openaddresses/batch-generic';
 import { sql } from 'drizzle-orm';
 

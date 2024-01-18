@@ -1,9 +1,9 @@
 import Err from '@openaddresses/batch-error';
-import Auth from '../lib/auth.ts';
+import Auth from '../lib/auth.js';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
-import Config from '../lib/config.ts';
-import { ProfileOverlay } from '../lib/schema.ts';
+import Config from '../lib/config.js';
+import { ProfileOverlay } from '../lib/schema.js';
 import Modeler from '@openaddresses/batch-generic';
 
 export default async function router(schema: any, config: Config) {

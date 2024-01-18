@@ -1,15 +1,15 @@
 import Err from '@openaddresses/batch-error';
-import Auth from '../lib/auth.ts';
-import ECR from '../lib/aws/ecr.ts';
-import CF from '../lib/aws/cloudformation.ts';
-import Lambda from '../lib/aws/lambda.ts';
-import CloudFormation from '../lib/aws/cloudformation.ts';
-import Logs from '../lib/aws/lambda-logs.ts';
+import Auth from '../lib/auth.js';
+import ECR from '../lib/aws/ecr.js';
+import CF from '../lib/aws/cloudformation.js';
+import Lambda from '../lib/aws/lambda.js';
+import CloudFormation from '../lib/aws/cloudformation.js';
+import Logs from '../lib/aws/lambda-logs.js';
 import Modeler from '@openaddresses/batch-generic';
-import { Layer } from '../lib/schema.ts';
+import { Layer } from '../lib/schema.js';
 import semver from 'semver-sort';
-import Cacher from '../lib/cacher.ts';
-import Config from '../lib/config.ts';
+import Cacher from '../lib/cacher.js';
+import Config from '../lib/config.js';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
 

@@ -1,6 +1,6 @@
 import jsonata from 'jsonata';
 import { Feature } from 'geojson';
-import { Layer } from './schema.ts';
+import { Layer } from './schema.js';
 import handlebars from 'handlebars';
 import Err from '@openaddresses/batch-error';
 import { type InferSelectModel } from 'drizzle-orm';

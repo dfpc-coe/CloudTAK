@@ -1,9 +1,9 @@
-import Config from './config.ts';
+import Config from './config.js';
 import { CoT } from '@tak-ps/node-tak';
-import ESRISink from './sinks/esri.ts';
-import HookQueue from './aws/hooks.ts';
-import Cacher from './cacher.ts';
-import { Connection, ConnectionSink } from './schema.ts';
+import ESRISink from './sinks/esri.js';
+import HookQueue from './aws/hooks.js';
+import Cacher from './cacher.js';
+import { Connection, ConnectionSink } from './schema.js';
 import { type InferSelectModel } from 'drizzle-orm';
 import { sql } from 'drizzle-orm';
 import Modeler from '@openaddresses/batch-generic';

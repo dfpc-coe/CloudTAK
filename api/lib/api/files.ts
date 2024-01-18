@@ -1,4 +1,4 @@
-import TAKAPI from '../tak-api.ts';
+import TAKAPI from '../tak-api.js';
 import { Readable } from 'node:stream';
 import mime from 'mime';
 

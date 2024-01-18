@@ -1,11 +1,11 @@
 import Err from '@openaddresses/batch-error';
-import { Data, DataMission } from '../lib/schema.ts';
-import Auth from '../lib/auth.ts';
+import { Data, DataMission } from '../lib/schema.js';
+import Auth from '../lib/auth.js';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
 import { type InferSelectModel } from 'drizzle-orm';
-import Config from '../lib/config.ts';
-import S3 from '../lib/aws/s3.ts';
+import Config from '../lib/config.js';
+import S3 from '../lib/aws/s3.js';
 import Modeler, { Param } from '@openaddresses/batch-generic';
 import { sql, eq } from 'drizzle-orm';
 

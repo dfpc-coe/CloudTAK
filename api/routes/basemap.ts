@@ -1,16 +1,16 @@
 import path from 'node:path';
 import Err from '@openaddresses/batch-error';
-import Auth from '../lib/auth.ts';
-import Cacher from '../lib/cacher.ts';
+import Auth from '../lib/auth.js';
+import Cacher from '../lib/cacher.js';
 import busboy from 'busboy';
-import Config from '../lib/config.ts';
+import Config from '../lib/config.js';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
 import xml2js from 'xml2js';
 import { Readable } from 'node:stream';
-import stream2buffer from '../lib/stream.ts';
+import stream2buffer from '../lib/stream.js';
 import bboxPolygon from '@turf/bbox-polygon';
-import { Basemap } from '../lib/schema.ts';
+import { Basemap } from '../lib/schema.js';
 import Modeler, { Param } from '@openaddresses/batch-generic';
 import { sql } from 'drizzle-orm';
 

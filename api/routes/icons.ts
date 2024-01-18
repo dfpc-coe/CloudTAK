@@ -1,15 +1,15 @@
-import Auth from '../lib/auth.ts';
+import Auth from '../lib/auth.js';
 import path from 'node:path';
 import fs from 'node:fs/promises';
 import Err from '@openaddresses/batch-error';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
-import Config from '../lib/config.ts';
-import Sprites from '../lib/sprites.ts';
-import Cacher from '../lib/cacher.ts';
+import Config from '../lib/config.js';
+import Sprites from '../lib/sprites.js';
+import Cacher from '../lib/cacher.js';
 import archiver from 'archiver';
 import xml2js from 'xml2js';
-import { Iconset, Icon } from '../lib/schema.ts';
+import { Iconset, Icon } from '../lib/schema.js';
 import Modeler, { Param } from '@openaddresses/batch-generic';
 import { sql } from 'drizzle-orm';
 

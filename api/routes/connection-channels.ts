@@ -1,11 +1,11 @@
 import Err from '@openaddresses/batch-error';
-import Auth from '../lib/auth.ts';
-import Config from '../lib/config.ts';
+import Auth from '../lib/auth.js';
+import Config from '../lib/config.js';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
-import TAKAPI, { APIAuthCertificate, } from '../lib/tak-api.ts';
+import TAKAPI, { APIAuthCertificate, } from '../lib/tak-api.js';
 import Modeler from '@openaddresses/batch-generic';
-import { Connection } from '../lib/schema.ts';
+import { Connection } from '../lib/schema.js';
 
 export default async function router(schema: any, config: Config) {
     const ConnectionModel = new Modeler(config.pg, Connection);

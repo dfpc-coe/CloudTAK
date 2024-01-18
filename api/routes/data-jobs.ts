@@ -1,12 +1,12 @@
 import Err from '@openaddresses/batch-error';
-import Auth from '../lib/auth.ts';
-import Batch from '../lib/aws/batch.ts';
-import Logs from '../lib/aws/batch-logs.ts';
-import { Data } from '../lib/schema.ts';
+import Auth from '../lib/auth.js';
+import Batch from '../lib/aws/batch.js';
+import Logs from '../lib/aws/batch-logs.js';
+import { Data } from '../lib/schema.js';
 import Modeler from '@openaddresses/batch-generic';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
-import Config from '../lib/config.ts';
+import Config from '../lib/config.js';
 
 export default async function router(schema: any, config: Config) {
     const DataModel = new Modeler(config.pg, Data);

@@ -1,12 +1,12 @@
 import path from 'node:path';
 import Err from '@openaddresses/batch-error';
-import Auth from '../lib/auth.ts';
+import Auth from '../lib/auth.js';
 import busboy from 'busboy';
-import Config from '../lib/config.ts';
+import Config from '../lib/config.js';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
-import { Import } from '../lib/schema.ts';
-import S3 from '../lib/aws/s3.ts'
+import { Import } from '../lib/schema.js';
+import S3 from '../lib/aws/s3.js'
 import crypto from 'node:crypto';
 import Modeler, { Param } from '@openaddresses/batch-generic';
 import { sql } from 'drizzle-orm';
