@@ -2,11 +2,9 @@
     "ts-node": {
         "esm": true
     },
-    "allowJs": true,
     "compilerOptions": {
         "module": "es2022",
         "esModuleInterop": true,
-        "allowImportingTsExtensions": true,
         "target": "es2022",
         "noImplicitAny": false,
         "moduleResolution": "node",
