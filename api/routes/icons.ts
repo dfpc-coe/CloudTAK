@@ -371,7 +371,7 @@ export default async function router(schema, config: Config) {
                     `
                 })
 
-                const sprites = await Sprites(icons);
+                const sprites = await Sprites(icons.items);
 
                 SpriteMap[String(req.query.iconset)] = { image: sprites.image, json: sprites.json };
 
@@ -409,7 +409,7 @@ export default async function router(schema, config: Config) {
                         (${Param(req.query.iconset)}::TEXT IS NULL OR ${Param(req.query.iconset)}::TEXT = iconset)
                     `
                 })
-                const sprites = await Sprites(icons);
+                const sprites = await Sprites(icons.items);
 
                 SpriteMap[String(req.query.iconset)] = { image: sprites.image, json: sprites.json };
 

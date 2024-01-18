@@ -181,7 +181,7 @@ export default {
                 // Any Loading related states
                 main: true
             },
-            iconsets: { total: 0, iconsets: [] },
+            iconsets: { total: 0, items: [] },
         }
     },
     beforeUnmount: function() {
@@ -373,7 +373,7 @@ export default {
                 mapStore.initLayers(basemap);
 
                 const iconsets = await window.std('/api/iconset');
-                for (const iconset of iconsets.iconsets) {
+                for (const iconset of iconsets.items) {
                     mapStore.map.addSprite(iconset.uid, String(window.stdurl(`/api/icon/sprite?token=${localStorage.token}&iconset=${iconset.uid}`)))
                 }
 
