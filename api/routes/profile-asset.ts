@@ -2,17 +2,17 @@ import Err from '@openaddresses/batch-error';
 import busboy from 'busboy';
 import fs from 'node:fs/promises';
 import path from 'path';
-import Auth from '../lib/auth.ts';
-import S3 from '../lib/aws/s3.ts';
+import Auth from '../lib/auth.js';
+import S3 from '../lib/aws/s3.js';
 import Stream from 'node:stream';
-import Batch from '../lib/aws/batch.ts';
+import Batch from '../lib/aws/batch.js';
 import jwt from 'jsonwebtoken';
 import { includesWithGlob } from "array-includes-with-glob";
-import assetList from '../lib/asset.ts';
+import assetList from '../lib/asset.js';
 
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
-import Config from '../lib/config.ts';
+import Config from '../lib/config.js';
 
 export default async function router(schema: any, config: Config) {
     await schema.get('/profile/asset', {

@@ -1,11 +1,11 @@
 import Err from '@openaddresses/batch-error';
-import Dynamo from '../lib/aws/dynamo.ts';
-import Config from '../lib/config.ts';
-import Cacher from '../lib/cacher.ts';
-import Auth from '../lib/auth.ts';
+import Dynamo from '../lib/aws/dynamo.js';
+import Config from '../lib/config.js';
+import Cacher from '../lib/cacher.js';
+import Auth from '../lib/auth.js';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
-import { Layer } from '../lib/schema.ts';
+import { Layer } from '../lib/schema.js';
 import Modeler from '@openaddresses/batch-generic';
 
 export default async function router(schema: any, config: Config) {

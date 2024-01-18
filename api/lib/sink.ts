@@ -1,6 +1,6 @@
-import { ConnectionSink } from './schema.ts';
+import { ConnectionSink } from './schema.js';
 import { InferSelectModel } from 'drizzle-orm';
-import Config from './config.ts';
+import Config from './config.js';
 
 export default class SinkInterface {
     static sink_name(): string {

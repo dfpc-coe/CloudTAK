@@ -1,8 +1,8 @@
 import Err from '@openaddresses/batch-error';
-import { Server, Connection } from './schema.ts';
-import Sinks from './sinks.ts';
-import Config from './config.ts';
-import Metrics from './aws/metric.ts';
+import { Server, Connection } from './schema.js';
+import Sinks from './sinks.js';
+import Config from './config.js';
+import Metrics from './aws/metric.js';
 import { WebSocket } from 'ws';
 import TAK, { CoT } from '@tak-ps/node-tak';
 import { type InferSelectModel } from 'drizzle-orm';

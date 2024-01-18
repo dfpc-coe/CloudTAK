@@ -2,19 +2,19 @@ import Err from '@openaddresses/batch-error';
 import busboy from 'busboy';
 import fs from 'node:fs/promises';
 import path from 'path';
-import { Data, DataMission } from '../lib/schema.ts';
-import Auth from '../lib/auth.ts';
-import S3 from '../lib/aws/s3.ts';
+import { Data, DataMission } from '../lib/schema.js';
+import Auth from '../lib/auth.js';
+import S3 from '../lib/aws/s3.js';
 import Stream from 'node:stream';
-import Batch from '../lib/aws/batch.ts';
+import Batch from '../lib/aws/batch.js';
 import jwt from 'jsonwebtoken';
 import { includesWithGlob } from "array-includes-with-glob";
-import assetList from '../lib/asset.ts';
-import { augment } from './data.ts';
+import assetList from '../lib/asset.js';
+import { augment } from './data.js';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
 import Modeler from '@openaddresses/batch-generic';
-import Config from '../lib/config.ts';
+import Config from '../lib/config.js';
 
 export default async function router(schema: any, config: Config) {
     const DataModel = new Modeler(config.pg, Data);

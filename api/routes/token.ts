@@ -1,9 +1,9 @@
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
 import Err from '@openaddresses/batch-error';
-import Auth from '../lib/auth.ts';
-import { Token } from '../lib/schema.ts';
-import Config from '../lib/config.ts';
+import Auth from '../lib/auth.js';
+import { Token } from '../lib/schema.js';
+import Config from '../lib/config.js';
 import { promisify } from 'util';
 import crypto from 'crypto';
 import Modeler, { Param } from '@openaddresses/batch-generic';

@@ -1,6 +1,6 @@
-import Schedule from './schedule.ts';
+import Schedule from './schedule.js';
 import Bree from 'bree';
-import { Layer } from './schema.ts';
+import { Layer } from './schema.js';
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import { type InferSelectModel } from 'drizzle-orm';
 import Modeler from '@openaddresses/batch-generic';

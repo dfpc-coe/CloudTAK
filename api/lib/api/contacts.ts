@@ -1,4 +1,4 @@
-import TAKAPI from '../tak-api.ts';
+import TAKAPI from '../tak-api.js';
 
 export default class {
     api: TAKAPI;

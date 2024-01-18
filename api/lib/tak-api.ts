@@ -1,9 +1,9 @@
-import Mission from './api/mission.ts';
-import MissionLog from './api/mission-log.ts';
-import Credentials from './api/credentials.ts';
-import Contacts from './api/contacts.ts';
-import Files from './api/files.ts';
-import Group from './api/groups.ts';
+import Mission from './api/mission.js';
+import MissionLog from './api/mission-log.js';
+import Credentials from './api/credentials.js';
+import Contacts from './api/contacts.js';
+import Files from './api/files.js';
+import Group from './api/groups.js';
 import { CookieJar, Cookie } from 'tough-cookie';
 import { CookieAgent } from 'http-cookie-agent/undici';
 import Err from '@openaddresses/batch-error';

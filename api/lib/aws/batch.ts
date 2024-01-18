@@ -1,11 +1,11 @@
 // @ts-ignore
 import cf from '@openaddresses/cloudfriend';
 import AWSBatch from '@aws-sdk/client-batch';
-import Config from '../config.ts';
+import Config from '../config.js';
 import jwt from 'jsonwebtoken';
 import Err from '@openaddresses/batch-error';
 import process from 'node:process';
-import { Data } from '../schema.ts';
+import { Data } from '../schema.js';
 import { type InferSelectModel } from 'drizzle-orm';
 
 export interface BatchJob {

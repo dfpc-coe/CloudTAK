@@ -1,5 +1,5 @@
 import { sql } from 'drizzle-orm';
-import { StyleContainer } from './style.ts';
+import { StyleContainer } from './style.js';
 import { geometry, GeometryType } from '@openaddresses/batch-generic';
 
 import {
