@@ -11,6 +11,9 @@
         "updated": {
             "$ref": "./imports/updated.json"
         },
+        "name": {
+            "$ref": "./imports/name.json"
+        },
         "status": {
             "$ref": "./imports/status.json"
         },
@@ -20,33 +23,30 @@
         "result": {
             "$ref": "./imports/result.json"
         },
-        "name": {
-            "$ref": "./imports/name.json"
-        },
         "username": {
             "$ref": "./imports/username.json"
         },
         "mode": {
             "$ref": "./imports/mode.json"
         },
-        "config": {
-            "$ref": "./imports/config.json"
-        },
         "mode_id": {
             "$ref": "./imports/mode_id.json"
+        },
+        "config": {
+            "$ref": "./imports/config.json"
         }
     },
     "required": [
         "id",
         "created",
         "updated",
+        "name",
         "status",
         "error",
         "result",
-        "name",
         "username",
         "mode",
-        "config",
-        "mode_id"
+        "mode_id",
+        "config"
     ]
 }

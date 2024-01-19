@@ -4,5 +4,5 @@
         "null"
     ],
     "description": "",
-    "$comment": "text"
+    "$comment": "varchar"
 }
