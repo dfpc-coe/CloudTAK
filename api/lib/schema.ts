@@ -15,8 +15,8 @@ import {
 
 export const Basemap = pgTable('basemaps', {
     id: serial('id').primaryKey(),
-    created: timestamp('created').notNull().default(sql`Now()`),
-    updated: timestamp('updated').notNull().default(sql`Now()`),
+    created: timestamp('created', { withTimezone: true }).notNull().default(sql`Now()`),
+    updated: timestamp('updated', { withTimezone: true }).notNull().default(sql`Now()`),
     name: varchar('name').notNull(),
     url: varchar('url').notNull(),
     bounds: geometry('bounds', { type: GeometryType.Polygon, srid: 4326 }),
@@ -33,8 +33,8 @@ export const Profile = pgTable('profile', {
         cert?: string;
         key?: string;
     }>().notNull().default({}),
-    created: timestamp('created').notNull().default(sql`Now()`),
-    updated: timestamp('updated').notNull().default(sql`Now()`),
+    created: timestamp('created', { withTimezone: true }).notNull().default(sql`Now()`),
+    updated: timestamp('updated', { withTimezone: true }).notNull().default(sql`Now()`),
     tak_callsign: varchar('tak_callsign').notNull().default('CloudTAK User'),
     tak_group: varchar('tak_group').notNull().default('Orange'),
     tak_role: varchar('tak_role').notNull().default('Team Member'),
@@ -43,8 +43,8 @@ export const Profile = pgTable('profile', {
 
 export const Import = pgTable('imports', {
     id: varchar('id').primaryKey(),
-    created: timestamp('created').notNull().default(sql`Now()`),
-    updated: timestamp('updated').notNull().default(sql`Now()`),
+    created: timestamp('created', { withTimezone: true }).notNull().default(sql`Now()`),
+    updated: timestamp('updated', { withTimezone: true }).notNull().default(sql`Now()`),
     name: varchar('name').notNull(),
     status: varchar('status').notNull().default('Pending'),
     error: varchar('error'),
@@ -57,8 +57,8 @@ export const Import = pgTable('imports', {
 
 export const Iconset = pgTable('iconsets', {
     uid: varchar('uid').primaryKey(),
-    created: timestamp('created').notNull().default(sql`Now()`),
-    updated: timestamp('updated').notNull().default(sql`Now()`),
+    created: timestamp('created', { withTimezone: true }).notNull().default(sql`Now()`),
+    updated: timestamp('updated', { withTimezone: true }).notNull().default(sql`Now()`),
     version: integer('version').notNull(),
     name: varchar('name').notNull(),
     default_group: varchar('default_group'),
@@ -71,8 +71,8 @@ export const Iconset = pgTable('iconsets', {
 
 export const Icon = pgTable('icons', {
     id: serial('id').primaryKey(),
-    created: timestamp('created').notNull().default(sql`Now()`),
-    updated: timestamp('updated').notNull().default(sql`Now()`),
+    created: timestamp('created', { withTimezone: true }).notNull().default(sql`Now()`),
+    updated: timestamp('updated', { withTimezone: true }).notNull().default(sql`Now()`),
     name: varchar('name').notNull(),
     iconset: varchar('iconset').notNull().references(() => Iconset.uid),
     type2525b: varchar('type2525b'),
@@ -82,8 +82,8 @@ export const Icon = pgTable('icons', {
 
 export const Connection = pgTable('connections', {
     id: serial('id').primaryKey(),
-    created: timestamp('created').notNull().default(sql`Now()`),
-    updated: timestamp('updated').notNull().default(sql`Now()`),
+    created: timestamp('created', { withTimezone: true }).notNull().default(sql`Now()`),
+    updated: timestamp('updated', { withTimezone: true }).notNull().default(sql`Now()`),
     name: varchar('name').notNull(),
     description: varchar('description').notNull().default(''),
     enabled: boolean('enabled').notNull().default(true),
@@ -95,22 +95,22 @@ export const Connection = pgTable('connections', {
 
 export const ConnectionSink = pgTable('connection_sinks', {
     id: serial('id').primaryKey(),
-    created: timestamp('created').notNull().default(sql`Now()`),
-    updated: timestamp('updated').notNull().default(sql`Now()`),
+    created: timestamp('created', { withTimezone: true }).notNull().default(sql`Now()`),
+    updated: timestamp('updated', { withTimezone: true }).notNull().default(sql`Now()`),
     name: varchar('name').notNull(),
     enabled: boolean('enabled').notNull().default(true),
     connection: bigint('connection', {
         mode: 'number'
     }).notNull().references(() => Connection.id),
-    type: varchar('name').notNull(),
+    type: varchar('type').notNull(),
     body: json('body').notNull().default({}),
     logging: boolean('logging').notNull().default(false)
 });
 
 export const Data = pgTable('data', {
     id: serial('id').primaryKey(),
-    created: timestamp('created').notNull().default(sql`Now()`),
-    updated: timestamp('updated').notNull().default(sql`Now()`),
+    created: timestamp('created', { withTimezone: true }).notNull().default(sql`Now()`),
+    updated: timestamp('updated', { withTimezone: true }).notNull().default(sql`Now()`),
     name: varchar('name').notNull(),
     description: varchar('description').notNull().default(''),
     auto_transform: boolean('auto_transform').notNull().default(false),
@@ -131,8 +131,8 @@ export const DataMission = pgTable('data_mission', {
 
 export const Layer = pgTable('layers', {
     id: serial('id').primaryKey(),
-    created: timestamp('created').notNull().default(sql`Now()`),
-    updated: timestamp('updated').notNull().default(sql`Now()`),
+    created: timestamp('created', { withTimezone: true }).notNull().default(sql`Now()`),
+    updated: timestamp('updated', { withTimezone: true }).notNull().default(sql`Now()`),
     name: varchar('name').notNull(),
     description: varchar('description').notNull().default(''),
     enabled: boolean('enabled').notNull().default(true),
@@ -145,7 +145,7 @@ export const Layer = pgTable('layers', {
         mode: 'number'
     }).notNull().references(() => Connection.id),
     cron: varchar('cron'),
-    environment: json('styles').notNull().default({}),
+    environment: json('environment').notNull().default({}),
     memory: integer('memory').notNull().default(128),
     timeout: integer('timeout').notNull().default(128),
     data: bigint('data', {
@@ -156,8 +156,8 @@ export const Layer = pgTable('layers', {
 
 export const LayerAlert = pgTable('layer_alerts', {
     id: serial('id').primaryKey(),
-    created: timestamp('created').notNull().default(sql`Now()`),
-    updated: timestamp('updated').notNull().default(sql`Now()`),
+    created: timestamp('created', { withTimezone: true }).notNull().default(sql`Now()`),
+    updated: timestamp('updated', { withTimezone: true }).notNull().default(sql`Now()`),
     layer: bigint('layer', {
         mode: 'number'
     }).notNull().references(() => Layer.id),
@@ -170,8 +170,8 @@ export const LayerAlert = pgTable('layer_alerts', {
 
 export const Server = pgTable('server', {
     id: serial('id').primaryKey(),
-    created: timestamp('created').notNull().default(sql`Now()`),
-    updated: timestamp('updated').notNull().default(sql`Now()`),
+    created: timestamp('created', { withTimezone: true }).notNull().default(sql`Now()`),
+    updated: timestamp('updated', { withTimezone: true }).notNull().default(sql`Now()`),
     name: varchar('name').notNull().default('Default'),
     url: varchar('url').notNull(),
     auth: json('auth').$type<{
@@ -186,16 +186,16 @@ export const Token = pgTable('tokens', {
     email: varchar('email').notNull(),
     name: varchar('name').notNull(),
     token: varchar('token').notNull(),
-    created: timestamp('created').notNull().default(sql`Now()`),
-    updated: timestamp('updated').notNull().default(sql`Now()`),
+    created: timestamp('created', { withTimezone: true }).notNull().default(sql`Now()`),
+    updated: timestamp('updated', { withTimezone: true }).notNull().default(sql`Now()`),
 });
 
 export const ProfileOverlay = pgTable('profile_overlays', {
     id: serial('id').primaryKey(),
     name: varchar('name').notNull(),
     username: varchar('username').notNull().references(() => Profile.username),
-    created: timestamp('created').notNull().default(sql`Now()`),
-    updated: timestamp('updated').notNull().default(sql`Now()`),
+    created: timestamp('created', { withTimezone: true }).notNull().default(sql`Now()`),
+    updated: timestamp('updated', { withTimezone: true }).notNull().default(sql`Now()`),
     pos: integer('pos').notNull().default(5),
     type: varchar('type').notNull().default('vector'),
     opacity: integer('opacity').notNull().default(1),

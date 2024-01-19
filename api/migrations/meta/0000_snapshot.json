@@ -1,5 +1,5 @@
 {
-  "id": "0febc029-748a-4084-a4fd-09fd30f3fb0d",
+  "id": "ce4e0253-091c-4676-b215-72b4c3a65436",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "5",
   "dialect": "pg",
@@ -16,14 +16,14 @@
         },
         "created": {
           "name": "created",
-          "type": "timestamp",
+          "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true,
           "default": "Now()"
         },
         "updated": {
           "name": "updated",
-          "type": "timestamp",
+          "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true,
           "default": "Now()"
@@ -39,6 +39,18 @@
           "type": "varchar",
           "primaryKey": false,
           "notNull": true
+        },
+        "bounds": {
+          "name": "bounds",
+          "type": "GEOMETRY(POLYGON, 4326)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "center": {
+          "name": "center",
+          "type": "GEOMETRY(POINT, 4326)",
+          "primaryKey": false,
+          "notNull": false
         },
         "minzoom": {
           "name": "minzoom",
@@ -86,14 +98,14 @@
         },
         "created": {
           "name": "created",
-          "type": "timestamp",
+          "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true,
           "default": "Now()"
         },
         "updated": {
           "name": "updated",
-          "type": "timestamp",
+          "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true,
           "default": "Now()"
@@ -143,14 +155,14 @@
         },
         "created": {
           "name": "created",
-          "type": "timestamp",
+          "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true,
           "default": "Now()"
         },
         "updated": {
           "name": "updated",
-          "type": "timestamp",
+          "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true,
           "default": "Now()"
@@ -195,7 +207,6 @@
           "name": "connection_sinks_connection_connections_id_fk",
           "tableFrom": "connection_sinks",
           "tableTo": "connections",
-          "schemaTo": "public",
           "columnsFrom": [
             "connection"
           ],
@@ -221,14 +232,14 @@
         },
         "created": {
           "name": "created",
-          "type": "timestamp",
+          "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true,
           "default": "Now()"
         },
         "updated": {
           "name": "updated",
-          "type": "timestamp",
+          "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true,
           "default": "Now()"
@@ -266,7 +277,6 @@
           "name": "data_connection_connections_id_fk",
           "tableFrom": "data",
           "tableTo": "connections",
-          "schemaTo": "public",
           "columnsFrom": [
             "connection"
           ],
@@ -323,7 +333,6 @@
           "name": "data_mission_data_data_id_fk",
           "tableFrom": "data_mission",
           "tableTo": "data",
-          "schemaTo": "public",
           "columnsFrom": [
             "data"
           ],
@@ -349,14 +358,14 @@
         },
         "created": {
           "name": "created",
-          "type": "timestamp",
+          "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true,
           "default": "Now()"
         },
         "updated": {
           "name": "updated",
-          "type": "timestamp",
+          "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true,
           "default": "Now()"
@@ -398,7 +407,6 @@
           "name": "icons_iconset_iconsets_uid_fk",
           "tableFrom": "icons",
           "tableTo": "iconsets",
-          "schemaTo": "public",
           "columnsFrom": [
             "iconset"
           ],
@@ -424,14 +432,14 @@
         },
         "created": {
           "name": "created",
-          "type": "timestamp",
+          "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true,
           "default": "Now()"
         },
         "updated": {
           "name": "updated",
-          "type": "timestamp",
+          "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true,
           "default": "Now()"
@@ -503,14 +511,14 @@
         },
         "created": {
           "name": "created",
-          "type": "timestamp",
+          "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true,
           "default": "Now()"
         },
         "updated": {
           "name": "updated",
-          "type": "timestamp",
+          "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true,
           "default": "Now()"
@@ -574,7 +582,6 @@
           "name": "imports_username_profile_username_fk",
           "tableFrom": "imports",
           "tableTo": "profile",
-          "schemaTo": "public",
           "columnsFrom": [
             "username"
           ],
@@ -600,14 +607,14 @@
         },
         "created": {
           "name": "created",
-          "type": "timestamp",
+          "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true,
           "default": "Now()"
         },
         "updated": {
           "name": "updated",
-          "type": "timestamp",
+          "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true,
           "default": "Now()"
@@ -712,7 +719,6 @@
           "name": "layers_connection_connections_id_fk",
           "tableFrom": "layers",
           "tableTo": "connections",
-          "schemaTo": "public",
           "columnsFrom": [
             "connection"
           ],
@@ -726,7 +732,6 @@
           "name": "layers_data_data_id_fk",
           "tableFrom": "layers",
           "tableTo": "data",
-          "schemaTo": "public",
           "columnsFrom": [
             "data"
           ],
@@ -752,14 +757,14 @@
         },
         "created": {
           "name": "created",
-          "type": "timestamp",
+          "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true,
           "default": "Now()"
         },
         "updated": {
           "name": "updated",
-          "type": "timestamp",
+          "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true,
           "default": "Now()"
@@ -811,7 +816,6 @@
           "name": "layer_alerts_layer_layers_id_fk",
           "tableFrom": "layer_alerts",
           "tableTo": "layers",
-          "schemaTo": "public",
           "columnsFrom": [
             "layer"
           ],
@@ -844,14 +848,14 @@
         },
         "created": {
           "name": "created",
-          "type": "timestamp",
+          "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true,
           "default": "Now()"
         },
         "updated": {
           "name": "updated",
-          "type": "timestamp",
+          "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true,
           "default": "Now()"
@@ -876,6 +880,12 @@
           "primaryKey": false,
           "notNull": true,
           "default": "'Team Member'"
+        },
+        "tak_loc": {
+          "name": "tak_loc",
+          "type": "GEOMETRY(POINT, 4326)",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "indexes": {},
@@ -907,14 +917,14 @@
         },
         "created": {
           "name": "created",
-          "type": "timestamp",
+          "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true,
           "default": "Now()"
         },
         "updated": {
           "name": "updated",
-          "type": "timestamp",
+          "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true,
           "default": "Now()"
@@ -972,7 +982,6 @@
           "name": "profile_overlays_username_profile_username_fk",
           "tableFrom": "profile_overlays",
           "tableTo": "profile",
-          "schemaTo": "public",
           "columnsFrom": [
             "username"
           ],
@@ -998,14 +1007,14 @@
         },
         "created": {
           "name": "created",
-          "type": "timestamp",
+          "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true,
           "default": "Now()"
         },
         "updated": {
           "name": "updated",
-          "type": "timestamp",
+          "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true,
           "default": "Now()"
@@ -1073,14 +1082,14 @@
         },
         "created": {
           "name": "created",
-          "type": "timestamp",
+          "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true,
           "default": "Now()"
         },
         "updated": {
           "name": "updated",
-          "type": "timestamp",
+          "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true,
           "default": "Now()"
