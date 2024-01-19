@@ -4,6 +4,7 @@ import { Layer } from './schema.js';
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import { type InferSelectModel } from 'drizzle-orm';
 import Modeler from '@openaddresses/batch-generic';
+import * as pgtypes from './schema.js'
 
 /**
  * Maintain a pool of Events - this pool handles second level
@@ -38,7 +39,7 @@ export default class EventsPool {
      *
      * @param pool        Postgres Pool
      */
-    async init(pool: PostgresJsDatabase<typeof import("/home/null/Development/dfpc-coe/etl/api/lib/schema.js")>): Promise<void> {
+    async init(pool: PostgresJsDatabase<typeof pgtypes>): Promise<void> {
         const LayerModel = new Modeler(pool, Layer);
         const layers: InferSelectModel<typeof Layer>[] = [];
 

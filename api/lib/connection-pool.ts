@@ -8,6 +8,7 @@ import TAK, { CoT } from '@tak-ps/node-tak';
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import Modeler from '@openaddresses/batch-generic';
 import { InferSelectModel } from 'drizzle-orm';
+import * as pgtypes from './schema.js';
 
 export type EphemeralConnection = {
     id: string;
@@ -72,7 +73,7 @@ class ConnectionClient {
  */
 export default class ConnectionPool extends Map<number | string, ConnectionClient> {
     #server: InferSelectModel<typeof Server>;
-    pg: PostgresJsDatabase<typeof import("/home/null/Development/dfpc-coe/etl/api/lib/schema.js")>;
+    pg: PostgresJsDatabase<typeof pgtypes>;
     wsClients: Map<string, ConnectionWebSocket[]>;
     metrics: Metrics;
     sinks: Sinks;
