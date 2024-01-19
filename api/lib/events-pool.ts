@@ -38,7 +38,7 @@ export default class EventsPool {
      *
      * @param pool        Postgres Pool
      */
-    async init(pool: PostgresJsDatabase<typeof import("/home/null/Development/dfpc-coe/etl/api/lib/schema")>): Promise<void> {
+    async init(pool: PostgresJsDatabase<typeof import("/home/null/Development/dfpc-coe/etl/api/lib/schema.js")>): Promise<void> {
         const LayerModel = new Modeler(pool, Layer);
         const layers: InferSelectModel<typeof Layer>[] = [];
 
