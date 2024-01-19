@@ -11,9 +11,10 @@ import drop from './drop.js';
 import { pathToRegexp } from 'path-to-regexp';
 import test from 'tape';
 import Ajv from 'ajv';
+import addFormats from 'ajv-formats';
 import * as pgschema from '../lib/schema.js';
 import { Pool } from '@openaddresses/batch-generic';
-const ajv = new Ajv({ allErrors: true });
+const ajv = addFormats(new Ajv({ allErrors: true }));
 
 /**
  * @class
