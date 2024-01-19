@@ -6,6 +6,7 @@ import Cacher from './cacher.js';
 import { Server } from './schema.js';
 import { type InferSelectModel } from 'drizzle-orm';
 import process from 'node:process';
+import * as pgtypes from './schema.js';
 
 interface ConfigArgs {
     silent: boolean,
@@ -35,7 +36,7 @@ export default class Config {
     DynamoDB: string;
     wsClients: Map<string, ConnectionWebSocket[]>;
     Bucket?: string;
-    pg?: Pool<typeof import("/home/null/Development/dfpc-coe/etl/api/lib/schema")>;
+    pg?: Pool<typeof pgtypes>;
     cacher?: Cacher;
     conns?: ConnectionPool;
     server?: InferSelectModel<typeof Server>;
