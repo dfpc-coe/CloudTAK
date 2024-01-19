@@ -1,5 +1,5 @@
 {
-  "id": "ce4e0253-091c-4676-b215-72b4c3a65436",
+  "id": "82f2b54b-387a-4da3-9471-66a0f6269a03",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "5",
   "dialect": "pg",
@@ -183,6 +183,12 @@
         "connection": {
           "name": "connection",
           "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "type": {
+          "name": "type",
+          "type": "varchar",
           "primaryKey": false,
           "notNull": true
         },
@@ -684,6 +690,13 @@
           "type": "varchar",
           "primaryKey": false,
           "notNull": false
+        },
+        "environment": {
+          "name": "environment",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'::json"
         },
         "memory": {
           "name": "memory",
