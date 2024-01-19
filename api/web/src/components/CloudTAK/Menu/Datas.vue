@@ -48,13 +48,13 @@
         </template>
         <template v-else>
             <TablerNone
-                v-if='!list.data.length'
+                v-if='!list.items.length'
                 label='Data'
                 @create='$router.push("/data/new")'
             />
             <template v-else>
                 <div class='modal-body mx-3 my-2'>
-                    <div @click='data = d' :key='d.id' v-for='d in list.data' class='cursor-pointer col-12 row py-2 rounded hover-dark'>
+                    <div @click='data = d' :key='d.id' v-for='d in list.items' class='cursor-pointer col-12 row py-2 rounded hover-dark'>
                         <div class='col-12 py-2 px-2 d-flex align-items-center'>
                             <IconFolder/><span class="mx-2" v-text='d.name'></span>
                         </div>
