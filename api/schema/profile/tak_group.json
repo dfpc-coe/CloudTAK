@@ -1,7 +1,7 @@
 {
     "type": "string",
     "description": "",
-    "$comment": "text",
+    "$comment": "varchar",
     "enum": [
         "White",
         "Yellow",
