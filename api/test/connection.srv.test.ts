@@ -18,7 +18,7 @@ test('GET: api/connection', async (t) => {
 
         t.deepEquals(res.body, {
             total: 0,
-            connections: [],
+            items: [],
             status: {
                 dead: 0,
                 live: 0,
