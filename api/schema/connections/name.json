@@ -1,5 +1,5 @@
 {
     "type": "string",
-    "description": "Unique human readable name",
-    "$comment": "text"
+    "description": "",
+    "$comment": "varchar"
 }
