@@ -67,7 +67,10 @@ export default class Flight {
                 if (dropdb) {
                     const connstr = process.env.POSTGRES || 'postgres://postgres@localhost:5432/tak_ps_etl';
                     await drop(connstr);
-                    const pool = await Pool.connect(connstr, { schema: pgschema });
+                    const pool = await Pool.connect(connstr, {
+                        migrationsFolder: (new URL('../migrations', import.meta.url)).pathname,
+                        schema: pgschema
+                    });
                     console.error('POOL', pool);
                     //pool.end();
                 }

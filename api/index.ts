@@ -70,7 +70,9 @@ export default async function server(config: Config) {
         console.log(`ok - failed to flush cache: ${err.message}`);
     }
 
+    console.error((new URL('./migrations', import.meta.url)).pathname)
     config.pg = await Pool.connect(process.env.POSTGRES || args.postgres || 'postgres://postgres@localhost:5432/tak_ps_etl', pgschema, {
+        migrationsFolder: (new URL('./migrations', import.meta.url)).pathname,
         jsonschema: {
             dir: new URL('./schema', import.meta.url)
         }
