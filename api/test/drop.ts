@@ -1,7 +1,7 @@
 import postgres from 'postgres'
 
-export default async function drop() {
-    const client = postgres(process.env.POSTGRES || 'postgres://postgres@localhost:5432/tak_ps_etl')
+export default async function drop(connstr: string) {
+    const client = postgres(connstr)
 
     const pgres = await client`
         SELECT
@@ -14,7 +14,7 @@ export default async function drop() {
     `;
 
     for (const r of pgres) {
-        await client`r.drop`;
+        await client.unsafe(r.drop);
     }
 
     client.end();
