@@ -1,12 +1,9 @@
-import PG from 'pg';
-const Pool = PG.Pool;
+import postgres from 'postgres'
 
 export default async function drop() {
-    const pool = new Pool({
-        connectionString: process.env.POSTGRES || 'postgres://postgres@localhost:5432/tak_ps_etl'
-    });
+    const client = postgres(process.env.POSTGRES || 'postgres://postgres@localhost:5432/tak_ps_etl')
 
-    const pgres = await pool.query(`
+    const pgres = await client`
         SELECT
             'drop table "' || tablename || '" cascade;' AS drop
         FROM
@@ -14,11 +11,11 @@ export default async function drop() {
         WHERE
             schemaname = 'public'
             AND tablename != 'spatial_ref_sys'
-    `);
+    `;
 
-    for (const r of pgres.rows) {
-        await pool.query(r.drop);
+    for (const r of pgres) {
+        await client`r.drop`;
     }
 
-    await pool.end();
+    client.end();
 }
