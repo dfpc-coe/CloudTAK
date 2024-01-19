@@ -13,6 +13,7 @@ export default async function drop(connstr: string) {
             AND tablename != 'spatial_ref_sys'
     `;
 
+    await client`DROP SCHEMA drizzle CASCADE`;
     for (const r of pgres) {
         await client.unsafe(r.drop);
     }
