@@ -7,12 +7,12 @@ import jwt from 'jsonwebtoken';
 import fs from 'fs';
 import api from '../index.js';
 import Config from '../lib/config.js';
-import Knex from 'knex';
-import KnexConfig from '../knexfile.js';
 import drop from './drop.js';
 import { pathToRegexp } from 'path-to-regexp';
 import test from 'tape';
 import Ajv from 'ajv';
+import * as pgschema from '../lib/schema.js';
+import { Pool } from '@openaddresses/batch-generic';
 const ajv = new Ajv({ allErrors: true });
 
 /**
@@ -65,10 +65,11 @@ export default class Flight {
         test('start: database', async (t) => {
             try {
                 if (dropdb) {
-                    await drop();
-                    const knex = Knex(KnexConfig);
-                    await knex.migrate.latest();
-                    await knex.destroy();
+                    const connstr = process.env.POSTGRES || 'postgres://postgres@localhost:5432/tak_ps_etl';
+                    await drop(connstr);
+                    const pool = await Pool.connect(connstr, { schema: pgschema });
+                    console.error('POOL', pool);
+                    //pool.end();
                 }
             } catch (err) {
                 t.error(err);
@@ -248,7 +249,7 @@ export default class Flight {
     landing() {
         test('test server landing - api', (t) => {
             this.srv.close(async () => {
-                await this.config.pool.end();
+                //await this.config.pool.end();
                 this.config.cacher.end();
                 delete this.config;
                 delete this.srv;
