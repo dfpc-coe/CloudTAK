@@ -36,7 +36,8 @@
                     <div v-text='a.callsign'></div>
                     <div v-text='a.notes.trim()' class='subheader'></div>
                 </div>
-                <div class='col-auto ms-auto'>
+                <div class='col-auto ms-auto btn-list'>
+                    <IconMessage @click='$emit("chat", a.uid)' v-if='isChatable(a)' v-tooltip='"Start Chat"' class='cursor-pointer'/>
                     <IconZoomPan @click='flyTo(a)' v-if='isZoomable(a)' v-tooltip='"Zoom To"' class='cursor-pointer'/>
                 </div>
             </div>
@@ -51,6 +52,7 @@ import {
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import {
+    IconMessage,
     IconZoomPan,
     IconRefresh,
     IconCircleFilled,
@@ -84,6 +86,11 @@ export default {
         isZoomable: function(contact) {
             return cotStore.cots.has(contact.uid);
         },
+        isChatable: function(contact) {
+            if (!cotStore.cots.has(contact.uid)) return false;
+            const cot = cotStore.cots.get(contact.uid);
+            return cot.properties.contact && cot.properties.contact.endpoint;
+        },
         flyTo: function(contact) {
             const flyTo = {
                 speed: Infinity,
@@ -102,6 +109,7 @@ export default {
         },
     },
     components: {
+        IconMessage,
         IconZoomPan,
         TablerNone,
         TablerLoading,
