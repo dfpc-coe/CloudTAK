@@ -320,7 +320,7 @@ export default {
                                 cf.sub('{{resolve:secretsmanager:${AWS::StackName}/rds/secret:SecretString:password:AWSCURRENT}}'),
                                 '@',
                                 cf.getAtt('DBInstance', 'Endpoint.Address'),
-                                ':5432/tak_ps_etl'
+                                ':5432/tak_ps_etl?sslmode=require'
                             ])
                         },
                         { Name: 'HookURL', Value: cf.ref('HookQueue') },
