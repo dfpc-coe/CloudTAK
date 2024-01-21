@@ -43,7 +43,7 @@ test('GET: api/connection/1', async (t) => {
 
         t.deepEquals(res.body, {
             status: 404,
-            message: 'connections not found',
+            message: 'Item Not Found',
             messages: []
         });
     } catch (err) {
