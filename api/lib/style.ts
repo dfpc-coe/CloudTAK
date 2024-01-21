@@ -1,9 +1,7 @@
 import jsonata from 'jsonata';
 import { Feature } from 'geojson';
-import { Layer } from './schema.js';
 import handlebars from 'handlebars';
 import Err from '@openaddresses/batch-error';
-import { type InferSelectModel } from 'drizzle-orm';
 
 export type StyleContainer = {
     line?: StyleLine;
@@ -49,6 +47,12 @@ export type StylePolygon = {
     callsign?: string;
 };
 
+export interface StyleInterface {
+    stale: number;    
+    enabled_styles: boolean;
+    styles: StyleContainer;
+}
+
 
 /**
  * Apply layer styling to CoT Messages
@@ -57,10 +61,10 @@ export type StylePolygon = {
  * @prop layer - Layer object
  */
 export default class Style {
-    layer: InferSelectModel<typeof Layer>;
+    style: StyleInterface;
 
-    constructor(layer: InferSelectModel<typeof Layer>) {
-        this.layer = layer;
+    constructor(style: StyleInterface) {
+        this.style = style;
     }
 
     static validate(styles: StyleContainer) {
@@ -84,14 +88,14 @@ export default class Style {
      * @returns             GeoJSON Feature
      */
     async feat(feature: Feature): Promise<Feature> {
-        if (this.layer.stale && !feature.properties.stale) {
-            feature.properties.stale = this.layer.stale;
+        if (this.style.stale && !feature.properties.stale) {
+            feature.properties.stale = this.style.stale;
         }
 
-        if (!this.layer.enabled_styles) {
+        if (!this.style.enabled_styles) {
             return feature;
-        } else if (this.layer.styles.queries) {
-            for (const q of this.layer.styles.queries) {
+        } else if (this.style.styles.queries) {
+            for (const q of this.style.styles.queries) {
                 const expression = jsonata(q.query);
 
                 if (await expression.evaluate(feature) === true) {
@@ -101,7 +105,7 @@ export default class Style {
 
             return feature;
         } else {
-            this.#by_geom(this.layer.styles, feature);
+            this.#by_geom(this.style.styles, feature);
 
             return feature;
         }
