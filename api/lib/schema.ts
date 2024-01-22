@@ -181,10 +181,10 @@ export const Server = pgTable('server', {
 });
 
 export const Token = pgTable('tokens', {
-    id: serial('id').primaryKey(),
+    id: serial('id').notNull(),
     email: text('email').notNull(),
     name: text('name').notNull(),
-    token: text('token').notNull(),
+    token: text('token').primaryKey(),
     created: timestamp('created', { withTimezone: true }).notNull().default(sql`Now()`),
     updated: timestamp('updated', { withTimezone: true }).notNull().default(sql`Now()`),
 });
