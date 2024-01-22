@@ -15,7 +15,7 @@ import {
 
 /** Internal Tables for Postgis for use with drizzle-kit push:pg */
 export const SpatialRefSys = pgTable('spatial_ref_sys', {
-    srid: integer('srid').notNull(),
+    srid: integer('srid').primaryKey(),
     auth_name: varchar('auth_name', { length: 256 }),
     auth_srid: integer('auth_srid'),
     srtext: varchar('srtext', { length: 2048 }),
