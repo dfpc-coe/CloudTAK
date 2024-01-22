@@ -91,6 +91,12 @@ ALTER TABLE IF EXISTS profile
     ALTER COLUMN auth TYPE JSON;
 ALTER TABLE IF EXISTS connection
     ALTER COLUMN auth TYPE JSON;
+ALTER TABLE IF EXISTS server
+    ALTER COLUMN auth TYPE JSON;
+ALTER TABLE IF EXISTS profile_overlays
+    ALTER COLUMN pos TYPE INTEGER;
+ALTER TABLE IF EXISTS layers
+    ALTER COLUMN styles TYPE JSON;
 
 
 CREATE TABLE IF NOT EXISTS "basemaps" (
@@ -123,7 +129,7 @@ CREATE TABLE IF NOT EXISTS "connection_sinks" (
 	"updated" timestamp with time zone DEFAULT Now() NOT NULL,
 	"name" text NOT NULL,
 	"enabled" boolean DEFAULT true NOT NULL,
-	"connection" bigint NOT NULL,
+	"connection" integer NOT NULL,
 	"type" text NOT NULL,
 	"body" json DEFAULT '{}'::json NOT NULL,
 	"logging" boolean DEFAULT false NOT NULL
@@ -136,14 +142,14 @@ CREATE TABLE IF NOT EXISTS "data" (
 	"name" text NOT NULL,
 	"description" text DEFAULT '' NOT NULL,
 	"auto_transform" boolean DEFAULT false NOT NULL,
-	"connection" bigint NOT NULL
+	"connection" integer NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "data_mission" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"mission" text NOT NULL,
 	"enabled" boolean DEFAULT true NOT NULL,
-	"data" bigint NOT NULL,
+	"data" integer NOT NULL,
 	"assets" json DEFAULT '["*"]'::json NOT NULL
 );
 --> statement-breakpoint
@@ -198,12 +204,12 @@ CREATE TABLE IF NOT EXISTS "layers" (
 	"logging" boolean DEFAULT true NOT NULL,
 	"stale" integer DEFAULT 20000 NOT NULL,
 	"task" text NOT NULL,
-	"connection" bigint NOT NULL,
+	"connection" integer NOT NULL,
 	"cron" text,
 	"environment" json DEFAULT '{}'::json NOT NULL,
 	"memory" integer DEFAULT 128 NOT NULL,
 	"timeout" integer DEFAULT 128 NOT NULL,
-	"data" bigint NOT NULL,
+	"data" integer NOT NULL,
 	"schema" json DEFAULT '{}'::json NOT NULL
 );
 --> statement-breakpoint
@@ -211,7 +217,7 @@ CREATE TABLE IF NOT EXISTS "layer_alerts" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"created" timestamp with time zone DEFAULT Now() NOT NULL,
 	"updated" timestamp with time zone DEFAULT Now() NOT NULL,
-	"layer" bigint NOT NULL,
+	"layer" integer NOT NULL,
 	"icon" text DEFAULT 'alert-circle' NOT NULL,
 	"priority" text DEFAULT 'yellow' NOT NULL,
 	"title" text NOT NULL,
