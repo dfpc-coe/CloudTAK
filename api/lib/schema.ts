@@ -110,9 +110,7 @@ export const ConnectionSink = pgTable('connection_sinks', {
     updated: timestamp('updated', { withTimezone: true }).notNull().default(sql`Now()`),
     name: text('name').notNull(),
     enabled: boolean('enabled').notNull().default(true),
-    connection: integer('connection', {
-        mode: 'number'
-    }).notNull().references(() => Connection.id),
+    connection: integer('connection').notNull().references(() => Connection.id),
     type: text('type').notNull(),
     body: json('body').notNull().default({}),
     logging: boolean('logging').notNull().default(false)
@@ -125,18 +123,14 @@ export const Data = pgTable('data', {
     name: text('name').notNull(),
     description: text('description').notNull().default(''),
     auto_transform: boolean('auto_transform').notNull().default(false),
-    connection: integer('connection', {
-        mode: 'number'
-    }).notNull().references(() => Connection.id)
+    connection: integer('connection').notNull().references(() => Connection.id)
 });
 
 export const DataMission = pgTable('data_mission', {
     id: serial('id').primaryKey(),
     mission: text('mission').notNull(),
     enabled: boolean('enabled').notNull().default(true),
-    data: integer('data', {
-        mode: 'number'
-    }).notNull().references(() => Data.id),
+    data: integer('data').notNull().references(() => Data.id),
     assets: json('assets').notNull().default(["*"])
 });
 
@@ -152,16 +146,12 @@ export const Layer = pgTable('layers', {
     logging: boolean('logging').notNull().default(true),
     stale: integer('stale').notNull().default(20000),
     task: text('task').notNull(),
-    connection: integer('connection', {
-        mode: 'number'
-    }).notNull().references(() => Connection.id),
+    connection: integer('connection').notNull().references(() => Connection.id),
     cron: text('cron'),
     environment: json('environment').notNull().default({}),
     memory: integer('memory').notNull().default(128),
     timeout: integer('timeout').notNull().default(128),
-    data: integer('data', {
-        mode: 'number'
-    }).notNull().references(() => Data.id),
+    data: integer('data').notNull().references(() => Data.id),
     schema: json('schema').notNull().default({})
 });
 
@@ -169,9 +159,7 @@ export const LayerAlert = pgTable('layer_alerts', {
     id: serial('id').primaryKey(),
     created: timestamp('created', { withTimezone: true }).notNull().default(sql`Now()`),
     updated: timestamp('updated', { withTimezone: true }).notNull().default(sql`Now()`),
-    layer: integer('layer', {
-        mode: 'number'
-    }).notNull().references(() => Layer.id),
+    layer: integer('layer').notNull().references(() => Layer.id),
     icon: text('icon').notNull().default('alert-circle'),
     priority: text('priority').notNull().default('yellow'),
     title: text('title').notNull(),
