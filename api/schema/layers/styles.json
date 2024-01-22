@@ -1,5 +1,5 @@
 {
     "type": "object",
-    "description": "",
-    "$comment": "json"
+    "description": "Styling rules for the layer",
+    "$comment": "jsonb"
 }
