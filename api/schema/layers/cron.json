@@ -1,5 +1,8 @@
 {
-    "type": "string",
+    "type": [
+        "string",
+        "null"
+    ],
     "description": "",
-    "$comment": "text"
+    "$comment": "varchar"
 }

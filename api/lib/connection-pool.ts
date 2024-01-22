@@ -178,6 +178,7 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
             cert: conn.auth.cert
         });
         const connClient = new ConnectionClient(conn, tak, ephemeral);
+
         this.set(conn.id, connClient);
 
         tak.on('cot', async (cot: CoT) => {
