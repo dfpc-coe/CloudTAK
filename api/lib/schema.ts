@@ -4,7 +4,6 @@ import { geometry, GeometryType } from '@openaddresses/batch-generic';
 
 import {
     json,
-    bigint,
     boolean,
     integer,
     timestamp,
@@ -111,7 +110,7 @@ export const ConnectionSink = pgTable('connection_sinks', {
     updated: timestamp('updated', { withTimezone: true }).notNull().default(sql`Now()`),
     name: text('name').notNull(),
     enabled: boolean('enabled').notNull().default(true),
-    connection: bigint('connection', {
+    connection: integer('connection', {
         mode: 'number'
     }).notNull().references(() => Connection.id),
     type: text('type').notNull(),
@@ -126,7 +125,7 @@ export const Data = pgTable('data', {
     name: text('name').notNull(),
     description: text('description').notNull().default(''),
     auto_transform: boolean('auto_transform').notNull().default(false),
-    connection: bigint('connection', {
+    connection: integer('connection', {
         mode: 'number'
     }).notNull().references(() => Connection.id)
 });
@@ -135,7 +134,7 @@ export const DataMission = pgTable('data_mission', {
     id: serial('id').primaryKey(),
     mission: text('mission').notNull(),
     enabled: boolean('enabled').notNull().default(true),
-    data: bigint('data', {
+    data: integer('data', {
         mode: 'number'
     }).notNull().references(() => Data.id),
     assets: json('assets').notNull().default(["*"])
@@ -153,14 +152,14 @@ export const Layer = pgTable('layers', {
     logging: boolean('logging').notNull().default(true),
     stale: integer('stale').notNull().default(20000),
     task: text('task').notNull(),
-    connection: bigint('connection', {
+    connection: integer('connection', {
         mode: 'number'
     }).notNull().references(() => Connection.id),
     cron: text('cron'),
     environment: json('environment').notNull().default({}),
     memory: integer('memory').notNull().default(128),
     timeout: integer('timeout').notNull().default(128),
-    data: bigint('data', {
+    data: integer('data', {
         mode: 'number'
     }).notNull().references(() => Data.id),
     schema: json('schema').notNull().default({})
@@ -170,7 +169,7 @@ export const LayerAlert = pgTable('layer_alerts', {
     id: serial('id').primaryKey(),
     created: timestamp('created', { withTimezone: true }).notNull().default(sql`Now()`),
     updated: timestamp('updated', { withTimezone: true }).notNull().default(sql`Now()`),
-    layer: bigint('layer', {
+    layer: integer('layer', {
         mode: 'number'
     }).notNull().references(() => Layer.id),
     icon: text('icon').notNull().default('alert-circle'),
