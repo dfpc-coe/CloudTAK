@@ -1,5 +1,5 @@
 {
     "type": "string",
     "description": "",
-    "$comment": "varchar"
+    "$comment": "text"
 }
