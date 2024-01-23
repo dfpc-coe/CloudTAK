@@ -72,7 +72,7 @@ export default async function server(config: Config) {
 
     console.error((new URL('./migrations', import.meta.url)).pathname)
     config.pg = await Pool.connect(process.env.POSTGRES || args.postgres || 'postgres://postgres@localhost:5432/tak_ps_etl', pgschema, {
-        ssl: { rejectUnauthorized: false },
+        ssl: config.StackName === 'test' ? undefined  : { rejectUnauthorized: false },
         migrationsFolder: (new URL('./migrations', import.meta.url)).pathname,
         jsonschema: {
             dir: new URL('./schema', import.meta.url)
