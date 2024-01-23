@@ -158,7 +158,13 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
         if (this.wsClients.has(String(conn.id))) {
             for (const client of this.wsClients.get(String(conn.id))) {
                 if (client.format == 'geojson') {
-                    client.ws.send(JSON.stringify({ type: 'cot', connection: conn.id, data: cot.to_geojson() }));
+                    const feat = cot.to_geojson();
+
+                    if (feat.properties.chat) {
+                        client.ws.send(JSON.stringify({ type: 'chat', connection: conn.id, data: feat }));
+                    } else {
+                        client.ws.send(JSON.stringify({ type: 'cot', connection: conn.id, data: feat }));
+                    }
                 } else {
                     client.ws.send(JSON.stringify({ type: 'cot', connection: conn.id, data: cot.raw }));
                 }
