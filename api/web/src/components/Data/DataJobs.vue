@@ -7,7 +7,7 @@
         </div>
     </div>
 
-    <div v-if='!loading.list && list.list.length' class='table-responsive'>
+    <div v-if='!loading.list && list.items.length' class='table-responsive'>
         <table class="table table-vcenter card-table table-hover">
             <thead>
                 <tr>
@@ -18,7 +18,7 @@
                 </tr>
             </thead>
             <tbody>
-                <tr @click='$router.push(`/connection/${$route.params.connectionid}/data/${$route.params.dataid}/job/${job.id}`)' :key='job.created' v-for='job in list.list' class='cursor-pointer'>
+                <tr @click='$router.push(`/connection/${$route.params.connectionid}/data/${$route.params.dataid}/job/${job.id}`)' :key='job.created' v-for='job in list.items' class='cursor-pointer'>
                     <td v-text='job.asset'></td>
                     <td v-text='job.status'></td>
                     <td>
@@ -37,7 +37,7 @@
             <Alert title='Transforms Error' :err='err.message' :compact='true'/>
         </template>
         <TablerLoading v-else-if='loading.list'/>
-        <TablerNone v-else-if='!list.list.length' :create='false' :compact='true'/>
+        <TablerNone v-else-if='!list.items.length' :create='false' :compact='true'/>
     </div>
 </div>
 </template>
@@ -63,7 +63,7 @@ export default {
             },
             list: {
                 total: 0,
-                list: []
+                items: []
             }
         };
     },
@@ -76,7 +76,7 @@ export default {
                 this.loading.list = true;
                 this.err = null;
                 const list = await window.std(`/api/data/${this.$route.params.dataid}/job`);
-                list.list = list.list.map((l) => {
+                list.items = list.items.map((l) => {
                     if (l.status === 'SUBMITTED') l.status = 'Unknown';
                     if (l.status === 'PENDING') l.status = 'Pending';
                     if (l.status === 'RUNNABLE') l.status = 'Pending';

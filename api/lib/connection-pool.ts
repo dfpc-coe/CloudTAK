@@ -185,6 +185,10 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
             connClient.retry = 0;
             connClient.initial = false;
 
+            if (conn.id === 'nicholas.ingalls@state.co.us') {
+                console.error(JSON.stringify(cot.raw));
+            }
+
             this.cot(conn, cot, ephemeral);
         }).on('end', async () => {
             console.error(`not ok - ${conn.id} @ end`);

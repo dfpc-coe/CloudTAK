@@ -5,12 +5,6 @@
         "uid": {
             "$ref": "./iconsets/uid.json"
         },
-        "created": {
-            "$ref": "./iconsets/created.json"
-        },
-        "updated": {
-            "$ref": "./iconsets/updated.json"
-        },
         "version": {
             "$ref": "./iconsets/version.json"
         },
@@ -34,12 +28,16 @@
         },
         "skip_resize": {
             "$ref": "./iconsets/skip_resize.json"
+        },
+        "created": {
+            "$ref": "./iconsets/created.json"
+        },
+        "updated": {
+            "$ref": "./iconsets/updated.json"
         }
     },
     "required": [
         "uid",
-        "created",
-        "updated",
         "version",
         "name",
         "default_group",
@@ -47,6 +45,8 @@
         "default_hostile",
         "default_neutral",
         "default_unknown",
-        "skip_resize"
+        "skip_resize",
+        "created",
+        "updated"
     ]
 }
