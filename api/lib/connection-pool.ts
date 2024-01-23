@@ -31,8 +31,11 @@ export class ConnectionWebSocket {
         if (client) {
             this.client = client;
             this.ws.on('message', (msg) => {
+                msg = JSON.parse(String(msg));
+
                 try {
-                    const cot = CoT.from_geojson(JSON.parse(String(msg)));
+                    const cot = CoT.from_geojson(msg);
+
                     this.client.tak.write([cot]);
                 } catch (err) {
                     this.ws.send(JSON.stringify({
