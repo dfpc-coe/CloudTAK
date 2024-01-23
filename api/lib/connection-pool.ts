@@ -8,6 +8,7 @@ import TAK, { CoT } from '@tak-ps/node-tak';
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import Modeler from '@openaddresses/batch-generic';
 import { InferSelectModel } from 'drizzle-orm';
+import { Feature } from 'geojson';
 import * as pgtypes from './schema.js';
 
 export type EphemeralConnection = {
@@ -31,10 +32,10 @@ export class ConnectionWebSocket {
         if (client) {
             this.client = client;
             this.ws.on('message', (msg) => {
-                msg = JSON.parse(String(msg));
+                const feat: Feature = JSON.parse(String(msg));
 
                 try {
-                    const cot = CoT.from_geojson(msg);
+                    const cot = CoT.from_geojson(feat);
 
                     this.client.tak.write([cot]);
                 } catch (err) {
