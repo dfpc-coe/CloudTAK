@@ -1,5 +1,5 @@
-// @ts-ignore
-import ConnectionSink from './types/connection-sink.js';
+import { ConnectionSink } from './schema.js';
+import { InferSelectModel } from 'drizzle-orm';
 import Config from './config.js';
 
 export default class SinkInterface {
@@ -7,7 +7,7 @@ export default class SinkInterface {
         return 'generic';
     }
 
-    static async secrets(config: Config, sink: ConnectionSink): Promise<any> {
+    static async secrets(config: Config, sink: InferSelectModel<typeof ConnectionSink>): Promise<object> {
         return {
             SinkId: sink.id,
             StackName: config.StackName

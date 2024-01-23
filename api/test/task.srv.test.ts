@@ -13,7 +13,7 @@ flight.user();
 
 test('GET: api/task - empty', async (t) => {
     try {
-        Sinon.stub(ECRClient.prototype, 'send').callsFake((command: any) => {
+        Sinon.stub(ECRClient.prototype, 'send').callsFake((command) => {
             t.deepEquals(command.input, {
                 repositoryName: 'coe-ecr-etl-tasks'
             });
@@ -29,7 +29,7 @@ test('GET: api/task - empty', async (t) => {
 
         t.deepEquals(res.body, {
             total: 0,
-            tasks: {}
+            items: {}
         });
     } catch (err) {
         t.error(err, 'no error');
@@ -41,7 +41,7 @@ test('GET: api/task - empty', async (t) => {
 
 test('GET: api/task - empty', async (t) => {
     try {
-        Sinon.stub(ECRClient.prototype, 'send').callsFake((command: any) => {
+        Sinon.stub(ECRClient.prototype, 'send').callsFake((command) => {
             t.deepEquals(command.input, {
                 repositoryName: 'coe-ecr-etl-tasks'
             });
@@ -70,7 +70,7 @@ test('GET: api/task - empty', async (t) => {
 
         t.deepEquals(res.body, {
             total: 5,
-            tasks: {
+            items: {
                 test: [ '1.1.1', '1.1.0', '1.0.0' ],
                 another: [ '10.1.0', '1.1.0' ]
             }

@@ -8,6 +8,14 @@ export default class {
         this.api = api;
     }
 
+    async delete(log: string) {
+        const url = new URL(`/Marti/api/missions/logs/entries/${log}`, this.api.url);
+
+        return await this.api.fetch(url, {
+            method: 'DELETE',
+        });
+    }
+
     async create(mission: string, opts: {
         content: string;
         creatorUid: string;

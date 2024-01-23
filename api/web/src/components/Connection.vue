@@ -38,10 +38,14 @@
                                 </div>
                                 <div class='col-12 col-md-4'>
                                     <TablerLoading v-if='loading.channels' desc='Loading Channels'/>
+                                    <TablerNone v-else-if='!rawChannels.length' :create='false'/>
                                     <template v-else>
-                                        <h3 class='subheader'>Channels</h3>
-                                        <div v-for='channel in channels'>
-                                            <span v-text='channel.name'/>
+                                        <div :key='ch.name' v-for='ch in processChannels' class="col-lg-12 hover-light">
+                                            <div class='col-12 py-2 px-2 d-flex align-items-center'>
+                                                <IconEye v-if='ch.active'/>
+                                                <IconEyeOff v-else />
+                                                <span class="mx-2" v-text='ch.name'></span>
+                                            </div>
                                         </div>
                                     </template>
                                 </div>
@@ -100,6 +104,8 @@ import PageFooter from './PageFooter.vue';
 import ConnectionStatus from './Connection/Status.vue';
 import timeDiff from '../timediff.js';
 import {
+    IconEye,
+    IconEyeOff,
     IconRefresh,
     IconDatabase,
     IconOutbound,
@@ -122,7 +128,7 @@ export default {
                 channels: true,
             },
             err: null,
-            channels: [],
+            rawChannels: [],
             connection: {}
         }
     },
@@ -139,6 +145,24 @@ export default {
         await this.fetchChannels();
 
     },
+    computed: {
+        processChannels: function() {
+            const channels = {};
+
+            JSON.parse(JSON.stringify(this.rawChannels)).sort((a, b) => {
+                return (a.name > b.name) ? 1 : ((b.name > a.name) ? -1 : 0);
+            }).forEach((channel) => {
+                if (channels[channel.name]) {
+                    channels[channel.name].direction.push(channel.direction);
+                } else {
+                    channel.direction = [channel.direction];
+                    channels[channel.name] = channel;
+                }
+            });
+
+            return channels;
+        }
+    },
     methods: {
         timeDiff(update) {
             return timeDiff(update);
@@ -150,7 +174,7 @@ export default {
         },
         fetchChannels: async function() {
             this.loading.channels = true;
-            this.channels = (await window.std(`/api/connection/${this.$route.params.connectionid}/channel`)).data;
+            this.rawChannels = (await window.std(`/api/connection/${this.$route.params.connectionid}/channel`)).data;
             this.loading.channels = false;
         },
         refresh: async function() {
@@ -160,6 +184,8 @@ export default {
         }
     },
     components: {
+        IconEye,
+        IconEyeOff,
         IconSettings,
         IconRefresh,
         IconDatabase,

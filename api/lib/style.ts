@@ -1,8 +1,58 @@
 import jsonata from 'jsonata';
 import { Feature } from 'geojson';
-import Layer from './types/layer.js';
 import handlebars from 'handlebars';
 import Err from '@openaddresses/batch-error';
+
+export type StyleContainer = {
+    line?: StyleLine;
+    point?: StylePoint;
+    polygon?: StylePolygon;
+    queries?: Array<StyleSingleContainer>;
+}
+
+export type StyleSingleContainer = {
+    query: string;
+    styles: StyleSingle
+}
+
+export type StyleSingle = {
+    line?: StyleLine;
+    point?: StylePoint;
+    polygon?: StylePolygon;
+
+}
+
+// Also note these are defined in schema/util/styles.json
+export type StylePoint = {
+    color?: string;
+    remarks?: string;
+    callsign?: string;
+};
+export type StyleLine = {
+    stroke?: string;
+    'stroke-style'?: string;
+    'stroke-opacity'?: string;
+    'stroke-width'?: string;
+    remarks?: string;
+    callsign?: string;
+};
+export type StylePolygon = {
+    stroke?: string;
+    'stroke-style'?: string;
+    'stroke-opacity'?: string;
+    'stroke-width'?: string;
+    fill?: string;
+    'fill-opacity'?: string;
+    remarks?: string;
+    callsign?: string;
+};
+
+export interface StyleInterface {
+    stale: number;    
+    enabled_styles: boolean;
+    styles: StyleContainer;
+}
+
 
 /**
  * Apply layer styling to CoT Messages
@@ -11,13 +61,13 @@ import Err from '@openaddresses/batch-error';
  * @prop layer - Layer object
  */
 export default class Style {
-    layer: Layer;
+    style: StyleInterface;
 
-    constructor(layer: Layer) {
-        this.layer = layer;
+    constructor(style: StyleInterface) {
+        this.style = style;
     }
 
-    static validate(styles: any) {
+    static validate(styles: StyleContainer) {
         try {
             if (styles.queries) {
                 for (const q of styles.queries) {
@@ -38,14 +88,14 @@ export default class Style {
      * @returns             GeoJSON Feature
      */
     async feat(feature: Feature): Promise<Feature> {
-        if (this.layer.stale && !feature.properties.stale) {
-            feature.properties.stale = this.layer.stale;
+        if (this.style.stale && !feature.properties.stale) {
+            feature.properties.stale = this.style.stale;
         }
 
-        if (!this.layer.enabled_styles) {
+        if (!this.style.enabled_styles) {
             return feature;
-        } else if (this.layer.styles.queries) {
-            for (const q of this.layer.styles.queries) {
+        } else if (this.style.styles.queries) {
+            for (const q of this.style.styles.queries) {
                 const expression = jsonata(q.query);
 
                 if (await expression.evaluate(feature) === true) {
@@ -55,13 +105,13 @@ export default class Style {
 
             return feature;
         } else {
-            this.#by_geom(this.layer.styles, feature);
+            this.#by_geom(this.style.styles, feature);
 
             return feature;
         }
     }
 
-    #by_geom(style: any, feature: Feature) {
+    #by_geom(style: StyleSingle, feature: Feature) {
         if (feature.geometry.type === 'Point' && style.point) {
             if (!style.point.remarks) delete style.point.remarks;
             if (!style.point.callsign) delete style.point.callsign;

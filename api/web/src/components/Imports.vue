@@ -26,7 +26,7 @@
                         </div>
                         <TablerLoading v-if='loading'/>
                         <TablerNone
-                            v-else-if='!list.imports.length'
+                            v-else-if='!list.items.length'
                             label='Imports'
                             :create='false'
                         />
@@ -38,7 +38,7 @@
                                     <th>Created</th>
                                     <th>Result</th>
                                 </tr></thead>
-                                <tbody><tr @click='$router.push(`/import/${imported.id}`)' :key='imported.id' v-for='imported in list.imports'>
+                                <tbody><tr @click='$router.push(`/import/${imported.id}`)' :key='imported.id' v-for='imported in list.items'>
                                     <td>
                                         <div class='d-flex'>
                                             <Status :status='imported.status'/>
@@ -81,7 +81,7 @@ export default {
             loading: true,
             list: {
                 total: 0,
-                imports: []
+                items: []
             }
         }
     },

@@ -2,14 +2,14 @@
     "type": "object",
     "required": [
         "total",
-        "iconsets"
+        "items"
     ],
     "additionalProperties": false,
     "properties": {
         "total": {
             "$ref": "./util/total.json"
         },
-        "iconsets": {
+        "items": {
             "type": "array",
             "items": {
                 "type": "object",

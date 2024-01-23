@@ -3,32 +3,34 @@ import { fetch } from 'undici';
 import fsp from 'node:fs/promises';
 import fs from 'node:fs';
 import Lambda from "aws-lambda";
-import { Readable } from 'node:stream';
 import path from 'node:path';
 import S3 from "@aws-sdk/client-s3";
 import StreamZip, { StreamZipAsync } from 'node-stream-zip'
+import { includesWithGlob } from "array-includes-with-glob";
 import { pipeline } from 'node:stream/promises';
 import xml2js from 'xml2js';
 import jwt from 'jsonwebtoken';
+import API from './api.js';
 
-interface Event {
+export type Event = {
     ID?: string;
     Token: string;
     Bucket: string;
     Key: string;
+    Name: string;
     Ext: string;
     Local: string;
 }
 
 export const handler = async (
     event: {
-        Records: Lambda.SQSRecord | Lambda.S3EventRecord
+        Records: Lambda.SQSRecord[] | Lambda.S3EventRecord[]
     }
 ): Promise<void> => {
     for (const record of event.Records) {
-        if (record.s3) {
+        if (Object.keys(record).includes('s3')) {
             await s3Event(record as Lambda.S3EventRecord)
-        } else if (record.body) {
+        } else if (Object.keys(record).includes('body')) {
             await sqsEvent(record as Lambda.SQSRecord);
         }
     }
@@ -43,6 +45,7 @@ async function s3Event(record: Lambda.S3EventRecord) {
         Token: jwt.sign({ access: 'event' }, String(process.env.SigningSecret)),
         Bucket: record.s3.bucket.name,
         Key: decodeURIComponent(record.s3.object.key.replace(/\+/g, ' ')),
+        Name: path.parse(decodeURIComponent(record.s3.object.key.replace(/\+/g, ' '))).name,
         Ext: path.parse(decodeURIComponent(record.s3.object.key.replace(/\+/g, ' '))).ext,
         Local: path.resolve(os.tmpdir(), `input${path.parse(decodeURIComponent(record.s3.object.key.replace(/\+/g, ' '))).ext}`),
     };
@@ -56,13 +59,12 @@ async function genericEvent(md: Event) {
         try {
             md.ID = path.parse(md.Key).name;
 
-            await updateImport(md, { status: 'Running' });
-            const imported = await fetchImport(md);
+            await API.updateImport(md, { status: 'Running' });
+            const imported = await API.fetchImport(md);
 
             console.error('Import', JSON.stringify(imported));
 
             const s3 = new S3.S3Client({ region: process.env.AWS_DEFAULT_REGION || 'us-east-1' });
-
             await pipeline(
                 // @ts-ignore
                 (await s3.send(new S3.GetObjectCommand({
@@ -77,22 +79,14 @@ async function genericEvent(md: Event) {
                 if (!imported.config.id) throw new Error('No mission name defined');
                 if (!imported.config.token) throw new Error('No token defined');
 
-                const {size} = fs.statSync(md.Local);
-
-                const url = new URL(`/api/marti/missions/${encodeURIComponent(imported.config.id)}/upload`, process.env.TAK_ETL_API);
-                url.searchParams.append('name', imported.name);
-                const res = await fetch(url, {
-                    method: 'POST',
-                    duplex: 'half',
-                    headers: {
-                        'Authorization': `Bearer ${imported.config.token}`,
-                        'Content-Length': size,
-                        'Content-Type': 'application/octet-stream'
-                    },
-                    body: Readable.toWeb(fs.createReadStream(md.Local))
+                const res = await API.uploadMission(md, {
+                    name: imported.config.id,
+                    filename: imported.name,
+                    token: imported.config.token
                 });
 
-                console.error(JSON.stringify(await res.json()));
+                if (res.status !== 200) throw new Error(res.message);
+                console.error(JSON.stringify(res));
             } else if (imported.mode === 'Unknown') {
                 if (md.Ext === '.zip') {
                     const zip = new StreamZip.async({
@@ -121,14 +115,14 @@ async function genericEvent(md: Event) {
                 }
             }
 
-            await updateImport(md, {
+            await API.updateImport(md, {
                 status: 'Success',
                 result
             });
         } catch (err) {
             console.error(err);
 
-            await updateImport(md, {
+            await API.updateImport(md, {
                 status: 'Fail',
                 error: err instanceof Error ? err.message : String(err)
             });
@@ -136,69 +130,51 @@ async function genericEvent(md: Event) {
     } else if (md.Key.startsWith('data/')) {
         md.ID = path.parse(md.Key).dir.replace('data/', '');
 
-        const data = await fetchData(md);
+        const data = await API.fetchData(md);
 
-        if (!data.auto_transform) {
-            console.log(`ok - Data ${md.ID} has auto-transform turned off`);
-            return;
+        if (data.mission && !['.geojsonld', '.pmtiles'].includes(md.Ext)) {
+            let sync = false;
+            for (const glob of data.mission.assets) {
+                sync = includesWithGlob([md.Name], glob);
+                if (sync) break;
+            }
+
+            if (sync) {
+                console.log(`ok - Data ${md.Key} syncing with ${data.mission.mission}`);
+                const s3 = new S3.S3Client({ region: process.env.AWS_DEFAULT_REGION || 'us-east-1' });
+                await pipeline(
+                    // @ts-ignore
+                    (await s3.send(new S3.GetObjectCommand({
+                        Bucket: md.Bucket,
+                        Key: md.Key
+                    }))).Body,
+                    fs.createWriteStream(md.Local)
+                );
+
+                const res = await API.uploadMission(md, {
+                    name: data.mission.mission,
+                    filename: md.Name,
+                    connection: data.connection
+                });
+
+                if (res.status !== 200) throw new Error(res.message);
+                console.log(JSON.stringify(res));
+            } else {
+                console.log(`ok - Data ${md.Key} does not match mission sync globs`);
+            }
+        } else {
+                console.log(`ok - Data ${md.Key} has no mission assigned or is a geojsonld or pmtiles file`);
         }
 
-        await transformData(md);
+        if (data.auto_transform) {
+            await API.transformData(md);
+        } else {
+            console.log(`ok - Data ${md.ID} has auto-transform turned off`);
+        }
+
     } else {
         throw new Error('Unknown Import Type');
     }
-}
-
-async function transformData(event: Event) {
-    const res = await fetch(new URL(`/api/data/${event.ID}/${path.parse(event.Key).name}`, process.env.TAK_ETL_API), {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${event.Token}`
-        }
-    });
-
-    return await res.json();
-}
-
-async function fetchData(event: Event) {
-    const res = await fetch(new URL(`/api/data/${event.ID}`, process.env.TAK_ETL_API), {
-        method: 'GET',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${event.Token}`
-        }
-    });
-
-    return await res.json();
-}
-
-async function fetchImport(event: Event) {
-    const res = await fetch(new URL(`/api/import/${event.ID}`, process.env.TAK_ETL_API), {
-        method: 'GET',
-        headers: {
-            'Authorization': `Bearer ${event.Token}`
-        },
-    });
-
-    const resbody = await res.json();
-    if (!res.ok) throw new Error(`HTTP ${res.status}: ${resbody.message}`);
-    return resbody;
-}
-
-async function updateImport(event: Event, body: object) {
-    const res = await fetch(new URL(`/api/import/${event.ID}`, process.env.TAK_ETL_API), {
-        method: 'PATCH',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${event.Token}`
-        },
-        body: JSON.stringify(body)
-    });
-
-    const resbody = await res.json();
-    if (!res.ok) throw new Error(`HTTP ${res.status}: ${resbody.message}`);
-    return resbody;
 }
 
 async function processIndex(event: Event, xmlstr: string, zip?: StreamZipAsync) {
@@ -224,7 +200,7 @@ async function processIndex(event: Event, xmlstr: string, zip?: StreamZipAsync) 
         });
 
         if (check.status === 200) {
-            await updateImport(event, {
+            await API.updateImport(event, {
                 status: 'Fail',
                 message: `Iconset ${iconset.name} (${iconset.uid}) already exists`
             });
@@ -268,7 +244,7 @@ async function processIndex(event: Event, xmlstr: string, zip?: StreamZipAsync) 
             if (!icon_req.ok) console.error(await icon_req.text());
         }
 
-        await updateImport(event, {
+        await API.updateImport(event, {
             status: 'Success',
             result: { url: `/iconset/${iconset.uid}` }
         });
@@ -293,6 +269,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
         Token: jwt.sign({ access: 'event' }, 'coe-wildland-fire'),
         Bucket: process.env.BUCKET,
         Key: process.env.KEY,
+        Name: path.parse(process.env.KEY).name,
         Ext: path.parse(process.env.KEY).ext,
         Local: path.resolve(os.tmpdir(), `input${path.parse(process.env.KEY).ext}`),
     });

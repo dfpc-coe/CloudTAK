@@ -2,11 +2,11 @@ import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
 import bodyparser from 'body-parser';
-import Profile from '../lib/types/profile.js';
-import Connection from '../lib/types/connection.js';
+import { Profile, Connection } from '../lib/schema.js';
 import S3 from '../lib/aws/s3.js';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
+import Modeler from '@openaddresses/batch-generic';
 import TAKAPI, {
     APIAuthToken,
     APIAuthCertificate,
@@ -14,6 +14,9 @@ import TAKAPI, {
 } from '../lib/tak-api.js';
 
 export default async function router(schema: any, config: Config) {
+    const ProfileModel = new Modeler(config.pg, Profile);
+    const ConnectionModel = new Modeler(config.pg, Connection);
+
     await schema.post('/marti/missions/:name/log', {
         name: 'Create Log',
         group: 'MartiMissionLog',
@@ -45,14 +48,14 @@ export default async function router(schema: any, config: Config) {
             let auth;
             let creatorUid;
             if (req.query.connection) {
-                auth = (await Connection.from(config.pool, req.query.connection)).auth;
+                auth = (await ConnectionModel.from(parseInt(String(req.query.connection)))).auth;
                 creatorUid = `CloudTAK-Conn-${req.query.connection}`;
             } else {
                 if (!req.auth.email) throw new Err(400, null, 'Mission Log can only be modified by an authenticated user');
-                auth = (await Profile.from(config.pool, req.auth.email)).auth;
+                auth = (await ProfileModel.from(req.auth.email)).auth;
                 creatorUid = req.auth.email;
             }
-            const api = await TAKAPI.init(new URL(config.server.api), new APIAuthCertificate(auth.cert, auth.key));
+            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
             const mission = await api.MissionLog.create(req.params.name, {
                 creatorUid: creatorUid,

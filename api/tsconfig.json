@@ -2,8 +2,8 @@
     "ts-node": {
         "esm": true
     },
-    "allowJs": true,
     "compilerOptions": {
+        "skipLibCheck": true,
         "module": "es2022",
         "esModuleInterop": true,
         "target": "es2022",

@@ -27,18 +27,18 @@ jobs:
           registry-url: https://registry.npmjs.org/
 
       - name: Docker Compose Build
-        run: docker-compose up --build -d postgis
+        run: docker compose up --build -d postgis
 
       - name: Docker API Build
-        run: docker-compose build api
+        run: docker compose build api
 
       - name: Docker API Lint
-        run: docker run etl_api:latest sh -c "npm install --include=dev && npm run lint"
+        run: docker run etl-api:latest sh -c "npm install --include=dev && npm run lint"
 
       - name: Docker API Test
         run: docker run --network etl_default
           -e "POSTGRES=postgres://docker:docker@postgis:5432/gis"
-          etl_api:latest npm test
+          etl-api:latest npm test
 
       - name: Docker Cleanup
-        run: docker-compose kill
+        run: docker compose kill

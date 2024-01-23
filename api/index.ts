@@ -7,19 +7,18 @@ import SwaggerUI from 'swagger-ui-express';
 import history, {Context} from 'connect-history-api-fallback';
 // @ts-ignore
 import Schema from '@openaddresses/batch-schema';
-// @ts-ignore
-import { Pool } from '@openaddresses/batch-generic';
+import Modeler, { Pool } from '@openaddresses/batch-generic';
 import minimist from 'minimist';
 import ConnectionPool, { ConnectionWebSocket, sleep } from './lib/connection-pool.js';
 import EventsPool from './lib/events-pool.js';
 import { WebSocket, WebSocketServer } from 'ws';
 import Cacher from './lib/cacher.js';
 import BlueprintLogin, { tokenParser } from '@tak-ps/blueprint-login';
-import Server from './lib/types/server.js';
 import Config from './lib/config.js';
-import Profile from './lib/types/profile.js';
 import TAKAPI, { APIAuthPassword } from './lib/tak-api.js';
 import process from 'node:process';
+
+import * as pgschema from './lib/schema.js';
 
 const args = minimist(process.argv, {
     boolean: [
@@ -62,15 +61,6 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     await server(config);
 }
 
-/**
- * @apiDefine user User
- *   A user must be logged in to use this endpoint
- */
-/**
- * @apiDefine public Public
- *   This API endpoint does not require authentication
- */
-
 export default async function server(config: Config) {
     config.cacher = new Cacher(args.nocache, config.silent);
 
@@ -79,17 +69,19 @@ export default async function server(config: Config) {
     } catch (err) {
         console.log(`ok - failed to flush cache: ${err.message}`);
     }
-    config.pool = await Pool.connect(process.env.POSTGRES || args.postgres || 'postgres://postgres@localhost:5432/tak_ps_etl', {
-        schemas: {
+
+    console.error((new URL('./migrations', import.meta.url)).pathname)
+    config.pg = await Pool.connect(process.env.POSTGRES || args.postgres || 'postgres://postgres@localhost:5432/tak_ps_etl', pgschema, {
+        ssl: config.StackName === 'test' ? undefined  : { rejectUnauthorized: false },
+        migrationsFolder: (new URL('./migrations', import.meta.url)).pathname,
+        jsonschema: {
             dir: new URL('./schema', import.meta.url)
-        },
-        parsing: {
-            geometry: true
         }
-    });
+    })
 
     try {
-        config.server = await Server.from(config.pool, 1);
+        const ServerModel = new Modeler(config.pg, pgschema.Server);
+        config.server = await ServerModel.from(1);
     } catch (err) {
         console.log(`ok - no server config found: ${err.message}`);
         config.server = null;
@@ -98,7 +90,7 @@ export default async function server(config: Config) {
     config.conns = new ConnectionPool(config, config.server, config.wsClients, config.StackName, config.local);
     await config.conns.init();
     config.events = new EventsPool(config.StackName);
-    if (!config.noevents) await config.events.init(config.pool);
+    if (!config.noevents) await config.events.init(config.pg);
 
     const app = express();
 
@@ -147,14 +139,15 @@ export default async function server(config: Config) {
         group: config.AuthGroup,
         api: config.local ? 'http://localhost:5001' : config.MartiAPI
     });
+    const ProfileModel = new Modeler(config.pg, pgschema.Profile);
 
     login.on('login', async (user) => {
         let profile;
         try {
-            profile = await Profile.from(config.pool, user.username);
+            profile = await ProfileModel.from(user.username);
         } catch (err) {
             if (err.status === 404) {
-                profile = await Profile.generate(config.pool, { username: user.username });
+                profile = await ProfileModel.generate({ username: user.username });
             } else {
                 console.error(err);
             }
@@ -163,7 +156,7 @@ export default async function server(config: Config) {
         if (!profile.auth.cert || !profile.auth.key) {
             try {
             const api = await TAKAPI.init(new URL(config.MartiAPI), new APIAuthPassword(user.username, user.password));
-            await profile.commit({ auth: await api.Credentials.generate() });
+            await ProfileModel.commit(profile.username, { auth: await api.Credentials.generate() });
             } catch (err) {
                 console.error(err);
             }
@@ -241,14 +234,12 @@ export default async function server(config: Config) {
                 config.wsClients.get(params.get('connection')).push(new ConnectionWebSocket(ws, params.get('format')));
             } else if (params.get('connection') === auth.email) {
                 if (!config.conns.has(params.get('connection'))) {
-                    const profile = await Profile.from(config.pool, params.get('connection'));
+                    const profile = await ProfileModel.from(params.get('connection'));
                     if (!profile.auth.cert || !profile.auth.key) throw new Error('No Cert Found on profile');
 
                     const client = await config.conns.add({
                         id: params.get('connection'),
                         name: params.get('connection'),
-                        created: new Date(),
-                        updated: new Date(),
                         enabled: true,
                         auth: profile.auth
                     }, true);

@@ -17,6 +17,9 @@
         "description": {
             "$ref": "./data/description.json"
         },
+        "connection": {
+            "$ref": "./data/connection.json"
+        },
         "mission": {
             "$ref": "./data_mission.json"
         },
@@ -29,6 +32,7 @@
         "created",
         "updated",
         "name",
+        "connection",
         "auto_transform",
         "description"
     ]

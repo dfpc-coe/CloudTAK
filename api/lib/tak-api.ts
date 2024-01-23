@@ -41,7 +41,7 @@ export class APIAuthPassword extends APIAuth {
 
         if (!authres.ok) throw new Err(400, new Error(await authres.text()), 'Non-200 Response from Auth Server - Token');
 
-        const body = await authres.json();
+        const body: any = await authres.json();
         this.jwt = body.access_token
     }
 
@@ -121,7 +121,7 @@ export class APIAuthCertificate extends APIAuth {
 
     async stream2buffer(stream: Stream): Promise<Buffer> {
         return new Promise<Buffer> ((resolve, reject) => {
-            const _buf = Array<any>();
+            const _buf = Array<Buffer>();
             stream.on("data", chunk => _buf.push(chunk));
             stream.on("end", () => resolve(Buffer.concat(_buf)));
             stream.on("error", (err: Error) => reject(`error converting stream - ${err}`));

@@ -1,12 +1,12 @@
 import SecretsManager from '@aws-sdk/client-secrets-manager';
 import type EventsPool from './events-pool.js';
-import ConnectionPool, { ConnectionWebSocket } from './connection-pool.js';
-// @ts-ignore
-import Server from './types/server.js';
-// @ts-ignore
 import { Pool } from '@openaddresses/batch-generic';
+import ConnectionPool, { ConnectionWebSocket } from './connection-pool.js';
 import Cacher from './cacher.js';
+import { Server } from './schema.js';
+import { type InferSelectModel } from 'drizzle-orm';
 import process from 'node:process';
+import * as pgtypes from './schema.js';
 
 interface ConfigArgs {
     silent: boolean,
@@ -17,9 +17,6 @@ interface ConfigArgs {
     local: boolean
 }
 
-/**
- * @class
- */
 export default class Config {
     local: boolean;
     silent: boolean;
@@ -39,10 +36,10 @@ export default class Config {
     DynamoDB: string;
     wsClients: Map<string, ConnectionWebSocket[]>;
     Bucket?: string;
-    pool?: Pool;
+    pg?: Pool<typeof pgtypes>;
     cacher?: Cacher;
     conns?: ConnectionPool;
-    server?: Server;
+    server?: InferSelectModel<typeof Server>;
     events?: EventsPool;
 
     static async env(args: ConfigArgs) {

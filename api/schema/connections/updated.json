@@ -1,5 +1,6 @@
 {
-    "type": "integer",
-    "description": "Updated TimeStamp",
-    "$comment": "timestamptz"
+    "type": "string",
+    "description": "",
+    "$comment": "timestamptz",
+    "format": "date-time"
 }

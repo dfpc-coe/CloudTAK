@@ -26,7 +26,6 @@
     },
     "required": [
         "username",
-        "auth",
         "created",
         "updated",
         "tak_callsign",

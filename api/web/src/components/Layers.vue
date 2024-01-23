@@ -48,12 +48,12 @@
                 </template>
                 <template v-else>
                     <TablerNone
-                        v-if='!list.layers.length'
+                        v-if='!list.items.length'
                         label='Layers'
                         @create='$router.push("/layer/new")'
                     />
                     <template v-else>
-                        <div :key='layer.id' v-for='layer in list.layers' class="col-lg-12">
+                        <div :key='layer.id' v-for='layer in list.items' class="col-lg-12">
                             <div class="card">
                                 <div class="card-header">
                                     <LayerStatus :layer='layer'/>
@@ -118,7 +118,7 @@ export default {
             },
             list: {
                 total: 0,
-                layers: []
+                items: []
             }
         }
     },

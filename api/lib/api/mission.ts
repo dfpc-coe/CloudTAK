@@ -59,6 +59,22 @@ export default class {
         });
     }
 
+    async getGuid(guid: string, query: {
+        password?: string;
+        changes?: string;
+        logs?: string;
+        secago?: string;
+        start?: string;
+        end?: string;
+    }) {
+        const url = new URL(`/Marti/api/missions/guid/${encodeURIComponent(guid)}`, this.api.url);
+
+        for (const q in query) url.searchParams.append(q, query[q]);
+        return await this.api.fetch(url, {
+            method: 'GET'
+        });
+    }
+
     async get(name: string, query: {
         password?: string;
         changes?: string;

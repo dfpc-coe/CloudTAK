@@ -14,6 +14,12 @@
             @close='mode = null'
         />
     </template>
+    <template v-else-if='mode && mode.startsWith("chat:")'>
+        <MenuChat
+            :uid='mode.split(":")[1]'
+            @close='mode = null'
+        />
+    </template>
     <template v-else-if='mode === "channels"'>
         <MenuChannels
             @close='mode = null'
@@ -23,6 +29,7 @@
     <template v-else-if='mode === "contacts"'>
         <MenuContacts
             @close='mode = null'
+            @chat='mode = `chat:${$event}`'
         />
     </template>
     <template v-else-if='mode === "datas"'>
@@ -94,6 +101,7 @@ import {
 import MenuBasemaps from './Menu/Basemaps.vue';
 import MenuOverlays from './Menu/Overlays.vue';
 import MenuDatas from './Menu/Datas.vue';
+import MenuChat from './Menu/Chat.vue';
 import MenuContacts from './Menu/Contacts.vue';
 import MenuSettings from './Menu/Settings.vue';
 import MenuMissions from './Menu/Missions.vue';
@@ -114,6 +122,7 @@ export default {
         MenuContacts,
         MenuChannels,
         MenuMissions,
+        MenuChat,
         MenuDatas,
         IconAffiliate,
         IconAmbulance,
