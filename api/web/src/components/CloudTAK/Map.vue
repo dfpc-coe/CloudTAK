@@ -266,9 +266,12 @@ export default {
             this.ws.addEventListener('message', (msg) => {
                 msg = JSON.parse(msg.data);
                 if (msg.type === 'Error') throw new Error(msg.properties.message);
-                if (msg.type !== 'cot') return;
 
-                cotStore.add(msg.data);
+                if (msg.type === 'cot') {
+                    cotStore.add(msg.data);
+                } else if (msg.type === 'chat') {
+                    console.log(msg.data);
+                }
             });
         },
         setBearing: function(bearing=0) {
