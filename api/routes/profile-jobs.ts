@@ -1,5 +1,4 @@
 import Err from '@openaddresses/batch-error';
-import Data from '../lib/types/data.js';
 import Auth from '../lib/auth.js';
 import Batch from '../lib/aws/batch.js';
 import Logs from '../lib/aws/batch-logs.js';
@@ -24,7 +23,7 @@ export default async function router(schema: any, config: Config) {
 
             return res.json({
                 total: list.length,
-                list
+                items: list
             });
         } catch (err) {
             return Err.respond(err, res);

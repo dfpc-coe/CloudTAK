@@ -9,10 +9,6 @@
 
                         <div class='ms-auto'>
                             <div class='btn-list'>
-                                <a @click='query = !query' class="cursor-pointer btn btn-secondary">
-                                    <IconSearch/>
-                                </a>
-
                                 <a @click='$router.push("/connection/new")' class="cursor-pointer btn btn-primary">
                                     New Connection
                                 </a>
@@ -27,7 +23,7 @@
     <div class='page-body'>
         <div class='container-xl'>
             <div class='row row-deck row-cards'>
-                <div v-if='query' class="col-lg-12">
+                <div class="col-lg-12">
                     <div class="card">
                         <div class="card-body">
                             <label class="form-label">Connection Search</label>
@@ -46,12 +42,12 @@
                 </template>
                 <template v-else>
                     <TablerNone
-                        v-if='!list.connections.length'
+                        v-if='!list.items.length'
                         label='Connections'
                         @create='$router.push("/connection/new")'
                     />
                     <template v-else>
-                        <div :key='connection.id' v-for='connection in list.connections' class="col-lg-12">
+                        <div :key='connection.id' v-for='connection in list.items' class="col-lg-12">
                             <div class="card">
                                 <div class="card-header">
                                     <ConnectionStatus :connection='connection'/>
@@ -105,7 +101,6 @@ export default {
         return {
             err: false,
             loading: true,
-            query: false,
             paging: {
                 filter: '',
                 limit: 10,
@@ -113,7 +108,7 @@ export default {
             },
             list: {
                 total: 0,
-                connections: []
+                items: []
             }
         }
     },
@@ -135,7 +130,7 @@ export default {
         fetchList: async function() {
             this.loading = true;
             const url = window.stdurl('/api/connection');
-            if (this.query && this.paging.filter) url.searchParams.append('filter', this.paging.filter);
+            url.searchParams.append('filter', this.paging.filter);
             url.searchParams.append('limit', this.paging.limit);
             url.searchParams.append('page', this.paging.page);
             this.list = await window.std(url);

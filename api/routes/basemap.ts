@@ -1,20 +1,22 @@
 import path from 'node:path';
 import Err from '@openaddresses/batch-error';
-import BaseMap from '../lib/types/basemap.js';
-import Data from '../lib/types/data.js';
 import Auth from '../lib/auth.js';
 import Cacher from '../lib/cacher.js';
 import busboy from 'busboy';
-import { sql } from 'slonik';
 import Config from '../lib/config.js';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
 import xml2js from 'xml2js';
-import { Stream, Readable } from 'node:stream';
+import { Readable } from 'node:stream';
 import stream2buffer from '../lib/stream.js';
 import bboxPolygon from '@turf/bbox-polygon';
+import { Basemap } from '../lib/schema.js';
+import Modeler, { Param } from '@openaddresses/batch-generic';
+import { sql } from 'drizzle-orm';
 
 export default async function router(schema: any, config: Config) {
+    const BasemapModel = new Modeler(config.pg, Basemap);
+
     await schema.put('/basemap', {
         name: 'Import BaseMaps',
         group: 'BaseMap',
@@ -122,7 +124,16 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            const list = await BaseMap.list(config.pool, req.query);
+            const list = await BasemapModel.list({
+                limit: Number(req.query.limit),
+                page: Number(req.query.page),
+                order: String(req.query.order),
+                sort: String(req.query.sort),
+                where: sql`
+                    name ~* ${Param(req.query.filter)}
+                    AND (${Param(req.query.type)}::TEXT IS NULL or ${Param(req.query.type)}::TEXT = type)
+                `
+            });
 
             return res.json(list);
         } catch (err) {
@@ -144,7 +155,7 @@ export default async function router(schema: any, config: Config) {
             if (req.body.bounds) req.body.bounds = bboxPolygon(req.body.bounds).geometry;
             if (req.body.center) req.body.center = { type: 'Point', coordinates: req.body.center };
 
-            const basemap = await BaseMap.generate(config.pool, req.body);
+            const basemap = await BasemapModel.generate(req.body);
 
             return res.json(basemap);
         } catch (err) {
@@ -167,7 +178,7 @@ export default async function router(schema: any, config: Config) {
             if (req.body.bounds) req.body.bounds = bboxPolygon(req.body.bounds).geometry;
             if (req.body.center) req.body.center = { type: 'Point', coordinates: req.body.center };
 
-            const basemap = await BaseMap.commit(config.pool, req.params.basemapid, {
+            const basemap = await BasemapModel.commit(Number(req.params.basemapid), {
                 updated: sql`Now()`,
                 ...req.body
             });
@@ -193,7 +204,7 @@ export default async function router(schema: any, config: Config) {
             await Auth.is_auth(req, true);
 
             const basemap = await config.cacher.get(Cacher.Miss(req.query, `basemap-${req.params.basemapid}`), async () => {
-                return (await BaseMap.from(config.pool, req.params.basemapid)).serialize();
+                return await BasemapModel.from(Number(req.params.basemapid))
             });
 
             if (req.query.download) {
@@ -240,7 +251,7 @@ export default async function router(schema: any, config: Config) {
             await Auth.is_auth(req, true);
 
             const basemap = await config.cacher.get(Cacher.Miss(req.query, `basemap-${req.params.basemapid}`), async () => {
-                return (await BaseMap.from(config.pool, req.params.basemapid)).serialize();
+                return await BasemapModel.from(Number(req.params.basemapid));
             });
 
             const url = new URL(basemap.url
@@ -275,7 +286,7 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            await BaseMap.delete(config.pool, req.params.basemapid);
+            await BasemapModel.delete(Number(req.params.basemapid));
 
             await config.cacher.del(`basemap-${req.params.basemapid}`);
 

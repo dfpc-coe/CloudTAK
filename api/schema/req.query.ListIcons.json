@@ -8,6 +8,24 @@
         "page": {
             "$ref": "./util/page.json"
         },
+        "order": {
+            "$ref": "./util/order.json"
+        },
+        "sort": {
+            "type": "string",
+            "default": "created",
+            "enum": [
+                "iconset",
+                "name",
+                "type2525b",
+                "created",
+                "updated",
+                "data",
+                "path",
+                "id"
+            ],
+            "description": "Field to sort order by"
+        },
         "iconset": {
             "type": "string",
             "description": "Limit icons to those contained in a given iconset"

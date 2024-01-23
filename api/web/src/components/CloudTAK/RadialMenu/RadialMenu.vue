@@ -80,6 +80,8 @@ export default {
                 this.menuItems.push({ id: 'edit', icon: '#radial-pencil' })
                 this.menuItems.push({ id: 'view', icon: '#radial-view' })
                 this.menuItems.push({ id: 'delete', icon: '#radial-trash' })
+            } else if (this.mode === 'feat') {
+                this.menuItems.push({ id: 'view', icon: '#radial-view' })
             } else if (this.mode === 'context') {
                 this.menuItems.push({ id: 'new', icon: '#radial-pencil-plus' })
                 this.menuItems.push({ id: 'info', icon: '#radial-question' })

@@ -48,13 +48,13 @@
         </template>
         <template v-else>
             <TablerNone
-                v-if='!list.data.length'
+                v-if='!list.items.length'
                 label='Data'
                 @create='$router.push("/data/new")'
             />
             <template v-else>
                 <div class='modal-body mx-3 my-2'>
-                    <div @click='data = d' :key='d.id' v-for='d in list.data' class='cursor-pointer col-12 row py-2 rounded hover-dark'>
+                    <div @click='data = d' :key='d.id' v-for='d in list.items' class='cursor-pointer col-12 row py-2 rounded hover-dark'>
                         <div class='col-12 py-2 px-2 d-flex align-items-center'>
                             <IconFolder/><span class="mx-2" v-text='d.name'></span>
                         </div>
@@ -178,84 +178,35 @@ export default {
             const res = await window.std(url);
 
             if (new URL(res.tiles[0]).pathname.endsWith('.mvt')) {
-                if (mapStore.map.getSource(id)) {
-                    mapStore.map.removeSource(id);
-                }
-
-                mapStore.map.addSource(id, {
-                    type: 'vector',
-                    url: String(url)
-                });
-
-                mapStore.addLayer({
-                    name: id,
-                    source: id,
-                    type: 'vector'
-                }, [{
-                    id: `${id}-poly`,
-                    type: 'fill',
-                    source: id,
-                    'source-layer': 'out',
-                    filter: ["==", "$type", "Polygon"],
-                    layout: {},
-                    paint: {
-                        'fill-opacity': 0.1,
-                        'fill-color': '#00FF00'
-                    }
-                },{
-                    id: `${id}-polyline`,
-                    type: 'line',
-                    source: id,
-                    'source-layer': 'out',
-                    filter: ["==", "$type", "Polygon"],
-                    layout: {
-                        'line-join': 'round',
-                        'line-cap': 'round'
-                    },
-                    paint: {
-                        'line-color': '#00FF00',
-                        'line-width': 1,
-                        'line-opacity': 0.75
-                    }
-                },{
-                    id: `${id}-line`,
-                    type: 'line',
-                    source: id,
-                    'source-layer': 'out',
-                    filter: ["==", "$type", "LineString"],
-                    layout: {
-                        'line-join': 'round',
-                        'line-cap': 'round'
-                    },
-                    'paint': {
-                        'line-color': '#00FF00',
-                        'line-width': 1,
-                        'line-opacity': 0.75
-                    }
-                },{
-                    id: id,
-                    type: 'circle',
-                    source: id,
-                    'source-layer': 'out',
-                    filter: ["==", "$type", "Point"],
-                    paint: {
-                        'circle-color': '#00FF00',
-                        'circle-radius': 2.5,
-                        'circle-opacity': 0.75
-                    }
-                }]);
-            } else {
-                mapStore.map.addSource(id, { type: 'raster', tileSize: 256, url: String(url) });
-
-                mapStore.addLayer({
-                    name: id,
-                    source: id,
-                    type: 'raster'
-                }, [{
+                await mapStore.addDefaultLayer({
                     id,
-                    'type': 'raster',
-                    'source': id
-                }], 'CoT Icons');
+                    url: url,
+                    name: id,
+                    source: id,
+                    type: 'vector',
+                    before: 'CoT Icons',
+                    clickable: [
+                        { id: `${id}-poly`, type: 'feat' },
+                        { id: `${id}-polyline`, type: 'feat' },
+                        { id: `${id}-line`, type: 'feat' },
+                        { id: id, type: 'feat' }
+                    ]
+                });
+            } else {
+                await mapStore.addDefaultLayer({
+                    id,
+                    url: url,
+                    name: id,
+                    source: id,
+                    type: 'vector',
+                    before: 'CoT Icons',
+                    clickable: [
+                        { id: `${id}-poly`, type: 'feat' },
+                        { id: `${id}-polyline`, type: 'feat' },
+                        { id: `${id}-line`, type: 'feat' },
+                        { id: id, type: 'feat' }
+                    ]
+                });
             }
 
             this.loading = false;

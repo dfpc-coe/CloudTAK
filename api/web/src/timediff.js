@@ -1,4 +1,8 @@
 export default function(updated) {
+    if (typeof updated === 'string') {
+        updated = +new Date(updated)
+    }
+
     const msPerMinute = 60 * 1000;
     const msPerHour = msPerMinute * 60;
     const msPerDay = msPerHour * 24;

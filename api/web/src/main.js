@@ -59,9 +59,27 @@ const router = new VueRouter.createRouter({
         { path: '/layer/:layerid/alert', name: 'layer-alerts', component: () => import('./components/LayerAlerts.vue') },
 
         { path: '/connection/:connectionid/data/new', name: 'data-new', component: () => import('./components/DataEdit.vue') },
-        { path: '/connection/:connectionid/data/:dataid', name: 'data', component: () => import('./components/Data.vue') },
+        {
+            path: '/connection/:connectionid/data/:dataid',
+            name: 'data',
+            component: () => import('./components/Data.vue'),
+            children: [{
+                path: '',
+                name: 'data-default',
+                redirect: to => {
+                    return { name: 'data-files' };
+                }
+            },{
+                path: 'files',
+                name: 'data-files',
+                component: () => import('./components/Data/DataFiles.vue')
+            },{
+                path: 'jobs',
+                name: 'data-jobs',
+                component: () => import('./components/Data/DataJobs.vue')
+            }]
+        },
         { path: '/connection/:connectionid/data/:dataid/edit', name: 'data-edit', component: () => import('./components/DataEdit.vue') },
-        { path: '/connection/:connectionid/data/:dataid/job', name: 'data-jobs', component: () => import('./components/DataJobs.vue') },
         { path: '/connection/:connectionid/data/:dataid/job/:jobid', name: 'data-job', component: () => import('./components/DataJob.vue') },
 
         { path: '/connection', name: 'connections', component: () => import('./components/Connections.vue') },

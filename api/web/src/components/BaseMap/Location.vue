@@ -36,7 +36,7 @@ export default {
             const tmpmap = new mapgl.Map({
                 container: this.$refs.map,
                 zoom: 0,
-                center: this.basemap.center.length ? this.basemap.center : [0, 0],
+                center: this.basemap.center && this.basemap.center.length ? this.basemap.center : [0, 0],
                 style: {
                     version: 8,
                     sources: {

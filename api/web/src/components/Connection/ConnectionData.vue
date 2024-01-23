@@ -10,7 +10,7 @@
 
     <Alert v-if='err' title='ETL Server Error' :err='err.message' :compact='true'/>
     <TablerLoading v-else-if='loading'/>
-    <TablerNone v-else-if='!list.data.length' :create='false' label='Data'/>
+    <TablerNone v-else-if='!list.items.length' :create='false' label='Data'/>
     <div v-else class='table-resposive'>
         <table class='table card-table table-vcenter datatable table-hover'>
             <thead>
@@ -19,7 +19,7 @@
                 </tr>
             </thead>
             <tbody class='table-tbody'>
-                <tr @click='$router.push(`/connection/${connection.id}/data/${data.id}`)' :key='data.id' v-for='data of list.data' class='cursor-pointer'>
+                <tr @click='$router.push(`/connection/${connection.id}/data/${data.id}`)' :key='data.id' v-for='data of list.items' class='cursor-pointer'>
                     <td>
                         <div class='d-flex'>
                             <span class='mt-2' v-text='data.name'/>
@@ -70,7 +70,7 @@ export default {
             },
             list: {
                 total: 0,
-                data: []
+                items: []
             },
         }
     },

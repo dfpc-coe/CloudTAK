@@ -13,12 +13,12 @@
     <div class='row py-2 px-2'>
         <TablerLoading v-if='loading'/>
         <TablerNone
-            v-else-if='!list.basemaps.length'
+            v-else-if='!list.items.length'
             label='BaseMaps'
             @create='$router.push("/basemap/new")'
         />
         <template v-else>
-            <div @click='setBasemap(basemap)' :key='basemap.id' v-for='basemap in list.basemaps' class="col-12 hover-dark cursor-pointer">
+            <div @click='setBasemap(basemap)' :key='basemap.id' v-for='basemap in list.items' class="col-12 hover-dark cursor-pointer">
                 <div class="d-flex align-items-center my-2">
                     <span class='mx-2' style='font-size: 18px;' v-text='basemap.name'/>
 
@@ -73,7 +73,7 @@ export default {
             },
             list: {
                 total: 0,
-                basemaps: []
+                items: []
             }
         }
     },
@@ -96,6 +96,7 @@ export default {
             mapStore.map.addSource('basemap', { type: 'raster', tileSize: 256, tiles: [ url ] });
             mapStore.addLayer({
                 name: basemap.name,
+                before: 'CoT Icons',
                 type: 'raster',
                 source: 'basemap',
             }, [{
@@ -104,7 +105,7 @@ export default {
                 source: 'basemap',
                 minzoom: basemap.minzoom,
                 maxzoom: basemap.maxzoom
-            }], 'CoT Icons');
+            }]);
         },
         share: function(basemap) {
             this.shareModal.basemap = basemap;

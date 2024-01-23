@@ -2,14 +2,14 @@
     "type": "object",
     "required": [
         "total",
-        "tasks"
+        "items"
     ],
     "additionalProperties": false,
     "properties": {
         "total": {
             "type": "integer"
         },
-        "tasks": {
+        "items": {
             "type": "object"
         }
     }

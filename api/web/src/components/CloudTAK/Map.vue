@@ -3,9 +3,8 @@
     <TablerLoading v-if='loading.main'/>
     <template v-else>
         <div v-if='mode === "Default"' class='position-absolute top-0 end-0 text-white py-2' style='z-index: 1; width: 60px; background-color: rgba(0, 0, 0, 0.5);'>
-            <IconMenu2 v-if='!cot && !menu.main' @click='menu.main = true' size='40' class='cursor-pointer'/>
-            <IconX v-else-if='!cot && menu.main' @click='menu.main = false' size='40' class='cursor-pointer bg-dark'/>
-            <IconX v-if='cot' @click='cot = false' size='40' class='cursor-pointer bg-dark'/>
+            <IconMenu2 v-if='noMenuShown' @click='menu.main = true' size='40' class='cursor-pointer'/>
+            <IconX v-if='!noMenuShown' @click='menu.main = cot = feat = false' size='40' class='cursor-pointer bg-dark'/>
         </div>
 
         <div v-if='profile' class='position-absolute bottom-0 begin-0 text-white' style='z-index: 1; width: 200px; background-color: rgba(0, 0, 0, 0.5);'>
@@ -23,7 +22,10 @@
             </div>
         </div>
 
-        <div v-if='mode === "Default"' class='position-absolute top-0 beginning-0 text-white py-2 mx-2' style='z-index: 1; width: 60px; background-color: rgba(0, 0, 0, 0.5)'>
+        <div
+            v-if='mode === "Default"'
+            class='position-absolute top-0 beginning-0 text-white py-2 px-2'
+            style='z-index: 1; width: 60px; background-color: rgba(0, 0, 0, 0.5)'>
             <div @click='setBearing(0)' style='padding-bottom: 10px;' class='cursor-pointer'>
                 <svg width="40" height="40" :transform='`rotate(${360 - bearing})`' viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" /><path d="M12 8l-4 4" /><path d="M12 8v8" /><path d="M16 12l-4 -4" /></svg>
                 <div v-if='bearing !== 0' class='text-center' v-text='`${Math.round(bearing)}°`'></div>
@@ -63,6 +65,10 @@
         <CloudTAKCoTView
             v-if='cot && mode === "Default"'
             :cot='cot'
+        />
+        <CloudTAKFeatView
+            v-if='feat && mode === "Default"'
+            :feat='feat'
         />
         <div
             ref="map"
@@ -105,14 +111,15 @@ import {
 import 'maplibre-gl/dist/maplibre-gl.css';
 import CloudTAKMenu from './Menu.vue';
 import CloudTAKCoTView from './CoTView.vue';
+import CloudTAKFeatView from './FeatView.vue';
 import RadialMenu from './RadialMenu/RadialMenu.vue';
 import moment from 'moment';
 import { mapState, mapActions } from 'pinia'
 import { useMapStore } from '/src/stores/map.js';
 import { useProfileStore } from '/src/stores/profile.js';
 import { useCOTStore } from '/src/stores/cots.js';
-const mapStore = useMapStore();
 const cotStore = useCOTStore();
+const mapStore = useMapStore();
 const profileStore = useProfileStore();
 
 export default {
@@ -125,7 +132,10 @@ export default {
     },
     computed: {
         ...mapState(useMapStore, ['bearing', 'radial', 'isLoaded']),
-        ...mapState(useProfileStore, ['profile'])
+        ...mapState(useProfileStore, ['profile']),
+        noMenuShown: function() {
+            return !this.cot && !this.feat && !this.menu.main
+        }
     },
     mounted: async function() {
         // ensure uncaught errors in the stack are captured into vue context
@@ -166,6 +176,7 @@ export default {
                                 //   this is an array so that things like the radial menu can temporarily lock state but remember the previous lock value when they are closed
             edit: false,        // If a radial.cot is set and edit is true then load the cot into terra-draw
             cot: null,          // Show the CoT Viewer sidebar
+            feat: null,         // Show the Feat Viewer sidebar
             ws: null,           // WebSocket Connection for CoT events
             timer: null,        // Interval for pushing GeoJSON Map Updates (CoT)
             timerSelf: null,    // Interval for pushing your location to the server
@@ -173,7 +184,7 @@ export default {
                 // Any Loading related states
                 main: true
             },
-            iconsets: { total: 0, iconsets: [] },
+            iconsets: { total: 0, items: [] },
         }
     },
     beforeUnmount: function() {
@@ -294,6 +305,9 @@ export default {
                 this.deleteCOT(cot);
             } else if (event === 'cot:edit') {
                 //this.edit = true;
+            } else if (event === 'feat:view') {
+                this.feat = this.radial.cot;
+                this.closeRadial()
             } else {
                 this.closeRadial()
                 throw new Error(`Unimplemented Radial Action: ${event}`);
@@ -341,8 +355,8 @@ export default {
             const burl = window.stdurl('/api/basemap');
             burl.searchParams.append('type', 'raster');
             const basemaps = await window.std(burl);
-            if (basemaps.basemaps.length > 0) {
-                basemap = basemaps.basemaps[0];
+            if (basemaps.items.length > 0) {
+                basemap = basemaps.items[0];
                 basemap.url = String(window.stdurl(`/api/basemap/${basemap.id}/tiles/`)) + `{z}/{x}/{y}?token=${localStorage.token}`;
             }
 
@@ -350,8 +364,8 @@ export default {
             turl.searchParams.append('type', 'raster-dem');
             /*
             const terrains = await window.std(turl);
-            if (terrains.basemaps.length > 0) {
-                terrain = terrains.basemaps[0];
+            if (terrains.items.length > 0) {
+                terrain = terrains.items[0];
                 terrain.url = String(window.stdurl(`/api/basemap/${terrain.id}/tiles/`)) + `{z}/{x}/{y}?token=${localStorage.token}`;
             }
             */
@@ -362,9 +376,11 @@ export default {
                 mapStore.initLayers(basemap);
 
                 const iconsets = await window.std('/api/iconset');
-                for (const iconset of iconsets.iconsets) {
+                for (const iconset of iconsets.items) {
                     mapStore.map.addSprite(iconset.uid, String(window.stdurl(`/api/icon/sprite?token=${localStorage.token}&iconset=${iconset.uid}`)))
                 }
+
+                await mapStore.initOverlays();
 
                 mapStore.initDraw();
                 this.setYou();
@@ -421,7 +437,8 @@ export default {
         IconX,
         TablerLoading,
         CloudTAKMenu,
-        CloudTAKCoTView
+        CloudTAKCoTView,
+        CloudTAKFeatView,
     }
 }
 </script>

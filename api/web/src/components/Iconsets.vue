@@ -38,7 +38,7 @@
                             />
                         </template>
                         <TablerNone
-                            v-else-if='!list.iconsets.length'
+                            v-else-if='!list.items.length'
                             label='Iconsets'
                             :create='false'
                         />
@@ -48,7 +48,7 @@
                                     <th>Name</th>
                                     <th>UID</th>
                                 </tr></thead>
-                                <tbody><tr @click='$router.push(`/iconset/${iconset.uid}`)' :key='iconset.uid' v-for='iconset in list.iconsets'>
+                                <tbody><tr @click='$router.push(`/iconset/${iconset.uid}`)' :key='iconset.uid' v-for='iconset in list.items'>
                                     <td v-text='iconset.name'></td>
                                     <td>
                                         <div class='d-flex'>
@@ -65,7 +65,7 @@
                 </div>
 
                 <div class="col-lg-12">
-                    <IconCombineds v-if='list.iconsets.length'/>
+                    <IconCombineds v-if='list.items.length'/>
                 </div>
             </div>
         </div>
@@ -101,7 +101,7 @@ export default {
             upload: false,
             list: {
                 total: 0,
-                iconsets: []
+                items: []
             }
         }
     },

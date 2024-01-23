@@ -1,6 +1,8 @@
 import spritesmith from 'spritesmith';
 import Vinyl from 'vinyl';
 import { promisify } from 'node:util'
+import { Icon } from './schema.js';
+import { type InferSelectModel } from 'drizzle-orm';
 
 const SpriteSmith = promisify(spritesmith.run);
 
@@ -8,11 +10,11 @@ type SpriteConfig = {
     name?: string;
 };
 
-export default async function(icons, config?: SpriteConfig) {
+export default async function(icons: Array<InferSelectModel<typeof Icon>>, config?: SpriteConfig) {
     if (!config) config = {};
 
     const doc = await SpriteSmith({
-        src: icons.icons.map((icon) => {
+        src: icons.map((icon) => {
             return new Vinyl({
                 path: config.name ? icon[config.name] + '.png' : icon.path.replace(/.*?\//, ''),
                 contents: Buffer.from(icon.data, 'base64'),

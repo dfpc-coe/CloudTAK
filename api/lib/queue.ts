@@ -1,4 +1,3 @@
-// @ts-ignore
 import Dynamo from './aws/dynamo.js';
 import { EventEmitter } from 'node:events';
 

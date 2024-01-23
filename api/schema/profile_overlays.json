@@ -1,0 +1,56 @@
+{
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+        "id": {
+            "$ref": "./profile_overlays/id.json"
+        },
+        "name": {
+            "$ref": "./profile_overlays/name.json"
+        },
+        "username": {
+            "$ref": "./profile_overlays/username.json"
+        },
+        "created": {
+            "$ref": "./profile_overlays/created.json"
+        },
+        "updated": {
+            "$ref": "./profile_overlays/updated.json"
+        },
+        "pos": {
+            "$ref": "./profile_overlays/pos.json"
+        },
+        "type": {
+            "$ref": "./profile_overlays/type.json"
+        },
+        "opacity": {
+            "$ref": "./profile_overlays/opacity.json"
+        },
+        "visible": {
+            "$ref": "./profile_overlays/visible.json"
+        },
+        "mode": {
+            "$ref": "./profile_overlays/mode.json"
+        },
+        "mode_id": {
+            "$ref": "./profile_overlays/mode_id.json"
+        },
+        "url": {
+            "$ref": "./profile_overlays/url.json"
+        }
+    },
+    "required": [
+        "id",
+        "name",
+        "username",
+        "created",
+        "updated",
+        "pos",
+        "type",
+        "opacity",
+        "visible",
+        "mode",
+        "mode_id",
+        "url"
+    ]
+}

@@ -2,11 +2,11 @@ import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
 import bodyparser from 'body-parser';
-import Profile from '../lib/types/profile.js';
-import Connection from '../lib/types/connection.js';
+import { Profile, Connection } from '../lib/schema.js';
 import S3 from '../lib/aws/s3.js';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
+import Modeler from '@openaddresses/batch-generic';
 import TAKAPI, {
     APIAuthToken,
     APIAuthCertificate,
@@ -14,6 +14,9 @@ import TAKAPI, {
 } from '../lib/tak-api.js';
 
 export default async function router(schema: any, config: Config) {
+    const ProfileModel = new Modeler(config.pg, Profile);
+    const ConnectionModel = new Modeler(config.pg, Connection);
+
     await schema.get('/marti/missions/:name', {
         name: 'Get Mission',
         group: 'MartiMissions',
@@ -47,12 +50,12 @@ export default async function router(schema: any, config: Config) {
 
             let auth;
             if (req.query.connection) {
-                auth = (await Connection.from(config.pool, req.query.connection)).auth;
+                auth = (await ConnectionModel.from(parseInt(String(req.query.connection)))).auth;
             } else {
                 if (!req.auth.email) throw new Err(400, null, 'Groups can only be listed by an authenticated user');
-                auth = (await Profile.from(config.pool, req.auth.email)).auth;
+                auth = (await ProfileModel.from(req.auth.email)).auth;
             }
-            const api = await TAKAPI.init(new URL(config.server.api), new APIAuthCertificate(auth.cert, auth.key));
+            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
             const query = {};
             for (const q in req.query) query[q] = String(req.query[q]);
@@ -90,12 +93,12 @@ export default async function router(schema: any, config: Config) {
 
             let auth;
             if (req.query.connection) {
-                auth = (await Connection.from(config.pool, req.query.connection)).auth;
+                auth = (await ConnectionModel.from(parseInt(String(req.query.connection)))).auth;
             } else {
                 if (!req.auth.email) throw new Err(400, null, 'Groups can only be listed by an authenticated user');
-                auth = (await Profile.from(config.pool, req.auth.email)).auth;
+                auth = (await ProfileModel.from(req.auth.email)).auth;
             }
-            const api = await TAKAPI.init(new URL(config.server.api), new APIAuthCertificate(auth.cert, auth.key));
+            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
             const query = {};
             for (const q in req.query) query[q] = String(req.query[q]);
@@ -141,12 +144,12 @@ export default async function router(schema: any, config: Config) {
 
             let auth;
             if (req.query.connection) {
-                auth = (await Connection.from(config.pool, req.query.connection)).auth;
+                auth = (await ConnectionModel.from(parseInt(String(req.query.connection)))).auth;
             } else {
                 if (!req.auth.email) throw new Err(400, null, 'Groups can only be listed by an authenticated user');
-                auth = (await Profile.from(config.pool, req.auth.email)).auth;
+                auth = (await ProfileModel.from(req.auth.email)).auth;
             }
-            const api = await TAKAPI.init(new URL(config.server.api), new APIAuthCertificate(auth.cert, auth.key));
+            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
             const query = {};
             for (const q in req.query) query[q] = String(req.query[q]);
@@ -190,12 +193,12 @@ export default async function router(schema: any, config: Config) {
 
             let auth;
             if (req.query.connection) {
-                auth = (await Connection.from(config.pool, req.query.connection)).auth;
+                auth = (await ConnectionModel.from(parseInt(String(req.query.connection)))).auth;
             } else {
                 if (!req.auth.email) throw new Err(400, null, 'Groups can only be listed by an authenticated user');
-                auth = (await Profile.from(config.pool, req.auth.email)).auth;
+                auth = (await ProfileModel.from(req.auth.email)).auth;
             }
-            const api = await TAKAPI.init(new URL(config.server.api), new APIAuthCertificate(auth.cert, auth.key));
+            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
             const query = {};
             for (const q in req.query) query[q] = String(req.query[q]);
@@ -242,12 +245,12 @@ export default async function router(schema: any, config: Config) {
 
             let auth;
             if (req.query.connection) {
-                auth = (await Connection.from(config.pool, req.query.connection)).auth;
+                auth = (await ConnectionModel.from(parseInt(String(req.query.connection)))).auth;
             } else {
                 if (!req.auth.email) throw new Err(400, null, 'Groups can only be listed by an authenticated user');
-                auth = (await Profile.from(config.pool, req.auth.email)).auth;
+                auth = (await ProfileModel.from(req.auth.email)).auth;
             }
-            const api = await TAKAPI.init(new URL(config.server.api), new APIAuthCertificate(auth.cert, auth.key));
+            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
             const missions = await api.Mission.contacts(String(req.params.name));
 
@@ -284,19 +287,19 @@ export default async function router(schema: any, config: Config) {
             let auth;
             let creatorUid;
             if (req.query.connection) {
-                auth = (await Connection.from(config.pool, req.query.connection)).auth;
+                auth = (await ConnectionModel.from(parseInt(String(req.query.connection)))).auth;
                 creatorUid = `CloudTAK-Conn-${req.query.connection}`;
             } else {
                 if (!req.auth.email) throw new Err(400, null, 'Groups can only be listed by an authenticated user');
 
-                const profile = await Profile.from(config.pool, req.auth.email);
+                const profile = await ProfileModel.from(req.auth.email);
                 auth = profile.auth;
                 creatorUid = profile.username;
             }
 
             const name = String(req.query.name);
 
-            const api = await TAKAPI.init(new URL(config.server.api), new APIAuthCertificate(auth.cert, auth.key));
+            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
             const content = await api.Files.upload({
                 name: name,
@@ -304,7 +307,6 @@ export default async function router(schema: any, config: Config) {
                 keywords: [],
                 creatorUid: creatorUid,
             }, req.body);
-
 
             const missionContent = await api.Mission.attachContents(req.params.name, [content.Hash]);
 
@@ -335,17 +337,17 @@ export default async function router(schema: any, config: Config) {
 
             let auth;
             if (req.query.connection) {
-                auth = (await Connection.from(config.pool, req.query.connection)).auth;
+                auth = (await ConnectionModel.from(parseInt(String(req.query.connection)))).auth;
             } else {
                 if (!req.auth.email) throw new Err(400, null, 'Groups can only be listed by an authenticated user');
 
-                const profile = await Profile.from(config.pool, req.auth.email);
+                const profile = await ProfileModel.from(req.auth.email);
                 auth = profile.auth;
             }
 
             const name = String(req.query.name);
 
-            const api = await TAKAPI.init(new URL(config.server.api), new APIAuthCertificate(auth.cert, auth.key));
+            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
             const missionContent = await api.Mission.detachContents(req.params.name, req.params.hash);
 

@@ -42,6 +42,9 @@ export default {
             type: Boolean,
             default: false
         },
+        connection: {
+            type: Number
+        },
         modelValue: {
             type: Array,
             default: []
@@ -69,7 +72,9 @@ export default {
         },
         fetch: async function() {
             this.loading.groups = true;
-            this.list = await window.std('/api/marti/group');
+            const url = window.stdurl('/api/marti/group');
+            if (this.connection) url.searchParams.append('connection', this.connection);
+            this.list = await window.std(url);
             this.loading.groups = false;
         },
         close: function() {
