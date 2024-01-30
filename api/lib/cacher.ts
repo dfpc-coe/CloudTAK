@@ -74,20 +74,18 @@ export default class Cacher {
     /**
      * Delete a key from the cache
      */
-    async del(key: string) {
+    async del(key: string): Promise<void> {
         try {
             await this.cache.delete(key);
         } catch (err) {
             console.error(err);
         }
-
-        return true;
     }
 
     /**
      * Flush the entire cache
      */
-    async flush() {
+    async flush(): Promise<void> {
         try {
             await this.cache.flush();
         } catch (err) {
@@ -95,7 +93,7 @@ export default class Cacher {
         }
     }
 
-    end() {
+    end(): void {
         this.cache.close();
     }
 }
