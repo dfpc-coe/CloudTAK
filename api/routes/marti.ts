@@ -66,7 +66,8 @@ export default async function router(schema: any, config: Config) {
         query: {
             type: 'object',
             properties: {
-                clientUid: { type: 'string' }
+                clientUid: { type: 'string' },
+                connection: { type: 'integer' }
             }
         },
         body: {
@@ -90,9 +91,16 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            if (!req.auth.email) throw new Err(400, null, 'Groups can only be listed by an authenticated user');
-            const profile = await ProfileModel.from(req.auth.email);
-            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
+            let api;
+            if (req.query.connection) {
+                const connection = await ConnectionModel.from(parseInt(String(req.query.connection)));
+                api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(connection.auth.cert, connection.auth.key));
+
+            } else {
+                if (!req.auth.email) throw new Err(400, null, 'Groups can only be listed by an authenticated user');
+                const profile = await ProfileModel.from(req.auth.email);
+                api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
+            }
 
             const query = {};
             for (const q in req.query) query[q] = String(req.query[q]);
