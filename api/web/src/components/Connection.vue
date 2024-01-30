@@ -40,10 +40,10 @@
                                     <TablerLoading v-if='loading.channels' desc='Loading Channels'/>
                                     <TablerNone v-else-if='!rawChannels.length' :create='false'/>
                                     <template v-else>
-                                        <div :key='ch.name' v-for='ch in processChannels' class="col-lg-12 hover-light">
+                                        <div :key='ch.name' v-for='ch in processChannels' class="col-lg-12">
                                             <div class='col-12 py-2 px-2 d-flex align-items-center'>
-                                                <IconEye v-if='ch.active'/>
-                                                <IconEyeOff v-else />
+                                                <IconEye v-if='ch.active' @click='setStatus(ch, false)' v-tooltip='"Disable"' class='cursor-pointer'/>
+                                                <IconEyeOff v-else @click='setStatus(ch, true)' v-tooltip='"Enable"' class='cursor-pointer'/>
                                                 <span class="mx-2" v-text='ch.name'></span>
                                             </div>
                                         </div>
@@ -164,6 +164,21 @@ export default {
         }
     },
     methods: {
+        setStatus: async function(channel, active=false) {
+            this.rawChannels = this.rawChannels.map((ch) => {
+                if (ch.name === channel.name) ch.active = active;
+                return ch;
+            });
+
+            const url = window.stdurl('/api/marti/group');
+            url.searchParams.append('connection', this.connection.id);
+            await window.std(url, {
+                method: 'PUT',
+                body: this.rawChannels
+            });
+
+            this.$emit('reset');
+        },
         timeDiff(update) {
             return timeDiff(update);
         },
