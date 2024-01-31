@@ -134,15 +134,9 @@ export const Data = pgTable('data', {
     name: text('name').notNull(),
     description: text('description').notNull().default(''),
     auto_transform: boolean('auto_transform').notNull().default(false),
+    mission_sync: boolean('mission_sync').notNull().default(false),
+    assets: json('assets').$type<Array<string>>().notNull().default(["*"]),
     connection: integer('connection').notNull().references(() => Connection.id)
-});
-
-export const DataMission = pgTable('data_mission', {
-    id: serial('id').primaryKey(),
-    mission: text('mission').notNull(),
-    enabled: boolean('enabled').notNull().default(true),
-    data: integer('data').notNull().references(() => Data.id),
-    assets: json('assets').notNull().default(["*"])
 });
 
 export const Layer = pgTable('layers', {

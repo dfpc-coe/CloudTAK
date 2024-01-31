@@ -20,9 +20,6 @@
         "connection": {
             "$ref": "./data/connection.json"
         },
-        "mission": {
-            "$ref": "./data_mission.json"
-        },
         "auto_transform": {
             "$ref": "./data/auto_transform.json"
         }
