@@ -29,8 +29,8 @@
 
                             <span v-text='asset.name' class='mx-2'/>
 
-                            <IconRefreshDot v-if='data.mission && asset.sync' class='text-green' v-tooltip='"Syncing"'/>
-                            <IconRefreshOff v-else-if='data.mission && !asset.sync'/>
+                            <IconRefreshDot v-if='data.mission_sync && asset.sync' class='text-green' v-tooltip='"Syncing"'/>
+                            <IconRefreshOff v-else-if='data.mission_sync && !asset.sync'/>
                         </div>
                     </td>
                     <td>

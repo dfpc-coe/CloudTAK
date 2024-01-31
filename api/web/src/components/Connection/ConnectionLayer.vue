@@ -8,9 +8,9 @@
         </div>
     </div>
 
-    <Alert v-if='err' title='ETL Server Error' :err='err.message' :compact='true'/>
+    <Alert v-if='err' title='ETL Server Error' :err='err.message'/>
     <TablerLoading v-else-if='loading'/>
-    <TablerNone v-else-if='!list.items.length' :create='false' label='Layers' :compact='true'/>
+    <TablerNone v-else-if='!list.items.length' :create='false' label='Layers'/>
     <div v-else class='table-resposive'>
         <table class='table card-table table-vcenter datatable table-hover'>
             <thead>

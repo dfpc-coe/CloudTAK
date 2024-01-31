@@ -29,7 +29,7 @@
 
                             <div class='ms-auto'>
                                 <div class='btn-list'>
-                                    <IconAccessPoint v-if='data.mission' class='text-green' v-tooltip='"Mission Sync On"'/>
+                                    <IconAccessPoint v-if='data.mission_sync' class='text-green' v-tooltip='"Mission Sync On"'/>
                                     <IconAccessPointOff v-else class='text-red' v-tooltip='"Mission Sync Off"'/>
 
                                     <IconSettings class='cursor-pointer' @click='$router.push(`/connection/${$route.params.connectionid}/data/${data.id}/edit`)' v-tooltip='"Edit"'/>
@@ -102,7 +102,6 @@ export default {
             loading: {
                 data: true
             },
-            assets: {},
             connection: {},
             data: {},
         }
