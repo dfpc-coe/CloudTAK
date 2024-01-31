@@ -9,7 +9,7 @@
             <template v-else-if='!newtask'>
                 <h3 class='subtitle-header'>Available Tasks:</h3>
                 <div class="list-group list-group-flush">
-                    <a @click='newtask = image' :key='image' v-for='image in Object.keys(list.tasks)' class='list-group-item list-group-item-action cursor-pointer' v-text='image'/>
+                    <a @click='newtask = image' :key='image' v-for='image in Object.keys(list.items)' class='list-group-item list-group-item-action cursor-pointer' v-text='image'/>
                 </div>
             </template>
             <template v-else-if='!version'>
@@ -19,7 +19,7 @@
                 </div>
 
                 <div class="list-group list-group-flush">
-                    <a @click='version = v' :key='v' v-for='v in list.tasks[newtask]' class='list-group-item list-group-item-action cursor-pointer' v-text='v'/>
+                    <a @click='version = v' :key='v' v-for='v in list.items[newtask]' class='list-group-item list-group-item-action cursor-pointer' v-text='v'/>
                 </div>
             </template>
             <template v-else>
@@ -66,7 +66,7 @@ export default {
             version: false,
             list: {
                 total: 0,
-                tasks: {}
+                items: {}
             }
         }
     },
@@ -74,7 +74,7 @@ export default {
         await this.fetch();
 
         const task = this.task.replace(/-v[0-9]+\.[0-9]+\.[0-9]+$/, '');
-        if (this.list.tasks[task]) this.newtask = task;
+        if (this.list.items[task]) this.newtask = task;
     },
     methods: {
         close: function() {
