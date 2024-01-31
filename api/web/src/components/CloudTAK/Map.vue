@@ -326,7 +326,10 @@ export default {
         },
         sendCOT: function(cot) {
             if (!this.ws || this.ws.readyState !== WebSocket.OPEN) return;
-            this.ws.send(JSON.stringify(cot));
+            this.ws.send(JSON.stringify({
+                type: 'cot',
+                data: cot
+            }));
         },
         updateCOT: function() {
             mapStore.map.getSource('cots').setData(cotStore.collection())
