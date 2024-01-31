@@ -24,6 +24,11 @@ export type EphemeralConnection = {
     }
 }
 
+export type IncomingMessage = {
+    type: string;
+    data: object;
+}
+
 export class ConnectionWebSocket {
     ws: WebSocket;
     format: string;
@@ -34,20 +39,26 @@ export class ConnectionWebSocket {
         this.format = format;
         if (client) {
             this.client = client;
-            this.ws.on('message', (msg) => {
-                const feat: Feature = JSON.parse(String(msg));
+            this.ws.on('message', (data) => {
+                const msg = JSON.parse(String(data));
 
-                try {
-                    const cot = CoT.from_geojson(feat);
+                if (msg.type === 'chat') {
+                    console.error('CHAT');
+                } else {
+                    const feat = msg.data as Feature;
 
-                    this.client.tak.write([cot]);
-                } catch (err) {
-                    this.ws.send(JSON.stringify({
-                        type: 'Error',
-                        properties: {
-                            message: err.message
-                        }
-                    }));
+                    try {
+                        const cot = CoT.from_geojson(feat);
+
+                        this.client.tak.write([cot]);
+                    } catch (err) {
+                        this.ws.send(JSON.stringify({
+                            type: 'Error',
+                            properties: {
+                                message: err.message
+                            }
+                        }));
+                    }
                 }
             });
         }
