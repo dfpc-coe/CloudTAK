@@ -20,6 +20,12 @@
             @close='mode = null'
         />
     </template>
+    <template v-else-if='mode === "chats"'>
+        <MenuChats
+            @close='mode = null'
+            @mode='mode = $event'
+        />
+    </template>
     <template v-else-if='mode === "channels"'>
         <MenuChannels
             @close='mode = null'
@@ -34,12 +40,6 @@
     </template>
     <template v-else-if='mode === "datas"'>
         <MenuDatas
-            @close='mode = null'
-            @mode='mode = $event'
-        />
-    </template>
-    <template v-else-if='mode === "chats"'>
-        <MenuChats
             @close='mode = null'
             @mode='mode = $event'
         />
@@ -89,6 +89,10 @@
                     <IconAffiliate size='32'/>
                     <span class='mx-2' style='font-size: 18px;'>Channels</span>
                 </div>
+                <div @click='mode = "chats"' class='cursor-pointer col-12 py-2 px-2 d-flex align-items-center hover-dark'>
+                    <IconMessage size='32'/>
+                    <span class='mx-2' style='font-size: 18px;'>Chats</span>
+                </div>
             </div>
         </div>
     </template>
@@ -99,6 +103,7 @@
 import {
     IconMap,
     IconUsers,
+    IconMessage,
     IconSettings,
     IconAmbulance,
     IconBoxMultiple,
@@ -132,6 +137,7 @@ export default {
         MenuChats,
         MenuChat,
         MenuDatas,
+        IconMessage,
         IconAffiliate,
         IconAmbulance,
         IconSettings,

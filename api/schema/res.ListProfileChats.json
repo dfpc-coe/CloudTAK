@@ -1,9 +1,9 @@
 {
     "type": "object",
     "additionalProperties": false,
-    "required": [],
+    "required": ["items"],
     "properties": {
-        "chatrooms": {
+        "items": {
             "type": "array",
             "items": {
                 "type": "object"
