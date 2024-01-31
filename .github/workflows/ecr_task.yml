@@ -42,7 +42,7 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v2
 
       - name: Docker Tag Task
-        run: docker tag etl-${{matrix.task}}:latest ${{secrets.AWS_ACCOUNT_ID}}.dkr.ecr.${{secrets.AWS_REGION}}.amazonaws.com/coe-ecr-etl:${{matrix.task}}-${{github.event.pull_request.head.sha || github.sha}}
+        run: docker tag cloudtak-${{matrix.task}}:latest ${{secrets.AWS_ACCOUNT_ID}}.dkr.ecr.${{secrets.AWS_REGION}}.amazonaws.com/coe-ecr-etl:${{matrix.task}}-${{github.event.pull_request.head.sha || github.sha}}
 
       - name: Docker Push task
         run: docker push ${{secrets.AWS_ACCOUNT_ID}}.dkr.ecr.${{secrets.AWS_REGION}}.amazonaws.com/coe-ecr-etl:${{matrix.task}}-${{github.event.pull_request.head.sha || github.sha}}
@@ -59,7 +59,7 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v2
 
       - name: Docker Tag Task (STAGING)
-        run: docker tag etl-${{matrix.task}}:latest ${{secrets.AWS_STAGING_ACCOUNT_ID}}.dkr.ecr.${{secrets.AWS_STAGING_REGION}}.amazonaws.com/coe-ecr-etl:${{matrix.task}}-${{github.event.pull_request.head.sha || github.sha}}
+        run: docker tag cloudtak-${{matrix.task}}:latest ${{secrets.AWS_STAGING_ACCOUNT_ID}}.dkr.ecr.${{secrets.AWS_STAGING_REGION}}.amazonaws.com/coe-ecr-etl:${{matrix.task}}-${{github.event.pull_request.head.sha || github.sha}}
 
       - name: Docker Push task (STAGING)
         run: docker push ${{secrets.AWS_STAGING_ACCOUNT_ID}}.dkr.ecr.${{secrets.AWS_STAGING_REGION}}.amazonaws.com/coe-ecr-etl:${{matrix.task}}-${{github.event.pull_request.head.sha || github.sha}}
