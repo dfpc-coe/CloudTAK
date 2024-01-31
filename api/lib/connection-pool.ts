@@ -1,5 +1,8 @@
 import Err from '@openaddresses/batch-error';
-import { Server, Connection } from './schema.js';
+import {
+    Server,
+    Connection,
+} from './schema.js';
 import Sinks from './sinks.js';
 import Config from './config.js';
 import Metrics from './aws/metric.js';

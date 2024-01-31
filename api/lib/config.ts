@@ -5,11 +5,13 @@ import ConnectionPool, { ConnectionWebSocket } from './connection-pool.js';
 import Cacher from './cacher.js';
 import { Server } from './schema.js';
 import { type InferSelectModel } from 'drizzle-orm';
+import Models from './models.js';
 import process from 'node:process';
 import * as pgtypes from './schema.js';
 
 interface ConfigArgs {
     silent: boolean,
+    postgres: string,
     unsafe: boolean,
     noevents: boolean,
     nosinks: boolean,
@@ -24,6 +26,7 @@ export default class Config {
     noevents: boolean;
     nometrics: boolean;
     nosinks: boolean;
+    models: Models;
     StackName: string;
     HookURL?: string;
     SigningSecret: string;
@@ -36,13 +39,13 @@ export default class Config {
     DynamoDB: string;
     wsClients: Map<string, ConnectionWebSocket[]>;
     Bucket?: string;
-    pg?: Pool<typeof pgtypes>;
+    pg: Pool<typeof pgtypes>;
     cacher?: Cacher;
     conns?: ConnectionPool;
     server?: InferSelectModel<typeof Server>;
     events?: EventsPool;
 
-    static async env(args: ConfigArgs) {
+    static async env(args: ConfigArgs): Promise<Config> {
         const config = new Config();
 
         config.silent = (args.silent || false);
@@ -51,6 +54,16 @@ export default class Config {
         config.nometrics = (args.nometrics || false);
         config.nosinks = (args.nosinks || false);
         config.wsClients = new Map();
+
+        config.pg = await Pool.connect(args.postgres, pgtypes, {
+            ssl: config.StackName === 'test' ? undefined  : { rejectUnauthorized: false },
+            migrationsFolder: (new URL('../migrations', import.meta.url)).pathname,
+            jsonschema: {
+                dir: new URL('../schema', import.meta.url)
+            }
+        })
+
+        config.models = new Models(config.pg);
 
         try {
             if (!process.env.AWS_DEFAULT_REGION) {

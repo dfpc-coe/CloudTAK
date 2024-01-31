@@ -2,11 +2,9 @@ import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
 import bodyparser from 'body-parser';
-import { Profile, Connection } from '../lib/schema.js';
 import S3 from '../lib/aws/s3.js';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
-import Modeler from '@openaddresses/batch-generic';
 import TAKAPI, {
     APIAuthToken,
     APIAuthCertificate,
@@ -14,9 +12,6 @@ import TAKAPI, {
 } from '../lib/tak-api.js';
 
 export default async function router(schema: any, config: Config) {
-    const ProfileModel = new Modeler(config.pg, Profile);
-    const ConnectionModel = new Modeler(config.pg, Connection);
-
     await schema.post('/marti/missions/:name/log', {
         name: 'Create Log',
         group: 'MartiMissionLog',
@@ -48,11 +43,11 @@ export default async function router(schema: any, config: Config) {
             let auth;
             let creatorUid;
             if (req.query.connection) {
-                auth = (await ConnectionModel.from(parseInt(String(req.query.connection)))).auth;
+                auth = (await config.models.Connection.from(parseInt(String(req.query.connection)))).auth;
                 creatorUid = `CloudTAK-Conn-${req.query.connection}`;
             } else {
                 if (!req.auth.email) throw new Err(400, null, 'Mission Log can only be modified by an authenticated user');
-                auth = (await ProfileModel.from(req.auth.email)).auth;
+                auth = (await config.models.Profile.from(req.auth.email)).auth;
                 creatorUid = req.auth.email;
             }
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));

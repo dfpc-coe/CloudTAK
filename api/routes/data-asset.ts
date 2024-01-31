@@ -2,7 +2,6 @@ import Err from '@openaddresses/batch-error';
 import busboy from 'busboy';
 import fs from 'node:fs/promises';
 import path from 'path';
-import { Data, DataMission } from '../lib/schema.js';
 import Auth from '../lib/auth.js';
 import S3 from '../lib/aws/s3.js';
 import Stream from 'node:stream';
@@ -13,13 +12,9 @@ import assetList from '../lib/asset.js';
 import { augment } from './data.js';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
-import Modeler from '@openaddresses/batch-generic';
 import Config from '../lib/config.js';
 
 export default async function router(schema: any, config: Config) {
-    const DataModel = new Modeler(config.pg, Data);
-    const DataMissionModel = new Modeler(config.pg, DataMission);
-
     await schema.get('/data/:dataid/asset', {
         name: 'List Assets',
         auth: 'user',
@@ -31,7 +26,7 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            const data: any = await augment(DataMissionModel, await DataModel.from(parseInt(req.params.dataid)))
+            const data: any = await augment(config.models.DataMission, await config.models.Data.from(parseInt(req.params.dataid)))
 
             const list = await assetList(config, `data/${String(req.params.dataid)}/`);
 
@@ -68,7 +63,7 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            data = await DataModel.from(parseInt(req.params.dataid));
+            data = await config.models.Data.from(parseInt(req.params.dataid));
 
             if (!req.headers['content-type']) throw new Err(400, null, 'Missing Content-Type Header');
 
@@ -123,7 +118,7 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            const data = await DataModel.from(parseInt(req.params.dataid));
+            const data = await config.models.Data.from(parseInt(req.params.dataid));
 
             await Batch.submitData(config, data, `${req.params.asset}.${req.params.ext}`, req.body);
 
@@ -191,7 +186,7 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req, true);
 
-            const data = await DataModel.from(parseInt(req.params.dataid));
+            const data = await config.models.Data.from(parseInt(req.params.dataid));
 
             const token = jwt.sign({ access: 'user' }, config.SigningSecret)
             const url = new URL(`${config.PMTILES_URL}/tiles/data/${data.id}/${req.params.asset}`);

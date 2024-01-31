@@ -10,13 +10,10 @@ import xml2js from 'xml2js';
 import { Readable } from 'node:stream';
 import stream2buffer from '../lib/stream.js';
 import bboxPolygon from '@turf/bbox-polygon';
-import { Basemap } from '../lib/schema.js';
-import Modeler, { Param } from '@openaddresses/batch-generic';
+import { Param } from '@openaddresses/batch-generic'
 import { sql } from 'drizzle-orm';
 
 export default async function router(schema: any, config: Config) {
-    const BasemapModel = new Modeler(config.pg, Basemap);
-
     await schema.put('/basemap', {
         name: 'Import BaseMaps',
         group: 'BaseMap',
@@ -124,7 +121,7 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            const list = await BasemapModel.list({
+            const list = await config.models.Basemap.list({
                 limit: Number(req.query.limit),
                 page: Number(req.query.page),
                 order: String(req.query.order),
@@ -155,7 +152,7 @@ export default async function router(schema: any, config: Config) {
             if (req.body.bounds) req.body.bounds = bboxPolygon(req.body.bounds).geometry;
             if (req.body.center) req.body.center = { type: 'Point', coordinates: req.body.center };
 
-            const basemap = await BasemapModel.generate(req.body);
+            const basemap = await config.models.Basemap.generate(req.body);
 
             return res.json(basemap);
         } catch (err) {
@@ -178,7 +175,7 @@ export default async function router(schema: any, config: Config) {
             if (req.body.bounds) req.body.bounds = bboxPolygon(req.body.bounds).geometry;
             if (req.body.center) req.body.center = { type: 'Point', coordinates: req.body.center };
 
-            const basemap = await BasemapModel.commit(Number(req.params.basemapid), {
+            const basemap = await config.models.Basemap.commit(Number(req.params.basemapid), {
                 updated: sql`Now()`,
                 ...req.body
             });
@@ -204,7 +201,7 @@ export default async function router(schema: any, config: Config) {
             await Auth.is_auth(req, true);
 
             const basemap = await config.cacher.get(Cacher.Miss(req.query, `basemap-${req.params.basemapid}`), async () => {
-                return await BasemapModel.from(Number(req.params.basemapid))
+                return await config.models.Basemap.from(Number(req.params.basemapid))
             });
 
             if (req.query.download) {
@@ -251,7 +248,7 @@ export default async function router(schema: any, config: Config) {
             await Auth.is_auth(req, true);
 
             const basemap = await config.cacher.get(Cacher.Miss(req.query, `basemap-${req.params.basemapid}`), async () => {
-                return await BasemapModel.from(Number(req.params.basemapid));
+                return await config.models.Basemap.from(Number(req.params.basemapid));
             });
 
             const url = new URL(basemap.url
@@ -286,7 +283,7 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            await BasemapModel.delete(Number(req.params.basemapid));
+            await config.models.Basemap.delete(Number(req.params.basemapid));
 
             await config.cacher.del(`basemap-${req.params.basemapid}`);
 

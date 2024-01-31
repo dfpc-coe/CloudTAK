@@ -3,12 +3,8 @@ import Auth from '../lib/auth.js';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
 import Config from '../lib/config.js';
-import { ProfileOverlay } from '../lib/schema.js';
-import Modeler from '@openaddresses/batch-generic';
 
 export default async function router(schema: any, config: Config) {
-    const OverlayModel = new Modeler(config.pg, ProfileOverlay);
-
     await schema.get('/profile/overlay', {
         name: 'Get Overlays',
         auth: 'user',
@@ -19,7 +15,7 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            const overlays = await OverlayModel.list({
+            const overlays = await config.models.ProfileOverlay.list({
                 limit: Number(req.query.limit)
             });
 
@@ -40,7 +36,7 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            const overlay = await OverlayModel.generate({
+            const overlay = await config.models.ProfileOverlay.generate({
                 username: req.auth.email,
                 ...req.body
             });

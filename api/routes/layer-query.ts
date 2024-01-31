@@ -5,11 +5,9 @@ import Cacher from '../lib/cacher.js';
 import Auth from '../lib/auth.js';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
-import { Layer } from '../lib/schema.js';
 import Modeler from '@openaddresses/batch-generic';
 
 export default async function router(schema: any, config: Config) {
-    const LayerModel = new Modeler(config.pg, Layer);
     const ddb = new Dynamo(config.StackName);
 
     await schema.get('/layer/:layerid/query', {
@@ -25,7 +23,7 @@ export default async function router(schema: any, config: Config) {
             await Auth.is_auth(req);
 
             const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
-                return await LayerModel.from(parseInt(req.params.layerid));
+                return await config.models.Layer.from(parseInt(req.params.layerid));
             });
 
             if (!layer.logging) throw new Err(400, null, 'Feature Logging has been disabled for this layer');
@@ -61,7 +59,7 @@ export default async function router(schema: any, config: Config) {
             await Auth.is_auth(req);
 
             const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
-                return await LayerModel.from(parseInt(req.params.layerid));
+                return await config.models.Layer.from(parseInt(req.params.layerid));
             });
 
             if (!layer.logging) throw new Err(400, null, 'Feature Logging has been disabled for this layer');
