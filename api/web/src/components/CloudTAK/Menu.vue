@@ -64,7 +64,7 @@
                     <div/>
                 </div>
             </div>
-            <div class='row py-2 px-2'>
+            <div class='py-2 px-3'>
                 <div @click='mode = "settings"' class='cursor-pointer col-12 py-2 px-2 d-flex align-items-center hover-dark'>
                     <IconSettings size='32'/>
                     <span class='mx-2' style='font-size: 18px;'>Settings</span>

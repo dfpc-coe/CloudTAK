@@ -36,7 +36,7 @@
                 <div/>
             </div>
         </div>
-        <div class='col-12 row px-2 py-2'>
+        <div class='col-12 px-3 py-2'>
             <div @click='mode = "callsign"' class='cursor-pointer col-12 py-2 px-2 d-flex align-items-center hover-dark'>
                 <IconUserCog size='32'/>
                 <span class='mx-2' style='font-size: 18px;'>Callsign &amp; Device Preferences</span>
