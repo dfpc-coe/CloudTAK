@@ -1,5 +1,5 @@
 <template>
-<div class='row'>
+<div>
     <div class='col-12 border-bottom border-light'>
         <div class='modal-header px-0 mx-2'>
             <IconCircleArrowLeft @click='$emit("close")' class='cursor-pointer'/>
@@ -9,8 +9,8 @@
             </div>
         </div>
     </div>
-    <div :key='layer.name' v-for='layer in layers' class="col-lg-12">
-        <div class='row col-12 py-2 px-2 d-flex'>
+    <div :key='layer.name' v-for='layer in layers' class="col-lg">
+        <div class='py-2 px-2'>
             <div class='col-12 d-flex align-items-center'>
                 <IconEye v-if='layer.visible === "visible"' @click='flipVisible(layer)' class='cursor-pointer' v-tooltip='"Hide Layer"'/>
                 <IconEyeOff v-else @click='flipVisible(layer)' class='cursor-pointer' v-tooltip='"Show Layer"'/>
@@ -19,6 +19,7 @@
                     <IconMap v-if='layer.type === "raster"' v-tooltip='"Raster"'/>
                     <IconVector v-else v-tooltip='"Vector"'/>
                 </span>
+
                 <span class='mx-2' v-text='layer.name'/>
 
                 <div class='ms-auto btn-list'>

@@ -1,5 +1,5 @@
 <template>
-<div class='row'>
+<div>
     <div class='col-12 border-bottom border-light'>
         <div class='modal-header px-0 mx-2'>
             <IconCircleArrowLeft @click='$emit("close")' class='cursor-pointer'/>
@@ -7,7 +7,7 @@
             <div/>
         </div>
     </div>
-    <div class='col-12 row px-2 py-2'>
+    <div class='px-2 py-2'>
         <TablerLoading v-if='loading'/>
         <div v-else class='position-absolute'>
             <div class='position-relative bottom-0'>

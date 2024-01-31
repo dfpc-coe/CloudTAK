@@ -1,5 +1,5 @@
 <template>
-<div class='row'>
+<div>
     <div class='col-12 border-bottom border-light'>
         <div class='modal-header px-0 mx-2'>
             <IconCircleArrowLeft @click='$emit("close")' class='cursor-pointer'/>
@@ -10,7 +10,7 @@
             </div>
         </div>
     </div>
-    <div class='row py-2 px-2'>
+    <div class='py-2 px-2'>
         <TablerLoading v-if='loading'/>
         <TablerNone
             v-else-if='!list.items.length'
@@ -18,7 +18,7 @@
             @create='$router.push("/basemap/new")'
         />
         <template v-else>
-            <div @click='setBasemap(basemap)' :key='basemap.id' v-for='basemap in list.items' class="col-12 hover-dark cursor-pointer">
+            <div @click='setBasemap(basemap)' :key='basemap.id' v-for='basemap in list.items' class="col-12 hover-dark cursor-pointer py-2 px-2">
                 <div class="d-flex align-items-center my-2">
                     <span class='mx-2' style='font-size: 18px;' v-text='basemap.name'/>
 
