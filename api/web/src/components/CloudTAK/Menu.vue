@@ -38,6 +38,12 @@
             @mode='mode = $event'
         />
     </template>
+    <template v-else-if='mode === "chats"'>
+        <MenuChats
+            @close='mode = null'
+            @mode='mode = $event'
+        />
+    </template>
     <template v-else-if='mode === "overlays"'>
         <MenuOverlays
             @close='mode = null'
@@ -101,6 +107,7 @@ import {
 import MenuBasemaps from './Menu/Basemaps.vue';
 import MenuOverlays from './Menu/Overlays.vue';
 import MenuDatas from './Menu/Datas.vue';
+import MenuChats from './Menu/Chats.vue';
 import MenuChat from './Menu/Chat.vue';
 import MenuContacts from './Menu/Contacts.vue';
 import MenuSettings from './Menu/Settings.vue';
@@ -122,6 +129,7 @@ export default {
         MenuContacts,
         MenuChannels,
         MenuMissions,
+        MenuChats,
         MenuChat,
         MenuDatas,
         IconAffiliate,
