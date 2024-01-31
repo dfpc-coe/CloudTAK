@@ -3,25 +3,11 @@ import Auth from '../lib/auth.js';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
 import { type InferSelectModel } from 'drizzle-orm';
-import { Data, DataMission } from '../lib/schema.js';
+import { Data } from '../lib/schema.js';
 import Config from '../lib/config.js';
 import S3 from '../lib/aws/s3.js';
 import { Param } from '@openaddresses/batch-generic';
 import { sql, eq } from 'drizzle-orm';
-
-export async function augment(Model, data: InferSelectModel<typeof Data>): Promise<object> {
-    let mission = false;
-    try {
-        mission = await Model.from(eq(DataMission.data, data.id))
-    } catch (err) {
-        mission = false;
-    }
-
-    return {
-        ...data,
-        mission
-    }
-}
 
 export default async function router(schema: any, config: Config) {
     await schema.get('/data', {
@@ -88,7 +74,7 @@ export default async function router(schema: any, config: Config) {
                 ...req.body
             });
 
-            return res.json(await augment(config.models.DataMission, data));
+            return res.json(data);
         } catch (err) {
             return Err.respond(err, res);
         }
@@ -106,35 +92,7 @@ export default async function router(schema: any, config: Config) {
             await Auth.is_auth(req);
 
             let data = await config.models.Data.from(parseInt(req.params.dataid));
-            return res.json(await augment(config.models.DataMission, data));
-        } catch (err) {
-            return Err.respond(err, res);
-        }
-    });
-
-    await schema.post('/data/:dataid/mission', {
-        name: 'Attach Mission',
-        group: 'Data',
-        auth: 'admin',
-        ':dataid': 'integer',
-        description: 'Attach a TAK Server Mission to a Data Layer',
-        body: 'req.body.CreateDataMission.json',
-        res: 'res.Data.json'
-    }, async (req: AuthRequest, res: Response) => {
-        try {
-            await Auth.is_auth(req);
-
-            let data = await config.models.Data.from(parseInt(req.params.dataid));
-
-            const mission = await config.models.DataMission.generate({
-                ...req.body,
-                data: req.params.dataid
-            });
-
-            return res.json({
-                ...data,
-                mission
-            });
+            return res.json(data);
         } catch (err) {
             return Err.respond(err, res);
         }

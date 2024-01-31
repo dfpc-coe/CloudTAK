@@ -9,7 +9,6 @@ import Batch from '../lib/aws/batch.js';
 import jwt from 'jsonwebtoken';
 import { includesWithGlob } from "array-includes-with-glob";
 import assetList from '../lib/asset.js';
-import { augment } from './data.js';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
 import Config from '../lib/config.js';
@@ -26,15 +25,15 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            const data: any = await augment(config.models.DataMission, await config.models.Data.from(parseInt(req.params.dataid)))
+            const data = await config.models.Data.from(parseInt(req.params.dataid))
 
             const list = await assetList(config, `data/${String(req.params.dataid)}/`);
 
             list.assets = list.assets.map((a: any) => {
-                if (!data.mission) {
+                if (!data.mission_sync) {
                     a.sync = false;
                 } else {
-                    for (const glob of data.mission.assets) {
+                    for (const glob of data.assets) {
                         a.sync = includesWithGlob([a.name], glob);
                         if (a.sync) break;
                     }

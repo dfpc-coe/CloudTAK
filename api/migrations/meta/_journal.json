@@ -15,6 +15,13 @@
       "when": 1706580028287,
       "tag": "0001_perpetual_psynapse",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1706731243037,
+      "tag": "0002_shallow_loa",
+      "breakpoints": true
     }
   ]
 }

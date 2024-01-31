@@ -7,7 +7,6 @@ export default class Models {
     Basemap: Modeler<typeof pgtypes.Basemap>;
     Import: Modeler<typeof pgtypes.Import>;
     Data: Modeler<typeof pgtypes.Data>;
-    DataMission: Modeler<typeof pgtypes.DataMission>;
     Connection: Modeler<typeof pgtypes.Connection>;
     ConnectionSink: Modeler<typeof pgtypes.ConnectionSink>;
     Profile: Modeler<typeof pgtypes.Profile>;
@@ -31,7 +30,6 @@ export default class Models {
         this.Connection = new Modeler(pg, pgtypes.Connection);
         this.ConnectionSink = new Modeler(pg, pgtypes.ConnectionSink);
         this.Data = new Modeler(pg, pgtypes.Data);
-        this.DataMission = new Modeler(pg, pgtypes.DataMission);
         this.Iconset = new Modeler(pg, pgtypes.Iconset);
         this.Icon = new Modeler(pg, pgtypes.Icon);
         this.Layer = new Modeler(pg, pgtypes.Layer);
