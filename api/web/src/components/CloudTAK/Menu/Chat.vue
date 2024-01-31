@@ -11,7 +11,7 @@
         <TablerLoading v-if='loading'/>
         <div v-else class='position-absolute'>
             <div class='position-relative bottom-0'>
-                HERE
+                <TablerInput v-model='chat'/>
             </div>
         </div>
     </div>
@@ -40,6 +40,7 @@ export default {
     data: function() {
         return {
             loading: false,
+            chat: '',
             contact: cotStore.cots.get(this.uid)
         }
     },
