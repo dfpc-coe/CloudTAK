@@ -39,6 +39,13 @@
                                     />
                                 </div>
                                 <div class="col-md-12">
+                                    <TablerToggle
+                                        label='Misison Sync'
+                                        description='If Enabled, Assets will be uploaded to the Mission'
+                                        v-model='data.mission_sync'
+                                    />
+                                </div>
+                                <div class="col-md-12">
                                     <TablerInput
                                         label='Data Description'
                                         description='The human readable description of the Data Layer'
@@ -92,6 +99,7 @@ export default {
             data: {
                 name: '',
                 auto_transform: true,
+                mission_sync: true,
                 description: '',
             }
         }

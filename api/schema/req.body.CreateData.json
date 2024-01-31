@@ -16,6 +16,9 @@
         "auto_transform": {
             "$ref": "./data/auto_transform.json"
         },
+        "mission_sync": {
+            "$ref": "./data/mission_sync.json"
+        },
         "description": {
             "$ref": "./data/description.json"
         }
