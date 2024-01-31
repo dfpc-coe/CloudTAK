@@ -1,12 +1,12 @@
 import Err from '@openaddresses/batch-error';
-import { Data, DataMission } from '../lib/schema.js';
 import Auth from '../lib/auth.js';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
 import { type InferSelectModel } from 'drizzle-orm';
+import { Data, DataMission } from '../lib/schema.js';
 import Config from '../lib/config.js';
 import S3 from '../lib/aws/s3.js';
-import Modeler, { Param } from '@openaddresses/batch-generic';
+import { Param } from '@openaddresses/batch-generic';
 import { sql, eq } from 'drizzle-orm';
 
 export async function augment(Model, data: InferSelectModel<typeof Data>): Promise<object> {
@@ -24,9 +24,6 @@ export async function augment(Model, data: InferSelectModel<typeof Data>): Promi
 }
 
 export default async function router(schema: any, config: Config) {
-    const DataModel = new Modeler(config.pg, Data);
-    const DataMissionModel = new Modeler(config.pg, DataMission);
-
     await schema.get('/data', {
         name: 'List Data',
         group: 'Data',
@@ -38,7 +35,7 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            const list = await DataModel.list({
+            const list = await config.models.Data.list({
                 limit: Number(req.query.limit),
                 page: Number(req.query.page),
                 order: String(req.query.order),
@@ -66,7 +63,7 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            const data = await DataModel.generate(req.body);
+            const data = await config.models.Data.generate(req.body);
 
             return res.json(data);
         } catch (err) {
@@ -86,12 +83,12 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            let data = await DataModel.commit(parseInt(req.params.dataid), {
+            let data = await config.models.Data.commit(parseInt(req.params.dataid), {
                 updated: sql`Now()`,
                 ...req.body
             });
 
-            return res.json(await augment(DataMissionModel, data));
+            return res.json(await augment(config.models.DataMission, data));
         } catch (err) {
             return Err.respond(err, res);
         }
@@ -108,8 +105,8 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            let data = await DataModel.from(parseInt(req.params.dataid));
-            return res.json(await augment(DataMissionModel, data));
+            let data = await config.models.Data.from(parseInt(req.params.dataid));
+            return res.json(await augment(config.models.DataMission, data));
         } catch (err) {
             return Err.respond(err, res);
         }
@@ -127,9 +124,9 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            let data = await DataModel.from(parseInt(req.params.dataid));
+            let data = await config.models.Data.from(parseInt(req.params.dataid));
 
-            const mission = await DataMissionModel.generate({
+            const mission = await config.models.DataMission.generate({
                 ...req.body,
                 data: req.params.dataid
             });
@@ -156,7 +153,7 @@ export default async function router(schema: any, config: Config) {
 
             await S3.del(`data-${String(req.params.dataid)}/`, { recurse: true });
 
-            await DataModel.delete(parseInt(req.params.dataid));
+            await config.models.Data.delete(parseInt(req.params.dataid));
 
             return res.json({
                 status: 200,

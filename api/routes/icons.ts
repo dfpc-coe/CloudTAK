@@ -9,14 +9,10 @@ import Sprites from '../lib/sprites.js';
 import Cacher from '../lib/cacher.js';
 import archiver from 'archiver';
 import xml2js from 'xml2js';
-import { Iconset, Icon } from '../lib/schema.js';
-import Modeler, { Param } from '@openaddresses/batch-generic';
+import { Param } from '@openaddresses/batch-generic';
 import { sql } from 'drizzle-orm';
 
 export default async function router(schema, config: Config) {
-    const IconsetModel = new Modeler(config.pg, Iconset);
-    const IconModel = new Modeler(config.pg, Icon);
-
     // Eventually look at replacing this with memcached?
     const SpriteMap = {
         default: {
@@ -36,7 +32,7 @@ export default async function router(schema, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            const list = await IconsetModel.list({
+            const list = await config.models.Iconset.list({
                 limit: Number(req.query.limit),
                 page: Number(req.query.page),
                 order: String(req.query.order),
@@ -63,7 +59,7 @@ export default async function router(schema, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            const iconset = await IconsetModel.generate(req.body);
+            const iconset = await config.models.Iconset.generate(req.body);
 
             return res.json(iconset);
         } catch (err) {
@@ -83,7 +79,7 @@ export default async function router(schema, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            const iconset = await IconsetModel.commit(String(req.params.iconset), req.body);
+            const iconset = await config.models.Iconset.commit(String(req.params.iconset), req.body);
 
             return res.json(iconset);
         } catch (err) {
@@ -115,7 +111,7 @@ export default async function router(schema, config: Config) {
         try {
             await Auth.is_auth(req, true);
 
-            const iconset = await IconsetModel.from(String(req.params.iconset));
+            const iconset = await config.models.Iconset.from(String(req.params.iconset));
 
             if (req.query.download) {
                 res.setHeader('Content-Disposition', `attachment; filename="${iconset.name}.${req.query.format}"`);
@@ -145,7 +141,7 @@ export default async function router(schema, config: Config) {
                     }
                 };
 
-                for (const icon of (await IconModel.list({
+                for (const icon of (await config.models.Icon.list({
                     limit: 1000,
                     where: sql`iconset = ${String(req.params.iconset)}`
                 })).items) {
@@ -181,11 +177,11 @@ export default async function router(schema, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            const iconset = await IconsetModel.from(String(req.params.iconset));
+            const iconset = await config.models.Iconset.from(String(req.params.iconset));
 
             if (path.parse(req.body.name).ext !== '.png') throw new Err(400, null, 'Name must have .png extension');
 
-            const icon = await IconModel.generate({
+            const icon = await config.models.Icon.generate({
                 ...req.body,
                 path: `${iconset.uid}/${req.body.name}`,
                 iconset: iconset.uid
@@ -208,8 +204,8 @@ export default async function router(schema, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            await IconModel.delete(sql`iconset = ${req.params.iconset}`);
-            await IconsetModel.delete(String(req.params.iconset));
+            await config.models.Icon.delete(sql`iconset = ${req.params.iconset}`);
+            await config.models.Iconset.delete(String(req.params.iconset));
 
             return res.json({
                 status: 200,
@@ -233,7 +229,7 @@ export default async function router(schema, config: Config) {
 
             req.query.filter = String(req.query.filter).toLowerCase();
 
-            const list = await IconModel.list({
+            const list = await config.models.Icon.list({
                 limit: Number(req.query.limit),
                 page: Number(req.query.page),
                 order: String(req.query.order),
@@ -262,7 +258,7 @@ export default async function router(schema, config: Config) {
     }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(req);
-            const icon = await IconModel.from(sql`${req.params.iconset} = iconset AND ${req.params.icon} = name`);
+            const icon = await config.models.Icon.from(sql`${req.params.iconset} = iconset AND ${req.params.icon} = name`);
             return res.json(icon);
         } catch (err) {
             return Err.respond(err, res);
@@ -289,13 +285,13 @@ export default async function router(schema, config: Config) {
     }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(req);
-            let icon = await IconModel.from(sql`${req.params.iconset} = iconset AND ${req.params.icon} = name`);
+            let icon = await config.models.Icon.from(sql`${req.params.iconset} = iconset AND ${req.params.icon} = name`);
 
             if (req.body.name && path.parse(req.body.name).ext !== '.png') throw new Err(400, null, 'Name must have .png extension');
             if (req.body.name) req.body.path = `${icon.iconset}/${req.body.name}`;
 
             if (req.body.type2525b === '') delete req.body.type2525b;
-            icon = await IconModel.commit(icon.id, req.body);
+            icon = await config.models.Icon.commit(icon.id, req.body);
 
             return res.json(icon);
         } catch (err) {
@@ -314,7 +310,7 @@ export default async function router(schema, config: Config) {
     }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(req);
-            const icon = await IconModel.delete(sql`${req.params.iconset} = iconset AND ${req.params.icon} = name`);
+            const icon = await config.models.Icon.delete(sql`${req.params.iconset} = iconset AND ${req.params.icon} = name`);
             return res.json({
                 status: 200,
                 message: 'Icon Deleted'
@@ -335,7 +331,7 @@ export default async function router(schema, config: Config) {
         try {
             await Auth.is_auth(req, true);
 
-            const icon = await IconModel.from(sql`
+            const icon = await config.models.Icon.from(sql`
                 (${req.params.iconset} = iconset AND ${req.params.icon} = name)
             `);
             return res.status(200).send(Buffer.from(icon.data, 'base64'));
@@ -364,7 +360,7 @@ export default async function router(schema, config: Config) {
             if (SpriteMap[String(req.query.iconset)]) {
                 return res.json(SpriteMap[String(req.query.iconset)].json);
             } else {
-                const icons = await IconModel.list({
+                const icons = await config.models.Icon.list({
                     limit: 1000,
                     where: sql`
                         (${Param(req.query.iconset)}::TEXT IS NULL OR ${Param(req.query.iconset)}::TEXT = iconset)
@@ -403,7 +399,7 @@ export default async function router(schema, config: Config) {
             if (SpriteMap[String(req.query.iconset)]) {
                 return res.send(SpriteMap[String(req.query.iconset)].image);
             } else {
-                const icons = await IconModel.list({
+                const icons = await config.models.Icon.list({
                     limit: 1000,
                     where: sql`
                         (${Param(req.query.iconset)}::TEXT IS NULL OR ${Param(req.query.iconset)}::TEXT = iconset)

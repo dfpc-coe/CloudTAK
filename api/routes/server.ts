@@ -4,12 +4,9 @@ import { sql } from 'drizzle-orm';
 import Config from '../lib/config.js';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
-import { Server } from '../lib/schema.js';
-import Modeler, { Param } from '@openaddresses/batch-generic';
+import { Param } from '@openaddresses/batch-generic';
 
 export default async function router(schema: any, config: Config) {
-    const ServerModel = new Modeler<typeof Server>(config.pg, Server);
-
     await schema.get('/server', {
         name: 'Get Server',
         group: 'Server',
@@ -49,7 +46,7 @@ export default async function router(schema: any, config: Config) {
 
             if (config.server) throw new Err(400, null, 'Cannot post to an existing server');
 
-            config.server = await ServerModel.generate(req.body);
+            config.server = await config.models.Server.generate(req.body);
             await config.conns.refresh(config.server);
 
             return res.json({
@@ -75,7 +72,7 @@ export default async function router(schema: any, config: Config) {
 
             if (!config.server) throw new Err(400, null, 'Cannot patch a server that hasn\'t been created');
 
-            config.server = await ServerModel.commit(config.server.id, {
+            config.server = await config.models.Server.commit(config.server.id, {
                 ...req.body,
                 updated: sql`Now()`,
             });

@@ -1,15 +1,10 @@
 import Err from '@openaddresses/batch-error';
-import { Profile } from '../lib/schema.js';
 import Auth from '../lib/auth.js';
-
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
 import Config from '../lib/config.js';
-import Modeler from '@openaddresses/batch-generic';
 
 export default async function router(schema: any, config: Config) {
-    const ProfileModel = new Modeler(config.pg, Profile);
-
     await schema.get('/profile', {
         name: 'Get Profile',
         auth: 'user',
@@ -20,7 +15,7 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            const profile = await ProfileModel.from(req.auth.email);
+            const profile = await config.models.Profile.from(req.auth.email);
 
             return res.json(profile);
         } catch (err) {
@@ -39,7 +34,7 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            const profile = await ProfileModel.commit(req.auth.email, req.body);
+            const profile = await config.models.Profile.commit(req.auth.email, req.body);
 
             return res.json(profile);
         } catch (err) {

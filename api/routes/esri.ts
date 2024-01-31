@@ -3,8 +3,6 @@ import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
-import { ConnectionSink } from '../lib/schema.js';
-import Modeler from '@openaddresses/batch-generic';
 import {
     EsriType,
     EsriAuth,
@@ -15,8 +13,6 @@ import {
 } from '../lib/esri.js';
 
 export default async function router(schema: any, config: Config) {
-    const ConnectionSinkModel = new Modeler(config.pg, ConnectionSink);
-
     await schema.post('/esri', {
         name: 'Validate & Auth',
         group: 'ESRI',
@@ -69,7 +65,7 @@ export default async function router(schema: any, config: Config) {
             }
 
             if (req.body.sinkid) {
-                const sink: any = await ConnectionSinkModel.from(parseInt(req.body.sinkid));
+                const sink: any = await config.models.ConnectionSink.from(parseInt(req.body.sinkid));
                 req.body.username = sink.body.username;
                 req.body.password = sink.body.password;
             }

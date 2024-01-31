@@ -5,8 +5,6 @@ import CF from '../lib/aws/cloudformation.js';
 import Lambda from '../lib/aws/lambda.js';
 import CloudFormation from '../lib/aws/cloudformation.js';
 import Logs from '../lib/aws/lambda-logs.js';
-import Modeler from '@openaddresses/batch-generic';
-import { Layer } from '../lib/schema.js';
 import semver from 'semver-sort';
 import Cacher from '../lib/cacher.js';
 import Config from '../lib/config.js';
@@ -14,8 +12,6 @@ import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
 
 export default async function router(schema: any, config: Config) {
-    const LayerModel = new Modeler(config.pg, Layer);
-
     await schema.get('/task', {
         name: 'List Tasks',
         group: 'Task',
@@ -99,7 +95,7 @@ export default async function router(schema: any, config: Config) {
             await Auth.is_auth(req);
 
             const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
-                return await LayerModel.from(parseInt(String(req.params.layerid)));
+                return await config.models.Layer.from(parseInt(String(req.params.layerid)));
             });
 
             return res.json(await CF.status(config, layer.id));
@@ -120,7 +116,7 @@ export default async function router(schema: any, config: Config) {
             await Auth.is_auth(req);
 
             const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
-                return await LayerModel.from(parseInt(String(req.params.layerid)));
+                return await config.models.Layer.from(parseInt(String(req.params.layerid)));
             });
 
             await Lambda.invoke(config, layer.id)
@@ -148,7 +144,7 @@ export default async function router(schema: any, config: Config) {
             await Auth.is_auth(req);
 
             const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
-                return await LayerModel.from(parseInt(String(req.params.layerid)));
+                return await config.models.Layer.from(parseInt(String(req.params.layerid)));
             });
 
             return res.json(await Logs.list(config, layer));
@@ -170,7 +166,7 @@ export default async function router(schema: any, config: Config) {
             await Auth.is_auth(req);
 
             const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
-                return await LayerModel.from(parseInt(String(req.params.layerid)));
+                return await config.models.Layer.from(parseInt(String(req.params.layerid)));
             });
 
             return res.json({
@@ -193,7 +189,7 @@ export default async function router(schema: any, config: Config) {
             await Auth.is_auth(req);
 
             const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
-                return await LayerModel.from(parseInt(String(req.params.layerid)));
+                return await config.models.Layer.from(parseInt(String(req.params.layerid)));
             });
 
             try {

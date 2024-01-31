@@ -50,10 +50,10 @@ export default async function router(schema: any, config: Config) {
 
             let auth;
             if (req.query.connection) {
-                auth = (await ConnectionModel.from(parseInt(String(req.query.connection)))).auth;
+                auth = (await config.models.Connection.from(parseInt(String(req.query.connection)))).auth;
             } else {
                 if (!req.auth.email) throw new Err(400, null, 'Groups can only be listed by an authenticated user');
-                auth = (await ProfileModel.from(req.auth.email)).auth;
+                auth = (await config.models.Profile.from(req.auth.email)).auth;
             }
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
@@ -93,10 +93,10 @@ export default async function router(schema: any, config: Config) {
 
             let auth;
             if (req.query.connection) {
-                auth = (await ConnectionModel.from(parseInt(String(req.query.connection)))).auth;
+                auth = (await config.models.Connection.from(parseInt(String(req.query.connection)))).auth;
             } else {
                 if (!req.auth.email) throw new Err(400, null, 'Groups can only be listed by an authenticated user');
-                auth = (await ProfileModel.from(req.auth.email)).auth;
+                auth = (await config.models.Profile.from(req.auth.email)).auth;
             }
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
@@ -144,10 +144,10 @@ export default async function router(schema: any, config: Config) {
 
             let auth;
             if (req.query.connection) {
-                auth = (await ConnectionModel.from(parseInt(String(req.query.connection)))).auth;
+                auth = (await config.models.Connection.from(parseInt(String(req.query.connection)))).auth;
             } else {
                 if (!req.auth.email) throw new Err(400, null, 'Groups can only be listed by an authenticated user');
-                auth = (await ProfileModel.from(req.auth.email)).auth;
+                auth = (await config.models.Profile.from(req.auth.email)).auth;
             }
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
@@ -193,10 +193,10 @@ export default async function router(schema: any, config: Config) {
 
             let auth;
             if (req.query.connection) {
-                auth = (await ConnectionModel.from(parseInt(String(req.query.connection)))).auth;
+                auth = (await config.models.Connection.from(parseInt(String(req.query.connection)))).auth;
             } else {
                 if (!req.auth.email) throw new Err(400, null, 'Groups can only be listed by an authenticated user');
-                auth = (await ProfileModel.from(req.auth.email)).auth;
+                auth = (await config.models.Profile.from(req.auth.email)).auth;
             }
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
@@ -245,10 +245,10 @@ export default async function router(schema: any, config: Config) {
 
             let auth;
             if (req.query.connection) {
-                auth = (await ConnectionModel.from(parseInt(String(req.query.connection)))).auth;
+                auth = (await config.models.Connection.from(parseInt(String(req.query.connection)))).auth;
             } else {
                 if (!req.auth.email) throw new Err(400, null, 'Groups can only be listed by an authenticated user');
-                auth = (await ProfileModel.from(req.auth.email)).auth;
+                auth = (await config.models.Profile.from(req.auth.email)).auth;
             }
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
@@ -287,12 +287,12 @@ export default async function router(schema: any, config: Config) {
             let auth;
             let creatorUid;
             if (req.query.connection) {
-                auth = (await ConnectionModel.from(parseInt(String(req.query.connection)))).auth;
+                auth = (await config.models.Connection.from(parseInt(String(req.query.connection)))).auth;
                 creatorUid = `CloudTAK-Conn-${req.query.connection}`;
             } else {
                 if (!req.auth.email) throw new Err(400, null, 'Groups can only be listed by an authenticated user');
 
-                const profile = await ProfileModel.from(req.auth.email);
+                const profile = await config.models.Profile.from(req.auth.email);
                 auth = profile.auth;
                 creatorUid = profile.username;
             }
@@ -337,11 +337,11 @@ export default async function router(schema: any, config: Config) {
 
             let auth;
             if (req.query.connection) {
-                auth = (await ConnectionModel.from(parseInt(String(req.query.connection)))).auth;
+                auth = (await config.models.Connection.from(parseInt(String(req.query.connection)))).auth;
             } else {
                 if (!req.auth.email) throw new Err(400, null, 'Groups can only be listed by an authenticated user');
 
-                const profile = await ProfileModel.from(req.auth.email);
+                const profile = await config.models.Profile.from(req.auth.email);
                 auth = profile.auth;
             }
 

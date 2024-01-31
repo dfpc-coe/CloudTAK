@@ -4,13 +4,10 @@ import CW from '../lib/aws/metric.js';
 import Config from '../lib/config.js';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
-import { Connection, ConnectionSink } from '../lib/schema.js';
-import Modeler, { Param } from '@openaddresses/batch-generic';
+import { Param } from '@openaddresses/batch-generic';
 import { sql } from 'drizzle-orm';
 
 export default async function router(schema: any, config: Config) {
-    const ConnectionModel = new Modeler(config.pg, Connection);
-    const ConnectionSinkModel = new Modeler(config.pg, ConnectionSink);
     const cw = new CW(config.StackName);
 
     await schema.get('/connection/:connectionid/sink', {
@@ -25,7 +22,7 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            const list = await ConnectionSinkModel.list({
+            const list = await config.models.ConnectionSink.list({
                 limit: Number(req.query.limit),
                 page: Number(req.query.page),
                 order: String(req.query.order),
@@ -55,9 +52,9 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            const conn = await ConnectionModel.from(parseInt(req.params.connectionid));
+            const conn = await config.models.Connection.from(parseInt(req.params.connectionid));
 
-            const sink = await ConnectionSinkModel.generate({
+            const sink = await config.models.ConnectionSink.generate({
                 ...req.body,
                 connection: conn.id,
             });
@@ -83,12 +80,12 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            const conn = await ConnectionModel.from(parseInt(req.params.connectionid));
-            let sink = await ConnectionSinkModel.from(parseInt(req.params.sinkid));
+            const conn = await config.models.Connection.from(parseInt(req.params.connectionid));
+            let sink = await config.models.ConnectionSink.from(parseInt(req.params.sinkid));
 
             if (sink.connection !== conn.id) throw new Err(400, null, 'Sink must belong to parent connection');
 
-            sink = await ConnectionSinkModel.commit(sink.id, req.body);
+            sink = await config.models.ConnectionSink.commit(sink.id, req.body);
 
             await config.cacher.del(`connection-${req.params.connectionid}-sinks`);
 
@@ -110,8 +107,8 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            const conn = await ConnectionModel.from(parseInt(req.params.connectionid));
-            const sink = await ConnectionSinkModel.from(parseInt(req.params.sinkid));
+            const conn = await config.models.Connection.from(parseInt(req.params.connectionid));
+            const sink = await config.models.ConnectionSink.from(parseInt(req.params.sinkid));
             if (sink.connection !== conn.id) throw new Err(400, null, 'Sink must belong to parent connection');
 
             return res.json(sink);
@@ -150,8 +147,8 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            const conn = await ConnectionModel.from(parseInt(req.params.connectionid));
-            const sink = await ConnectionSinkModel.from(parseInt(req.params.sinkid));
+            const conn = await config.models.Connection.from(parseInt(req.params.connectionid));
+            const sink = await config.models.ConnectionSink.from(parseInt(req.params.sinkid));
             if (sink.connection !== conn.id) throw new Err(400, null, 'Sink must belong to parent connection');
 
             const stats = await cw.sink(sink.id);
@@ -204,11 +201,11 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req);
 
-            const conn = await ConnectionModel.from(parseInt(req.params.connectionid));
-            const sink = await ConnectionSinkModel.from(parseInt(req.params.sinkid));
+            const conn = await config.models.Connection.from(parseInt(req.params.connectionid));
+            const sink = await config.models.ConnectionSink.from(parseInt(req.params.sinkid));
             if (sink.connection !== conn.id) throw new Err(400, null, 'Sink must belong to parent connection');
 
-            await ConnectionSinkModel.delete(sink.id);
+            await config.models.ConnectionSink.delete(sink.id);
 
             await config.cacher.del(`connection-${req.params.connectionid}-sinks`);
 

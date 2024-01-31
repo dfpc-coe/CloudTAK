@@ -8,6 +8,13 @@
       "when": 1705685810664,
       "tag": "0000_third_turbo",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1706580028287,
+      "tag": "0001_perpetual_psynapse",
+      "breakpoints": true
     }
   ]
 }

@@ -7,7 +7,7 @@ import SwaggerUI from 'swagger-ui-express';
 import history, {Context} from 'connect-history-api-fallback';
 // @ts-ignore
 import Schema from '@openaddresses/batch-schema';
-import Modeler, { Pool } from '@openaddresses/batch-generic';
+import Modeler from '@openaddresses/batch-generic';
 import minimist from 'minimist';
 import ConnectionPool, { ConnectionWebSocket, sleep } from './lib/connection-pool.js';
 import EventsPool from './lib/events-pool.js';
@@ -54,6 +54,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
         silent: args.silent || false,
         unsafe: args.unsafe || false,
         noevents: args.noevents || false,
+        postgres: process.env.POSTGRES || args.postgres || 'postgres://postgres@localhost:5432/tak_ps_etl',
         nometrics: args.nometrics || false,
         nosinks: args.nosinks || false,
         local: args.local || false,
@@ -69,15 +70,6 @@ export default async function server(config: Config) {
     } catch (err) {
         console.log(`ok - failed to flush cache: ${err.message}`);
     }
-
-    console.error((new URL('./migrations', import.meta.url)).pathname)
-    config.pg = await Pool.connect(process.env.POSTGRES || args.postgres || 'postgres://postgres@localhost:5432/tak_ps_etl', pgschema, {
-        ssl: config.StackName === 'test' ? undefined  : { rejectUnauthorized: false },
-        migrationsFolder: (new URL('./migrations', import.meta.url)).pathname,
-        jsonschema: {
-            dir: new URL('./schema', import.meta.url)
-        }
-    })
 
     try {
         const ServerModel = new Modeler(config.pg, pgschema.Server);
