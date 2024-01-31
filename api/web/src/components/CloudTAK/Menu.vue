@@ -56,43 +56,41 @@
         />
     </template>
     <template v-else>
-        <div class='row'>
-            <div class='col-12 border-bottom border-light'>
-                <div class='modal-header px-0 mx-2 align-center'>
-                    <div/>
-                    <div class='modal-title'>Sidebar</div>
-                    <div/>
-                </div>
+        <div class='col-12 border-bottom border-light'>
+            <div class='modal-header px-0 mx-2 align-center'>
+                <div/>
+                <div class='modal-title'>Sidebar</div>
+                <div/>
             </div>
-            <div class='py-2 px-3'>
-                <div @click='mode = "settings"' class='cursor-pointer col-12 py-2 px-2 d-flex align-items-center hover-dark'>
-                    <IconSettings size='32'/>
-                    <span class='mx-2' style='font-size: 18px;'>Settings</span>
-                </div>
-                <div @click='mode = "overlays"' class='cursor-pointer col-12 py-2 px-2 d-flex align-items-center hover-dark'>
-                    <IconBoxMultiple size='32'/>
-                    <span class='mx-2' style='font-size: 18px;'>Overlays</span>
-                </div>
-                <div @click='mode = "contacts"' class='cursor-pointer col-12 py-2 px-2 d-flex align-items-center hover-dark'>
-                    <IconUsers size='32'/>
-                    <span class='mx-2' style='font-size: 18px;'>Contacts</span>
-                </div>
-                <div @click='mode = "basemaps"' class='cursor-pointer col-12 py-2 px-2 d-flex align-items-center hover-dark'>
-                    <IconMap size='32'/>
-                    <span class='mx-2' style='font-size: 18px;'>BaseMaps</span>
-                </div>
-                <div @click='mode = "missions"' class='cursor-pointer col-12 py-2 px-2 d-flex align-items-center hover-dark'>
-                    <IconAmbulance size='32'/>
-                    <span class='mx-2' style='font-size: 18px;'>Mission Sync</span>
-                </div>
-                <div @click='mode = "channels"' class='cursor-pointer col-12 py-2 px-2 d-flex align-items-center hover-dark'>
-                    <IconAffiliate size='32'/>
-                    <span class='mx-2' style='font-size: 18px;'>Channels</span>
-                </div>
-                <div @click='mode = "chats"' class='cursor-pointer col-12 py-2 px-2 d-flex align-items-center hover-dark'>
-                    <IconMessage size='32'/>
-                    <span class='mx-2' style='font-size: 18px;'>Chats</span>
-                </div>
+        </div>
+        <div class='py-2 px-2'>
+            <div @click='mode = "settings"' class='cursor-pointer col-12 py-2 px-2 d-flex align-items-center hover-dark'>
+                <IconSettings size='32'/>
+                <span class='mx-2' style='font-size: 18px;'>Settings</span>
+            </div>
+            <div @click='mode = "overlays"' class='cursor-pointer col-12 py-2 px-2 d-flex align-items-center hover-dark'>
+                <IconBoxMultiple size='32'/>
+                <span class='mx-2' style='font-size: 18px;'>Overlays</span>
+            </div>
+            <div @click='mode = "contacts"' class='cursor-pointer col-12 py-2 px-2 d-flex align-items-center hover-dark'>
+                <IconUsers size='32'/>
+                <span class='mx-2' style='font-size: 18px;'>Contacts</span>
+            </div>
+            <div @click='mode = "basemaps"' class='cursor-pointer col-12 py-2 px-2 d-flex align-items-center hover-dark'>
+                <IconMap size='32'/>
+                <span class='mx-2' style='font-size: 18px;'>BaseMaps</span>
+            </div>
+            <div @click='mode = "missions"' class='cursor-pointer col-12 py-2 px-2 d-flex align-items-center hover-dark'>
+                <IconAmbulance size='32'/>
+                <span class='mx-2' style='font-size: 18px;'>Mission Sync</span>
+            </div>
+            <div @click='mode = "channels"' class='cursor-pointer col-12 py-2 px-2 d-flex align-items-center hover-dark'>
+                <IconAffiliate size='32'/>
+                <span class='mx-2' style='font-size: 18px;'>Channels</span>
+            </div>
+            <div @click='mode = "chats"' class='cursor-pointer col-12 py-2 px-2 d-flex align-items-center hover-dark'>
+                <IconMessage size='32'/>
+                <span class='mx-2' style='font-size: 18px;'>Chats</span>
             </div>
         </div>
     </template>

@@ -1,5 +1,5 @@
 <template>
-<div class='row'>
+<div>
     <div class='col-12 border-bottom border-light'>
         <div class='modal-header px-0 mx-2'>
             <IconCircleArrowLeft @click='$emit("close")' class='cursor-pointer'/>
@@ -13,7 +13,7 @@
     <TablerNone v-else-if='!contacts.length' :create='false'/>
     <template v-else>
         <div :key='a.id' v-for='a of visibleContacts' class="col-lg-12">
-            <div class='col-12 row py-2 px-2 d-flex align-items-center hover-dark cursor-pointer'>
+            <div class='row col-12 py-2 px-2 d-flex align-items-center hover-dark cursor-pointer'>
                 <div class='col-auto'>
                     <IconCircleFilled :class='{
                         "text-yellow": a.team === "Yellow",
