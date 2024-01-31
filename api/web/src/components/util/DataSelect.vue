@@ -29,7 +29,7 @@
                                         </tr>
                                     </thead>
                                     <tbody class='table-tbody'>
-                                        <tr @click='selected = data' :key='data.id' v-for='data of data.data' class='cursor-pointer'>
+                                        <tr @click='selected = data' :key='data.id' v-for='data of data.items' class='cursor-pointer'>
                                             <td>
                                                 <div class='d-flex'>
                                                     <span class='mt-2' v-text='data.name'/>
@@ -74,7 +74,7 @@ export default {
             },
             data: {
                 total: 0,
-                data: []
+                items: []
             }
         }
     },
