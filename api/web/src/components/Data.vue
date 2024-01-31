@@ -29,8 +29,8 @@
 
                             <div class='ms-auto'>
                                 <div class='btn-list'>
-                                    <IconAccessPoint @click='modal.mission = true' v-if='data.mission' class='cursor-pointer text-green' v-tooltip='"Mission Sync On"'/>
-                                    <IconAccessPointOff @click='modal.mission = true' v-else class='cursor-pointer text-red' v-tooltip='"Mission Sync Off"'/>
+                                    <IconAccessPoint v-if='data.mission' class='text-green' v-tooltip='"Mission Sync On"'/>
+                                    <IconAccessPointOff v-else class='text-red' v-tooltip='"Mission Sync Off"'/>
 
                                     <IconSettings class='cursor-pointer' @click='$router.push(`/connection/${$route.params.connectionid}/data/${data.id}/edit`)' v-tooltip='"Edit"'/>
                                 </div>
@@ -72,22 +72,11 @@
         </div>
     </div>
 
-    <MissionModal
-        v-if='modal.mission'
-        :selectable='true'
-        :initial='data.mission ? {
-            "name": data.mission.mission
-        } : null'
-        @select='selectMission($event)'
-        @close='modal.mission = false'
-    />
-
     <PageFooter/>
 </div>
 </template>
 
 <script>
-import MissionModal from './Data/MissionModal.vue';
 import PageFooter from './PageFooter.vue';
 import timeDiff from '../timediff.js';
 import {
@@ -110,9 +99,6 @@ export default {
     data: function() {
         return {
             err: false,
-            modal: {
-                mission: false
-            },
             loading: {
                 data: true
             },
@@ -128,22 +114,6 @@ export default {
     methods: {
         timeDiff(update) {
             return timeDiff(update);
-        },
-        selectMission: async function(mission) {
-            this.modal.mission = false;
-
-            if (!this.data.mission) {
-                this.loading.data = true;
-                this.data = await window.std(`/api/data/${this.$route.params.dataid}/mission`, {
-                    method: 'POST',
-                    body: {
-                        mission: mission.name,
-                    }
-                });
-                this.loading.data = false;
-            } else {
-                throw new Error('Updating missions not yet supported');
-            }
         },
         fetchConnection: async function() {
             this.connection = await window.std(`/api/connection/${this.$route.params.connectionid}`);
@@ -164,8 +134,7 @@ export default {
         TablerMarkdown,
         IconAccessPoint,
         IconAccessPointOff,
-        ConnectionStatus,
-        MissionModal
+        ConnectionStatus
     }
 }
 </script>

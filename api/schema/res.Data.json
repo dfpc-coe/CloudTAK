@@ -14,6 +14,12 @@
         "name": {
             "$ref": "./data/name.json"
         },
+        "mission_sync": {
+            "$ref": "./data/mission_sync.json"
+        },
+        "assets": {
+            "$ref": "./data/assets.json"
+        },
         "description": {
             "$ref": "./data/description.json"
         },
@@ -30,6 +36,8 @@
         "updated",
         "name",
         "connection",
+        "mission_sync",
+        "assets",
         "auto_transform",
         "description"
     ]
