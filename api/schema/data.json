@@ -22,6 +22,12 @@
         },
         "connection": {
             "$ref": "./data/connection.json"
+        },
+        "mission_sync": {
+            "$ref": "./data/mission_sync.json"
+        },
+        "assets": {
+            "$ref": "./data/assets.json"
         }
     },
     "required": [
@@ -31,6 +37,8 @@
         "name",
         "description",
         "auto_transform",
-        "connection"
+        "connection",
+        "mission_sync",
+        "assets"
     ]
 }
