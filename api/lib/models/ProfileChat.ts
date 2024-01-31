@@ -3,6 +3,13 @@ import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import { ProfileChat } from '../schema.js';
 import { sql, eq } from 'drizzle-orm';
 
+export type ChatList = {
+    total: number;
+    items: Array<{
+        chatroom: string;
+    }>
+}
+
 export default class ProfileChatModel extends Modeler<typeof ProfileChat> {
     constructor(
         pool: PostgresJsDatabase<any>,
@@ -10,12 +17,15 @@ export default class ProfileChatModel extends Modeler<typeof ProfileChat> {
         super(pool, ProfileChat);
     }
 
-    async chats(username: string): Promise<boolean> {
+    async chats(username: string): Promise<ChatList> {
         const pgres = await this.pool.select({
-            chatroom: this.generic.username
+            chatroom: this.generic.chatroom
         }).from(this.generic)
             .where(eq(this.generic.username, username))
 
-        return true;
+        return {
+            total: pgres.length,
+            items: pgres
+        }
     }
 }

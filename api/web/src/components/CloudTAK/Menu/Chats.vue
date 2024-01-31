@@ -51,8 +51,6 @@ export default {
         },
     },
     components: {
-        IconEye,
-        IconEyeOff,
         IconRefresh,
         TablerNone,
         TablerLoading,
