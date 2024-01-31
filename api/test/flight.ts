@@ -221,6 +221,7 @@ export default class Flight {
     takeoff(custom = {}) {
         test('test server takeoff', async (t) => {
             this.config = await Config.env({
+                postgres: process.env.POSTGRES || 'postgres://postgres@localhost:5432/tak_ps_etl',
                 silent: true,
                 unsafe: true,
                 noevents: true,
