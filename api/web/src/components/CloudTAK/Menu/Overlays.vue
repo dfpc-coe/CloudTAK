@@ -27,6 +27,7 @@
                     <div class='ms-auto btn-list'>
                         <IconMaximize v-if='getSource(layer).bounds' @click='zoomTo(getSource(layer).bounds)' class='cursor-pointer' v-tooltip='"Zoom To Overlay"'/>
                         <TablerDelete
+                            :key='layer.id'
                             v-if='layer.name.startsWith("data-") || layer.name.startsWith("profile-")'
                             displaytype='icon'
                             @delete='removeLayer(layer)'
@@ -77,7 +78,7 @@ export default {
     methods: {
         removeLayer: async function(layer) {
             this.loading = true;
-            //mapStore.removeLayer(layer.name);
+            mapStore.removeLayer(layer.name);
             this.loading = false;
         },
         getSource: function(layer) {

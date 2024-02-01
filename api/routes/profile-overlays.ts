@@ -47,4 +47,37 @@ export default async function router(schema: any, config: Config) {
         }
     });
 
+    await schema.delete('/profile/overlay', {
+        name: 'delete Overlay',
+        auth: 'user',
+        group: 'ProfileOverlay',
+        description: 'Create Profile Overlay',
+        query: {
+            type: 'object',
+            required: ['id'],
+            properties: {
+                id: { type: 'string' }
+            }
+        },
+        res: 'res.Standard.json'
+    }, async (req: AuthRequest, res: Response) => {
+        try {
+            await Auth.is_auth(req);
+
+            const overlay = await config.models.ProfileOverlay.from(parseInt(String(req.query.id)));
+
+            if (overlay.username !== req.auth.email) {
+                throw new Err(403, null, 'Cannot delete anothers overlays');
+            }
+
+            await config.models.ProfileOverlay.delete(overlay.id);
+
+            return res.json({
+                status: 200,
+                message: 'Overlay Removed'
+            });
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
 }
