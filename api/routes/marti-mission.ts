@@ -301,7 +301,7 @@ export default async function router(schema: any, config: Config) {
                 creatorUid: creatorUid,
             }, req);
 
-            // @ts-expect-error
+            // @ts-expect-error Morgan will throw an error after not getting req.ip and there not being req.connection.remoteAddress
             req.connection = {
                 // @ts-expect-error
                 remoteAddress: req._remoteAddress
