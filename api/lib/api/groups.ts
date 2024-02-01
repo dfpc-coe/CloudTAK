@@ -1,4 +1,16 @@
 import TAKAPI from '../tak-api.js';
+import { TAKList } from './types.js';
+
+export type Group = {
+    name: string;
+    direction: string;
+    created: string;
+    type: string;
+    bitpos: number;
+    active: boolean;
+    description: string;
+}
+
 
 export default class {
     api: TAKAPI;
@@ -9,7 +21,7 @@ export default class {
 
     async list(query: {
         useCache?: string;
-    }) {
+    }): Promise<TAKList<Group>> {
         const url = new URL(`/Marti/api/groups/all`, this.api.url);
         for (const q in query) url.searchParams.append(q, query[q]);
         return await this.api.fetch(url, {

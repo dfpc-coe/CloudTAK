@@ -211,10 +211,10 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
 
             this.cot(conn, cot, ephemeral);
         }).on('end', async () => {
-            console.error(`not ok - ${conn.id} @ end`);
+            console.error(`not ok - ${conn.id} - ${conn.name} @ end`);
             this.retry(connClient);
         }).on('timeout', async () => {
-            console.error(`not ok - ${conn.id} @ timeout`);
+            console.error(`not ok - ${conn.id} - ${conn.name} @ timeout`);
             this.retry(connClient);
         }).on('ping', async () => {
             if (this.stackName !== 'test' && !ephemeral) {
@@ -226,7 +226,7 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
                 }
             }
         }).on('error', async (err) => {
-            console.error(`not ok - ${conn.id} @ error:${err}`);
+            console.error(`not ok - ${conn.id} - ${conn.name} @ error:${err}`);
             this.retry(connClient);
         });
 
@@ -237,13 +237,13 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
         if (connClient.initial) {
             if (connClient.retry >= 5) return; // These are considered stalled connecitons
             connClient.retry++
-            console.log(`not ok - ${connClient.conn.id} - retrying in ${connClient.retry * 1000}ms`)
+            console.log(`not ok - ${connClient.conn.id} - ${connClient.conn.name} - retrying in ${connClient.retry * 1000}ms`)
             await sleep(connClient.retry * 1000);
             await connClient.tak.reconnect();
         } else {
             // For now allow infinite retry if a client has connected once
             const retryms = Math.min(connClient.retry * 1000, 15000);
-            console.log(`not ok - ${connClient.conn.id} - retrying in ${retryms}ms`)
+            console.log(`not ok - ${connClient.conn.id} - ${connClient.conn.name} - retrying in ${retryms}ms`)
             await sleep(retryms);
             await connClient.tak.reconnect();
         }

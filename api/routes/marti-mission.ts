@@ -6,7 +6,6 @@ import { Profile, Connection } from '../lib/schema.js';
 import S3 from '../lib/aws/s3.js';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
-import Modeler from '@openaddresses/batch-generic';
 import TAKAPI, {
     APIAuthToken,
     APIAuthCertificate,
@@ -14,9 +13,6 @@ import TAKAPI, {
 } from '../lib/tak-api.js';
 
 export default async function router(schema: any, config: Config) {
-    const ProfileModel = new Modeler(config.pg, Profile);
-    const ConnectionModel = new Modeler(config.pg, Connection);
-
     await schema.get('/marti/missions/:name', {
         name: 'Get Mission',
         group: 'MartiMissions',
@@ -151,7 +147,7 @@ export default async function router(schema: any, config: Config) {
             }
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
-            const query = {};
+            const query: any = {};
             for (const q in req.query) query[q] = String(req.query[q]);
             const mission = await api.Mission.create(req.params.name, query);
             return res.json(mission);

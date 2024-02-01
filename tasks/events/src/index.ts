@@ -85,7 +85,6 @@ async function genericEvent(md: Event) {
                     token: imported.config.token
                 });
 
-                if (res.status !== 200) throw new Error(res.message);
                 console.error(JSON.stringify(res));
             } else if (imported.mode === 'Unknown') {
                 if (md.Ext === '.zip') {
@@ -132,15 +131,15 @@ async function genericEvent(md: Event) {
 
         const data = await API.fetchData(md);
 
-        if (data.mission && !['.geojsonld', '.pmtiles'].includes(md.Ext)) {
+        if (data.mission_sync && !['.geojsonld', '.pmtiles'].includes(md.Ext)) {
             let sync = false;
-            for (const glob of data.mission.assets) {
+            for (const glob of data.assets) {
                 sync = includesWithGlob([md.Name], glob);
                 if (sync) break;
             }
 
             if (sync) {
-                console.log(`ok - Data ${md.Key} syncing with ${data.mission.mission}`);
+                console.log(`ok - Data ${md.Key} syncing with ${data.name}`);
                 const s3 = new S3.S3Client({ region: process.env.AWS_DEFAULT_REGION || 'us-east-1' });
                 await pipeline(
                     // @ts-ignore
@@ -152,12 +151,11 @@ async function genericEvent(md: Event) {
                 );
 
                 const res = await API.uploadMission(md, {
-                    name: data.mission.mission,
+                    name: data.name,
                     filename: md.Name,
                     connection: data.connection
                 });
 
-                if (res.status !== 200) throw new Error(res.message);
                 console.log(JSON.stringify(res));
             } else {
                 console.log(`ok - Data ${md.Key} does not match mission sync globs`);

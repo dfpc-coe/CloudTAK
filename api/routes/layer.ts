@@ -16,7 +16,7 @@ import Config from '../lib/config.js';
 import Schedule from '../lib/schedule.js';
 import S3 from '../lib/aws/s3.js';
 import { Feature } from 'geojson';
-import Modeler, { Param } from '@openaddresses/batch-generic';
+import { Param } from '@openaddresses/batch-generic';
 import { sql } from 'drizzle-orm';
 
 export default async function router(schema: any, config: Config) {

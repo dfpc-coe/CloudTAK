@@ -1,5 +1,33 @@
 import TAKAPI from '../tak-api.js';
 import { Readable } from 'node:stream'
+import { TAKList } from './types.js';
+
+export type Mission = {
+    name: string;
+    description: string;
+    chatRoom: string;
+    baseLayer: string;
+    bbox: string;
+    path: string;
+    classification: string;
+    tool: string;
+    keywords: Array<unknown>;
+    creatorUid: string;
+    createTime: string;
+    externalData: Array<unknown>;
+    feeds: Array<unknown>;
+    mapLayers: Array<unknown>;
+    ownerRole: Array<unknown>;
+    inviteOnly: boolean;
+    expiration: number;
+    guid: string;
+    uids: Array<unknown>,
+    contents: Array<unknown>,
+    passwordProtected: boolean;
+    token?: string; // Only present when mission created 
+    groups?: Array<string>; // Only present on Mission.get()
+    missionChanges?: Array<unknown>; // Only present on Mission.get()
+}
 
 export default class {
     api: TAKAPI;
@@ -92,8 +120,8 @@ export default class {
     }
 
     async create(name: string, query: {
-        creatorUid?: string;
-        group?: Array<string> | string;
+        group: Array<string> | string;
+        creatorUid: string;
         description?: string;
         chatRoom?: string;
         baseLayer?: string;
@@ -107,7 +135,7 @@ export default class {
         expiration?: string;
         inviteOnly?: string;
         allowDupe?: string;
-    }) {
+    }): Promise<TAKList<Mission>> {
         const url = new URL(`/Marti/api/missions/${encodeURIComponent(name)}`, this.api.url);
 
         if (query.group && Array.isArray(query.group)) query.group = query.group.join(',');
