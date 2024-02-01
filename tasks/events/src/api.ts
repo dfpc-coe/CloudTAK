@@ -29,7 +29,14 @@ export default class API {
             body: Readable.toWeb(fs.createReadStream(event.Local))
         });
 
-        return await res.json();
+        const json = await res.json();
+
+        if (res.status !== 200) {
+            const err = json as { message: string };
+            throw new Error(err.message);
+        }
+
+        return json;
     }
 
     static async transformData(event: Event) {
@@ -52,13 +59,8 @@ export default class API {
         description: string;
         connection: number;
         auto_transform: boolean;
-        mission?: {
-            id: number;
-            mission: string;
-            enabled: boolean;
-            data: number;
-            assets: string[];
-        }
+        mission_sync: boolean;
+        assets: string[];
     }> {
         const res = await fetch(new URL(`/api/data/${event.ID}`, process.env.TAK_ETL_API), {
             method: 'GET',

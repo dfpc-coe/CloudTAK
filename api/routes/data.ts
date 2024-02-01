@@ -8,6 +8,7 @@ import Config from '../lib/config.js';
 import S3 from '../lib/aws/s3.js';
 import { Param } from '@openaddresses/batch-generic';
 import { sql, eq } from 'drizzle-orm';
+import DataMission from '../lib/data-mission.js';
 
 export default async function router(schema: any, config: Config) {
     await schema.get('/data', {
@@ -51,6 +52,8 @@ export default async function router(schema: any, config: Config) {
 
             const data = await config.models.Data.generate(req.body);
 
+            await DataMission.sync(config, data);
+
             return res.json(data);
         } catch (err) {
             return Err.respond(err, res);
@@ -73,6 +76,8 @@ export default async function router(schema: any, config: Config) {
                 updated: sql`Now()`,
                 ...req.body
             });
+
+            await DataMission.sync(config, data);
 
             return res.json(data);
         } catch (err) {
