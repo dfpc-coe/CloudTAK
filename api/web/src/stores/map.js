@@ -25,10 +25,17 @@ export const useMapStore = defineStore('cloudtak', {
         }
     },
     actions: {
-        saveLayer: async function(layer) {
-            await window.std('/api/profile/overlay', {
+        saveOverlay: async function(layer) {
+            const overlay = await window.std('/api/profile/overlay', {
                 method: 'POST',
                 body: layer
+            });
+
+            return overlay.id;
+        },
+        deleteOverlay: async function(overlay_id) {
+            await window.std(`/api/profile/overlay?id=${overlay_id}`, {
+                method: 'DELETE'
             });
         },
         addLayer: async function(layer, layers, config = {
@@ -90,7 +97,7 @@ export const useMapStore = defineStore('cloudtak', {
             }
 
             if (layer.save && !config.initial) {
-                await this.saveLayer({
+                await this.saveOverlay({
                     ...layer,
                     url: new URL(layer.url).pathname,
                     visible: layer.visible === 'visible' ? true : false
@@ -141,14 +148,17 @@ export const useMapStore = defineStore('cloudtak', {
             if (pos === false) return;
             const layer = this.layers[pos];
 
+            this.layers.splice(pos, 1)
+
             for (const l of layer.layers) {
                 this.map.removeLayer(l.id);
             }
-            for (const l of layer.layers) {
-                this.map.removeSource(l.source);
-            }
 
-            this.layers.splice(pos, 1)
+            this.map.removeSource(layer.source);
+
+            if (layer.save && layer.overlay) {
+                await this.deleteOverlay(layer.overlay);
+            }
         },
         init: function(container, basemap, terrain) {
             this.container = container;
@@ -228,6 +238,7 @@ export const useMapStore = defineStore('cloudtak', {
                     name: layer.name || layer.id,
                     mode: layer.id.split('-')[0],
                     mode_id:  Number(layer.id.split('-')[1]),
+                    overlay: layer.overlay || null,
                     source: layer.id,
                     type: 'vector',
                     before: 'CoT Icons',
@@ -306,6 +317,7 @@ export const useMapStore = defineStore('cloudtak', {
                     name: layer.name || id,
                     mode: layer.id.split('-')[0],
                     mode_id:  Number(layer.id.split('-')[1]),
+                    overlay: layer.overlay || null,
                     source: layer.id,
                     type: 'raster',
                     before: 'CoT Icons',
@@ -435,13 +447,14 @@ export const useMapStore = defineStore('cloudtak', {
             });
         },
         initOverlays: async function() {
-            for (const overlay of (await window.std('/api/profile/overlay')).items) {
-                const url = window.stdurl(overlay.url);
+            for (const layer of (await window.std('/api/profile/overlay')).items) {
+                const url = window.stdurl(layer.url);
                 url.searchParams.append('token', localStorage.token);
-                overlay.url = String(url);
-                overlay.id = `${overlay.mode}-${overlay.mode_id}-${overlay.id}`;
-                overlay.save = true;
-                await this.addDefaultLayer(overlay, true)
+                layer.url = String(url);
+                layer.overlay = layer.id;
+                layer.id = `${layer.mode}-${layer.mode_id}-${layer.id}`;
+                layer.save = true;
+                await this.addDefaultLayer(layer, true)
             }
         },
         initDraw: function() {
