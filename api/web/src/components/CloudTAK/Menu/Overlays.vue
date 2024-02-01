@@ -26,7 +26,6 @@
                     <IconMaximize v-if='getSource(layer).bounds' @click='zoomTo(getSource(layer).bounds)' class='cursor-pointer' v-tooltip='"Zoom To Overlay"'/>
                     <TablerDelete
                         v-if='layer.name.startsWith("data-")'
-                        data-bs-theme="light"
                         displaytype='icon'
                         @delete='removeLayer(layer)'
                         v-tooltip='"Delete Overlay"'
@@ -73,7 +72,7 @@ export default {
     },
     methods: {
         removeLayer: async function(layer) {
-            mapState.removeLayer(layer.name);
+            mapStore.removeLayer(layer.name);
         },
         getSource: function(layer) {
             return mapStore.map.getSource(layer.source)

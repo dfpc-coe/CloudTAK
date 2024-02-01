@@ -10,7 +10,8 @@ import {
     pgTable,
     serial,
     varchar,
-    text
+    text,
+    unique
 } from 'drizzle-orm/pg-core';
 
 /** Internal Tables for Postgis for use with drizzle-kit push:pg */
@@ -207,4 +208,6 @@ export const ProfileOverlay = pgTable('profile_overlays', {
     mode: text('mode').notNull(),
     mode_id: integer('mode_id').notNull(),
     url: text('url').notNull()
-});
+}, (t) => ({
+    unq: unique().on(t.username, t.url)
+}));
