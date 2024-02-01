@@ -11,8 +11,8 @@
     </div>
     <TablerLoading v-if='loading'/>
     <template v-else>
-        <div :key='layer.url' v-for='layer in layers' class="col-lg">
-            <div class='py-2 px-2'>
+        <div :key='layer.url' v-for='layer in layers' class="col-lg py-2 px2 hover-dark">
+            <div class='py-2 px-2 hover-dark'>
                 <div class='col-12 d-flex align-items-center'>
                     <IconEye v-if='layer.visible === "visible"' @click='flipVisible(layer)' class='cursor-pointer' v-tooltip='"Hide Layer"'/>
                     <IconEyeOff v-else @click='flipVisible(layer)' class='cursor-pointer' v-tooltip='"Show Layer"'/>
@@ -36,7 +36,7 @@
                     </div>
                 </div>
 
-                <div v-if='layer.type === "raster"' class='col-12' style='margin-left: 30px; padding-right: 24px;' step=''>
+                <div v-if='layer.type === "raster"' class='col-12' style='margin-left: 30px; padding-right: 40px;' step=''>
                     <TablerRange label='Opacity' v-model='layer.opacity' @change='updateOpacity(layer)' :min='0' :max='1' :step='0.1'/>
                 </div>
             </div>
