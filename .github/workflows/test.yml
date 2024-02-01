@@ -33,12 +33,12 @@ jobs:
         run: docker compose build api
 
       - name: Docker API Lint
-        run: docker run etl-api:latest sh -c "npm install --include=dev && npm run lint"
+        run: docker run cloudtak-api:latest sh -c "npm install --include=dev && npm run lint"
 
       - name: Docker API Test
         run: docker run --network etl_default
           -e "POSTGRES=postgres://docker:docker@postgis:5432/gis"
-          etl-api:latest npm test
+          cloudtak-api:latest npm test
 
       - name: Docker Cleanup
         run: docker compose kill
