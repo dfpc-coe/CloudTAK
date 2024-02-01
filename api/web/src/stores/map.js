@@ -31,7 +31,9 @@ export const useMapStore = defineStore('cloudtak', {
                 body: layer
             });
         },
-        addLayer: async function(layer, layers, config = {}) {
+        addLayer: async function(layer, layers, config = {
+            initial: false
+        }) {
             if (!layer.name) throw new Error('Layer Name must be set');
             if (!layer.source) throw new Error('Layer Source must be set');
             if (!layer.clickable) layer.clickable = [];
@@ -87,7 +89,7 @@ export const useMapStore = defineStore('cloudtak', {
                 });
             }
 
-            if (layer.save) {
+            if (layer.save && !config.initial) {
                 await this.saveLayer({
                     ...layer,
                     url: new URL(layer.url).pathname,
@@ -120,6 +122,7 @@ export const useMapStore = defineStore('cloudtak', {
             for (const l of layer.layers) {
                 this.map.removeLayer(l.id);
             }
+
             this.map.removeSource(source);
 
             this.layers.splice(pos, 1)
@@ -133,17 +136,19 @@ export const useMapStore = defineStore('cloudtak', {
 
             return false
         },
-        removeLayer: function(name) {
+        removeLayer: async function(name) {
             const pos = this.getLayerPos(name);
             if (pos === false) return;
             const layer = this.layers[pos];
 
             for (const l of layer.layers) {
                 this.map.removeLayer(l.id);
+            }
+            for (const l of layer.layers) {
                 this.map.removeSource(l.source);
             }
 
-            this.layers.splice(i, 1)
+            this.layers.splice(pos, 1)
         },
         init: function(container, basemap, terrain) {
             this.container = container;
@@ -205,7 +210,7 @@ export const useMapStore = defineStore('cloudtak', {
 
             this.map = new mapgl.Map(init);
         },
-        addDefaultLayer: async function(layer) {
+        addDefaultLayer: async function(layer, initial=false) {
             if (this.map.getSource(layer.id)) {
                 this.map.removeSource(layer.id);
             }
@@ -284,7 +289,9 @@ export const useMapStore = defineStore('cloudtak', {
                         'circle-radius': ["number", ["get", "circle-radius"], 4],
                         'circle-opacity': ["number", ["get", "circle-opacity"], 1]
                     }
-                }]);
+                }], {
+                    initial: initial
+                });
             } else {
                 this.map.addSource(layer.id, {
                     type: 'raster',
@@ -434,7 +441,7 @@ export const useMapStore = defineStore('cloudtak', {
                 overlay.url = String(url);
                 overlay.id = `${overlay.mode}-${overlay.mode_id}-${overlay.id}`;
                 overlay.save = true;
-                await this.addDefaultLayer(overlay)
+                await this.addDefaultLayer(overlay, true)
             }
         },
         initDraw: function() {

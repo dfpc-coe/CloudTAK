@@ -37,8 +37,8 @@ export default async function router(schema: any, config: Config) {
             await Auth.is_auth(req);
 
             const overlay = await config.models.ProfileOverlay.generate({
-                username: req.auth.email,
-                ...req.body
+                ...req.body,
+                username: req.auth.email
             });
 
             return res.json(overlay);
