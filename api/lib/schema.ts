@@ -206,7 +206,7 @@ export const ProfileOverlay = pgTable('profile_overlays', {
     opacity: integer('opacity').notNull().default(1),
     visible: boolean('visible').notNull().default(true),
     mode: text('mode').notNull(),
-    mode_id: integer('mode_id').notNull(),
+    mode_id: integer('mode_id'), // Used for Data not for Profile
     url: text('url').notNull()
 }, (t) => ({
     unq: unique().on(t.username, t.url)
