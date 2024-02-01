@@ -14,10 +14,10 @@ export default class API {
         connection?: number;
     }) {
         const {size} = fs.statSync(event.Local);
-
         const url = new URL(`/api/marti/missions/${encodeURIComponent(mission.name)}/upload`, process.env.TAK_ETL_API);
         url.searchParams.append('name', mission.filename);
         if (mission.connection) url.searchParams.append('connection', String(mission.connection));
+
         const res = await fetch(url, {
             method: 'POST',
             duplex: 'half',
@@ -31,7 +31,7 @@ export default class API {
 
         const json = await res.json();
 
-        if (res.status !== 200) {
+        if (!res.ok) {
             const err = json as { message: string };
             throw new Error(err.message);
         }
@@ -70,8 +70,14 @@ export default class API {
             }
         });
 
-        const resbody = await res.json() as any;
-        return resbody;
+        const json = await res.json();
+
+        if (!res.ok) {
+            const err = json as { message: string };
+            throw new Error(err.message);
+        }
+
+        return json as any;
     }
 
     static async fetchImport(event: Event): Promise<{
@@ -90,9 +96,14 @@ export default class API {
             },
         });
 
-        const resbody = await res.json() as any;
-        if (!res.ok) throw new Error(`HTTP ${res.status}: ${resbody.message}`);
-        return resbody;
+        const json = await res.json();
+
+        if (!res.ok) {
+            const err = json as { message: string };
+            throw new Error(err.message);
+        }
+
+        return json as any;
     }
 
     static async updateImport(event: Event, body: object) {
@@ -105,8 +116,13 @@ export default class API {
             body: JSON.stringify(body)
         });
 
-        const resbody = await res.json() as any;
-        if (!res.ok) throw new Error(`HTTP ${res.status}: ${resbody.message}`);
-        return resbody;
+        const json = await res.json();
+
+        if (!res.ok) {
+            const err = json as { message: string };
+            throw new Error(err.message);
+        }
+
+        return json as any;
     }
 }

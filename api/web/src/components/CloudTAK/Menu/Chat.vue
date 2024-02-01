@@ -12,6 +12,7 @@
         <div v-else class='position-absolute'>
             <div class='position-relative bottom-0'>
                 <TablerInput v-model='chat'/>
+                <button class='btn btn-primary'>Send</button>
             </div>
         </div>
     </div>

@@ -273,10 +273,7 @@ export default async function router(schema: any, config: Config) {
             }
         },
         res: 'res.Marti.json'
-    }, bodyparser.raw({
-        type: '*/*',
-        limit: '50mb'
-    }), async (req: AuthRequest, res: Response) => {
+    }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(req);
 
@@ -302,7 +299,13 @@ export default async function router(schema: any, config: Config) {
                 contentLength: Number(req.headers['content-length']),
                 keywords: [],
                 creatorUid: creatorUid,
-            }, req.body);
+            }, req);
+
+            // @ts-expect-error
+            req.connection = {
+                // @ts-expect-error
+                remoteAddress: req._remoteAddress
+            }
 
             const missionContent = await api.Mission.attachContents(req.params.name, [content.Hash]);
 

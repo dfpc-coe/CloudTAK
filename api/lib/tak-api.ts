@@ -3,6 +3,7 @@ import MissionLog from './api/mission-log.js';
 import Credentials from './api/credentials.js';
 import Contacts from './api/contacts.js';
 import Files from './api/files.js';
+import { fetch } from 'undici';
 import Group from './api/groups.js';
 import { CookieJar, Cookie } from 'tough-cookie';
 import { CookieAgent } from 'http-cookie-agent/undici';
@@ -182,7 +183,13 @@ export default class TAKAPI {
         try {
             if (!opts.headers) opts.headers = {};
 
-            if (!(opts.body instanceof FormData) && typeof opts.body === 'object' && !opts.headers['Content-Type']) {
+            if (
+                (isPlainObject(opts.body))
+                && (
+                    !opts.headers['Content-Type']
+                    || opts.headers['Content-Type'].startsWith('application/json')
+                )
+            ) {
                 opts.body = JSON.stringify(opts.body);
                 opts.headers['Content-Type'] = 'application/json';
             }
@@ -213,3 +220,5 @@ export default class TAKAPI {
         }
     }
 }
+
+const isPlainObject = value => value?.constructor === Object;
