@@ -20,38 +20,38 @@
                             <IconUser/>
                             </div>
                                 <ul class="dropdown-menu" aria-labelledby='userProfileButton'>
-                                    <div class='d-flex mx-2 cursor-pointer'>
-                                        <IconUser class='my-2'/><a @click='$router.push("/profile")' class="cursor-pointer dropdown-item">Profile</a>
+                                    <div @click='$router.push("/profile")' class='d-flex dropdown-item cursor-pointer hover-dark'>
+                                        <IconUser/>
+                                        <span class="mx-2">Profile</span>
                                     </div>
-                                    <div class='d-flex mx-2 cursor-pointer'>
-                                        <IconLogout class='my-2'/><a @click='logout' class="curdor-pointer dropdown-item">Logout</a>
+                                    <div @click='$router.push("/connection")' class='d-flex dropdown-item cursor-pointer hover-dark'>
+                                        <IconNetwork/>
+                                        <span class="mx-2">Connections</span>
                                     </div>
-                                </ul>
-                            </div>
-                        <div>
-                    </div>
-                    <div class='dropdown'>
-                        <div type="button" id="userMenuButton" data-bs-toggle="dropdown" aria-expanded="false" class='btn btn-dark'>
-                            <IconMenu/>
-                            </div>
-                                <ul class="dropdown-menu" aria-labelledby='userMenuButton'>
-                                    <div class='d-flex mx-2 cursor-pointer hover-dark'>
-                                        <IconNetwork class='my-2'/><a @click='$router.push("/connection")' class="cursor-pointer dropdown-item">Connections</a>
+                                    <div @click='$router.push("/layer")' class='d-flex dropdown-item cursor-pointer hover-dark'>
+                                        <IconBuildingBroadcastTower/>
+                                        <span class="mx-2">Layers</span>
                                     </div>
-                                    <div class='d-flex mx-2 cursor-pointer hover-dark'>
-                                        <IconBuildingBroadcastTower class='my-2'/><a @click='$router.push("/layer")' class="cursor-pointer dropdown-item">Layers</a>
+                                    <div @click='$router.push("/basemap")' class='d-flex dropdown-item cursor-pointer hover-dark'>
+                                        <IconMap/>
+                                        <span class="mx-2">Basemaps</span>
                                     </div>
-                                    <div class='d-flex mx-2 cursor-pointer hover-dark'>
-                                        <IconMap class='my-2'/><a @click='$router.push("/basemap")' class="cursor-pointer dropdown-item">Basemaps</a>
+                                    <div @click='$router.push("/iconset")' class='d-flex dropdown-item cursor-pointer hover-dark'>
+                                        <IconPhoto/>
+                                        <span class="mx-2">Iconsets</span>
                                     </div>
-                                    <div class='d-flex mx-2 cursor-pointer hover-dark'>
-                                        <IconPhoto class='my-2'/><a @click='$router.push("/iconset")' class="cursor-pointer dropdown-item">Iconsets</a>
+                                    <div @click='$router.push("/import")' class='d-flex dropdown-item cursor-pointer hover-dark'>
+                                        <IconFileImport/>
+                                        <span class="mx-2">Imports</span>
                                     </div>
-                                    <div class='d-flex mx-2 cursor-pointer hover-dark'>
-                                        <IconFileImport class='my-2'/><a @click='$router.push("/import")' class="cursor-pointer dropdown-item">Imports</a>
+                                    <div @click='$router.push("/admin")' class='d-flex dropdown-item cursor-pointer hover-dark'>
+                                        <IconSettings/>
+                                        <span class='mx-2'>Server</span>
+                                        <span class='ms-auto badge border border-red bg-red text-white'>Admin</span>
                                     </div>
-                                    <div class='d-flex mx-2 cursor-pointer hover-dark'>
-                                        <IconSettings class='my-2'/><a @click='$router.push("/admin")' class="cursor-pointer dropdown-item">Admin</a>
+                                    <div @click='logout' class='d-flex dropdown-item cursor-pointer hover-dark'>
+                                        <IconLogout/>
+                                        <span class="mx-2">Logout</span>
                                     </div>
                                 </ul>
                             </div>
@@ -102,7 +102,6 @@ import {
     IconCode,
     IconHome,
     IconLogout,
-    IconMenu,
     IconUser,
     IconMap,
     IconFileImport,
@@ -197,7 +196,6 @@ export default {
         IconCode,
         IconSettings,
         IconLogout,
-        IconMenu,
         IconUser,
         IconMap,
         IconNetwork,
