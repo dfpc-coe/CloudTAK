@@ -9,41 +9,45 @@
             </div>
         </div>
     </div>
-    <div :key='layer.name' v-for='layer in layers' class="col-lg">
-        <div class='py-2 px-2'>
-            <div class='col-12 d-flex align-items-center'>
-                <IconEye v-if='layer.visible === "visible"' @click='flipVisible(layer)' class='cursor-pointer' v-tooltip='"Hide Layer"'/>
-                <IconEyeOff v-else @click='flipVisible(layer)' class='cursor-pointer' v-tooltip='"Show Layer"'/>
+    <TablerLoading v-if='loading'/>
+    <template v-else>
+        <div :key='layer.url' v-for='layer in layers' class="col-lg">
+            <div class='py-2 px-2'>
+                <div class='col-12 d-flex align-items-center'>
+                    <IconEye v-if='layer.visible === "visible"' @click='flipVisible(layer)' class='cursor-pointer' v-tooltip='"Hide Layer"'/>
+                    <IconEyeOff v-else @click='flipVisible(layer)' class='cursor-pointer' v-tooltip='"Show Layer"'/>
 
-                <span class='mx-2'>
-                    <IconMap v-if='layer.type === "raster"' v-tooltip='"Raster"'/>
-                    <IconVector v-else v-tooltip='"Vector"'/>
-                </span>
+                    <span class='mx-2'>
+                        <IconMap v-if='layer.type === "raster"' v-tooltip='"Raster"'/>
+                        <IconVector v-else v-tooltip='"Vector"'/>
+                    </span>
 
-                <span class='mx-2' v-text='layer.name'/>
+                    <span class='mx-2' v-text='layer.name'/>
 
-                <div class='ms-auto btn-list'>
-                    <IconMaximize v-if='getSource(layer).bounds' @click='zoomTo(getSource(layer).bounds)' class='cursor-pointer' v-tooltip='"Zoom To Overlay"'/>
-                    <TablerDelete
-                        v-if='layer.name.startsWith("data-")'
-                        displaytype='icon'
-                        @delete='removeLayer(layer)'
-                        v-tooltip='"Delete Overlay"'
-                    />
+                    <div class='ms-auto btn-list'>
+                        <IconMaximize v-if='getSource(layer).bounds' @click='zoomTo(getSource(layer).bounds)' class='cursor-pointer' v-tooltip='"Zoom To Overlay"'/>
+                        <TablerDelete
+                            v-if='layer.name.startsWith("data-") || layer.name.startsWith("profile-")'
+                            displaytype='icon'
+                            @delete='removeLayer(layer)'
+                            v-tooltip='"Delete Overlay"'
+                        />
+                    </div>
+                </div>
+
+                <div v-if='layer.type === "raster"' class='col-12' style='margin-left: 30px; padding-right: 24px;' step=''>
+                    <TablerRange label='Opacity' v-model='layer.opacity' @change='updateOpacity(layer)' :min='0' :max='1' :step='0.1'/>
                 </div>
             </div>
-
-            <div v-if='layer.type === "raster"' class='col-12' style='margin-left: 30px; padding-right: 24px;' step=''>
-                <TablerRange label='Opacity' v-model='layer.opacity' @change='updateOpacity(layer)' :min='0' :max='1' :step='0.1'/>
-            </div>
         </div>
-    </div>
+    </template>
 </div>
 </template>
 
 <script>
 import {
     TablerDelete,
+    TablerLoading,
     TablerRange
 } from '@tak-ps/vue-tabler';
 import {
@@ -64,7 +68,7 @@ export default {
     data: function() {
         return {
             err: false,
-            loading: true,
+            loading: false,
         }
     },
     computed: {
@@ -72,7 +76,9 @@ export default {
     },
     methods: {
         removeLayer: async function(layer) {
-            mapStore.removeLayer(layer.name);
+            this.loading = true;
+            //mapStore.removeLayer(layer.name);
+            this.loading = false;
         },
         getSource: function(layer) {
             return mapStore.map.getSource(layer.source)
@@ -95,6 +101,7 @@ export default {
     },
     components: {
         TablerRange,
+        TablerLoading,
         TablerDelete,
         IconMaximize,
         IconCircleArrowLeft,
