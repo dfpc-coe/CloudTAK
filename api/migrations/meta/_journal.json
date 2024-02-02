@@ -36,6 +36,13 @@
       "when": 1706815765791,
       "tag": "0004_smooth_preak",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "5",
+      "when": 1706916522622,
+      "tag": "0005_friendly_wind_dancer",
+      "breakpoints": true
     }
   ]
 }
