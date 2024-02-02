@@ -115,6 +115,10 @@ const router = new VueRouter.createRouter({
                 path: 'health',
                 name: 'connection-health',
                 component: () => import('./components/Connection/ConnectionHealth.vue')
+            },{
+                path: 'tokens',
+                name: 'connection-tokens',
+                component: () => import('./components/Connection/ConnectionTokens.vue')
             }]
         },
 
