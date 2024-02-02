@@ -23,7 +23,7 @@
         "moment": "^2.29.3",
         "p12-pem": "^1.0.5",
         "pinia": "^2.1.7",
-        "pmtiles": "^2.7.1",
+        "pmtiles": "^3.0.0",
         "sass": "^1.49.7",
         "sass-loader": "^14.0.0",
         "semver-sort": "^1.0.0",
