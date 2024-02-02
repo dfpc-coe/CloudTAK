@@ -36,7 +36,7 @@ jobs:
         run: docker run cloudtak-api:latest sh -c "npm install --include=dev && npm run lint"
 
       - name: Docker API Test
-        run: docker run --network etl_default
+        run: docker run --network cloudtak_default
           -e "POSTGRES=postgres://docker:docker@postgis:5432/gis"
           cloudtak-api:latest npm test
 
