@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS "connection_tokens" (
 	"id" serial NOT NULL,
-	"connection" text NOT NULL,
+	"connection" integer NOT NULL,
 	"name" text NOT NULL,
 	"token" text PRIMARY KEY NOT NULL,
 	"created" timestamp with time zone DEFAULT Now() NOT NULL,
