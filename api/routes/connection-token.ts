@@ -59,7 +59,7 @@ export default async function router(schema: any, config: Config) {
                 connection: parseInt(String(req.params.connectionid))
             });
 
-            return res.json(token[0]);
+            return res.json(token);
         } catch (err) {
             return Err.respond(err, res);
         }
