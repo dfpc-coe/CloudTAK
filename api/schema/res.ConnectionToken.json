@@ -1,0 +1,24 @@
+{
+    "type": "object",
+    "required": [
+        "id",
+        "name",
+        "created",
+        "updated"
+    ],
+    "additionalProperties": false,
+    "properties": {
+        "id": {
+            "$ref": "./connection_tokens/id.json"
+        },
+        "name": {
+            "$ref": "./connection_tokens/name.json"
+        },
+        "created": {
+            "$ref": "./connection_tokens/created.json"
+        },
+        "updated": {
+            "$ref": "./connection_tokens/updated.json"
+        }
+    }
+}

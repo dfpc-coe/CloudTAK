@@ -9,6 +9,7 @@ export default class Models {
     Data: Modeler<typeof pgtypes.Data>;
     Connection: Modeler<typeof pgtypes.Connection>;
     ConnectionSink: Modeler<typeof pgtypes.ConnectionSink>;
+    ConnectionToken: Modeler<typeof pgtypes.ConnectionToken>;
     Profile: Modeler<typeof pgtypes.Profile>;
     ProfileOverlay: Modeler<typeof pgtypes.ProfileOverlay>;
     Iconset: Modeler<typeof pgtypes.Iconset>;
@@ -28,6 +29,7 @@ export default class Models {
         this.Basemap = new Modeler(pg, pgtypes.Basemap);
         this.Import = new Modeler(pg, pgtypes.Import);
         this.Connection = new Modeler(pg, pgtypes.Connection);
+        this.ConnectionToken = new Modeler(pg, pgtypes.ConnectionToken);
         this.ConnectionSink = new Modeler(pg, pgtypes.ConnectionSink);
         this.Data = new Modeler(pg, pgtypes.Data);
         this.Iconset = new Modeler(pg, pgtypes.Iconset);
