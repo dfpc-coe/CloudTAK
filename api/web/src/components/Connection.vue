@@ -80,6 +80,10 @@
                                             "active": $route.name === "connection-health",
                                             "cursor-pointer": $route.name !== "connection-health"
                                         }'><IconCloudDataConnection/><span class='mx-3'>Health &amp; Metrics</span></span>
+                                        <span @click='$router.push(`/connection/${$route.params.connectionid}/tokens`)' class="list-group-item list-group-item-action d-flex align-items-center" :class='{
+                                            "active": $route.name === "connection-tokens",
+                                            "cursor-pointer": $route.name !== "connection-tokens"
+                                        }'><IconRobot/><span class='mx-3'>API Tokens</span></span>
                                     </div>
                                 </div>
                             </div>
@@ -105,6 +109,7 @@ import ConnectionStatus from './Connection/Status.vue';
 import timeDiff from '../timediff.js';
 import {
     IconEye,
+    IconRobot,
     IconEyeOff,
     IconRefresh,
     IconDatabase,
@@ -200,6 +205,7 @@ export default {
     },
     components: {
         IconEye,
+        IconRobot,
         IconEyeOff,
         IconSettings,
         IconRefresh,
