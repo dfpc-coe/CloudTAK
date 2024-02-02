@@ -1,0 +1,9 @@
+{
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+        "name": {
+            "$ref": "./connection_tokens/name.json"
+        }
+    }
+}

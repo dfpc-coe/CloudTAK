@@ -24,16 +24,16 @@
                 "additionalProperties": false,
                 "properties": {
                     "id": {
-                        "$ref": "./tokens/id.json"
+                        "$ref": "./connection_tokens/id.json"
                     },
                     "name": {
-                        "$ref": "./tokens/name.json"
+                        "$ref": "./connection_tokens/name.json"
                     },
                     "created": {
-                        "$ref": "./tokens/created.json"
+                        "$ref": "./connection_tokens/created.json"
                     },
                     "updated": {
-                        "$ref": "./tokens/updated.json"
+                        "$ref": "./connection_tokens/updated.json"
                     }
                 }
             }
