@@ -43,6 +43,13 @@
       "when": 1706916522622,
       "tag": "0005_friendly_wind_dancer",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1706969803889,
+      "tag": "0006_flippant_cobalt_man",
+      "breakpoints": true
     }
   ]
 }
