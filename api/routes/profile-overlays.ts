@@ -3,7 +3,6 @@ import Auth from '../lib/auth.js';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
 import Config from '../lib/config.js';
-import { AuthResource } from '@tak-ps/blueprint-login';
 
 export default async function router(schema: any, config: Config) {
     await schema.get('/profile/overlay', {
@@ -35,12 +34,11 @@ export default async function router(schema: any, config: Config) {
         res: 'profile_overlays.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req);
+            const user = await Auth.is_user(req);
 
-            if (req.auth instanceof AuthResource) throw new Err(400, null, 'Overlays can only be listed by an authenticated user');
             const overlay = await config.models.ProfileOverlay.generate({
                 ...req.body,
-                username: req.auth.email
+                username: user.email
             });
 
             return res.json(overlay);
@@ -64,12 +62,11 @@ export default async function router(schema: any, config: Config) {
         res: 'res.Standard.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req);
+            const user = await Auth.is_user(req);
 
-            if (req.auth instanceof AuthResource) throw new Err(400, null, 'Overlays can only be listed by an authenticated user');
             const overlay = await config.models.ProfileOverlay.from(parseInt(String(req.query.id)));
 
-            if (overlay.username !== req.auth.email) {
+            if (overlay.username !== user.email) {
                 throw new Err(403, null, 'Cannot delete anothers overlays');
             }
 

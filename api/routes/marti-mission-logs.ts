@@ -39,7 +39,7 @@ export default async function router(schema: any, config: Config) {
         res: 'res.Marti.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req);
+            const user = await Auth.is_user(req);
 
             let auth;
             let creatorUid;
@@ -47,10 +47,8 @@ export default async function router(schema: any, config: Config) {
                 auth = (await config.models.Connection.from(parseInt(String(req.query.connection)))).auth;
                 creatorUid = `CloudTAK-Conn-${req.query.connection}`;
             } else {
-                if (req.auth instanceof AuthResource) throw new Err(400, null, 'Files can only be downloaded by a JWT authenticated user');
-                if (!req.auth.email) throw new Err(400, null, 'Mission Log can only be modified by an authenticated user');
-                auth = (await config.models.Profile.from(req.auth.email)).auth;
-                creatorUid = req.auth.email;
+                auth = (await config.models.Profile.from(user.email)).auth;
+                creatorUid = user.email;
             }
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
