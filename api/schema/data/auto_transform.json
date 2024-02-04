@@ -1,5 +1,5 @@
 {
     "type": "boolean",
-    "description": "",
+    "description": "Should CloudTAK enhanced data products be created",
     "$comment": "bool"
 }

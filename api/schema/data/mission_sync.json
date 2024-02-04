@@ -1,5 +1,5 @@
 {
     "type": "boolean",
-    "description": "",
+    "description": "Is the DataSync actively syncing with TAK Server",
     "$comment": "bool"
 }

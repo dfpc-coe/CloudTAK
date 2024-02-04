@@ -13,7 +13,7 @@ import ConnectionPool, { ConnectionWebSocket, sleep } from './lib/connection-poo
 import EventsPool from './lib/events-pool.js';
 import { WebSocket, WebSocketServer } from 'ws';
 import Cacher from './lib/cacher.js';
-import BlueprintLogin, { tokenParser } from '@tak-ps/blueprint-login';
+import BlueprintLogin, { tokenParser, AuthUser } from '@tak-ps/blueprint-login';
 import Config from './lib/config.js';
 import TAKAPI, { APIAuthPassword } from './lib/tak-api.js';
 import process from 'node:process';
@@ -224,7 +224,7 @@ export default async function server(config: Config) {
             // Connect to MachineUser Connection if it is an integer
             if (!isNaN(parseInt(params.get('connection')))) {
                 config.wsClients.get(params.get('connection')).push(new ConnectionWebSocket(ws, params.get('format')));
-            } else if (params.get('connection') === auth.email) {
+            } else if (auth instanceof AuthUser && params.get('connection') === auth.email) {
                 if (!config.conns.has(params.get('connection'))) {
                     const profile = await ProfileModel.from(params.get('connection'));
                     if (!profile.auth.cert || !profile.auth.key) throw new Error('No Cert Found on profile');
