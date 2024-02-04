@@ -3,9 +3,9 @@ import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
-import { AuthUser, AuthResource } from '@tak-ps/blueprint-login';
 import TAKAPI, {
     APIAuthToken,
+    APIAuthCertificate,
     APIAuthPassword
 } from '../lib/tak-api.js';
 
@@ -19,12 +19,9 @@ export default async function router(schema: any, config: Config) {
         res: 'res.Standard.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req, true);
-
-            if (req.auth instanceof AuthResource) throw new Err(400, null, 'Files can only be downloaded by a JWT authenticated user');
-            if (!req.auth.email) throw new Err(400, null, 'Files can only be downloaded by a JWT authenticated user');
-
-            const api = await TAKAPI.init(new URL(config.MartiAPI), new APIAuthToken(req.auth.token));
+            const user = await Auth.is_user(req, true);
+            const profile = await config.models.Profile.from(user.email);
+            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
             const file = await api.Files.delete(req.params.hash);
 
             return res.json({
@@ -51,12 +48,9 @@ export default async function router(schema: any, config: Config) {
         description: 'Helper API to download files by file hash',
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req, true);
-
-            if (req.auth instanceof AuthResource) throw new Err(400, null, 'Files can only be downloaded by a JWT authenticated user');
-            if (!req.auth.email) throw new Err(400, null, 'Files can only be downloaded by a JWT authenticated user');
-
-            const api = await TAKAPI.init(new URL(config.MartiAPI), new APIAuthToken(req.auth.token));
+            const user = await Auth.is_user(req, true);
+            const profile = await config.models.Profile.from(user.email);
+            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
 
             res.setHeader('Content-Disposition', `attachment; filename="${req.query.name || req.params.hash}"`);
 

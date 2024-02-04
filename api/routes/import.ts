@@ -44,14 +44,12 @@ export default async function router(schema: any, config: Config) {
         res: "imports.json"
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req);
-
-            if (!(req.auth instanceof AuthUser)) throw new Err(400, null, 'Must access with user account');
+            const user = await Auth.is_user(req);
 
             const imp = await config.models.Import.generate({
                 id: crypto.randomUUID(),
                 name: req.body.name,
-                username: req.auth.email,
+                username: user.email,
                 status: 'Empty',
                 mode: req.body.mode,
                 mode_id: req.body.mode_id,
@@ -73,9 +71,7 @@ export default async function router(schema: any, config: Config) {
         res: 'imports.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req);
-
-            if (!(req.auth instanceof AuthUser)) throw new Err(400, null, 'Must access with user account');
+            const user = await Auth.is_user(req);
 
             if (!req.headers['content-type'].startsWith('multipart/form-data')) {
                 throw new Err(400, null, 'Unsupported Content-Type');
@@ -84,7 +80,7 @@ export default async function router(schema: any, config: Config) {
             const imported = await config.models.Import.from(String(req.params.import));
 
             if (imported.status !== 'Empty') throw new Err(400, null, 'An asset is already associated with this import');
-            if (imported.username !== req.auth.email) throw new Err(400, null, 'You did not create this import');
+            if (imported.username !== user.email) throw new Err(400, null, 'You did not create this import');
 
             const bb = busboy({
                 headers: req.headers,
@@ -153,7 +149,7 @@ export default async function router(schema: any, config: Config) {
         }
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req);
+            const user = await Auth.is_user(req);
 
             if (!req.headers['content-type'].startsWith('multipart/form-data')) {
                 throw new Err(400, null, 'Unsupported Content-Type');
@@ -173,11 +169,9 @@ export default async function router(schema: any, config: Config) {
                         uid: crypto.randomUUID()
                     };
 
-                    if (!(req.auth instanceof AuthUser)) throw new Err(400, null, 'Must access with user account');
-
                     await config.models.Import.generate({
                         name: res.file,
-                        username: req.auth.email,
+                        username: user.email,
                         id: res.uid
                     });
 

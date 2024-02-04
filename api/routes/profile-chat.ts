@@ -15,11 +15,8 @@ export default async function router(schema: any, config: Config) {
         res: 'res.ListProfileChats.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req);
-
-            if (req.auth instanceof AuthResource) throw new Err(400, null, 'Chats can only be listed by an authenticated user');
-            const chats = await config.models.ProfileChat.chats(req.auth.email);
-
+            const user = await Auth.is_user(req);
+            const chats = await config.models.ProfileChat.chats(user.email);
             return res.json(chats);
         } catch (err) {
             return Err.respond(err, res);

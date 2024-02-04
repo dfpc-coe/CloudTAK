@@ -6,7 +6,6 @@ import Logs from '../lib/aws/batch-logs.js';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
 import Config from '../lib/config.js';
-import { AuthResource } from '@tak-ps/blueprint-login';
 
 export default async function router(schema: any, config: Config) {
     await schema.get('/profile/job', {
@@ -18,10 +17,8 @@ export default async function router(schema: any, config: Config) {
         res: 'res.ListProfileJobs.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req);
-
-            if (req.auth instanceof AuthResource) throw new Err(400, null, 'Jobs can only be listed by an authenticated user');
-            const list = await Batch.list(config, `profile-${req.auth.email.replace('@', '_at_').replace(/[^a-zA-Z0-9]/g, '_')}`);
+            const user = await Auth.is_user(req);
+            const list = await Batch.list(config, `profile-${user.email.replace('@', '_at_').replace(/[^a-zA-Z0-9]/g, '_')}`);
 
             return res.json({
                 total: list.length,

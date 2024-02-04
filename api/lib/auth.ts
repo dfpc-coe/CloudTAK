@@ -1,17 +1,17 @@
 import Err from '@openaddresses/batch-error';
-import { AuthRequest, AuthUser } from '@tak-ps/blueprint-login';
+import { AuthRequest, AuthUser, AuthResource } from '@tak-ps/blueprint-login';
 
 /**
  * @class
  */
 export default class Auth {
     /**
-     * Is the user authenticated
+     * Is the requester authenticated - can be either a Resource or User auth
      *
      * @param {Object} req Express Request
      * @param {boolean} token Should URL query tokens be allowed (usually only for downloads)
      */
-    static async is_auth(req: AuthRequest, token = false) {
+    static async is_auth(req: AuthRequest, token = false): Promise<boolean> {
         if (token && req.token) req.auth = req.token;
 
         if (!req.auth || !req.auth.access) {
@@ -24,6 +24,14 @@ export default class Auth {
         }
 
         return true;
+    }
+
+    static async is_user(req: AuthRequest, token = false): Promise<AuthUser> {
+        await this.is_auth(req, token);
+
+        if (req.auth instanceof AuthResource) throw new Err(401, null, 'Only an authenticated user can access this resource');
+
+        return req.auth;
     }
 
     /**

@@ -14,10 +14,8 @@ export default async function router(schema: any, config: Config) {
         res: 'res.Profile.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req);
-
-            if (req.auth instanceof AuthResource) throw new Err(400, null, 'Overlays can only be listed by an authenticated user');
-            const profile = await config.models.Profile.from(req.auth.email);
+            const user = await Auth.is_user(req);
+            const profile = await config.models.Profile.from(user.email);
 
             return res.json(profile);
         } catch (err) {
@@ -34,10 +32,8 @@ export default async function router(schema: any, config: Config) {
         res: 'res.Profile.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req);
-
-            if (req.auth instanceof AuthResource) throw new Err(400, null, 'Overlays can only be listed by an authenticated user');
-            const profile = await config.models.Profile.commit(req.auth.email, req.body);
+            const user = await Auth.is_user(req);
+            const profile = await config.models.Profile.commit(user.email, req.body);
 
             return res.json(profile);
         } catch (err) {
