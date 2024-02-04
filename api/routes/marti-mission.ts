@@ -6,6 +6,7 @@ import { Profile, Connection } from '../lib/schema.js';
 import S3 from '../lib/aws/s3.js';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
+import { AuthUser, AuthResource } from '@tak-ps/blueprint-login';
 import TAKAPI, {
     APIAuthToken,
     APIAuthCertificate,
@@ -48,6 +49,7 @@ export default async function router(schema: any, config: Config) {
             if (req.query.connection) {
                 auth = (await config.models.Connection.from(parseInt(String(req.query.connection)))).auth;
             } else {
+                if (req.auth instanceof AuthResource) throw new Err(400, null, 'Files can only be downloaded by a JWT authenticated user');
                 if (!req.auth.email) throw new Err(400, null, 'Groups can only be listed by an authenticated user');
                 auth = (await config.models.Profile.from(req.auth.email)).auth;
             }
@@ -91,6 +93,7 @@ export default async function router(schema: any, config: Config) {
             if (req.query.connection) {
                 auth = (await config.models.Connection.from(parseInt(String(req.query.connection)))).auth;
             } else {
+                if (req.auth instanceof AuthResource) throw new Err(400, null, 'Files can only be downloaded by a JWT authenticated user');
                 if (!req.auth.email) throw new Err(400, null, 'Groups can only be listed by an authenticated user');
                 auth = (await config.models.Profile.from(req.auth.email)).auth;
             }
@@ -142,6 +145,7 @@ export default async function router(schema: any, config: Config) {
             if (req.query.connection) {
                 auth = (await config.models.Connection.from(parseInt(String(req.query.connection)))).auth;
             } else {
+                if (req.auth instanceof AuthResource) throw new Err(400, null, 'Files can only be downloaded by a JWT authenticated user');
                 if (!req.auth.email) throw new Err(400, null, 'Groups can only be listed by an authenticated user');
                 auth = (await config.models.Profile.from(req.auth.email)).auth;
             }
@@ -191,6 +195,7 @@ export default async function router(schema: any, config: Config) {
             if (req.query.connection) {
                 auth = (await config.models.Connection.from(parseInt(String(req.query.connection)))).auth;
             } else {
+                if (req.auth instanceof AuthResource) throw new Err(400, null, 'Files can only be downloaded by a JWT authenticated user');
                 if (!req.auth.email) throw new Err(400, null, 'Groups can only be listed by an authenticated user');
                 auth = (await config.models.Profile.from(req.auth.email)).auth;
             }
@@ -243,6 +248,7 @@ export default async function router(schema: any, config: Config) {
             if (req.query.connection) {
                 auth = (await config.models.Connection.from(parseInt(String(req.query.connection)))).auth;
             } else {
+                if (req.auth instanceof AuthResource) throw new Err(400, null, 'Files can only be downloaded by a JWT authenticated user');
                 if (!req.auth.email) throw new Err(400, null, 'Groups can only be listed by an authenticated user');
                 auth = (await config.models.Profile.from(req.auth.email)).auth;
             }
@@ -283,6 +289,7 @@ export default async function router(schema: any, config: Config) {
                 auth = (await config.models.Connection.from(parseInt(String(req.query.connection)))).auth;
                 creatorUid = `CloudTAK-Conn-${req.query.connection}`;
             } else {
+                if (req.auth instanceof AuthResource) throw new Err(400, null, 'Files can only be downloaded by a JWT authenticated user');
                 if (!req.auth.email) throw new Err(400, null, 'Groups can only be listed by an authenticated user');
 
                 const profile = await config.models.Profile.from(req.auth.email);
@@ -338,6 +345,7 @@ export default async function router(schema: any, config: Config) {
             if (req.query.connection) {
                 auth = (await config.models.Connection.from(parseInt(String(req.query.connection)))).auth;
             } else {
+                if (req.auth instanceof AuthResource) throw new Err(400, null, 'Files can only be downloaded by a JWT authenticated user');
                 if (!req.auth.email) throw new Err(400, null, 'Groups can only be listed by an authenticated user');
 
                 const profile = await config.models.Profile.from(req.auth.email);

@@ -3,6 +3,7 @@ import Auth from '../lib/auth.js';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
 import Config from '../lib/config.js';
+import { AuthResource } from '@tak-ps/blueprint-login';
 
 export default async function router(schema: any, config: Config) {
     await schema.get('/profile/overlay', {
@@ -36,6 +37,7 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req);
 
+            if (req.auth instanceof AuthResource) throw new Err(400, null, 'Overlays can only be listed by an authenticated user');
             const overlay = await config.models.ProfileOverlay.generate({
                 ...req.body,
                 username: req.auth.email
@@ -64,6 +66,7 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req);
 
+            if (req.auth instanceof AuthResource) throw new Err(400, null, 'Overlays can only be listed by an authenticated user');
             const overlay = await config.models.ProfileOverlay.from(parseInt(String(req.query.id)));
 
             if (overlay.username !== req.auth.email) {

@@ -5,6 +5,7 @@ import bodyparser from 'body-parser';
 import S3 from '../lib/aws/s3.js';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
+import { AuthUser, AuthResource } from '@tak-ps/blueprint-login';
 import TAKAPI, {
     APIAuthToken,
     APIAuthCertificate,
@@ -46,6 +47,7 @@ export default async function router(schema: any, config: Config) {
                 auth = (await config.models.Connection.from(parseInt(String(req.query.connection)))).auth;
                 creatorUid = `CloudTAK-Conn-${req.query.connection}`;
             } else {
+                if (req.auth instanceof AuthResource) throw new Err(400, null, 'Files can only be downloaded by a JWT authenticated user');
                 if (!req.auth.email) throw new Err(400, null, 'Mission Log can only be modified by an authenticated user');
                 auth = (await config.models.Profile.from(req.auth.email)).auth;
                 creatorUid = req.auth.email;

@@ -1,5 +1,5 @@
 import Err from '@openaddresses/batch-error';
-import { AuthRequest } from '@tak-ps/blueprint-login';
+import { AuthRequest, AuthUser } from '@tak-ps/blueprint-login';
 
 /**
  * @class
@@ -36,7 +36,7 @@ export default class Auth {
         await this.is_auth(req);
 
         if (req.auth.access !== 'cot')  throw new Err(400, null, 'Token must have "cot" access');
-        if (req.auth.layer !== layer)  throw new Err(400, null, 'Token is not valid for this layer');
+        if (req.auth instanceof AuthUser && req.auth.layer !== layer)  throw new Err(400, null, 'Token is not valid for this layer');
 
         return true;
     }

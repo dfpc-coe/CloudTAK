@@ -1,5 +1,5 @@
 {
     "type": "number",
-    "description": "",
+    "description": "ConnectionID this Data Sync is a child of",
     "$comment": "int4"
 }

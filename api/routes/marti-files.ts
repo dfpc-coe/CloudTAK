@@ -3,6 +3,7 @@ import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
+import { AuthUser, AuthResource } from '@tak-ps/blueprint-login';
 import TAKAPI, {
     APIAuthToken,
     APIAuthPassword
@@ -20,7 +21,8 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req, true);
 
-            if (!req.auth.email) throw new Err(400, null, 'Files can only be deleted by a JWT authenticated user');
+            if (req.auth instanceof AuthResource) throw new Err(400, null, 'Files can only be downloaded by a JWT authenticated user');
+            if (!req.auth.email) throw new Err(400, null, 'Files can only be downloaded by a JWT authenticated user');
 
             const api = await TAKAPI.init(new URL(config.MartiAPI), new APIAuthToken(req.auth.token));
             const file = await api.Files.delete(req.params.hash);
@@ -51,6 +53,7 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req, true);
 
+            if (req.auth instanceof AuthResource) throw new Err(400, null, 'Files can only be downloaded by a JWT authenticated user');
             if (!req.auth.email) throw new Err(400, null, 'Files can only be downloaded by a JWT authenticated user');
 
             const api = await TAKAPI.init(new URL(config.MartiAPI), new APIAuthToken(req.auth.token));

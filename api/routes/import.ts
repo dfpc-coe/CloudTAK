@@ -9,6 +9,7 @@ import S3 from '../lib/aws/s3.js'
 import crypto from 'node:crypto';
 import { Param } from '@openaddresses/batch-generic';
 import { sql } from 'drizzle-orm';
+import { AuthUser } from '@tak-ps/blueprint-login';
 
 export default async function router(schema: any, config: Config) {
     await schema.post('/import', {
@@ -45,6 +46,8 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(req);
 
+            if (!(req.auth instanceof AuthUser)) throw new Err(400, null, 'Must access with user account');
+
             const imp = await config.models.Import.generate({
                 id: crypto.randomUUID(),
                 name: req.body.name,
@@ -71,6 +74,8 @@ export default async function router(schema: any, config: Config) {
     }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(req);
+
+            if (!(req.auth instanceof AuthUser)) throw new Err(400, null, 'Must access with user account');
 
             if (!req.headers['content-type'].startsWith('multipart/form-data')) {
                 throw new Err(400, null, 'Unsupported Content-Type');
@@ -167,6 +172,8 @@ export default async function router(schema: any, config: Config) {
                         ext: path.parse(blob.filename).ext,
                         uid: crypto.randomUUID()
                     };
+
+                    if (!(req.auth instanceof AuthUser)) throw new Err(400, null, 'Must access with user account');
 
                     await config.models.Import.generate({
                         name: res.file,
