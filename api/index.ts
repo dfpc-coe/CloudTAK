@@ -224,7 +224,7 @@ export default async function server(config: Config) {
 
             const auth = tokenParser(parsedParams.token, config.SigningSecret);
 
-            if (!config.wsClients.has(parsedParams.connection)) config.wsClients.set(parsedParams.connecton, [])
+            if (!config.wsClients.has(parsedParams.connection)) config.wsClients.set(parsedParams.connection, [])
 
             // Connect to MachineUser Connection if it is an integer
             if (!isNaN(parseInt(parsedParams.connection))) {
