@@ -1,5 +1,6 @@
 import Err from '@openaddresses/batch-error';
 import { AuthRequest, AuthUser, AuthResource } from '@tak-ps/blueprint-login';
+import Models from './models.js';
 
 /**
  * @class
@@ -11,23 +12,25 @@ export default class Auth {
      * @param {Object} req Express Request
      * @param {boolean} token Should URL query tokens be allowed (usually only for downloads)
      */
-    static async is_auth(req: AuthRequest, token = false): Promise<boolean> {
-        if (token && req.token) req.auth = req.token;
+    static async is_auth(models: Models, req: AuthRequest, opts: {
+        token?: boolean;
+    }): Promise<boolean> {
+        if (!opts.token) opts.token = false;
+
+        if (opts.token && req.token) req.auth = req.token;
 
         if (!req.auth || !req.auth.access) {
             throw new Err(403, null, 'Authentication Required');
         }
 
-        // @ts-expect-error TODO: Update auth type
-        if (req.auth.disabled) {
-            throw new Err(403, null, 'Account Disabled - Please Contact Us');
-        }
-
         return true;
     }
 
-    static async is_user(req: AuthRequest, token = false): Promise<AuthUser> {
-        await this.is_auth(req, token);
+    static async is_user(models: Models, req: AuthRequest, opts: {
+        token?: boolean;
+    }): Promise<AuthUser> {
+        if (!opts.token) opts.token = false;
+        await this.is_auth(models, req, opts);
 
         if (req.auth instanceof AuthResource) throw new Err(401, null, 'Only an authenticated user can access this resource');
 
@@ -40,7 +43,7 @@ export default class Auth {
      * @param {Object} req Express Request
      * @param {Number} layer Expected Layer
      */
-    static async is_layer(req: AuthRequest, layer: number) {
+    static async is_resource(req: AuthRequest, layer: number) {
         await this.is_auth(req);
 
         if (req.auth.access !== 'cot')  throw new Err(400, null, 'Token must have "cot" access');
