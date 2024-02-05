@@ -3,15 +3,11 @@
     "additionalProperties": false,
     "required": [
         "name",
-        "description",
-        "connection"
+        "description"
     ],
     "properties": {
         "name": {
             "$ref": "./data/name.json"
-        },
-        "connection": {
-            "$ref": "./data/connection.json"
         },
         "auto_transform": {
             "$ref": "./data/auto_transform.json"

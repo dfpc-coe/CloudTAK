@@ -12,16 +12,19 @@ import DataMission from '../lib/data-mission.js';
 import { AuthResourceAccess } from '@tak-ps/blueprint-login';
 
 export default async function router(schema: any, config: Config) {
-    await schema.get('/data', {
+    await schema.get('/connection/:connectionid/data', {
         name: 'List Data',
         group: 'Data',
         auth: 'user',
+        ':connectionid': 'integer',
         description: 'List data',
         query: 'req.query.ListData.json',
         res: 'res.ListData.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(config.models, req);
+            await Auth.is_auth(config.models, req, {
+                resources: [{ access: AuthResourceAccess.CONNECTION, id: parseInt(req.params.connectionid) }]
+            });
 
             const list = await config.models.Data.list({
                 limit: Number(req.query.limit),
@@ -30,7 +33,7 @@ export default async function router(schema: any, config: Config) {
                 sort: String(req.query.sort),
                 where: sql`
                     name ~* ${req.query.filter}
-                    AND (${Param(req.query.connection)}::BIGINT IS NULL OR connection = ${Param(req.query.connection)}::BIGINT)
+                    AND (${Param(req.params.connectionid)}::BIGINT IS NULL OR connection = ${Param(req.params.connectionid)}::BIGINT)
                 `
             });
 
@@ -40,18 +43,24 @@ export default async function router(schema: any, config: Config) {
         }
     });
 
-    await schema.post('/data', {
+    await schema.post('/connection/:connectionid/data', {
         name: 'Create data',
         group: 'Data',
         auth: 'admin',
         description: 'Register a new data source',
+        ':connectionid': 'integer',
         body: 'req.body.CreateData.json',
         res: 'res.Data.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(config.models, req);
+            await Auth.is_auth(config.models, req, {
+                resources: [{ access: AuthResourceAccess.CONNECTION, id: parseInt(req.params.connectionid) }]
+            });
 
-            const data = await config.models.Data.generate(req.body);
+            const data = await config.models.Data.generate({
+                ...req.body,
+                connection: req.params.connectionid
+            });
 
             await DataMission.sync(config, data);
 
@@ -61,18 +70,22 @@ export default async function router(schema: any, config: Config) {
         }
     });
 
-    await schema.patch('/data/:dataid', {
+    await schema.patch('/connection/:connectionid/data/:dataid', {
         name: 'Update Layer',
         group: 'Data',
         auth: 'admin',
         description: 'Update a data source',
+        ':connectionid': 'integer',
         ':dataid': 'integer',
         body: 'req.body.PatchData.json',
         res: 'res.Data.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(config.models, req, {
-                resources: [{ access: AuthResourceAccess.DATA, id: parseInt(req.params.dataid) }]
+                resources: [
+                    { access: AuthResourceAccess.DATA, id: parseInt(req.params.dataid) },
+                    { access: AuthResourceAccess.CONNECTION, id: parseInt(req.params.connectionid) }
+                ]
             });
 
             let data = await config.models.Data.commit(parseInt(req.params.dataid), {
@@ -88,17 +101,21 @@ export default async function router(schema: any, config: Config) {
         }
     });
 
-    await schema.get('/data/:dataid', {
+    await schema.get('/connection/:connectionid/data/:dataid', {
         name: 'Get Data',
         group: 'Data',
         auth: 'user',
         description: 'Get a data source',
+        ':connectionid': 'integer',
         ':dataid': 'integer',
         res: 'res.Data.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(config.models, req, {
-                resources: [{ access: AuthResourceAccess.DATA, id: parseInt(req.params.dataid) }]
+                resources: [
+                    { access: AuthResourceAccess.DATA, id: parseInt(req.params.dataid) },
+                    { access: AuthResourceAccess.CONNECTION, id: parseInt(req.params.connectionid) }
+                ]
             });
 
             let data = await config.models.Data.from(parseInt(req.params.dataid));
@@ -108,16 +125,19 @@ export default async function router(schema: any, config: Config) {
         }
     });
 
-    await schema.delete('/data/:dataid', {
+    await schema.delete('/connection/:connectionid/data/:dataid', {
         name: 'Delete Data',
         group: 'Data',
         auth: 'user',
         description: 'Delete a data source',
+        ':connectionid': 'integer',
         ':dataid': 'integer',
         res: 'res.Standard.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(config.models, req);
+            await Auth.is_auth(config.models, req, {
+                resources: [{ access: AuthResourceAccess.CONNECTION, id: parseInt(req.params.connectionid) }]
+            });
 
             await S3.del(`data-${String(req.params.dataid)}/`, { recurse: true });
 

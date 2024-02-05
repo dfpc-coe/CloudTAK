@@ -25,10 +25,6 @@
             ],
             "description": "Field to sort order by"
         },
-        "connection": {
-            "type": "integer",
-            "description": "Filter by a connection id"
-        },
         "filter": {
             "type": "string",
             "default": "",
