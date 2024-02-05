@@ -13,6 +13,7 @@ import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
 import Config from '../lib/config.js';
 import DataMission from '../lib/data-mission.js';
+import { AuthResourceAccess } from '@tak-ps/blueprint-login';
 
 export default async function router(schema: any, config: Config) {
     await schema.get('/data/:dataid/asset', {
@@ -61,7 +62,9 @@ export default async function router(schema: any, config: Config) {
         let bb;
         let data;
         try {
-            await Auth.is_auth(config.models, req);
+            await Auth.is_auth(config.models, req, {
+                resources: [{ access: AuthResourceAccess.DATA, id: parseInt(req.params.dataid) }]
+            });
 
             await DataMission.sync(config, data);
 
@@ -118,7 +121,9 @@ export default async function router(schema: any, config: Config) {
         res: 'res.Standard.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(config.models, req);
+            await Auth.is_auth(config.models, req, {
+                resources: [{ access: AuthResourceAccess.DATA, id: parseInt(req.params.dataid) }]
+            });
 
             const data = await config.models.Data.from(parseInt(req.params.dataid));
 
@@ -144,7 +149,9 @@ export default async function router(schema: any, config: Config) {
         res: 'res.Standard.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(config.models, req);
+            await Auth.is_auth(config.models, req, {
+                resources: [{ access: AuthResourceAccess.DATA, id: parseInt(req.params.dataid) }]
+            });
 
             await S3.del(`data/${req.params.dataid}/${req.params.asset}.${req.params.ext}`);
 
@@ -167,7 +174,10 @@ export default async function router(schema: any, config: Config) {
         ':ext': 'string'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(config.models, req, { token: true });
+            await Auth.is_auth(config.models, req, {
+                token: true,
+                resources: [{ access: AuthResourceAccess.DATA, id: parseInt(req.params.dataid) }]
+            });
 
             const stream = await S3.get(`data/${req.params.dataid}/${req.params.asset}.${req.params.ext}`);
 
@@ -186,7 +196,10 @@ export default async function router(schema: any, config: Config) {
         ':asset': 'string'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(config.models, req, { token: true });
+            await Auth.is_auth(config.models, req, {
+                token: true,
+                resources: [{ access: AuthResourceAccess.DATA, id: parseInt(req.params.dataid) }]
+            });
 
             const data = await config.models.Data.from(parseInt(req.params.dataid));
 

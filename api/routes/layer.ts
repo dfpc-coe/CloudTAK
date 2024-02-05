@@ -18,6 +18,7 @@ import S3 from '../lib/aws/s3.js';
 import { Feature } from 'geojson';
 import { Param } from '@openaddresses/batch-generic';
 import { sql } from 'drizzle-orm';
+import { AuthResourceAccess } from '@tak-ps/blueprint-login';
 
 export default async function router(schema: any, config: Config) {
     const alarm = new Alarm(config.StackName);
@@ -169,7 +170,9 @@ export default async function router(schema: any, config: Config) {
         res: 'res.Layer.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(config.models, req);
+            await Auth.is_auth(config.models, req, {
+                resources: [{ access: AuthResourceAccess.LAYER, id: parseInt(req.params.layerid) }]
+            });
 
             if (req.body.styles) {
                 await Style.validate(req.body.styles);
@@ -251,7 +254,9 @@ export default async function router(schema: any, config: Config) {
         res: 'res.Layer.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(config.models, req);
+            await Auth.is_auth(config.models, req, {
+                resources: [{ access: AuthResourceAccess.LAYER, id: parseInt(req.params.layerid) }]
+            });
 
             const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
                 return await config.models.Layer.from(parseInt(req.params.layerid));
@@ -345,7 +350,9 @@ export default async function router(schema: any, config: Config) {
         limit: '50mb'
     }), async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_layer(req, parseInt(req.params.layerid));
+            await Auth.is_auth(config.models, req, {
+                resources: [{ access: AuthResourceAccess.LAYER, id: parseInt(req.params.layerid) }]
+            });
 
             if (!req.headers['content-type']) throw new Err(400, null, 'Content-Type not set');
 
