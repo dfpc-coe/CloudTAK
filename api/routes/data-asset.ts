@@ -16,11 +16,12 @@ import DataMission from '../lib/data-mission.js';
 import { AuthResourceAccess } from '@tak-ps/blueprint-login';
 
 export default async function router(schema: any, config: Config) {
-    await schema.get('/data/:dataid/asset', {
+    await schema.get('/connection/:connectionid/data/:dataid/asset', {
         name: 'List Assets',
         auth: 'user',
         group: 'DataAssets',
         description: 'List Assets',
+        ':connectionid': 'integer',
         ':dataid': 'integer',
         res: 'res.ListAssets.json'
     }, async (req: AuthRequest, res: Response) => {
@@ -50,11 +51,12 @@ export default async function router(schema: any, config: Config) {
         }
     });
 
-    await schema.post('/data/:dataid/asset', {
+    await schema.post('/connection/:connectionid/data/:dataid/asset', {
         name: 'Create Asset',
         auth: 'user',
         group: 'DataAssets',
         description: 'Create a new asset',
+        ':connectionid': 'integer',
         ':dataid': 'integer',
         res: 'res.Standard.json'
     }, async (req: AuthRequest, res: Response) => {
@@ -110,11 +112,12 @@ export default async function router(schema: any, config: Config) {
         return req.pipe(bb);
     });
 
-    await schema.post('/data/:dataid/asset/:asset.:ext', {
+    await schema.post('/connection/:connectionid/data/:dataid/asset/:asset.:ext', {
         name: 'Convert Asset',
         auth: 'user',
         group: 'DataAssets',
         description: 'Convert Asset into a cloud native or TAK Native format automatically',
+        ':connectionid': 'integer',
         ':dataid': 'integer',
         ':asset': 'string',
         ':ext': 'string',
@@ -138,11 +141,12 @@ export default async function router(schema: any, config: Config) {
         }
     });
 
-    await schema.delete('/data/:dataid/asset/:asset.:ext', {
+    await schema.delete('/connection/:connectionid/data/:dataid/asset/:asset.:ext', {
         name: 'Delete Asset',
         auth: 'user',
         group: 'DataAssets',
         description: 'Delete Asset',
+        ':connectionid': 'integer',
         ':dataid': 'integer',
         ':asset': 'string',
         ':ext': 'string',
@@ -164,11 +168,12 @@ export default async function router(schema: any, config: Config) {
         }
     });
 
-    await schema.get('/data/:dataid/asset/:asset.:ext', {
+    await schema.get('/connection/:connectionid/data/:dataid/asset/:asset.:ext', {
         name: 'Raw Asset',
         auth: 'user',
         group: 'DataAssets',
         description: 'Get single raw asset',
+        ':connectionid': 'integer',
         ':dataid': 'integer',
         ':asset': 'string',
         ':ext': 'string'
@@ -187,11 +192,12 @@ export default async function router(schema: any, config: Config) {
         }
     });
 
-    await schema.get('/data/:dataid/asset/:asset.pmtiles/tile', {
+    await schema.get('/connection/:connectionid/data/:dataid/asset/:asset.pmtiles/tile', {
         name: 'PMTiles TileJSON',
         auth: 'user',
         group: 'DataAssets',
         description: 'Get TileJSON ',
+        ':connectionid': 'integer',
         ':dataid': 'integer',
         ':asset': 'string'
     }, async (req: AuthRequest, res: Response) => {

@@ -8,11 +8,12 @@ import Config from '../lib/config.js';
 import { AuthResourceAccess } from '@tak-ps/blueprint-login';
 
 export default async function router(schema: any, config: Config) {
-    await schema.get('/data/:dataid/job', {
+    await schema.get('/connection/:connectionid/data/:dataid/job', {
         name: 'List Jobs',
         auth: 'user',
         group: 'DataJobs',
         description: 'List Data Jobs',
+        ':connectionid': 'integer',
         ':dataid': 'integer',
         res: 'res.ListDataJobs.json'
     }, async (req: AuthRequest, res: Response) => {
@@ -34,11 +35,12 @@ export default async function router(schema: any, config: Config) {
         }
     });
 
-    await schema.get('/data/:dataid/job/:jobid', {
+    await schema.get('/connection/:connectionid/data/:dataid/job/:jobid', {
         name: 'List Jobs',
         auth: 'user',
         group: 'DataJobs',
         description: 'List Data Jobs',
+        ':connectionid': 'integer',
         ':dataid': 'integer',
         ':jobid': 'string',
         res: 'res.DataJob.json'
@@ -58,11 +60,12 @@ export default async function router(schema: any, config: Config) {
         }
     });
 
-    await schema.get('/data/:dataid/job/:jobid/logs', {
+    await schema.get('/connection/:connectionid/data/:dataid/job/:jobid/logs', {
         name: 'List Logs',
         auth: 'user',
         group: 'DataJobLogs',
         description: 'List Data Job Logs',
+        ':connectionid': 'integer',
         ':dataid': 'integer',
         ':jobid': 'string',
         res: 'res.DataJobLogs.json'
