@@ -7,6 +7,7 @@ import SwaggerUI from 'swagger-ui-express';
 import history, {Context} from 'connect-history-api-fallback';
 // @ts-ignore
 import Schema from '@openaddresses/batch-schema';
+import Err from '@openaddresses/batch-error';
 import Modeler from '@openaddresses/batch-generic';
 import minimist from 'minimist';
 import ConnectionPool, { ConnectionWebSocket, sleep } from './lib/connection-pool.js';
@@ -68,15 +69,14 @@ export default async function server(config: Config) {
     try {
         await config.cacher.flush();
     } catch (err) {
-        console.log(`ok - failed to flush cache: ${err.message}`);
+        console.log(`ok - failed to flush cache: ${err instanceof Error? err.message : String(err)}`);
     }
 
     try {
         const ServerModel = new Modeler(config.pg, pgschema.Server);
         config.server = await ServerModel.from(1);
     } catch (err) {
-        console.log(`ok - no server config found: ${err.message}`);
-        config.server = null;
+        console.log(`ok - no server config found: ${err instanceof Error ? err.message : String(err)}`);
     }
 
     config.conns = new ConnectionPool(config, config.server, config.wsClients, config.StackName, config.local);
@@ -138,14 +138,14 @@ export default async function server(config: Config) {
         try {
             profile = await ProfileModel.from(user.username);
         } catch (err) {
-            if (err.status === 404) {
+            if (err instanceof Err && err.status === 404) {
                 profile = await ProfileModel.generate({ username: user.username });
             } else {
                 console.error(err);
             }
         }
 
-        if (!profile.auth.cert || !profile.auth.key) {
+        if (!profile || !profile.auth || !profile.auth.cert || !profile.auth.key) {
             try {
             const api = await TAKAPI.init(new URL(config.MartiAPI), new APIAuthPassword(user.username, user.password));
             await ProfileModel.commit(profile.username, { auth: await api.Credentials.generate() });
@@ -216,36 +216,41 @@ export default async function server(config: Config) {
 
             if (!params.get('connection')) throw new Error('Connection Parameter Required');
             if (!params.get('token')) throw new Error('Token Parameter Required');
+            const parsedParams = {
+                connection: String(params.get('connection')),
+                token: String(params.get('token')),
+                format: String(params.get('format') || 'raw')
+            }
 
-            const auth = tokenParser(params.get('token'), config.SigningSecret);
+            const auth = tokenParser(parsedParams.token, config.SigningSecret);
 
-            if (!config.wsClients.has(params.get('connection'))) config.wsClients.set(params.get('connection'), [])
+            if (!config.wsClients.has(parsedParams.connection)) config.wsClients.set(parsedParams.connecton, [])
 
             // Connect to MachineUser Connection if it is an integer
-            if (!isNaN(parseInt(params.get('connection')))) {
-                config.wsClients.get(params.get('connection')).push(new ConnectionWebSocket(ws, params.get('format')));
-            } else if (auth instanceof AuthUser && params.get('connection') === auth.email) {
-                if (!config.conns.has(params.get('connection'))) {
-                    const profile = await ProfileModel.from(params.get('connection'));
+            if (!isNaN(parseInt(parsedParams.connection))) {
+                config.wsClients.get(parsedParams.connection).push(new ConnectionWebSocket(ws, parsedParams.format));
+            } else if (auth instanceof AuthUser && parsedParams.connection === auth.email) {
+                if (!config.conns.has(parsedParams.connection)) {
+                    const profile = await ProfileModel.from(parsedParams.connection);
                     if (!profile.auth.cert || !profile.auth.key) throw new Error('No Cert Found on profile');
 
                     const client = await config.conns.add({
-                        id: params.get('connection'),
-                        name: params.get('connection'),
+                        id: parsedParams.connection,
+                        name: parsedParams.connection,
                         enabled: true,
                         auth: profile.auth
                     }, true);
 
-                    config.wsClients.get(params.get('connection')).push(new ConnectionWebSocket(ws, params.get('format'), client));
+                    config.wsClients.get(parsedParams.connection).push(new ConnectionWebSocket(ws, parsedParams.format, client));
                 } else {
-                    const client = config.conns.get(params.get('connection'));
-                    config.wsClients.get(params.get('connection')).push(new ConnectionWebSocket(ws, params.get('format'), client));
+                    const client = config.conns.get(parsedParams.connection);
+                    config.wsClients.get(parsedParams.connection).push(new ConnectionWebSocket(ws, parsedParams.format, client));
                 }
             } else {
                 throw new Error('Unauthorized');
             }
         } catch (err) {
-            ws.send(JSON.stringify({type: 'Error', message: String(err.message) }));
+            ws.send(JSON.stringify({type: 'Error', message: err instanceof Error ? String(err.message) : String(err) }));
             await sleep(500);
             ws.close();
         }
