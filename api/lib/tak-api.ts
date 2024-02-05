@@ -38,7 +38,9 @@ export class APIAuthPassword extends APIAuth {
         url.searchParams.append('username', this.username);
         url.searchParams.append('password', this.password);
 
-        const authres = await fetch(url);
+        const authres = await fetch(url, {
+            method: 'POST'
+        });
 
         if (!authres.ok) throw new Err(400, new Error(await authres.text()), 'Non-200 Response from Auth Server - Token');
 

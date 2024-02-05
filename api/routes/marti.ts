@@ -139,7 +139,7 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(config.models, req);
 
-            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthPassword(req.body.username, req.body.password));
+            const api = await TAKAPI.init(new URL(config.MartiAPI), new APIAuthPassword(req.body.username, req.body.password));
 
             const certs = await api.Credentials.generate();
 
