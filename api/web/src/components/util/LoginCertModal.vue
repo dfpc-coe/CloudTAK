@@ -54,10 +54,15 @@ export default {
     methods: {
         generate: async function() {
             this.loading.generate = true;
-            const res = await window.std('/api/marti/signClient', {
-                method: 'POST',
-                body: this.body
-            });
+            try {
+                const res = await window.std('/api/marti/signClient', {
+                    method: 'POST',
+                    body: this.body
+                });
+            } catch (err) {
+                this.loading.generate = false;
+                throw err;
+            }
 
             this.$emit('certs', res);
             this.$emit('close');
