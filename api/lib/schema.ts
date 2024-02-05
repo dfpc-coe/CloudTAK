@@ -136,6 +136,7 @@ export const Data = pgTable('data', {
     description: text('description').notNull().default(''),
     auto_transform: boolean('auto_transform').notNull().default(false),
     mission_sync: boolean('mission_sync').notNull().default(false),
+    mission_groups: json('mission_groups').$type<Array<string>>().notNull().default([]),
     assets: json('assets').$type<Array<string>>().notNull().default(["*"]),
     connection: integer('connection').notNull().references(() => Connection.id)
 });
