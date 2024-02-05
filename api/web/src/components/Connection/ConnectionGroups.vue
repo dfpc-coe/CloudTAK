@@ -80,6 +80,21 @@ export default {
             this.rawChannels = (await window.std(`/api/connection/${this.$route.params.connectionid}/channel`)).data;
             this.loading = false;
         },
+        setStatus: async function(channel, active=false) {
+            this.rawChannels = this.rawChannels.map((ch) => {
+                if (ch.name === channel.name) ch.active = active;
+                return ch;
+            });
+
+            const url = window.stdurl('/api/marti/group');
+            url.searchParams.append('connection', this.$route.params.connectionid);
+            await window.std(url, {
+                method: 'PUT',
+                body: this.rawChannels
+            });
+
+            this.$emit('reset');
+        },
     },
     components: {
         IconEye,

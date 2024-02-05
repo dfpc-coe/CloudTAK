@@ -186,7 +186,7 @@ export default class TAKAPI {
             if (!opts.headers) opts.headers = {};
 
             if (
-                (isPlainObject(opts.body))
+                (isPlainObject(opts.body) || Array.isArray(opts.body))
                 && (
                     !opts.headers['Content-Type']
                     || opts.headers['Content-Type'].startsWith('application/json')
