@@ -50,6 +50,13 @@
       "when": 1706969803889,
       "tag": "0006_flippant_cobalt_man",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "5",
+      "when": 1707103066482,
+      "tag": "0007_chubby_scarlet_spider",
+      "breakpoints": true
     }
   ]
 }

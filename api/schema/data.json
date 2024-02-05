@@ -28,6 +28,9 @@
         },
         "assets": {
             "$ref": "./data/assets.json"
+        },
+        "mission_groups": {
+            "$ref": "./data/mission_groups.json"
         }
     },
     "required": [
@@ -39,6 +42,7 @@
         "auto_transform",
         "connection",
         "mission_sync",
-        "assets"
+        "assets",
+        "mission_groups"
     ]
 }
