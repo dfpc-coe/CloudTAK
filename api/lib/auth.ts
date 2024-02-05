@@ -34,7 +34,7 @@ export default class Auth {
         }
 
         if (req.auth instanceof AuthResource) {
-            if (!opts.resources || !opts.resources.length) throw new Err(403, null, 'Resource token cannot access this resource as no resource were specified');
+            if (!opts.resources || !opts.resources.length) throw new Err(403, null, 'Resource token cannot access resource');
 
             if (!req.auth.internal) {
                 try {
