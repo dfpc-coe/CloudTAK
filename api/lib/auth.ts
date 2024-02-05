@@ -1,5 +1,9 @@
 import Err from '@openaddresses/batch-error';
-import { AuthRequest, AuthUser, AuthResource } from '@tak-ps/blueprint-login';
+import {
+    AuthRequest,
+    AuthUser, AuthUserAccess,
+    AuthResource, AuthResourceAccess
+} from '@tak-ps/blueprint-login';
 import Models from './models.js';
 
 /**
@@ -12,8 +16,9 @@ export default class Auth {
      * @param {Object} req Express Request
      * @param {boolean} token Should URL query tokens be allowed (usually only for downloads)
      */
-    static async is_auth(models: Models, req: AuthRequest, opts: {
+    static async is_auth(models: Models, req: AuthRequest, opts?: {
         token?: boolean;
+        resources?: Array<void>
     }): Promise<boolean> {
         if (!opts.token) opts.token = false;
 
@@ -23,10 +28,22 @@ export default class Auth {
             throw new Err(403, null, 'Authentication Required');
         }
 
+        if (req.auth instanceof AuthResource) {
+            if (!opts.resources || !opts.resources.length) throw new Err(403, null, 'Resource token cannot access this resource');
+
+            if (!req.auth.internal) {
+                try {
+                    await models.ConnectionToken.from(req.auth.token);
+                } catch (err) {
+                    throw new Err(403, err, 'Token does not exist');
+                }
+            }
+        }
+
         return true;
     }
 
-    static async is_user(models: Models, req: AuthRequest, opts: {
+    static async is_user(models: Models, req: AuthRequest, opts?: {
         token?: boolean;
     }): Promise<AuthUser> {
         if (!opts.token) opts.token = false;
@@ -35,36 +52,5 @@ export default class Auth {
         if (req.auth instanceof AuthResource) throw new Err(401, null, 'Only an authenticated user can access this resource');
 
         return req.auth;
-    }
-
-    /**
-     * Is the request from a task lambda function
-     *
-     * @param {Object} req Express Request
-     * @param {Number} layer Expected Layer
-     */
-    static async is_resource(req: AuthRequest, layer: number) {
-        await this.is_auth(req);
-
-        if (req.auth.access !== 'cot')  throw new Err(400, null, 'Token must have "cot" access');
-        if (req.auth instanceof AuthUser && req.auth.layer !== layer)  throw new Err(400, null, 'Token is not valid for this layer');
-
-        return true;
-    }
-
-    /**
-     * Is the request from a task lambda function
-     *
-     * @param {Object} req Express Request
-     * @param {Number} data Expected Data
-     */
-    static async is_data(req: AuthRequest, data: number) {
-        await this.is_auth(req);
-
-        if (req.auth.access !== 'cot')  throw new Err(400, null, 'Token must have "data" access');
-        // @ts-expect-error TODO: Update auth type
-        if (req.auth.data !== data)  throw new Err(400, null, 'Token is not valid for this data source');
-
-        return true;
     }
 }

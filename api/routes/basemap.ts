@@ -27,7 +27,7 @@ export default async function router(schema: any, config: Config) {
         res: 'res.ImportBaseMap.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req);
+            await Auth.is_auth(config.models, req);
 
             const imported: {
                 name?: string;
@@ -119,7 +119,7 @@ export default async function router(schema: any, config: Config) {
         res: 'res.ListBaseMaps.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req);
+            await Auth.is_auth(config.models, req);
 
             const list = await config.models.Basemap.list({
                 limit: Number(req.query.limit),
@@ -147,7 +147,7 @@ export default async function router(schema: any, config: Config) {
         res: 'basemaps.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req);
+            await Auth.is_auth(config.models, req);
 
             if (req.body.bounds) req.body.bounds = bboxPolygon(req.body.bounds).geometry;
             if (req.body.center) req.body.center = { type: 'Point', coordinates: req.body.center };
@@ -170,7 +170,7 @@ export default async function router(schema: any, config: Config) {
         res: 'basemaps.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req);
+            await Auth.is_auth(config.models, req);
 
             if (req.body.bounds) req.body.bounds = bboxPolygon(req.body.bounds).geometry;
             if (req.body.center) req.body.center = { type: 'Point', coordinates: req.body.center };
@@ -198,7 +198,7 @@ export default async function router(schema: any, config: Config) {
         res: 'basemaps.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req, true);
+            await Auth.is_auth(config.models, req, { token: true });
 
             const basemap = await config.cacher.get(Cacher.Miss(req.query, `basemap-${req.params.basemapid}`), async () => {
                 return await config.models.Basemap.from(Number(req.params.basemapid))
@@ -245,7 +245,7 @@ export default async function router(schema: any, config: Config) {
         ':y': 'integer',
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req, true);
+            await Auth.is_auth(config.models, req, { token: true });
 
             const basemap = await config.cacher.get(Cacher.Miss(req.query, `basemap-${req.params.basemapid}`), async () => {
                 return await config.models.Basemap.from(Number(req.params.basemapid));
@@ -281,7 +281,7 @@ export default async function router(schema: any, config: Config) {
         res: 'res.Standard.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req);
+            await Auth.is_auth(config.models, req);
 
             await config.models.Basemap.delete(Number(req.params.basemapid));
 

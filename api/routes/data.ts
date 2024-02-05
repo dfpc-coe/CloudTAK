@@ -20,7 +20,7 @@ export default async function router(schema: any, config: Config) {
         res: 'res.ListData.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req);
+            await Auth.is_auth(config.models, req);
 
             const list = await config.models.Data.list({
                 limit: Number(req.query.limit),
@@ -48,7 +48,7 @@ export default async function router(schema: any, config: Config) {
         res: 'res.Data.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req);
+            await Auth.is_auth(config.models, req);
 
             const data = await config.models.Data.generate(req.body);
 
@@ -70,7 +70,7 @@ export default async function router(schema: any, config: Config) {
         res: 'res.Data.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req);
+            await Auth.is_auth(config.models, req);
 
             let data = await config.models.Data.commit(parseInt(req.params.dataid), {
                 updated: sql`Now()`,
@@ -94,7 +94,7 @@ export default async function router(schema: any, config: Config) {
         res: 'res.Data.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req);
+            await Auth.is_auth(config.models, req);
 
             let data = await config.models.Data.from(parseInt(req.params.dataid));
             return res.json(data);
@@ -112,7 +112,7 @@ export default async function router(schema: any, config: Config) {
         res: 'res.Standard.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req);
+            await Auth.is_auth(config.models, req);
 
             await S3.del(`data-${String(req.params.dataid)}/`, { recurse: true });
 

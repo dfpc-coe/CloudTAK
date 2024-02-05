@@ -15,7 +15,7 @@ export default async function router(schema: any, config: Config) {
         res: 'res.Server.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req);
+            await Auth.is_auth(config.models, req);
 
             if (!config.server) {
                 return res.json({
@@ -42,7 +42,7 @@ export default async function router(schema: any, config: Config) {
         res: 'res.Server.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req);
+            await Auth.is_auth(config.models, req);
 
             if (config.server) throw new Err(400, null, 'Cannot post to an existing server');
 
@@ -68,7 +68,7 @@ export default async function router(schema: any, config: Config) {
         res: 'res.Server.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req);
+            await Auth.is_auth(config.models, req);
 
             if (!config.server) throw new Err(400, null, 'Cannot patch a server that hasn\'t been created');
 
