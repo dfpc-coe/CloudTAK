@@ -6,6 +6,7 @@ import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
 import { Param } from '@openaddresses/batch-generic';
 import { sql } from 'drizzle-orm';
+import { AuthResourceAccess } from '@tak-ps/blueprint-login';
 
 export default async function router(schema: any, config: Config) {
     const cw = new CW(config.StackName);
@@ -20,7 +21,9 @@ export default async function router(schema: any, config: Config) {
         res: 'res.ListConnectionSinks.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(config.models, req);
+            await Auth.is_auth(config.models, req, {
+                resources: [{ access: AuthResourceAccess.CONNECTION, id: parseInt(req.params.connectionid) }]
+            });
 
             const list = await config.models.ConnectionSink.list({
                 limit: Number(req.query.limit),
@@ -50,7 +53,9 @@ export default async function router(schema: any, config: Config) {
         res: 'res.ConnectionSink.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(config.models, req);
+            await Auth.is_auth(config.models, req, {
+                resources: [{ access: AuthResourceAccess.CONNECTION, id: parseInt(req.params.connectionid) }]
+            });
 
             const conn = await config.models.Connection.from(parseInt(req.params.connectionid));
 
@@ -78,7 +83,9 @@ export default async function router(schema: any, config: Config) {
         res: 'res.ConnectionSink.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(config.models, req);
+            await Auth.is_auth(config.models, req, {
+                resources: [{ access: AuthResourceAccess.CONNECTION, id: parseInt(req.params.connectionid) }]
+            });
 
             const conn = await config.models.Connection.from(parseInt(req.params.connectionid));
             let sink = await config.models.ConnectionSink.from(parseInt(req.params.sinkid));
@@ -105,7 +112,10 @@ export default async function router(schema: any, config: Config) {
         res: 'res.ConnectionSink.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(config.models, req);
+            await Auth.is_auth(config.models, req, {
+                resources: [{ access: AuthResourceAccess.CONNECTION, id: parseInt(req.params.connectionid) }]
+            });
+
 
             const conn = await config.models.Connection.from(parseInt(req.params.connectionid));
             const sink = await config.models.ConnectionSink.from(parseInt(req.params.sinkid));
@@ -145,7 +155,9 @@ export default async function router(schema: any, config: Config) {
         }
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(config.models, req);
+            await Auth.is_auth(config.models, req, {
+                resources: [{ access: AuthResourceAccess.CONNECTION, id: parseInt(req.params.connectionid) }]
+            });
 
             const conn = await config.models.Connection.from(parseInt(req.params.connectionid));
             const sink = await config.models.ConnectionSink.from(parseInt(req.params.sinkid));
@@ -199,7 +211,9 @@ export default async function router(schema: any, config: Config) {
         res: 'res.Standard.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(config.models, req);
+            await Auth.is_auth(config.models, req, {
+                resources: [{ access: AuthResourceAccess.CONNECTION, id: parseInt(req.params.connectionid) }]
+            });
 
             const conn = await config.models.Connection.from(parseInt(req.params.connectionid));
             const sink = await config.models.ConnectionSink.from(parseInt(req.params.sinkid));

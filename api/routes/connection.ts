@@ -5,6 +5,7 @@ import Config from '../lib/config.js';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
 import CW from '../lib/aws/metric.js';
+import { AuthResourceAccess } from '@tak-ps/blueprint-login';
 
 export default async function router(schema: any, config: Config) {
     const cw = new CW(config.StackName);
@@ -87,7 +88,10 @@ export default async function router(schema: any, config: Config) {
         res: 'res.Connection.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(config.models, req);
+            await Auth.is_auth(config.models, req, {
+                resources: [{ access: AuthResourceAccess.CONNECTION, id: parseInt(req.params.connectionid) }]
+            });
+
             const conn = await config.models.Connection.commit(parseInt(req.params.connectionid), {
                 updated: sql`Now()`,
                 ...req.body
@@ -118,7 +122,9 @@ export default async function router(schema: any, config: Config) {
         res: 'res.Connection.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(config.models, req);
+            await Auth.is_auth(config.models, req, {
+                resources: [{ access: AuthResourceAccess.CONNECTION, id: parseInt(req.params.connectionid) }]
+            });
 
             const conn = await config.models.Connection.from(parseInt(req.params.connectionid));
 
@@ -140,7 +146,9 @@ export default async function router(schema: any, config: Config) {
         res: 'res.Connection.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(config.models, req);
+            await Auth.is_auth(config.models, req, {
+                resources: [{ access: AuthResourceAccess.CONNECTION, id: parseInt(req.params.connectionid) }]
+            });
 
             const conn = await config.models.Connection.from(parseInt(req.params.connectionid));
 
@@ -212,7 +220,9 @@ export default async function router(schema: any, config: Config) {
         }
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(config.models, req);
+            await Auth.is_auth(config.models, req, {
+                resources: [{ access: AuthResourceAccess.CONNECTION, id: parseInt(req.params.connectionid) }]
+            });
 
             const conn = await config.models.Connection.from(parseInt(req.params.connectionid));
 

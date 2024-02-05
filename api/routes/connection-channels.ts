@@ -4,6 +4,7 @@ import Config from '../lib/config.js';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
 import TAKAPI, { APIAuthCertificate, } from '../lib/tak-api.js';
+import { AuthResourceAccess } from '@tak-ps/blueprint-login';
 
 export default async function router(schema: any, config: Config) {
     await schema.get('/connection/:connectionid/channel', {
@@ -15,7 +16,9 @@ export default async function router(schema: any, config: Config) {
         res: 'res.Marti.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(config.models, req);
+            await Auth.is_auth(config.models, req, {
+                resources: [{ access: AuthResourceAccess.CONNECTION, id: parseInt(req.params.connectionid) }]
+            });
             const conn = await config.models.Connection.from(parseInt(req.params.connectionid));
 
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(conn.auth.cert, conn.auth.key));
