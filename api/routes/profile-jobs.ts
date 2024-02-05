@@ -17,7 +17,7 @@ export default async function router(schema: any, config: Config) {
         res: 'res.ListProfileJobs.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            const user = await Auth.is_user(req);
+            const user = await Auth.is_user(config.models, req);
             const list = await Batch.list(config, `profile-${user.email.replace('@', '_at_').replace(/[^a-zA-Z0-9]/g, '_')}`);
 
             return res.json({
@@ -38,7 +38,7 @@ export default async function router(schema: any, config: Config) {
         res: 'res.ProfileJob.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req);
+            await Auth.is_auth(config.models, req);
 
             const job = await Batch.job(config, req.params.jobid);
 
@@ -59,7 +59,7 @@ export default async function router(schema: any, config: Config) {
         res: 'res.ProfileJobLogs.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req);
+            await Auth.is_auth(config.models, req);
 
             const job = await Batch.job(config, req.params.jobid);
 

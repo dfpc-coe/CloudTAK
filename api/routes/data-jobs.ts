@@ -16,7 +16,7 @@ export default async function router(schema: any, config: Config) {
         res: 'res.ListDataJobs.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req);
+            await Auth.is_auth(config.models, req);
 
             const data = await config.models.Data.from(parseInt(req.params.dataid));
 
@@ -41,7 +41,7 @@ export default async function router(schema: any, config: Config) {
         res: 'res.DataJob.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req);
+            await Auth.is_auth(config.models, req);
 
             const data = await config.models.Data.from(parseInt(req.params.dataid));
 
@@ -63,7 +63,7 @@ export default async function router(schema: any, config: Config) {
         res: 'res.DataJobLogs.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req);
+            await Auth.is_auth(config.models, req);
 
             const data = await config.models.Data.from(parseInt(req.params.dataid));
 

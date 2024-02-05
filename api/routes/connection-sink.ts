@@ -20,7 +20,7 @@ export default async function router(schema: any, config: Config) {
         res: 'res.ListConnectionSinks.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req);
+            await Auth.is_auth(config.models, req);
 
             const list = await config.models.ConnectionSink.list({
                 limit: Number(req.query.limit),
@@ -50,7 +50,7 @@ export default async function router(schema: any, config: Config) {
         res: 'res.ConnectionSink.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req);
+            await Auth.is_auth(config.models, req);
 
             const conn = await config.models.Connection.from(parseInt(req.params.connectionid));
 
@@ -78,7 +78,7 @@ export default async function router(schema: any, config: Config) {
         res: 'res.ConnectionSink.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req);
+            await Auth.is_auth(config.models, req);
 
             const conn = await config.models.Connection.from(parseInt(req.params.connectionid));
             let sink = await config.models.ConnectionSink.from(parseInt(req.params.sinkid));
@@ -105,7 +105,7 @@ export default async function router(schema: any, config: Config) {
         res: 'res.ConnectionSink.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req);
+            await Auth.is_auth(config.models, req);
 
             const conn = await config.models.Connection.from(parseInt(req.params.connectionid));
             const sink = await config.models.ConnectionSink.from(parseInt(req.params.sinkid));
@@ -145,7 +145,7 @@ export default async function router(schema: any, config: Config) {
         }
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req);
+            await Auth.is_auth(config.models, req);
 
             const conn = await config.models.Connection.from(parseInt(req.params.connectionid));
             const sink = await config.models.ConnectionSink.from(parseInt(req.params.sinkid));
@@ -199,7 +199,7 @@ export default async function router(schema: any, config: Config) {
         res: 'res.Standard.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req);
+            await Auth.is_auth(config.models, req);
 
             const conn = await config.models.Connection.from(parseInt(req.params.connectionid));
             const sink = await config.models.ConnectionSink.from(parseInt(req.params.sinkid));

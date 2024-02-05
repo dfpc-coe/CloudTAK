@@ -20,7 +20,7 @@ export default async function router(schema: any, config: Config) {
         res: 'res.ListTasks.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req);
+            await Auth.is_auth(config.models, req);
 
             const images = await ECR.list();
 
@@ -58,7 +58,7 @@ export default async function router(schema: any, config: Config) {
         res: 'res.ListTaskVersions.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req);
+            await Auth.is_auth(config.models, req);
 
             // Stuck with this approach for now - https://github.com/aws/containers-roadmap/issues/418
             const images = await ECR.list();
@@ -92,7 +92,7 @@ export default async function router(schema: any, config: Config) {
         res: 'res.TaskStatus.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req);
+            await Auth.is_auth(config.models, req);
 
             const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
                 return await config.models.Layer.from(parseInt(String(req.params.layerid)));
@@ -113,7 +113,7 @@ export default async function router(schema: any, config: Config) {
         res: 'res.Standard.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req);
+            await Auth.is_auth(config.models, req);
 
             const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
                 return await config.models.Layer.from(parseInt(String(req.params.layerid)));
@@ -141,7 +141,7 @@ export default async function router(schema: any, config: Config) {
         res: 'res.TaskLogs.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req);
+            await Auth.is_auth(config.models, req);
 
             const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
                 return await config.models.Layer.from(parseInt(String(req.params.layerid)));
@@ -163,7 +163,7 @@ export default async function router(schema: any, config: Config) {
         res: 'res.TaskSchema.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req);
+            await Auth.is_auth(config.models, req);
 
             const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
                 return await config.models.Layer.from(parseInt(String(req.params.layerid)));
@@ -186,7 +186,7 @@ export default async function router(schema: any, config: Config) {
         res: 'res.TaskStatus.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req);
+            await Auth.is_auth(config.models, req);
 
             const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
                 return await config.models.Layer.from(parseInt(String(req.params.layerid)));

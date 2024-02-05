@@ -30,7 +30,7 @@ export default async function router(schema, config: Config) {
         res: 'res.ListIconsets.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req);
+            await Auth.is_auth(config.models, req);
 
             const list = await config.models.Iconset.list({
                 limit: Number(req.query.limit),
@@ -57,7 +57,7 @@ export default async function router(schema, config: Config) {
         res: 'iconsets.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req);
+            await Auth.is_auth(config.models, req);
 
             const iconset = await config.models.Iconset.generate(req.body);
 
@@ -77,7 +77,7 @@ export default async function router(schema, config: Config) {
         res: 'iconsets.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req);
+            await Auth.is_auth(config.models, req);
 
             const iconset = await config.models.Iconset.commit(String(req.params.iconset), req.body);
 
@@ -109,7 +109,7 @@ export default async function router(schema, config: Config) {
         res: 'iconsets.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req, true);
+            await Auth.is_auth(config.models, req, { token: true });
 
             const iconset = await config.models.Iconset.from(String(req.params.iconset));
 
@@ -175,7 +175,7 @@ export default async function router(schema, config: Config) {
         res: 'icons.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req);
+            await Auth.is_auth(config.models, req);
 
             const iconset = await config.models.Iconset.from(String(req.params.iconset));
 
@@ -202,7 +202,7 @@ export default async function router(schema, config: Config) {
         res: 'res.Standard.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req);
+            await Auth.is_auth(config.models, req);
 
             await config.models.Icon.delete(sql`iconset = ${req.params.iconset}`);
             await config.models.Iconset.delete(String(req.params.iconset));
@@ -225,7 +225,7 @@ export default async function router(schema, config: Config) {
         res: 'res.ListIcons.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req);
+            await Auth.is_auth(config.models, req);
 
             req.query.filter = String(req.query.filter).toLowerCase();
 
@@ -257,7 +257,7 @@ export default async function router(schema, config: Config) {
         res: 'icons.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req);
+            await Auth.is_auth(config.models, req);
             const icon = await config.models.Icon.from(sql`${req.params.iconset} = iconset AND ${req.params.icon} = name`);
             return res.json(icon);
         } catch (err) {
@@ -284,7 +284,7 @@ export default async function router(schema, config: Config) {
         res: 'icons.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req);
+            await Auth.is_auth(config.models, req);
             let icon = await config.models.Icon.from(sql`${req.params.iconset} = iconset AND ${req.params.icon} = name`);
 
             if (req.body.name && path.parse(req.body.name).ext !== '.png') throw new Err(400, null, 'Name must have .png extension');
@@ -309,7 +309,7 @@ export default async function router(schema, config: Config) {
         res: 'res.Standard.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req);
+            await Auth.is_auth(config.models, req);
             const icon = await config.models.Icon.delete(sql`${req.params.iconset} = iconset AND ${req.params.icon} = name`);
             return res.json({
                 status: 200,
@@ -329,7 +329,7 @@ export default async function router(schema, config: Config) {
         description: 'Icon Data',
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req, true);
+            await Auth.is_auth(config.models, req, { token: true });
 
             const icon = await config.models.Icon.from(sql`
                 (${req.params.iconset} = iconset AND ${req.params.icon} = name)
@@ -355,7 +355,7 @@ export default async function router(schema, config: Config) {
         }
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req, true);
+            await Auth.is_auth(config.models, req, { token: true });
 
             if (SpriteMap[String(req.query.iconset)]) {
                 return res.json(SpriteMap[String(req.query.iconset)].json);
@@ -393,7 +393,7 @@ export default async function router(schema, config: Config) {
         }
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req, true);
+            await Auth.is_auth(config.models, req, { token: true });
 
             res.type('png');
             if (SpriteMap[String(req.query.iconset)]) {

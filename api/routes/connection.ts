@@ -18,7 +18,7 @@ export default async function router(schema: any, config: Config) {
         res: 'res.ListConnections.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req);
+            await Auth.is_auth(config.models, req);
 
             const list = await config.models.Connection.list({
                 limit: Number(req.query.limit),
@@ -61,7 +61,7 @@ export default async function router(schema: any, config: Config) {
         res: 'res.Connection.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req);
+            await Auth.is_auth(config.models, req);
 
             if (!config.server) throw new Err(400, null, 'TAK Server must be configured before a connection can be made');
             const conn = await config.models.Connection.generate(req.body);
@@ -87,7 +87,7 @@ export default async function router(schema: any, config: Config) {
         res: 'res.Connection.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req);
+            await Auth.is_auth(config.models, req);
             const conn = await config.models.Connection.commit(parseInt(req.params.connectionid), {
                 updated: sql`Now()`,
                 ...req.body
@@ -118,7 +118,7 @@ export default async function router(schema: any, config: Config) {
         res: 'res.Connection.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req);
+            await Auth.is_auth(config.models, req);
 
             const conn = await config.models.Connection.from(parseInt(req.params.connectionid));
 
@@ -140,7 +140,7 @@ export default async function router(schema: any, config: Config) {
         res: 'res.Connection.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req);
+            await Auth.is_auth(config.models, req);
 
             const conn = await config.models.Connection.from(parseInt(req.params.connectionid));
 
@@ -171,7 +171,7 @@ export default async function router(schema: any, config: Config) {
         res: 'res.Standard.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req);
+            await Auth.is_auth(config.models, req);
 
             await config.models.Connection.delete(parseInt(req.params.connectionid));
 
@@ -212,7 +212,7 @@ export default async function router(schema: any, config: Config) {
         }
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req);
+            await Auth.is_auth(config.models, req);
 
             const conn = await config.models.Connection.from(parseInt(req.params.connectionid));
 

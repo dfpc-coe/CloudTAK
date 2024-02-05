@@ -31,7 +31,7 @@ export default async function router(schema: any, config: Config) {
         res: 'res.Marti.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req);
+            await Auth.is_auth(config.models, req);
 
             let api;
             if (req.query.connection) {
@@ -39,7 +39,7 @@ export default async function router(schema: any, config: Config) {
                 api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(connection.auth.cert, connection.auth.key));
 
             } else {
-                const user = await Auth.is_user(req);
+                const user = await Auth.is_user(config.models, req);
                 const profile = await config.models.Profile.from(user.email);
                 api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
             }
@@ -85,7 +85,7 @@ export default async function router(schema: any, config: Config) {
         res: 'res.Marti.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req);
+            await Auth.is_auth(config.models, req);
 
             let api;
             if (req.query.connection) {
@@ -93,7 +93,7 @@ export default async function router(schema: any, config: Config) {
                 api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(connection.auth.cert, connection.auth.key));
 
             } else {
-                const user = await Auth.is_user(req);
+                const user = await Auth.is_user(config.models, req);
                 const profile = await config.models.Profile.from(user.email);
                 api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
             }
@@ -116,7 +116,7 @@ export default async function router(schema: any, config: Config) {
         res: 'res.Marti.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            const user = await Auth.is_user(req);
+            const user = await Auth.is_user(config.models, req);
             const profile = await config.models.Profile.from(user.email);
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
 
@@ -137,7 +137,7 @@ export default async function router(schema: any, config: Config) {
         res: 'res.MartiSignClient.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req);
+            await Auth.is_auth(config.models, req);
 
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthPassword(req.body.username, req.body.password));
 
