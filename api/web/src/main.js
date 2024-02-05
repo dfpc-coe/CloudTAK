@@ -100,6 +100,10 @@ const router = new VueRouter.createRouter({
                     return { name: 'connection-layer' };
                 }
             },{
+                path: 'groups',
+                name: 'connection-groups',
+                component: () => import('./components/Connection/ConnectionGroups.vue')
+            },{
                 path: 'layer',
                 name: 'connection-layer',
                 component: () => import('./components/Connection/ConnectionLayer.vue')
