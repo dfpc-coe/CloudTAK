@@ -21,10 +21,10 @@ export default class Auth {
      * @param {Object} req Express Request
      * @param {boolean} token Should URL query tokens be allowed (usually only for downloads)
      */
-    static async is_auth(models: Models, req: AuthRequest, opts?: {
+    static async is_auth(models: Models, req: AuthRequest, opts: {
         token?: boolean;
         resources?: Array<AuthResourceAccepted>;
-    }): Promise<boolean> {
+    } = {}): Promise<boolean> {
         if (!opts.token) opts.token = false;
 
         if (opts.token && req.token) req.auth = req.token;
@@ -54,9 +54,9 @@ export default class Auth {
         return true;
     }
 
-    static async is_user(models: Models, req: AuthRequest, opts?: {
+    static async is_user(models: Models, req: AuthRequest, opts: {
         token?: boolean;
-    }): Promise<AuthUser> {
+    } = {}): Promise<AuthUser> {
         if (!opts.token) opts.token = false;
         await this.is_auth(models, req, opts);
 
