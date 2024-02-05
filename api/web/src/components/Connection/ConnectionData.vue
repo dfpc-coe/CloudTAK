@@ -89,7 +89,7 @@ export default {
         listData: async function() {
             this.loading = true;
             try {
-                const url = window.stdurl(`/api/data`);
+                const url = window.stdurl(`/api/connection/${this.$route.params.connectionid}/data`);
                 url.searchParams.append('limit', this.paging.limit);
                 url.searchParams.append('page', this.paging.page);
                 url.searchParams.append('filter', this.paging.filter);
