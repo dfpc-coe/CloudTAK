@@ -5,6 +5,7 @@ import Logs from '../lib/aws/batch-logs.js';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
 import Config from '../lib/config.js';
+import { AuthResourceAccess } from '@tak-ps/blueprint-login';
 
 export default async function router(schema: any, config: Config) {
     await schema.get('/data/:dataid/job', {
@@ -16,7 +17,9 @@ export default async function router(schema: any, config: Config) {
         res: 'res.ListDataJobs.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(config.models, req);
+            await Auth.is_auth(config.models, req, {
+                resources: [{ access: AuthResourceAccess.DATA, id: parseInt(req.params.dataid) }]
+            });
 
             const data = await config.models.Data.from(parseInt(req.params.dataid));
 
@@ -41,7 +44,9 @@ export default async function router(schema: any, config: Config) {
         res: 'res.DataJob.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(config.models, req);
+            await Auth.is_auth(config.models, req, {
+                resources: [{ access: AuthResourceAccess.DATA, id: parseInt(req.params.dataid) }]
+            });
 
             const data = await config.models.Data.from(parseInt(req.params.dataid));
 
@@ -63,7 +68,9 @@ export default async function router(schema: any, config: Config) {
         res: 'res.DataJobLogs.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(config.models, req);
+            await Auth.is_auth(config.models, req, {
+                resources: [{ access: AuthResourceAccess.DATA, id: parseInt(req.params.dataid) }]
+            });
 
             const data = await config.models.Data.from(parseInt(req.params.dataid));
 

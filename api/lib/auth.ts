@@ -1,10 +1,15 @@
 import Err from '@openaddresses/batch-error';
 import {
     AuthRequest,
-    AuthUser, AuthUserAccess,
+    AuthUser,
     AuthResource, AuthResourceAccess
 } from '@tak-ps/blueprint-login';
 import Models from './models.js';
+
+export type AuthResourceAccepted = {
+    access: AuthResourceAccess;
+    id: string | number;
+}
 
 /**
  * @class
@@ -18,7 +23,7 @@ export default class Auth {
      */
     static async is_auth(models: Models, req: AuthRequest, opts?: {
         token?: boolean;
-        resources?: Array<void>
+        resources?: Array<AuthResourceAccepted>;
     }): Promise<boolean> {
         if (!opts.token) opts.token = false;
 
@@ -29,7 +34,7 @@ export default class Auth {
         }
 
         if (req.auth instanceof AuthResource) {
-            if (!opts.resources || !opts.resources.length) throw new Err(403, null, 'Resource token cannot access this resource');
+            if (!opts.resources || !opts.resources.length) throw new Err(403, null, 'Resource token cannot access this resource as no resource were specified');
 
             if (!req.auth.internal) {
                 try {
@@ -37,6 +42,12 @@ export default class Auth {
                 } catch (err) {
                     throw new Err(403, err, 'Token does not exist');
                 }
+            }
+
+            if (!opts.resources.some((r) => {
+                return r.access === req.auth.access && r.id === req.auth.id;
+            })) {
+                throw new Err(403, null, 'Resource token cannot access this resource');
             }
         }
 

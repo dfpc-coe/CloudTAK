@@ -9,6 +9,7 @@ import S3 from '../lib/aws/s3.js';
 import { Param } from '@openaddresses/batch-generic';
 import { sql, eq } from 'drizzle-orm';
 import DataMission from '../lib/data-mission.js';
+import { AuthResourceAccess } from '@tak-ps/blueprint-login';
 
 export default async function router(schema: any, config: Config) {
     await schema.get('/data', {
@@ -70,7 +71,9 @@ export default async function router(schema: any, config: Config) {
         res: 'res.Data.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(config.models, req);
+            await Auth.is_auth(config.models, req, {
+                resources: [{ access: AuthResourceAccess.DATA, id: parseInt(req.params.dataid) }]
+            });
 
             let data = await config.models.Data.commit(parseInt(req.params.dataid), {
                 updated: sql`Now()`,
@@ -94,7 +97,9 @@ export default async function router(schema: any, config: Config) {
         res: 'res.Data.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(config.models, req);
+            await Auth.is_auth(config.models, req, {
+                resources: [{ access: AuthResourceAccess.DATA, id: parseInt(req.params.dataid) }]
+            });
 
             let data = await config.models.Data.from(parseInt(req.params.dataid));
             return res.json(data);
