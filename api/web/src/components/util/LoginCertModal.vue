@@ -59,13 +59,13 @@ export default {
                     method: 'POST',
                     body: this.body
                 });
+
+                this.$emit('certs', res);
+                this.$emit('close');
             } catch (err) {
                 this.loading.generate = false;
                 throw err;
             }
-
-            this.$emit('certs', res);
-            this.$emit('close');
         },
         close: function() {
             this.$emit('close');
