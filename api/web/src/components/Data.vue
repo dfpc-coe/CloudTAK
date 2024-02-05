@@ -119,7 +119,7 @@ export default {
         },
         fetch: async function() {
             this.loading.data = true;
-            this.data = await window.std(`/api/data/${this.$route.params.dataid}`);
+            this.data = await window.std(`/api/connection/${this.$route.params.connectionid}/data/${this.$route.params.dataid}`);
             this.loading.data = false;
         }
     },
