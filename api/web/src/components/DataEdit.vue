@@ -114,11 +114,11 @@ export default {
     methods: {
         fetch: async function() {
             this.loading.data = true;
-            this.data = await window.std(`/api/data/${this.$route.params.dataid}`);
+            this.data = await window.std(`/api/connection/${this.$route.params.connectionid}/data/${this.$route.params.dataid}`);
             this.loading.data = false;
         },
         deleteData: async function() {
-            await window.std(`/api/data/${this.$route.params.dataid}`, {
+            await window.std(`/api/connection/${this.$route.params.connectionid}/data/${this.$route.params.dataid}`, {
                 method: 'DELETE'
             });
 
@@ -137,10 +137,10 @@ export default {
                 const body = JSON.parse(JSON.stringify(this.data));
 
                 if (this.$route.params.dataid) {
-                    url = window.stdurl(`/api/data/${this.$route.params.dataid}`);
+                    url = window.stdurl(`/api/connection/${this.$route.params.connectionid}/data/${this.$route.params.dataid}`);
                     method = 'PATCH'
                 } else {
-                    url = window.stdurl(`/api/data`);
+                    url = window.stdurl(`/api/connection/${this.$route.params.connectionid}/data`);
                     method = 'POST'
                     body.connection = parseInt(this.$route.params.connectionid);
                 }
