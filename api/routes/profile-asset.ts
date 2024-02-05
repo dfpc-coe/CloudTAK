@@ -158,7 +158,7 @@ export default async function router(schema: any, config: Config) {
         try {
             const user = await Auth.is_user(req, true);
 
-            const token = jwt.sign({ access: 'profile' }, config.SigningSecret)
+            const token = jwt.sign({ access: 'profile', email: user.email }, config.SigningSecret)
             const url = new URL(`${config.PMTILES_URL}/tiles/profile/${user.email}/${req.params.asset}`);
             url.searchParams.append('token', token);
 
