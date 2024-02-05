@@ -68,9 +68,9 @@ export default async function router(schema: any, config: Config) {
                 resources: [{ access: AuthResourceAccess.DATA, id: parseInt(req.params.dataid) }]
             });
 
-            await DataMission.sync(config, data);
-
             data = await config.models.Data.from(parseInt(req.params.dataid));
+
+            await DataMission.sync(config, data);
 
             if (!req.headers['content-type']) throw new Err(400, null, 'Missing Content-Type Header');
 
