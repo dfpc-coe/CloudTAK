@@ -19,6 +19,8 @@ export default class DataMission {
             mission = await api.Mission.get(data.name, {});
             //TODO Compare groups and update as necessary
         } catch (err) {
+            console.error(err);
+
             if (!data.mission_groups.length) {
                 data.mission_groups = (await api.Group.list({})).data.map((group) =>{
                     return group.name;
@@ -31,7 +33,5 @@ export default class DataMission {
                 group: data.mission_groups
             });
         }
-
-        console.error(JSON.stringify(mission));
     }
 }
