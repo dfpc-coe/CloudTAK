@@ -84,7 +84,7 @@ export default async function router(schema: any, config: Config) {
         });
 
         try {
-            const auth = (await config.models.Connection.from(parseInt(String(req.params.connection)))).auth;
+            const auth = (await config.models.Connection.from(parseInt(String(req.params.connectionid)))).auth;
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
             const data = await config.models.Data.from(parseInt(req.params.dataid));
 
@@ -92,7 +92,7 @@ export default async function router(schema: any, config: Config) {
                 name: data.name,
                 contentLength: Number(req.headers['content-length']),
                 keywords: [],
-                creatorUid: `CloudTAK-Conn-${req.params.connection}`,
+                creatorUid: `CloudTAK-Conn-${req.params.connectionid}`,
             }, req);
 
             // @ts-expect-error Morgan will throw an error after not getting req.ip and there not being req.connection.remoteAddress
