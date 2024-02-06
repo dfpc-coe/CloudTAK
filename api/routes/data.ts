@@ -139,7 +139,12 @@ export default async function router(schema: any, config: Config) {
                 resources: [{ access: AuthResourceAccess.CONNECTION, id: parseInt(req.params.connectionid) }]
             });
 
+            const data = await config.models.Data.from(parseInt(req.params.dataid));
+
             await S3.del(`data-${String(req.params.dataid)}/`, { recurse: true });
+    
+            data.mission_sync = false;
+            await DataMission.sync(config, data);
 
             await config.models.Data.delete(parseInt(req.params.dataid));
 

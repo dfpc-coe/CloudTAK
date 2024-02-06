@@ -46,7 +46,12 @@
                                         </div>
                                     </div>
 
-                                    <GroupSelectModal v-if='modal' @close='modal = false' v-model='data.mission_groups'/>
+                                    <GroupSelectModal
+                                        v-if='modal'
+                                        :connection='$route.params.connectionid'
+                                        @close='modal = false'
+                                        v-model='data.mission_groups'
+                                    />
 
                                     <template v-if='data.mission_groups.length === 0'>
                                         <div class='col-12'>

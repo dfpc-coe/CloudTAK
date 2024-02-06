@@ -7,8 +7,6 @@ import Config from './config.js';
 
 export default class DataMission {
     static async sync(config: Config, data: InferSelectModel<typeof Data>): Promise<void> {
-        // Right now we don't delete the mission if sync is turned off
-        if (!data.mission_sync) return;
 
         const connection = await config.models.Connection.from(data.connection);
 
@@ -18,8 +16,12 @@ export default class DataMission {
         try {
             mission = await api.Mission.get(data.name, {});
             //TODO Compare groups and update as necessary
+
+            if (!data.mission_sync) {
+                await api.Mission.delete(data.name, {});
+            };
         } catch (err) {
-            console.error(err);
+            if (!data.mission_sync) return;
 
             if (!data.mission_groups.length) {
                 data.mission_groups = (await api.Group.list({})).data.map((group) =>{
