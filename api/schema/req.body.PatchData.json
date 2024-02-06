@@ -11,9 +11,6 @@
         "mission_sync": {
             "$ref": "./data/mission_sync.json"
         },
-        "mission_groups": {
-            "$ref": "./data/mission_groups.json"
-        },
         "description": {
             "$ref": "./data/description.json"
         }

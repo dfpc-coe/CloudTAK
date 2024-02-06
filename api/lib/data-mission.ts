@@ -14,12 +14,12 @@ export default class DataMission {
 
         let mission;
         try {
-            mission = await api.Mission.get(data.name, {});
-            //TODO Compare groups and update as necessary
+            await api.Mission.get(data.name, {});
+            //TODO Update Groups: Not supported by TAK Server at this time
 
             if (!data.mission_sync) {
                 await api.Mission.delete(data.name, {});
-            };
+            }
         } catch (err) {
             if (!data.mission_sync) return;
 
@@ -31,7 +31,7 @@ export default class DataMission {
                 });
             }
 
-            mission = await api.Mission.create(data.name, {
+            await api.Mission.create(data.name, {
                 creatorUid: `connection-${data.connection}-data-${data.id}`,
                 description: data.description,
                 group: data.mission_groups

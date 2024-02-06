@@ -55,7 +55,7 @@ export class ConnectionWebSocket {
                         this.ws.send(JSON.stringify({
                             type: 'Error',
                             properties: {
-                                message: err.message
+                                message: err instanceof Error ? err.message : String(err)
                             }
                         }));
                     }
@@ -156,8 +156,10 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
     }
 
     status(id: number | string): string {
-        if (this.has(id)) {
-            return this.get(id).tak.open ? 'live' : 'dead';
+        const conn = this.get(id);
+
+        if (conn) {
+            return conn.tak.open ? 'live' : 'dead';
         } else {
             return 'unknown';
         }
@@ -174,7 +176,7 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
                 if (client.format == 'geojson') {
                     const feat = cot.to_geojson();
 
-                    if (feat.properties.chat) {
+                    if (feat.properties && feat.properties.chat) {
                         client.ws.send(JSON.stringify({ type: 'chat', connection: conn.id, data: feat }));
                     } else {
                         client.ws.send(JSON.stringify({ type: 'cot', connection: conn.id, data: feat }));
@@ -250,8 +252,9 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
     }
 
     delete(id: number | string): boolean {
-        if (this.has(id)) {
-            const conn = this.get(id);
+        const conn = this.get(id);
+
+        if (conn) {
             conn.tak.destroy();
             super.delete(id);
 
