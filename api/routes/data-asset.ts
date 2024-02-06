@@ -66,6 +66,14 @@ export default async function router(schema: any, config: Config) {
         ':connectionid': 'string',
         ':dataid': 'string',
         description: 'Create an upload after the file as been processed by Event Lambda',
+        query: {
+            type: 'object',
+            additionalProperties: false,
+            required: ['name'],
+            properties: {
+                name: { type: 'string' }
+            }
+        },
         res: 'res.Marti.json'
     }, async (req: AuthRequest, res: Response) => {
         await Auth.is_auth(config.models, req, {
@@ -76,7 +84,7 @@ export default async function router(schema: any, config: Config) {
         });
 
         try {
-            const auth = (await config.models.Connection.from(parseInt(String(req.query.connection)))).auth;
+            const auth = (await config.models.Connection.from(parseInt(String(req.params.connection)))).auth;
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
             const data = await config.models.Data.from(parseInt(req.params.dataid));
 
@@ -84,7 +92,7 @@ export default async function router(schema: any, config: Config) {
                 name: data.name,
                 contentLength: Number(req.headers['content-length']),
                 keywords: [],
-                creatorUid: `CloudTAK-Conn-${req.query.connection}`,
+                creatorUid: `CloudTAK-Conn-${req.params.connection}`,
             }, req);
 
             // @ts-expect-error Morgan will throw an error after not getting req.ip and there not being req.connection.remoteAddress
@@ -93,7 +101,7 @@ export default async function router(schema: any, config: Config) {
                 remoteAddress: req._remoteAddress
             }
 
-            const missionContent = await api.Mission.attachContents(req.params.name, [content.Hash]);
+            const missionContent = await api.Mission.attachContents(String(req.query.name), [content.Hash]);
 
             return res.json(missionContent);
         } catch (err) {

@@ -15,6 +15,7 @@ export default class API {
     }) {
         const {size} = fs.statSync(event.Local);
         const url = new URL(`/api/connection/${mission.connection}/data/${event.ID}/upload`, process.env.TAK_ETL_API);
+        url.searchParams.append('name', mission.filename);
 
         const res = await fetch(url, {
             method: 'POST',
