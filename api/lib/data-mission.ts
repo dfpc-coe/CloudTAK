@@ -19,13 +19,15 @@ export default class DataMission {
             mission = await api.Mission.get(data.name, {});
             //TODO Compare groups and update as necessary
         } catch (err) {
-            const groups = await api.Group.list({});
+            if (!data.mission_groups.length) {
+                data.mission_groups = (await api.Group.list({})).data.map((group) =>{
+                    return group.name;
+                });
+            }
 
             mission = await api.Mission.create(data.name, {
                 creatorUid: `connection-${data.connection}-data-${data.id}`,
-                group: groups.data.map((group) => {
-                    return group.name;
-                })
+                group: data.mission_groups
             });
         }
 
