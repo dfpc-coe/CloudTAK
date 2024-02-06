@@ -6,6 +6,7 @@ import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
 import CW from '../lib/aws/metric.js';
 import { AuthResourceAccess } from '@tak-ps/blueprint-login';
+import { X509Certificate } from 'crypto';
 
 export default async function router(schema: any, config: Config) {
     const cw = new CW(config.StackName);
@@ -104,8 +105,11 @@ export default async function router(schema: any, config: Config) {
                 await config.conns.add(conn);
             }
 
+            const { validFrom, validTo } = new X509Certificate(conn.auth.cert);
+
             return res.json({
                 status: config.conns.status(conn.id),
+                certificate: { validFrom, validTo },
                 ...conn
             });
         } catch (err) {
@@ -127,9 +131,11 @@ export default async function router(schema: any, config: Config) {
             });
 
             const conn = await config.models.Connection.from(parseInt(req.params.connectionid));
+            const { validFrom, validTo } = new X509Certificate(conn.auth.cert);
 
             return res.json({
                 status: config.conns.status(conn.id),
+                certificate: { validFrom, validTo },
                 ...conn
             });
         } catch (err) {
@@ -161,8 +167,11 @@ export default async function router(schema: any, config: Config) {
                 await config.conns.add(conn);
             }
 
+            const { validFrom, validTo } = new X509Certificate(conn.auth.cert);
+
             return res.json({
                 status: config.conns.status(conn.id),
+                certificate: { validFrom, validTo },
                 ...conn
             });
         } catch (err) {

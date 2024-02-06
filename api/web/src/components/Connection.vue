@@ -36,6 +36,16 @@
                                 <div class='col-12'>
                                     <TablerMarkdown :markdown='connection.description'/>
                                 </div>
+                                <div class='col-12 datagrid'>
+                                    <div class="datagrid-item pb-2">
+                                        <div class="datagrid-title">Certificate Valid From</div>
+                                        <div class="datagrid-content" v-text='connection.certificate.validFrom'></div>
+                                    </div>
+                                    <div class="datagrid-item pb-2">
+                                        <div class="datagrid-title">Certificate Valid From</div>
+                                        <div class="datagrid-content" v-text='connection.certificate.validTo'></div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <div class="card-footer">
