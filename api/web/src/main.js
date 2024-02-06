@@ -70,6 +70,10 @@ const router = new VueRouter.createRouter({
                     return { name: 'data-files' };
                 }
             },{
+                path: 'groups',
+                name: 'data-groups',
+                component: () => import('./components/Data/DataGroups.vue')
+            },{
                 path: 'files',
                 name: 'data-files',
                 component: () => import('./components/Data/DataFiles.vue')
