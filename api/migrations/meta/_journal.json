@@ -57,6 +57,13 @@
       "when": 1707103066482,
       "tag": "0007_chubby_scarlet_spider",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "5",
+      "when": 1707194635538,
+      "tag": "0008_certain_juggernaut",
+      "breakpoints": true
     }
   ]
 }
