@@ -12,7 +12,6 @@ export default class DataMission {
 
         const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(connection.auth.cert, connection.auth.key));
 
-        let mission;
         try {
             await api.Mission.get(data.name, {});
             //TODO Update Groups: Not supported by TAK Server at this time

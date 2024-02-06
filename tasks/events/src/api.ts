@@ -31,7 +31,6 @@ export default class API {
     }
 
     static async uploadDataMission(event: Event, mission: {
-        name: string;
         filename: string;
         token?: string;
         connection: number;
