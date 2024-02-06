@@ -13,6 +13,7 @@ import { AuthResourceAccess } from '@tak-ps/blueprint-login';
 
 export default async function router(schema: any, config: Config) {
     await schema.get('/data/:dataid', {
+        private: true,
         name: 'Internal Get Data',
         group: 'Data',
         auth: 'user',
