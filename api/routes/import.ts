@@ -9,7 +9,7 @@ import S3 from '../lib/aws/s3.js'
 import crypto from 'node:crypto';
 import { Param } from '@openaddresses/batch-generic';
 import { sql } from 'drizzle-orm';
-import { AuthUser } from '@tak-ps/blueprint-login';
+import { AuthResourceAccess } from '@tak-ps/blueprint-login';
 
 export default async function router(schema: any, config: Config) {
     await schema.post('/import', {
@@ -204,7 +204,9 @@ export default async function router(schema: any, config: Config) {
         res: 'imports.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(config.models, req);
+            await Auth.is_auth(config.models, req, {
+                resources: [{ access: AuthResourceAccess.IMPORT, id: req.params.import }]
+            });
 
             const imported = await config.models.Import.from(String(req.params.import));
 
@@ -224,7 +226,9 @@ export default async function router(schema: any, config: Config) {
         res: 'imports.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(config.models, req);
+            await Auth.is_auth(config.models, req, {
+                resources: [{ access: AuthResourceAccess.IMPORT, id: req.params.import }]
+            });
 
             const imported = await config.models.Import.commit(String(req.params.import), {
                 ...req.body,
