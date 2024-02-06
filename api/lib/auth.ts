@@ -54,11 +54,11 @@ export default class Auth {
         return true;
     }
 
-    static async is_user(req: AuthRequest): Promise<boolean> {
+    static is_user(req: AuthRequest): boolean {
         return req.auth instanceof AuthUser;
     }
 
-    static async is_resource(req: AuthRequest): Promise<boolean> {
+    static is_resource(req: AuthRequest): boolean {
         return req.auth instanceof AuthResource;
     }
 
