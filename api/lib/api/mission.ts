@@ -24,7 +24,7 @@ export type Mission = {
     uids: Array<unknown>,
     contents: Array<unknown>,
     passwordProtected: boolean;
-    token?: string; // Only present when mission created 
+    token?: string; // Only present when mission created
     groups?: Array<string>; // Only present on Mission.get()
     missionChanges?: Array<unknown>; // Only present on Mission.get()
 }

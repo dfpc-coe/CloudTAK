@@ -127,6 +127,7 @@ export default {
                 name: '',
                 auto_transform: true,
                 mission_sync: true,
+                mission_groups: [],
                 description: '',
             }
         }
