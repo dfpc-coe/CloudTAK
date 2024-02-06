@@ -53,10 +53,12 @@ export class APIAuthPassword extends APIAuth {
 
         await jar.setCookie(new Cookie({ key: 'access_token', value: this.jwt }), String(api.url));
 
-        const agent = new CookieAgent({ cookies: { jar } });
-
         opts.credentials = 'include';
-        opts.dispatcher = agent;
+
+        if (!opts.nocookies) {
+            const agent = new CookieAgent({ cookies: { jar } });
+            opts.dispatcher = agent;
+        }
 
         return await fetch(url, opts);
     }
@@ -75,10 +77,12 @@ export class APIAuthToken extends APIAuth {
 
         await jar.setCookie(new Cookie({ key: 'access_token', value: this.jwt }), String(api.url));
 
-        const agent = new CookieAgent({ cookies: { jar } });
 
         opts.credentials = 'include';
-        opts.dispatcher = agent;
+        if (!opts.nocookies) {
+            const agent = new CookieAgent({ cookies: { jar } });
+            opts.dispatcher = agent;
+        }
 
         return await fetch(url, opts);
     }
