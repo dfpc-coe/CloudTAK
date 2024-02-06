@@ -13,6 +13,13 @@
                 "unknown"
             ]
         },
+        "certificate": {
+            "type": "object",
+            "properties": {
+                "validTo": { "type": "string" },
+                "validFrom": { "type": "string" }
+            }
+        },
         "name": {
             "$ref": "./connections/name.json"
         },
