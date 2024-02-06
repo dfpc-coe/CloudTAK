@@ -24,7 +24,9 @@ export default class DataMission {
             if (!data.mission_sync) return;
 
             if (!data.mission_groups.length) {
-                data.mission_groups = (await api.Group.list({})).data.map((group) =>{
+                data.mission_groups = (await api.Group.list({
+                    useCache: 'true'
+                })).data.map((group) =>{
                     return group.name;
                 });
             }
