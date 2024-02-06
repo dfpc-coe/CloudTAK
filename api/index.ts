@@ -79,8 +79,13 @@ export default async function server(config: Config) {
         console.log(`ok - no server config found: ${err instanceof Error ? err.message : String(err)}`);
     }
 
-    config.conns = new ConnectionPool(config, config.server, config.wsClients, config.StackName, config.local);
-    await config.conns.init();
+    if (config.server) {
+        config.conns = new ConnectionPool(config, config.server, config.wsClients, config.StackName, config.local);
+        await config.conns.init();
+    } else {
+        console.error('not ok - no connection pool due to lack of server config');
+    }
+
     config.events = new EventsPool(config.StackName);
     if (!config.noevents) await config.events.init(config.pg);
 
@@ -141,17 +146,15 @@ export default async function server(config: Config) {
             if (err instanceof Err && err.status === 404) {
                 profile = await ProfileModel.generate({ username: user.username });
             } else {
-                console.error(err);
+                return console.error(err);
             }
         }
 
-        if (!profile || !profile.auth || !profile.auth.cert || !profile.auth.key) {
-            try {
+        try {
             const api = await TAKAPI.init(new URL(config.MartiAPI), new APIAuthPassword(user.username, user.password));
             await ProfileModel.commit(profile.username, { auth: await api.Credentials.generate() });
-            } catch (err) {
-                console.error(err);
-            }
+        } catch (err) {
+            console.error(err);
         }
     });
 
@@ -190,11 +193,14 @@ export default async function server(config: Config) {
         rewrites: [{
             from: /.*\/js\/.*$/,
             to(context: Context) {
+                if (!context.parsedUrl.pathname) context.parsedUrl.pathname = ''
                 return context.parsedUrl.pathname.replace(/.*\/js\//, '/js/');
             }
         },{
             from: /.*$/,
             to(context: Context) {
+                if (!context.parsedUrl.pathname) context.parsedUrl.pathname = ''
+                if (!context.parsedUrl.path) context.parsedUrl.path = ''
                 const parse = path.parse(context.parsedUrl.path);
                 if (parse.ext) {
                     return context.parsedUrl.pathname;
@@ -211,6 +217,7 @@ export default async function server(config: Config) {
         noServer: true
     }).on('connection', async (ws: WebSocket, request) => {
         try {
+            if (!request.url) throw new Error('Could not parse connection URL');
             const params = new URLSearchParams(request.url.replace(/.*\?/, ''));
             // TODO: Remove connections
 
@@ -226,26 +233,35 @@ export default async function server(config: Config) {
 
             if (!config.wsClients.has(parsedParams.connection)) config.wsClients.set(parsedParams.connection, [])
 
+            if (!config.conns) throw new Error('Server not configured with Connection Pool');
+
             // Connect to MachineUser Connection if it is an integer
             if (!isNaN(parseInt(parsedParams.connection))) {
-                config.wsClients.get(parsedParams.connection).push(new ConnectionWebSocket(ws, parsedParams.format));
+                let webClients = config.wsClients.get(parsedParams.connection)
+                if (!webClients) webClients = [];
+                webClients.push(new ConnectionWebSocket(ws, parsedParams.format));
+                config.wsClients.set(parsedParams.connection, webClients);
             } else if (auth instanceof AuthUser && parsedParams.connection === auth.email) {
+                let client;
                 if (!config.conns.has(parsedParams.connection)) {
                     const profile = await ProfileModel.from(parsedParams.connection);
                     if (!profile.auth.cert || !profile.auth.key) throw new Error('No Cert Found on profile');
 
-                    const client = await config.conns.add({
+                    client = await config.conns.add({
                         id: parsedParams.connection,
                         name: parsedParams.connection,
                         enabled: true,
                         auth: profile.auth
                     }, true);
-
-                    config.wsClients.get(parsedParams.connection).push(new ConnectionWebSocket(ws, parsedParams.format, client));
                 } else {
-                    const client = config.conns.get(parsedParams.connection);
-                    config.wsClients.get(parsedParams.connection).push(new ConnectionWebSocket(ws, parsedParams.format, client));
+                    client = config.conns.get(parsedParams.connection);
+
                 }
+
+                let webClients = config.wsClients.get(parsedParams.connection)
+                if (!webClients) webClients = [];
+                webClients.push(new ConnectionWebSocket(ws, parsedParams.format, client));
+                config.wsClients.set(parsedParams.connection, webClients);
             } else {
                 throw new Error('Unauthorized');
             }
