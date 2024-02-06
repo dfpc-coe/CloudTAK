@@ -101,7 +101,7 @@ export default async function router(schema: any, config: Config) {
                 remoteAddress: req._remoteAddress
             }
 
-            const missionContent = await api.Mission.attachContents(String(req.query.name), [content.Hash]);
+            const missionContent = await api.Mission.attachContents(data.name, [content.Hash]);
 
             return res.json(missionContent);
         } catch (err) {
