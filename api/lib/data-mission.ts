@@ -27,6 +27,7 @@ export default class DataMission {
 
             mission = await api.Mission.create(data.name, {
                 creatorUid: `connection-${data.connection}-data-${data.id}`,
+                description: data.description,
                 group: data.mission_groups
             });
         }
