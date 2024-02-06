@@ -57,7 +57,7 @@ async function genericEvent(md: Event) {
     if (md.Key.startsWith('import/')) {
         try {
             md.ID = path.parse(md.Key).name;
-            md.Token = jwt.sign({ access: 'import' , id: md.ID, internal: true }, String(process.env.SigningSecret)),
+            md.Token = jwt.sign({ access: 'import' , id: md.ID, internal: true }, String(process.env.SigningSecret));
 
             await API.updateImport(md, { status: 'Running' });
             const imported = await API.fetchImport(md);
@@ -128,7 +128,7 @@ async function genericEvent(md: Event) {
         }
     } else if (md.Key.startsWith('data/')) {
         md.ID = path.parse(md.Key).dir.replace('data/', '');
-        md.Token = jwt.sign({ access: 'data' , id: parseInt(md.ID), internal: true }, String(process.env.SigningSecret)),
+        md.Token = jwt.sign({ access: 'data' , id: parseInt(md.ID), internal: true }, String(process.env.SigningSecret));
 
         const data = await API.fetchData(md);
 
