@@ -89,7 +89,7 @@ export default async function router(schema: any, config: Config) {
             const data = await config.models.Data.from(parseInt(req.params.dataid));
 
             const content = await api.Files.upload({
-                name: data.name,
+                name: String(req.query.name),
                 contentLength: Number(req.headers['content-length']),
                 keywords: [],
                 creatorUid: `CloudTAK-Conn-${req.params.connectionid}`,
@@ -222,7 +222,36 @@ export default async function router(schema: any, config: Config) {
                 ]
             });
 
-            await S3.del(`data/${req.params.dataid}/${req.params.asset}.${req.params.ext}`);
+            const auth = (await config.models.Connection.from(parseInt(String(req.params.connectionid)))).auth;
+            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
+            const data = await config.models.Data.from(parseInt(req.params.dataid));
+
+            const file = `${req.params.asset}.${req.params.ext}`;
+            try {
+                if (data.mission_sync) {
+                    let mission = await api.Mission.get(data.name, {});
+                    if (!mission.data.length) throw new Error('No Mission');
+                    mission = mission.data[0];
+
+                    for (const content of mission.contents) {
+                        if (content.data.name === file) {
+                            await api.Mission.get(data.name, {});
+                            await api.Mission.detachContents(data.name, content.data.hash);
+                        }
+                    }
+                }
+            } catch (err) {
+                console.error(err);
+            }
+
+            const list = await assetList(config, `data/${String(req.params.dataid)}/`);
+            for (const asset of list.assets) {
+                if (asset.name !== file) continue;
+
+                if (asset.visualized) await S3.del(`data/${req.params.dataid}/${req.params.asset}.pmtiles`);
+                if (asset.vectorized) await S3.del(`data/${req.params.dataid}/${req.params.asset}.geojsonld`);
+                await S3.del(`data/${req.params.dataid}/${file}`);
+            }
 
             return res.json({
                 status: 200,

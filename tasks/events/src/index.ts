@@ -153,7 +153,6 @@ async function genericEvent(md: Event) {
 
                 console.log(`ok - Data ${md.Key} posting to mission ${data.name}`);
                 const res = await API.uploadDataMission(md, {
-                    name: data.name,
                     filename: md.Name,
                     connection: data.connection
                 });
