@@ -22,7 +22,7 @@ export default async function router(schema: any, config: Config) {
         res: 'res.ListAssets.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            const user = await Auth.is_user(config.models, req);
+            const user = await Auth.as_user(config.models, req);
             return res.json(await assetList(config, `profile/${user.email}/`));
         } catch (err) {
             return Err.respond(err, res);
@@ -39,7 +39,7 @@ export default async function router(schema: any, config: Config) {
 
         let bb;
         try {
-            const user = await Auth.is_user(config.models, req);
+            const user = await Auth.as_user(config.models, req);
 
             if (!req.headers['content-type']) throw new Err(400, null, 'Missing Content-Type Header');
 
@@ -94,7 +94,7 @@ export default async function router(schema: any, config: Config) {
         res: 'res.Standard.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            const user = await Auth.is_user(config.models, req);
+            const user = await Auth.as_user(config.models, req);
             await Batch.submitUser(config, user.email, `${req.params.asset}.${req.params.ext}`, req.body);
 
             return res.json({
@@ -116,7 +116,7 @@ export default async function router(schema: any, config: Config) {
         res: 'res.Standard.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            const user = await Auth.is_user(config.models, req);
+            const user = await Auth.as_user(config.models, req);
 
             await S3.del(`profile/${user.email}/${req.params.asset}.${req.params.ext}`);
 
@@ -138,7 +138,7 @@ export default async function router(schema: any, config: Config) {
         ':ext': 'string'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            const user = await Auth.is_user(config.models, req, { token: true });
+            const user = await Auth.as_user(config.models, req, { token: true });
 
             const stream = await S3.get(`profile/${user.email}/${req.params.asset}.${req.params.ext}`);
 
@@ -156,7 +156,7 @@ export default async function router(schema: any, config: Config) {
         ':asset': 'string'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            const user = await Auth.is_user(config.models, req, { token: true });
+            const user = await Auth.as_user(config.models, req, { token: true });
 
             const token = jwt.sign({ access: 'profile', email: user.email }, config.SigningSecret)
             const url = new URL(`${config.PMTILES_URL}/tiles/profile/${user.email}/${req.params.asset}`);

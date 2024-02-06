@@ -44,7 +44,7 @@ export default async function router(schema: any, config: Config) {
         res: "imports.json"
     }, async (req: AuthRequest, res: Response) => {
         try {
-            const user = await Auth.is_user(config.models, req);
+            const user = await Auth.as_user(config.models, req);
 
             const imp = await config.models.Import.generate({
                 id: crypto.randomUUID(),
@@ -71,7 +71,7 @@ export default async function router(schema: any, config: Config) {
         res: 'imports.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            const user = await Auth.is_user(config.models, req);
+            const user = await Auth.as_user(config.models, req);
 
             if (!req.headers['content-type'].startsWith('multipart/form-data')) {
                 throw new Err(400, null, 'Unsupported Content-Type');
@@ -149,7 +149,7 @@ export default async function router(schema: any, config: Config) {
         }
     }, async (req: AuthRequest, res: Response) => {
         try {
-            const user = await Auth.is_user(config.models, req);
+            const user = await Auth.as_user(config.models, req);
 
             if (!req.headers['content-type'].startsWith('multipart/form-data')) {
                 throw new Err(400, null, 'Unsupported Content-Type');

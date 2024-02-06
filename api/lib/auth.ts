@@ -54,14 +54,33 @@ export default class Auth {
         return true;
     }
 
-    static async is_user(models: Models, req: AuthRequest, opts: {
+    static async is_user(req: AuthRequest): Promise<boolean> {
+        return req.auth instanceof AuthUser;
+    }
+
+    static async is_resource(req: AuthRequest): Promise<boolean> {
+        return req.auth instanceof AuthResource;
+    }
+
+    static async as_resource(models: Models, req: AuthRequest, opts: {
+        token?: boolean;
+    } = {}): Promise<AuthResource> {
+        if (!opts.token) opts.token = false;
+        await this.is_auth(models, req, opts);
+
+        if (this.is_user(req)) throw new Err(401, null, 'Only a resource token can access this resource');
+
+        return req.auth as AuthResource;
+    }
+
+    static async as_user(models: Models, req: AuthRequest, opts: {
         token?: boolean;
     } = {}): Promise<AuthUser> {
         if (!opts.token) opts.token = false;
         await this.is_auth(models, req, opts);
 
-        if (req.auth instanceof AuthResource) throw new Err(401, null, 'Only an authenticated user can access this resource');
+        if (this.is_resource(req)) throw new Err(401, null, 'Only an authenticated user can access this resource');
 
-        return req.auth;
+        return req.auth as AuthUser;
     }
 }

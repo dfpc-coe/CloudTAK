@@ -34,7 +34,7 @@ export default async function router(schema: any, config: Config) {
         res: 'profile_overlays.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            const user = await Auth.is_user(config.models, req);
+            const user = await Auth.as_user(config.models, req);
 
             const overlay = await config.models.ProfileOverlay.generate({
                 ...req.body,
@@ -62,7 +62,7 @@ export default async function router(schema: any, config: Config) {
         res: 'res.Standard.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            const user = await Auth.is_user(config.models, req);
+            const user = await Auth.as_user(config.models, req);
 
             const overlay = await config.models.ProfileOverlay.from(parseInt(String(req.query.id)));
 

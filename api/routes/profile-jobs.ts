@@ -17,7 +17,7 @@ export default async function router(schema: any, config: Config) {
         res: 'res.ListProfileJobs.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            const user = await Auth.is_user(config.models, req);
+            const user = await Auth.as_user(config.models, req);
             const list = await Batch.list(config, `profile-${user.email.replace('@', '_at_').replace(/[^a-zA-Z0-9]/g, '_')}`);
 
             return res.json({

@@ -39,8 +39,10 @@ export default class API {
         return json;
     }
 
-    static async transformData(event: Event) {
-        const res = await fetch(new URL(`/api/data/${event.ID}/${path.parse(event.Key).name}`, process.env.TAK_ETL_API), {
+    static async transformData(event: Event, opts: {
+        connection: number;
+    }) {
+        const res = await fetch(new URL(`/api/connection/${opts.connection}/data/${event.ID}/${path.parse(event.Key).name}`, process.env.TAK_ETL_API), {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
