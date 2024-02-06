@@ -14,7 +14,7 @@ import API from './api.js';
 
 export type Event = {
     ID?: string;
-    Token: string;
+    Token?: string;
     Bucket: string;
     Key: string;
     Name: string;
@@ -42,7 +42,6 @@ async function sqsEvent(record: Lambda.SQSRecord) {
 
 async function s3Event(record: Lambda.S3EventRecord) {
     const md: Event = {
-        Token: jwt.sign({ access: 'event' }, String(process.env.SigningSecret)),
         Bucket: record.s3.bucket.name,
         Key: decodeURIComponent(record.s3.object.key.replace(/\+/g, ' ')),
         Name: path.parse(decodeURIComponent(record.s3.object.key.replace(/\+/g, ' '))).name,
@@ -58,6 +57,7 @@ async function genericEvent(md: Event) {
     if (md.Key.startsWith('import/')) {
         try {
             md.ID = path.parse(md.Key).name;
+            md.Token = jwt.sign({ access: 'import' , id: md.ID, internal: true }, String(process.env.SigningSecret)),
 
             await API.updateImport(md, { status: 'Running' });
             const imported = await API.fetchImport(md);
@@ -128,6 +128,7 @@ async function genericEvent(md: Event) {
         }
     } else if (md.Key.startsWith('data/')) {
         md.ID = path.parse(md.Key).dir.replace('data/', '');
+        md.Token = jwt.sign({ access: 'data' , id: parseInt(md.ID), internal: true }, String(process.env.SigningSecret)),
 
         const data = await API.fetchData(md);
 
@@ -262,9 +263,9 @@ if (import.meta.url === `file://${process.argv[1]}`) {
 
     if (!process.env.KEY) throw new Error('KEY env var must be set');
     if (!process.env.BUCKET) throw new Error('BUCKET env var must be set');
+    process.env.SigningSecret = 'coe-wildland-fire'
 
     await genericEvent({
-        Token: jwt.sign({ access: 'event' }, 'coe-wildland-fire'),
         Bucket: process.env.BUCKET,
         Key: process.env.KEY,
         Name: path.parse(process.env.KEY).name,
