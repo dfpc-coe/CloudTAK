@@ -1,5 +1,12 @@
 {
-    "type": "object",
+    "type": "array",
     "description": "",
-    "$comment": "json"
+    "$comment": "text[]",
+    "items": {
+        "type": [
+            "string",
+            "null"
+        ],
+        "description": ""
+    }
 }
