@@ -26,7 +26,9 @@ export default async function router(schema: any, config: Config) {
         res: 'res.ListAssets.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(config.models, req);
+            await Auth.is_auth(config.models, req, {
+                resources: [{ access: AuthResourceAccess.CONNECTION, id: parseInt(req.params.connectionid) }]
+            });
 
             const data = await config.models.Data.from(parseInt(req.params.dataid))
 
@@ -65,7 +67,10 @@ export default async function router(schema: any, config: Config) {
         let data;
         try {
             await Auth.is_auth(config.models, req, {
-                resources: [{ access: AuthResourceAccess.DATA, id: parseInt(req.params.dataid) }]
+                resources: [
+                    { access: AuthResourceAccess.DATA, id: parseInt(req.params.dataid) },
+                    { access: AuthResourceAccess.CONNECTION, id: parseInt(req.params.connectionid) }
+                ]
             });
 
             data = await config.models.Data.from(parseInt(req.params.dataid));
@@ -125,7 +130,10 @@ export default async function router(schema: any, config: Config) {
     }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(config.models, req, {
-                resources: [{ access: AuthResourceAccess.DATA, id: parseInt(req.params.dataid) }]
+                resources: [
+                    { access: AuthResourceAccess.DATA, id: parseInt(req.params.dataid) },
+                    { access: AuthResourceAccess.CONNECTION, id: parseInt(req.params.connectionid) }
+                ]
             });
 
             const data = await config.models.Data.from(parseInt(req.params.dataid));
@@ -154,7 +162,10 @@ export default async function router(schema: any, config: Config) {
     }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(config.models, req, {
-                resources: [{ access: AuthResourceAccess.DATA, id: parseInt(req.params.dataid) }]
+                resources: [
+                    { access: AuthResourceAccess.DATA, id: parseInt(req.params.dataid) },
+                    { access: AuthResourceAccess.CONNECTION, id: parseInt(req.params.connectionid) }
+                ]
             });
 
             await S3.del(`data/${req.params.dataid}/${req.params.asset}.${req.params.ext}`);
@@ -181,7 +192,10 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(config.models, req, {
                 token: true,
-                resources: [{ access: AuthResourceAccess.DATA, id: parseInt(req.params.dataid) }]
+                resources: [
+                    { access: AuthResourceAccess.DATA, id: parseInt(req.params.dataid) },
+                    { access: AuthResourceAccess.CONNECTION, id: parseInt(req.params.connectionid) }
+                ]
             });
 
             const stream = await S3.get(`data/${req.params.dataid}/${req.params.asset}.${req.params.ext}`);
@@ -204,7 +218,10 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(config.models, req, {
                 token: true,
-                resources: [{ access: AuthResourceAccess.DATA, id: parseInt(req.params.dataid) }]
+                resources: [
+                    { access: AuthResourceAccess.DATA, id: parseInt(req.params.dataid) },
+                    { access: AuthResourceAccess.CONNECTION, id: parseInt(req.params.connectionid) }
+                ]
             });
 
             const data = await config.models.Data.from(parseInt(req.params.dataid));
