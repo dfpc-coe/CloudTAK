@@ -14,6 +14,11 @@ import { AuthRequest } from '@tak-ps/blueprint-login';
 import Config from '../lib/config.js';
 import DataMission from '../lib/data-mission.js';
 import { AuthResourceAccess } from '@tak-ps/blueprint-login';
+import TAKAPI, {
+    APIAuthToken,
+    APIAuthCertificate,
+    APIAuthPassword
+} from '../lib/tak-api.js';
 
 export default async function router(schema: any, config: Config) {
     await schema.get('/connection/:connectionid/data/:dataid/asset', {
@@ -48,6 +53,49 @@ export default async function router(schema: any, config: Config) {
             });
 
             return res.json(list);
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
+
+    await schema.post('/connection/:connectionid/data/:dataid/upload', {
+        private: true,
+        name: 'Internal Upload',
+        group: 'DataAssets',
+        auth: 'user',
+        ':connectionid': 'string',
+        ':dataid': 'string',
+        description: 'Create an upload after the file as been processed by Event Lambda',
+        res: 'res.Marti.json'
+    }, async (req: AuthRequest, res: Response) => {
+        await Auth.is_auth(config.models, req, {
+            resources: [
+                // Connection tokens shouldn't use this, only internal Data/Lambda Tokens
+                { access: AuthResourceAccess.DATA, id: parseInt(req.params.dataid) }
+            ]
+        });
+
+        try {
+            const auth = (await config.models.Connection.from(parseInt(String(req.query.connection)))).auth;
+            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
+            const data = await config.models.Data.from(parseInt(req.params.dataid));
+
+            const content = await api.Files.upload({
+                name: data.name,
+                contentLength: Number(req.headers['content-length']),
+                keywords: [],
+                creatorUid: `CloudTAK-Conn-${req.query.connection}`,
+            }, req);
+
+            // @ts-expect-error Morgan will throw an error after not getting req.ip and there not being req.connection.remoteAddress
+            req.connection = {
+                // @ts-expect-error
+                remoteAddress: req._remoteAddress
+            }
+
+            const missionContent = await api.Mission.attachContents(req.params.name, [content.Hash]);
+
+            return res.json(missionContent);
         } catch (err) {
             return Err.respond(err, res);
         }

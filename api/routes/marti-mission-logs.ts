@@ -39,7 +39,7 @@ export default async function router(schema: any, config: Config) {
         res: 'res.Marti.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            const user = await Auth.is_user(config.models, req);
+            const user = await Auth.as_user(config.models, req);
 
             let auth;
             let creatorUid;

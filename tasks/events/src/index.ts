@@ -166,7 +166,9 @@ async function genericEvent(md: Event) {
         }
 
         if (data.auto_transform) {
-            await API.transformData(md);
+            await API.transformData(md, {
+                connection: data.connection
+            });
         } else {
             console.log(`ok - Data ${md.ID} has auto-transform turned off`);
         }

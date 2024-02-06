@@ -39,7 +39,7 @@ export default async function router(schema: any, config: Config) {
                 api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(connection.auth.cert, connection.auth.key));
 
             } else {
-                const user = await Auth.is_user(config.models, req);
+                const user = await Auth.as_user(config.models, req);
                 const profile = await config.models.Profile.from(user.email);
                 api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
             }
@@ -94,7 +94,7 @@ export default async function router(schema: any, config: Config) {
                 api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(connection.auth.cert, connection.auth.key));
 
             } else {
-                const user = await Auth.is_user(config.models, req);
+                const user = await Auth.as_user(config.models, req);
                 const profile = await config.models.Profile.from(user.email);
                 api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
             }
@@ -118,7 +118,7 @@ export default async function router(schema: any, config: Config) {
         res: 'res.Marti.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            const user = await Auth.is_user(config.models, req);
+            const user = await Auth.as_user(config.models, req);
             const profile = await config.models.Profile.from(user.email);
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
 

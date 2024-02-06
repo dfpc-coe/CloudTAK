@@ -12,6 +12,33 @@ import DataMission from '../lib/data-mission.js';
 import { AuthResourceAccess } from '@tak-ps/blueprint-login';
 
 export default async function router(schema: any, config: Config) {
+    await schema.get('/data/:dataid', {
+        name: 'Internal Get Data',
+        group: 'Data',
+        auth: 'user',
+        description: `
+            Events don't have the Connection ID but they have a valid data token
+            This API allows a data token to request the data object and obtain the
+            connectin Id for subsequent calls
+        `,
+        ':connectionid': 'integer',
+        ':dataid': 'integer',
+        res: 'res.Data.json'
+    }, async (req: AuthRequest, res: Response) => {
+        try {
+            await Auth.is_auth(config.models, req, {
+                resources: [
+                    { access: AuthResourceAccess.DATA, id: parseInt(req.params.dataid) }
+                ]
+            });
+
+            let data = await config.models.Data.from(parseInt(req.params.dataid));
+            return res.json(data);
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
+
     await schema.get('/connection/:connectionid/data', {
         name: 'List Data',
         group: 'Data',
@@ -142,7 +169,7 @@ export default async function router(schema: any, config: Config) {
             const data = await config.models.Data.from(parseInt(req.params.dataid));
 
             await S3.del(`data-${String(req.params.dataid)}/`, { recurse: true });
-    
+
             data.mission_sync = false;
             await DataMission.sync(config, data);
 
