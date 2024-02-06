@@ -49,6 +49,10 @@
                                 <div class="card-body">
                                     <h4 class="subheader">Data Sections</h4>
                                     <div class="list-group list-group-transparent">
+                                        <span @click='$router.push(`/connection/${$route.params.connectionid}/data/${$route.params.dataid}/groups`)' class="list-group-item list-group-item-action d-flex align-items-center" :class='{
+                                            "active": $route.name === "data-groups",
+                                            "cursor-pointer": $route.name !== "data-groups"
+                                        }'><IconAffiliate/><span class='mx-3'>Channels</span></span>
                                         <span @click='$router.push(`/connection/${$route.params.connectionid}/data/${$route.params.dataid}/files`)' class="list-group-item list-group-item-action d-flex align-items-center" :class='{
                                             "active": $route.name === "data-files",
                                             "cursor-pointer": $route.name !== "data-files"
@@ -87,6 +91,7 @@ import {
 } from '@tak-ps/vue-tabler'
 import {
     IconFiles,
+    IconAffiliate,
     IconTransform,
     IconSettings,
     IconAccessPoint,
@@ -125,6 +130,7 @@ export default {
     },
     components: {
         IconFiles,
+        IconAffiliate,
         IconTransform,
         IconSettings,
         PageFooter,
