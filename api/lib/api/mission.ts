@@ -22,7 +22,12 @@ export type Mission = {
     expiration: number;
     guid: string;
     uids: Array<unknown>,
-    contents: Array<unknown>,
+    contents: Array<{
+        data: {
+            name: string;
+            hash: string;
+        }
+    }>,
     passwordProtected: boolean;
     token?: string; // Only present when mission created
     groups?: Array<string>; // Only present on Mission.get()
@@ -110,7 +115,7 @@ export default class {
         secago?: string;
         start?: string;
         end?: string;
-    }) {
+    }): Promise<TAKList<Mission>> {
         const url = new URL(`/Marti/api/missions/${encodeURIComponent(name)}`, this.api.url);
 
         for (const q in query) url.searchParams.append(q, query[q]);
