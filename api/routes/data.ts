@@ -93,7 +93,7 @@ export default async function router(schema: any, config: Config) {
             try {
                 const mission = await DataMission.sync(config, data);
             } catch (err) {
-                res.json({
+                return res.json({
                     mission_exists: false,
                     mission_error: err instanceof Error ? err.message : String(err),
                     ...data
@@ -135,7 +135,7 @@ export default async function router(schema: any, config: Config) {
             try {
                 const mission = await DataMission.sync(config, data);
             } catch (err) {
-                res.json({
+                return res.json({
                     mission_exists: false,
                     mission_error: err instanceof Error ? err.message : String(err),
                     ...data
@@ -173,7 +173,7 @@ export default async function router(schema: any, config: Config) {
             try {
                 const mission = await DataMission.sync(config, data);
             } catch (err) {
-                res.json({
+                return res.json({
                     mission_exists: false,
                     mission_error: err instanceof Error ? err.message : String(err),
                     ...data
