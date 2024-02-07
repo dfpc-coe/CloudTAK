@@ -21,7 +21,7 @@
             "type": "boolean",
             "description": "Does the mission exist in TAK Server"
         },
-        "misison_error": {
+        "mission_error": {
             "type": "string",
             "description": "Returned only if there is an error syncing the mission with the TAK Server" 
         },
