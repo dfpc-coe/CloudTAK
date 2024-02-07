@@ -90,9 +90,20 @@ export default async function router(schema: any, config: Config) {
                 connection: req.params.connectionid
             });
 
-            await DataMission.sync(config, data);
+            try {
+                const mission = await DataMission.sync(config, data);
+            } catch (err) {
+                res.json({
+                    mission_exists: false,
+                    mission_error: err instanceof Error ? err.message : String(err),
+                    ...data
+                });
+            }
 
-            return res.json(data);
+            return res.json({
+                mission_exists: true,
+                ...data
+            });
         } catch (err) {
             return Err.respond(err, res);
         }
@@ -121,9 +132,20 @@ export default async function router(schema: any, config: Config) {
                 ...req.body
             });
 
-            await DataMission.sync(config, data);
+            try {
+                const mission = await DataMission.sync(config, data);
+            } catch (err) {
+                res.json({
+                    mission_exists: false,
+                    mission_error: err instanceof Error ? err.message : String(err),
+                    ...data
+                });
+            }
 
-            return res.json(data);
+            return res.json({
+                mission_exists: true,
+                ...data
+            });
         } catch (err) {
             return Err.respond(err, res);
         }
@@ -147,7 +169,21 @@ export default async function router(schema: any, config: Config) {
             });
 
             let data = await config.models.Data.from(parseInt(req.params.dataid));
-            return res.json(data);
+
+            try {
+                const mission = await DataMission.sync(config, data);
+            } catch (err) {
+                res.json({
+                    mission_exists: false,
+                    mission_error: err instanceof Error ? err.message : String(err),
+                    ...data
+                });
+            }
+
+            return res.json({
+                mission_exists: true,
+                ...data
+            });
         } catch (err) {
             return Err.respond(err, res);
         }
