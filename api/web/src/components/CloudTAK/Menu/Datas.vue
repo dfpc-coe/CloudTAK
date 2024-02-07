@@ -8,15 +8,17 @@
         </div>
     </div>
 
-    <div class="btn-group w-100 py-2" role="group">
-        <input @change="mode = 'data'" :checked='mode === "data"' value='data' type="radio" class="btn-check" name="mode-select" id="data" autocomplete="off">
-        <label for="data" class="btn btn-icon" v-tooltip='"Data Store"'>
-            <IconDatabase/>
-        </label>
-        <input @change="mode = 'user'" :checked='mode === "user"' value='user' type="radio" class="btn-check" name="mode-select" id="user" autocomplete="off">
-        <label for="user" class="btn btn-icon" v-tooltip='"User Files"'>
-            <IconUser/>
-        </label>
+    <div class='mx-4'>
+        <div class="btn-group w-100 py-2" role="group">
+            <input @change="mode = 'data'" :checked='mode === "data"' value='data' type="radio" class="btn-check" name="mode-select" id="data" autocomplete="off">
+            <label for="data" class="btn btn-icon" v-tooltip='"Data Store"'>
+                <IconDatabase/>
+            </label>
+            <input @change="mode = 'user'" :checked='mode === "user"' value='user' type="radio" class="btn-check" name="mode-select" id="user" autocomplete="off">
+            <label for="user" class="btn btn-icon" v-tooltip='"User Files"'>
+                <IconUser/>
+            </label>
+        </div>
     </div>
 
     <TablerLoading v-if='loading'/>
@@ -32,17 +34,19 @@
     </template>
     <template v-else-if='mode === "data"'>
         <template v-if='data'>
-            <div class='col-12 d-flex py-2'>
+            <div class='col-12 d-flex mx-2 py-2'>
                 <IconCircleArrowLeft @click='data = null' class='cursor-pointer'/>
                 <div class='modal-title mx-2' v-text='data.name'></div>
             </div>
 
-            <div :key='a.id' v-for='a in assetList.assets' class="col-lg-12">
-                <div class='col-12 py-2 px-2 d-flex align-items-center'>
-                    <IconEyeX v-if='!a.visualized' v-tooltip='"No Viz Layer"'/>
-                    <IconEye v-else-if='a.visible' @click='flipVisible(a)' class='cursor-pointer'/>
-                    <IconEyeOff v-else @click='flipVisible(a)' class='cursor-pointer'/>
-                    <span class="mx-2 cursor-pointer" v-text='a.name'></span>
+            <div class='modal-body my-2'>
+                <div :key='a.id' v-for='a in assetList.assets' class='cursor-pointer col-12 py-2 px-3 rounded hover-dark'>
+                    <div class='col-12 py-2 px-2 d-flex align-items-center'>
+                        <IconEyeX v-if='!a.visualized' v-tooltip='"No Viz Layer"'/>
+                        <IconEye v-else-if='a.visible' @click='flipVisible(a)' class='cursor-pointer'/>
+                        <IconEyeOff v-else @click='flipVisible(a)' class='cursor-pointer'/>
+                        <span class="mx-2 cursor-pointer" v-text='a.name'></span>
+                    </div>
                 </div>
             </div>
         </template>
@@ -53,8 +57,8 @@
                 @create='$router.push("/data/new")'
             />
             <template v-else>
-                <div class='modal-body mx-3 my-2'>
-                    <div @click='data = d' :key='d.id' v-for='d in list.items' class='cursor-pointer col-12 py-2 rounded hover-dark'>
+                <div class='modal-body my-2'>
+                    <div @click='data = d' :key='d.id' v-for='d in list.items' class='cursor-pointer col-12 py-2 px-3 rounded hover-dark'>
                         <div class='col-12 py-2 px-2 d-flex align-items-center'>
                             <IconFolder/><span class="mx-2" v-text='d.name'></span>
                         </div>
