@@ -166,7 +166,7 @@ export default {
                     a.visible = false;
                 } else {
                     a.visible = true;
-                    const url = window.stdurl(`/api/data/${this.data.id}/asset/${a.visualized}/tile`);
+                    const url = window.stdurl(`/api/connection/${this.data.connection}/data/${this.data.id}/asset/${a.visualized}/tile`);
                     url.searchParams.append('token', localStorage.token);
 
                     await this.createOverlay(id, url, a)
@@ -241,7 +241,7 @@ export default {
         },
         fetchAssetList: async function() {
             this.loading = true;
-            const url = window.stdurl(`/api/data/${this.data.id}/asset`);
+            const url = window.stdurl(`/api/connection/${this.data.connection}/data/${this.data.id}/asset`);
             if (this.query && this.paging.filter) url.searchParams.append('filter', this.paging.filter);
             url.searchParams.append('limit', this.paging.limit);
             url.searchParams.append('page', this.paging.page);

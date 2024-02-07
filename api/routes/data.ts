@@ -12,6 +12,34 @@ import DataMission from '../lib/data-mission.js';
 import { AuthResourceAccess } from '@tak-ps/blueprint-login';
 
 export default async function router(schema: any, config: Config) {
+    await schema.get('/data', {
+        private: true,
+        name: 'Internal List Data',
+        group: 'Data',
+        auth: 'user',
+        description: `
+            Used by the frontend UI to list data packages that the user can visualize
+        `,
+        query: 'req.query.ListData.json',
+        res: 'res.ListData.json'
+    }, async (req: AuthRequest, res: Response) => {
+        try {
+            await Auth.is_auth(config.models, req);
+
+            const list = await config.models.Data.list({
+                limit: Number(req.query.limit),
+                page: Number(req.query.page),
+                order: String(req.query.order),
+                sort: String(req.query.sort),
+                where: sql`name ~* ${req.query.filter}`
+            });
+
+            res.json(list);
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
+
     await schema.get('/data/:dataid', {
         private: true,
         name: 'Internal Get Data',
