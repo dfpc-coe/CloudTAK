@@ -29,13 +29,13 @@ export default class {
         });
     }
 
-    async update(query: {
+    async update(body: Group[], query: {
         clientUid?: string;
-    }, body: object[]) {
+    }): Promise<void> {
         const url = new URL(`/Marti/api/groups/active`, this.api.url);
         for (const q in query) url.searchParams.append(q, query[q]);
 
-        return await this.api.fetch(url, {
+        await this.api.fetch(url, {
             method: 'PUT',
             body
         });
