@@ -16,7 +16,7 @@ export default class DataMission {
         // All groups should be active for data-sync api to work properly
         const groups = await api.Group.list({ useCache: 'true' });
         if (groups.data.some((g) => { return !g.active })) {
-            const updatedGroups = await api.Group.update(groups.data.map((group) => {
+            await api.Group.update(groups.data.map((group) => {
                 group.active = true;
                 return group;
             }), {})

@@ -37,7 +37,7 @@ export default async function router(schema: any, config: Config) {
                 url?: string;
             } = {};
 
-            if (req.headers['content-type'].startsWith('multipart/form-data')) {
+            if (req.headers['content-type'] && req.headers['content-type'].startsWith('multipart/form-data')) {
                 const bb = busboy({
                     headers: req.headers,
                     limits: {
