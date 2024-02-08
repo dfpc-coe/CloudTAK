@@ -44,7 +44,7 @@ async function s3Event(record: Lambda.S3EventRecord) {
     const md: Event = {
         Bucket: record.s3.bucket.name,
         Key: decodeURIComponent(record.s3.object.key.replace(/\+/g, ' ')),
-        Name: path.parse(decodeURIComponent(record.s3.object.key.replace(/\+/g, ' '))).name,
+        Name: path.parse(decodeURIComponent(record.s3.object.key.replace(/\+/g, ' '))).base,
         Ext: path.parse(decodeURIComponent(record.s3.object.key.replace(/\+/g, ' '))).ext,
         Local: path.resolve(os.tmpdir(), `input${path.parse(decodeURIComponent(record.s3.object.key.replace(/\+/g, ' '))).ext}`),
     };
