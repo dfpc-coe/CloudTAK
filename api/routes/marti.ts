@@ -102,7 +102,9 @@ export default async function router(schema: any, config: Config) {
             const query = {};
             for (const q in req.query) query[q] = String(req.query[q]);
 
-            const groups = await api.Group.update(req.body, {});
+            await api.Group.update(req.body, {});
+
+            const groups = await api.Group.list(query);
 
             return res.json(groups);
         } catch (err) {
