@@ -49,8 +49,7 @@ export class ConnectionWebSocket {
 
                     try {
                         const cot = CoT.from_geojson(feat);
-
-                        this.client.tak.write([cot]);
+                        if (this.client) this.client.tak.write([cot]);
                     } catch (err) {
                         this.ws.send(JSON.stringify({
                             type: 'Error',
@@ -172,7 +171,7 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
      */
     async cot(conn: InferSelectModel<typeof Connection> | EphemeralConnection, cot: CoT, ephemeral=false) {
         if (this.wsClients.has(String(conn.id))) {
-            for (const client of this.wsClients.get(String(conn.id))) {
+            for (const client of (this.wsClients.get(String(conn.id)) || [])) {
                 if (client.format == 'geojson') {
                     const feat = cot.to_geojson();
 
@@ -237,7 +236,7 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
 
     async retry(connClient: ConnectionClient) {
         if (connClient.initial) {
-            if (connClient.retry >= 5) return; // These are considered stalled connecitons
+            if (connClient.retry >= 5) return; // These are considered stalled connections
             connClient.retry++
             console.log(`not ok - ${connClient.conn.id} - ${connClient.conn.name} - retrying in ${connClient.retry * 1000}ms`)
             await sleep(connClient.retry * 1000);

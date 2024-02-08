@@ -56,7 +56,9 @@ export default async function router(schema: any, config: Config) {
         }
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(config.models, req);
+            await Auth.is_auth(config.models, req, {
+                anyResource: true
+            });
 
             try {
                 req.body.url = new URL(req.body.url);
@@ -112,7 +114,9 @@ export default async function router(schema: any, config: Config) {
         res: { type: 'object' }
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(config.models, req);
+            await Auth.is_auth(config.models, req, {
+                anyResource: true
+            });
 
             const base = new EsriBase(String(req.query.portal));
             if (req.query.token && req.query.expires) {
@@ -152,7 +156,9 @@ export default async function router(schema: any, config: Config) {
         res: { type: "object" }
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(config.models, req);
+            await Auth.is_auth(config.models, req, {
+                anyResource: true
+            });
 
             const base = new EsriBase(String(req.query.portal));
             if (req.query.token && req.query.expires) {
@@ -201,7 +207,9 @@ export default async function router(schema: any, config: Config) {
         }
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(config.models, req);
+            await Auth.is_auth(config.models, req, {
+                anyResource: true
+            });
 
             const base = new EsriBase(String(req.query.portal));
             base.token = {
@@ -248,7 +256,9 @@ export default async function router(schema: any, config: Config) {
         }
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(config.models, req);
+            await Auth.is_auth(config.models, req, {
+                anyResource: true
+            });
 
             const base = new EsriBase(String(req.query.portal));
             if (req.query.token && req.query.expires) {
@@ -294,7 +304,9 @@ export default async function router(schema: any, config: Config) {
         }
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(config.models, req);
+            await Auth.is_auth(config.models, req, {
+                anyResource: true
+            });
 
             const base = new EsriBase(String(req.query.server));
             if (req.query.token && req.query.expires) {
@@ -336,7 +348,9 @@ export default async function router(schema: any, config: Config) {
         }
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(config.models, req);
+            await Auth.is_auth(config.models, req, {
+                anyResource: true
+            });
 
             const base = new EsriBase(String(req.query.server));
             if (req.query.token && req.query.expires) {
@@ -374,7 +388,9 @@ export default async function router(schema: any, config: Config) {
         }
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(config.models, req);
+            await auth.is_auth(config.models, req, {
+                anyresource: true
+            });
 
             if (!String(req.query.server).match(/\/\d+$/)) throw new Err(400, null, 'Could not parse layer ID');
 
@@ -418,7 +434,9 @@ export default async function router(schema: any, config: Config) {
         }
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(config.models, req);
+            await auth.is_auth(config.models, req, {
+                anyresource: true
+            });
 
             const base = new EsriBase(String(req.query.layer));
             if (req.query.token && req.query.expires) {

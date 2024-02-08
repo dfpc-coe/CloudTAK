@@ -23,18 +23,24 @@ export default class Auth {
      */
     static async is_auth(models: Models, req: AuthRequest, opts: {
         token?: boolean;
+        anyResources: boolean;
         resources?: Array<AuthResourceAccepted>;
     } = {}): Promise<boolean> {
         if (!opts.token) opts.token = false;
-
         if (opts.token && req.token) req.auth = req.token;
+        if (!opts.resources) opts.resources = [];
+        if (!opts.anyResources) opts.anyResources = false;
 
         if (!req.auth || !req.auth.access) {
             throw new Err(403, null, 'Authentication Required');
         }
 
         if (req.auth instanceof AuthResource) {
-            if (!opts.resources || !opts.resources.length) throw new Err(403, null, 'Resource token cannot access resource');
+            if (opts.anyResources && opts.resources.length) {
+                throw new Err(403, null, 'Server cannot specify defined resource access any resource access together');
+            } else if (!opts.anyResources && !opts.resources.length) {
+                throw new Err(403, null, 'Resource token cannot access resource');
+            }
 
             if (!req.auth.internal) {
                 try {
@@ -44,7 +50,7 @@ export default class Auth {
                 }
             }
 
-            if (!opts.resources.some((r) => {
+            if (!opts.anyResources && !opts.resources.some((r) => {
                 return r.access === req.auth.access && r.id === req.auth.id;
             })) {
                 throw new Err(403, null, 'Resource token cannot access this resource');
