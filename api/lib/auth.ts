@@ -23,7 +23,7 @@ export default class Auth {
      */
     static async is_auth(models: Models, req: AuthRequest, opts: {
         token?: boolean;
-        anyResources: boolean;
+        anyResources?: boolean;
         resources?: Array<AuthResourceAccepted>;
     } = {}): Promise<boolean> {
         if (!opts.token) opts.token = false;
