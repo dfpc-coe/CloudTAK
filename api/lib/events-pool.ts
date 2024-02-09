@@ -49,14 +49,14 @@ export default class EventsPool {
 
         return new Promise((resolve) => {
             stream.on('data', (layer: InferSelectModel<typeof Layer>) => {
-                if (Schedule.is_aws(layer.cron)) return;
+                if (layer.cron && Schedule.is_aws(layer.cron)) return;
 
                 if (!layer.enabled) return;
                 layers.push(layer);
             }).on('end', async () => {
                 for (const layer of layers) {
                     try {
-                        this.add(layer.id, layer.cron);
+                        if (layer.cron) this.add(layer.id, layer.cron);
                     } catch (err) {
                         console.error(err);
                     }

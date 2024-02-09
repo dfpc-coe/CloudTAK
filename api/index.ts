@@ -7,13 +7,14 @@ import SwaggerUI from 'swagger-ui-express';
 import history, {Context} from 'connect-history-api-fallback';
 // @ts-ignore
 import Schema from '@openaddresses/batch-schema';
-import Modeler, { Pool } from '@openaddresses/batch-generic';
+import Err from '@openaddresses/batch-error';
+import Modeler from '@openaddresses/batch-generic';
 import minimist from 'minimist';
 import ConnectionPool, { ConnectionWebSocket, sleep } from './lib/connection-pool.js';
 import EventsPool from './lib/events-pool.js';
 import { WebSocket, WebSocketServer } from 'ws';
 import Cacher from './lib/cacher.js';
-import BlueprintLogin, { tokenParser } from '@tak-ps/blueprint-login';
+import BlueprintLogin, { tokenParser, AuthUser } from '@tak-ps/blueprint-login';
 import Config from './lib/config.js';
 import TAKAPI, { APIAuthPassword } from './lib/tak-api.js';
 import process from 'node:process';
@@ -54,6 +55,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
         silent: args.silent || false,
         unsafe: args.unsafe || false,
         noevents: args.noevents || false,
+        postgres: process.env.POSTGRES || args.postgres || 'postgres://postgres@localhost:5432/tak_ps_etl',
         nometrics: args.nometrics || false,
         nosinks: args.nosinks || false,
         local: args.local || false,
@@ -67,28 +69,23 @@ export default async function server(config: Config) {
     try {
         await config.cacher.flush();
     } catch (err) {
-        console.log(`ok - failed to flush cache: ${err.message}`);
+        console.log(`ok - failed to flush cache: ${err instanceof Error? err.message : String(err)}`);
     }
-
-    console.error((new URL('./migrations', import.meta.url)).pathname)
-    config.pg = await Pool.connect(process.env.POSTGRES || args.postgres || 'postgres://postgres@localhost:5432/tak_ps_etl', pgschema, {
-        ssl: config.StackName === 'test' ? undefined  : { rejectUnauthorized: false },
-        migrationsFolder: (new URL('./migrations', import.meta.url)).pathname,
-        jsonschema: {
-            dir: new URL('./schema', import.meta.url)
-        }
-    })
 
     try {
         const ServerModel = new Modeler(config.pg, pgschema.Server);
         config.server = await ServerModel.from(1);
     } catch (err) {
-        console.log(`ok - no server config found: ${err.message}`);
-        config.server = null;
+        console.log(`ok - no server config found: ${err instanceof Error ? err.message : String(err)}`);
     }
 
-    config.conns = new ConnectionPool(config, config.server, config.wsClients, config.StackName, config.local);
-    await config.conns.init();
+    if (config.server) {
+        config.conns = new ConnectionPool(config, config.server, config.wsClients, config.StackName, config.local);
+        await config.conns.init();
+    } else {
+        console.error('not ok - no connection pool due to lack of server config');
+    }
+
     config.events = new EventsPool(config.StackName);
     if (!config.noevents) await config.events.init(config.pg);
 
@@ -146,20 +143,18 @@ export default async function server(config: Config) {
         try {
             profile = await ProfileModel.from(user.username);
         } catch (err) {
-            if (err.status === 404) {
+            if (err instanceof Err && err.status === 404) {
                 profile = await ProfileModel.generate({ username: user.username });
             } else {
-                console.error(err);
+                return console.error(err);
             }
         }
 
-        if (!profile.auth.cert || !profile.auth.key) {
-            try {
+        try {
             const api = await TAKAPI.init(new URL(config.MartiAPI), new APIAuthPassword(user.username, user.password));
             await ProfileModel.commit(profile.username, { auth: await api.Credentials.generate() });
-            } catch (err) {
-                console.error(err);
-            }
+        } catch (err) {
+            console.error(err);
         }
     });
 
@@ -198,11 +193,14 @@ export default async function server(config: Config) {
         rewrites: [{
             from: /.*\/js\/.*$/,
             to(context: Context) {
+                if (!context.parsedUrl.pathname) context.parsedUrl.pathname = ''
                 return context.parsedUrl.pathname.replace(/.*\/js\//, '/js/');
             }
         },{
             from: /.*$/,
             to(context: Context) {
+                if (!context.parsedUrl.pathname) context.parsedUrl.pathname = ''
+                if (!context.parsedUrl.path) context.parsedUrl.path = ''
                 const parse = path.parse(context.parsedUrl.path);
                 if (parse.ext) {
                     return context.parsedUrl.pathname;
@@ -219,41 +217,56 @@ export default async function server(config: Config) {
         noServer: true
     }).on('connection', async (ws: WebSocket, request) => {
         try {
+            if (!request.url) throw new Error('Could not parse connection URL');
             const params = new URLSearchParams(request.url.replace(/.*\?/, ''));
             // TODO: Remove connections
 
             if (!params.get('connection')) throw new Error('Connection Parameter Required');
             if (!params.get('token')) throw new Error('Token Parameter Required');
+            const parsedParams = {
+                connection: String(params.get('connection')),
+                token: String(params.get('token')),
+                format: String(params.get('format') || 'raw')
+            }
 
-            const auth = tokenParser(params.get('token'), config.SigningSecret);
+            const auth = tokenParser(parsedParams.token, config.SigningSecret);
 
-            if (!config.wsClients.has(params.get('connection'))) config.wsClients.set(params.get('connection'), [])
+            if (!config.wsClients.has(parsedParams.connection)) config.wsClients.set(parsedParams.connection, [])
+
+            if (!config.conns) throw new Error('Server not configured with Connection Pool');
 
             // Connect to MachineUser Connection if it is an integer
-            if (!isNaN(parseInt(params.get('connection')))) {
-                config.wsClients.get(params.get('connection')).push(new ConnectionWebSocket(ws, params.get('format')));
-            } else if (params.get('connection') === auth.email) {
-                if (!config.conns.has(params.get('connection'))) {
-                    const profile = await ProfileModel.from(params.get('connection'));
+            if (!isNaN(parseInt(parsedParams.connection))) {
+                let webClients = config.wsClients.get(parsedParams.connection)
+                if (!webClients) webClients = [];
+                webClients.push(new ConnectionWebSocket(ws, parsedParams.format));
+                config.wsClients.set(parsedParams.connection, webClients);
+            } else if (auth instanceof AuthUser && parsedParams.connection === auth.email) {
+                let client;
+                if (!config.conns.has(parsedParams.connection)) {
+                    const profile = await ProfileModel.from(parsedParams.connection);
                     if (!profile.auth.cert || !profile.auth.key) throw new Error('No Cert Found on profile');
 
-                    const client = await config.conns.add({
-                        id: params.get('connection'),
-                        name: params.get('connection'),
+                    client = await config.conns.add({
+                        id: parsedParams.connection,
+                        name: parsedParams.connection,
                         enabled: true,
                         auth: profile.auth
                     }, true);
-
-                    config.wsClients.get(params.get('connection')).push(new ConnectionWebSocket(ws, params.get('format'), client));
                 } else {
-                    const client = config.conns.get(params.get('connection'));
-                    config.wsClients.get(params.get('connection')).push(new ConnectionWebSocket(ws, params.get('format'), client));
+                    client = config.conns.get(parsedParams.connection);
+
                 }
+
+                let webClients = config.wsClients.get(parsedParams.connection)
+                if (!webClients) webClients = [];
+                webClients.push(new ConnectionWebSocket(ws, parsedParams.format, client));
+                config.wsClients.set(parsedParams.connection, webClients);
             } else {
                 throw new Error('Unauthorized');
             }
         } catch (err) {
-            ws.send(JSON.stringify({type: 'Error', message: String(err.message) }));
+            ws.send(JSON.stringify({type: 'Error', message: err instanceof Error ? String(err.message) : String(err) }));
             await sleep(500);
             ws.close();
         }

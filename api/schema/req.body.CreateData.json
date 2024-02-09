@@ -3,18 +3,20 @@
     "additionalProperties": false,
     "required": [
         "name",
-        "description",
-        "connection"
+        "description"
     ],
     "properties": {
         "name": {
             "$ref": "./data/name.json"
         },
-        "connection": {
-            "$ref": "./data/connection.json"
-        },
         "auto_transform": {
             "$ref": "./data/auto_transform.json"
+        },
+        "mission_sync": {
+            "$ref": "./data/mission_sync.json"
+        },
+        "mission_groups": {
+            "$ref": "./data/mission_groups.json"
         },
         "description": {
             "$ref": "./data/description.json"

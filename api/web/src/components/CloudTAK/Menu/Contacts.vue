@@ -1,5 +1,5 @@
 <template>
-<div class='row'>
+<div>
     <div class='col-12 border-bottom border-light'>
         <div class='modal-header px-0 mx-2'>
             <IconCircleArrowLeft @click='$emit("close")' class='cursor-pointer'/>
@@ -13,32 +13,34 @@
     <TablerNone v-else-if='!contacts.length' :create='false'/>
     <template v-else>
         <div :key='a.id' v-for='a of visibleContacts' class="col-lg-12">
-            <div class='col-12 row py-2 px-2 d-flex align-items-center hover-dark cursor-pointer'>
-                <div class='col-auto'>
-                    <IconCircleFilled :class='{
-                        "text-yellow": a.team === "Yellow",
-                        "text-cyan": a.team === "Cyan",
-                        "text-lime": a.team === "Green",
-                        "text-red": a.team === "Red",
-                        "text-purple": a.team === "Purple",
-                        "text-orange": a.team === "Orange",
-                        "text-azure": a.team === "Blue",
-                        "text-dribble": a.team === "Magenta",
-                        "text-white": a.team === "White",
-                        "text-pinterest": a.team === "Maroon",
-                        "text-blue": a.team === "Dark Blue",
-                        "text-teal": a.team === "Teal",
-                        "text-green": a.team === "Dark Green",
-                        "text-google": a.team === "Brown",
-                    }'/>
-                </div>
-                <div class='col-auto'>
-                    <div v-text='a.callsign'></div>
-                    <div v-text='a.notes.trim()' class='subheader'></div>
-                </div>
-                <div class='col-auto ms-auto btn-list'>
-                    <IconMessage @click='$emit("chat", a.uid)' v-if='isChatable(a)' v-tooltip='"Start Chat"' class='cursor-pointer'/>
-                    <IconZoomPan @click='flyTo(a)' v-if='isZoomable(a)' v-tooltip='"Zoom To"' class='cursor-pointer'/>
+            <div class='col-12 py-2 d-flex hover-dark cursor-pointer'>
+                <div class='row col-12 align-items-center'>
+                    <div class='col-auto'>
+                        <IconCircleFilled style='margin-left: 16px;' :class='{
+                            "text-yellow": a.team === "Yellow",
+                            "text-cyan": a.team === "Cyan",
+                            "text-lime": a.team === "Green",
+                            "text-red": a.team === "Red",
+                            "text-purple": a.team === "Purple",
+                            "text-orange": a.team === "Orange",
+                            "text-azure": a.team === "Blue",
+                            "text-dribble": a.team === "Magenta",
+                            "text-white": a.team === "White",
+                            "text-pinterest": a.team === "Maroon",
+                            "text-blue": a.team === "Dark Blue",
+                            "text-teal": a.team === "Teal",
+                            "text-green": a.team === "Dark Green",
+                            "text-google": a.team === "Brown",
+                        }'/>
+                    </div>
+                    <div class='col-auto'>
+                        <div v-text='a.callsign'></div>
+                        <div v-text='a.notes.trim()' class='subheader'></div>
+                    </div>
+                    <div class='col-auto ms-auto btn-list'>
+                        <IconMessage @click='$emit("chat", a.uid)' v-if='isChatable(a)' v-tooltip='"Start Chat"' class='cursor-pointer'/>
+                        <IconZoomPan @click='flyTo(a)' v-if='isZoomable(a)' v-tooltip='"Zoom To"' class='cursor-pointer'/>
+                    </div>
                 </div>
             </div>
         </div>

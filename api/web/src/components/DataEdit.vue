@@ -38,6 +38,40 @@
                                         v-model='data.auto_transform'
                                     />
                                 </div>
+                                <div class='col-md-12'>
+                                    <div class='col-12 d-flex'>
+                                        <label>Data Groups</label>
+                                        <div class='ms-auto'>
+                                            <IconSettings @click='modal = true' class='cursor-pointer'/>
+                                        </div>
+                                    </div>
+
+                                    <GroupSelectModal
+                                        v-if='modal'
+                                        :connection='$route.params.connectionid'
+                                        @close='modal = false'
+                                        v-model='data.mission_groups'
+                                    />
+
+                                    <template v-if='data.mission_groups.length === 0'>
+                                        <div class='col-12'>
+                                            <span>All Groups</span>
+                                        </div>
+
+                                    </template>
+                                    <template v-else>
+                                        <div :key='group.name' v-for='group in data.mission_groups' class='col-12'>
+                                            <span v-text='group' class='mx-2'/>
+                                        </div>
+                                    </template>
+                                </div>
+                                <div class="col-md-12">
+                                    <TablerToggle
+                                        label='Misison Sync'
+                                        description='If Enabled, Assets will be uploaded to the Mission'
+                                        v-model='data.mission_sync'
+                                    />
+                                </div>
                                 <div class="col-md-12">
                                     <TablerInput
                                         label='Data Description'
@@ -77,13 +111,18 @@ import {
     TablerDelete,
     TablerLoading
 } from '@tak-ps/vue-tabler';
+import {
+    IconSettings,
+} from '@tabler/icons-vue'
+import GroupSelectModal from './util/GroupSelectModal.vue';
 
 export default {
     name: 'DataEdit',
     data: function() {
         return {
+            modal: false,
             loading: {
-                data: true
+                data: true,
             },
             errors: {
                 name: '',
@@ -92,6 +131,8 @@ export default {
             data: {
                 name: '',
                 auto_transform: true,
+                mission_sync: true,
+                mission_groups: [],
                 description: '',
             }
         }
@@ -106,11 +147,11 @@ export default {
     methods: {
         fetch: async function() {
             this.loading.data = true;
-            this.data = await window.std(`/api/data/${this.$route.params.dataid}`);
+            this.data = await window.std(`/api/connection/${this.$route.params.connectionid}/data/${this.$route.params.dataid}`);
             this.loading.data = false;
         },
         deleteData: async function() {
-            await window.std(`/api/data/${this.$route.params.dataid}`, {
+            await window.std(`/api/connection/${this.$route.params.connectionid}/data/${this.$route.params.dataid}`, {
                 method: 'DELETE'
             });
 
@@ -129,10 +170,10 @@ export default {
                 const body = JSON.parse(JSON.stringify(this.data));
 
                 if (this.$route.params.dataid) {
-                    url = window.stdurl(`/api/data/${this.$route.params.dataid}`);
+                    url = window.stdurl(`/api/connection/${this.$route.params.connectionid}/data/${this.$route.params.dataid}`);
                     method = 'PATCH'
                 } else {
-                    url = window.stdurl(`/api/data`);
+                    url = window.stdurl(`/api/connection/${this.$route.params.connectionid}/data`);
                     method = 'POST'
                     body.connection = parseInt(this.$route.params.connectionid);
                 }
@@ -149,7 +190,9 @@ export default {
         }
     },
     components: {
+        IconSettings,
         PageFooter,
+        GroupSelectModal,
         TablerBreadCrumb,
         TablerToggle,
         TablerDelete,

@@ -221,6 +221,7 @@ export default class Flight {
     takeoff(custom = {}) {
         test('test server takeoff', async (t) => {
             this.config = await Config.env({
+                postgres: process.env.POSTGRES || 'postgres://postgres@localhost:5432/tak_ps_etl',
                 silent: true,
                 unsafe: true,
                 noevents: true,
@@ -230,6 +231,16 @@ export default class Flight {
             });
 
             Object.assign(this.config, custom);
+
+            this.config.models.Server.generate({
+                name: 'Test Runner',
+                url: 'ssl://tak.example.com',
+                auth: {
+                    cert: 'cert-123',
+                    key: 'key-123'
+                },
+                api: 'http://tak-api.example.com'
+            });
 
             this.srv = await api(this.config);
 
@@ -242,7 +253,7 @@ export default class Flight {
      */
     user() {
         test('Create Token: admin', async (t) => {
-            this.token.admin = jwt.sign({ access: 'user' }, 'coe-wildland-fire')
+            this.token.admin = jwt.sign({ access: 'user', email: 'test@example.com' }, 'coe-wildland-fire')
             t.end();
         });
     }

@@ -87,7 +87,7 @@ export default class Lambda {
                         Environment: {
                             Variables: {
                                 ETL_API: cf.importValue(config.StackName + '-hosted'),
-                                ETL_TOKEN: jwt.sign({ access: 'cot', layer: layer.id }, config.SigningSecret),
+                                ETL_TOKEN: `etl.${jwt.sign({ access: 'layer', id: layer.id, internal: true }, config.SigningSecret)}`,
                                 ETL_LAYER: layer.id
                             }
                         },

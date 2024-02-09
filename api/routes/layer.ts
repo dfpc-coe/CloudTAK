@@ -16,14 +16,11 @@ import Config from '../lib/config.js';
 import Schedule from '../lib/schedule.js';
 import S3 from '../lib/aws/s3.js';
 import { Feature } from 'geojson';
-import { Data, Layer } from '../lib/schema.js';
-import Modeler, { Param } from '@openaddresses/batch-generic';
+import { Param } from '@openaddresses/batch-generic';
 import { sql } from 'drizzle-orm';
+import { AuthResourceAccess } from '@tak-ps/blueprint-login';
 
 export default async function router(schema: any, config: Config) {
-    const DataModel = new Modeler(config.pg, Data);
-    const LayerModel = new Modeler(config.pg, Layer);
-
     const alarm = new Alarm(config.StackName);
     const ddb = new DDBQueue(config.StackName);
     ddb.on('error', (err) => { console.error(err); });
@@ -37,9 +34,9 @@ export default async function router(schema: any, config: Config) {
         res: 'res.ListLayers.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req);
+            await Auth.is_auth(config.models, req);
 
-            const list = await LayerModel.list({
+            const list = await config.models.Layer.list({
                 limit: Number(req.query.limit),
                 page: Number(req.query.page),
                 order: String(req.query.order),
@@ -77,7 +74,7 @@ export default async function router(schema: any, config: Config) {
         res: 'res.Layer.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req);
+            await Auth.is_auth(config.models, req);
 
             if (req.body.styles && req.body.styles.queries) {
                 req.body.styles = {
@@ -100,7 +97,7 @@ export default async function router(schema: any, config: Config) {
             }
 
             Schedule.is_valid(req.body.cron);
-            let layer = await LayerModel.generate(req.body);
+            let layer = await config.models.Layer.generate(req.body);
 
             if (!Schedule.is_aws(layer.cron) && layer.enabled) {
                 config.events.add(layer.id, layer.cron);
@@ -132,11 +129,11 @@ export default async function router(schema: any, config: Config) {
         res: 'res.Standard.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req);
+            await Auth.is_auth(config.models, req);
 
             // TODO there is a limit here to how many will be returned
             // switch to an async iter or stream
-            const list = await LayerModel.list();
+            const list = await config.models.Layer.list();
 
             for (const layer of list.items) {
                 const status = (await CloudFormation.status(config, layer.id)).status;
@@ -173,7 +170,9 @@ export default async function router(schema: any, config: Config) {
         res: 'res.Layer.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req);
+            await Auth.is_auth(config.models, req, {
+                resources: [{ access: AuthResourceAccess.LAYER, id: parseInt(req.params.layerid) }]
+            });
 
             if (req.body.styles) {
                 await Style.validate(req.body.styles);
@@ -201,7 +200,7 @@ export default async function router(schema: any, config: Config) {
 
             if (req.body.cron) Schedule.is_valid(req.body.cron);
 
-            let layer = await LayerModel.from(parseInt(req.params.layerid));
+            let layer = await config.models.Layer.from(parseInt(req.params.layerid));
 
             let changed = false;
             // Avoid Updating CF unless necessary as it blocks further updates until deployed
@@ -214,7 +213,7 @@ export default async function router(schema: any, config: Config) {
                 if (!status.endsWith('_COMPLETE')) throw new Err(400, null, 'Layer is still Deploying, Wait for Deploy to succeed before updating')
             }
 
-            layer = await LayerModel.commit(layer.id, { updated: sql`Now()`, ...req.body });
+            layer = await config.models.Layer.commit(layer.id, { updated: sql`Now()`, ...req.body });
 
             if (changed) {
                 try {
@@ -255,10 +254,12 @@ export default async function router(schema: any, config: Config) {
         res: 'res.Layer.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req);
+            await Auth.is_auth(config.models, req, {
+                resources: [{ access: AuthResourceAccess.LAYER, id: parseInt(req.params.layerid) }]
+            });
 
             const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
-                return await LayerModel.from(parseInt(req.params.layerid));
+                return await config.models.Layer.from(parseInt(req.params.layerid));
             });
 
             return res.json({
@@ -279,9 +280,9 @@ export default async function router(schema: any, config: Config) {
         res: 'res.Standard.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req);
+            await Auth.is_auth(config.models, req);
 
-            const layer = await LayerModel.from(parseInt(req.params.layerid));
+            const layer = await config.models.Layer.from(parseInt(req.params.layerid));
 
             const status = (await CloudFormation.status(config, parseInt(req.params.layerid))).status;
             if (!status.endsWith('_COMPLETE')) throw new Err(400, null, 'Layer is still Deploying, Wait for Deploy to succeed before updating')
@@ -315,15 +316,15 @@ export default async function router(schema: any, config: Config) {
         res: 'res.Standard.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req);
+            await Auth.is_auth(config.models, req);
 
-            const layer = await LayerModel.from(parseInt(req.params.layerid));
+            const layer = await config.models.Layer.from(parseInt(req.params.layerid));
 
             await CloudFormation.delete(config, layer.id);
 
             config.events.delete(layer.id);
 
-            await LayerModel.delete(parseInt(req.params.layerid));
+            await config.models.Layer.delete(parseInt(req.params.layerid));
 
             await config.cacher.del(`layer-${req.params.layerid}`);
 
@@ -349,12 +350,14 @@ export default async function router(schema: any, config: Config) {
         limit: '50mb'
     }), async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_layer(req, parseInt(req.params.layerid));
+            await Auth.is_auth(config.models, req, {
+                resources: [{ access: AuthResourceAccess.LAYER, id: parseInt(req.params.layerid) }]
+            });
 
             if (!req.headers['content-type']) throw new Err(400, null, 'Content-Type not set');
 
             const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
-                return await LayerModel.from(parseInt(req.params.layerid));
+                return await config.models.Layer.from(parseInt(req.params.layerid));
             });
 
             const style = new Style(layer);
@@ -415,7 +418,7 @@ export default async function router(schema: any, config: Config) {
                 }
             } else if (layer.data) {
                 if (req.headers['content-type'] === 'application/json') {
-                    const data = await DataModel.from(layer.data);
+                    const data = await config.models.Data.from(layer.data);
                     S3.put(`data/${data.id}/layer-${layer.id}.geojson`, JSON.stringify(req.body));
                 } else {
                     throw new Err(400, null, 'Only Content-Type application/json is currently supported');

@@ -51,7 +51,7 @@
                         </template>
                         <template v-else>
                             <TablerNone
-                                v-if='!list.layers.length'
+                                v-if='!list.items.length'
                                 label='Layers'
                                 @create='$router.push("/layer/new")'
                             />
@@ -64,7 +64,7 @@
                                             v-model:header='header'
                                         />
                                         <tbody>
-                                            <tr @click='$router.push(`/layer/${layer.id}`)' :key='layer.id' v-for='(layer, layer_it) in list.layers' class='cursor-pointer'>
+                                            <tr @click='$router.push(`/layer/${layer.id}`)' :key='layer.id' v-for='(layer, layer_it) in list.items' class='cursor-pointer'>
                                                 <template v-for='h in header'>
                                                     <template v-if='h.display'>
                                                         <td>
@@ -124,7 +124,7 @@ export default {
             },
             list: {
                 total: 0,
-                layers: []
+                items: []
             }
         }
     },

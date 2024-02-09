@@ -29,8 +29,8 @@
 
                             <span v-text='asset.name' class='mx-2'/>
 
-                            <IconRefreshDot v-if='data.mission && asset.sync' class='text-green' v-tooltip='"Syncing"'/>
-                            <IconRefreshOff v-else-if='data.mission && !asset.sync'/>
+                            <IconRefreshDot v-if='data.mission_sync && asset.sync' class='text-green' v-tooltip='"Syncing"'/>
+                            <IconRefreshOff v-else-if='data.mission_sync && !asset.sync'/>
                         </div>
                     </td>
                     <td>
@@ -124,10 +124,10 @@ export default {
             };
         },
         uploadURL: function() {
-            return window.stdurl(`/api/data/${this.$route.params.dataid}/asset`);
+            return window.stdurl(`/api/connection/${this.$route.params.connectionid}/data/${this.$route.params.dataid}/asset`);
         },
         downloadAsset: async function(asset) {
-            const url = window.stdurl(`/api/data/${this.$route.params.dataid}/asset/${asset.name}`);
+            const url = window.stdurl(`/api/connection/${this.$route.params.connectionid}/data/${this.$route.params.dataid}/asset/${asset.name}`);
             url.searchParams.append('token', localStorage.token);
             window.open(url, "_blank")
         },
@@ -142,7 +142,7 @@ export default {
         },
         deleteAsset: async function(asset) {
             this.loading.list = true;
-            await window.std(`/api/data/${this.$route.params.dataid}/asset/${asset.name}`, {
+            await window.std(`/api/connection/${this.$route.params.connectionid}/data/${this.$route.params.dataid}/asset/${asset.name}`, {
                 method: 'DELETE'
             });
 
@@ -154,7 +154,7 @@ export default {
             try {
                 this.loading.list = true;
                 this.err = false;
-                this.list = await window.std(`/api/data/${this.$route.params.dataid}/asset`);
+                this.list = await window.std(`/api/connection/${this.$route.params.connectionid}/data/${this.$route.params.dataid}/asset`);
                 this.loading.list = false;
                 this.$emit('assets', this.list);
             } catch (err) {

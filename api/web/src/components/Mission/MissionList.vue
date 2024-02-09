@@ -1,35 +1,26 @@
 <template>
-<div class='row' :class='{
-    "bg-dark text-white": !modal
-}'>
-    <div class='col-12' :class='{
-        "border-bottom border-light": !modal
-    }'>
-        <div class='modal-header' :class='{
-            "px-0 mx-2": !modal
-        }'>
-            <IconCircleArrowLeft v-if='!modal' @click='$emit("close")' class='cursor-pointer'/>
+<div>
+    <div class='col-12 border-bottom border-light'>
+        <div class='modal-header px-0 mx-2'>
+            <IconCircleArrowLeft @click='$emit("close")' class='cursor-pointer'/>
             <div class='modal-title'>Missions</div>
-            <div class='btn-list'>
-                <template v-if='!loading'>
-                    <IconPlus @click='$emit("create")' class='cursor-pointer' v-tooltip='"Create Mission"'/>
-                    <IconRefresh @click='fetchMissions' class='cursor-pointer' v-tooltip='"Refresh"'/>
-                </template>
+            <div class='btn-list' v-if='!loading'>
+                <IconPlus @click='$emit("create")' class='cursor-pointer' v-tooltip='"Create Mission"'/>
+                <IconRefresh @click='fetchMissions' class='cursor-pointer' v-tooltip='"Refresh"'/>
             </div>
         </div>
     </div>
-    <div class='modal-body mx-3 my-2'>
-        <TablerLoading v-if='loading' desc='Loading Missions'/>
-        <TablerNone v-else-if='!list.data.length' label='Missions' :create='false'/>
-        <Alert v-else-if='err' :err='err'/>
-        <template v-else>
-            <div
-                @click='$emit("mission", mission)'
-                :key='mission_it'
-                v-for='(mission, mission_it) in list.data'
-                class='cursor-pointer col-12 row py-2 rounded'
-                :class='{ "hover-dark": !modal, "hover-light": modal }'
-            >
+    <TablerLoading v-if='loading' desc='Loading Missions'/>
+    <TablerNone v-else-if='!list.data.length' label='Missions' :create='false'/>
+    <Alert v-else-if='err' :err='err'/>
+    <template v-else>
+        <div
+            @click='$emit("mission", mission)'
+            :key='mission_it'
+            v-for='(mission, mission_it) in list.data'
+            class='cursor-pointer col-12 py-2 hover-dark'
+        >
+            <div class='row px-3'>
                 <div class='col-auto d-flex justify-content-center align-items-center'>
                     <IconLock v-if='mission.passwordProtected'/>
                     <IconLockOpen v-else/>
@@ -45,8 +36,8 @@
                     </div>
                 </div>
             </div>
-        </template>
-    </div>
+        </div>
+    </template>
 </div>
 </template>
 
@@ -70,10 +61,6 @@ export default {
         connection: {
             type: Number
         },
-        modal: {
-            type: Boolean,
-            default: true
-        }
     },
     data: function() {
         return {

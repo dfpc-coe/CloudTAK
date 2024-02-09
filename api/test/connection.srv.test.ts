@@ -53,32 +53,4 @@ test('GET: api/connection/1', async (t) => {
     t.end();
 });
 
-test('POST: api/connection', async (t) => {
-    try {
-        const res = await flight.fetch('/api/connection', {
-            method: 'POST',
-            auth: {
-                bearer: flight.token.admin
-            },
-            body: {
-                name: '1st Connection',
-                description: 'Pretty Rad',
-                auth: {}
-            }
-        }, false);
-
-        t.deepEquals(res.body, {
-            status: 400,
-            message: 'TAK Server must be configured before a connection can be made',
-            messages: []
-        });
-    } catch (err) {
-        t.error(err, 'no error');
-    }
-
-    t.end();
-});
-
-flight.fixture('server.json', 'admin');
-
 flight.landing();

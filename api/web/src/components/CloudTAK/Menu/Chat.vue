@@ -1,5 +1,5 @@
 <template>
-<div class='row'>
+<div>
     <div class='col-12 border-bottom border-light'>
         <div class='modal-header px-0 mx-2'>
             <IconCircleArrowLeft @click='$emit("close")' class='cursor-pointer'/>
@@ -7,11 +7,17 @@
             <div/>
         </div>
     </div>
-    <div class='col-12 row px-2 py-2'>
+    <div class='px-2 py-2'>
         <TablerLoading v-if='loading'/>
-        <div v-else class='position-absolute'>
-            <div class='position-relative bottom-0'>
-                HERE
+
+        <div class='border-top border-blue position-absolute start-0 bottom-0 end-0'>
+            <div class='row mx-2'>
+                <div class='col-12'>
+                    <TablerInput v-on:keyup.enter='sendMessage' v-model='message'/>
+                </div>
+                <div class='col-12 my-2'>
+                    <button @click='sendMessage' class='w-100 btn btn-primary'>Send</button>
+                </div>
             </div>
         </div>
     </div>
@@ -40,6 +46,7 @@ export default {
     data: function() {
         return {
             loading: false,
+            message: '',
             contact: cotStore.cots.get(this.uid)
         }
     },
@@ -47,6 +54,10 @@ export default {
         await this.fetchChats();
     },
     methods: {
+        sendMessage: async function() {
+            const message = this.message;
+            this.message = '';
+        },
         fetchChats: async function() {
             this.loading = true;
             //TODO LOAD CHATS

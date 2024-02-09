@@ -39,7 +39,7 @@
                             <div
                                 @click='selected = icon'
                                 :key='icon.id'
-                                v-for='icon of list.icons'
+                                v-for='icon of list.items'
                                 class='col-auto cursor-pointer'
                             >
                                 <img
@@ -115,7 +115,7 @@ export default {
             sets: [],
             list: {
                 total: 0,
-                icons: []
+                items: []
             }
         }
     },
@@ -152,7 +152,7 @@ export default {
         Iconlistsets: async function() {
             this.loading.iconsets = true;
             const url = window.stdurl('/api/iconset');
-            this.sets = (await window.std(url)).iconsets;
+            this.sets = (await window.std(url)).items;
             this.params.iconset = this.sets[0].name;
             this.loading.iconsets = false;
         },

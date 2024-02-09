@@ -33,21 +33,18 @@
                         </div>
                         <div class='card-body'>
                             <div class='row g-2'>
-                                <div class='col-12 col-md-8'>
+                                <div class='col-12'>
                                     <TablerMarkdown :markdown='connection.description'/>
                                 </div>
-                                <div class='col-12 col-md-4'>
-                                    <TablerLoading v-if='loading.channels' desc='Loading Channels'/>
-                                    <TablerNone v-else-if='!rawChannels.length' :create='false'/>
-                                    <template v-else>
-                                        <div :key='ch.name' v-for='ch in processChannels' class="col-lg-12 hover-light">
-                                            <div class='col-12 py-2 px-2 d-flex align-items-center'>
-                                                <IconEye v-if='ch.active'/>
-                                                <IconEyeOff v-else />
-                                                <span class="mx-2" v-text='ch.name'></span>
-                                            </div>
-                                        </div>
-                                    </template>
+                                <div class='col-12 datagrid'>
+                                    <div class="datagrid-item pb-2">
+                                        <div class="datagrid-title">Certificate Valid From</div>
+                                        <div class="datagrid-content" v-text='connection.certificate.validFrom'></div>
+                                    </div>
+                                    <div class="datagrid-item pb-2">
+                                        <div class="datagrid-title">Certificate Valid From</div>
+                                        <div class="datagrid-content" v-text='connection.certificate.validTo'></div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -68,6 +65,10 @@
                                             "active": $route.name === "connection-layer",
                                             "cursor-pointer": $route.name !== "connection-layer"
                                         }'><IconBuildingBroadcastTower/><span class='mx-3'>Layers</span></span>
+                                        <span @click='$router.push(`/connection/${$route.params.connectionid}/groups`)' class="list-group-item list-group-item-action d-flex align-items-center" :class='{
+                                            "active": $route.name === "connection-groups",
+                                            "cursor-pointer": $route.name !== "connection-groups"
+                                        }'><IconAffiliate/><span class='mx-3'>Channels</span></span>
                                         <span @click='$router.push(`/connection/${$route.params.connectionid}/data`)' class="list-group-item list-group-item-action d-flex align-items-center" :class='{
                                             "active": $route.name === "connection-data",
                                             "cursor-pointer": $route.name !== "connection-data"
@@ -80,6 +81,10 @@
                                             "active": $route.name === "connection-health",
                                             "cursor-pointer": $route.name !== "connection-health"
                                         }'><IconCloudDataConnection/><span class='mx-3'>Health &amp; Metrics</span></span>
+                                        <span @click='$router.push(`/connection/${$route.params.connectionid}/tokens`)' class="list-group-item list-group-item-action d-flex align-items-center" :class='{
+                                            "active": $route.name === "connection-tokens",
+                                            "cursor-pointer": $route.name !== "connection-tokens"
+                                        }'><IconRobot/><span class='mx-3'>API Tokens</span></span>
                                     </div>
                                 </div>
                             </div>
@@ -104,11 +109,11 @@ import PageFooter from './PageFooter.vue';
 import ConnectionStatus from './Connection/Status.vue';
 import timeDiff from '../timediff.js';
 import {
-    IconEye,
-    IconEyeOff,
+    IconRobot,
     IconRefresh,
     IconDatabase,
     IconOutbound,
+    IconAffiliate,
     IconCloudDataConnection,
     IconBuildingBroadcastTower,
     IconSettings
@@ -125,10 +130,8 @@ export default {
         return {
             loading: {
                 connection: true,
-                channels: true,
             },
             err: null,
-            rawChannels: [],
             connection: {}
         }
     },
@@ -142,26 +145,7 @@ export default {
     },
     mounted: async function() {
         await this.fetch();
-        await this.fetchChannels();
 
-    },
-    computed: {
-        processChannels: function() {
-            const channels = {};
-
-            JSON.parse(JSON.stringify(this.rawChannels)).sort((a, b) => {
-                return (a.name > b.name) ? 1 : ((b.name > a.name) ? -1 : 0);
-            }).forEach((channel) => {
-                if (channels[channel.name]) {
-                    channels[channel.name].direction.push(channel.direction);
-                } else {
-                    channel.direction = [channel.direction];
-                    channels[channel.name] = channel;
-                }
-            });
-
-            return channels;
-        }
     },
     methods: {
         timeDiff(update) {
@@ -172,11 +156,6 @@ export default {
             this.connection = await window.std(`/api/connection/${this.$route.params.connectionid}`);
             this.loading.connection = false;
         },
-        fetchChannels: async function() {
-            this.loading.channels = true;
-            this.rawChannels = (await window.std(`/api/connection/${this.$route.params.connectionid}/channel`)).data;
-            this.loading.channels = false;
-        },
         refresh: async function() {
             this.connection = await window.std(`/api/connection/${this.$route.params.connectionid}/refresh`, {
                 method: 'POST'
@@ -184,9 +163,9 @@ export default {
         }
     },
     components: {
-        IconEye,
-        IconEyeOff,
+        IconRobot,
         IconSettings,
+        IconAffiliate,
         IconRefresh,
         IconDatabase,
         IconBuildingBroadcastTower,

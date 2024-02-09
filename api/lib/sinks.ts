@@ -1,6 +1,7 @@
 import Config from './config.js';
 import { CoT } from '@tak-ps/node-tak';
 import ESRISink from './sinks/esri.js';
+import SinkInterface from './sink.js';
 import HookQueue from './aws/hooks.js';
 import Cacher from './cacher.js';
 import { Connection, ConnectionSink } from './schema.js';
@@ -8,7 +9,7 @@ import { type InferSelectModel } from 'drizzle-orm';
 import { sql } from 'drizzle-orm';
 import Modeler from '@openaddresses/batch-generic';
 
-export default class Sinks extends Map<string, any> {
+export default class Sinks extends Map<string, typeof SinkInterface> {
     config: Config;
     queue: HookQueue;
 
@@ -33,7 +34,7 @@ export default class Sinks extends Map<string, any> {
             });
         });
 
-        for (const sink of sinks.sinks) {
+        for (const sink of sinks.items) {
             const handler = this.get(sink.type);
 
             const secrets = await handler.secrets(this.config, sink);

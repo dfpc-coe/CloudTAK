@@ -50,6 +50,7 @@ export default class {
 
         const res = await this.api.fetch(url, {
             method: 'POST',
+            nocookies: true,
             headers: {
                 Accept: 'application/json',
                 Authorization: 'Basic ' + btoa(this.api.auth.username + ":" + this.api.auth.password)

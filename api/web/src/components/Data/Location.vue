@@ -138,7 +138,7 @@ export default {
         mountPMTiles: async function() {
             if (!this.asset || !map) return;
 
-            const url = window.stdurl(`/api/data/${this.$route.params.dataid}/asset/${this.asset.name}/tile`);
+            const url = window.stdurl(`/api/connection/${this.$route.params.connectionid}/data/${this.$route.params.dataid}/asset/${this.asset.name}/tile`);
             url.searchParams.append('token', localStorage.token);
 
             map.addSource('vector', {

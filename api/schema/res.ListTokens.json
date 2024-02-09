@@ -8,7 +8,7 @@
     "properties": {
         "total": {
             "type": "integer",
-            "description": "Total number of layers related to the query"
+            "description": "Total number of tokens related to the query"
         },
         "items": {
             "type": "array",

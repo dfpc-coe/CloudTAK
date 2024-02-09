@@ -8,6 +8,62 @@
       "when": 1705685810664,
       "tag": "0000_third_turbo",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1706580028287,
+      "tag": "0001_perpetual_psynapse",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1706731243037,
+      "tag": "0002_shallow_loa",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1706809890667,
+      "tag": "0003_peaceful_killraven",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1706815765791,
+      "tag": "0004_smooth_preak",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "5",
+      "when": 1706916522622,
+      "tag": "0005_friendly_wind_dancer",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1706969803889,
+      "tag": "0006_flippant_cobalt_man",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "5",
+      "when": 1707103066482,
+      "tag": "0007_chubby_scarlet_spider",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "5",
+      "when": 1707194635538,
+      "tag": "0008_certain_juggernaut",
+      "breakpoints": true
     }
   ]
 }

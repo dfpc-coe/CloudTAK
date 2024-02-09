@@ -81,16 +81,25 @@ export class EsriBase {
                 body: String(body)
             });
 
-            const json: { [k: string]: any; } = await res.json()
+            let json: { [k: string]: unknown; } = await res.json()
 
-            if (json.error) throw new Err(400, null, 'ESRI Server Error: ' + json.error.message);
+            if (json.error) {
+                // @ts-expect-error
+                throw new Err(400, null, 'ESRI Server Error: ' + json.error.message);
+            }
 
             if (!('token' in json) && typeof json.token === 'string') throw new Err(400, null, 'ESRI Server did not provide token');
             if (!('expires' in json) && typeof json.expires === 'number') throw new Err(400, null, 'ESRI Server did not provide token expiration');
 
+            json = json as {
+                token: string;
+                expires: number;
+                referer: string;
+            }
+
             this.token = {
                 token: String(json.token),
-                expires: json.expires,
+                expires: parseInt(String(json.expires)),
                 referer: this.auth.referer
             };
         } catch (err) {
