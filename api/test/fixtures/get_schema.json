@@ -19,22 +19,22 @@
         "query": false,
         "res": true
     },
-    "GET /connection/:connectionid/channel": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
     "PUT /basemap": {
         "body": false,
         "query": false,
         "res": true
     },
-    "GET /connection/:connectionid/sink": {
+    "GET /connection/:connectionid/channel": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /connection/:connectionid/token": {
         "body": false,
         "query": true,
         "res": true
     },
-    "GET /connection/:connectionid/token": {
+    "GET /connection/:connectionid/sink": {
         "body": false,
         "query": true,
         "res": true
@@ -64,17 +64,17 @@
         "query": true,
         "res": true
     },
-    "POST /connection/:connectionid/sink": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
     "POST /connection/:connectionid/token": {
         "body": true,
         "query": false,
         "res": true
     },
     "POST /basemap": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "POST /connection/:connectionid/sink": {
         "body": true,
         "query": false,
         "res": true
@@ -174,6 +174,11 @@
         "query": true,
         "res": true
     },
+    "PATCH /basemap/:basemapid": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
     "PATCH /connection/:connectionid/sink/:sinkid": {
         "body": true,
         "query": false,
@@ -181,11 +186,6 @@
     },
     "DELETE /connection/:connectionid/token/:id": {
         "body": false,
-        "query": false,
-        "res": true
-    },
-    "PATCH /basemap/:basemapid": {
-        "body": true,
         "query": false,
         "res": true
     },
@@ -199,6 +199,11 @@
         "query": false,
         "res": true
     },
+    "PATCH /connection/:connectionid": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
     "GET /connection/:connectionid/sink/:sinkid": {
         "body": false,
         "query": false,
@@ -206,11 +211,6 @@
     },
     "GET /connection/:connectionid/sink/:sinkid/stats": {
         "body": false,
-        "query": false,
-        "res": true
-    },
-    "PATCH /connection/:connectionid": {
-        "body": true,
         "query": false,
         "res": true
     },
@@ -244,14 +244,14 @@
         "query": false,
         "res": true
     },
-    "GET /connection/:connectionid/data": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
     "DELETE /basemap/:basemapid": {
         "body": false,
         "query": false,
+        "res": true
+    },
+    "GET /connection/:connectionid/data": {
+        "body": false,
+        "query": true,
         "res": true
     },
     "GET /layer/:layerid/query": {
@@ -264,12 +264,12 @@
         "query": true,
         "res": true
     },
-    "GET /import/:import": {
+    "GET /layer/:layerid/query/:featid": {
         "body": false,
         "query": false,
         "res": true
     },
-    "GET /layer/:layerid/query/:featid": {
+    "GET /import/:import": {
         "body": false,
         "query": false,
         "res": true
@@ -277,11 +277,6 @@
     "POST /connection/:connectionid/refresh": {
         "body": false,
         "query": false,
-        "res": true
-    },
-    "GET /iconset": {
-        "body": false,
-        "query": true,
         "res": true
     },
     "DELETE /connection/:connectionid": {
@@ -292,6 +287,11 @@
     "GET /connection/:connectionid/stats": {
         "body": false,
         "query": false,
+        "res": true
+    },
+    "GET /iconset": {
+        "body": false,
+        "query": true,
         "res": true
     },
     "DELETE /marti/api/files/:hash": {
@@ -311,7 +311,7 @@
     },
     "POST /marti/missions/:name/log": {
         "body": true,
-        "query": true,
+        "query": false,
         "res": true
     },
     "POST /layer/:layerid/alert": {
@@ -339,12 +339,12 @@
         "query": true,
         "res": true
     },
-    "DELETE /marti/missions/:name": {
+    "GET /layer": {
         "body": false,
         "query": true,
         "res": true
     },
-    "GET /layer": {
+    "DELETE /marti/missions/:name": {
         "body": false,
         "query": true,
         "res": true
@@ -374,12 +374,12 @@
         "query": false,
         "res": true
     },
-    "GET /profile/chat": {
+    "GET /profile/asset": {
         "body": false,
         "query": false,
         "res": true
     },
-    "GET /profile/asset": {
+    "GET /profile/chat": {
         "body": false,
         "query": false,
         "res": true
@@ -396,7 +396,7 @@
     },
     "GET /marti/missions/:name/contacts": {
         "body": false,
-        "query": true,
+        "query": false,
         "res": true
     },
     "GET /profile/job": {
@@ -444,14 +444,14 @@
         "query": false,
         "res": true
     },
-    "PATCH /iconset/:iconset": {
-        "body": true,
+    "DELETE /marti/missions/:name/upload/:hash": {
+        "body": false,
         "query": false,
         "res": true
     },
-    "DELETE /marti/missions/:name/upload/:hash": {
-        "body": false,
-        "query": true,
+    "PATCH /iconset/:iconset": {
+        "body": true,
+        "query": false,
         "res": true
     },
     "DELETE /connection/:connectionid/data/:dataid": {
@@ -484,12 +484,12 @@
         "query": false,
         "res": true
     },
-    "GET /profile": {
+    "GET /profile/overlay": {
         "body": false,
         "query": false,
         "res": true
     },
-    "GET /profile/overlay": {
+    "GET /profile": {
         "body": false,
         "query": false,
         "res": true
@@ -519,7 +519,7 @@
         "query": false,
         "res": true
     },
-    "PATCH /profile": {
+    "POST /profile/overlay": {
         "body": true,
         "query": false,
         "res": true
@@ -529,18 +529,13 @@
         "query": false,
         "res": true
     },
-    "POST /profile/overlay": {
+    "PATCH /profile": {
         "body": true,
         "query": false,
         "res": true
     },
     "GET /layer/:layerid/task": {
         "body": false,
-        "query": false,
-        "res": true
-    },
-    "POST /iconset/:iconset/icon": {
-        "body": true,
         "query": false,
         "res": true
     },
@@ -554,6 +549,11 @@
         "query": false,
         "res": true
     },
+    "POST /iconset/:iconset/icon": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
     "GET /token": {
         "body": false,
         "query": true,
@@ -564,23 +564,23 @@
         "query": false,
         "res": true
     },
+    "GET /layer/:layerid/task/logs": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
     "DELETE /iconset/:iconset": {
         "body": false,
         "query": false,
         "res": true
     },
-    "GET /layer/:layerid/task/logs": {
+    "POST /layer/:layerid/redeploy": {
         "body": false,
         "query": false,
         "res": true
     },
     "PATCH /server": {
         "body": true,
-        "query": false,
-        "res": true
-    },
-    "POST /layer/:layerid/redeploy": {
-        "body": false,
         "query": false,
         "res": true
     },
@@ -594,13 +594,13 @@
         "query": true,
         "res": true
     },
-    "POST /layer/:layerid/task": {
-        "body": false,
+    "POST /token": {
+        "body": true,
         "query": false,
         "res": true
     },
-    "POST /token": {
-        "body": true,
+    "POST /layer/:layerid/task": {
+        "body": false,
         "query": false,
         "res": true
     },
@@ -614,13 +614,13 @@
         "query": true,
         "res": true
     },
-    "GET /iconset/:iconset/icon/:icon": {
-        "body": false,
+    "PATCH /token/:id": {
+        "body": true,
         "query": false,
         "res": true
     },
-    "PATCH /token/:id": {
-        "body": true,
+    "GET /iconset/:iconset/icon/:icon": {
+        "body": false,
         "query": false,
         "res": true
     },
