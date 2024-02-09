@@ -19,14 +19,6 @@ export default async function router(schema: any, config: Config) {
         auth: 'user',
         ':name': 'string',
         description: 'Helper API to add a log to a mission',
-        query: {
-            type: 'object',
-            properties: {
-                connection: {
-                    type: 'integer'
-                },
-            }
-        },
         body: {
             type: 'object',
             required: ['content'],
@@ -41,15 +33,8 @@ export default async function router(schema: any, config: Config) {
         try {
             const user = await Auth.as_user(config.models, req);
 
-            let auth;
-            let creatorUid;
-            if (req.query.connection) {
-                auth = (await config.models.Connection.from(parseInt(String(req.query.connection)))).auth;
-                creatorUid = `CloudTAK-Conn-${req.query.connection}`;
-            } else {
-                auth = (await config.models.Profile.from(user.email)).auth;
-                creatorUid = user.email;
-            }
+            const auth = (await config.models.Profile.from(user.email)).auth;
+            const creatorUid = user.email;
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
             const mission = await api.MissionLog.create(req.params.name, {
