@@ -232,6 +232,16 @@ export default class Flight {
 
             Object.assign(this.config, custom);
 
+            this.config.models.Server.generate({
+                name: 'Test Runner',
+                url: 'ssl://tak.example.com',
+                auth: {
+                    cert: 'cert-123',
+                    key: 'key-123'
+                },
+                api: 'http://tak-api.example.com'
+            });
+
             this.srv = await api(this.config);
 
             t.end();
@@ -243,7 +253,7 @@ export default class Flight {
      */
     user() {
         test('Create Token: admin', async (t) => {
-            this.token.admin = jwt.sign({ access: 'user' }, 'coe-wildland-fire')
+            this.token.admin = jwt.sign({ access: 'user', email: 'test@example.com' }, 'coe-wildland-fire')
             t.end();
         });
     }
