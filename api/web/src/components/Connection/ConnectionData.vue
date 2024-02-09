@@ -24,8 +24,8 @@
                         <div class='d-flex'>
                             <span class='mt-2' v-text='data.name'/>
                             <div class='ms-auto'>
-                                <IconAccessPoint @click='modal.mission = true' v-if='data.mission' class='cursor-pointer text-green' v-tooltip='"Mission Sync On"'/>
-                                <IconAccessPointOff @click='modal.mission = true' v-else class='cursor-pointer text-red' v-tooltip='"Mission Sync Off"'/>
+                                <IconAccessPoint v-if='data.mission_sync' class='cursor-pointer text-green' v-tooltip='"Mission Sync On"'/>
+                                <IconAccessPointOff v-else class='cursor-pointer text-red' v-tooltip='"Mission Sync Off"'/>
                             </div>
                         </div>
                     </td>
@@ -89,7 +89,7 @@ export default {
         listData: async function() {
             this.loading = true;
             try {
-                const url = window.stdurl(`/api/data`);
+                const url = window.stdurl(`/api/connection/${this.$route.params.connectionid}/data`);
                 url.searchParams.append('limit', this.paging.limit);
                 url.searchParams.append('page', this.paging.page);
                 url.searchParams.append('filter', this.paging.filter);

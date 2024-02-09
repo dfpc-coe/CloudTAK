@@ -1,10 +1,14 @@
 <template>
-<div class="row position-relative" style='height: calc(100vh - 58px) !important;'>
+<div class="d-flex position-relative" style='height: calc(100vh - 58px) !important;'>
     <TablerLoading v-if='loading.main'/>
     <template v-else>
-        <div v-if='mode === "Default"' class='position-absolute top-0 end-0 text-white py-2' style='z-index: 1; width: 60px; background-color: rgba(0, 0, 0, 0.5);'>
-            <IconMenu2 v-if='noMenuShown' @click='menu.main = true' size='40' class='cursor-pointer'/>
-            <IconX v-if='!noMenuShown' @click='menu.main = cot = feat = false' size='40' class='cursor-pointer bg-dark'/>
+        <div
+            v-if='mode === "Default"'
+            class='position-absolute top-0 end-0 text-white py-2'
+            style='z-index: 1; width: 60px; background-color: rgba(0, 0, 0, 0.5);'
+       >
+            <IconMenu2 v-if='noMenuShown' @click='menu.main = true' size='40' class='mx-2 cursor-pointer'/>
+            <IconX v-if='!noMenuShown' @click='menu.main = cot = feat = false' size='40' class='mx-2 cursor-pointer bg-dark'/>
         </div>
 
         <div v-if='profile' class='position-absolute bottom-0 begin-0 text-white' style='z-index: 1; width: 200px; background-color: rgba(0, 0, 0, 0.5);'>
@@ -45,7 +49,7 @@
         >
             <TablerDropdown>
                 <template #default>
-                    <IconPencil @click='menu.draw = true' size='40' class='cursor-pointer'/>
+                    <IconPencil @click='menu.draw = true' size='40' class='mx-2 cursor-pointer'/>
                 </template>
                 <template #dropdown>
                     <div class='btn-list my-2'>
@@ -266,9 +270,12 @@ export default {
             this.ws.addEventListener('message', (msg) => {
                 msg = JSON.parse(msg.data);
                 if (msg.type === 'Error') throw new Error(msg.properties.message);
-                if (msg.type !== 'cot') return;
 
-                cotStore.add(msg.data);
+                if (msg.type === 'cot') {
+                    cotStore.add(msg.data);
+                } else if (msg.type === 'chat') {
+                    console.log(msg.data);
+                }
             });
         },
         setBearing: function(bearing=0) {
@@ -323,7 +330,10 @@ export default {
         },
         sendCOT: function(cot) {
             if (!this.ws || this.ws.readyState !== WebSocket.OPEN) return;
-            this.ws.send(JSON.stringify(cot));
+            this.ws.send(JSON.stringify({
+                type: 'cot',
+                data: cot
+            }));
         },
         updateCOT: function() {
             mapStore.map.getSource('cots').setData(cotStore.collection())

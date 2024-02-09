@@ -3,15 +3,13 @@ import Cacher from '../lib/cacher.js';
 import Auth from '../lib/auth.js';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
+import { LayerAlert } from '../lib/schema.js';
 import Config from '../lib/config.js';
-import Modeler, { Param } from '@openaddresses/batch-generic';
-import { Layer, LayerAlert } from '../lib/schema.js';
+import { Param } from '@openaddresses/batch-generic';
 import { sql, eq } from 'drizzle-orm';
+import { AuthResourceAccess } from '@tak-ps/blueprint-login';
 
 export default async function router(schema: any, config: Config) {
-    const LayerModel = new Modeler(config.pg, Layer);
-    const AlertModel = new Modeler(config.pg, LayerAlert);
-
     await schema.get('/layer/:layerid/alert', {
         name: 'List Alerts',
         group: 'Layer Alerts',
@@ -22,13 +20,15 @@ export default async function router(schema: any, config: Config) {
         res: 'res.ListLayerAlerts.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req);
-
-            const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
-                return await LayerModel.from(parseInt(req.params.layerid))
+            await Auth.is_auth(config.models, req, {
+                resources: [{ access: AuthResourceAccess.LAYER, id: parseInt(req.params.layerid) }]
             });
 
-            const list = await AlertModel.list({
+            const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
+                return await config.models.Layer.from(parseInt(req.params.layerid))
+            });
+
+            const list = await config.models.LayerAlert.list({
                 limit: Number(req.query.limit),
                 page: Number(req.query.page),
                 order: String(req.query.order),
@@ -55,10 +55,12 @@ export default async function router(schema: any, config: Config) {
         res: 'layer_alerts.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_layer(req, parseInt(req.params.layerid));
+            await Auth.is_auth(config.models, req, {
+                resources: [{ access: AuthResourceAccess.LAYER, id: parseInt(req.params.layerid) }]
+            });
 
             const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
-                return await LayerModel.from(parseInt(req.params.layerid))
+                return await config.models.Layer.from(parseInt(req.params.layerid))
             });
 
             req.body.layer = layer.id;
@@ -85,13 +87,15 @@ export default async function router(schema: any, config: Config) {
         res: 'res.Standard.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req);
-
-            const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
-                return await LayerModel.from(parseInt(req.params.layerid))
+            await Auth.is_auth(config.models, req, {
+                resources: [{ access: AuthResourceAccess.LAYER, id: parseInt(req.params.layerid) }]
             });
 
-            const list = await AlertModel.delete(eq(layer.id, LayerAlert.layer))
+            const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
+                return await config.models.Layer.from(parseInt(req.params.layerid))
+            });
+
+            const list = await config.models.LayerAlert.delete(eq(layer.id, LayerAlert.layer))
 
             res.json({
                 status: 200,
@@ -112,16 +116,18 @@ export default async function router(schema: any, config: Config) {
         res: 'res.Standard.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req);
-
-            const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
-                return await LayerModel.from(parseInt(req.params.layerid))
+            await Auth.is_auth(config.models, req, {
+                resources: [{ access: AuthResourceAccess.LAYER, id: parseInt(req.params.layerid) }]
             });
 
-            const alert = await AlertModel.from(parseInt(req.params.alertid));
+            const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
+                return await config.models.Layer.from(parseInt(req.params.layerid))
+            });
+
+            const alert = await config.models.LayerAlert.from(parseInt(req.params.alertid));
             if (alert.layer !== layer.id) throw new Err(400, null, 'Alert does not belong to this layer');
 
-            await AlertModel.delete(parseInt(req.params.alertid));
+            await config.models.LayerAlert.delete(parseInt(req.params.alertid));
 
             res.json({
                 status: 200,

@@ -1,0 +1,9 @@
+{
+    "type": "array",
+    "description": "",
+    "$comment": "text[]",
+    "items": {
+        "type": "string",
+        "description": ""
+    }
+}

@@ -1,15 +1,14 @@
 import Err from '@openaddresses/batch-error';
-import { Connection } from '../lib/schema.js';
 import Auth from '../lib/auth.js';
 import { sql } from 'drizzle-orm';
 import Config from '../lib/config.js';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
 import CW from '../lib/aws/metric.js';
-import Modeler from '@openaddresses/batch-generic';
+import { AuthResourceAccess } from '@tak-ps/blueprint-login';
+import { X509Certificate } from 'crypto';
 
 export default async function router(schema: any, config: Config) {
-    const ConnectionModel = new Modeler(config.pg, Connection);
     const cw = new CW(config.StackName);
 
     await schema.get('/connection', {
@@ -21,9 +20,9 @@ export default async function router(schema: any, config: Config) {
         res: 'res.ListConnections.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req);
+            await Auth.is_auth(config.models, req);
 
-            const list = await ConnectionModel.list({
+            const list = await config.models.Connection.list({
                 limit: Number(req.query.limit),
                 page: Number(req.query.page),
                 order: String(req.query.order),
@@ -64,10 +63,10 @@ export default async function router(schema: any, config: Config) {
         res: 'res.Connection.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req);
+            await Auth.is_auth(config.models, req);
 
             if (!config.server) throw new Err(400, null, 'TAK Server must be configured before a connection can be made');
-            const conn = await ConnectionModel.generate(req.body);
+            const conn = await config.models.Connection.generate(req.body);
 
             if (conn.enabled) await config.conns.add(conn);
 
@@ -90,8 +89,11 @@ export default async function router(schema: any, config: Config) {
         res: 'res.Connection.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req);
-            const conn = await ConnectionModel.commit(parseInt(req.params.connectionid), {
+            await Auth.is_auth(config.models, req, {
+                resources: [{ access: AuthResourceAccess.CONNECTION, id: parseInt(req.params.connectionid) }]
+            });
+
+            const conn = await config.models.Connection.commit(parseInt(req.params.connectionid), {
                 updated: sql`Now()`,
                 ...req.body
             });
@@ -103,8 +105,11 @@ export default async function router(schema: any, config: Config) {
                 await config.conns.add(conn);
             }
 
+            const { validFrom, validTo } = new X509Certificate(conn.auth.cert);
+
             return res.json({
                 status: config.conns.status(conn.id),
+                certificate: { validFrom, validTo },
                 ...conn
             });
         } catch (err) {
@@ -121,12 +126,16 @@ export default async function router(schema: any, config: Config) {
         res: 'res.Connection.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req);
+            await Auth.is_auth(config.models, req, {
+                resources: [{ access: AuthResourceAccess.CONNECTION, id: parseInt(req.params.connectionid) }]
+            });
 
-            const conn = await ConnectionModel.from(parseInt(req.params.connectionid));
+            const conn = await config.models.Connection.from(parseInt(req.params.connectionid));
+            const { validFrom, validTo } = new X509Certificate(conn.auth.cert);
 
             return res.json({
                 status: config.conns.status(conn.id),
+                certificate: { validFrom, validTo },
                 ...conn
             });
         } catch (err) {
@@ -143,9 +152,11 @@ export default async function router(schema: any, config: Config) {
         res: 'res.Connection.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req);
+            await Auth.is_auth(config.models, req, {
+                resources: [{ access: AuthResourceAccess.CONNECTION, id: parseInt(req.params.connectionid) }]
+            });
 
-            const conn = await ConnectionModel.from(parseInt(req.params.connectionid));
+            const conn = await config.models.Connection.from(parseInt(req.params.connectionid));
 
             if (!conn.enabled) throw new Err(400, null, 'Connection is not currently enabled');
 
@@ -156,8 +167,11 @@ export default async function router(schema: any, config: Config) {
                 await config.conns.add(conn);
             }
 
+            const { validFrom, validTo } = new X509Certificate(conn.auth.cert);
+
             return res.json({
                 status: config.conns.status(conn.id),
+                certificate: { validFrom, validTo },
                 ...conn
             });
         } catch (err) {
@@ -174,9 +188,9 @@ export default async function router(schema: any, config: Config) {
         res: 'res.Standard.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req);
+            await Auth.is_auth(config.models, req);
 
-            await ConnectionModel.delete(parseInt(req.params.connectionid));
+            await config.models.Connection.delete(parseInt(req.params.connectionid));
 
             config.conns.delete(parseInt(req.params.connectionid));
 
@@ -215,14 +229,21 @@ export default async function router(schema: any, config: Config) {
         }
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req);
+            await Auth.is_auth(config.models, req, {
+                resources: [{ access: AuthResourceAccess.CONNECTION, id: parseInt(req.params.connectionid) }]
+            });
 
-            const conn = await ConnectionModel.from(parseInt(req.params.connectionid));
+            const conn = await config.models.Connection.from(parseInt(req.params.connectionid));
 
             const stats = await cw.connection(conn.id);
 
             const timestamps: Set<Date> = new Set();
             const map: Map<string, number> = new Map();
+
+            if (!stats.MetricDataResults.length) {
+                return res.json({ stats: [] });
+            }
+
             const stat = stats.MetricDataResults[0];
 
             for (let i = 0; i < stat.Timestamps.length; i++) {

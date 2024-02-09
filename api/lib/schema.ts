@@ -10,7 +10,8 @@ import {
     pgTable,
     serial,
     varchar,
-    text
+    text,
+    unique
 } from 'drizzle-orm/pg-core';
 
 /** Internal Tables for Postgis for use with drizzle-kit push:pg */
@@ -50,6 +51,17 @@ export const Profile = pgTable('profile', {
     tak_group: text('tak_group').notNull().default('Orange'),
     tak_role: text('tak_role').notNull().default('Team Member'),
     tak_loc: geometry('tak_loc', { srid: 4326, type: GeometryType.Point })
+});
+
+export const ProfileChat = pgTable('profile_chats', {
+    username: text('username').primaryKey(),
+    chatroom: text('chatroom').notNull(),
+    sender_callsign: text('sender_callsign').notNull(),
+    sender_uid: text('sender_uid').notNull(),
+    created: timestamp('created', { withTimezone: true }).notNull().default(sql`Now()`),
+    updated: timestamp('updated', { withTimezone: true }).notNull().default(sql`Now()`),
+    message_id: text('message_id').notNull(),
+    message: text('message').notNull()
 });
 
 export const Import = pgTable('imports', {
@@ -123,15 +135,10 @@ export const Data = pgTable('data', {
     name: text('name').notNull(),
     description: text('description').notNull().default(''),
     auto_transform: boolean('auto_transform').notNull().default(false),
+    mission_sync: boolean('mission_sync').notNull().default(false),
+    mission_groups: text('mission_groups').array().notNull().default([]),
+    assets: json('assets').$type<Array<string>>().notNull().default(["*"]),
     connection: integer('connection').notNull().references(() => Connection.id)
-});
-
-export const DataMission = pgTable('data_mission', {
-    id: serial('id').primaryKey(),
-    mission: text('mission').notNull(),
-    enabled: boolean('enabled').notNull().default(true),
-    data: integer('data').notNull().references(() => Data.id),
-    assets: json('assets').notNull().default(["*"])
 });
 
 export const Layer = pgTable('layers', {
@@ -189,6 +196,15 @@ export const Token = pgTable('tokens', {
     updated: timestamp('updated', { withTimezone: true }).notNull().default(sql`Now()`),
 });
 
+export const ConnectionToken = pgTable('connection_tokens', {
+    id: serial('id').notNull(),
+    connection: integer('connection').notNull().references(() => Connection.id),
+    name: text('name').notNull(),
+    token: text('token').primaryKey(),
+    created: timestamp('created', { withTimezone: true }).notNull().default(sql`Now()`),
+    updated: timestamp('updated', { withTimezone: true }).notNull().default(sql`Now()`),
+});
+
 export const ProfileOverlay = pgTable('profile_overlays', {
     id: serial('id').primaryKey(),
     name: text('name').notNull(),
@@ -200,6 +216,8 @@ export const ProfileOverlay = pgTable('profile_overlays', {
     opacity: integer('opacity').notNull().default(1),
     visible: boolean('visible').notNull().default(true),
     mode: text('mode').notNull(),
-    mode_id: integer('mode_id').notNull(),
+    mode_id: integer('mode_id'), // Used for Data not for Profile
     url: text('url').notNull()
-});
+}, (t) => ({
+    unq: unique().on(t.username, t.url)
+}));

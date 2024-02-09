@@ -43,7 +43,7 @@ export default {
     methods: {
         submit: async function() {
             this.loading = true;
-            await window.std(`/api/data/${this.$route.params.dataid}/asset/${this.asset.name}`, {
+            await window.std(`/api/connection/${this.$route.params.connectionid}/data/${this.$route.params.dataid}/asset/${this.asset.name}`, {
                 method: 'POST',
             });
             this.loading = false;

@@ -1,5 +1,5 @@
 <template>
-<div class='row'>
+<div>
     <div class='col-12 border-bottom border-light'>
         <div class='modal-header px-0 mx-2'>
             <IconCircleArrowLeft @click='$emit("close")' class='cursor-pointer'/>
@@ -10,30 +10,28 @@
             </div>
         </div>
     </div>
-    <div class='row py-2 px-2'>
-        <TablerLoading v-if='loading'/>
-        <TablerNone
-            v-else-if='!list.items.length'
-            label='BaseMaps'
-            @create='$router.push("/basemap/new")'
-        />
-        <template v-else>
-            <div @click='setBasemap(basemap)' :key='basemap.id' v-for='basemap in list.items' class="col-12 hover-dark cursor-pointer">
-                <div class="d-flex align-items-center my-2">
-                    <span class='mx-2' style='font-size: 18px;' v-text='basemap.name'/>
+    <TablerLoading v-if='loading'/>
+    <TablerNone
+        v-else-if='!list.items.length'
+        label='BaseMaps'
+        @create='$router.push("/basemap/new")'
+    />
+    <template v-else>
+        <div @click='setBasemap(basemap)' :key='basemap.id' v-for='basemap in list.items' class="col-12 hover-dark cursor-pointer py-2 px-3">
+            <div class="d-flex align-items-center my-2">
+                <span class='mx-2' style='font-size: 18px;' v-text='basemap.name'/>
 
-                    <div class='ms-auto btn-list'>
-                        <IconShare2 v-if='false' v-tooltip='"Share BaseMap"' class='cursor-pointer' @click='share(basemap)'/>
-                        <IconSettings v-tooltip='"Edit Basemap"' class='cursor-pointer' @click='$router.push(`/basemap/${basemap.id}/edit`)'/>
-                    </div>
+                <div class='ms-auto btn-list'>
+                    <IconShare2 v-if='false' v-tooltip='"Share BaseMap"' class='cursor-pointer' @click='share(basemap)'/>
+                    <IconSettings v-tooltip='"Edit Basemap"' class='cursor-pointer' @click='$router.push(`/basemap/${basemap.id}/edit`)'/>
                 </div>
             </div>
+        </div>
 
-            <div class="col-lg-12">
-                <TablerPager v-if='list.total > paging.limit' @page='paging.page = $event' :page='paging.page'  :total='list.total' :limit='paging.limit'/>
-            </div>
-        </template>
-    </div>
+        <div class="col-lg-12">
+            <TablerPager v-if='list.total > paging.limit' @page='paging.page = $event' :page='paging.page'  :total='list.total' :limit='paging.limit'/>
+        </div>
+    </template>
 </div>
 </template>
 

@@ -72,10 +72,16 @@ export default {
         },
         fetch: async function() {
             this.loading.groups = true;
-            const url = window.stdurl('/api/marti/group');
-            if (this.connection) url.searchParams.append('connection', this.connection);
-            this.list = await window.std(url);
-            this.loading.groups = false;
+
+            if (this.connection) {
+                const url = window.stdurl(`/api/connection/${this.connection}/channel`);
+                this.list = await window.std(url);
+                this.loading.groups = false;
+            } else {
+                const url = window.stdurl('/api/marti/group');
+                this.list = await window.std(url);
+                this.loading.groups = false;
+            }
         },
         close: function() {
             this.$emit('close');

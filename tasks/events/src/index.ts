@@ -14,7 +14,7 @@ import API from './api.js';
 
 export type Event = {
     ID?: string;
-    Token: string;
+    Token?: string;
     Bucket: string;
     Key: string;
     Name: string;
@@ -42,10 +42,9 @@ async function sqsEvent(record: Lambda.SQSRecord) {
 
 async function s3Event(record: Lambda.S3EventRecord) {
     const md: Event = {
-        Token: jwt.sign({ access: 'event' }, String(process.env.SigningSecret)),
         Bucket: record.s3.bucket.name,
         Key: decodeURIComponent(record.s3.object.key.replace(/\+/g, ' ')),
-        Name: path.parse(decodeURIComponent(record.s3.object.key.replace(/\+/g, ' '))).name,
+        Name: path.parse(decodeURIComponent(record.s3.object.key.replace(/\+/g, ' '))).base,
         Ext: path.parse(decodeURIComponent(record.s3.object.key.replace(/\+/g, ' '))).ext,
         Local: path.resolve(os.tmpdir(), `input${path.parse(decodeURIComponent(record.s3.object.key.replace(/\+/g, ' '))).ext}`),
     };
@@ -58,6 +57,7 @@ async function genericEvent(md: Event) {
     if (md.Key.startsWith('import/')) {
         try {
             md.ID = path.parse(md.Key).name;
+            md.Token = `etl.${jwt.sign({ access: 'import' , id: md.ID, internal: true }, String(process.env.SigningSecret))}`;
 
             await API.updateImport(md, { status: 'Running' });
             const imported = await API.fetchImport(md);
@@ -85,7 +85,6 @@ async function genericEvent(md: Event) {
                     token: imported.config.token
                 });
 
-                if (res.status !== 200) throw new Error(res.message);
                 console.error(JSON.stringify(res));
             } else if (imported.mode === 'Unknown') {
                 if (md.Ext === '.zip') {
@@ -129,18 +128,19 @@ async function genericEvent(md: Event) {
         }
     } else if (md.Key.startsWith('data/')) {
         md.ID = path.parse(md.Key).dir.replace('data/', '');
+        md.Token = `etl.${jwt.sign({ access: 'data' , id: parseInt(md.ID), internal: true }, String(process.env.SigningSecret))}`;
 
         const data = await API.fetchData(md);
 
-        if (data.mission && !['.geojsonld', '.pmtiles'].includes(md.Ext)) {
+        if (data.mission_sync && !['.geojsonld', '.pmtiles'].includes(md.Ext)) {
             let sync = false;
-            for (const glob of data.mission.assets) {
+            for (const glob of data.assets) {
                 sync = includesWithGlob([md.Name], glob);
                 if (sync) break;
             }
 
             if (sync) {
-                console.log(`ok - Data ${md.Key} syncing with ${data.mission.mission}`);
+                console.log(`ok - Data ${md.Key} syncing with ${data.name}`);
                 const s3 = new S3.S3Client({ region: process.env.AWS_DEFAULT_REGION || 'us-east-1' });
                 await pipeline(
                     // @ts-ignore
@@ -151,13 +151,12 @@ async function genericEvent(md: Event) {
                     fs.createWriteStream(md.Local)
                 );
 
-                const res = await API.uploadMission(md, {
-                    name: data.mission.mission,
+                console.log(`ok - Data ${md.Key} posting to mission ${data.name}`);
+                const res = await API.uploadDataMission(md, {
                     filename: md.Name,
                     connection: data.connection
                 });
 
-                if (res.status !== 200) throw new Error(res.message);
                 console.log(JSON.stringify(res));
             } else {
                 console.log(`ok - Data ${md.Key} does not match mission sync globs`);
@@ -167,7 +166,9 @@ async function genericEvent(md: Event) {
         }
 
         if (data.auto_transform) {
-            await API.transformData(md);
+            await API.transformData(md, {
+                connection: data.connection
+            });
         } else {
             console.log(`ok - Data ${md.ID} has auto-transform turned off`);
         }
@@ -264,9 +265,9 @@ if (import.meta.url === `file://${process.argv[1]}`) {
 
     if (!process.env.KEY) throw new Error('KEY env var must be set');
     if (!process.env.BUCKET) throw new Error('BUCKET env var must be set');
+    process.env.SigningSecret = 'coe-wildland-fire'
 
     await genericEvent({
-        Token: jwt.sign({ access: 'event' }, 'coe-wildland-fire'),
         Bucket: process.env.BUCKET,
         Key: process.env.KEY,
         Name: path.parse(process.env.KEY).name,

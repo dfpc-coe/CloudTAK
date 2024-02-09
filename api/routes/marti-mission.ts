@@ -6,7 +6,6 @@ import { Profile, Connection } from '../lib/schema.js';
 import S3 from '../lib/aws/s3.js';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
-import Modeler from '@openaddresses/batch-generic';
 import TAKAPI, {
     APIAuthToken,
     APIAuthCertificate,
@@ -14,9 +13,6 @@ import TAKAPI, {
 } from '../lib/tak-api.js';
 
 export default async function router(schema: any, config: Config) {
-    const ProfileModel = new Modeler(config.pg, Profile);
-    const ConnectionModel = new Modeler(config.pg, Connection);
-
     await schema.get('/marti/missions/:name', {
         name: 'Get Mission',
         group: 'MartiMissions',
@@ -46,14 +42,14 @@ export default async function router(schema: any, config: Config) {
         res: 'res.Marti.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req);
+            await Auth.is_auth(config.models, req);
 
             let auth;
             if (req.query.connection) {
-                auth = (await ConnectionModel.from(parseInt(String(req.query.connection)))).auth;
+                auth = (await config.models.Connection.from(parseInt(String(req.query.connection)))).auth;
             } else {
-                if (!req.auth.email) throw new Err(400, null, 'Groups can only be listed by an authenticated user');
-                auth = (await ProfileModel.from(req.auth.email)).auth;
+                const user = await Auth.as_user(config.models, req);
+                auth = (await config.models.Profile.from(user.email)).auth;
             }
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
@@ -89,14 +85,14 @@ export default async function router(schema: any, config: Config) {
         res: 'res.Marti.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req);
+            await Auth.is_auth(config.models, req);
 
             let auth;
             if (req.query.connection) {
-                auth = (await ConnectionModel.from(parseInt(String(req.query.connection)))).auth;
+                auth = (await config.models.Connection.from(parseInt(String(req.query.connection)))).auth;
             } else {
-                if (!req.auth.email) throw new Err(400, null, 'Groups can only be listed by an authenticated user');
-                auth = (await ProfileModel.from(req.auth.email)).auth;
+                const user = await Auth.as_user(config.models, req);
+                auth = (await config.models.Profile.from(user.email)).auth;
             }
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
@@ -140,18 +136,18 @@ export default async function router(schema: any, config: Config) {
         res: 'res.Marti.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req);
+            await Auth.is_auth(config.models, req);
 
             let auth;
             if (req.query.connection) {
-                auth = (await ConnectionModel.from(parseInt(String(req.query.connection)))).auth;
+                auth = (await config.models.Connection.from(parseInt(String(req.query.connection)))).auth;
             } else {
-                if (!req.auth.email) throw new Err(400, null, 'Groups can only be listed by an authenticated user');
-                auth = (await ProfileModel.from(req.auth.email)).auth;
+                const user = await Auth.as_user(config.models, req);
+                auth = (await config.models.Profile.from(user.email)).auth;
             }
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
-            const query = {};
+            const query: any = {};
             for (const q in req.query) query[q] = String(req.query[q]);
             const mission = await api.Mission.create(req.params.name, query);
             return res.json(mission);
@@ -189,14 +185,14 @@ export default async function router(schema: any, config: Config) {
         res: 'res.Marti.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req);
+            await Auth.is_auth(config.models, req);
 
             let auth;
             if (req.query.connection) {
-                auth = (await ConnectionModel.from(parseInt(String(req.query.connection)))).auth;
+                auth = (await config.models.Connection.from(parseInt(String(req.query.connection)))).auth;
             } else {
-                if (!req.auth.email) throw new Err(400, null, 'Groups can only be listed by an authenticated user');
-                auth = (await ProfileModel.from(req.auth.email)).auth;
+                const user = await Auth.as_user(config.models, req);
+                auth = (await config.models.Profile.from(user.email)).auth;
             }
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
@@ -241,14 +237,14 @@ export default async function router(schema: any, config: Config) {
         }
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req);
+            await Auth.is_auth(config.models, req);
 
             let auth;
             if (req.query.connection) {
-                auth = (await ConnectionModel.from(parseInt(String(req.query.connection)))).auth;
+                auth = (await config.models.Connection.from(parseInt(String(req.query.connection)))).auth;
             } else {
-                if (!req.auth.email) throw new Err(400, null, 'Groups can only be listed by an authenticated user');
-                auth = (await ProfileModel.from(req.auth.email)).auth;
+                const user = await Auth.as_user(config.models, req);
+                auth = (await config.models.Profile.from(user.email)).auth;
             }
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
@@ -272,27 +268,26 @@ export default async function router(schema: any, config: Config) {
             additionalProperties: false,
             required: ['name'],
             properties: {
-                connection: { type: 'integer' },
                 name: { type: 'string' }
             }
         },
         res: 'res.Marti.json'
-    }, bodyparser.raw({
-        type: '*/*',
-        limit: '50mb'
-    }), async (req: AuthRequest, res: Response) => {
+    }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req);
-
             let auth;
             let creatorUid;
             if (req.query.connection) {
-                auth = (await ConnectionModel.from(parseInt(String(req.query.connection)))).auth;
+                const connection = await config.models.Connection.from(parseInt(String(req.query.connection)));
+
+                await Auth.is_auth(config.models, req);
+
+                auth = connection.auth;
                 creatorUid = `CloudTAK-Conn-${req.query.connection}`;
             } else {
-                if (!req.auth.email) throw new Err(400, null, 'Groups can only be listed by an authenticated user');
+                await Auth.is_auth(config.models, req);
 
-                const profile = await ProfileModel.from(req.auth.email);
+                const user = await Auth.as_user(config.models, req);
+                const profile = await config.models.Profile.from(user.email);
                 auth = profile.auth;
                 creatorUid = profile.username;
             }
@@ -306,7 +301,13 @@ export default async function router(schema: any, config: Config) {
                 contentLength: Number(req.headers['content-length']),
                 keywords: [],
                 creatorUid: creatorUid,
-            }, req.body);
+            }, req);
+
+            // @ts-expect-error Morgan will throw an error after not getting req.ip and there not being req.connection.remoteAddress
+            req.connection = {
+                // @ts-expect-error
+                remoteAddress: req._remoteAddress
+            }
 
             const missionContent = await api.Mission.attachContents(req.params.name, [content.Hash]);
 
@@ -333,15 +334,14 @@ export default async function router(schema: any, config: Config) {
         res: 'res.Marti.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req);
+            await Auth.is_auth(config.models, req);
 
             let auth;
             if (req.query.connection) {
-                auth = (await ConnectionModel.from(parseInt(String(req.query.connection)))).auth;
+                auth = (await config.models.Connection.from(parseInt(String(req.query.connection)))).auth;
             } else {
-                if (!req.auth.email) throw new Err(400, null, 'Groups can only be listed by an authenticated user');
-
-                const profile = await ProfileModel.from(req.auth.email);
+                const user = await Auth.as_user(config.models, req);
+                const profile = await config.models.Profile.from(user.email);
                 auth = profile.auth;
             }
 

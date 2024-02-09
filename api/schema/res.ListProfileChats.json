@@ -1,0 +1,13 @@
+{
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["items"],
+    "properties": {
+        "items": {
+            "type": "array",
+            "items": {
+                "type": "object"
+            }
+        }
+    }
+}

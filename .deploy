@@ -5,9 +5,10 @@
     "tags": [
         {
             "Key": "Project",
-            "Value": "coe-etl"
+            "Value": "cloudtak"
         },
-        "Owner"
+        "Owner",
+        "Client"
     ],
     "artifacts": {
         "docker": [

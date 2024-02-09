@@ -32,7 +32,7 @@
                                         </tr>
                                     </thead>
                                     <tbody class='table-tbody'>
-                                        <tr @click='selected = connection' :key='connection.id' v-for='connection of connections.connections' class='cursor-pointer'>
+                                        <tr @click='selected = connection' :key='connection.id' v-for='connection of connections.items' class='cursor-pointer'>
                                             <td>
                                                 <div class='d-flex'>
                                                     <ConnectionStatus :connection='connection'/>
@@ -80,7 +80,7 @@ export default {
             },
             connections: {
                 total: 0,
-                connections: []
+                items: []
             }
         }
     },

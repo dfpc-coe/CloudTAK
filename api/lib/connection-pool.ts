@@ -1,5 +1,8 @@
 import Err from '@openaddresses/batch-error';
-import { Server, Connection } from './schema.js';
+import {
+    Server,
+    Connection,
+} from './schema.js';
 import Sinks from './sinks.js';
 import Config from './config.js';
 import Metrics from './aws/metric.js';
@@ -21,6 +24,11 @@ export type EphemeralConnection = {
     }
 }
 
+export type IncomingMessage = {
+    type: string;
+    data: object;
+}
+
 export class ConnectionWebSocket {
     ws: WebSocket;
     format: string;
@@ -31,20 +39,25 @@ export class ConnectionWebSocket {
         this.format = format;
         if (client) {
             this.client = client;
-            this.ws.on('message', (msg) => {
-                const feat: Feature = JSON.parse(String(msg));
+            this.ws.on('message', (data) => {
+                const msg = JSON.parse(String(data));
 
-                try {
-                    const cot = CoT.from_geojson(feat);
+                if (msg.type === 'chat') {
+                    console.error('CHAT');
+                } else {
+                    const feat = msg.data as Feature;
 
-                    this.client.tak.write([cot]);
-                } catch (err) {
-                    this.ws.send(JSON.stringify({
-                        type: 'Error',
-                        properties: {
-                            message: err.message
-                        }
-                    }));
+                    try {
+                        const cot = CoT.from_geojson(feat);
+                        if (this.client) this.client.tak.write([cot]);
+                    } catch (err) {
+                        this.ws.send(JSON.stringify({
+                            type: 'Error',
+                            properties: {
+                                message: err instanceof Error ? err.message : String(err)
+                            }
+                        }));
+                    }
                 }
             });
         }
@@ -142,8 +155,10 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
     }
 
     status(id: number | string): string {
-        if (this.has(id)) {
-            return this.get(id).tak.open ? 'live' : 'dead';
+        const conn = this.get(id);
+
+        if (conn) {
+            return conn.tak.open ? 'live' : 'dead';
         } else {
             return 'unknown';
         }
@@ -156,9 +171,15 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
      */
     async cot(conn: InferSelectModel<typeof Connection> | EphemeralConnection, cot: CoT, ephemeral=false) {
         if (this.wsClients.has(String(conn.id))) {
-            for (const client of this.wsClients.get(String(conn.id))) {
+            for (const client of (this.wsClients.get(String(conn.id)) || [])) {
                 if (client.format == 'geojson') {
-                    client.ws.send(JSON.stringify({ type: 'cot', connection: conn.id, data: cot.to_geojson() }));
+                    const feat = cot.to_geojson();
+
+                    if (feat.properties && feat.properties.chat) {
+                        client.ws.send(JSON.stringify({ type: 'chat', connection: conn.id, data: feat }));
+                    } else {
+                        client.ws.send(JSON.stringify({ type: 'cot', connection: conn.id, data: feat }));
+                    }
                 } else {
                     client.ws.send(JSON.stringify({ type: 'cot', connection: conn.id, data: cot.raw }));
                 }
@@ -189,16 +210,12 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
             connClient.retry = 0;
             connClient.initial = false;
 
-            if (conn.id === 'nicholas.ingalls@state.co.us') {
-                console.error(JSON.stringify(cot.raw));
-            }
-
             this.cot(conn, cot, ephemeral);
         }).on('end', async () => {
-            console.error(`not ok - ${conn.id} @ end`);
+            console.error(`not ok - ${conn.id} - ${conn.name} @ end`);
             this.retry(connClient);
         }).on('timeout', async () => {
-            console.error(`not ok - ${conn.id} @ timeout`);
+            console.error(`not ok - ${conn.id} - ${conn.name} @ timeout`);
             this.retry(connClient);
         }).on('ping', async () => {
             if (this.stackName !== 'test' && !ephemeral) {
@@ -210,7 +227,7 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
                 }
             }
         }).on('error', async (err) => {
-            console.error(`not ok - ${conn.id} @ error:${err}`);
+            console.error(`not ok - ${conn.id} - ${conn.name} @ error:${err}`);
             this.retry(connClient);
         });
 
@@ -219,23 +236,24 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
 
     async retry(connClient: ConnectionClient) {
         if (connClient.initial) {
-            if (connClient.retry >= 5) return; // These are considered stalled connecitons
+            if (connClient.retry >= 5) return; // These are considered stalled connections
             connClient.retry++
-            console.log(`not ok - ${connClient.conn.id} - retrying in ${connClient.retry * 1000}ms`)
+            console.log(`not ok - ${connClient.conn.id} - ${connClient.conn.name} - retrying in ${connClient.retry * 1000}ms`)
             await sleep(connClient.retry * 1000);
             await connClient.tak.reconnect();
         } else {
             // For now allow infinite retry if a client has connected once
             const retryms = Math.min(connClient.retry * 1000, 15000);
-            console.log(`not ok - ${connClient.conn.id} - retrying in ${retryms}ms`)
+            console.log(`not ok - ${connClient.conn.id} - ${connClient.conn.name} - retrying in ${retryms}ms`)
             await sleep(retryms);
             await connClient.tak.reconnect();
         }
     }
 
     delete(id: number | string): boolean {
-        if (this.has(id)) {
-            const conn = this.get(id);
+        const conn = this.get(id);
+
+        if (conn) {
             conn.tak.destroy();
             super.delete(id);
 

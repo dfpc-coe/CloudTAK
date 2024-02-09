@@ -58,7 +58,7 @@ export default class Batch {
                 environment: [
                     { name: 'ETL_API',      value:  config.API_URL },
                     { name: 'ETL_BUCKET',   value:  config.Bucket },
-                    { name: 'ETL_TOKEN',    value: jwt.sign({ access: 'data', data: data.id }, config.SigningSecret) },
+                    { name: 'ETL_TOKEN',    value: `etl.${jwt.sign({ access: 'data', id: data.id, internal: true }, config.SigningSecret)}` },
                     { name: 'ETL_TYPE',     value: 'data' },
                     { name: 'ETL_ID',       value: String(data.id) },
                     { name: 'ETL_TASK',     value: JSON.stringify({ asset: asset, config: task }) },

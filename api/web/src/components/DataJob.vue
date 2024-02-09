@@ -71,12 +71,12 @@ export default {
     methods: {
         fetch: async function() {
             this.loading.job = true;
-            this.data = await window.std(`/api/data/${this.$route.params.dataid}/job/${this.$route.params.jobid}`);
+            this.data = await window.std(`/api/connection/${this.$route.params.connectionid}/data/${this.$route.params.dataid}/job/${this.$route.params.jobid}`);
             this.loading.job = false;
         },
         fetchLogs: async function() {
             this.loading.logs = true;
-            this.logs = (await window.std(`/api/data/${this.$route.params.dataid}/job/${this.$route.params.jobid}/logs`))
+            this.logs = (await window.std(`/api/connection/${this.$route.params.connectionid}/data/${this.$route.params.dataid}/job/${this.$route.params.jobid}/logs`))
                 .logs
                 .map((log) => { return log.message })
                 .join('\n');

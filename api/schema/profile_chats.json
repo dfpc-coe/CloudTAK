@@ -1,0 +1,40 @@
+{
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+        "username": {
+            "$ref": "./profile_chats/username.json"
+        },
+        "chatroom": {
+            "$ref": "./profile_chats/chatroom.json"
+        },
+        "sender_callsign": {
+            "$ref": "./profile_chats/sender_callsign.json"
+        },
+        "sender_uid": {
+            "$ref": "./profile_chats/sender_uid.json"
+        },
+        "created": {
+            "$ref": "./profile_chats/created.json"
+        },
+        "updated": {
+            "$ref": "./profile_chats/updated.json"
+        },
+        "message_id": {
+            "$ref": "./profile_chats/message_id.json"
+        },
+        "message": {
+            "$ref": "./profile_chats/message.json"
+        }
+    },
+    "required": [
+        "username",
+        "chatroom",
+        "sender_callsign",
+        "sender_uid",
+        "created",
+        "updated",
+        "message_id",
+        "message"
+    ]
+}

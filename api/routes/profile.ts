@@ -1,15 +1,11 @@
 import Err from '@openaddresses/batch-error';
-import { Profile } from '../lib/schema.js';
 import Auth from '../lib/auth.js';
-
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
 import Config from '../lib/config.js';
-import Modeler from '@openaddresses/batch-generic';
+import { AuthResource } from '@tak-ps/blueprint-login';
 
 export default async function router(schema: any, config: Config) {
-    const ProfileModel = new Modeler(config.pg, Profile);
-
     await schema.get('/profile', {
         name: 'Get Profile',
         auth: 'user',
@@ -18,9 +14,8 @@ export default async function router(schema: any, config: Config) {
         res: 'res.Profile.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req);
-
-            const profile = await ProfileModel.from(req.auth.email);
+            const user = await Auth.as_user(config.models, req);
+            const profile = await config.models.Profile.from(user.email);
 
             return res.json(profile);
         } catch (err) {
@@ -37,9 +32,8 @@ export default async function router(schema: any, config: Config) {
         res: 'res.Profile.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req);
-
-            const profile = await ProfileModel.commit(req.auth.email, req.body);
+            const user = await Auth.as_user(config.models, req);
+            const profile = await config.models.Profile.commit(user.email, req.body);
 
             return res.json(profile);
         } catch (err) {

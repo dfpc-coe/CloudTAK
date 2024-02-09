@@ -70,6 +70,10 @@ const router = new VueRouter.createRouter({
                     return { name: 'data-files' };
                 }
             },{
+                path: 'groups',
+                name: 'data-groups',
+                component: () => import('./components/Data/DataGroups.vue')
+            },{
                 path: 'files',
                 name: 'data-files',
                 component: () => import('./components/Data/DataFiles.vue')
@@ -100,6 +104,10 @@ const router = new VueRouter.createRouter({
                     return { name: 'connection-layer' };
                 }
             },{
+                path: 'groups',
+                name: 'connection-groups',
+                component: () => import('./components/Connection/ConnectionGroups.vue')
+            },{
                 path: 'layer',
                 name: 'connection-layer',
                 component: () => import('./components/Connection/ConnectionLayer.vue')
@@ -115,6 +123,10 @@ const router = new VueRouter.createRouter({
                 path: 'health',
                 name: 'connection-health',
                 component: () => import('./components/Connection/ConnectionHealth.vue')
+            },{
+                path: 'tokens',
+                name: 'connection-tokens',
+                component: () => import('./components/Connection/ConnectionTokens.vue')
             }]
         },
 

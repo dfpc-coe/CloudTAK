@@ -5,15 +5,13 @@ import busboy from 'busboy';
 import Config from '../lib/config.js';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
-import { Import } from '../lib/schema.js';
 import S3 from '../lib/aws/s3.js'
 import crypto from 'node:crypto';
-import Modeler, { Param } from '@openaddresses/batch-generic';
+import { Param } from '@openaddresses/batch-generic';
 import { sql } from 'drizzle-orm';
+import { AuthResourceAccess } from '@tak-ps/blueprint-login';
 
 export default async function router(schema: any, config: Config) {
-    const ImportModel = new Modeler(config.pg, Import);
-
     await schema.post('/import', {
         name: 'Import',
         group: 'Import',
@@ -46,12 +44,12 @@ export default async function router(schema: any, config: Config) {
         res: "imports.json"
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req);
+            const user = await Auth.as_user(config.models, req);
 
-            const imp = await ImportModel.generate({
+            const imp = await config.models.Import.generate({
                 id: crypto.randomUUID(),
                 name: req.body.name,
-                username: req.auth.email,
+                username: user.email,
                 status: 'Empty',
                 mode: req.body.mode,
                 mode_id: req.body.mode_id,
@@ -73,16 +71,16 @@ export default async function router(schema: any, config: Config) {
         res: 'imports.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req);
+            const user = await Auth.as_user(config.models, req);
 
-            if (!req.headers['content-type'].startsWith('multipart/form-data')) {
+            if (!req.headers['content-type'] || !req.headers['content-type'].startsWith('multipart/form-data')) {
                 throw new Err(400, null, 'Unsupported Content-Type');
             }
 
-            const imported = await ImportModel.from(String(req.params.import));
+            const imported = await config.models.Import.from(String(req.params.import));
 
             if (imported.status !== 'Empty') throw new Err(400, null, 'An asset is already associated with this import');
-            if (imported.username !== req.auth.email) throw new Err(400, null, 'You did not create this import');
+            if (imported.username !== user.email) throw new Err(400, null, 'You did not create this import');
 
             const bb = busboy({
                 headers: req.headers,
@@ -97,7 +95,7 @@ export default async function router(schema: any, config: Config) {
                         ext: path.parse(blob.filename).ext,
                     };
 
-                    await ImportModel.commit(imported.id, {
+                    await config.models.Import.commit(imported.id, {
                         status: 'Pending'
                     });
                     await S3.put(`import/${imported.id}${res.ext}`, file)
@@ -151,9 +149,9 @@ export default async function router(schema: any, config: Config) {
         }
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req);
+            const user = await Auth.as_user(config.models, req);
 
-            if (!req.headers['content-type'].startsWith('multipart/form-data')) {
+            if (!req.headers['content-type'] || !req.headers['content-type'].startsWith('multipart/form-data')) {
                 throw new Err(400, null, 'Unsupported Content-Type');
             }
 
@@ -171,9 +169,9 @@ export default async function router(schema: any, config: Config) {
                         uid: crypto.randomUUID()
                     };
 
-                    await ImportModel.generate({
+                    await config.models.Import.generate({
                         name: res.file,
-                        username: req.auth.email,
+                        username: user.email,
                         id: res.uid
                     });
 
@@ -206,9 +204,11 @@ export default async function router(schema: any, config: Config) {
         res: 'imports.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req);
+            await Auth.is_auth(config.models, req, {
+                resources: [{ access: AuthResourceAccess.IMPORT, id: req.params.import }]
+            });
 
-            const imported = await ImportModel.from(String(req.params.import));
+            const imported = await config.models.Import.from(String(req.params.import));
 
             return res.json(imported);
         } catch (err) {
@@ -226,9 +226,11 @@ export default async function router(schema: any, config: Config) {
         res: 'imports.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req);
+            await Auth.is_auth(config.models, req, {
+                resources: [{ access: AuthResourceAccess.IMPORT, id: req.params.import }]
+            });
 
-            const imported = await ImportModel.commit(String(req.params.import), {
+            const imported = await config.models.Import.commit(String(req.params.import), {
                 ...req.body,
                 updated: sql`Now()`
             });
@@ -248,9 +250,9 @@ export default async function router(schema: any, config: Config) {
         res: 'res.ListImports.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(req);
+            await Auth.is_auth(config.models, req);
 
-            const list = await ImportModel.list({
+            const list = await config.models.Import.list({
                 limit: Number(req.query.limit),
                 page: Number(req.query.page),
                 order: String(req.query.order),

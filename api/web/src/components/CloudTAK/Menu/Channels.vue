@@ -1,5 +1,5 @@
 <template>
-<div class='row'>
+<div>
     <div class='col-12 border-bottom border-light'>
         <div class='modal-header px-0 mx-2'>
             <IconCircleArrowLeft @click='$emit("close")' class='cursor-pointer'/>
@@ -9,19 +9,21 @@
             </div>
         </div>
     </div>
-    <div class='row py-2 px-2'>
-        <TablerLoading v-if='loading'/>
-        <TablerNone v-else-if='!rawChannels.length' :create='false'/>
-        <template v-else>
-            <div :key='ch.name' v-for='ch in processChannels' class="col-lg-12 hover-dark">
-                <div class='col-12 py-2 px-2 d-flex align-items-center'>
-                    <IconEye v-if='ch.active' @click='setStatus(ch, false)' v-tooltip='"Disable"' class='cursor-pointer'/>
-                    <IconEyeOff v-else @click='setStatus(ch, true)' v-tooltip='"Enable"' class='cursor-pointer'/>
-                    <span class="mx-2" v-text='ch.name'></span>
+    <TablerLoading v-if='loading'/>
+    <TablerNone v-else-if='!rawChannels.length' :create='false'/>
+    <template v-else>
+        <div :key='ch.name' v-for='ch in processChannels' class="col-lg-12 hover-dark">
+            <div class='hover-dark'>
+                <div class='px-2'>
+                    <div class='col-12 py-2 px-2 d-flex align-items-center'>
+                        <IconEye v-if='ch.active' @click='setStatus(ch, false)' v-tooltip='"Disable"' class='cursor-pointer'/>
+                        <IconEyeOff v-else @click='setStatus(ch, true)' v-tooltip='"Enable"' class='cursor-pointer'/>
+                        <span class="mx-2" v-text='ch.name'></span>
+                    </div>
                 </div>
             </div>
-        </template>
-    </div>
+        </div>
+    </template>
 </div>
 </template>
 
