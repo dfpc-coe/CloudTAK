@@ -22,9 +22,6 @@ export default async function router(schema: any, config: Config) {
         query: {
             type: 'object',
             properties: {
-                connection: {
-                    type: 'integer'
-                },
                 password: {
                     type: 'boolean',
                     default: false,
@@ -44,13 +41,8 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(config.models, req);
 
-            let auth;
-            if (req.query.connection) {
-                auth = (await config.models.Connection.from(parseInt(String(req.query.connection)))).auth;
-            } else {
-                const user = await Auth.as_user(config.models, req);
-                auth = (await config.models.Profile.from(user.email)).auth;
-            }
+            const user = await Auth.as_user(config.models, req);
+            const auth = (await config.models.Profile.from(user.email)).auth;
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
             const query = {};
@@ -71,9 +63,6 @@ export default async function router(schema: any, config: Config) {
         query: {
             type: 'object',
             properties: {
-                connection: {
-                    type: 'integer'
-                },
                 creatorUid: {
                     type: 'string'
                 },
@@ -87,13 +76,8 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(config.models, req);
 
-            let auth;
-            if (req.query.connection) {
-                auth = (await config.models.Connection.from(parseInt(String(req.query.connection)))).auth;
-            } else {
-                const user = await Auth.as_user(config.models, req);
-                auth = (await config.models.Profile.from(user.email)).auth;
-            }
+            const user = await Auth.as_user(config.models, req);
+            const auth = (await config.models.Profile.from(user.email)).auth;
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
             const query = {};
@@ -115,7 +99,6 @@ export default async function router(schema: any, config: Config) {
             type: 'object',
             additionalProperties: false,
             properties: {
-                connection: { type: 'integer' },
                 creatorUid: { type: 'string' },
                 group: { type: 'array', items: { type: 'string' } },
                 description: { type: 'string' },
@@ -138,13 +121,8 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(config.models, req);
 
-            let auth;
-            if (req.query.connection) {
-                auth = (await config.models.Connection.from(parseInt(String(req.query.connection)))).auth;
-            } else {
-                const user = await Auth.as_user(config.models, req);
-                auth = (await config.models.Profile.from(user.email)).auth;
-            }
+            const user = await Auth.as_user(config.models, req);
+            const auth = (await config.models.Profile.from(user.email)).auth;
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
             const query: any = {};
@@ -164,9 +142,6 @@ export default async function router(schema: any, config: Config) {
         query: {
             type: 'object',
             properties: {
-                connection: {
-                    type: 'integer'
-                },
                 passwordProtected: {
                     type: 'boolean',
                     default: false,
@@ -187,13 +162,8 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(config.models, req);
 
-            let auth;
-            if (req.query.connection) {
-                auth = (await config.models.Connection.from(parseInt(String(req.query.connection)))).auth;
-            } else {
-                const user = await Auth.as_user(config.models, req);
-                auth = (await config.models.Profile.from(user.email)).auth;
-            }
+            const user = await Auth.as_user(config.models, req);
+            const auth = (await config.models.Profile.from(user.email)).auth;
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
             const query = {};
@@ -211,13 +181,6 @@ export default async function router(schema: any, config: Config) {
         auth: 'user',
         ':name': 'string',
         description: 'List contacts associated with a mission',
-        query: {
-            type: 'object',
-            additionalProperties: false,
-            properties: {
-                connection: { type: 'integer' },
-            }
-        },
         res: {
             type: 'array',
             items: {
@@ -239,13 +202,8 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(config.models, req);
 
-            let auth;
-            if (req.query.connection) {
-                auth = (await config.models.Connection.from(parseInt(String(req.query.connection)))).auth;
-            } else {
-                const user = await Auth.as_user(config.models, req);
-                auth = (await config.models.Profile.from(user.email)).auth;
-            }
+            const user = await Auth.as_user(config.models, req);
+            const auth = (await config.models.Profile.from(user.email)).auth;
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
             const missions = await api.Mission.contacts(String(req.params.name));
@@ -274,23 +232,12 @@ export default async function router(schema: any, config: Config) {
         res: 'res.Marti.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            let auth;
-            let creatorUid;
-            if (req.query.connection) {
-                const connection = await config.models.Connection.from(parseInt(String(req.query.connection)));
+            await Auth.is_auth(config.models, req);
 
-                await Auth.is_auth(config.models, req);
-
-                auth = connection.auth;
-                creatorUid = `CloudTAK-Conn-${req.query.connection}`;
-            } else {
-                await Auth.is_auth(config.models, req);
-
-                const user = await Auth.as_user(config.models, req);
-                const profile = await config.models.Profile.from(user.email);
-                auth = profile.auth;
-                creatorUid = profile.username;
-            }
+            const user = await Auth.as_user(config.models, req);
+            const profile = await config.models.Profile.from(user.email);
+            const auth = profile.auth;
+            const creatorUid = profile.username;
 
             const name = String(req.query.name);
 
@@ -324,26 +271,14 @@ export default async function router(schema: any, config: Config) {
         ':name': 'string',
         ':hash': 'string',
         description: 'Delete an upload by hash',
-        query: {
-            type: 'object',
-            additionalProperties: false,
-            properties: {
-                connection: { type: 'integer' },
-            }
-        },
         res: 'res.Marti.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(config.models, req);
 
-            let auth;
-            if (req.query.connection) {
-                auth = (await config.models.Connection.from(parseInt(String(req.query.connection)))).auth;
-            } else {
-                const user = await Auth.as_user(config.models, req);
-                const profile = await config.models.Profile.from(user.email);
-                auth = profile.auth;
-            }
+            const user = await Auth.as_user(config.models, req);
+            const profile = await config.models.Profile.from(user.email);
+            const auth = profile.auth;
 
             const name = String(req.query.name);
 
