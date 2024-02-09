@@ -141,7 +141,7 @@ export default class Config {
             AuthGroup: process.env.AuthGroup,
             StackName: process.env.StackName,
             wsClients: new Map(),
-            SigningSecret, API_URL, DynamoDB, Bucket, pg, models
+            SigningSecret, API_URL, DynamoDB, Bucket, pg, models, HookURL
         });
 
         if (!config.silent) {
