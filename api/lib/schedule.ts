@@ -41,6 +41,7 @@ export default class Schedule {
             return true;
         } else if (this.is_rate(schedule)) {
             this.parse_rate(schedule);
+            return true;
         } else {
             throw new Err(400, null, 'Unknown Schedule Type');
         }
