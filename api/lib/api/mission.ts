@@ -83,10 +83,12 @@ export default class {
         passwordProtected?: string;
         defaultRole?: string;
         tool?: string;
+
+        [key: string]: unknown;
     }) {
         const url = new URL('/Marti/api/missions', this.api.url);
 
-        for (const q in query) url.searchParams.append(q, query[q]);
+        for (const q in query) url.searchParams.append(q, String(query[q]));
         return await this.api.fetch(url, {
             method: 'GET'
         });
@@ -99,10 +101,12 @@ export default class {
         secago?: string;
         start?: string;
         end?: string;
+
+        [key: string]: unknown;
     }) {
         const url = new URL(`/Marti/api/missions/guid/${encodeURIComponent(guid)}`, this.api.url);
 
-        for (const q in query) url.searchParams.append(q, query[q]);
+        for (const q in query) url.searchParams.append(q, String(query[q]));
         return await this.api.fetch(url, {
             method: 'GET'
         });
@@ -115,10 +119,12 @@ export default class {
         secago?: string;
         start?: string;
         end?: string;
+
+        [key: string]: unknown;
     }): Promise<TAKList<Mission>> {
         const url = new URL(`/Marti/api/missions/${encodeURIComponent(name)}`, this.api.url);
 
-        for (const q in query) url.searchParams.append(q, query[q]);
+        for (const q in query) url.searchParams.append(q, String(query[q]));
         return await this.api.fetch(url, {
             method: 'GET'
         });
@@ -140,11 +146,13 @@ export default class {
         expiration?: string;
         inviteOnly?: string;
         allowDupe?: string;
+
+        [key: string]: unknown;
     }): Promise<TAKList<Mission>> {
         const url = new URL(`/Marti/api/missions/${encodeURIComponent(name)}`, this.api.url);
 
         if (query.group && Array.isArray(query.group)) query.group = query.group.join(',');
-        for (const q in query) url.searchParams.append(q, query[q]);
+        for (const q in query) url.searchParams.append(q, String(query[q]));
         return await this.api.fetch(url, {
             method: 'POST'
         });
@@ -153,10 +161,12 @@ export default class {
     async delete(name: string, query: {
         creatorUid?: string;
         deepDelete?: string;
+
+        [key: string]: unknown;
     }) {
         const url = new URL(`/Marti/api/missions/${encodeURIComponent(name)}`, this.api.url);
 
-        for (const q in query) url.searchParams.append(q, query[q]);
+        for (const q in query) url.searchParams.append(q, String(query[q]));
         return await this.api.fetch(url, {
             method: 'DELETE'
         });

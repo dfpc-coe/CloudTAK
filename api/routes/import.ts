@@ -73,7 +73,7 @@ export default async function router(schema: any, config: Config) {
         try {
             const user = await Auth.as_user(config.models, req);
 
-            if (!req.headers['content-type'].startsWith('multipart/form-data')) {
+            if (!req.headers['content-type'] || !req.headers['content-type'].startsWith('multipart/form-data')) {
                 throw new Err(400, null, 'Unsupported Content-Type');
             }
 
@@ -151,7 +151,7 @@ export default async function router(schema: any, config: Config) {
         try {
             const user = await Auth.as_user(config.models, req);
 
-            if (!req.headers['content-type'].startsWith('multipart/form-data')) {
+            if (!req.headers['content-type'] || !req.headers['content-type'].startsWith('multipart/form-data')) {
                 throw new Err(400, null, 'Unsupported Content-Type');
             }
 

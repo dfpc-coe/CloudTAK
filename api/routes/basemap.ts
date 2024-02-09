@@ -81,7 +81,7 @@ export default async function router(schema: any, config: Config) {
                 });
 
                 return req.pipe(bb);
-            } else if (req.headers['content-type'].startsWith('text/plain')) {
+            } else if (req.headers['content-type'] && req.headers['content-type'].startsWith('text/plain')) {
                 const url = new URL(String(await stream2buffer(req)));
                 const tjres = await fetch(url);
                 const tjbody = await tjres.json();
