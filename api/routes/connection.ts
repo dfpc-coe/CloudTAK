@@ -239,6 +239,11 @@ export default async function router(schema: any, config: Config) {
 
             const timestamps: Set<Date> = new Set();
             const map: Map<string, number> = new Map();
+
+            if (!stats.MetricDataResults.length) {
+                return res.json({ stats: [] });
+            }
+
             const stat = stats.MetricDataResults[0];
 
             for (let i = 0; i < stat.Timestamps.length; i++) {

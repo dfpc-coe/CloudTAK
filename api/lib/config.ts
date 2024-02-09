@@ -36,7 +36,7 @@ export default class Config {
     API_URL: string;
     PMTILES_URL: string;
     TileBaseURL: URL;
-    DynamoDB: string;
+    DynamoDB?: string;
     wsClients: Map<string, ConnectionWebSocket[]>;
     Bucket?: string;
     pg: Pool<typeof pgtypes>;
@@ -45,79 +45,119 @@ export default class Config {
     server?: InferSelectModel<typeof Server>;
     events?: EventsPool;
 
+    constructor(init: {
+        local: boolean;
+        silent: boolean;
+        unsafe: boolean;
+        noevents: boolean;
+        nometrics: boolean;
+        nosinks: boolean;
+        models: Models;
+        StackName: string;
+        API_URL: string;
+        PMTILES_URL: string;
+        TileBaseURL: URL;
+        SigningSecret: string;
+        wsClients: Map<string, ConnectionWebSocket[]>;
+        pg: Pool<typeof pgtypes>;
+        MartiAPI: string;
+        AuthGroup: string;
+        DynamoDB?: string;
+        Bucket?: string;
+        HookURL?: string;
+    }) {
+        this.local = init.local;
+        this.silent = init.silent;
+        this.unsafe = init.unsafe;
+        this.noevents = init.noevents;
+        this.nometrics = init.nometrics;
+        this.nosinks = init.nosinks;
+        this.models = init.models;
+        this.StackName = init.StackName;
+        this.UnsafeSigningSecret = 'coe-wildland-fire';
+        this.SigningSecret = init.SigningSecret;
+        this.API_URL = init.API_URL;
+        this.PMTILES_URL = init.PMTILES_URL;
+        this.TileBaseURL = init.TileBaseURL;
+        this.wsClients = init.wsClients;
+        this.pg = init.pg;
+        this.MartiAPI = init.MartiAPI;
+        this.AuthGroup = init.AuthGroup;
+        this.DynamoDB = init.DynamoDB;
+        this.Bucket = init.Bucket;
+        this.HookURL = init.HookURL;
+    }
+
     static async env(args: ConfigArgs): Promise<Config> {
-        const config = new Config();
+        if (!process.env.AWS_DEFAULT_REGION) {
+            process.env.AWS_DEFAULT_REGION = 'us-east-1';
+        }
 
-        config.silent = (args.silent || false);
-        config.local = (args.local || false);
-        config.noevents = (args.noevents || false);
-        config.nometrics = (args.nometrics || false);
-        config.nosinks = (args.nosinks || false);
-        config.wsClients = new Map();
+        if (!process.env.MartiAPI) throw new Error('MartiAPI env must be set');
+        if (!process.env.AuthGroup) throw new Error('AuthGroup env must be set');
 
-        config.pg = await Pool.connect(args.postgres, pgtypes, {
-            ssl: config.StackName === 'test' ? undefined  : { rejectUnauthorized: false },
+        let SigningSecret, API_URL, DynamoDB, Bucket, HookURL;
+        if (!process.env.StackName || process.env.StackName === 'test') {
+            process.env.StackName = 'test';
+
+            SigningSecret = 'coe-wildland-fire';
+            API_URL = 'http://localhost:5001';
+            Bucket = process.env.ASSET_BUCKET;
+        } else {
+            if (args.local) throw new Error('local option cannot be used in production mode - Set StackName=test');
+            if (!process.env.StackName) throw new Error('StackName env must be set');
+            if (!process.env.API_URL) throw new Error('API_URL env must be set');
+            if (!process.env.PMTILES_URL) throw new Error('PMTILES_URL env must be set');
+            if (!process.env.ASSET_BUCKET) throw new Error('ASSET_BUCKET env must be set');
+
+            HookURL = process.env.HookURL;
+            API_URL = process.env.API_URL;
+            Bucket = process.env.ASSET_BUCKET;
+            DynamoDB = process.env.StackName;
+            SigningSecret = await Config.fetchSigningSecret(process.env.StackName);
+        }
+
+        const pg: Pool<typeof pgtypes> = await Pool.connect(args.postgres, pgtypes, {
+            ssl: process.env.StackName === 'test' ? undefined  : { rejectUnauthorized: false },
             migrationsFolder: (new URL('../migrations', import.meta.url)).pathname,
             jsonschema: {
                 dir: new URL('../schema', import.meta.url)
             }
         })
 
-        config.models = new Models(config.pg);
+        const models = new Models(pg);
 
-        if (!process.env.AWS_DEFAULT_REGION) {
-            if (!config.silent) console.error('ok - set env AWS_DEFAULT_REGION: us-east-1');
-            process.env.AWS_DEFAULT_REGION = 'us-east-1';
-        }
 
-        config.UnsafeSigningSecret = 'coe-wildland-fire';
-        config.unsafe = args.unsafe;
+        const config = new Config({
+            unsafe: (args.unsafe || false),
+            silent: (args.silent || false),
+            local: (args.local || false),
+            noevents: (args.noevents || false),
+            nometrics: (args.nometrics || false),
+            nosinks: (args.nosinks || false),
+            TileBaseURL: process.env.TileBaseURL ? new URL(process.env.TileBaseURL) : new URL('./data-dev/zipcodes.tilebase', import.meta.url),
+            PMTILES_URL: process.env.PMTILES_URL || 'http://localhost:5001',
+            MartiAPI: process.env.MartiAPI,
+            AuthGroup: process.env.AuthGroup,
+            StackName: process.env.StackName,
+            wsClients: new Map(),
+            SigningSecret, API_URL, DynamoDB, Bucket, pg, models
+        });
 
-        config.TileBaseURL = process.env.TileBaseURL ? new URL(process.env.TileBaseURL) : new URL('./data-dev/zipcodes.tilebase', import.meta.url);
-        config.PMTILES_URL = process.env.PMTILES_URL || 'http://localhost:5001';
-        config.MartiAPI = process.env.MartiAPI;
-        config.AuthGroup = process.env.AuthGroup;
-
-        if (!config.silent) console.log(`ok - PMTiles: ${config.PMTILES_URL}`);
-
-        if (!config.MartiAPI) throw new Error('MartiAPI env must be set');
-        if (!config.AuthGroup) throw new Error('AuthGroup env must be set');
-
-        if (!process.env.StackName || process.env.StackName === 'test') {
-            if (!config.silent) console.error('ok - set env StackName: test');
-            process.env.StackName = 'test';
-
-            config.SigningSecret = config.UnsafeSigningSecret;
-            config.StackName = 'test';
-            config.API_URL = 'http://localhost:5001';
-            config.DynamoDB = '';
-            config.Bucket = process.env.ASSET_BUCKET;
-        } else {
-            if (!config.silent) console.error(`ok - StackName: ${config.StackName}`);
-            if (config.local) throw new Error('local option cannot be used in production mode - Set StackName=test');
-            if (!process.env.StackName) throw new Error('StackName env must be set');
-            if (!process.env.API_URL) throw new Error('API_URL env must be set');
-            if (!process.env.PMTILES_URL) throw new Error('PMTILES_URL env must be set');
-            if (!process.env.ASSET_BUCKET) throw new Error('ASSET_BUCKET env must be set');
-
-            config.HookURL = process.env.HookURL;
-            config.StackName = process.env.StackName;
-            config.API_URL = process.env.API_URL;
-            config.Bucket = process.env.ASSET_BUCKET;
-
-            config.DynamoDB = config.StackName;
-
-            config.SigningSecret = await config.fetchSigningSecret();
+        if (!config.silent) {
+            console.error('ok - set env AWS_DEFAULT_REGION: us-east-1');
+            console.log(`ok - PMTiles: ${config.PMTILES_URL}`);
+            console.error(`ok - StackName: ${config.StackName}`);
         }
 
         return config;
     }
 
-    async fetchSigningSecret(): Promise<string> {
+    static async fetchSigningSecret(StackName: string): Promise<string> {
         const secrets = new SecretsManager.SecretsManagerClient({ region: process.env.AWS_DEFAULT_REGION });
 
         const secret = await secrets.send(new SecretsManager.GetSecretValueCommand({
-            SecretId: `${this.StackName}/api/secret`
+            SecretId: `${StackName}/api/secret`
         }));
 
         return secret.SecretString || '';

@@ -10,138 +10,15 @@ import { CookieAgent } from 'http-cookie-agent/undici';
 import Err from '@openaddresses/batch-error';
 import { Client } from 'undici';
 import { Stream } from 'node:stream';
-
-export class APIAuth {
-    async init(base: URL) { // eslint-disable-line @typescript-eslint/no-unused-vars
-
-    }
-
-    async fetch(api: TAKAPI, url: URL, opts: any): Promise<any> {
-        return await fetch(url, opts);
-    }
-}
-
-export class APIAuthPassword extends APIAuth {
-    username: string;
-    password: string;
-    jwt?: string;
-
-    constructor(username: string, password: string) {
-        super();
-        this.username = username;
-        this.password = password;
-    }
-
-    async init(base: URL) {
-        const url = new URL('/oauth/token', base);
-        url.searchParams.append('grant_type', 'password');
-        url.searchParams.append('username', this.username);
-        url.searchParams.append('password', this.password);
-
-        const authres = await fetch(url, {
-            method: 'POST'
-        });
-
-        if (!authres.ok) throw new Err(400, new Error(await authres.text()), 'Non-200 Response from Auth Server - Token');
-
-        const body: any = await authres.json();
-        this.jwt = body.access_token
-    }
-
-    async fetch(api: TAKAPI, url: URL, opts: any): Promise<any> {
-        const jar = new CookieJar();
-
-        await jar.setCookie(new Cookie({ key: 'access_token', value: this.jwt }), String(api.url));
-
-        opts.credentials = 'include';
-
-        if (!opts.nocookies) {
-            const agent = new CookieAgent({ cookies: { jar } });
-            opts.dispatcher = agent;
-        }
-
-        return await fetch(url, opts);
-    }
-}
-
-export class APIAuthToken extends APIAuth {
-    jwt?: string;
-
-    constructor(jwt: string) {
-        super();
-        this.jwt = jwt;
-    }
-
-    async fetch(api: TAKAPI, url: URL, opts: any): Promise<any> {
-        const jar = new CookieJar();
-
-        await jar.setCookie(new Cookie({ key: 'access_token', value: this.jwt }), String(api.url));
-
-
-        opts.credentials = 'include';
-        if (!opts.nocookies) {
-            const agent = new CookieAgent({ cookies: { jar } });
-            opts.dispatcher = agent;
-        }
-
-        return await fetch(url, opts);
-    }
-}
-
-export class APIAuthCertificate extends APIAuth {
-    cert: string;
-    key: string;
-
-    constructor(cert: string, key: string) {
-        super();
-        this.cert = cert;
-        this.key = key;
-    }
-
-    async fetch(api: TAKAPI, url: URL, opts: any): Promise<any> {
-        const client = new Client(api.url.origin, {
-            connect: {
-                key: this.key,
-                cert: this.cert,
-                rejectUnauthorized: false,
-            }
-        });
-
-        const res = await client.request({
-            path: String(url).replace(api.url.origin, ''),
-            ...opts
-        });
-
-        return {
-            status: res.statusCode,
-            body: res.body,
-            // Make this similiar to the fetch standard
-            headers: new Map(Object.entries(res.headers)),
-            text: async () => {
-                return String(await this.stream2buffer(res.body));
-            },
-            json: async () => {
-                return JSON.parse(String(await this.stream2buffer(res.body)));
-            },
-        };
-    }
-
-    async stream2buffer(stream: Stream): Promise<Buffer> {
-        return new Promise<Buffer> ((resolve, reject) => {
-            const _buf = Array<Buffer>();
-            stream.on("data", chunk => _buf.push(chunk));
-            stream.on("end", () => resolve(Buffer.concat(_buf)));
-            stream.on("error", (err: Error) => reject(`error converting stream - ${err}`));
-        })
-    }
-}
+import * as auth from './tak-auth.js';
+export * from './tak-auth.js';
 
 /**
  * Handle TAK HTTP API Operations
  * @class
  */
 export default class TAKAPI {
-    auth: APIAuth;
+    auth: auth.APIAuth;
     url: URL;
     Mission: Mission;
     MissionLog: MissionLog;
@@ -150,19 +27,22 @@ export default class TAKAPI {
     Group: Group;
     Files: Files;
 
-    static async init(url: URL, auth: APIAuth): Promise<TAKAPI> {
-        const api = new TAKAPI();
-        api.url = url;
-        api.auth = auth;
+    constructor(url: URL, auth: auth.APIAuth) {
+        this.url = url;
+        this.auth = auth;
+
+        this.Mission = new Mission(this);
+        this.MissionLog = new MissionLog(this);
+        this.Credentials = new Credentials(this);
+        this.Contacts = new Contacts(this);
+        this.Group = new Group(this);
+        this.Files = new Files(this);
+    }
+
+    static async init(url: URL, auth: auth.APIAuth): Promise<TAKAPI> {
+        const api = new TAKAPI(url, auth);
 
         await api.auth.init(api.url);
-
-        api.Mission = new Mission(api);
-        api.MissionLog = new MissionLog(api);
-        api.Credentials = new Credentials(api);
-        api.Contacts = new Contacts(api);
-        api.Group = new Group(api);
-        api.Files = new Files(api);
 
         return api;
     }
@@ -222,9 +102,11 @@ export default class TAKAPI {
             }
         } catch (err) {
             if (err instanceof Err) throw err;
-            throw new Err(400, null, err.message);
+            throw new Err(400, null, err instanceof Error ? err.message : String(err));
         }
     }
 }
 
-const isPlainObject = value => value?.constructor === Object;
+function isPlainObject(value: object) {
+    return  value?.constructor === Object;
+}
