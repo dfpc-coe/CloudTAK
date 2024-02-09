@@ -36,22 +36,24 @@ export default class Auth {
         }
 
         if (req.auth instanceof AuthResource) {
+            const auth = req.auth as AuthResource;
+
             if (opts.anyResources && opts.resources.length) {
                 throw new Err(403, null, 'Server cannot specify defined resource access any resource access together');
             } else if (!opts.anyResources && !opts.resources.length) {
                 throw new Err(403, null, 'Resource token cannot access resource');
             }
 
-            if (!req.auth.internal) {
+            if (!auth.internal) {
                 try {
-                    await models.ConnectionToken.from(req.auth.token);
+                    await models.ConnectionToken.from(auth.token);
                 } catch (err) {
-                    throw new Err(403, err, 'Token does not exist');
+                    throw new Err(403, err instanceof Error ? err : new Error(String(err)), 'Token does not exist');
                 }
             }
 
             if (!opts.anyResources && !opts.resources.some((r) => {
-                return r.access === req.auth.access && r.id === req.auth.id;
+                return r.access === auth.access && r.id === auth.id;
             })) {
                 throw new Err(403, null, 'Resource token cannot access this resource');
             }

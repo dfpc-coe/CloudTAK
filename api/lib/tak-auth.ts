@@ -1,16 +1,10 @@
-import Mission from './api/mission.js';
-import MissionLog from './api/mission-log.js';
-import Credentials from './api/credentials.js';
-import Contacts from './api/contacts.js';
-import Files from './api/files.js';
 import { fetch } from 'undici';
-import Group from './api/groups.js';
 import { CookieJar, Cookie } from 'tough-cookie';
 import { CookieAgent } from 'http-cookie-agent/undici';
 import Err from '@openaddresses/batch-error';
 import { Client } from 'undici';
-import { Stream } from 'node:stream';
 import TAKAPI from './tak-api.js';
+import stream2buffer  from './stream.js';
 
 export class APIAuth {
     async init(base: URL) { // eslint-disable-line @typescript-eslint/no-unused-vars
@@ -119,21 +113,12 @@ export class APIAuthCertificate extends APIAuth {
             // Make this similiar to the fetch standard
             headers: new Map(Object.entries(res.headers)),
             text: async () => {
-                return String(await this.stream2buffer(res.body));
+                return String(await stream2buffer(res.body));
             },
             json: async () => {
-                return JSON.parse(String(await this.stream2buffer(res.body)));
+                return JSON.parse(String(await stream2buffer(res.body)));
             },
         };
-    }
-
-    async stream2buffer(stream: Stream): Promise<Buffer> {
-        return new Promise<Buffer> ((resolve, reject) => {
-            const _buf = Array<Buffer>();
-            stream.on("data", chunk => _buf.push(chunk));
-            stream.on("end", () => resolve(Buffer.concat(_buf)));
-            stream.on("error", (err: Error) => reject(`error converting stream - ${err}`));
-        })
     }
 }
 
