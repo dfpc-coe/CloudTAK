@@ -40,7 +40,7 @@ export class EsriBase {
         if (this.type === EsriType.AGOL || this.type === EsriType.PORTAL) {
             this.postfix = base.pathname.replace(/.*sharing\/rest/i, '');
             base.pathname = base.pathname.replace(/(?<=sharing\/rest).*/i, '');
-        } else if (this.type === EsriType.SERVER) {
+        } else { // EsriType === SERVER
             this.postfix = base.pathname.replace(/.*arcgis\/rest/i, '');
             base.pathname = base.pathname.replace(/(?<=arcgis\/rest).*/i, '');
         }
@@ -56,7 +56,7 @@ export class EsriBase {
     }
 
     async generateToken(): Promise<EsriToken> {
-        if (!this.auth) return;
+        if (!this.auth) throw new Err(400, null, 'Cannot generate token without auth');
 
         const body = new URLSearchParams();
         body.append('f', 'json');
@@ -102,8 +102,11 @@ export class EsriBase {
                 expires: parseInt(String(json.expires)),
                 referer: this.auth.referer
             };
+
+            return this.token;
         } catch (err) {
-            throw new Err(400, err, err.message);
+            if (err instanceof Err) throw err;
+            throw new Err(400, err instanceof Error ? err : new Error(String(err)), err instanceof Error ? err.message : String(err));
         }
     }
 
@@ -143,12 +146,14 @@ export class EsriBase {
                 const major = parseInt(String(json.currentVersion).split('.')[0])
                 if (isNaN(major)) throw new Err(400, null, 'Could not parse ESRI Server Version - non-integer - this version may not be supported');
                 if (major < 8) throw new Err(400, null, 'ESRI Server version is too old - Update to at least version 8.x')
-            } else if (this.type === EsriType.AGOL) {
-                // ArcGIS Online uses a <year>.<month?> format - assume it's alawys at the bleeding edge
-                return json.currentVersion;
             }
+
+            // ArcGIS Online (AGOL) uses a <year>.<month?> format - assume it's always at the bleeding edge
+
+            return json.currentVersion;
         } catch (err) {
-            throw new Err(400, err, err.message);
+            if (err instanceof Err) throw err;
+            throw new Err(400, err instanceof Error ? err : new Error(String(err)), err instanceof Error ? err.message : String(err));
         }
     }
 
@@ -156,7 +161,8 @@ export class EsriBase {
         try {
             base = new URL(base);
         } catch (err) {
-            throw new Err(400, null, err.message);
+            if (err instanceof Err) throw err;
+            throw new Err(400, err instanceof Error ? err : new Error(String(err)), err instanceof Error ? err.message : String(err));
         }
 
         base as URL;
@@ -235,7 +241,8 @@ class EsriProxyPortal {
 
             return json;
         } catch (err) {
-            throw new Err(400, err, err.message);
+            if (err instanceof Err) throw err;
+            throw new Err(400, err instanceof Error ? err : new Error(String(err)), err instanceof Error ? err.message : String(err));
         }
     }
 

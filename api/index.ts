@@ -10,10 +10,9 @@ import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Modeler from '@openaddresses/batch-generic';
 import minimist from 'minimist';
-import ConnectionPool, { ConnectionWebSocket, sleep } from './lib/connection-pool.js';
+import { ConnectionWebSocket, sleep } from './lib/connection-pool.js';
 import EventsPool from './lib/events-pool.js';
 import { WebSocket, WebSocketServer } from 'ws';
-import Cacher from './lib/cacher.js';
 import BlueprintLogin, { tokenParser, AuthUser } from '@tak-ps/blueprint-login';
 import Config from './lib/config.js';
 import TAKAPI, { APIAuthPassword } from './lib/tak-api.js';
@@ -58,33 +57,20 @@ if (import.meta.url === `file://${process.argv[1]}`) {
         postgres: process.env.POSTGRES || args.postgres || 'postgres://postgres@localhost:5432/tak_ps_etl',
         nometrics: args.nometrics || false,
         nosinks: args.nosinks || false,
+        nocache: args.nocache || false,
         local: args.local || false,
     });
     await server(config);
 }
 
 export default async function server(config: Config) {
-    config.cacher = new Cacher(args.nocache, config.silent);
-
     try {
         await config.cacher.flush();
     } catch (err) {
         console.log(`ok - failed to flush cache: ${err instanceof Error? err.message : String(err)}`);
     }
 
-    try {
-        const ServerModel = new Modeler(config.pg, pgschema.Server);
-        config.server = await ServerModel.from(1);
-    } catch (err) {
-        console.log(`ok - no server config found: ${err instanceof Error ? err.message : String(err)}`);
-    }
-
-    if (config.server) {
-        config.conns = new ConnectionPool(config, config.server, config.wsClients, config.StackName, config.local);
-        await config.conns.init();
-    } else {
-        console.error('not ok - no connection pool due to lack of server config');
-    }
+    await config.conns.init();
 
     config.events = new EventsPool(config.StackName);
     if (!config.noevents) await config.events.init(config.pg);
@@ -139,22 +125,19 @@ export default async function server(config: Config) {
     const ProfileModel = new Modeler(config.pg, pgschema.Profile);
 
     login.on('login', async (user) => {
-        let profile;
         try {
-            profile = await ProfileModel.from(user.username);
+            await ProfileModel.from(user.username);
         } catch (err) {
             if (err instanceof Err && err.status === 404) {
-                profile = await ProfileModel.generate({ username: user.username });
+                const api = await TAKAPI.init(new URL(config.MartiAPI), new APIAuthPassword(user.username, user.password));
+
+                await ProfileModel.generate({
+                    username: user.username,
+                    auth: await api.Credentials.generate()
+                });
             } else {
                 return console.error(err);
             }
-        }
-
-        try {
-            const api = await TAKAPI.init(new URL(config.MartiAPI), new APIAuthPassword(user.username, user.password));
-            await ProfileModel.commit(profile.username, { auth: await api.Credentials.generate() });
-        } catch (err) {
-            console.error(err);
         }
     });
 

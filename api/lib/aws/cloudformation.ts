@@ -32,7 +32,7 @@ export default class CloudFormation {
         }));
     }
 
-    static async update(config: Config, layerid: number, stack: object) {
+    static async update(config: Config, layerid: number, stack: object): Promise<void> {
         const cf = new AWSCloudFormation.CloudFormationClient({ region: process.env.AWS_DEFAULT_REGION });
 
         await cf.send(new AWSCloudFormation.UpdateStackCommand({
@@ -41,7 +41,9 @@ export default class CloudFormation {
         }));
     }
 
-    static async status(config: Config, layerid: number) {
+    static async status(config: Config, layerid: number): Promise<{
+        status: string;
+    }> {
         const cf = new AWSCloudFormation.CloudFormationClient({ region: process.env.AWS_DEFAULT_REGION });
 
         try {
@@ -49,11 +51,13 @@ export default class CloudFormation {
                 StackName: this.stdname(config, layerid)
             }));
 
+            if (!res.Stacks || !res.Stacks.length) return { status: 'unknown' }
+
             return {
-                status: res.Stacks[0].StackStatus
+                status: String(res.Stacks[0].StackStatus)
             };
         } catch (err) {
-            if (err.message.match(/Stack with id .* does not exist/)) {
+            if (err instanceof Error && err.message.match(/Stack with id .* does not exist/)) {
                 return { status: 'destroyed' };
             } else {
                 throw err;
@@ -61,7 +65,7 @@ export default class CloudFormation {
         }
     }
 
-    static async exists(config: Config, layerid: number) {
+    static async exists(config: Config, layerid: number): Promise<boolean> {
         const cf = new AWSCloudFormation.CloudFormationClient({ region: process.env.AWS_DEFAULT_REGION });
 
         try {
@@ -69,11 +73,9 @@ export default class CloudFormation {
                 StackName: this.stdname(config, layerid)
             }));
 
-            console.error(res);
-
             return true;
         } catch (err) {
-            if (err.message.match(/Stack with id .* does not exist/)) {
+            if (err instanceof Error && err.message.match(/Stack with id .* does not exist/)) {
                 return false;
             } else {
                 throw err;
@@ -81,7 +83,7 @@ export default class CloudFormation {
         }
     }
 
-    static async delete(config: Config, layerid: number) {
+    static async delete(config: Config, layerid: number): Promise<void> {
         const cf = new AWSCloudFormation.CloudFormationClient({ region: process.env.AWS_DEFAULT_REGION });
 
         await cf.send(new AWSCloudFormation.DeleteStackCommand({

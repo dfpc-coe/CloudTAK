@@ -77,7 +77,7 @@ export default class Style {
 
             return true;
         } catch (err) {
-            throw new Err(400, err, err.message);
+            throw new Err(400, err instanceof Error ? err : new Error(String(err)), err instanceof Error ? err.message : String(err));
         }
     }
 
@@ -88,6 +88,8 @@ export default class Style {
      * @returns             GeoJSON Feature
      */
     async feat(feature: Feature): Promise<Feature> {
+        if (!feature.properties) feature.properties = {};
+
         if (this.style.stale && !feature.properties.stale) {
             feature.properties.stale = this.style.stale;
         }
@@ -112,6 +114,8 @@ export default class Style {
     }
 
     #by_geom(style: StyleSingle, feature: Feature) {
+        if (!feature.properties) feature.properties = {};
+
         if (feature.geometry.type === 'Point' && style.point) {
             if (!style.point.remarks) delete style.point.remarks;
             if (!style.point.callsign) delete style.point.callsign;

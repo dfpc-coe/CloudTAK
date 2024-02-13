@@ -42,9 +42,9 @@ export const Basemap = pgTable('basemaps', {
 export const Profile = pgTable('profile', {
     username: text('username').primaryKey(),
     auth: json('auth').$type<{
-        cert?: string;
-        key?: string;
-    }>().notNull().default({}),
+        cert: string;
+        key: string;
+    }>().notNull(),
     created: timestamp('created', { withTimezone: true }).notNull().default(sql`Now()`),
     updated: timestamp('updated', { withTimezone: true }).notNull().default(sql`Now()`),
     tak_callsign: text('tak_callsign').notNull().default('CloudTAK User'),
@@ -111,9 +111,9 @@ export const Connection = pgTable('connections', {
     description: text('description').notNull().default(''),
     enabled: boolean('enabled').notNull().default(true),
     auth: json('auth').$type<{
-        cert?: string;
-        key?: string;
-    }>().notNull().default({}),
+        cert: string;
+        key: string;
+    }>().notNull()
 });
 
 export const ConnectionSink = pgTable('connection_sinks', {

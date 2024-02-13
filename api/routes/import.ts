@@ -87,7 +87,7 @@ export default async function router(schema: any, config: Config) {
                 limits: { files: 1 }
             });
 
-            const uploads = [];
+            const uploads: Promise<unknown>[] = [];
             bb.on('file', async (fieldname, file, blob) => {
                 uploads.push((async function() {
                     const res = {
@@ -160,7 +160,7 @@ export default async function router(schema: any, config: Config) {
                 limits: { files: 5 }
             });
 
-            const uploads = [];
+            const uploads: Promise<unknown>[] = [];
             bb.on('file', async (fieldname, file, blob) => {
                 uploads.push((async function() {
                     const res = {

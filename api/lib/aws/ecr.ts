@@ -16,7 +16,7 @@ export default class ECR {
 
             return res;
         } catch (err) {
-            throw new Err(500, new Error(err), 'Failed to list ECR Tasks');
+            throw new Err(500, new Error(err instanceof Error ? err.message : String(err)), 'Failed to list ECR Tasks');
         }
     }
 }

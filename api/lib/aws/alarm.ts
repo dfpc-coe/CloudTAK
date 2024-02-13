@@ -21,19 +21,19 @@ export default class Alarm {
                 AlarmNamePrefix: `${this.stack}-layer-`
             }));
 
-            for (const alarm of res.MetricAlarms) {
+            for (const alarm of (res.MetricAlarms || [])) {
                 let value = 'healthy';
                 if (alarm.StateValue === 'ALARM') value = 'alarm';
                 if (alarm.StateValue === 'INSUFFICIENT_DATA') value = 'unknown';
 
-                const layer = parseInt(alarm.AlarmName.replace(`${this.stack}-layer-`, ''));
+                const layer = parseInt(String(alarm.AlarmName).replace(`${this.stack}-layer-`, ''));
 
                 map.set(layer, value);
             }
 
             return map;
         } catch (err) {
-            throw new Err(500, new Error(err), 'Failed to describe alarms');
+            throw new Err(500, new Error(err instanceof Error ? err.message : String(err)), 'Failed to describe alarms');
         }
     }
 
@@ -45,14 +45,14 @@ export default class Alarm {
                 AlarmNames: [`${this.stack}-layer-${layer}`]
             }));
 
-            if (!res.MetricAlarms.length) return 'unknown';
+            if (!res.MetricAlarms || !res.MetricAlarms.length) return 'unknown';
 
             let value = 'healthy';
             if (res.MetricAlarms[0].StateValue === 'ALARM') value = 'alarm';
             if (res.MetricAlarms[0].StateValue === 'INSUFFICIENT_DATA') value = 'unknown';
             return value;
         } catch (err) {
-            throw new Err(500, new Error(err), 'Failed to describe alarm');
+            throw new Err(500, new Error(err instanceof Error ? err.message : String(err)), 'Failed to describe alarm');
         }
     }
 }
