@@ -209,7 +209,7 @@ export default async function router(schema: any, config: Config) {
             let changed = false;
             // Avoid Updating CF unless necessary as it blocks further updates until deployed
             for (const prop of ['cron', 'task', 'memory', 'timeout', 'enabled']) {
-                // @ts-expect-error
+                // @ts-ignore
                 if (req.body[prop] !== undefined && req.body[prop] !== layer[prop]) changed = true;
             }
 
@@ -412,7 +412,7 @@ export default async function router(schema: any, config: Config) {
                             id: String(feat.id),
                             layer: layer.id,
                             type: feat.type,
-                            // @ts-expect-error
+                            // @ts-ignore
                             properties: feat.properties,
                             geometry: feat.geometry
                         }
