@@ -151,7 +151,7 @@ export default async function router(schema: any, config: Config) {
                     where: sql`iconset = ${String(req.params.iconset)}`
                 })).items) {
                     archive.append(Buffer.from(icon.data, 'base64'), { name: icon.name });
-                    // @ts-expect-error
+                    // @ts-ignore
                     xmljson.iconset.icon.push({ $: { name: path.parse(icon.name).base, type2525b: icon.type2525b } })
                 }
 

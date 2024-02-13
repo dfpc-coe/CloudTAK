@@ -14,7 +14,7 @@ export default async function(icons: Array<InferSelectModel<typeof Icon>>, confi
     const doc = await SpriteSmith({
         src: icons.map((icon) => {
             return new Vinyl({
-                // @ts-expect-error
+                // @ts-ignore
                 path: config.name ? icon[config.name] + '.png' : icon.path.replace(/.*?\//, ''),
                 contents: Buffer.from(icon.data, 'base64'),
             })
@@ -23,7 +23,7 @@ export default async function(icons: Array<InferSelectModel<typeof Icon>>, confi
 
     const coords = {};
     for (const key in doc.coordinates) {
-        // @ts-expect-error
+        // @ts-ignore
         coords[key.replace(/.png/, '')] = {
             ...doc.coordinates[key],
             pixelRatio: 1

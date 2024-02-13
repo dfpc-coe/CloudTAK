@@ -75,7 +75,7 @@ export default class S3 {
             }));
             return true;
         } catch (err) {
-            //@ts-expect-error
+            //@ts-ignore
             if (err.code === 'NotFound') return false;
 
             throw new Err(500, new Error(err instanceof Error ? err.message : String(err)), 'Failed to determine existance');
