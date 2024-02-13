@@ -27,8 +27,8 @@ export default async function router(schema: any, config: Config) {
             let total: number = 0;
             const tasks = new Map();
 
-            for (const image of images.imageIds) {
-                const match = image.imageTag.match(/^(.*)-v([0-9]+\.[0-9]+\.[0-9]+)$/);
+            for (const image of (images.imageIds || [])) {
+                const match = String(image.imageTag).match(/^(.*)-v([0-9]+\.[0-9]+\.[0-9]+)$/);
                 if (!match) continue;
                 total++;
                 if (!tasks.has(match[1])) tasks.set(match[1], []);
@@ -66,8 +66,8 @@ export default async function router(schema: any, config: Config) {
             let total: number = 0;
             const tasks = new Map();
 
-            for (const image of images.imageIds) {
-                const match = image.imageTag.match(/^(.*)-v([0-9]+\.[0-9]+\.[0-9]+)$/);
+            for (const image of (images.imageIds || [])) {
+                const match = String(image.imageTag).match(/^(.*)-v([0-9]+\.[0-9]+\.[0-9]+)$/);
                 if (!match) continue;
                 total++;
                 if (!tasks.has(match[1])) tasks.set(match[1], []);

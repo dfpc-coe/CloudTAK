@@ -7,7 +7,7 @@ import Config from './config.js';
 import { Mission } from './api/mission.js';
 
 export default class DataMission {
-    static async sync(config: Config, data: InferSelectModel<typeof Data>): Promise<Mission> {
+    static async sync(config: Config, data: InferSelectModel<typeof Data>): Promise<Mission | void> {
 
         const connection = await config.models.Connection.from(data.connection);
 

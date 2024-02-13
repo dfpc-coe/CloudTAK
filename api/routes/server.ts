@@ -17,7 +17,7 @@ export default async function router(schema: any, config: Config) {
         try {
             await Auth.is_auth(config.models, req);
 
-            if (!config.server) {
+            if (!config.server.auth) {
                 return res.json({
                     status: 'unconfigured'
                 });
@@ -28,32 +28,6 @@ export default async function router(schema: any, config: Config) {
                     auth: config.server.auth.cert && config.server.auth.key,
                 });
             }
-        } catch (err) {
-            return Err.respond(err, res);
-        }
-    });
-
-    await schema.post('/server', {
-        name: 'Post Server',
-        group: 'Server',
-        auth: 'user',
-        description: 'Post Server',
-        body: 'req.body.Server.json',
-        res: 'res.Server.json'
-    }, async (req: AuthRequest, res: Response) => {
-        try {
-            await Auth.is_auth(config.models, req);
-
-            if (config.server) throw new Err(400, null, 'Cannot post to an existing server');
-
-            config.server = await config.models.Server.generate(req.body);
-            await config.conns.refresh(config.server);
-
-            return res.json({
-                status: 'configured',
-                ...config.server,
-                auth: config.server.auth.cert && config.server.auth.key
-            });
         } catch (err) {
             return Err.respond(err, res);
         }
@@ -77,7 +51,7 @@ export default async function router(schema: any, config: Config) {
                 updated: sql`Now()`,
             });
 
-            await config.conns.refresh(config.server);
+            await config.conns.refresh();
 
             return res.json({
                 status: 'configured',

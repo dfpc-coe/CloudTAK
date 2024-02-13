@@ -44,7 +44,7 @@ export default async function router(schema: any, config: Config) {
                 api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
             }
 
-            const query = {};
+            const query: Record<string, string> = {};
             for (const q in req.query) query[q] = String(req.query[q]);
 
             const groups = await api.Group.list(query);
@@ -99,7 +99,7 @@ export default async function router(schema: any, config: Config) {
                 api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
             }
 
-            const query = {};
+            const query: Record<string, string> = {};
             for (const q in req.query) query[q] = String(req.query[q]);
 
             await api.Group.update(req.body, {});
