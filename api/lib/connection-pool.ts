@@ -89,37 +89,21 @@ class ConnectionClient {
  * @class
  */
 export default class ConnectionPool extends Map<number | string, ConnectionClient> {
-    #server: InferSelectModel<typeof Server>;
-    pg: PostgresJsDatabase<typeof pgtypes>;
-    wsClients: Map<string, ConnectionWebSocket[]>;
+    config: Config;
     metrics: Metrics;
     sinks: Sinks;
-    nosinks: boolean;
-    stackName: string;
-    local: boolean;
 
-    constructor(
-        config: Config,
-        server: InferSelectModel<typeof Server>,
-        wsClients: Map<string, ConnectionWebSocket[]> = new Map(),
-        stackName: string,
-        local=false
-    ) {
+    constructor(config: Config) {
         super();
-        this.#server = server;
-        this.wsClients = wsClients;
-        this.stackName = stackName,
-        this.local = local,
-        this.metrics = new Metrics(stackName);
+
+        this.config = config;
+        this.metrics = new Metrics(this.config.StackName);
+
         if (config.nometrics) this.metrics.paused = true;
-        this.pg = config.pg;
         this.sinks = new Sinks(config);
-        this.nosinks = config.nosinks;
     }
 
-    async refresh(server: InferSelectModel<typeof Server>) {
-        this.#server = server;
-
+    async refresh() {
         for (const conn of this.keys()) {
             this.delete(conn);
         }
@@ -133,12 +117,12 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
     async init(): Promise<void> {
         const conns: Promise<ConnectionClient>[] = [];
 
-        const ConnectionModel = new Modeler(this.pg, Connection);
+        const ConnectionModel = new Modeler(this.config.pg, Connection);
         const stream = ConnectionModel.stream();
 
         return new Promise((resolve, reject) => {
             stream.on('data', async (conn: InferSelectModel<typeof Connection>) => {
-                if (conn.enabled && !this.local) {
+                if (conn.enabled && !this.config.local) {
                     conns.push(this.add(conn));
                 }
             }).on('end', async () => {
@@ -170,8 +154,8 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
      * aren't rebroadcast to the submitter by the TAK Server
      */
     async cot(conn: InferSelectModel<typeof Connection> | EphemeralConnection, cot: CoT, ephemeral=false) {
-        if (this.wsClients.has(String(conn.id))) {
-            for (const client of (this.wsClients.get(String(conn.id)) || [])) {
+        if (this.config.wsClients.has(String(conn.id))) {
+            for (const client of (this.config.wsClients.get(String(conn.id)) || [])) {
                 if (client.format == 'geojson') {
                     const feat = cot.to_geojson();
 
@@ -186,7 +170,7 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
             }
         }
 
-        if (!ephemeral && !this.nosinks && cot.is_atom()) {
+        if (!ephemeral && !this.config.nosinks && cot.is_atom()) {
             const c = conn as InferSelectModel<typeof Connection>;
             try {
                 await this.sinks.cot(c, cot);
@@ -198,7 +182,7 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
 
     async add(conn: InferSelectModel<typeof Connection> | EphemeralConnection, ephemeral=false): Promise<ConnectionClient> {
         if (!conn.auth || !conn.auth.cert || !conn.auth.key) throw new Err(400, null, 'Connection must have auth.cert & auth.key');
-        const tak = await TAK.connect(conn.id, new URL(this.#server.url), {
+        const tak = await TAK.connect(conn.id, new URL(this.config.server.url), {
             key: conn.auth.key,
             cert: conn.auth.cert
         });
@@ -218,7 +202,7 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
             console.error(`not ok - ${conn.id} - ${conn.name} @ timeout`);
             this.retry(connClient);
         }).on('ping', async () => {
-            if (this.stackName !== 'test' && !ephemeral) {
+            if (this.config.StackName !== 'test' && !ephemeral) {
                 try {
                     const c = conn as InferSelectModel<typeof Connection>;
                     await this.metrics.post(c.id);

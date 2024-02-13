@@ -72,19 +72,7 @@ export default async function server(config: Config) {
         console.log(`ok - failed to flush cache: ${err instanceof Error? err.message : String(err)}`);
     }
 
-    try {
-        const ServerModel = new Modeler(config.pg, pgschema.Server);
-        config.server = await ServerModel.from(1);
-    } catch (err) {
-        console.log(`ok - no server config found: ${err instanceof Error ? err.message : String(err)}`);
-    }
-
-    if (config.server) {
-        config.conns = new ConnectionPool(config, config.server, config.wsClients, config.StackName, config.local);
-        await config.conns.init();
-    } else {
-        console.error('not ok - no connection pool due to lack of server config');
-    }
+    await config.conns.init();
 
     config.events = new EventsPool(config.StackName);
     if (!config.noevents) await config.events.init(config.pg);
