@@ -13,7 +13,7 @@ export interface BatchJob {
     asset: string;
     status: string;
     created: number;
-    updated: number;
+    updated?: number;
     logstream?: string;
 }
 
@@ -92,22 +92,28 @@ export default class Batch {
             id: job.jobId,
             asset: asset.join(''),
             status: job.status,
-            created: job.createdAt,
+            created: job.createdAt || +new Date(),
             updated: job.stoppedAt,
-            logstream: job.container.logStreamName
+            logstream: job.container ? job.container.logStreamName : undefined
         }
     }
 
     static async list(config: Config, prefix: string): Promise<BatchJob[]> {
         const batch = new AWSBatch.BatchClient({ region: process.env.AWS_DEFAULT_REGION });
 
-        const res = (await batch.send(new AWSBatch.ListJobsCommand({
+        const res = await batch.send(new AWSBatch.ListJobsCommand({
             jobQueue: `${config.StackName}-queue`,
             filters: [{
                 name: 'JOB_NAME',
                 values: [`${prefix}-*`]
             }]
-        }))).jobSummaryList.map((job) => {
+        }))
+
+        if (!res.jobSummaryList) throw new Err(400, null, 'AWS Does not report a jobSummaryList')
+
+        const final: BatchJob[] = res.jobSummaryList.map((job) => {
+            if (!job.jobName) throw new Err(400, null, 'AWS Does not report a jobName')
+            if (!job.jobId) throw new Err(400, null, 'AWS Does not report a jobId')
             const name = job.jobName.replace(`${prefix}-`, '');
             let asset: string[] = [...name];
             asset[name.lastIndexOf('_')] = '.';
@@ -115,14 +121,14 @@ export default class Batch {
             return {
                 id: job.jobId,
                 asset: asset.join(''),
-                status: job.status,
-                created: job.createdAt,
+                status: String(job.status),
+                created: job.createdAt || +new Date(),
                 updated: job.stoppedAt,
             };
         }).sort((a, b) => {
             return b.created - a.created;
         });
 
-        return res;
+        return final;
     }
 };
