@@ -1,5 +1,5 @@
 {
     "type": "boolean",
-    "description": "Is styling enabled for the layer",
+    "description": "",
     "$comment": "bool"
 }
