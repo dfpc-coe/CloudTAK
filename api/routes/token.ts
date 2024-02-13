@@ -19,7 +19,7 @@ export default async function router(schema: any, config: Config) {
         res: 'res.ListTokens.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
-            await Auth.is_auth(config.models, req);
+            const user = await Auth.as_user(config.models, req);
 
             const list = await config.models.Token.list({
                 limit: Number(req.query.limit),
@@ -28,6 +28,7 @@ export default async function router(schema: any, config: Config) {
                 sort: String(req.query.sort),
                 where: sql`
                     name ~* ${req.query.filter}
+                    AND email = ${user.email}
                 `
             });
 
