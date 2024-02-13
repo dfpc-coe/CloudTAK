@@ -21,7 +21,7 @@ export default class S3 {
 
             return head;
         } catch (err) {
-            throw new Err(500, new Error(err), 'Failed to head file');
+            throw new Err(500, new Error(err instanceof Error ? err.message : String(err)), 'Failed to head file');
         }
     }
 
@@ -42,7 +42,7 @@ export default class S3 {
 
             await upload.done();
         } catch (err) {
-            throw new Err(500, new Error(err), 'Failed to upload file');
+            throw new Err(500, new Error(err instanceof Error ? err.message : String(err)), 'Failed to upload file');
         }
     }
 
@@ -60,7 +60,7 @@ export default class S3 {
             const read = res.Body as Readable;
             return read;
         } catch (err) {
-            throw new Err(500, new Error(err), 'Failed to get file');
+            throw new Err(500, new Error(err instanceof Error ? err.message : String(err)), 'Failed to get file');
         }
     }
 
@@ -75,9 +75,10 @@ export default class S3 {
             }));
             return true;
         } catch (err) {
+            //@ts-expect-error
             if (err.code === 'NotFound') return false;
 
-            throw new Err(500, new Error(err), 'Failed to determine existance');
+            throw new Err(500, new Error(err instanceof Error ? err.message : String(err)), 'Failed to determine existance');
         }
     }
 
@@ -98,7 +99,7 @@ export default class S3 {
 
             return list.Contents || [];
         } catch (err) {
-            throw new Err(500, new Error(err), 'Failed to list files');
+            throw new Err(500, new Error(err instanceof Error ? err.message : String(err)), 'Failed to list files');
         }
     }
 
@@ -122,7 +123,7 @@ export default class S3 {
                     Key: key
                 }));
             } catch (err) {
-                throw new Err(500, new Error(err), 'Failed to delete file');
+                throw new Err(500, new Error(err instanceof Error ? err.message : String(err)), 'Failed to delete file');
             }
         } else {
             try {
@@ -141,7 +142,7 @@ export default class S3 {
                     }
                 }));
             } catch (err) {
-                throw new Err(500, new Error(err), 'Failed to delete files');
+                throw new Err(500, new Error(err instanceof Error ? err.message : String(err)), 'Failed to delete files');
             }
         }
     }

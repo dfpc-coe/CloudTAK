@@ -1,5 +1,7 @@
 import Err from '@openaddresses/batch-error';
-import CloudWatch from '@aws-sdk/client-cloudwatch';
+import CloudWatch, {
+    MetricDataResult
+} from '@aws-sdk/client-cloudwatch';
 import moment from 'moment';
 import process from 'node:process';
 
@@ -17,7 +19,7 @@ export default class Metric {
         this.paused = false;
     }
 
-    async post(connid: number) {
+    async post(connid: number): Promise<void> {
         if (this.paused) return;
 
         try {
@@ -38,15 +40,15 @@ export default class Metric {
                 }]
             }));
         } catch (err) {
-            throw new Err(500, new Error(err), 'Failed to push metric data');
+            throw new Err(500, new Error(err instanceof Error ? err.message : String(err)), 'Failed to push metric data');
         }
     }
 
-    async connection(connid: number) {
-        if (this.paused) return;
+    async connection(connid: number): Promise<Array<MetricDataResult>> {
+        if (this.paused) return [] as Array<MetricDataResult>;
 
         try {
-            return await this.cw.send(new CloudWatch.GetMetricDataCommand({
+            const res = await this.cw.send(new CloudWatch.GetMetricDataCommand({
                 EndTime: moment().toDate(),
                 StartTime: moment().subtract(12, 'hours').toDate(),
                 MetricDataQueries: [{
@@ -69,16 +71,19 @@ export default class Metric {
                     ReturnData: true
                 }]
             }));
+
+            if (!res || !res.MetricDataResults) return [] as Array<MetricDataResult>;
+            return res.MetricDataResults;
         } catch (err) {
-            throw new Err(500, new Error(err), `Failed to retrieve metric data for Connection: ${connid}`);
+            throw new Err(500, new Error(err instanceof Error ? err.message : String(err)), `Failed to retrieve metric data for Connection: ${connid}`);
         }
     }
 
-    async sink(sinkid: number) {
-        if (this.paused) return;
+    async sink(sinkid: number): Promise<Array<MetricDataResult>> {
+        if (this.paused) return [] as Array<MetricDataResult>;
 
         try {
-            return await this.cw.send(new CloudWatch.GetMetricDataCommand({
+            const res = await this.cw.send(new CloudWatch.GetMetricDataCommand({
                 EndTime: moment().toDate(),
                 StartTime: moment().subtract(12, 'hours').toDate(),
                 MetricDataQueries: [{
@@ -119,8 +124,11 @@ export default class Metric {
                     ReturnData: true
                 }]
             }));
+
+            if (!res || !res.MetricDataResults) return [] as Array<MetricDataResult>;
+            return res.MetricDataResults;
         } catch (err) {
-            throw new Err(500, new Error(err), `Failed to retrieve metric data for ConnectionSink: ${sinkid}`);
+            throw new Err(500, new Error(err instanceof Error ? err.message : String(err)), `Failed to retrieve metric data for ConnectionSink: ${sinkid}`);
         }
     }
 }

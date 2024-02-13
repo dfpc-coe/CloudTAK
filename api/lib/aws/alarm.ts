@@ -33,7 +33,7 @@ export default class Alarm {
 
             return map;
         } catch (err) {
-            throw new Err(500, new Error(err), 'Failed to describe alarms');
+            throw new Err(500, new Error(err instanceof Error ? err.message : String(err)), 'Failed to describe alarms');
         }
     }
 
@@ -52,7 +52,7 @@ export default class Alarm {
             if (res.MetricAlarms[0].StateValue === 'INSUFFICIENT_DATA') value = 'unknown';
             return value;
         } catch (err) {
-            throw new Err(500, new Error(err), 'Failed to describe alarm');
+            throw new Err(500, new Error(err instanceof Error ? err.message : String(err)), 'Failed to describe alarm');
         }
     }
 }

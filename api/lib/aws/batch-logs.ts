@@ -25,7 +25,7 @@ export default class LogGroup {
             if (err.message.contains('The specified log stream does not exist')) {
                 return { logs: [] }
             } else {
-                throw err;
+                throw new Error(err instanceof Error ? err.message : String(err));
             }
         }
     }
