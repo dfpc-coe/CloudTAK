@@ -10,7 +10,7 @@ import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Modeler from '@openaddresses/batch-generic';
 import minimist from 'minimist';
-import ConnectionPool, { ConnectionWebSocket, sleep } from './lib/connection-pool.js';
+import { ConnectionWebSocket, sleep } from './lib/connection-pool.js';
 import EventsPool from './lib/events-pool.js';
 import { WebSocket, WebSocketServer } from 'ws';
 import BlueprintLogin, { tokenParser, AuthUser } from '@tak-ps/blueprint-login';
@@ -125,14 +125,13 @@ export default async function server(config: Config) {
     const ProfileModel = new Modeler(config.pg, pgschema.Profile);
 
     login.on('login', async (user) => {
-        let profile;
         try {
-            profile = await ProfileModel.from(user.username);
+            await ProfileModel.from(user.username);
         } catch (err) {
             if (err instanceof Err && err.status === 404) {
                 const api = await TAKAPI.init(new URL(config.MartiAPI), new APIAuthPassword(user.username, user.password));
 
-                profile = await ProfileModel.generate({
+                await ProfileModel.generate({
                     username: user.username,
                     auth: await api.Credentials.generate()
                 });

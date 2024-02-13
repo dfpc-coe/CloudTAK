@@ -26,7 +26,7 @@ export default async function AssetList(config: Config, prefix: string): Promise
     try {
         const viz = new Map() ;
         const geo = new Map() ;
-        let assets: Array<_Object> = [];
+        const assets: Array<_Object> = [];
         (await S3.list(prefix))
             .map((l) => {
                 if (path.parse(String(l.Key)).ext === '.pmtiles') viz.set(path.parse(String(l.Key)).name, l)
