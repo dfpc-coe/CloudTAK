@@ -63,7 +63,7 @@ export default async function router(schema: any, config: Config) {
             try {
                 req.body.url = new URL(req.body.url);
             } catch (err) {
-                throw new Err(400, null, err.message);
+                throw new Err(400, null, err instanceof Error ? err.message : String(err));
             }
 
             if (req.body.sinkid) {
@@ -392,10 +392,11 @@ export default async function router(schema: any, config: Config) {
                 anyResources: true
             });
 
-            if (!String(req.query.server).match(/\/\d+$/)) throw new Err(400, null, 'Could not parse layer ID');
-
             const url = new URL(String(req.query.server).replace(/\/\d+$/, ''));
-            const layer_id = parseInt(String(req.query.server).match(/\/\d+$/)[0].replace('/', ''));
+
+            const parsed_layer = String(req.query.server).match(/\/\d+$/);
+            if (!parsed_layer || !parsed_layer[0]) throw new Error('Could not parse layer ID');
+            const layer_id = parseInt(parsed_layer[0].replace('/', ''));
 
             const base = new EsriBase(String(url));
             if (req.query.token && req.query.expires) {
