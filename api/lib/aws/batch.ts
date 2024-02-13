@@ -72,13 +72,17 @@ export default class Batch {
     static async job(config: Config, jobid: string): Promise<BatchJob> {
         const batch = new AWSBatch.BatchClient({ region: process.env.AWS_DEFAULT_REGION });
 
-        const jobs = await batch.send(new AWSBatch.DescribeJobsCommand({
+        const res = await batch.send(new AWSBatch.DescribeJobsCommand({
             jobs: [jobid]
         }))
 
-        if (!jobs.jobs.length) throw new Err(400, null, 'AWS Does not report this job');
+        if (!res.jobs || !res.jobs.length) throw new Err(400, null, 'AWS Does not report this job');
 
-        const job = jobs.jobs[0];
+        const job = res.jobs[0];
+
+        if (!job.jobName) throw new Err(400, null, 'AWS Does not report a jobName')
+        if (!job.jobId) throw new Err(400, null, 'AWS Does not report a jobId')
+        if (!job.status) throw new Err(400, null, 'AWS Does not report a Status')
 
         const name = job.jobName.replace(/data-[0-9]+-/, '');
         let asset: string[] = [...name];
@@ -97,7 +101,7 @@ export default class Batch {
     static async list(config: Config, prefix: string): Promise<BatchJob[]> {
         const batch = new AWSBatch.BatchClient({ region: process.env.AWS_DEFAULT_REGION });
 
-        const jobs = (await batch.send(new AWSBatch.ListJobsCommand({
+        const res = (await batch.send(new AWSBatch.ListJobsCommand({
             jobQueue: `${config.StackName}-queue`,
             filters: [{
                 name: 'JOB_NAME',
@@ -119,6 +123,6 @@ export default class Batch {
             return b.created - a.created;
         });
 
-        return jobs;
+        return res;
     }
 };

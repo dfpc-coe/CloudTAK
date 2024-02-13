@@ -14,6 +14,8 @@ import { AuthRequest } from '@tak-ps/blueprint-login';
 import Config from '../lib/config.js';
 import DataMission from '../lib/data-mission.js';
 import { AuthResourceAccess } from '@tak-ps/blueprint-login';
+import { InferSelectModel } from 'drizzle-orm';
+import { Data } from '../lib/schema.js';
 import TAKAPI, {
     APIAuthToken,
     APIAuthCertificate,
@@ -120,7 +122,7 @@ export default async function router(schema: any, config: Config) {
     }, async (req: AuthRequest, res: Response) => {
 
         let bb;
-        let data;
+        let data: InferSelectModel<typeof Data>;
         try {
             await Auth.is_auth(config.models, req, {
                 resources: [

@@ -240,11 +240,14 @@ export default async function router(schema: any, config: Config) {
             const timestamps: Set<Date> = new Set();
             const map: Map<string, number> = new Map();
 
-            if (!stats.MetricDataResults.length) {
+            if (!stats.length) {
                 return res.json({ stats: [] });
             }
 
-            const stat = stats.MetricDataResults[0];
+            const stat = stats[0];
+
+            if (!stat.Timestamps) stat.Timestamps = [];
+            if (!stat.Values) stat.Values = [];
 
             for (let i = 0; i < stat.Timestamps.length; i++) {
                 timestamps.add(stat.Timestamps[i]);

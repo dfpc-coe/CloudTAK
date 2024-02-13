@@ -13,7 +13,6 @@ import minimist from 'minimist';
 import ConnectionPool, { ConnectionWebSocket, sleep } from './lib/connection-pool.js';
 import EventsPool from './lib/events-pool.js';
 import { WebSocket, WebSocketServer } from 'ws';
-import Cacher from './lib/cacher.js';
 import BlueprintLogin, { tokenParser, AuthUser } from '@tak-ps/blueprint-login';
 import Config from './lib/config.js';
 import TAKAPI, { APIAuthPassword } from './lib/tak-api.js';
@@ -58,14 +57,13 @@ if (import.meta.url === `file://${process.argv[1]}`) {
         postgres: process.env.POSTGRES || args.postgres || 'postgres://postgres@localhost:5432/tak_ps_etl',
         nometrics: args.nometrics || false,
         nosinks: args.nosinks || false,
+        nocache: args.nocache || false,
         local: args.local || false,
     });
     await server(config);
 }
 
 export default async function server(config: Config) {
-    config.cacher = new Cacher(args.nocache, config.silent);
-
     try {
         await config.cacher.flush();
     } catch (err) {
@@ -132,17 +130,15 @@ export default async function server(config: Config) {
             profile = await ProfileModel.from(user.username);
         } catch (err) {
             if (err instanceof Err && err.status === 404) {
-                profile = await ProfileModel.generate({ username: user.username });
+                const api = await TAKAPI.init(new URL(config.MartiAPI), new APIAuthPassword(user.username, user.password));
+
+                profile = await ProfileModel.generate({
+                    username: user.username,
+                    auth: await api.Credentials.generate()
+                });
             } else {
                 return console.error(err);
             }
-        }
-
-        try {
-            const api = await TAKAPI.init(new URL(config.MartiAPI), new APIAuthPassword(user.username, user.password));
-            await ProfileModel.commit(profile.username, { auth: await api.Credentials.generate() });
-        } catch (err) {
-            console.error(err);
         }
     });
 

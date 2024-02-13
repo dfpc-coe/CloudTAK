@@ -16,6 +16,7 @@ interface ConfigArgs {
     unsafe: boolean,
     noevents: boolean,
     nosinks: boolean,
+    nocache: boolean,
     nometrics: boolean,
     local: boolean
 }
@@ -27,6 +28,7 @@ export default class Config {
     noevents: boolean;
     nometrics: boolean;
     nosinks: boolean;
+    nocache: boolean;
     models: Models;
     StackName: string;
     HookURL?: string;
@@ -41,7 +43,7 @@ export default class Config {
     wsClients: Map<string, ConnectionWebSocket[]>;
     Bucket?: string;
     pg: Pool<typeof pgtypes>;
-    cacher?: Cacher;
+    cacher: Cacher;
     conns: ConnectionPool;
     server: InferSelectModel<typeof Server>;
     events?: EventsPool;
@@ -53,6 +55,7 @@ export default class Config {
         noevents: boolean;
         nometrics: boolean;
         nosinks: boolean;
+        nocache: boolean;
         models: Models;
         StackName: string;
         API_URL: string;
@@ -74,6 +77,7 @@ export default class Config {
         this.noevents = init.noevents;
         this.nometrics = init.nometrics;
         this.nosinks = init.nosinks;
+        this.nocache = init.nocache;
         this.models = init.models;
         this.StackName = init.StackName;
         this.UnsafeSigningSecret = 'coe-wildland-fire';
@@ -91,6 +95,7 @@ export default class Config {
         this.HookURL = init.HookURL;
 
         this.conns = new ConnectionPool(this);
+        this.cacher = new Cacher(this.nocache, this.silent);
 
     }
 
@@ -153,6 +158,7 @@ export default class Config {
             noevents: (args.noevents || false),
             nometrics: (args.nometrics || false),
             nosinks: (args.nosinks || false),
+            nocache: (args.nocache || false),
             TileBaseURL: process.env.TileBaseURL ? new URL(process.env.TileBaseURL) : new URL('./data-dev/zipcodes.tilebase', import.meta.url),
             PMTILES_URL: process.env.PMTILES_URL || 'http://localhost:5001',
             MartiAPI: process.env.MartiAPI,

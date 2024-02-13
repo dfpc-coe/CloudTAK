@@ -23,7 +23,7 @@ export default class HookQueue {
             return res;
         } catch (err) {
             console.error(err);
-            throw new Err(500, new Error(err), 'Failed to submit SQS Message');
+            throw new Err(500, new Error(err instanceof Error ? err.message : String(err)), 'Failed to submit SQS Message');
         }
     }
 }

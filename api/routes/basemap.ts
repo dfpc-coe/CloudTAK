@@ -261,7 +261,8 @@ export default async function router(schema: any, config: Config) {
 
             res.status(proxy.status);
             for (const h of ['content-type', 'content-length', 'content-encoding']) {
-                if (proxy.headers.get(h)) res.append(h, proxy.headers.get(h));
+                const ph = proxy.headers.get(h);
+                if (ph) res.append(h, ph);
             }
 
 
