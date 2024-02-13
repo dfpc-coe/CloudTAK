@@ -19,12 +19,12 @@
         "query": false,
         "res": true
     },
-    "PUT /basemap": {
+    "GET /connection/:connectionid/channel": {
         "body": false,
         "query": false,
         "res": true
     },
-    "GET /connection/:connectionid/channel": {
+    "PUT /basemap": {
         "body": false,
         "query": false,
         "res": true
@@ -64,17 +64,17 @@
         "query": true,
         "res": true
     },
+    "POST /connection/:connectionid/sink": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
     "POST /connection/:connectionid/token": {
         "body": true,
         "query": false,
         "res": true
     },
     "POST /basemap": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "POST /connection/:connectionid/sink": {
         "body": true,
         "query": false,
         "res": true
@@ -139,17 +139,12 @@
         "query": false,
         "res": true
     },
-    "POST /connection": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
     "POST /connection/:connectionid/data/:dataid/asset/:asset.:ext": {
         "body": false,
         "query": false,
         "res": true
     },
-    "PATCH /connection/:connectionid/token/:id": {
+    "POST /connection": {
         "body": true,
         "query": false,
         "res": true
@@ -169,14 +164,14 @@
         "query": false,
         "res": false
     },
+    "PATCH /connection/:connectionid/token/:id": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
     "GET /data": {
         "body": false,
         "query": true,
-        "res": true
-    },
-    "PATCH /basemap/:basemapid": {
-        "body": true,
-        "query": false,
         "res": true
     },
     "PATCH /connection/:connectionid/sink/:sinkid": {
@@ -186,6 +181,11 @@
     },
     "DELETE /connection/:connectionid/token/:id": {
         "body": false,
+        "query": false,
+        "res": true
+    },
+    "PATCH /basemap/:basemapid": {
+        "body": true,
         "query": false,
         "res": true
     },
@@ -244,14 +244,14 @@
         "query": false,
         "res": true
     },
-    "DELETE /basemap/:basemapid": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
     "GET /connection/:connectionid/data": {
         "body": false,
         "query": true,
+        "res": true
+    },
+    "DELETE /basemap/:basemapid": {
+        "body": false,
+        "query": false,
         "res": true
     },
     "GET /layer/:layerid/query": {
@@ -319,12 +319,17 @@
         "query": false,
         "res": true
     },
+    "GET /marti/missions/:name": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
     "PATCH /import/:import": {
         "body": true,
         "query": false,
         "res": true
     },
-    "GET /marti/missions/:name": {
+    "GET /marti/group": {
         "body": false,
         "query": true,
         "res": true
@@ -332,11 +337,6 @@
     "DELETE /layer/:layerid/alert": {
         "body": false,
         "query": false,
-        "res": true
-    },
-    "GET /marti/group": {
-        "body": false,
-        "query": true,
         "res": true
     },
     "GET /layer": {
@@ -354,14 +354,14 @@
         "query": false,
         "res": true
     },
-    "DELETE /layer/:layerid/alert/:alertid": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
     "PUT /marti/group": {
         "body": true,
         "query": true,
+        "res": true
+    },
+    "DELETE /layer/:layerid/alert/:alertid": {
+        "body": false,
+        "query": false,
         "res": true
     },
     "POST /marti/missions/:name": {
@@ -369,8 +369,8 @@
         "query": true,
         "res": true
     },
-    "PATCH /connection/:connectionid/data/:dataid": {
-        "body": true,
+    "GET /profile/chat": {
+        "body": false,
         "query": false,
         "res": true
     },
@@ -379,8 +379,8 @@
         "query": false,
         "res": true
     },
-    "GET /profile/chat": {
-        "body": false,
+    "PATCH /connection/:connectionid/data/:dataid": {
+        "body": true,
         "query": false,
         "res": true
     },
@@ -424,14 +424,14 @@
         "query": false,
         "res": true
     },
-    "GET /import": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
     "POST /profile/asset/:asset.:ext": {
         "body": false,
         "query": false,
+        "res": true
+    },
+    "GET /import": {
+        "body": false,
+        "query": true,
         "res": true
     },
     "POST /layer": {
@@ -444,13 +444,13 @@
         "query": false,
         "res": true
     },
-    "DELETE /marti/missions/:name/upload/:hash": {
-        "body": false,
+    "PATCH /iconset/:iconset": {
+        "body": true,
         "query": false,
         "res": true
     },
-    "PATCH /iconset/:iconset": {
-        "body": true,
+    "DELETE /marti/missions/:name/upload/:hash": {
+        "body": false,
         "query": false,
         "res": true
     },
@@ -519,23 +519,23 @@
         "query": false,
         "res": true
     },
-    "POST /profile/overlay": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "POST /server": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
     "PATCH /profile": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "POST /profile/overlay": {
         "body": true,
         "query": false,
         "res": true
     },
     "GET /layer/:layerid/task": {
         "body": false,
+        "query": false,
+        "res": true
+    },
+    "PATCH /server": {
+        "body": true,
         "query": false,
         "res": true
     },
@@ -564,23 +564,18 @@
         "query": false,
         "res": true
     },
-    "GET /layer/:layerid/task/logs": {
+    "DELETE /iconset/:iconset": {
         "body": false,
         "query": false,
         "res": true
     },
-    "DELETE /iconset/:iconset": {
+    "GET /layer/:layerid/task/logs": {
         "body": false,
         "query": false,
         "res": true
     },
     "POST /layer/:layerid/redeploy": {
         "body": false,
-        "query": false,
-        "res": true
-    },
-    "PATCH /server": {
-        "body": true,
         "query": false,
         "res": true
     },
@@ -594,13 +589,13 @@
         "query": true,
         "res": true
     },
-    "POST /token": {
-        "body": true,
+    "POST /layer/:layerid/task": {
+        "body": false,
         "query": false,
         "res": true
     },
-    "POST /layer/:layerid/task": {
-        "body": false,
+    "POST /token": {
+        "body": true,
         "query": false,
         "res": true
     },
