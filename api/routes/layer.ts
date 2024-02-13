@@ -51,7 +51,9 @@ export default async function router(schema: any, config: Config) {
 
             const status = { healthy: 0, alarm: 0, unknown: 0 };
             for (const state of alarms.values()) {
-                status[state]++;
+                if (state === 'healthy') status.healthy++;
+                if (state === 'alarm') status.alarm++;
+                if (state === 'unknown') status.unknown++;
             }
 
             res.json({
@@ -99,10 +101,12 @@ export default async function router(schema: any, config: Config) {
             Schedule.is_valid(req.body.cron);
             let layer = await config.models.Layer.generate(req.body);
 
-            if (!Schedule.is_aws(layer.cron) && layer.enabled) {
-                config.events.add(layer.id, layer.cron);
-            } else if (Schedule.is_aws(layer.cron) || !layer.enabled) {
-                await config.events.delete(layer.id);
+            if (config.events) {
+                if (layer.cron && !Schedule.is_aws(layer.cron) && layer.enabled) {
+                    config.events.add(layer.id, layer.cron);
+                } else if (layer.cron && Schedule.is_aws(layer.cron) || !layer.enabled) {
+                    await config.events.delete(layer.id);
+                }
             }
 
             try {
@@ -205,6 +209,7 @@ export default async function router(schema: any, config: Config) {
             let changed = false;
             // Avoid Updating CF unless necessary as it blocks further updates until deployed
             for (const prop of ['cron', 'task', 'memory', 'timeout', 'enabled']) {
+                // @ts-ignore
                 if (req.body[prop] !== undefined && req.body[prop] !== layer[prop]) changed = true;
             }
 
@@ -228,10 +233,12 @@ export default async function router(schema: any, config: Config) {
                 }
             }
 
-            if (!Schedule.is_aws(layer.cron) && layer.enabled) {
-                config.events.add(layer.id, layer.cron);
-            } else if (Schedule.is_aws(layer.cron) || !layer.enabled) {
-                await config.events.delete(layer.id);
+            if (config.events) {
+                if (layer.cron && !Schedule.is_aws(layer.cron) && layer.enabled) {
+                    config.events.add(layer.id, layer.cron);
+                } else if (layer.cron && Schedule.is_aws(layer.cron) || !layer.enabled) {
+                    await config.events.delete(layer.id);
+                }
             }
 
             await config.cacher.del(`layer-${req.params.layerid}`);
@@ -322,7 +329,7 @@ export default async function router(schema: any, config: Config) {
 
             await CloudFormation.delete(config, layer.id);
 
-            config.events.delete(layer.id);
+            if (config.events) config.events.delete(layer.id);
 
             await config.models.Layer.delete(parseInt(req.params.layerid));
 
@@ -367,7 +374,7 @@ export default async function router(schema: any, config: Config) {
                 try {
                     req.body = check(req.body);
                 } catch (err) {
-                    throw new Err(400, null, err.message);
+                    throw new Err(400, null, err instanceof Error ? err.message : String(err));
                 }
 
                 for (let i = 0; i < req.body.features.length; i++) {
@@ -405,6 +412,7 @@ export default async function router(schema: any, config: Config) {
                             id: String(feat.id),
                             layer: layer.id,
                             type: feat.type,
+                            // @ts-ignore
                             properties: feat.properties,
                             geometry: feat.geometry
                         }

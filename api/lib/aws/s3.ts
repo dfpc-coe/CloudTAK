@@ -9,7 +9,7 @@ import process from 'node:process';
  * @class
  */
 export default class S3 {
-    static async head(key: string) {
+    static async head(key: string): Promise<S3AWS.HeadObjectCommandOutput> {
         try {
             if (!process.env.ASSET_BUCKET) throw new Err(400, null, 'ASSET_BUCKET not set');
 
@@ -21,11 +21,11 @@ export default class S3 {
 
             return head;
         } catch (err) {
-            throw new Err(500, new Error(err), 'Failed to head file');
+            throw new Err(500, new Error(err instanceof Error ? err.message : String(err)), 'Failed to head file');
         }
     }
 
-    static async put(key: string, body: Readable | string) {
+    static async put(key: string, body: Readable | string): Promise<void> {
         try {
             if (!process.env.ASSET_BUCKET) throw new Err(400, null, 'ASSET_BUCKET not set');
 
@@ -42,7 +42,7 @@ export default class S3 {
 
             await upload.done();
         } catch (err) {
-            throw new Err(500, new Error(err), 'Failed to upload file');
+            throw new Err(500, new Error(err instanceof Error ? err.message : String(err)), 'Failed to upload file');
         }
     }
 
@@ -60,11 +60,11 @@ export default class S3 {
             const read = res.Body as Readable;
             return read;
         } catch (err) {
-            throw new Err(500, new Error(err), 'Failed to get file');
+            throw new Err(500, new Error(err instanceof Error ? err.message : String(err)), 'Failed to get file');
         }
     }
 
-    static async exists(key: string) {
+    static async exists(key: string): Promise<boolean> {
         try {
             if (!process.env.ASSET_BUCKET) throw new Err(400, null, 'ASSET_BUCKET not set');
 
@@ -75,9 +75,10 @@ export default class S3 {
             }));
             return true;
         } catch (err) {
+            //@ts-ignore
             if (err.code === 'NotFound') return false;
 
-            throw new Err(500, new Error(err), 'Failed to determine existance');
+            throw new Err(500, new Error(err instanceof Error ? err.message : String(err)), 'Failed to determine existance');
         }
     }
 
@@ -86,7 +87,7 @@ export default class S3 {
      *
      * @param {string}  fragment             Key or Prefix to delete
      */
-    static async list(fragment: string) {
+    static async list(fragment: string): Promise<Array<S3AWS._Object>> {
         try {
             if (!process.env.ASSET_BUCKET) throw new Err(400, null, 'ASSET_BUCKET not set');
 
@@ -98,7 +99,7 @@ export default class S3 {
 
             return list.Contents || [];
         } catch (err) {
-            throw new Err(500, new Error(err), 'Failed to list files');
+            throw new Err(500, new Error(err instanceof Error ? err.message : String(err)), 'Failed to list files');
         }
     }
 
@@ -111,7 +112,7 @@ export default class S3 {
      */
     static async del(key: string, opts: {
         recurse: Boolean
-    } = { recurse: false }) {
+    } = { recurse: false }): Promise<void> {
         if (!process.env.ASSET_BUCKET) return;
         const s3 = new S3AWS.S3Client({ region: process.env.AWS_DEFAULT_REGION });
 
@@ -122,7 +123,7 @@ export default class S3 {
                     Key: key
                 }));
             } catch (err) {
-                throw new Err(500, new Error(err), 'Failed to delete file');
+                throw new Err(500, new Error(err instanceof Error ? err.message : String(err)), 'Failed to delete file');
             }
         } else {
             try {
@@ -141,7 +142,7 @@ export default class S3 {
                     }
                 }));
             } catch (err) {
-                throw new Err(500, new Error(err), 'Failed to delete files');
+                throw new Err(500, new Error(err instanceof Error ? err.message : String(err)), 'Failed to delete files');
             }
         }
     }

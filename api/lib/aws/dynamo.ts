@@ -49,7 +49,7 @@ export default class Dynamo {
 
             return items;
         } catch (err) {
-            throw new Err(500, err instanceof Error ? err : new Error(String(err)), 'DynamoDB Query Failed');
+            throw new Err(500, new Error(err instanceof Error ? err.message : String(err)), 'DynamoDB Query Failed');
         }
     }
 
@@ -68,7 +68,7 @@ export default class Dynamo {
 
             return row.Item as DynamoItem;
         } catch (err) {
-            throw new Err(500, err instanceof Error ? err : new Error(String(err)), 'DynamoDB Query Failed');
+            throw new Err(500, new Error(err instanceof Error ? err.message : String(err)), 'DynamoDB Query Failed');
         }
     }
 
@@ -94,7 +94,7 @@ export default class Dynamo {
                 }
             }));
         } catch (err) {
-            throw new Err(500, err instanceof Error ? err : new Error(String(err)), 'DynamoDB putItem Failed');
+            throw new Err(500, new Error(err instanceof Error ? err.message : String(err)), 'DynamoDB putItem Failed');
         }
     }
 
@@ -128,7 +128,7 @@ export default class Dynamo {
             await ddbdoc.send(new DynamoDBDoc.BatchWriteCommand(req));
         } catch (err) {
             console.error('DEBUG', JSON.stringify(features));
-            throw new Err(500, err instanceof Error ? err : new Error(String(err)), 'DynamoDB batchWrite Failed');
+            throw new Err(500, new Error(err instanceof Error ? err.message : String(err)), 'DynamoDB batchWrite Failed');
         }
     }
 }

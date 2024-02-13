@@ -22,6 +22,7 @@ export default class Lambda {
             }))
         }));
 
+        if (!res.Payload) return {};
         return JSON.parse(Buffer.from(res.Payload).toString());
     }
 

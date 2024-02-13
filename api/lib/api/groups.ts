@@ -21,9 +21,11 @@ export default class {
 
     async list(query: {
         useCache?: string;
+
+        [key: string]: unknown;
     }): Promise<TAKList<Group>> {
         const url = new URL(`/Marti/api/groups/all`, this.api.url);
-        for (const q in query) url.searchParams.append(q, query[q]);
+        for (const q in query) url.searchParams.append(q, String(query[q]));
         return await this.api.fetch(url, {
             method: 'GET'
         });
@@ -31,9 +33,11 @@ export default class {
 
     async update(body: Group[], query: {
         clientUid?: string;
+
+        [key: string]: unknown;
     }): Promise<void> {
         const url = new URL(`/Marti/api/groups/active`, this.api.url);
-        for (const q in query) url.searchParams.append(q, query[q]);
+        for (const q in query) url.searchParams.append(q, String(query[q]));
 
         await this.api.fetch(url, {
             method: 'PUT',

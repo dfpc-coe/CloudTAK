@@ -12,9 +12,14 @@ import xml2js from 'xml2js';
 import { Param } from '@openaddresses/batch-generic';
 import { sql } from 'drizzle-orm';
 
-export default async function router(schema, config: Config) {
+export type SpriteRecord = {
+    json: object;
+    image: Buffer;
+}
+
+export default async function router(schema: any, config: Config) {
     // Eventually look at replacing this with memcached?
-    const SpriteMap = {
+    const SpriteMap: Record<string, SpriteRecord> = {
         default: {
             json: JSON.parse(String(await fs.readFile(new URL('../icons/generator.json', import.meta.url)))),
             image: await fs.readFile(new URL('../icons/generator.png', import.meta.url))
@@ -146,6 +151,7 @@ export default async function router(schema, config: Config) {
                     where: sql`iconset = ${String(req.params.iconset)}`
                 })).items) {
                     archive.append(Buffer.from(icon.data, 'base64'), { name: icon.name });
+                    // @ts-ignore
                     xmljson.iconset.icon.push({ $: { name: path.parse(icon.name).base, type2525b: icon.type2525b } })
                 }
 

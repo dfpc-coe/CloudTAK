@@ -15,6 +15,7 @@ interface ConfigArgs {
     unsafe: boolean,
     noevents: boolean,
     nosinks: boolean,
+    nocache: boolean,
     nometrics: boolean,
     local: boolean
 }
@@ -26,6 +27,7 @@ export default class Config {
     noevents: boolean;
     nometrics: boolean;
     nosinks: boolean;
+    nocache: boolean;
     models: Models;
     StackName: string;
     HookURL?: string;
@@ -40,9 +42,9 @@ export default class Config {
     wsClients: Map<string, ConnectionWebSocket[]>;
     Bucket?: string;
     pg: Pool<typeof pgtypes>;
-    cacher?: Cacher;
-    conns?: ConnectionPool;
-    server?: InferSelectModel<typeof Server>;
+    cacher: Cacher;
+    conns: ConnectionPool;
+    server: InferSelectModel<typeof Server>;
     events?: EventsPool;
 
     constructor(init: {
@@ -52,6 +54,7 @@ export default class Config {
         noevents: boolean;
         nometrics: boolean;
         nosinks: boolean;
+        nocache: boolean;
         models: Models;
         StackName: string;
         API_URL: string;
@@ -60,6 +63,7 @@ export default class Config {
         SigningSecret: string;
         wsClients: Map<string, ConnectionWebSocket[]>;
         pg: Pool<typeof pgtypes>;
+        server: InferSelectModel<typeof Server>;
         MartiAPI: string;
         AuthGroup: string;
         DynamoDB?: string;
@@ -72,6 +76,7 @@ export default class Config {
         this.noevents = init.noevents;
         this.nometrics = init.nometrics;
         this.nosinks = init.nosinks;
+        this.nocache = init.nocache;
         this.models = init.models;
         this.StackName = init.StackName;
         this.UnsafeSigningSecret = 'coe-wildland-fire';
@@ -85,7 +90,12 @@ export default class Config {
         this.AuthGroup = init.AuthGroup;
         this.DynamoDB = init.DynamoDB;
         this.Bucket = init.Bucket;
+        this.server = init.server;
         this.HookURL = init.HookURL;
+
+        this.conns = new ConnectionPool(this);
+        this.cacher = new Cacher(this.nocache, this.silent);
+
     }
 
     static async env(args: ConfigArgs): Promise<Config> {
@@ -127,6 +137,18 @@ export default class Config {
 
         const models = new Models(pg);
 
+        let server: InferSelectModel<typeof Server>;
+        try {
+            server = await models.Server.from(1);
+        } catch (err) {
+            console.log(`ok - no server config found: ${err instanceof Error ? err.message : String(err)}`);
+
+            server = await models.Server.generate({
+                name: 'Default Server',
+                url: 'ssl://ops.example.com:8089',
+                api: 'https://ops.example.com:8443'
+            });
+        }
 
         const config = new Config({
             unsafe: (args.unsafe || false),
@@ -135,13 +157,14 @@ export default class Config {
             noevents: (args.noevents || false),
             nometrics: (args.nometrics || false),
             nosinks: (args.nosinks || false),
+            nocache: (args.nocache || false),
             TileBaseURL: process.env.TileBaseURL ? new URL(process.env.TileBaseURL) : new URL('./data-dev/zipcodes.tilebase', import.meta.url),
             PMTILES_URL: process.env.PMTILES_URL || 'http://localhost:5001',
             MartiAPI: process.env.MartiAPI,
             AuthGroup: process.env.AuthGroup,
             StackName: process.env.StackName,
             wsClients: new Map(),
-            SigningSecret, API_URL, DynamoDB, Bucket, pg, models, HookURL
+            server, SigningSecret, API_URL, DynamoDB, Bucket, pg, models, HookURL
         });
 
         if (!config.silent) {

@@ -168,11 +168,16 @@ export default async function router(schema: any, config: Config) {
             const timestamps: Set<Date> = new Set();
             const successMap: Map<string, number> = new Map();
             const failureMap: Map<string, number> = new Map();
-            for (const stat of stats.MetricDataResults) {
-                let map;
-                if (stat.Label === 'ConnectionSinkSuccess') map = successMap;
-                else if (stat.Label === 'ConnectionSinkFailure') map = failureMap;
+            for (const stat of stats) {
+                let map: Map<string, number> = new Map();
+                if (stat.Label === 'ConnectionSinkSuccess') {
+                    map = successMap;
+                } else if (stat.Label === 'ConnectionSinkFailure') {
+                    map = failureMap;
+                }
 
+                if (!stat.Timestamps) stat.Timestamps = [];
+                if (!stat.Values) stat.Values = [];
                 for (let i = 0; i < stat.Timestamps.length; i++) {
                     timestamps.add(stat.Timestamps[i]);
                     map.set(String(stat.Timestamps[i]), Number(stat.Values[i]));
