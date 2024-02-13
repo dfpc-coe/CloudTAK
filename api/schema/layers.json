@@ -5,14 +5,14 @@
         "id": {
             "$ref": "./layers/id.json"
         },
+        "name": {
+            "$ref": "./layers/name.json"
+        },
         "created": {
             "$ref": "./layers/created.json"
         },
         "updated": {
             "$ref": "./layers/updated.json"
-        },
-        "name": {
-            "$ref": "./layers/name.json"
         },
         "description": {
             "$ref": "./layers/description.json"
@@ -59,9 +59,9 @@
     },
     "required": [
         "id",
+        "name",
         "created",
         "updated",
-        "name",
         "description",
         "enabled",
         "enabled_styles",

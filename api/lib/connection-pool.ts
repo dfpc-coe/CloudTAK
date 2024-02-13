@@ -1,18 +1,13 @@
 import Err from '@openaddresses/batch-error';
-import {
-    Server,
-    Connection,
-} from './schema.js';
+import { Connection } from './schema.js';
 import Sinks from './sinks.js';
 import Config from './config.js';
 import Metrics from './aws/metric.js';
 import { WebSocket } from 'ws';
 import TAK, { CoT } from '@tak-ps/node-tak';
-import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import Modeler from '@openaddresses/batch-generic';
 import { InferSelectModel } from 'drizzle-orm';
 import { Feature } from 'geojson';
-import * as pgtypes from './schema.js';
 
 export type EphemeralConnection = {
     id: string;
