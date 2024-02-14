@@ -2,6 +2,9 @@
     "type": "object",
     "additionalProperties": false,
     "properties": {
+        "id": {
+            "$ref": "./profile_subscriptions/id.json"
+        },
         "username": {
             "$ref": "./profile_subscriptions/username.json"
         },
@@ -16,6 +19,7 @@
         }
     },
     "required": [
+        "id",
         "username",
         "created",
         "updated",

@@ -1,5 +1,5 @@
 {
-  "id": "ac7d3eb1-13f2-45ec-aad2-13b04e149710",
+  "id": "b6417e62-7ce3-496f-b350-b67445209556",
   "prevId": "c36f059c-c7a8-4e81-86a8-0b290d92979e",
   "version": "5",
   "dialect": "pg",
@@ -1106,10 +1106,16 @@
       "name": "profile_subscriptions",
       "schema": "",
       "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
         "username": {
           "name": "username",
           "type": "text",
-          "primaryKey": true,
+          "primaryKey": false,
           "notNull": true
         },
         "created": {
