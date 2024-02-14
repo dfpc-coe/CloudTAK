@@ -36,6 +36,10 @@
             ],
             "description": "Field to sort order by"
         },
+        "data": {
+            "type": "integer",
+            "description": "Limit returned layers to those attached to a given data sync"
+        },
         "connection": {
             "type": "integer",
             "description": "Limit returned layers to those attached to a given connection"
