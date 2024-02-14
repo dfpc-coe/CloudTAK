@@ -92,6 +92,7 @@
 <script>
 import PageFooter from './PageFooter.vue';
 import LayerStatus from './Layer/utils/Status.vue';
+import timeDiff from '../timediff.js';
 import {
     TablerNone,
     TablerPager,
@@ -134,20 +135,8 @@ export default {
         await this.fetchList();
     },
     methods: {
-        timeDiff: function(updated) {
-            const msPerMinute = 60 * 1000;
-            const msPerHour = msPerMinute * 60;
-            const msPerDay = msPerHour * 24;
-            const msPerMonth = msPerDay * 30;
-            const msPerYear = msPerDay * 365;
-            const elapsed = +(new Date()) - updated;
-
-            if (elapsed < msPerMinute) return Math.round(elapsed/1000) + ' seconds ago';
-            if (elapsed < msPerHour) return Math.round(elapsed/msPerMinute) + ' minutes ago';
-            if (elapsed < msPerDay ) return Math.round(elapsed/msPerHour ) + ' hours ago';
-            if (elapsed < msPerMonth) return '~' + Math.round(elapsed/msPerDay) + ' days ago';
-            if (elapsed < msPerYear) return '~' + Math.round(elapsed/msPerMonth) + ' months ago';
-            return '~' + Math.round(elapsed/msPerYear ) + ' years ago';
+        timeDiff(update) {
+            return timeDiff(update);
         },
         fetchList: async function() {
             this.loading = true;
