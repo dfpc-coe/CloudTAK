@@ -5,8 +5,8 @@
         @mission='mission = $event'
         @close='$emit("close")'
     />
-    <TablerModal data-bs-theme="light" size='xl' v-if='mode !== "list"' class='text-black'>
-    <div class="modal-status bg-yellow"></div>
+    <TablerModal size='xl' v-if='mode !== "list"'>
+    <div class="modal-status bg-red"></div>
         <button type="button" class="btn-close" @click='mode = "list"' aria-label="Close"></button>
         <MissionCreate
             v-if='mode === "create"'
