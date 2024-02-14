@@ -34,6 +34,9 @@ export type Mission = {
     missionChanges?: Array<unknown>; // Only present on Mission.get()
 }
 
+/**
+ * @class
+ */
 export default class {
     api: TAKAPI;
 
@@ -41,6 +44,9 @@ export default class {
         this.api = api;
     }
 
+    /**
+     * Return users associated with this mission
+     */
     async contacts(name: string) {
         const url = new URL(`/Marti/api/missions/${encodeURIComponent(name)}/contacts`, this.api.url);
 
@@ -49,6 +55,9 @@ export default class {
         });
     }
 
+    /**
+     * Remove a file from the mission
+     */
     async detachContents(name: string, hash: string) {
         const url = new URL(`/Marti/api/missions/${encodeURIComponent(name)}/contents`, this.api.url);
         url.searchParams.append('hash', hash);
@@ -58,6 +67,9 @@ export default class {
         });
     }
 
+    /**
+     * Attach a file resource by hash from the TAK Server file manager
+     */
     async attachContents(name: string, hashes: string[]) {
         const url = new URL(`/Marti/api/missions/${encodeURIComponent(name)}/contents`, this.api.url);
 
@@ -69,6 +81,9 @@ export default class {
         });
     }
 
+    /**
+     * Upload a Mission Package
+     */
     async upload(name: string, creatorUid: string, body: Readable) {
         const url = new URL(`/Marti/api/missions/${encodeURIComponent(name)}/contents/missionpackage`, this.api.url);
         url.searchParams.append('creatorUid', creatorUid);
@@ -79,6 +94,62 @@ export default class {
         });
     }
 
+    /**
+     * Subscribe to a mission
+     */
+    async subscribe(query: {
+        uid: string;
+        password: string;
+        secago: number;
+        start: string;
+        end: string;
+
+        [key: string]: unknown;
+    }) {
+        const url = new URL(`/Marti/api/missions/${encodeURIComponent(name)}/subscription`, this.api.url);
+
+        for (const q in query) url.searchParams.append(q, String(query[q]));
+        return await this.api.fetch(url, {
+            method: 'PUT'
+        });
+    }
+
+    /**
+     * Get current subscription status
+     */
+    async subscribed(query: {
+        uid: string;
+
+        [key: string]: unknown;
+    }) {
+        const url = new URL(`/Marti/api/missions/${encodeURIComponent(name)}/subscription`, this.api.url);
+
+        for (const q in query) url.searchParams.append(q, String(query[q]));
+        return await this.api.fetch(url, {
+            method: 'GET'
+        });
+    }
+
+    /**
+     * Unsubscribe from a mission
+     */
+    async unsubscribe(query: {
+        uid: string;
+        disconnectOnly: string;
+
+        [key: string]: unknown;
+    }) {
+        const url = new URL(`/Marti/api/missions/${encodeURIComponent(name)}/subscription`, this.api.url);
+
+        for (const q in query) url.searchParams.append(q, String(query[q]));
+        return await this.api.fetch(url, {
+            method: 'DELETE'
+        });
+    }
+
+    /**
+     * List missions in currently active channels
+     */
     async list(query: {
         passwordProtected?: string;
         defaultRole?: string;
@@ -94,6 +165,9 @@ export default class {
         });
     }
 
+    /**
+     * Get mission by its GUID
+     */
     async getGuid(guid: string, query: {
         password?: string;
         changes?: string;
@@ -112,6 +186,9 @@ export default class {
         });
     }
 
+    /**
+     * Get mission by its Name
+     */
     async get(name: string, query: {
         password?: string;
         changes?: string;
@@ -130,6 +207,9 @@ export default class {
         });
     }
 
+    /**
+     * Create a new mission
+     */
     async create(name: string, query: {
         group: Array<string> | string;
         creatorUid: string;
@@ -158,6 +238,9 @@ export default class {
         });
     }
 
+    /**
+     * Delete a mission
+     */
     async delete(name: string, query: {
         creatorUid?: string;
         deepDelete?: string;
