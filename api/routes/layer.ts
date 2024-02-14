@@ -416,6 +416,7 @@ export default async function router(schema: any, config: Config) {
             if (req.headers['content-type'] === 'application/json') {
                 if (cots.length === 0) return res.json({ status: 200, message: 'No features found' });
 
+                console.error(cots[0].to_xml());
                 pooledClient.tak.write(cots);
                 for (const cot of cots) config.conns.cot(pooledClient.conn, cot);
 
