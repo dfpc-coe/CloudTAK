@@ -68,7 +68,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-12 col-md-9">
+                            <div class="col-12 col-md-9 position-relative">
                                 <router-view
                                     :data='data'
                                 />
