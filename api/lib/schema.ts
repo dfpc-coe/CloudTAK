@@ -54,7 +54,8 @@ export const Profile = pgTable('profile', {
 });
 
 export const ProfileSubscription = pgTable('profile_subscriptions', {
-    username: text('username').primaryKey(),
+    id: serial('id').primaryKey(),
+    username: text('username').notNull(),
     created: timestamp('created', { withTimezone: true }).notNull().default(sql`Now()`),
     updated: timestamp('updated', { withTimezone: true }).notNull().default(sql`Now()`),
     mission: text('mission').notNull()
