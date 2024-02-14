@@ -1,6 +1,5 @@
 <template>
 <div
-    data-bs-theme="dark"
     class='position-absolute end-0 bottom-0 text-white bg-dark overflow-auto'
     style='z-index: 1; width: 400px; top: 56px;'
 >
