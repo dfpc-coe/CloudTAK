@@ -22,16 +22,19 @@ export default class DataMission {
             }), {})
         }
 
+        let mission;
+
         try {
             const missions = await api.Mission.get(data.name, {});
             //TODO Update Groups: Not supported by TAK Server at this time
 
             if (!data.mission_sync) {
                 await api.Mission.delete(data.name, {});
+                return;
             }
 
             if (!missions.data.length) throw new Error('Create Mission didn\'t return a mission or an error');
-            return missions.data[0];
+            mission = missions.data[0];
         } catch (err) {
             if (!data.mission_sync) return;
 
@@ -46,7 +49,9 @@ export default class DataMission {
             });
 
             if (!missions.data.length) throw new Error('Create Mission didn\'t return a mission or an error');
-            return missions.data[0];
+            mission = missions.data[0];
         }
+
+        return mission;
     }
 }
