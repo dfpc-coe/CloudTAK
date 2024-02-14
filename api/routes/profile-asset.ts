@@ -66,7 +66,7 @@ export default async function router(schema: any, config: Config) {
 
                     await assets[0];
 
-                    await Batch.submitUser(config, user.email, `${req.params.asset}.${req.params.ext}`, req.body);
+                    await Batch.submitUser(config, user.email, `${blob.filename}`, req.body);
 
                     return res.json({
                         status: 200,
