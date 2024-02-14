@@ -97,7 +97,7 @@ export default class {
     /**
      * Subscribe to a mission
      */
-    async subscribe(query: {
+    async subscribe(name: string, query: {
         uid: string;
         password: string;
         secago: number;
@@ -117,7 +117,7 @@ export default class {
     /**
      * Get current subscription status
      */
-    async subscribed(query: {
+    async subscribed(name: string, query: {
         uid: string;
 
         [key: string]: unknown;
@@ -133,7 +133,7 @@ export default class {
     /**
      * Unsubscribe from a mission
      */
-    async unsubscribe(query: {
+    async unsubscribe(name: string, query: {
         uid: string;
         disconnectOnly: string;
 
