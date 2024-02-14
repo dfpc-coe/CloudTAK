@@ -53,6 +53,13 @@ export const Profile = pgTable('profile', {
     tak_loc: geometry('tak_loc', { srid: 4326, type: GeometryType.Point })
 });
 
+export const ProfileSubscription = pgTable('profile_subscriptions', {
+    username: text('username').primaryKey(),
+    created: timestamp('created', { withTimezone: true }).notNull().default(sql`Now()`),
+    updated: timestamp('updated', { withTimezone: true }).notNull().default(sql`Now()`),
+    mission: text('mission').notNull()
+});
+
 export const ProfileChat = pgTable('profile_chats', {
     username: text('username').primaryKey(),
     chatroom: text('chatroom').notNull(),

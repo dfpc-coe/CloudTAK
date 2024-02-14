@@ -1,0 +1,24 @@
+{
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+        "username": {
+            "$ref": "./profile_subscriptions/username.json"
+        },
+        "created": {
+            "$ref": "./profile_subscriptions/created.json"
+        },
+        "updated": {
+            "$ref": "./profile_subscriptions/updated.json"
+        },
+        "mission": {
+            "$ref": "./profile_subscriptions/mission.json"
+        }
+    },
+    "required": [
+        "username",
+        "created",
+        "updated",
+        "mission"
+    ]
+}
