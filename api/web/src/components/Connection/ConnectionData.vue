@@ -8,30 +8,35 @@
         </div>
     </div>
 
-    <Alert v-if='err' title='ETL Server Error' :err='err.message' :compact='true'/>
-    <TablerLoading v-else-if='loading'/>
-    <TablerNone v-else-if='!list.items.length' :create='false' label='Data'/>
-    <div v-else class='table-resposive'>
-        <table class='table card-table table-vcenter datatable table-hover'>
-            <thead>
-                <tr>
-                    <th>Name</th>
-                </tr>
-            </thead>
-            <tbody class='table-tbody'>
-                <tr @click='$router.push(`/connection/${connection.id}/data/${data.id}`)' :key='data.id' v-for='data of list.items' class='cursor-pointer'>
-                    <td>
-                        <div class='d-flex'>
-                            <span class='mt-2' v-text='data.name'/>
-                            <div class='ms-auto'>
-                                <IconAccessPoint v-if='data.mission_sync' class='cursor-pointer text-green' v-tooltip='"Mission Sync On"'/>
-                                <IconAccessPointOff v-else class='cursor-pointer text-red' v-tooltip='"Mission Sync Off"'/>
+    <div style='min-height: 20vh; margin-bottom: 61px'>
+        <Alert v-if='err' title='ETL Server Error' :err='err.message' :compact='true'/>
+        <TablerLoading v-else-if='loading'/>
+        <TablerNone v-else-if='!list.items.length' :create='false' label='Data'/>
+        <div v-else class='table-resposive'>
+            <table class='table card-table table-vcenter datatable table-hover'>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                    </tr>
+                </thead>
+                <tbody class='table-tbody'>
+                    <tr @click='$router.push(`/connection/${connection.id}/data/${data.id}`)' :key='data.id' v-for='data of list.items' class='cursor-pointer'>
+                        <td>
+                            <div class='d-flex'>
+                                <span class='mt-2' v-text='data.name'/>
+                                <div class='ms-auto'>
+                                    <IconAccessPoint v-if='data.mission_sync' class='cursor-pointer text-green' v-tooltip='"Mission Sync On"'/>
+                                    <IconAccessPointOff v-else class='cursor-pointer text-red' v-tooltip='"Mission Sync Off"'/>
+                                </div>
                             </div>
-                        </div>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class='position-absolute bottom-0 w-100' style='height: 61px;'>
         <TableFooter :limit='paging.limit' :total='list.total' @page='paging.page = $event'/>
     </div>
 </div>
