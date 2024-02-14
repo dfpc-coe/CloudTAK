@@ -1,0 +1,12 @@
+{
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+        "mission": {
+            "$ref": "./profile_subscriptions/mission.json"
+        }
+    },
+    "required": [
+        "mission"
+    ]
+}
