@@ -8,17 +8,29 @@ export const useSubStore = defineStore('subscriptions', {
     state: () => {
         return {
             initialized: false,
-            subscriptions: [],
+            subscriptions: new Map()
         }
     },
     actions: {
-        list: async function(overlay_id) {
+        list: async function() {
             const list = await window.std(`/api/profile/sub`);
-            this.subscriptions = list.items;
+            for (const sub of list.items) {
+                this.subscriptions.set(sub.guid, sub);
+            }
             this.initialized = true;
         },
-        subscribe: async function() {
+        subscribe: async function(mission) {
             if (!this.initialized) await this.list();
+
+            const list = await window.std(`/api/profile/sub`, {
+                method: 'POST',
+                body: {
+                    mission: mission.name,
+                    guid: mission.guid
+                }
+            });
+
+            await this.list()
         },
         unsubscribe: async function() {
             if (!this.initialized) await this.list();

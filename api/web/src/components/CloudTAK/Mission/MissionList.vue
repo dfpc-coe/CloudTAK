@@ -35,6 +35,9 @@
                         <span v-text='mission.contents.length + " Items"' class='text-secondary'/>
                     </div>
                 </div>
+                <div class='col-auto ms-auto align-items-center d-flex'>
+                    <IconAccessPoint v-if='subscriptions.has(mission.guid)' v-tooltip='"Subscribed"' class='text-green'/>
+                </div>
             </div>
         </div>
     </template>
@@ -46,6 +49,7 @@ import {
     IconPlus,
     IconLock,
     IconLockOpen,
+    IconAccessPoint,
     IconRefresh,
     IconCircleArrowLeft,
 } from '@tabler/icons-vue';
@@ -59,22 +63,18 @@ const subStore = useSubStore();
 
 export default {
     name: 'MissionList',
-    props: {
-        subscriptions: {
-            type: Object,
-            default: []
-        }
-    },
     data: function() {
         return {
             err: false,
             loading: true,
+            subscriptions: subStore.subscriptions,
             list: {
                 data: {}
             }
         }
     },
     mounted: async function() {
+        await subStore.list();
         await this.fetchMissions();
     },
     methods: {
@@ -95,6 +95,7 @@ export default {
         TablerNone,
         TablerLoading,
         IconCircleArrowLeft,
+        IconAccessPoint,
         IconRefresh,
         IconPlus,
         IconLock,
