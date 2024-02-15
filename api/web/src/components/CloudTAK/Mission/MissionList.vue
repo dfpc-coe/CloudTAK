@@ -58,8 +58,8 @@ import {
     TablerNone,
     TablerLoading
 } from '@tak-ps/vue-tabler';
-import { useSubStore } from '/src/stores/subscription.js';
-const subStore = useSubStore();
+import { useOverlayStore } from '/src/stores/overlays.js';
+const overlayStore = useOverlayStore();
 
 export default {
     name: 'MissionList',
@@ -67,7 +67,7 @@ export default {
         return {
             err: false,
             loading: true,
-            subscriptions: subStore.subscriptions,
+            subscriptions: overlayStore.subscriptions,
             list: {
                 data: {}
             }
