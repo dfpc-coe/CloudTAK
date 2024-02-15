@@ -191,7 +191,7 @@ import {
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import { useOverlayStore } from '/src/stores/overlays.js';
-import { useOverlayStore } from '/src/stores/map.js';
+import { useMapStore } from '/src/stores/map.js';
 const overlayStore = useOverlayStore();
 const mapStore = useMapStore();
 
@@ -242,7 +242,22 @@ export default {
     watch: {
         subscribed: async function() {
             if (this.subscribed === true && !overlayStore.subscriptions.has(this.mission.guid)) {
-                await mapStore.subscribe(this.mission);
+                await mapStore.addDefaultLayer({
+                    id: this.mission.guid,
+                    url: 'internal',
+                    name: this.mission.name,
+                    source: this.mission.guid,
+                    type: 'geojson',
+                    before: 'CoT Icons',
+                    mode: 'mission',
+                    mode_id: this.mission.guid,
+                    clickable: [
+                        { id: `${this.mission.guid}-poly`, type: 'feat' },
+                        { id: `${this.mission.guid}-polyline`, type: 'feat' },
+                        { id: `${this.mission.guid}-line`, type: 'feat' },
+                        { id: this.mission.guid, type: 'feat' }
+                    ]
+                });
             } else if (this.subscribed === false && overlayStore.subscriptions.has(this.mission.guid)) {
                 await mapStore.removeLayer(this.mission.name);
             }
