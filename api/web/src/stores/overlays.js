@@ -53,11 +53,5 @@ export const useOverlayStore = defineStore('overlays', {
 
             await this.list()
         },
-        unsubscribe: async function(mission) {
-            if (!this.initialized) await this.list();
-            if (!this.subscriptions.has(mission.guid)) return;
-            this.deleteOverlay(this.subscriptions.get(mission.guid).id);
-            await this.list();
-        }
     },
 })
