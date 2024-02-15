@@ -110,7 +110,7 @@ export const useMapStore = defineStore('cloudtak', {
                 }
             }
         },
-        removeLayerBySource: function(source) {
+        removeLayerBySource: async function(source) {
             const pos = this.getLayerPos(source, 'source');
             if (pos === false) return
             const layer = this.layers[pos];
@@ -119,7 +119,7 @@ export const useMapStore = defineStore('cloudtak', {
                 this.map.removeLayer(l.id);
             }
 
-            this.map.removeSource(source);
+            await this.map.removeSource(source);
 
             this.layers.splice(pos, 1)
         },
@@ -245,6 +245,7 @@ export const useMapStore = defineStore('cloudtak', {
                         { id: `${layer.id}-poly`, type: 'feat' },
                         { id: `${layer.id}-polyline`, type: 'feat' },
                         { id: `${layer.id}-line`, type: 'feat' },
+                        { id: `${layer.id}-icon`, type: 'feat' },
                         { id: layer.id, type: 'feat' }
                     ]
                 }, cotStyles(layer.id, {
@@ -301,9 +302,11 @@ export const useMapStore = defineStore('cloudtak', {
                     { id: 'cots', type: 'cot' },
                     { id: 'cots-poly', type: 'cot' },
                     { id: 'cots-group', type: 'cot' },
+                    { id: `cots-icon`, type: 'cot' },
                     { id: 'cots-line', type: 'cot' }
                 ]
             }, cotStyles('cots', {
+                group: true,
                 icons: true,
                 labels: true
             }));
@@ -372,6 +375,7 @@ export const useMapStore = defineStore('cloudtak', {
 
 function cotStyles(id, opts = {
     sourceLayer: undefined,
+    group: false,
     labels: false,
     icons: false
 }) {
@@ -413,11 +417,21 @@ function cotStyles(id, opts = {
             'line-width': ["*", 2, ["number", ["get", "stroke-width"], 3]],
             'line-opacity': ["number", ["get", "stroke-opacity"], 1]
         }
+    },{
+        id: id,
+        type: 'circle',
+        source: id,
+        filter: ["==", "$type", "Point"],
+        paint: {
+            'circle-color': ["string", ["get", "circle-color"], "#00FF00"],
+            'circle-radius': ["number", ["get", "circle-radius"], 4],
+            'circle-opacity': ["number", ["get", "circle-opacity"], 1]
+        }
     }]
 
     if (opts.icons) {
         styles.push({
-            id: id,
+            id: `${id}-icon`,
             type: 'symbol',
             source: id,
             filter: [ 'all', ['==', '$type', 'Point'] ],
@@ -434,18 +448,6 @@ function cotStyles(id, opts = {
                 'icon-anchor': 'center',
             }
         })
-    } else {
-        styles.push({
-            id: id,
-            type: 'circle',
-            source: id,
-            filter: ["==", "$type", "Point"],
-            paint: {
-                'circle-color': ["string", ["get", "circle-color"], "#00FF00"],
-                'circle-radius': ["number", ["get", "circle-radius"], 4],
-                'circle-opacity': ["number", ["get", "circle-opacity"], 1]
-            }
-        });
     }
 
     if (opts.labels) {
@@ -464,6 +466,24 @@ function cotStyles(id, opts = {
                 'text-field':  '{callsign}'
             }
         });
+    }
+
+    if (opts.group) {
+        styles.push({
+            id: 'cots-group',
+            type: 'circle',
+            source: 'cots',
+            filter: [ 'all',
+                ['==', '$type', 'Point'],
+                ['has', 'color']
+            ],
+            paint: {
+                'circle-color': ['get', 'color'],
+                'circle-stroke-color': '#ffffff',
+                'circle-stroke-width': 2,
+                'circle-radius': 10
+            },
+        })
     }
 
     return styles.map((s) => {
