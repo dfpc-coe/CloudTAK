@@ -4,9 +4,13 @@
     "properties": {
         "mission": {
             "$ref": "./profile_subscriptions/mission.json"
+        },
+        "guid": {
+            "$ref": "./profile_subscriptions/guid.json"
         }
     },
     "required": [
-        "mission"
+        "mission",
+        "guid"
     ]
 }

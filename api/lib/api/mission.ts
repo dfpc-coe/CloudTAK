@@ -99,10 +99,10 @@ export default class {
      */
     async subscribe(name: string, query: {
         uid: string;
-        password: string;
-        secago: number;
-        start: string;
-        end: string;
+        password?: string;
+        secago?: number;
+        start?: string;
+        end?: string;
 
         [key: string]: unknown;
     }) {
@@ -135,7 +135,7 @@ export default class {
      */
     async unsubscribe(name: string, query: {
         uid: string;
-        disconnectOnly: string;
+        disconnectOnly?: string;
 
         [key: string]: unknown;
     }) {

@@ -5,6 +5,11 @@ import { AuthRequest } from '@tak-ps/blueprint-login';
 import Config from '../lib/config.js';
 import { AuthResource } from '@tak-ps/blueprint-login';
 import { sql } from 'drizzle-orm';
+import TAKAPI, {
+    APIAuthToken,
+    APIAuthCertificate,
+    APIAuthPassword
+} from '../lib/tak-api.js';
 
 export default async function router(schema: any, config: Config) {
     await schema.get('/profile/sub', {
@@ -39,12 +44,17 @@ export default async function router(schema: any, config: Config) {
     }, async (req: AuthRequest, res: Response) => {
         try {
             const user = await Auth.as_user(config.models, req);
+            const profile = await config.models.Profile.from(user.email);
             const sub = await config.models.ProfileSubscription.generate({
                 ...req.body,
                 username: user.email
             });
 
-            // @TODO Subscribe to TAK mission
+            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
+
+            const mission = await api.Mission.subscribe(req.params.name, {
+                uid: user.email
+            });
 
             return res.json(sub);
         } catch (err) {

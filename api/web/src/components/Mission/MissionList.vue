@@ -54,13 +54,16 @@ import {
     TablerNone,
     TablerLoading
 } from '@tak-ps/vue-tabler';
+import { useSubStore } from '/src/stores/subscription.js';
+const subStore = useSubStore();
 
 export default {
     name: 'MissionList',
     props: {
-        connection: {
-            type: Number
-        },
+        subscriptions: {
+            type: Object,
+            default: []
+        }
     },
     data: function() {
         return {
@@ -80,7 +83,6 @@ export default {
                 this.loading = true;
                 const url = window.stdurl('/api/marti/mission');
                 url.searchParams.append('passwordProtected', 'true');
-                if (this.connection) url.searchParams.append('connection', this.connection);
                 this.list = await window.std(url);
             } catch (err) {
                 this.err = err;
