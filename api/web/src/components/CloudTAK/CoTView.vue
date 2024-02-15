@@ -3,47 +3,45 @@
     class='position-absolute end-0 bottom-0 text-white py-2 bg-dark'
     style='z-index: 1; width: 400px; top: 56px;'
 >
-    <div class='row g-2'>
-        <div class='col-12 row border-light border-bottom'>
-            <div class='col-auto row card-header mx-1 my-2'>
-                <div class='card-title mx-2' v-text='cot.properties.callsign'></div>
-                <div class='subheader mx-2'>
-                    <span class='subheader' v-text='cot.properties.type'/>
-                    <span class='subheader ms-auto' v-text='" (" + cot.properties.how || "Unknown" + ")"'/>
-                </div>
-            </div>
-            <div class='col-auto btn-list my-2 ms-auto d-flex align-items-center'>
-                <IconZoomPan @click='zoomTo' class='cursor-pointer' v-tooltip='"Zoom To"'/>
-
-                <IconCode v-if='mode === "default"' @click='mode = "raw"' class='cursor-pointer' v-tooltip='"Raw View"'/>
-                <IconX v-if='mode === "raw"' @click='mode = "default"' class='cursor-pointer' v-tooltip='"Default View"'/>
+    <div class='col-12 border-light border-bottom d-flex'>
+        <div class='col-auto card-header row mx-1 my-2'>
+            <div class='card-title mx-2' v-text='cot.properties.callsign'></div>
+            <div class='subheader mx-2'>
+                <span class='subheader' v-text='cot.properties.type'/>
+                <span class='subheader ms-auto' v-text='" (" + cot.properties.how || "Unknown" + ")"'/>
             </div>
         </div>
+        <div class='col-auto btn-list my-2 mx-3 ms-auto d-flex align-items-center'>
+            <IconZoomPan @click='zoomTo' class='cursor-pointer' v-tooltip='"Zoom To"'/>
 
-        <template v-if='mode === "default"'>
-            <div v-if='!isNaN(cot.properties.speed)' class='col-12 px-3'>
-                <Coordinate :coordinates='center'/>
-            </div>
-            <div v-if='!isNaN(cot.properties.speed)' class='col-12 px-3'>
-                <Speed :speed='cot.properties.speed'/>
-            </div>
-            <div v-if='!isNaN(cot.properties.course)' class='col-12 px-3'>
-                <label class='subheader'>Course</label>
-                <div v-text='cot.properties.course' class='bg-gray-500 rounded mx-2 py-2 px-2'/>
-            </div>
-            <div class='col-12 px-3'>
-                <label class='subheader'>Remarks</label>
-                <div v-text='cot.properties.remarks || "None"' class='bg-gray-500 rounded mx-2 py-2 px-2'/>
-            </div>
-
-            <template v-if='isUserDrawn'>
-                <CoTStyle v-model='feat'/>
-            </template>
-        </template>
-        <template v-else-if='mode === "raw"'>
-            <pre v-text='cot'/>
-        </template>
+            <IconCode v-if='mode === "default"' @click='mode = "raw"' class='cursor-pointer' v-tooltip='"Raw View"'/>
+            <IconX v-if='mode === "raw"' @click='mode = "default"' class='cursor-pointer' v-tooltip='"Default View"'/>
+        </div>
     </div>
+
+    <template v-if='mode === "default"'>
+        <div v-if='!isNaN(cot.properties.speed)' class='col-12 px-3'>
+            <Coordinate :coordinates='center'/>
+        </div>
+        <div v-if='!isNaN(cot.properties.speed)' class='col-12 px-3'>
+            <Speed :speed='cot.properties.speed'/>
+        </div>
+        <div v-if='!isNaN(cot.properties.course)' class='col-12 px-3'>
+            <label class='subheader'>Course</label>
+            <div v-text='cot.properties.course' class='bg-gray-500 rounded mx-2 py-2 px-2'/>
+        </div>
+        <div class='col-12 px-3'>
+            <label class='subheader'>Remarks</label>
+            <div v-text='cot.properties.remarks || "None"' class='bg-gray-500 rounded mx-2 py-2 px-2'/>
+        </div>
+
+        <template v-if='isUserDrawn'>
+            <CoTStyle v-model='feat'/>
+        </template>
+    </template>
+    <template v-else-if='mode === "raw"'>
+        <pre v-text='cot'/>
+    </template>
 </div>
 </template>
 
