@@ -2,12 +2,6 @@ import TAKAPI from '../tak-api.js';
 import { Readable } from 'node:stream'
 import { TAKList } from './types.js';
 
-export enum MissionDefaultRole = {
-    MISSION_OWNER = 'MISSION_OWNER',
-    MISSION_SUBSCRIBER = 'MISSION_SUBSCRIBER',
-    MISSION_READONLY_SUBSCRIBER = 'MISSION_READONLY_SUBSCRIBER'
-};
-
 export type Mission = {
     name: string;
     description: string;

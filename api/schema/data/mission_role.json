@@ -1,0 +1,10 @@
+{
+    "type": "string",
+    "description": "",
+    "$comment": "text",
+    "enum": [
+        "MISSION_OWNER",
+        "MISSION_SUBSCRIBER",
+        "MISSION_READONLY_SUBSCRIBER"
+    ]
+}
