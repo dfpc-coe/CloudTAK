@@ -49,7 +49,7 @@ import {
     IconRefresh,
     IconCircleArrowLeft,
 } from '@tabler/icons-vue';
-import Alert from '../util/Alert.vue';
+import Alert from '../../util/Alert.vue';
 import {
     TablerNone,
     TablerLoading

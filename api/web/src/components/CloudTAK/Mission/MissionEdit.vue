@@ -180,9 +180,9 @@ import {
     IconPencil,
     IconRefresh,
 } from '@tabler/icons-vue';
-import Alert from '../util/Alert.vue';
-import UploadImport from '../util/UploadImport.vue';
-import Status from '../util/Status.vue';
+import Alert from '../../util/Alert.vue';
+import UploadImport from '../../util/UploadImport.vue';
+import Status from '../../util/Status.vue';
 import {
     TablerNone,
     TablerDelete,
