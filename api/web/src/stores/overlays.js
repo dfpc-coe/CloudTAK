@@ -18,12 +18,16 @@ export const useOverlayStore = defineStore('overlays', {
                 body: layer
             });
 
+            await this.list()
+
             return overlay.id;
         },
         deleteOverlay: async function(overlay_id) {
             await window.std(`/api/profile/overlay?id=${overlay_id}`, {
                 method: 'DELETE'
             });
+
+            await this.list()
         },
         list: async function() {
             const list = await window.std(`/api/profile/overlay`);
@@ -35,23 +39,6 @@ export const useOverlayStore = defineStore('overlays', {
                 }
             }
             this.initialized = true;
-        },
-        subscribe: async function(mission) {
-            if (!this.initialized) await this.list();
-
-            if (this.subscriptions.has(mission.guid)) return;
-
-            const list = await window.std(`/api/profile/overlay`, {
-                method: 'POST',
-                body: {
-                    url: 'internal',
-                    name: mission.name,
-                    mode: 'mission',
-                    mode_id: mission.guid
-                }
-            });
-
-            await this.list()
-        },
+        }
     },
 })
