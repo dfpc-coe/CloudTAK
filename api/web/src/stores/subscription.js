@@ -7,7 +7,7 @@ import pointOnFeature from '@turf/point-on-feature';
 export const useSubStore = defineStore('subscriptions', {
     state: () => {
         return {
-            initialized: false
+            initialized: false,
             subscriptions: [],
         }
     },
@@ -19,7 +19,7 @@ export const useSubStore = defineStore('subscriptions', {
         },
         subscribe: async function() {
             if (!this.initialized) await this.list();
-        }
+        },
         unsubscribe: async function() {
             if (!this.initialized) await this.list();
         }
