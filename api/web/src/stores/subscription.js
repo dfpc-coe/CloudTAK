@@ -14,6 +14,7 @@ export const useSubStore = defineStore('subscriptions', {
     actions: {
         list: async function() {
             const list = await window.std(`/api/profile/sub`);
+            this.subscriptions.clear();
             for (const sub of list.items) {
                 this.subscriptions.set(sub.guid, sub);
             }
@@ -21,6 +22,8 @@ export const useSubStore = defineStore('subscriptions', {
         },
         subscribe: async function(mission) {
             if (!this.initialized) await this.list();
+
+            if (this.subscriptions.has(mission.guid)) return;
 
             const list = await window.std(`/api/profile/sub`, {
                 method: 'POST',
@@ -32,8 +35,18 @@ export const useSubStore = defineStore('subscriptions', {
 
             await this.list()
         },
-        unsubscribe: async function() {
+        unsubscribe: async function(mission) {
             if (!this.initialized) await this.list();
+
+            if (!this.subscriptions.has(mission.guid)) return;
+
+            const url = await window.stdurl(`/api/profile/sub`);
+            url.searchParams.append('guid', mission.guid);
+            const list = await window.std(url, {
+                method: 'DELETE'
+            });
+
+            await this.list();
         }
     },
 })
