@@ -74,11 +74,12 @@ export default {
         }
     },
     mounted: async function() {
-        await overlayStore.list();
         await this.fetchMissions();
     },
     methods: {
         fetchMissions: async function() {
+            await overlayStore.list();
+
             try {
                 this.loading = true;
                 const url = window.stdurl('/api/marti/mission');
