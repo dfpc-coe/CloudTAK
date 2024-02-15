@@ -45,7 +45,8 @@ export default class DataMission {
             const missions = await api.Mission.create(data.name, {
                 creatorUid: `connection-${data.connection}-data-${data.id}`,
                 description: data.description,
-                group: data.mission_groups
+                defaultRole: data.mission_role,
+                group: data.mission_groups,
             });
 
             if (!missions.data.length) throw new Error('Create Mission didn\'t return a mission or an error');
