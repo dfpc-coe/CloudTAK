@@ -5,7 +5,7 @@
         style='pointer-events: none;'
         :style='{
             top: `${y - (size / 2)}px`,
-            left: `${x - (size / 2) - 5}px`,
+            left: `${x - (size / 2)}px`,
         }'
     ></div>
 

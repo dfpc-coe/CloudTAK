@@ -230,13 +230,13 @@ export const useMapStore = defineStore('cloudtak', {
             }
 
             if (['vector', 'geojson'].includes(layer.type)) {
-                this.addLayer({
+                await this.addLayer({
                     id: layer.id,
                     url: layer.url,
                     save: true,
                     name: layer.name || layer.id,
-                    mode: layer.id.split('-')[0],
-                    mode_id:  Number(layer.id.split('-')[1]),
+                    mode: layer.mode || layer.id.split('-')[0],
+                    mode_id:  layer.mode_id || Number(layer.id.split('-')[1]),
                     overlay: layer.overlay || null,
                     source: layer.id,
                     type: layer.type,
@@ -261,7 +261,7 @@ export const useMapStore = defineStore('cloudtak', {
                     url: String(layer.url)
                 });
 
-                this.addLayer({
+                await this.addLayer({
                     id: layer.id,
                     url: layer.url,
                     save: true,
@@ -280,8 +280,8 @@ export const useMapStore = defineStore('cloudtak', {
 
             }
         },
-        initLayers: function(basemap) {
-            this.addLayer({
+        initLayers: async function(basemap) {
+            await this.addLayer({
                 name: basemap.name,
                 source: 'basemap',
                 type: 'raster',
@@ -293,7 +293,7 @@ export const useMapStore = defineStore('cloudtak', {
                 maxzoom: basemap.maxzoom
             }]);
 
-            this.addLayer({
+            await this.addLayer({
                 name: 'CoT Icons',
                 source: 'cots',
                 type: 'vector',
@@ -308,7 +308,7 @@ export const useMapStore = defineStore('cloudtak', {
                 labels: true
             }));
 
-            this.addLayer({
+            await this.addLayer({
                 name: 'Your Location',
                 source: 'you',
                 type: 'vector'
@@ -375,7 +375,6 @@ function cotStyles(id, opts = {
     labels: false,
     icons: false
 }) {
-
     const styles = [{
         id: `${id}-poly`,
         type: 'fill',
