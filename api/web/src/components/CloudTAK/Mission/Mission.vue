@@ -238,7 +238,7 @@ export default {
     watch: {
         subscribed: async function() {
             if (this.subscribed) {
-                await subStore.subscribe();
+                await subStore.subscribe(this.mission);
             } else {
                 await subStore.unsubscribe();
             }

@@ -6,7 +6,7 @@
         @close='$emit("close")'
     />
     <TablerModal size='xl' v-if='mode !== "list"'>
-    <div class="modal-status bg-red"></div>
+        <div class="modal-status bg-red"></div>
         <button type="button" class="btn-close" @click='mode = "list"' aria-label="Close"></button>
         <MissionCreate
             v-if='mode === "create"'
