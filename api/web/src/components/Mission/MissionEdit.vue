@@ -20,9 +20,12 @@
                 </div>
             </div>
             <div class='ms-auto btn-list my-2' style='padding-right: 56px;'>
+                <div class='col-auto d-flex align-items-center'>
+                    <TablerToggle v-model='subscribed' label='Subscribed'/>
+                </div>
                 <template v-if='mode === "info"'>
                     <TablerDelete @delete='deleteMission' displaytype='icon' v-tooltip='"Delete"'/>
-                    <IconPencil class='cursor-pointer' v-tooltip='"Edit"'/>
+                    <!--<IconPencil class='cursor-pointer' v-tooltip='"Edit"'/>-->
                 </template>
                 <template v-else-if='mode === "contents"'>
                     <IconPlus v-if='!upload' @click='upload = true' v-tooltip='"Upload File"' class='cursor-pointer'/>
@@ -183,9 +186,12 @@ import Status from '../util/Status.vue';
 import {
     TablerNone,
     TablerDelete,
+    TablerToggle,
     TablerInput,
     TablerLoading
 } from '@tak-ps/vue-tabler';
+import { useSubStore } from '/src/stores/subscription.js';
+const subStore = useSubStore();
 
 export default {
     name: 'MissionEdit',
@@ -204,6 +210,7 @@ export default {
     data: function() {
         return {
             err: null,
+            subscribed: false,
             mode: 'info',
             password: '',
             upload: false,
@@ -229,6 +236,13 @@ export default {
         }
     },
     watch: {
+        subscribed: async function() {
+            if (this.subscribed) {
+                await subStore.subscribe();
+            } else {
+                await subStore.unsubscribe();
+            }
+        },
         upload: async function() {
             if (!this.upload) await this.refresh();
         }
@@ -344,6 +358,7 @@ export default {
         IconPencil,
         TablerLoading,
         TablerDelete,
+        TablerToggle,
         TablerInput,
         IconRefresh,
         IconLock,

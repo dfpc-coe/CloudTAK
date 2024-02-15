@@ -13,12 +13,16 @@
         },
         "mission": {
             "$ref": "./profile_subscriptions/mission.json"
+        },
+        "guid": {
+            "$ref": "./profile_subscriptions/guid.json"
         }
     },
     "required": [
         "id",
         "created",
         "updated",
-        "mission"
+        "mission",
+        "guid"
     ]
 }
