@@ -36,7 +36,7 @@ export default async function router(schema: any, config: Config) {
                 end: { type: 'string' }
             }
         },
-        res: 'res.Marti.json'
+        res: 'res.MartiMission.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(config.models, req);

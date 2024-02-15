@@ -4,6 +4,7 @@ import mapgl from 'maplibre-gl'
 import * as terraDraw from 'terra-draw';
 import pointOnFeature from '@turf/point-on-feature';
 import { useOverlayStore } from './overlays.js'
+const overlayStore = useOverlayStore();
 
 export const useMapStore = defineStore('cloudtak', {
     state: () => {
@@ -85,7 +86,7 @@ export const useMapStore = defineStore('cloudtak', {
             }
 
             if (layer.save && !config.initial) {
-                await this.saveOverlay({
+                await overlayStore.saveOverlay({
                     ...layer,
                     url: new URL(layer.url).pathname,
                     visible: layer.visible === 'visible' ? true : false
@@ -145,7 +146,7 @@ export const useMapStore = defineStore('cloudtak', {
             this.map.removeSource(layer.source);
 
             if (layer.save && layer.overlay) {
-                await this.deleteOverlay(layer.overlay);
+                await overlayStore.deleteOverlay(layer.overlay);
             }
         },
         init: function(container, basemap, terrain) {

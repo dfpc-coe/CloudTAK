@@ -30,7 +30,8 @@ export const useOverlayStore = defineStore('overlays', {
             this.subscriptions.clear();
             for (const sub of list.items) {
                 if (sub.mode === 'mission') {
-                    this.subscriptions.set(sub.guid, sub);
+                    // mode_id is GUID for mission type
+                    this.subscriptions.set(sub.mode_id, sub);
                 }
             }
             this.initialized = true;
@@ -40,11 +41,13 @@ export const useOverlayStore = defineStore('overlays', {
 
             if (this.subscriptions.has(mission.guid)) return;
 
-            const list = await window.std(`/api/profile/sub`, {
+            const list = await window.std(`/api/profile/overlay`, {
                 method: 'POST',
                 body: {
-                    mission: mission.name,
-                    guid: mission.guid
+                    url: 'internal',
+                    name: mission.name,
+                    mode: 'mission',
+                    mode_id: mission.guid
                 }
             });
 
@@ -52,15 +55,8 @@ export const useOverlayStore = defineStore('overlays', {
         },
         unsubscribe: async function(mission) {
             if (!this.initialized) await this.list();
-
             if (!this.subscriptions.has(mission.guid)) return;
-
-            const url = await window.stdurl(`/api/profile/sub`);
-            url.searchParams.append('guid', mission.guid);
-            const list = await window.std(url, {
-                method: 'DELETE'
-            });
-
+            this.deleteOverlay(this.subscriptions.get(mission.guid).id);
             await this.list();
         }
     },

@@ -1,4 +1,5 @@
 import TAKAPI from '../tak-api.js';
+import Err from '@openaddresses/batch-error';
 import { Readable } from 'node:stream'
 import { TAKList } from './types.js';
 
@@ -177,13 +178,16 @@ export default class {
         end?: string;
 
         [key: string]: unknown;
-    }) {
+    }): Promise<Mission> {
         const url = new URL(`/Marti/api/missions/guid/${encodeURIComponent(guid)}`, this.api.url);
 
         for (const q in query) url.searchParams.append(q, String(query[q]));
-        return await this.api.fetch(url, {
+        const missions: TAKList<Mission> = await this.api.fetch(url, {
             method: 'GET'
         });
+
+        if (!missions.data.length) throw new Err(404, null, `No Mission for GUID: ${guid}`);
+        return missions.data[0];
     }
 
     /**
@@ -198,13 +202,16 @@ export default class {
         end?: string;
 
         [key: string]: unknown;
-    }): Promise<TAKList<Mission>> {
+    }): Promise<Mission> {
         const url = new URL(`/Marti/api/missions/${encodeURIComponent(name)}`, this.api.url);
 
         for (const q in query) url.searchParams.append(q, String(query[q]));
-        return await this.api.fetch(url, {
+        const missions: TAKList<Mission> = await this.api.fetch(url, {
             method: 'GET'
         });
+
+        if (!missions.data.length) throw new Err(404, null, `No Mission for Name: ${name}`);
+        return missions.data[0];
     }
 
     /**
