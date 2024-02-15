@@ -190,8 +190,8 @@ import {
     TablerInput,
     TablerLoading
 } from '@tak-ps/vue-tabler';
-import { useSubStore } from '/src/stores/subscription.js';
-const subStore = useSubStore();
+import { useOverlayStore } from '/src/stores/overlays.js';
+const overlayStore = useOverlayStore();
 
 export default {
     name: 'Mission',
@@ -234,15 +234,15 @@ export default {
     mounted: async function() {
         if (!this.mission.passwordProtected) {
             await this.refresh();
-            this.subscribed = subStore.subscriptions.has(this.mission.guid);
+            this.subscribed = overlayStore.subscriptions.has(this.mission.guid);
         }
     },
     watch: {
         subscribed: async function() {
-            if (this.subscribed === true && !subStore.subscriptions.has(this.mission.guid)) {
-                await subStore.subscribe(this.mission);
-            } else if (this.subscribed === false && subStore.subscriptions.has(this.mission.guid)) {
-                await subStore.unsubscribe(this.mission);
+            if (this.subscribed === true && !overlayStore.subscriptions.has(this.mission.guid)) {
+                await overlayStore.subscribe(this.mission);
+            } else if (this.subscribed === false && overlayStore.subscriptions.has(this.mission.guid)) {
+                await overlayStore.unsubscribe(this.mission);
             }
         },
         upload: async function() {

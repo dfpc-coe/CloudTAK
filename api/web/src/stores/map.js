@@ -3,6 +3,7 @@ import * as pmtiles from 'pmtiles';
 import mapgl from 'maplibre-gl'
 import * as terraDraw from 'terra-draw';
 import pointOnFeature from '@turf/point-on-feature';
+import { useOverlayStore } from './overlays.js'
 
 export const useMapStore = defineStore('cloudtak', {
     state: () => {
@@ -25,19 +26,6 @@ export const useMapStore = defineStore('cloudtak', {
         }
     },
     actions: {
-        saveOverlay: async function(layer) {
-            const overlay = await window.std('/api/profile/overlay', {
-                method: 'POST',
-                body: layer
-            });
-
-            return overlay.id;
-        },
-        deleteOverlay: async function(overlay_id) {
-            await window.std(`/api/profile/overlay?id=${overlay_id}`, {
-                method: 'DELETE'
-            });
-        },
         addLayer: async function(layer, layers, config = {
             initial: false
         }) {

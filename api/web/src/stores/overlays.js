@@ -4,7 +4,7 @@ import mapgl from 'maplibre-gl'
 import * as terraDraw from 'terra-draw';
 import pointOnFeature from '@turf/point-on-feature';
 
-export const useSubStore = defineStore('subscriptions', {
+export const useOverlayStore = defineStore('overlays', {
     state: () => {
         return {
             initialized: false,
@@ -12,11 +12,26 @@ export const useSubStore = defineStore('subscriptions', {
         }
     },
     actions: {
+        saveOverlay: async function(layer) {
+            const overlay = await window.std('/api/profile/overlay', {
+                method: 'POST',
+                body: layer
+            });
+
+            return overlay.id;
+        },
+        deleteOverlay: async function(overlay_id) {
+            await window.std(`/api/profile/overlay?id=${overlay_id}`, {
+                method: 'DELETE'
+            });
+        },
         list: async function() {
-            const list = await window.std(`/api/profile/sub`);
+            const list = await window.std(`/api/profile/overlay`);
             this.subscriptions.clear();
             for (const sub of list.items) {
-                this.subscriptions.set(sub.guid, sub);
+                if (sub.mode === 'mission') {
+                    this.subscriptions.set(sub.guid, sub);
+                }
             }
             this.initialized = true;
         },
