@@ -88,7 +88,7 @@ export const useMapStore = defineStore('cloudtak', {
             if (layer.save && !config.initial) {
                 await overlayStore.saveOverlay({
                     ...layer,
-                    url: new URL(layer.url).pathname,
+                    url: layer.type === 'vector' ? new URL(layer.url).pathname : layer.url,
                     visible: layer.visible === 'visible' ? true : false
                 });
             }
@@ -220,13 +220,13 @@ export const useMapStore = defineStore('cloudtak', {
                     url: String(layer.url)
                 });
             } else if (layer.type === 'geojson') {
-                if (this.map.getSource(layer.id)) 
-
-                this.map.addSource(layer.id, {
-                    type: 'geojson',
-                    cluster: false,
-                    data: { type: 'FeatureCollection', features: [] }
-                },
+                if (!this.map.getSource(layer.id)) {
+                    this.map.addSource(layer.id, {
+                        type: 'geojson',
+                        cluster: false,
+                        data: { type: 'FeatureCollection', features: [] }
+                    })
+                }
             }
 
             if (['vector', 'geojson'].includes(layer.type)) {
@@ -247,59 +247,11 @@ export const useMapStore = defineStore('cloudtak', {
                         { id: `${layer.id}-line`, type: 'feat' },
                         { id: layer.id, type: 'feat' }
                     ]
-                },[{
-                    id: `${layer.id}-poly`,
-                    type: 'fill',
-                    source: layer.id,
-                    'source-layer': 'out',
-                    filter: ["==", "$type", "Polygon"],
-                    layout: {},
-                    paint: {
-                        'fill-opacity': ["number", ["get", "fill-opacity"], 1],
-                        'fill-color': ["string", ["get", "fill"], "#00FF00"]
-                    }
-                },{
-                    id: `${layer.id}-polyline`,
-                    type: 'line',
-                    source: layer.id,
-                    'source-layer': 'out',
-                    filter: ["==", "$type", "Polygon"],
-                    layout: {
-                        'line-join': 'round',
-                        'line-cap': 'round'
-                    },
-                    paint: {
-                        'line-color': ["string", ["get", "stroke"], "#00FF00"],
-                        'line-width': ["number", ["get", "stroke-width"], 3],
-                        'line-opacity': ["number", ["get", "stroke-opacity"], 1]
-                    }
-                },{
-                    id: `${layer.id}-line`,
-                    type: 'line',
-                    source: layer.id,
-                    'source-layer': 'out',
-                    filter: ["==", "$type", "LineString"],
-                    layout: {
-                        'line-join': 'round',
-                        'line-cap': 'round'
-                    },
-                    'paint': {
-                        'line-color': ["string", ["get", "stroke"], "#00FF00"],
-                        'line-width': ["*", 2, ["number", ["get", "stroke-width"], 3]],
-                        'line-opacity': ["number", ["get", "stroke-opacity"], 1]
-                    }
-                },{
-                    id: layer.id,
-                    type: 'circle',
-                    source: layer.id,
-                    'source-layer': 'out',
-                    filter: ["==", "$type", "Point"],
-                    paint: {
-                        'circle-color': ["string", ["get", "circle-color"], "#00FF00"],
-                        'circle-radius': ["number", ["get", "circle-radius"], 4],
-                        'circle-opacity': ["number", ["get", "circle-opacity"], 1]
-                    }
-                }], {
+                }, cotStyles(layer.id, {
+                    sourceLayer: layer.type === 'vector',
+                    icons: layer.type === 'geojson',
+                    labels: layer.type === 'geojson',
+                }), {
                     initial: initial
                 });
             } else {
@@ -351,70 +303,10 @@ export const useMapStore = defineStore('cloudtak', {
                     { id: 'cots-group', type: 'cot' },
                     { id: 'cots-line', type: 'cot' }
                 ]
-            }, [{
-                id: 'cots-poly',
-                type: 'fill',
-                source: 'cots',
-                filter: [ 'all', ['==', '$type', 'Polygon']],
-                paint: {
-                    'fill-color': ['get', 'fill'],
-                    'fill-opacity': ['get', 'fill-opacity']
-                }
-            },{
-                id: 'cots-line',
-                type: 'line',
-                source: 'cots',
-                paint: {
-                    'line-color': ['get', 'stroke'],
-                    'line-opacity': ['get', 'stroke-opacity'],
-                    'line-width': ['*', 2, ['get', 'stroke-width']],
-                },
-            },{
-                id: 'cots-group',
-                type: 'circle',
-                source: 'cots',
-                filter: [ 'all',
-                    ['==', '$type', 'Point'],
-                    ['has', 'color']
-                ],
-                paint: {
-                    'circle-color': ['get', 'color'],
-                    'circle-stroke-color': '#ffffff',
-                    'circle-stroke-width': 2,
-                    'circle-radius': 10
-                },
-            },{
-                id: 'cots',
-                type: 'symbol',
-                source: 'cots',
-                filter: [ 'all', ['==', '$type', 'Point'] ],
-                paint: {
-                    'icon-opacity': ['get', 'icon-opacity'],
-                    'icon-halo-color': '#ffffff',
-                    'icon-halo-width': 4
-                },
-                layout: {
-                    'icon-size': 1,
-                    'icon-rotate': ['get', 'course'],
-                    'icon-allow-overlap': true,
-                    'icon-image': '{icon}',
-                    'icon-anchor': 'center',
-                }
-            },{
-                id: 'cots-text',
-                type: 'symbol',
-                source: 'cots',
-                paint: {
-                    'text-color': '#ffffff',
-                    'text-halo-color': '#000000',
-                    'text-halo-width': 2,
-                },
-                layout: {
-                    'text-offset': [0, 2],
-                    'text-font': ['Open Sans Bold'],
-                    'text-field':  '{callsign}'
-                }
-            }]);
+            }, cotStyles('cots', {
+                icons: true,
+                labels: true
+            }));
 
             this.addLayer({
                 name: 'Your Location',
@@ -447,13 +339,20 @@ export const useMapStore = defineStore('cloudtak', {
         },
         initOverlays: async function() {
             for (const layer of (await window.std('/api/profile/overlay')).items) {
-                const url = window.stdurl(layer.url);
-                url.searchParams.append('token', localStorage.token);
-                layer.url = String(url);
-                layer.overlay = layer.id;
-                layer.id = `${layer.mode}-${layer.mode_id}-${layer.id}`;
-                layer.save = true;
-                await this.addDefaultLayer(layer, true)
+                if (layer.mode == 'mission') {
+                    layer.overlay = layer.id;
+                    layer.id = `${layer.mode}-${layer.mode_id}-${layer.id}`;
+                    layer.save = true;
+                    await this.addDefaultLayer(layer, true)
+                } else {
+                    const url = window.stdurl(layer.url);
+                    url.searchParams.append('token', localStorage.token);
+                    layer.url = String(url);
+                    layer.overlay = layer.id;
+                    layer.id = `${layer.mode}-${layer.mode_id}-${layer.id}`;
+                    layer.save = true;
+                    await this.addDefaultLayer(layer, true)
+                }
             }
         },
         initDraw: function() {
@@ -470,3 +369,106 @@ export const useMapStore = defineStore('cloudtak', {
         }
     },
 })
+
+function cotStyles(id, opts = {
+    sourceLayer: undefined,
+    labels: false,
+    icons: false
+}) {
+
+    const styles = [{
+        id: `${id}-poly`,
+        type: 'fill',
+        source: id,
+        filter: ["==", "$type", "Polygon"],
+        layout: {},
+        paint: {
+            'fill-opacity': ["number", ["get", "fill-opacity"], 1],
+            'fill-color': ["string", ["get", "fill"], "#00FF00"]
+        }
+    },{
+        id: `${id}-polyline`,
+        type: 'line',
+        source: id,
+        filter: ["==", "$type", "Polygon"],
+        layout: {
+            'line-join': 'round',
+            'line-cap': 'round'
+        },
+        paint: {
+            'line-color': ["string", ["get", "stroke"], "#00FF00"],
+            'line-width': ["number", ["get", "stroke-width"], 3],
+            'line-opacity': ["number", ["get", "stroke-opacity"], 1]
+        }
+    },{
+        id: `${id}-line`,
+        type: 'line',
+        source: id,
+        filter: ["==", "$type", "LineString"],
+        layout: {
+            'line-join': 'round',
+            'line-cap': 'round'
+        },
+        'paint': {
+            'line-color': ["string", ["get", "stroke"], "#00FF00"],
+            'line-width': ["*", 2, ["number", ["get", "stroke-width"], 3]],
+            'line-opacity': ["number", ["get", "stroke-opacity"], 1]
+        }
+    }]
+
+    if (opts.icons) {
+        styles.push({
+            id: id,
+            type: 'symbol',
+            source: id,
+            filter: [ 'all', ['==', '$type', 'Point'] ],
+            paint: {
+                'icon-opacity': ['get', 'icon-opacity'],
+                'icon-halo-color': '#ffffff',
+                'icon-halo-width': 4
+            },
+            layout: {
+                'icon-size': 1,
+                'icon-rotate': ['get', 'course'],
+                'icon-allow-overlap': true,
+                'icon-image': '{icon}',
+                'icon-anchor': 'center',
+            }
+        })
+    } else {
+        styles.push({
+            id: id,
+            type: 'circle',
+            source: id,
+            filter: ["==", "$type", "Point"],
+            paint: {
+                'circle-color': ["string", ["get", "circle-color"], "#00FF00"],
+                'circle-radius': ["number", ["get", "circle-radius"], 4],
+                'circle-opacity': ["number", ["get", "circle-opacity"], 1]
+            }
+        });
+    }
+
+    if (opts.labels) {
+        styles.push({
+            id: `${id}-text`,
+            type: 'symbol',
+            source: id,
+            paint: {
+                'text-color': '#ffffff',
+                'text-halo-color': '#000000',
+                'text-halo-width': 2,
+            },
+            layout: {
+                'text-offset': [0, 2],
+                'text-font': ['Open Sans Bold'],
+                'text-field':  '{callsign}'
+            }
+        });
+    }
+
+    return styles.map((s) => {
+        if (opts.sourceLayer) s['source-layer'] = opts.sourceLayer;
+        return s;
+    });
+}
