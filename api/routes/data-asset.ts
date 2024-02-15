@@ -231,9 +231,7 @@ export default async function router(schema: any, config: Config) {
             const file = `${req.params.asset}.${req.params.ext}`;
             try {
                 if (data.mission_sync) {
-                    let missions = await api.Mission.get(data.name, {});
-                    if (!missions.data.length) throw new Error('No Mission');
-                    const mission = missions.data[0];
+                    let mission = await api.Mission.get(data.name, {});
 
                     for (const content of mission.contents) {
                         if (content.data.name === file) {

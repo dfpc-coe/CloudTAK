@@ -74,7 +74,7 @@ export default {
         }
     },
     mounted: async function() {
-        await subStore.list();
+        await overlayStore.list();
         await this.fetchMissions();
     },
     methods: {

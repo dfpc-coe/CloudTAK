@@ -53,6 +53,7 @@ export default async function router(schema: any, config: Config) {
                 const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
 
                 const mission = await api.Mission.getGuid(overlay.mode_id, { uid: user.email });
+console.error(mission);
                 await api.Mission.subscribe(mission.name, { uid: user.email });
             }
 

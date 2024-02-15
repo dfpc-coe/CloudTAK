@@ -335,9 +335,7 @@ export default {
                 url.searchParams.append('changes', 'true');
                 url.searchParams.append('logs', 'true');
                 if (this.connection) url.searchParams.append('connection', this.connection);
-                const list = await window.std(url);
-                if (list.data.length !== 1) throw new Error('Mission Error');
-                this.mission = list.data[0];
+                this.mission = await window.std(url);
             } catch (err) {
                 this.err = err;
             }
