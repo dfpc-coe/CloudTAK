@@ -244,7 +244,7 @@ export default {
             if (this.subscribed === true && !overlayStore.subscriptions.has(this.mission.guid)) {
                 await mapStore.addDefaultLayer({
                     id: this.mission.guid,
-                    url: 'internal',
+                    url: `/mission/${encodeURIComponent(this.mission.name)}`,
                     name: this.mission.name,
                     source: this.mission.guid,
                     type: 'geojson',
