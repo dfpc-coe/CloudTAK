@@ -38,33 +38,43 @@
                                         v-model='data.auto_transform'
                                     />
                                 </div>
-                                <div class='col-md-12'>
-                                    <div class='col-12 d-flex'>
-                                        <label>Data Groups</label>
-                                        <div class='ms-auto'>
-                                            <IconSettings @click='modal = true' class='cursor-pointer'/>
+                                <template v-if='!$route.params.dataid'>
+                                    <div class='col-md-12'>
+                                        <div class='col-12 d-flex'>
+                                            <label>Data Groups</label>
+                                            <div class='ms-auto'>
+                                                <IconSettings @click='modal = true' class='cursor-pointer'/>
+                                            </div>
                                         </div>
+
+                                        <GroupSelectModal
+                                            v-if='modal'
+                                            :connection='$route.params.connectionid'
+                                            @close='modal = false'
+                                            v-model='data.mission_groups'
+                                        />
+
+                                        <template v-if='data.mission_groups.length === 0'>
+                                            <div class='col-12'>
+                                                <span>All Groups</span>
+                                            </div>
+
+                                        </template>
+                                        <template v-else>
+                                            <div :key='group.name' v-for='group in data.mission_groups' class='col-12'>
+                                                <span v-text='group' class='mx-2'/>
+                                            </div>
+                                        </template>
                                     </div>
-
-                                    <GroupSelectModal
-                                        v-if='modal'
-                                        :connection='$route.params.connectionid'
-                                        @close='modal = false'
-                                        v-model='data.mission_groups'
-                                    />
-
-                                    <template v-if='data.mission_groups.length === 0'>
-                                        <div class='col-12'>
-                                            <span>All Groups</span>
-                                        </div>
-
-                                    </template>
-                                    <template v-else>
-                                        <div :key='group.name' v-for='group in data.mission_groups' class='col-12'>
-                                            <span v-text='group' class='mx-2'/>
-                                        </div>
-                                    </template>
-                                </div>
+                                    <div class='col-md-12'>
+                                        <TablerEnum
+                                            label='Mission Default Role'
+                                            v-model='data.mission_role'
+                                            description='The Default role assigned to subscribers to the mission'
+                                            :options='["MISSION_OWNER", "MISSION_SUBSCRIBER", "MISSION_READONLY_SUBSCRIBER"]'
+                                        />
+                                    </div>
+                                </template>
                                 <div class="col-md-12">
                                     <TablerToggle
                                         label='Misison Sync'
@@ -109,6 +119,7 @@ import {
     TablerInput,
     TablerToggle,
     TablerDelete,
+    TablerEnum,
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import {
@@ -133,6 +144,7 @@ export default {
                 auto_transform: true,
                 mission_sync: true,
                 mission_groups: [],
+                mission_role: 'MISSION_SUBSCRIBER',
                 description: '',
             }
         }
@@ -194,6 +206,7 @@ export default {
         PageFooter,
         GroupSelectModal,
         TablerBreadCrumb,
+        TablerEnum,
         TablerToggle,
         TablerDelete,
         TablerInput,
