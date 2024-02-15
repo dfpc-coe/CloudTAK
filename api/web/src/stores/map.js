@@ -149,6 +149,23 @@ export const useMapStore = defineStore('cloudtak', {
                 await overlayStore.deleteOverlay(layer.overlay);
             }
         },
+        subscribe: async function(mission) {
+            if (!this.initialized) await this.list();
+
+            if (this.subscriptions.has(mission.guid)) return;
+
+            const list = await window.std(`/api/profile/overlay`, {
+                method: 'POST',
+                body: {
+                    url: 'internal',
+                    name: mission.name,
+                    mode: 'mission',
+                    mode_id: mission.guid
+                }
+            });
+
+            await this.list()
+        },
         init: function(container, basemap, terrain) {
             this.container = container;
 
@@ -219,7 +236,9 @@ export const useMapStore = defineStore('cloudtak', {
                     type: 'vector',
                     url: String(layer.url)
                 });
+            }
 
+            if (['vector', 'geojson'].includes(layer.type)) {
                 this.addLayer({
                     id: layer.id,
                     url: layer.url,

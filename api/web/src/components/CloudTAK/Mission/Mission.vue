@@ -191,7 +191,9 @@ import {
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import { useOverlayStore } from '/src/stores/overlays.js';
+import { useOverlayStore } from '/src/stores/map.js';
 const overlayStore = useOverlayStore();
+const mapStore = useMapStore();
 
 export default {
     name: 'Mission',
@@ -240,9 +242,9 @@ export default {
     watch: {
         subscribed: async function() {
             if (this.subscribed === true && !overlayStore.subscriptions.has(this.mission.guid)) {
-                await overlayStore.subscribe(this.mission);
+                await mapStore.subscribe(this.mission);
             } else if (this.subscribed === false && overlayStore.subscriptions.has(this.mission.guid)) {
-                await overlayStore.unsubscribe(this.mission);
+                await mapStore.removeLayer(this.mission.name);
             }
         },
         upload: async function() {
