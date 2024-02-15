@@ -21,9 +21,9 @@
 </template>
 
 <script>
-import MissionList from '../../Mission/MissionList.vue';
-import MissionEdit from '../../Mission/MissionEdit.vue';
-import MissionCreate from '../../Mission/MissionCreate.vue';
+import MissionList from '../Mission/MissionList.vue';
+import MissionEdit from '../Mission/MissionEdit.vue';
+import MissionCreate from '../Mission/MissionCreate.vue';
 import {
     TablerModal
 } from '@tak-ps/vue-tabler';
