@@ -3,6 +3,13 @@ import Auth from '../lib/auth.js';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
 import Config from '../lib/config.js';
+import { AuthResource } from '@tak-ps/blueprint-login';
+import { sql } from 'drizzle-orm';
+import TAKAPI, {
+    APIAuthToken,
+    APIAuthCertificate,
+    APIAuthPassword
+} from '../lib/tak-api.js';
 
 export default async function router(schema: any, config: Config) {
     await schema.get('/profile/overlay', {
@@ -41,6 +48,14 @@ export default async function router(schema: any, config: Config) {
                 username: user.email
             });
 
+            if (req.body.mode === 'mission') {
+                const profile = await config.models.Profile.from(user.email);
+                const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
+
+                const mission = await api.Mission.getGuid(overlay.mode_id, { uid: user.email });
+                await api.Mission.subscribe(mission.name, { uid: user.email });
+            }
+
             return res.json(overlay);
         } catch (err) {
             return Err.respond(err, res);
@@ -71,6 +86,13 @@ export default async function router(schema: any, config: Config) {
             }
 
             await config.models.ProfileOverlay.delete(overlay.id);
+
+            if (overlay.mode === 'mission') {
+                const profile = await config.models.Profile.from(user.email);
+                const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
+                const mission = await api.Mission.getGuid(overlay.mode_id, { uid: user.email });
+                await api.Mission.unsubscribe(mission.name, { uid: user.email });
+            }
 
             return res.json({
                 status: 200,
