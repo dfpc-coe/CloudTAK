@@ -239,7 +239,7 @@ export const useMapStore = defineStore('cloudtak', {
                     mode_id:  Number(layer.id.split('-')[1]),
                     overlay: layer.overlay || null,
                     source: layer.id,
-                    type: 'vector',
+                    type: layer.type,
                     before: 'CoT Icons',
                     clickable: [
                         { id: `${layer.id}-poly`, type: 'feat' },
