@@ -194,7 +194,7 @@ import { useSubStore } from '/src/stores/subscription.js';
 const subStore = useSubStore();
 
 export default {
-    name: 'MissionEdit',
+    name: 'Mission',
     props: {
         connection: {
             type: Number

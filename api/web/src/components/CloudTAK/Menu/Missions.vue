@@ -12,7 +12,7 @@
             v-if='mode === "create"'
             @close='mode = "list"'
         />
-        <MissionEdit
+        <Mission
             v-else-if='mode === "edit"'
             :initial='mission'
             @close='mode = "list"'
@@ -22,7 +22,7 @@
 
 <script>
 import MissionList from '../Mission/MissionList.vue';
-import MissionEdit from '../Mission/MissionEdit.vue';
+import Mission from '../Mission/Mission.vue';
 import MissionCreate from '../Mission/MissionCreate.vue';
 import {
     TablerModal
@@ -53,7 +53,7 @@ export default {
     components: {
         TablerModal,
         MissionCreate,
-        MissionEdit,
+        Mission,
         MissionList,
     }
 }
