@@ -53,17 +53,6 @@ export const Profile = pgTable('profile', {
     tak_loc: geometry('tak_loc', { srid: 4326, type: GeometryType.Point })
 });
 
-export const ProfileSubscription = pgTable('profile_subscriptions', {
-    id: serial('id').primaryKey(),
-    username: text('username').notNull(),
-    created: timestamp('created', { withTimezone: true }).notNull().default(sql`Now()`),
-    updated: timestamp('updated', { withTimezone: true }).notNull().default(sql`Now()`),
-    mission: text('mission').notNull(),
-    guid: text('guid').notNull()
-}, (t) => ({
-    unq: unique().on(t.username, t.guid)
-}));
-
 export const ProfileChat = pgTable('profile_chats', {
     username: text('username').primaryKey(),
     chatroom: text('chatroom').notNull(),
@@ -228,7 +217,7 @@ export const ProfileOverlay = pgTable('profile_overlays', {
     opacity: integer('opacity').notNull().default(1),
     visible: boolean('visible').notNull().default(true),
     mode: text('mode').notNull(),
-    mode_id: integer('mode_id'), // Used for Data not for Profile
+    mode_id: text('mode_id'), // Used for Data not for Profile
     url: text('url').notNull()
 }, (t) => ({
     unq: unique().on(t.username, t.url)
