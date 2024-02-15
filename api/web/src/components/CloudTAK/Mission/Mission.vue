@@ -224,6 +224,7 @@ export default {
             },
             mission: {
                 name: this.initial.name || 'Unknown',
+                guid: null,
                 passwordProtected: this.initial.passwordProtected,
             },
             imports: [],
@@ -233,14 +234,15 @@ export default {
     mounted: async function() {
         if (!this.mission.passwordProtected) {
             await this.refresh();
+            this.subscribed = subStore.subscriptions.has(this.mission.guid);
         }
     },
     watch: {
         subscribed: async function() {
-            if (this.subscribed) {
+            if (this.subscribed === true && !subStore.subscriptions.has(this.mission.guid)) {
                 await subStore.subscribe(this.mission);
-            } else {
-                await subStore.unsubscribe();
+            } else if (this.subscribed === false && subStore.subscriptions.has(this.mission.guid)) {
+                await subStore.unsubscribe(this.mission);
             }
         },
         upload: async function() {
