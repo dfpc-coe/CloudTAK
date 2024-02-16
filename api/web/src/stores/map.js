@@ -86,7 +86,7 @@ export const useMapStore = defineStore('cloudtak', {
             }
 
             if (layer.save && !config.initial) {
-                await overlayStore.saveOverlay({
+                layer.overlay = await overlayStore.saveOverlay({
                     ...layer,
                     url: layer.type === 'vector' ? new URL(layer.url).pathname : layer.url,
                     visible: layer.visible === 'visible' ? true : false
@@ -115,13 +115,7 @@ export const useMapStore = defineStore('cloudtak', {
             if (pos === false) return
             const layer = this.layers[pos];
 
-            for (const l of layer.layers) {
-                this.map.removeLayer(l.id);
-            }
-
-            await this.map.removeSource(source);
-
-            this.layers.splice(pos, 1)
+            await this.removeLayer(layer.name);
         },
         getLayerPos: function(name, key='name') {
             for (let i = 0; i < this.layers.length; i++) {
@@ -278,7 +272,6 @@ export const useMapStore = defineStore('cloudtak', {
                     type: 'raster',
                     source: layer.id
                 }]);
-
             }
         },
         initLayers: async function(basemap) {
@@ -341,20 +334,21 @@ export const useMapStore = defineStore('cloudtak', {
             });
         },
         initOverlays: async function() {
-            for (const layer of (await window.std('/api/profile/overlay')).items) {
-                if (layer.mode == 'mission') {
-                    layer.overlay = layer.id;
-                    layer.id = `${layer.mode}-${layer.mode_id}-${layer.id}`;
-                    layer.save = true;
-                    await this.addDefaultLayer(layer, true)
+            await overlayStore.list();
+            for (const overlay of overlayStore.overlays) {
+                if (overlay.mode == 'mission') {
+                    overlay.overlay = overlay.id;
+                    overlay.id = `${overlay.mode}-${overlay.mode_id}-${overlay.id}`;
+                    overlay.save = true;
+                    await this.addDefaultLayer(overlay, true)
                 } else {
-                    const url = window.stdurl(layer.url);
+                    const url = window.stdurl(overlay.url);
                     url.searchParams.append('token', localStorage.token);
-                    layer.url = String(url);
-                    layer.overlay = layer.id;
-                    layer.id = `${layer.mode}-${layer.mode_id}-${layer.id}`;
-                    layer.save = true;
-                    await this.addDefaultLayer(layer, true)
+                    overlay.url = String(url);
+                    overlay.overlay = overlay.id;
+                    overlay.id = `${overlay.mode}-${overlay.mode_id}-${overlay.id}`;
+                    overlay.save = true;
+                    await this.addDefaultLayer(overlay, true)
                 }
             }
         },
