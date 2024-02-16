@@ -202,9 +202,6 @@ const mapStore = useMapStore();
 export default {
     name: 'Mission',
     props: {
-        connection: {
-            type: Number
-        },
         initial: {
             type: Object
         },
@@ -234,7 +231,8 @@ export default {
                 passwordProtected: this.initial.passwordProtected,
             },
             imports: [],
-            contacts: []
+            contacts: [],
+            subscriptions: []
         }
     },
     mounted: async function() {
@@ -275,7 +273,7 @@ export default {
             await this.fetchMission();
 
             await Promise.all([
-                this.fetchContacts(),
+                this.fetchSubscriptions(),
                 this.fetchImports()
             ]);
         },
@@ -323,11 +321,19 @@ export default {
             }
             this.loading.users = false;
         },
+        fetchSubscriptions: async function() {
+            try {
+                const url = await window.stdurl(`/api/marti/missions/${this.mission.name}/subscriptions`);
+                this.subscriptions = await window.std(url);
+            } catch (err) {
+                this.err = err;
+            }
+            this.loading.users = false;
+        },
         fetchContacts: async function() {
             try {
                 this.loading.users = true;
                 const url = await window.stdurl(`/api/marti/missions/${this.mission.name}/contacts`);
-                if (this.connection) url.searchParams.append('connection', this.connection);
                 this.contacts = await window.std(url);
             } catch (err) {
                 this.err = err;
@@ -338,7 +344,6 @@ export default {
             try {
                 this.loading.delete = true;
                 const url = window.stdurl(`/api/marti/missions/${this.mission.name}`);
-                if (this.connection) url.searchParams.append('connection', this.connection);
                 const list = await window.std(url, {
                     method: 'DELETE'
                 });
@@ -355,7 +360,6 @@ export default {
                 const url = window.stdurl(`/api/marti/missions/${this.mission.name}`);
                 url.searchParams.append('changes', 'true');
                 url.searchParams.append('logs', 'true');
-                if (this.connection) url.searchParams.append('connection', this.connection);
                 this.mission = await window.std(url);
             } catch (err) {
                 this.err = err;
