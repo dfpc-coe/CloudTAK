@@ -145,7 +145,7 @@
                                 @click='$router.push(`/import/${imp.id}`)'
                                 :key='imp.id'
                                 v-for='imp in imports'
-                                class='col-12 d-flex align-items-center hover-light cursor-pointer rounded'
+                                class='col-12 d-flex align-items-center hover-dark cursor-pointer rounded'
                             >
                                 <Status :status='imp.status'/><span class='mx-2' v-text='imp.name'/>
                             </div>
