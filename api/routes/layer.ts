@@ -410,7 +410,7 @@ export default async function router(schema: any, config: Config) {
                 throw new Err(400, null, 'Either connection or data must be set');
             }
 
-            if (!pooledClient || !pooledClient.conn || !pooledClient.conn.enabled) {
+            if (!pooledClient || !pooledClient.config || !pooledClient.config.enabled) {
                 return res.json({ status: 200, message: 'Recieved but Connection Paused' });
             }
 
@@ -419,7 +419,7 @@ export default async function router(schema: any, config: Config) {
 
                 console.error(cots[0].to_xml());
                 pooledClient.tak.write(cots);
-                for (const cot of cots) config.conns.cot(pooledClient.conn, cot);
+                for (const cot of cots) config.conns.cot(pooledClient.config, cot);
 
                 // TODO Only GeoJSON Features go to Dynamo, this should also store CoT XML
                 // @ts-ignore
