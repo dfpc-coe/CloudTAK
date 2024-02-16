@@ -2,6 +2,8 @@
 
 <p align=center>Facilitate ETL operations to bring non-TAK sources into a TAK Server</p>
 
+<img src='./docs/Screenshot.png' alt='Screenshot of CloudTAK'/>
+
 ## Installation
 
 Local installation can take advantage of the docker-compose workflow.
