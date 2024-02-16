@@ -46,4 +46,30 @@ export default async function router(schema: any, config: Config) {
             return Err.respond(err, res);
         }
     });
+
+    await schema.delete('/marti/missions/:name/log/:log', {
+        name: 'Delete Log',
+        group: 'MartiMissionLog',
+        auth: 'user',
+        ':name': 'string',
+        ':log': 'string',
+        description: 'Helper API to delete a log',
+        res: 'res.Standard.json'
+    }, async (req: AuthRequest, res: Response) => {
+        try {
+            const user = await Auth.as_user(config.models, req);
+
+            const auth = (await config.models.Profile.from(user.email)).auth;
+            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
+
+            await api.MissionLog.delete(req.params.log);
+
+            return res.json({
+                status: 200,
+                message: 'Log Entry Deleted'
+            });
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
 }
