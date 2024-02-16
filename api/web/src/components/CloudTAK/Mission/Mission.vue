@@ -169,7 +169,10 @@
                                     <label class='subheader' v-text='log.creatorUid'/>
                                     <label class='subheader ms-auto' v-text='log.created'/>
                                 </div>
-                                <pre v-text='log.content || "None"'/>
+                                <div class='col-12 position-relative'>
+                                    <IconTrash @click='deleteLog(log)' class='position-absolute cursor-pointer end-0 mx-2 my-2'/>
+                                    <pre v-text='log.content || "None"'/>
+                                </div>
                             </div>
                         </div>
                     </template>
@@ -196,6 +199,7 @@ import {
     IconLockOpen,
     IconPencil,
     IconRefresh,
+    IconTrash,
 } from '@tabler/icons-vue';
 import Alert from '../../util/Alert.vue';
 import UploadImport from '../../util/UploadImport.vue';
@@ -295,6 +299,14 @@ export default {
             url.searchParams.append('name', file.name);
             return url;
         },
+        deleteLog: async function(log) {
+            this.loading.logs = true;
+            await window.std(`/api/marti/missions/${this.mission.name}/log/${log.id}`, {
+                method: 'DELETE',
+            });
+            this.loading.logs = false;
+            this.fetchMission();
+        },
         submitLog: async function(file) {
             this.loading.logs = true;
             await window.std(`/api/marti/missions/${this.mission.name}/log`, {
@@ -375,6 +387,10 @@ export default {
         TablerNone,
         UploadImport,
         Alert,
+        TablerLoading,
+        TablerDelete,
+        TablerToggle,
+        TablerInput,
         IconPlus,
         IconArticle,
         IconDownload,
@@ -383,10 +399,7 @@ export default {
         IconUser,
         IconUsers,
         IconPencil,
-        TablerLoading,
-        TablerDelete,
-        TablerToggle,
-        TablerInput,
+        IconTrash,
         IconRefresh,
         IconLock,
         IconLockOpen
