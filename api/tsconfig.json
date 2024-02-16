@@ -21,6 +21,7 @@
     "include": [
         "index.ts",
         "routes/**/*",
+        "test/**/*",
         "lib/**/*"
     ]
 }
