@@ -28,7 +28,7 @@
                         <IconMaximize v-if='getSource(layer).bounds' @click='zoomTo(getSource(layer).bounds)' class='cursor-pointer' v-tooltip='"Zoom To Overlay"'/>
                         <TablerDelete
                             :key='layer.id'
-                            v-if='layer.name.startsWith("data-") || layer.name.startsWith("profile-")'
+                            v-if='layer.mode === "mission" || layer.name.startsWith("data-") || layer.name.startsWith("profile-")'
                             displaytype='icon'
                             @delete='removeLayer(layer)'
                             v-tooltip='"Delete Overlay"'

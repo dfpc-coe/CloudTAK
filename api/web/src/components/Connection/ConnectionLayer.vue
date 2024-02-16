@@ -8,30 +8,31 @@
         </div>
     </div>
 
-    <Alert v-if='err' title='ETL Server Error' :err='err.message'/>
-    <TablerLoading v-else-if='loading'/>
-    <TablerNone v-else-if='!list.items.length' :create='false' label='Layers'/>
-    <div v-else class='table-resposive'>
-        <table class='table card-table table-vcenter datatable table-hover'>
-            <thead>
-                <tr>
-                    <th>Name</th>
-                </tr>
-            </thead>
-            <tbody class='table-tbody'>
-                <tr @click='$router.push(`/layer/${layer.id}`)' :key='layer.id' v-for='layer of list.items' class='cursor-pointer'>
-                    <td>
-                        <div class='d-flex align-items-center'>
-                            <LayerStatus :layer='layer'/><div class='mx-2' v-text='layer.name'></div>
-                        </div>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-
-        <div class=''>
-            <TableFooter :limit='paging.limit' :total='list.total' @page='paging.page = $event'/>
+    <div style='min-height: 20vh; margin-bottom: 61px'>
+        <Alert v-if='err' title='ETL Server Error' :err='err.message'/>
+        <TablerLoading v-else-if='loading'/>
+        <TablerNone v-else-if='!list.items.length' :create='false' label='Layers'/>
+        <div v-else class='table-resposive'>
+            <table class='table card-table table-vcenter datatable table-hover'>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                    </tr>
+                </thead>
+                <tbody class='table-tbody'>
+                    <tr @click='$router.push(`/layer/${layer.id}`)' :key='layer.id' v-for='layer of list.items' class='cursor-pointer'>
+                        <td>
+                            <div class='d-flex align-items-center'>
+                                <LayerStatus :layer='layer'/><div class='mx-2' v-text='layer.name'></div>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
+    </div>
+    <div class='position-absolute bottom-0 w-100' style='height: 61px;'>
+        <TableFooter :limit='paging.limit' :total='list.total' @page='paging.page = $event'/>
     </div>
 </div>
 

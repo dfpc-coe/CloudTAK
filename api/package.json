@@ -5,7 +5,8 @@
     "description": "Facilitate ETL operations to bring non-TAK sources into a TAK Server",
     "main": "index.js",
     "scripts": {
-        "test": "./test/test",
+        "test": "tape test/*.test.js",
+        "tstest": "test/test",
         "build": "tsc --outDir . && rm ./routes/*.ts",
         "prod": "NODE_OPTIONS='--max-old-space-size=6144' forever index.js",
         "lint": "eslint index.ts lib/**.ts test/**.ts",
@@ -39,6 +40,7 @@
         "@openaddresses/batch-schema": "^9.0.0",
         "@openaddresses/cloudfriend": "^7.0.0",
         "@placemarkio/check-geojson": "^0.1.12",
+        "@sinclair/typebox": "^0.32.14",
         "@tak-ps/blueprint-login": "^4.0.0",
         "@tak-ps/node-cot": "^5.1.1",
         "@tak-ps/node-tak": "^1.2.0",

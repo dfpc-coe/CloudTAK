@@ -41,7 +41,7 @@
                                 <div class='col-md-12'>
                                     <div class='col-12 d-flex'>
                                         <label>Data Groups</label>
-                                        <div class='ms-auto'>
+                                        <div class='ms-auto' v-if='!$route.params.dataid'>
                                             <IconSettings @click='modal = true' class='cursor-pointer'/>
                                         </div>
                                     </div>
@@ -64,6 +64,15 @@
                                             <span v-text='group' class='mx-2'/>
                                         </div>
                                     </template>
+                                </div>
+                                <div class='col-md-12'>
+                                    <TablerEnum
+                                        label='Mission Default Role'
+                                        :disabled='$route.params.dataid'
+                                        v-model='data.mission_role'
+                                        description='The Default role assigned to subscribers to the mission'
+                                        :options='["MISSION_OWNER", "MISSION_SUBSCRIBER", "MISSION_READONLY_SUBSCRIBER"]'
+                                    />
                                 </div>
                                 <div class="col-md-12">
                                     <TablerToggle
@@ -109,6 +118,7 @@ import {
     TablerInput,
     TablerToggle,
     TablerDelete,
+    TablerEnum,
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import {
@@ -133,6 +143,7 @@ export default {
                 auto_transform: true,
                 mission_sync: true,
                 mission_groups: [],
+                mission_role: 'MISSION_SUBSCRIBER',
                 description: '',
             }
         }
@@ -194,6 +205,7 @@ export default {
         PageFooter,
         GroupSelectModal,
         TablerBreadCrumb,
+        TablerEnum,
         TablerToggle,
         TablerDelete,
         TablerInput,

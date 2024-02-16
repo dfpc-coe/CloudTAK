@@ -35,6 +35,9 @@
                         <span v-text='mission.contents.length + " Items"' class='text-secondary'/>
                     </div>
                 </div>
+                <div class='col-auto ms-auto align-items-center d-flex'>
+                    <IconAccessPoint v-if='subscriptions.has(mission.guid)' v-tooltip='"Subscribed"' class='text-green'/>
+                </div>
             </div>
         </div>
     </template>
@@ -46,26 +49,25 @@ import {
     IconPlus,
     IconLock,
     IconLockOpen,
+    IconAccessPoint,
     IconRefresh,
     IconCircleArrowLeft,
 } from '@tabler/icons-vue';
-import Alert from '../util/Alert.vue';
+import Alert from '../../util/Alert.vue';
 import {
     TablerNone,
     TablerLoading
 } from '@tak-ps/vue-tabler';
+import { useOverlayStore } from '/src/stores/overlays.js';
+const overlayStore = useOverlayStore();
 
 export default {
     name: 'MissionList',
-    props: {
-        connection: {
-            type: Number
-        },
-    },
     data: function() {
         return {
             err: false,
             loading: true,
+            subscriptions: overlayStore.subscriptions,
             list: {
                 data: {}
             }
@@ -76,11 +78,12 @@ export default {
     },
     methods: {
         fetchMissions: async function() {
+            await overlayStore.list();
+
             try {
                 this.loading = true;
                 const url = window.stdurl('/api/marti/mission');
                 url.searchParams.append('passwordProtected', 'true');
-                if (this.connection) url.searchParams.append('connection', this.connection);
                 this.list = await window.std(url);
             } catch (err) {
                 this.err = err;
@@ -93,6 +96,7 @@ export default {
         TablerNone,
         TablerLoading,
         IconCircleArrowLeft,
+        IconAccessPoint,
         IconRefresh,
         IconPlus,
         IconLock,

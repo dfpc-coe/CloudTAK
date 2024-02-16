@@ -56,17 +56,17 @@ export default async function router(schema: any, config: Config) {
                     const passThrough = new Stream.PassThrough();
                     file.pipe(passThrough);
 
-                    assets.push(S3.put(`profile/${user.email}/${blob.filename}`, passThrough));
+                    assets.push((async () => {
+                        await S3.put(`profile/${user.email}/${blob.filename}`, passThrough);
+                        await Batch.submitUser(config, user.email, `${blob.filename}`, req.body);
+                    })());
                 } catch (err) {
                     return Err.respond(err, res);
                 }
             }).on('finish', async () => {
                 try {
                     if (!assets.length) throw new Err(400, null, 'No Asset Provided');
-
-                    await assets[0];
-
-                    await Batch.submitUser(config, user.email, `${req.params.asset}.${req.params.ext}`, req.body);
+                    await Promise.all(assets);
 
                     return res.json({
                         status: 200,

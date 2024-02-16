@@ -5,6 +5,7 @@
             <IconCircleArrowLeft @click='$emit("close")' class='cursor-pointer'/>
             <div class='modal-title'>Chats</div>
             <div class='btn-list'>
+                <IconPlus @click='$emit("mode", "contacts")' class='cursor-pointer' v-tooltip='"New Chat"'/>
                 <IconRefresh v-if='!loading' @click='fetchList' class='cursor-pointer' v-tooltip='"Refresh"'/>
             </div>
         </div>
@@ -27,6 +28,7 @@ import {
 
 import {
     IconCircleArrowLeft,
+    IconPlus,
     IconRefresh,
 } from '@tabler/icons-vue';
 
@@ -51,6 +53,7 @@ export default {
         },
     },
     components: {
+        IconPlus,
         IconRefresh,
         TablerNone,
         TablerLoading,

@@ -8,7 +8,7 @@
         <div class="modal-body row">
             <TablerLoading v-if='loading.groups'  desc='Loading Channels'/>
             <template v-else>
-                <div @click='updateGroup(group)' :key='group.name' v-for='group in list.data' class='col-12 cursor-pointer'>
+                <div @click='updateGroup(group)' :key='group.name' v-for='group in groups' class='col-12 cursor-pointer'>
                     <IconCircleFilled  v-if='selected.has(group.name)' class='cursor-pointer'/>
                     <IconCircle v-else class='cursor-pointer'/>
                     <span v-text='group.name' class='mx-2'/>
@@ -57,9 +57,7 @@ export default {
                 generate: false
             },
             selected: new Set(this.modelValue),
-            list: {
-                data: []
-            }
+            groups: []
         }
     },
     mounted: async function() {
@@ -73,15 +71,31 @@ export default {
         fetch: async function() {
             this.loading.groups = true;
 
+            let list;
             if (this.connection) {
                 const url = window.stdurl(`/api/connection/${this.connection}/channel`);
-                this.list = await window.std(url);
-                this.loading.groups = false;
+                list = await window.std(url);
             } else {
                 const url = window.stdurl('/api/marti/group');
-                this.list = await window.std(url);
-                this.loading.groups = false;
+                list = await window.std(url);
             }
+
+            const channels = {};
+
+            JSON.parse(JSON.stringify(list.data)).sort((a, b) => {
+                return (a.name > b.name) ? 1 : ((b.name > a.name) ? -1 : 0);
+            }).forEach((channel) => {
+                if (channels[channel.name]) {
+                    channels[channel.name].direction.push(channel.direction);
+                } else {
+                    channel.direction = [channel.direction];
+                    channels[channel.name] = channel;
+                }
+            });
+
+            this.groups = channels;
+
+            this.loading.groups = false;
         },
         close: function() {
             this.$emit('close');

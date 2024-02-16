@@ -1,4 +1,5 @@
 import TAKAPI from '../tak-api.js';
+import Err from '@openaddresses/batch-error';
 import { Readable } from 'node:stream'
 import { TAKList } from './types.js';
 
@@ -34,6 +35,21 @@ export type Mission = {
     missionChanges?: Array<unknown>; // Only present on Mission.get()
 }
 
+export type MissionSubscriber = {
+    token?: string;
+    clientUid: string;
+    username: string;
+    createTime: string;
+    role: {
+        permissions: Array<string>;
+        hibernateLazyInitializer: object;
+        type: string;
+    }
+}
+
+/**
+ * @class
+ */
 export default class {
     api: TAKAPI;
 
@@ -41,6 +57,9 @@ export default class {
         this.api = api;
     }
 
+    /**
+     * Return users associated with this mission
+     */
     async contacts(name: string) {
         const url = new URL(`/Marti/api/missions/${encodeURIComponent(name)}/contacts`, this.api.url);
 
@@ -49,6 +68,9 @@ export default class {
         });
     }
 
+    /**
+     * Remove a file from the mission
+     */
     async detachContents(name: string, hash: string) {
         const url = new URL(`/Marti/api/missions/${encodeURIComponent(name)}/contents`, this.api.url);
         url.searchParams.append('hash', hash);
@@ -58,6 +80,9 @@ export default class {
         });
     }
 
+    /**
+     * Attach a file resource by hash from the TAK Server file manager
+     */
     async attachContents(name: string, hashes: string[]) {
         const url = new URL(`/Marti/api/missions/${encodeURIComponent(name)}/contents`, this.api.url);
 
@@ -69,6 +94,9 @@ export default class {
         });
     }
 
+    /**
+     * Upload a Mission Package
+     */
     async upload(name: string, creatorUid: string, body: Readable) {
         const url = new URL(`/Marti/api/missions/${encodeURIComponent(name)}/contents/missionpackage`, this.api.url);
         url.searchParams.append('creatorUid', creatorUid);
@@ -79,6 +107,94 @@ export default class {
         });
     }
 
+    /**
+     * Return UIDs associated with any subscribed users
+     */
+    async subscriptions(name: string): Promise<TAKList<MissionSubscriber>> {
+        const url = new URL(`/Marti/api/missions/${encodeURIComponent(name)}/subscriptions`, this.api.url);
+        return await this.api.fetch(url, {
+            method: 'GET'
+        });
+    }
+
+    /**
+     * Return permissions associated with any subscribed users
+     */
+    async subscriptionRoles(name: string): Promise<TAKList<any>> {
+        const url = new URL(`/Marti/api/missions/${encodeURIComponent(name)}/subscriptions/roles`, this.api.url);
+        return await this.api.fetch(url, {
+            method: 'GET'
+        });
+    }
+
+    /**
+     * Return permissions associated with a given mission if subscribed
+     */
+    async subscription(name: string): Promise<MissionSubscriber> {
+        const url = new URL(`/Marti/api/missions/${encodeURIComponent(name)}/subscription`, this.api.url);
+        const res = await this.api.fetch(url, {
+            method: 'GET'
+        });
+
+        return res.data;
+    }
+
+    /**
+     * Subscribe to a mission
+     */
+    async subscribe(name: string, query: {
+        uid: string;
+        password?: string;
+        secago?: number;
+        start?: string;
+        end?: string;
+
+        [key: string]: unknown;
+    }) {
+        const url = new URL(`/Marti/api/missions/${encodeURIComponent(name)}/subscription`, this.api.url);
+
+        for (const q in query) url.searchParams.append(q, String(query[q]));
+        return await this.api.fetch(url, {
+            method: 'PUT'
+        });
+    }
+
+    /**
+     * Get current subscription status
+     */
+    async subscribed(name: string, query: {
+        uid: string;
+
+        [key: string]: unknown;
+    }) {
+        const url = new URL(`/Marti/api/missions/${encodeURIComponent(name)}/subscription`, this.api.url);
+
+        for (const q in query) url.searchParams.append(q, String(query[q]));
+        return await this.api.fetch(url, {
+            method: 'GET'
+        });
+    }
+
+    /**
+     * Unsubscribe from a mission
+     */
+    async unsubscribe(name: string, query: {
+        uid: string;
+        disconnectOnly?: string;
+
+        [key: string]: unknown;
+    }) {
+        const url = new URL(`/Marti/api/missions/${encodeURIComponent(name)}/subscription`, this.api.url);
+
+        for (const q in query) url.searchParams.append(q, String(query[q]));
+        return await this.api.fetch(url, {
+            method: 'DELETE'
+        });
+    }
+
+    /**
+     * List missions in currently active channels
+     */
     async list(query: {
         passwordProtected?: string;
         defaultRole?: string;
@@ -94,6 +210,9 @@ export default class {
         });
     }
 
+    /**
+     * Get mission by its GUID
+     */
     async getGuid(guid: string, query: {
         password?: string;
         changes?: string;
@@ -103,15 +222,21 @@ export default class {
         end?: string;
 
         [key: string]: unknown;
-    }) {
+    }): Promise<Mission> {
         const url = new URL(`/Marti/api/missions/guid/${encodeURIComponent(guid)}`, this.api.url);
 
         for (const q in query) url.searchParams.append(q, String(query[q]));
-        return await this.api.fetch(url, {
+        const missions: TAKList<Mission> = await this.api.fetch(url, {
             method: 'GET'
         });
+
+        if (!missions.data.length) throw new Err(404, null, `No Mission for GUID: ${guid}`);
+        return missions.data[0];
     }
 
+    /**
+     * Get mission by its Name
+     */
     async get(name: string, query: {
         password?: string;
         changes?: string;
@@ -121,15 +246,21 @@ export default class {
         end?: string;
 
         [key: string]: unknown;
-    }): Promise<TAKList<Mission>> {
+    }): Promise<Mission> {
         const url = new URL(`/Marti/api/missions/${encodeURIComponent(name)}`, this.api.url);
 
         for (const q in query) url.searchParams.append(q, String(query[q]));
-        return await this.api.fetch(url, {
+        const missions: TAKList<Mission> = await this.api.fetch(url, {
             method: 'GET'
         });
+
+        if (!missions.data.length) throw new Err(404, null, `No Mission for Name: ${name}`);
+        return missions.data[0];
     }
 
+    /**
+     * Create a new mission
+     */
     async create(name: string, query: {
         group: Array<string> | string;
         creatorUid: string;
@@ -158,6 +289,9 @@ export default class {
         });
     }
 
+    /**
+     * Delete a mission
+     */
     async delete(name: string, query: {
         creatorUid?: string;
         deepDelete?: string;
