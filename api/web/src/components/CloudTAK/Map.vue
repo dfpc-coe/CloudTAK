@@ -372,7 +372,8 @@ export default {
 
             const turl = window.stdurl('/api/basemap');
             turl.searchParams.append('type', 'raster-dem');
-            /*
+
+            /* Disabled for now
             const terrains = await window.std(turl);
             if (terrains.items.length > 0) {
                 terrain = terrains.items[0];
@@ -383,7 +384,7 @@ export default {
             mapStore.init(this.$refs.map, basemap);
 
             mapStore.map.once('load', async () => {
-                mapStore.initLayers(basemap);
+                await mapStore.initLayers(basemap);
 
                 const iconsets = await window.std('/api/iconset');
                 for (const iconset of iconsets.items) {

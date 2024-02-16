@@ -8,6 +8,7 @@ export const useOverlayStore = defineStore('overlays', {
     state: () => {
         return {
             initialized: false,
+            overlays: [],
             subscriptions: new Map()
         }
     },
@@ -30,14 +31,16 @@ export const useOverlayStore = defineStore('overlays', {
             await this.list()
         },
         list: async function() {
-            const list = await window.std(`/api/profile/overlay`);
+            this.overlays = (await window.std(`/api/profile/overlay`)).items;
+
             this.subscriptions.clear();
-            for (const sub of list.items) {
+            for (const sub of this.overlays) {
                 if (sub.mode === 'mission') {
                     // mode_id is GUID for mission type
                     this.subscriptions.set(sub.mode_id, sub);
                 }
             }
+
             this.initialized = true;
         }
     },
