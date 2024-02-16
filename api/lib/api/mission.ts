@@ -108,13 +108,35 @@ export default class {
     }
 
     /**
-     * List users subscribed to a mission
+     * Return UIDs associated with any subscribed users
      */
     async subscriptions(name: string): Promise<TAKList<MissionSubscriber>> {
-        const url = new URL(`/Marti/api/missions/${encodeURIComponent(name)}/subscription`, this.api.url);
+        const url = new URL(`/Marti/api/missions/${encodeURIComponent(name)}/subscriptions`, this.api.url);
         return await this.api.fetch(url, {
             method: 'GET'
         });
+    }
+
+    /**
+     * Return permissions associated with any subscribed users
+     */
+    async subscriptionRoles(name: string): Promise<TAKList<any>> {
+        const url = new URL(`/Marti/api/missions/${encodeURIComponent(name)}/subscriptions/roles`, this.api.url);
+        return await this.api.fetch(url, {
+            method: 'GET'
+        });
+    }
+
+    /**
+     * Return permissions associated with a given mission if subscribed
+     */
+    async subscription(name: string): Promise<MissionSubscriber> {
+        const url = new URL(`/Marti/api/missions/${encodeURIComponent(name)}/subscription`, this.api.url);
+        const res = await this.api.fetch(url, {
+            method: 'GET'
+        });
+
+        return res.data;
     }
 
     /**

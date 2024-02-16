@@ -94,8 +94,18 @@
                         </div>
                     </template>
                     <template v-else-if='mode === "users"'>
-                        <div v-for='contact of contacts'>
-                            <Contact @chat='$emit("chat", $event)' :contact='contact'/>
+                        <div v-for='sub of subscriptions'>
+                            <div class='col-12 py-2 d-flex hover-dark'>
+                                <div class='row col-12 align-items-center'>
+                                    <div class='col-auto mx-2'>
+                                        <div v-text='sub.username'></div>
+                                        <div v-text='sub.username' class='subheader'></div>
+                                    </div>
+                                    <div class='col-auto ms-auto btn-list'>
+                                        <span v-text='sub.role.type'/>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </template>
                     <template v-else-if='mode === "contents"'>
@@ -193,7 +203,6 @@ import {
     TablerInput,
     TablerLoading
 } from '@tak-ps/vue-tabler';
-import Contact from '../partial/Contact.vue';
 import { useOverlayStore } from '/src/stores/overlays.js';
 import { useMapStore } from '/src/stores/map.js';
 const overlayStore = useOverlayStore();
@@ -231,7 +240,6 @@ export default {
                 passwordProtected: this.initial.passwordProtected,
             },
             imports: [],
-            contacts: [],
             subscriptions: []
         }
     },
@@ -323,18 +331,8 @@ export default {
         },
         fetchSubscriptions: async function() {
             try {
-                const url = await window.stdurl(`/api/marti/missions/${this.mission.name}/subscriptions`);
-                this.subscriptions = await window.std(url);
-            } catch (err) {
-                this.err = err;
-            }
-            this.loading.users = false;
-        },
-        fetchContacts: async function() {
-            try {
-                this.loading.users = true;
-                const url = await window.stdurl(`/api/marti/missions/${this.mission.name}/contacts`);
-                this.contacts = await window.std(url);
+                const url = await window.stdurl(`/api/marti/missions/${this.mission.name}/subscriptions/roles`);
+                this.subscriptions = (await window.std(url)).data;
             } catch (err) {
                 this.err = err;
             }
@@ -370,7 +368,6 @@ export default {
     },
     components: {
         Status,
-        Contact,
         TablerNone,
         UploadImport,
         Alert,
