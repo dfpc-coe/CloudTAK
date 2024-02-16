@@ -10,6 +10,8 @@
         <button type="button" class="btn-close" @click='mode = "list"' aria-label="Close"></button>
         <MissionCreate
             v-if='mode === "create"'
+            @mission='mode = "list"'
+            @chat='$emit("chat", $event)'
             @close='mode = "list"'
         />
         <Mission
