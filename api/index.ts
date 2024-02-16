@@ -7,10 +7,11 @@ import SwaggerUI from 'swagger-ui-express';
 import history, {Context} from 'connect-history-api-fallback';
 // @ts-ignore
 import Schema from '@openaddresses/batch-schema';
+import { ProfileConnConfig } from './lib/connection-config.js';
 import Err from '@openaddresses/batch-error';
 import Modeler from '@openaddresses/batch-generic';
 import minimist from 'minimist';
-import { ConnectionWebSocket } from './lib/connection-pool.js';
+import { ConnectionWebSocket } from './lib/connection-web.js';
 import sleep from './lib/sleep.js';
 import EventsPool from './lib/events-pool.js';
 import { WebSocket, WebSocketServer } from 'ws';
@@ -231,12 +232,7 @@ export default async function server(config: Config) {
                     const profile = await ProfileModel.from(parsedParams.connection);
                     if (!profile.auth.cert || !profile.auth.key) throw new Error('No Cert Found on profile');
 
-                    client = await config.conns.add({
-                        id: parsedParams.connection,
-                        name: parsedParams.connection,
-                        enabled: true,
-                        auth: profile.auth
-                    }, true);
+                    client = await config.conns.add(new ProfileConnConfig(parsedParams.connection, profile.auth), true);
                 } else {
                     client = config.conns.get(parsedParams.connection);
 

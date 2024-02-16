@@ -1,79 +1,28 @@
 import Err from '@openaddresses/batch-error';
-import { Connection } from './schema.js';
 import Sinks from './sinks.js';
 import Config from './config.js';
 import Metrics from './aws/metric.js';
-import { WebSocket } from 'ws';
 import TAK, { CoT } from '@tak-ps/node-tak';
 import Modeler from '@openaddresses/batch-generic';
+import { Connection } from './schema.js';
 import { InferSelectModel } from 'drizzle-orm';
-import { Feature } from 'geojson';
 import sleep from './sleep.js';
+import ConnectionConfig from './connection-config.js';
 
-export type EphemeralConnection = {
-    id: string;
-    name: string;
-    enabled: boolean;
-    auth: {
-        cert?: string;
-        key?: string;
-    }
-}
-
-export type IncomingMessage = {
-    type: string;
-    data: object;
-}
-
-export class ConnectionWebSocket {
-    ws: WebSocket;
-    format: string;
-    client?: ConnectionClient;
-
-    constructor(ws: WebSocket, format = 'raw', client?: ConnectionClient) {
-        this.ws = ws;
-        this.format = format;
-        if (client) {
-            this.client = client;
-            this.ws.on('message', (data) => {
-                const msg = JSON.parse(String(data));
-
-                if (msg.type === 'chat') {
-                    console.error('CHAT');
-                } else {
-                    const feat = msg.data as Feature;
-
-                    try {
-                        const cot = CoT.from_geojson(feat);
-                        if (this.client) this.client.tak.write([cot]);
-                    } catch (err) {
-                        this.ws.send(JSON.stringify({
-                            type: 'Error',
-                            properties: {
-                                message: err instanceof Error ? err.message : String(err)
-                            }
-                        }));
-                    }
-                }
-            });
-        }
-    }
-}
-
-class ConnectionClient {
-    conn: InferSelectModel<typeof Connection> | EphemeralConnection;
+export class ConnectionClient {
+    config: ConnectionConfig;
     tak: TAK;
     retry: number;
     initial: boolean;
     ephemeral: boolean;
 
     constructor(
-        conn: InferSelectModel<typeof Connection> | EphemeralConnection,
+        config: ConnectionConfig,
         tak: TAK,
         ephemeral = false
     ) {
         this.tak = tak;
-        this.conn = conn;
+        this.config = config;
         this.retry = 0;
         this.initial = true;
         this.ephemeral = ephemeral;
@@ -149,7 +98,7 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
      * This is also called externally by the layer/:layer/cot API as CoTs
      * aren't rebroadcast to the submitter by the TAK Server
      */
-    async cot(conn: InferSelectModel<typeof Connection> | EphemeralConnection, cot: CoT, ephemeral=false) {
+    async cot(conn: ConnectionConfig, cot: CoT, ephemeral=false) {
         if (this.config.wsClients.has(String(conn.id))) {
             for (const client of (this.config.wsClients.get(String(conn.id)) || [])) {
                 if (client.format == 'geojson') {
@@ -176,7 +125,7 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
         }
     }
 
-    async add(conn: InferSelectModel<typeof Connection> | EphemeralConnection, ephemeral=false): Promise<ConnectionClient> {
+    async add(conn: ConnectionConfig, ephemeral=false): Promise<ConnectionClient> {
         if (!conn.auth || !conn.auth.cert || !conn.auth.key) throw new Err(400, null, 'Connection must have auth.cert & auth.key');
         const tak = await TAK.connect(conn.id, new URL(this.config.server.url), {
             key: conn.auth.key,
@@ -218,13 +167,13 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
         if (connClient.initial) {
             if (connClient.retry >= 5) return; // These are considered stalled connections
             connClient.retry++
-            console.log(`not ok - ${connClient.conn.id} - ${connClient.conn.name} - retrying in ${connClient.retry * 1000}ms`)
+            console.log(`not ok - ${connClient.config.id} - ${connClient.config.name} - retrying in ${connClient.retry * 1000}ms`)
             await sleep(connClient.retry * 1000);
             await connClient.tak.reconnect();
         } else {
             // For now allow infinite retry if a client has connected once
             const retryms = Math.min(connClient.retry * 1000, 15000);
-            console.log(`not ok - ${connClient.conn.id} - ${connClient.conn.name} - retrying in ${retryms}ms`)
+            console.log(`not ok - ${connClient.config.id} - ${connClient.config.name} - retrying in ${retryms}ms`)
             await sleep(retryms);
             await connClient.tak.reconnect();
         }
