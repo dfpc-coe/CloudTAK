@@ -11,6 +11,7 @@
         </template>
         <template v-else-if='mode === "missions"'>
             <MenuMissions
+                @chat='mode = `chat:${$event}`'
                 @close='mode = null'
             />
         </template>

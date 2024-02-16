@@ -94,6 +94,9 @@
                         </div>
                     </template>
                     <template v-else-if='mode === "users"'>
+                        <div v-for='contact of contacts'>
+                            <Contact @chat='$emit("chat", $event)' :contact='contact'/>
+                        </div>
                     </template>
                     <template v-else-if='mode === "contents"'>
                         <template v-if='upload'>
@@ -190,6 +193,7 @@ import {
     TablerInput,
     TablerLoading
 } from '@tak-ps/vue-tabler';
+import Contact from '../partial/Contact.vue';
 import { useOverlayStore } from '/src/stores/overlays.js';
 import { useMapStore } from '/src/stores/map.js';
 const overlayStore = useOverlayStore();
@@ -362,6 +366,7 @@ export default {
     },
     components: {
         Status,
+        Contact,
         TablerNone,
         UploadImport,
         Alert,
