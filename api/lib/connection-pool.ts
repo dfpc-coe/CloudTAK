@@ -7,7 +7,9 @@ import Modeler from '@openaddresses/batch-generic';
 import { Connection } from './schema.js';
 import { InferSelectModel } from 'drizzle-orm';
 import sleep from './sleep.js';
-import ConnectionConfig from './connection-config.js';
+import ConnectionConfig, {
+    MachineConnConfig
+}from './connection-config.js';
 
 export class ConnectionClient {
     config: ConnectionConfig;
@@ -68,8 +70,10 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
         return new Promise((resolve, reject) => {
             stream.on('data', async (conn: InferSelectModel<typeof Connection>) => {
                 if (conn.enabled && !this.config.local) {
-                    conns.push(this.add(conn));
+                    conns.push(this.add(new MachineConnConfig(conn)));
                 }
+            }).on('error', (err) => {
+                return reject(err);
             }).on('end', async () => {
                 try {
                     await Promise.all(conns);
