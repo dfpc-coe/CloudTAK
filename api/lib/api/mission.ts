@@ -35,6 +35,18 @@ export type Mission = {
     missionChanges?: Array<unknown>; // Only present on Mission.get()
 }
 
+export type MissionSubscriber = {
+    token?: string;
+    clientUid: string;
+    username: string;
+    createTime: string;
+    role: {
+        permissions: Array<string>;
+        hibernateLazyInitializer: object;
+        type: string;
+    }
+}
+
 /**
  * @class
  */
@@ -92,6 +104,16 @@ export default class {
         return await this.api.fetch(url, {
             method: 'PUT',
             body
+        });
+    }
+
+    /**
+     * List users subscribed to a mission
+     */
+    async subscriptions(name: string): Promise<TAKList<MissionSubscriber>> {
+        const url = new URL(`/Marti/api/missions/${encodeURIComponent(name)}/subscription`, this.api.url);
+        return await this.api.fetch(url, {
+            method: 'GET'
         });
     }
 

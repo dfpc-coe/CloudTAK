@@ -175,6 +175,34 @@ export default async function router(schema: any, config: Config) {
         }
     });
 
+    await schema.get('/marti/missions/:name/subscriptions', {
+        name: 'Mission Subscriptions',
+        group: 'MartiMissions',
+        auth: 'user',
+        ':name': 'string',
+        description: 'List subscriptions associated with a mission',
+        res: {
+            type: 'array',
+            items: {
+                type: 'object',
+            }
+        }
+    }, async (req: AuthRequest, res: Response) => {
+        try {
+            await Auth.is_auth(config.models, req);
+
+            const user = await Auth.as_user(config.models, req);
+            const auth = (await config.models.Profile.from(user.email)).auth;
+            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
+
+            const subs = await api.Mission.subscriptions(String(req.params.name));
+
+            return res.json(subs);
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
+
     await schema.get('/marti/missions/:name/contacts', {
         name: 'Mission Contacts',
         group: 'MartiMissions',
@@ -265,7 +293,7 @@ export default async function router(schema: any, config: Config) {
     });
 
     await schema.delete('/marti/missions/:name/upload/:hash', {
-        name: 'Mission Upload Delete',
+        nMissionSubscriptioname: 'Mission Upload Delete',
         group: 'MartiMissions',
         auth: 'user',
         ':name': 'string',
