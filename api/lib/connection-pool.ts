@@ -8,6 +8,7 @@ import TAK, { CoT } from '@tak-ps/node-tak';
 import Modeler from '@openaddresses/batch-generic';
 import { InferSelectModel } from 'drizzle-orm';
 import { Feature } from 'geojson';
+import sleep from './sleep.js';
 
 export type EphemeralConnection = {
     id: string;
@@ -241,10 +242,4 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
             return false;
         }
     }
-}
-
-export function sleep(ms: number): Promise<void> {
-    return new Promise((resolve) => {
-        setTimeout(resolve, ms);
-    });
 }
