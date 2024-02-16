@@ -129,38 +129,34 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
         }
     }
 
-    async add(conn: ConnectionConfig, ephemeral=false): Promise<ConnectionClient> {
-        if (!conn.auth || !conn.auth.cert || !conn.auth.key) throw new Err(400, null, 'Connection must have auth.cert & auth.key');
-        const tak = await TAK.connect(conn.id, new URL(this.config.server.url), {
-            key: conn.auth.key,
-            cert: conn.auth.cert
-        });
-        const connClient = new ConnectionClient(conn, tak, ephemeral);
+    async add(config: ConnectionConfig, ephemeral=false): Promise<ConnectionClient> {
+        if (!config.auth || !config.auth.cert || !config.auth.key) throw new Err(400, null, 'Connection must have auth.cert & auth.key');
+        const tak = await TAK.connect(config.id, new URL(this.config.server.url), config.auth);
+        const connClient = new ConnectionClient(config, tak, ephemeral);
 
-        this.set(conn.id, connClient);
+        this.set(config.id, connClient);
 
         tak.on('cot', async (cot: CoT) => {
             connClient.retry = 0;
             connClient.initial = false;
 
-            this.cot(conn, cot, ephemeral);
+            this.cot(config, cot, ephemeral);
         }).on('end', async () => {
-            console.error(`not ok - ${conn.id} - ${conn.name} @ end`);
+            console.error(`not ok - ${config.id} - ${config.name} @ end`);
             this.retry(connClient);
         }).on('timeout', async () => {
-            console.error(`not ok - ${conn.id} - ${conn.name} @ timeout`);
+            console.error(`not ok - ${config.id} - ${config.name} @ timeout`);
             this.retry(connClient);
         }).on('ping', async () => {
-            if (this.config.StackName !== 'test' && !ephemeral) {
+            if (this.config.StackName !== 'test' && !ephemeral && typeof config.id === 'number') {
                 try {
-                    const c = conn as InferSelectModel<typeof Connection>;
-                    await this.metrics.post(c.id);
+                    await this.metrics.post(config.id);
                 } catch (err) {
                     console.error(`not ok - failed to push metrics - ${err}`);
                 }
             }
         }).on('error', async (err) => {
-            console.error(`not ok - ${conn.id} - ${conn.name} @ error:${err}`);
+            console.error(`not ok - ${config.id} - ${config.name} @ error:${err}`);
             this.retry(connClient);
         });
 
