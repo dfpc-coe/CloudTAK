@@ -76,8 +76,8 @@ import {
     IconSquareChevronRight,
     IconChevronDown,
 } from '@tabler/icons-vue';
-import GroupSelect from '../util/GroupSelectModal.vue';
-import Alert from '../util/Alert.vue';
+import GroupSelect from '../../util/GroupSelectModal.vue';
+import Alert from '../../util/Alert.vue';
 import {
     TablerNone,
     TablerInput,

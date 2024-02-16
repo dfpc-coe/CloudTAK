@@ -19,12 +19,12 @@
         "query": false,
         "res": true
     },
-    "GET /connection/:connectionid/channel": {
+    "PUT /basemap": {
         "body": false,
         "query": false,
         "res": true
     },
-    "PUT /basemap": {
+    "GET /connection/:connectionid/channel": {
         "body": false,
         "query": false,
         "res": true
@@ -64,23 +64,23 @@
         "query": true,
         "res": true
     },
-    "POST /connection/:connectionid/sink": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
     "POST /connection/:connectionid/token": {
         "body": true,
         "query": false,
         "res": true
     },
-    "POST /basemap": {
+    "POST /connection/:connectionid/sink": {
         "body": true,
         "query": false,
         "res": true
     },
     "GET /connection/:connectionid/data/:dataid/job/:jobid": {
         "body": false,
+        "query": false,
+        "res": true
+    },
+    "POST /basemap": {
+        "body": true,
         "query": false,
         "res": true
     },
@@ -139,13 +139,13 @@
         "query": false,
         "res": true
     },
-    "POST /connection/:connectionid/data/:dataid/asset/:asset.:ext": {
-        "body": false,
+    "POST /connection": {
+        "body": true,
         "query": false,
         "res": true
     },
-    "POST /connection": {
-        "body": true,
+    "POST /connection/:connectionid/data/:dataid/asset/:asset.:ext": {
+        "body": false,
         "query": false,
         "res": true
     },
@@ -219,16 +219,6 @@
         "query": false,
         "res": true
     },
-    "GET /basemap/:basemapid": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "GET /basemap/:basemapid/tiles/:z/:x/:y": {
-        "body": false,
-        "query": false,
-        "res": false
-    },
     "PUT /import/:import": {
         "body": false,
         "query": false,
@@ -244,7 +234,22 @@
         "query": false,
         "res": true
     },
+    "GET /basemap/:basemapid": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "GET /basemap/:basemapid/tiles/:z/:x/:y": {
+        "body": false,
+        "query": false,
+        "res": false
+    },
     "GET /connection/:connectionid/data": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "GET /layer/:layerid/query": {
         "body": false,
         "query": true,
         "res": true
@@ -254,22 +259,17 @@
         "query": false,
         "res": true
     },
-    "GET /layer/:layerid/query": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
     "GET /layer/:layerid/alert": {
         "body": false,
         "query": true,
         "res": true
     },
-    "GET /layer/:layerid/query/:featid": {
+    "GET /import/:import": {
         "body": false,
         "query": false,
         "res": true
     },
-    "GET /import/:import": {
+    "GET /layer/:layerid/query/:featid": {
         "body": false,
         "query": false,
         "res": true
@@ -319,24 +319,29 @@
         "query": false,
         "res": true
     },
+    "PATCH /import/:import": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
     "GET /marti/missions/:name": {
         "body": false,
         "query": true,
         "res": true
     },
-    "PATCH /import/:import": {
-        "body": true,
+    "DELETE /marti/missions/:name/log/:log": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "DELETE /layer/:layerid/alert": {
+        "body": false,
         "query": false,
         "res": true
     },
     "GET /marti/group": {
         "body": false,
         "query": true,
-        "res": true
-    },
-    "DELETE /layer/:layerid/alert": {
-        "body": false,
-        "query": false,
         "res": true
     },
     "GET /layer": {
@@ -354,14 +359,14 @@
         "query": false,
         "res": true
     },
-    "PUT /marti/group": {
-        "body": true,
-        "query": true,
-        "res": true
-    },
     "DELETE /layer/:layerid/alert/:alertid": {
         "body": false,
         "query": false,
+        "res": true
+    },
+    "PUT /marti/group": {
+        "body": true,
+        "query": true,
         "res": true
     },
     "POST /marti/missions/:name": {
@@ -369,8 +374,8 @@
         "query": true,
         "res": true
     },
-    "GET /profile/chat": {
-        "body": false,
+    "PATCH /connection/:connectionid/data/:dataid": {
+        "body": true,
         "query": false,
         "res": true
     },
@@ -379,8 +384,8 @@
         "query": false,
         "res": true
     },
-    "PATCH /connection/:connectionid/data/:dataid": {
-        "body": true,
+    "GET /profile/chat": {
+        "body": false,
         "query": false,
         "res": true
     },
@@ -394,7 +399,7 @@
         "query": true,
         "res": true
     },
-    "GET /marti/missions/:name/contacts": {
+    "GET /marti/missions/:name/subscription": {
         "body": false,
         "query": false,
         "res": true
@@ -409,12 +414,12 @@
         "query": false,
         "res": true
     },
-    "POST /marti/missions/:name/upload": {
+    "GET /connection/:connectionid/data/:dataid": {
         "body": false,
-        "query": true,
+        "query": false,
         "res": true
     },
-    "GET /connection/:connectionid/data/:dataid": {
+    "GET /marti/missions/:name/subscriptions": {
         "body": false,
         "query": false,
         "res": true
@@ -424,22 +429,17 @@
         "query": false,
         "res": true
     },
-    "POST /profile/asset/:asset.:ext": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
     "GET /import": {
         "body": false,
         "query": true,
         "res": true
     },
-    "POST /layer": {
-        "body": true,
+    "POST /profile/asset/:asset.:ext": {
+        "body": false,
         "query": false,
         "res": true
     },
-    "POST /marti/signClient": {
+    "POST /layer": {
         "body": true,
         "query": false,
         "res": true
@@ -449,12 +449,22 @@
         "query": false,
         "res": true
     },
-    "DELETE /marti/missions/:name/upload/:hash": {
-        "body": false,
+    "POST /marti/signClient": {
+        "body": true,
         "query": false,
         "res": true
     },
     "DELETE /connection/:connectionid/data/:dataid": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /marti/missions/:name/subscriptions/roles": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /marti/missions/:name/contacts": {
         "body": false,
         "query": false,
         "res": true
@@ -484,14 +494,19 @@
         "query": false,
         "res": true
     },
+    "GET /profile": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
     "GET /profile/overlay": {
         "body": false,
         "query": false,
         "res": true
     },
-    "GET /profile": {
+    "POST /marti/missions/:name/upload": {
         "body": false,
-        "query": false,
+        "query": true,
         "res": true
     },
     "GET /server": {
@@ -502,6 +517,11 @@
     "GET /iconset/:iconset": {
         "body": false,
         "query": true,
+        "res": true
+    },
+    "DELETE /marti/missions/:name/upload/:hash": {
+        "body": false,
+        "query": false,
         "res": true
     },
     "GET /task": {
@@ -529,12 +549,17 @@
         "query": false,
         "res": true
     },
+    "PATCH /server": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
     "GET /layer/:layerid/task": {
         "body": false,
         "query": false,
         "res": true
     },
-    "PATCH /server": {
+    "POST /iconset/:iconset/icon": {
         "body": true,
         "query": false,
         "res": true
@@ -549,11 +574,6 @@
         "query": false,
         "res": true
     },
-    "POST /iconset/:iconset/icon": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
     "GET /token": {
         "body": false,
         "query": true,
@@ -564,12 +584,12 @@
         "query": false,
         "res": true
     },
-    "DELETE /iconset/:iconset": {
+    "GET /layer/:layerid/task/logs": {
         "body": false,
         "query": false,
         "res": true
     },
-    "GET /layer/:layerid/task/logs": {
+    "DELETE /iconset/:iconset": {
         "body": false,
         "query": false,
         "res": true

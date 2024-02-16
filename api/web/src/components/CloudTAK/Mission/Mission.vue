@@ -20,9 +20,12 @@
                 </div>
             </div>
             <div class='ms-auto btn-list my-2' style='padding-right: 56px;'>
+                <div class='col-auto d-flex align-items-center'>
+                    <TablerToggle v-model='subscribed' label='Subscribed'/>
+                </div>
                 <template v-if='mode === "info"'>
                     <TablerDelete @delete='deleteMission' displaytype='icon' v-tooltip='"Delete"'/>
-                    <IconPencil class='cursor-pointer' v-tooltip='"Edit"'/>
+                    <!--<IconPencil class='cursor-pointer' v-tooltip='"Edit"'/>-->
                 </template>
                 <template v-else-if='mode === "contents"'>
                     <IconPlus v-if='!upload' @click='upload = true' v-tooltip='"Upload File"' class='cursor-pointer'/>
@@ -73,24 +76,41 @@
                 </div>
                 <div class="mx-2 my-2" style='width: calc(100% - 40px);'>
                     <template v-if='mode === "info"'>
-                        <div class="datagrid-item pb-2">
-                            <div class="datagrid-title">Created</div>
-                            <div class="datagrid-content" v-text='mission.createTime'></div>
+                        <div class='datagrid'>
+                            <div class="datagrid-item pb-2">
+                                <div class="datagrid-title">Created</div>
+                                <div class="datagrid-content" v-text='mission.createTime'></div>
+                            </div>
+                            <div class="datagrid-item pb-2">
+                                <div class="datagrid-title">Subscribers</div>
+                                <div class="datagrid-content" v-text='subscriptions.length'></div>
+                            </div>
+                            <div class="datagrid-item pb-2">
+                                <div class="datagrid-title">Groups (Channels)</div>
+                                <div class="datagrid-content" v-text='mission.groups.join(", ")'></div>
+                            </div>
                         </div>
-                        <div class="datagrid-item pb-2">
-                            <div class="datagrid-title">Updated</div>
-                            <div class="datagrid-content"></div>
-                        </div>
-                        <div class="datagrid-item pb-2">
-                            <div class="datagrid-title">Groups (Channels)</div>
-                            <div class="datagrid-content" v-text='mission.groups.join(", ")'></div>
-                        </div>
-                        <div class="datagrid-item pb-2">
-                            <div class="datagrid-title">Description</div>
-                            <div class="datagrid-content" v-text='mission.description || "No Feed Description"'></div>
+                        <div class='datagrid'>
+                            <div class="datagrid-item pb-2">
+                                <div class="datagrid-title">Description</div>
+                                <div class="datagrid-content" v-text='mission.description || "No Feed Description"'></div>
+                            </div>
                         </div>
                     </template>
                     <template v-else-if='mode === "users"'>
+                        <div v-for='sub of subscriptions'>
+                            <div class='col-12 py-2 d-flex hover-dark'>
+                                <div class='row col-12 align-items-center'>
+                                    <div class='col-auto mx-2'>
+                                        <div v-text='sub.username'></div>
+                                        <div v-text='sub.username' class='subheader'></div>
+                                    </div>
+                                    <div class='col-auto ms-auto btn-list'>
+                                        <span v-text='sub.role.type'/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </template>
                     <template v-else-if='mode === "contents"'>
                         <template v-if='upload'>
@@ -125,7 +145,7 @@
                                 @click='$router.push(`/import/${imp.id}`)'
                                 :key='imp.id'
                                 v-for='imp in imports'
-                                class='col-12 d-flex align-items-center hover-light cursor-pointer rounded'
+                                class='col-12 d-flex align-items-center hover-dark cursor-pointer rounded'
                             >
                                 <Status :status='imp.status'/><span class='mx-2' v-text='imp.name'/>
                             </div>
@@ -149,7 +169,10 @@
                                     <label class='subheader' v-text='log.creatorUid'/>
                                     <label class='subheader ms-auto' v-text='log.created'/>
                                 </div>
-                                <pre v-text='log.content || "None"'/>
+                                <div class='col-12 position-relative'>
+                                    <IconTrash @click='deleteLog(log)' class='position-absolute cursor-pointer end-0 mx-2 my-2'/>
+                                    <pre v-text='log.content || "None"'/>
+                                </div>
                             </div>
                         </div>
                     </template>
@@ -176,23 +199,26 @@ import {
     IconLockOpen,
     IconPencil,
     IconRefresh,
+    IconTrash,
 } from '@tabler/icons-vue';
-import Alert from '../util/Alert.vue';
-import UploadImport from '../util/UploadImport.vue';
-import Status from '../util/Status.vue';
+import Alert from '../../util/Alert.vue';
+import UploadImport from '../../util/UploadImport.vue';
+import Status from '../../util/Status.vue';
 import {
     TablerNone,
     TablerDelete,
+    TablerToggle,
     TablerInput,
     TablerLoading
 } from '@tak-ps/vue-tabler';
+import { useOverlayStore } from '/src/stores/overlays.js';
+import { useMapStore } from '/src/stores/map.js';
+const overlayStore = useOverlayStore();
+const mapStore = useMapStore();
 
 export default {
-    name: 'MissionEdit',
+    name: 'Mission',
     props: {
-        connection: {
-            type: Number
-        },
         initial: {
             type: Object
         },
@@ -204,6 +230,7 @@ export default {
     data: function() {
         return {
             err: null,
+            subscribed: false,
             mode: 'info',
             password: '',
             upload: false,
@@ -217,18 +244,42 @@ export default {
             },
             mission: {
                 name: this.initial.name || 'Unknown',
+                guid: null,
                 passwordProtected: this.initial.passwordProtected,
             },
             imports: [],
-            contacts: []
+            subscriptions: []
         }
     },
     mounted: async function() {
         if (!this.mission.passwordProtected) {
             await this.refresh();
+            this.subscribed = overlayStore.subscriptions.has(this.mission.guid);
         }
     },
     watch: {
+        subscribed: async function() {
+            if (this.subscribed === true && !overlayStore.subscriptions.has(this.mission.guid)) {
+                await mapStore.addDefaultLayer({
+                    id: this.mission.guid,
+                    url: `/mission/${encodeURIComponent(this.mission.name)}`,
+                    name: this.mission.name,
+                    source: this.mission.guid,
+                    type: 'geojson',
+                    before: 'CoT Icons',
+                    mode: 'mission',
+                    mode_id: this.mission.guid,
+                    clickable: [
+                        { id: `${this.mission.guid}-poly`, type: 'feat' },
+                        { id: `${this.mission.guid}-polyline`, type: 'feat' },
+                        { id: `${this.mission.guid}-line`, type: 'feat' },
+                        { id: this.mission.guid, type: 'feat' }
+                    ]
+                });
+            } else if (this.subscribed === false && overlayStore.subscriptions.has(this.mission.guid)) {
+                await mapStore.removeLayer(this.mission.name);
+            }
+        },
         upload: async function() {
             if (!this.upload) await this.refresh();
         }
@@ -238,7 +289,7 @@ export default {
             await this.fetchMission();
 
             await Promise.all([
-                this.fetchContacts(),
+                this.fetchSubscriptions(),
                 this.fetchImports()
             ]);
         },
@@ -247,6 +298,14 @@ export default {
             url.searchParams.append('token', localStorage.token);
             url.searchParams.append('name', file.name);
             return url;
+        },
+        deleteLog: async function(log) {
+            this.loading.logs = true;
+            await window.std(`/api/marti/missions/${this.mission.name}/log/${log.id}`, {
+                method: 'DELETE',
+            });
+            this.loading.logs = false;
+            this.fetchMission();
         },
         submitLog: async function(file) {
             this.loading.logs = true;
@@ -286,12 +345,10 @@ export default {
             }
             this.loading.users = false;
         },
-        fetchContacts: async function() {
+        fetchSubscriptions: async function() {
             try {
-                this.loading.users = true;
-                const url = await window.stdurl(`/api/marti/missions/${this.mission.name}/contacts`);
-                if (this.connection) url.searchParams.append('connection', this.connection);
-                this.contacts = await window.std(url);
+                const url = await window.stdurl(`/api/marti/missions/${this.mission.name}/subscriptions/roles`);
+                this.subscriptions = (await window.std(url)).data;
             } catch (err) {
                 this.err = err;
             }
@@ -301,7 +358,6 @@ export default {
             try {
                 this.loading.delete = true;
                 const url = window.stdurl(`/api/marti/missions/${this.mission.name}`);
-                if (this.connection) url.searchParams.append('connection', this.connection);
                 const list = await window.std(url, {
                     method: 'DELETE'
                 });
@@ -318,10 +374,7 @@ export default {
                 const url = window.stdurl(`/api/marti/missions/${this.mission.name}`);
                 url.searchParams.append('changes', 'true');
                 url.searchParams.append('logs', 'true');
-                if (this.connection) url.searchParams.append('connection', this.connection);
-                const list = await window.std(url);
-                if (list.data.length !== 1) throw new Error('Mission Error');
-                this.mission = list.data[0];
+                this.mission = await window.std(url);
             } catch (err) {
                 this.err = err;
             }
@@ -334,6 +387,10 @@ export default {
         TablerNone,
         UploadImport,
         Alert,
+        TablerLoading,
+        TablerDelete,
+        TablerToggle,
+        TablerInput,
         IconPlus,
         IconArticle,
         IconDownload,
@@ -342,9 +399,7 @@ export default {
         IconUser,
         IconUsers,
         IconPencil,
-        TablerLoading,
-        TablerDelete,
-        TablerInput,
+        IconTrash,
         IconRefresh,
         IconLock,
         IconLockOpen

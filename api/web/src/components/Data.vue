@@ -57,6 +57,10 @@
                                             "active": $route.name === "data-files",
                                             "cursor-pointer": $route.name !== "data-files"
                                         }'><IconFiles/><span class='mx-3'>Files</span></span>
+                                        <span @click='$router.push(`/connection/${$route.params.connectionid}/data/${$route.params.dataid}/layer`)' class="list-group-item list-group-item-action d-flex align-items-center" :class='{
+                                            "active": $route.name === "data-layer",
+                                            "cursor-pointer": $route.name !== "data-layer"
+                                        }'><IconBuildingBroadcastTower/><span class='mx-3'>Layers</span></span>
                                         <span @click='$router.push(`/connection/${$route.params.connectionid}/data/${$route.params.dataid}/jobs`)' class="list-group-item list-group-item-action d-flex align-items-center" :class='{
                                             "active": $route.name === "data-jobs",
                                             "cursor-pointer": $route.name !== "data-jobs"
@@ -64,7 +68,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-12 col-md-9">
+                            <div class="col-12 col-md-9 position-relative">
                                 <router-view
                                     :data='data'
                                 />
@@ -92,6 +96,7 @@ import {
 import {
     IconFiles,
     IconAffiliate,
+    IconBuildingBroadcastTower,
     IconTransform,
     IconSettings,
     IconAccessPoint,
@@ -132,6 +137,7 @@ export default {
         IconFiles,
         IconAffiliate,
         IconTransform,
+        IconBuildingBroadcastTower,
         IconSettings,
         PageFooter,
         TablerLoading,

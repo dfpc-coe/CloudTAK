@@ -78,6 +78,10 @@ const router = new VueRouter.createRouter({
                 name: 'data-files',
                 component: () => import('./components/Data/DataFiles.vue')
             },{
+                path: 'layer',
+                name: 'data-layer',
+                component: () => import('./components/Data/DataLayer.vue')
+            },{
                 path: 'jobs',
                 name: 'data-jobs',
                 component: () => import('./components/Data/DataJobs.vue')

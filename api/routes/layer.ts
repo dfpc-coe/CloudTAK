@@ -44,6 +44,7 @@ export default async function router(schema: any, config: Config) {
                 where: sql`
                     name ~* ${req.query.filter}
                     AND (${Param(req.query.connection)}::BIGINT IS NULL OR ${Param(req.query.connection)}::BIGINT = layers.connection)
+                    AND (${Param(req.query.data)}::BIGINT IS NULL OR ${Param(req.query.data)}::BIGINT = layers.data)
                 `
             });
 
@@ -382,57 +383,62 @@ export default async function router(schema: any, config: Config) {
                 }
             }
 
+            let pooledClient;
+            const cots = [];
             if (layer.connection) {
-                const pooledClient = await config.conns.get(layer.connection);
+                pooledClient = await config.conns.get(layer.connection);
 
-                if (!pooledClient || !pooledClient.conn || !pooledClient.conn.enabled) {
-                    return res.json({
-                        status: 200,
-                        message: 'Recieved but Connection Paused'
-                    });
-                }
-
-                if (req.headers['content-type'] === 'application/json') {
-                    const cots = [];
-                    for (const feat of req.body.features) {
-                        cots.push(CoT.from_geojson(feat))
-                    }
-
-                    if (cots.length === 0) {
-                        return res.json({ status: 200, message: 'No features found' });
-                    }
-
-                    pooledClient.tak.write(cots);
-                    for (const cot of cots) config.conns.cot(pooledClient.conn, cot);
-
-                    // TODO Only GeoJSON Features go to Dynamo, this should also store CoT XML
-                    // @ts-ignore
-                    if (layer.logging && req.query.logging !== false) ddb.queue(req.body.features.map((feat: Feature) => {
-                        const item: QueueItem = {
-                            id: String(feat.id),
-                            layer: layer.id,
-                            type: feat.type,
-                            // @ts-ignore
-                            properties: feat.properties,
-                            geometry: feat.geometry
-                        }
-
-                        return item;
-                    }));
-                } else if (req.headers['content-type'] === 'application/xml') {
-                    pooledClient.tak.write_xml(req.body);
-                } else {
-                    throw new Err(400, null, 'Unsupported Content-Type');
+                for (const feat of req.body.features) {
+                    cots.push(CoT.from_geojson(feat))
                 }
             } else if (layer.data) {
-                if (req.headers['content-type'] === 'application/json') {
-                    const data = await config.models.Data.from(layer.data);
-                    S3.put(`data/${data.id}/layer-${layer.id}.geojson`, JSON.stringify(req.body));
-                } else {
-                    throw new Err(400, null, 'Only Content-Type application/json is currently supported');
+                const data = await config.models.Data.from(layer.data);
+
+                if (req.headers['content-type'] !== 'application/json') {
+                    throw new Err(400, null, 'Data Sync layers must be application/json');
+                } else if (!data.mission_sync) {
+                    return res.status(202).json({ status: 202, message: 'Recieved but Data Mission Sync Disabled' });
+                }
+
+                pooledClient = await config.conns.get(data.connection);
+
+                for (const feat of req.body.features) {
+                    feat.properties.dest = [{ mission: data.name }];
+                    cots.push(CoT.from_geojson(feat))
                 }
             } else {
                 throw new Err(400, null, 'Either connection or data must be set');
+            }
+
+            if (!pooledClient || !pooledClient.conn || !pooledClient.conn.enabled) {
+                return res.json({ status: 200, message: 'Recieved but Connection Paused' });
+            }
+
+            if (req.headers['content-type'] === 'application/json') {
+                if (cots.length === 0) return res.json({ status: 200, message: 'No features found' });
+
+                console.error(cots[0].to_xml());
+                pooledClient.tak.write(cots);
+                for (const cot of cots) config.conns.cot(pooledClient.conn, cot);
+
+                // TODO Only GeoJSON Features go to Dynamo, this should also store CoT XML
+                // @ts-ignore
+                if (layer.logging && req.query.logging !== false) ddb.queue(req.body.features.map((feat: Feature) => {
+                    const item: QueueItem = {
+                        id: String(feat.id),
+                        layer: layer.id,
+                        type: feat.type,
+                        // @ts-ignore
+                        properties: feat.properties,
+                        geometry: feat.geometry
+                    }
+
+                    return item;
+                }));
+            } else if (layer.connection && req.headers['content-type'] === 'application/xml') {
+                pooledClient.tak.write_xml(req.body);
+            } else {
+                throw new Err(400, null, 'Unsupported Content-Type');
             }
 
             res.json({

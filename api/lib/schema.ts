@@ -1,6 +1,7 @@
 import { sql } from 'drizzle-orm';
 import { StyleContainer } from './style.js';
 import { geometry, GeometryType } from '@openaddresses/batch-generic';
+import { ConnectionAuth } from './connection-config.js';
 
 import {
     json,
@@ -41,10 +42,7 @@ export const Basemap = pgTable('basemaps', {
 
 export const Profile = pgTable('profile', {
     username: text('username').primaryKey(),
-    auth: json('auth').$type<{
-        cert: string;
-        key: string;
-    }>().notNull(),
+    auth: json('auth').$type<ConnectionAuth>().notNull(),
     created: timestamp('created', { withTimezone: true }).notNull().default(sql`Now()`),
     updated: timestamp('updated', { withTimezone: true }).notNull().default(sql`Now()`),
     tak_callsign: text('tak_callsign').notNull().default('CloudTAK User'),
@@ -110,10 +108,7 @@ export const Connection = pgTable('connections', {
     name: text('name').notNull(),
     description: text('description').notNull().default(''),
     enabled: boolean('enabled').notNull().default(true),
-    auth: json('auth').$type<{
-        cert: string;
-        key: string;
-    }>().notNull()
+    auth: json('auth').$type<ConnectionAuth>().notNull()
 });
 
 export const ConnectionSink = pgTable('connection_sinks', {
@@ -136,6 +131,7 @@ export const Data = pgTable('data', {
     description: text('description').notNull().default(''),
     auto_transform: boolean('auto_transform').notNull().default(false),
     mission_sync: boolean('mission_sync').notNull().default(false),
+    mission_role: text('mission_role').notNull().default('MISSION_SUBSCRIBER'),
     mission_groups: text('mission_groups').array().notNull().default([]),
     assets: json('assets').$type<Array<string>>().notNull().default(["*"]),
     connection: integer('connection').notNull().references(() => Connection.id)
@@ -216,7 +212,7 @@ export const ProfileOverlay = pgTable('profile_overlays', {
     opacity: integer('opacity').notNull().default(1),
     visible: boolean('visible').notNull().default(true),
     mode: text('mode').notNull(),
-    mode_id: integer('mode_id'), // Used for Data not for Profile
+    mode_id: text('mode_id'), // Used for Data not for Profile
     url: text('url').notNull()
 }, (t) => ({
     unq: unique().on(t.username, t.url)

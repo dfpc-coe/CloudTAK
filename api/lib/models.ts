@@ -3,19 +3,23 @@ import ProfileChat from './models/ProfileChat.js';
 import * as pgtypes from './schema.js';
 
 export default class Models {
-    ProfileChat: ProfileChat;
     Basemap: Modeler<typeof pgtypes.Basemap>;
     Import: Modeler<typeof pgtypes.Import>;
     Data: Modeler<typeof pgtypes.Data>;
+    Server: Modeler<typeof pgtypes.Server>;
+    Token: Modeler<typeof pgtypes.Token>;
+
     Connection: Modeler<typeof pgtypes.Connection>;
     ConnectionSink: Modeler<typeof pgtypes.ConnectionSink>;
     ConnectionToken: Modeler<typeof pgtypes.ConnectionToken>;
+
     Profile: Modeler<typeof pgtypes.Profile>;
+    ProfileChat: ProfileChat;
     ProfileOverlay: Modeler<typeof pgtypes.ProfileOverlay>;
+
     Iconset: Modeler<typeof pgtypes.Iconset>;
     Icon: Modeler<typeof pgtypes.Icon>;
-    Server: Modeler<typeof pgtypes.Server>;
-    Token: Modeler<typeof pgtypes.Token>;
+
     Layer: Modeler<typeof pgtypes.Layer>;
     LayerAlert: Modeler<typeof pgtypes.LayerAlert>;
 

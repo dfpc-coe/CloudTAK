@@ -1,7 +1,8 @@
 import SecretsManager from '@aws-sdk/client-secrets-manager';
 import type EventsPool from './events-pool.js';
 import { Pool } from '@openaddresses/batch-generic';
-import ConnectionPool, { ConnectionWebSocket } from './connection-pool.js';
+import ConnectionPool from './connection-pool.js';
+import { ConnectionWebSocket } from './connection-web.js';
 import Cacher from './cacher.js';
 import { Server } from './schema.js';
 import { type InferSelectModel } from 'drizzle-orm';

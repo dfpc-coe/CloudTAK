@@ -95,6 +95,8 @@ export default {
         fetchList: async function() {
             this.loading = true;
             const url = window.stdurl('/api/import');
+            url.searchParams.append('order', 'desc');
+            url.searchParams.append('sort', 'created');
             this.list = await window.std(url);
             this.loading = false;
         }
