@@ -1,3 +1,5 @@
+import { Type } from '@sinclair/typebox'
+import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import { sql } from 'drizzle-orm';
@@ -6,11 +8,10 @@ import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
 import { Param } from '@openaddresses/batch-generic';
 
-export default async function router(schema: any, config: Config) {
+export default async function router(schema: Schema, config: Config) {
     await schema.get('/server', {
         name: 'Get Server',
         group: 'Server',
-        auth: 'user',
         description: 'Get Server',
         res: 'res.Server.json'
     }, async (req: AuthRequest, res: Response) => {
@@ -36,7 +37,6 @@ export default async function router(schema: any, config: Config) {
     await schema.patch('/server', {
         name: 'Patch Server',
         group: 'Server',
-        auth: 'user',
         description: 'Patch Server',
         body: 'req.body.Server.json',
         res: 'res.Server.json'

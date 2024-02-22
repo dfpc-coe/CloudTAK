@@ -1,3 +1,5 @@
+import { Type } from '@sinclair/typebox'
+import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import { Response } from 'express';
@@ -10,13 +12,13 @@ import { Param } from '@openaddresses/batch-generic';
 import { sql, eq } from 'drizzle-orm';
 import DataMission from '../lib/data-mission.js';
 import { AuthResourceAccess } from '@tak-ps/blueprint-login';
+import { StandardResponse } from '../lib/types.js';
 
-export default async function router(schema: any, config: Config) {
+export default async function router(schema: Schema, config: Config) {
     await schema.get('/data', {
         private: true,
         name: 'Internal List Data',
         group: 'Data',
-        auth: 'user',
         description: `
             Used by the frontend UI to list data packages that the user can visualize
         `,
@@ -44,14 +46,15 @@ export default async function router(schema: any, config: Config) {
         private: true,
         name: 'Internal Get Data',
         group: 'Data',
-        auth: 'user',
         description: `
             Events don't have the Connection ID but they have a valid data token
             This API allows a data token to request the data object and obtain the
             connectin Id for subsequent calls
         `,
-        ':connectionid': 'integer',
-        ':dataid': 'integer',
+        params: Type.Object({
+            connectionid: Type.Integer()
+            dataid: Type.Integer()
+        }),
         res: 'res.Data.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
@@ -71,8 +74,9 @@ export default async function router(schema: any, config: Config) {
     await schema.get('/connection/:connectionid/data', {
         name: 'List Data',
         group: 'Data',
-        auth: 'user',
-        ':connectionid': 'integer',
+        params: Type.Object({
+            connectionid: Type.Integer()
+        }),
         description: 'List data',
         query: 'req.query.ListData.json',
         res: 'res.ListData.json'
@@ -102,9 +106,10 @@ export default async function router(schema: any, config: Config) {
     await schema.post('/connection/:connectionid/data', {
         name: 'Create data',
         group: 'Data',
-        auth: 'admin',
         description: 'Register a new data source',
-        ':connectionid': 'integer',
+        params: Type.Object({
+            connectionid: Type.Integer()
+        }),
         body: 'req.body.CreateData.json',
         res: 'res.Data.json'
     }, async (req: AuthRequest, res: Response) => {
@@ -140,10 +145,11 @@ export default async function router(schema: any, config: Config) {
     await schema.patch('/connection/:connectionid/data/:dataid', {
         name: 'Update Layer',
         group: 'Data',
-        auth: 'admin',
         description: 'Update a data source',
-        ':connectionid': 'integer',
-        ':dataid': 'integer',
+        params: Type.Object({
+            connectionid: Type.Integer()
+            dataid: Type.Integer()
+        }),
         body: 'req.body.PatchData.json',
         res: 'res.Data.json'
     }, async (req: AuthRequest, res: Response) => {
@@ -182,10 +188,11 @@ export default async function router(schema: any, config: Config) {
     await schema.get('/connection/:connectionid/data/:dataid', {
         name: 'Get Data',
         group: 'Data',
-        auth: 'user',
         description: 'Get a data source',
-        ':connectionid': 'integer',
-        ':dataid': 'integer',
+        params: Type.Object({
+            connectionid: Type.Integer()
+            dataid: Type.Integer()
+        }),
         res: 'res.Data.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
@@ -220,11 +227,12 @@ export default async function router(schema: any, config: Config) {
     await schema.delete('/connection/:connectionid/data/:dataid', {
         name: 'Delete Data',
         group: 'Data',
-        auth: 'user',
         description: 'Delete a data source',
-        ':connectionid': 'integer',
-        ':dataid': 'integer',
-        res: 'res.Standard.json'
+        params: Type.Object({
+            connectionid: Type.Integer()
+            dataid: Type.Integer()
+        }),
+        res: StandardResponse
     }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(config.models, req, {

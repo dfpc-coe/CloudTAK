@@ -1,3 +1,5 @@
+import { Type } from '@sinclair/typebox'
+import Schema from '@openaddresses/batch-schema';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
 import Err from '@openaddresses/batch-error';
@@ -9,11 +11,10 @@ import { Param } from '@openaddresses/batch-generic';
 import { sql } from 'drizzle-orm';
 import { AuthResource } from '@tak-ps/blueprint-login';
 
-export default async function router(schema: any, config: Config) {
+export default async function router(schema: Schema, config: Config) {
     await schema.get('/token', {
         name: 'List Tokens',
         group: 'Token',
-        auth: 'user',
         description: 'List all tokens associated with the requester\'s account',
         query: 'req.query.ListTokens.json',
         res: 'res.ListTokens.json'
@@ -41,7 +42,6 @@ export default async function router(schema: any, config: Config) {
     await schema.post('/token', {
         name: 'Create Tokens',
         group: 'Token',
-        auth: 'user',
         description: 'Create a new API token for programatic access',
         body: 'req.body.CreateToken.json',
         res: 'res.CreateToken.json'
@@ -64,11 +64,12 @@ export default async function router(schema: any, config: Config) {
     await schema.patch('/token/:id', {
         name: 'Update Token',
         group: 'Token',
-        auth: 'user',
-        ':id': 'integer',
+        params: Type.Object({
+            id: Type.Integer(),
+        }),
         description: 'Update properties of a Token',
         body: 'req.body.PatchToken.json',
-        res: 'res.Standard.json'
+        res: StandardResponse
     }, async (req: AuthRequest, res: Response) => {
         try {
             const user = await Auth.as_user(config.models, req);
@@ -90,10 +91,11 @@ export default async function router(schema: any, config: Config) {
     await schema.delete('/token/:id', {
         name: 'Delete Tokens',
         group: 'Token',
-        auth: 'user',
         description: 'Delete a user\'s API Token',
-        ':id': 'integer',
-        res: 'res.Standard.json'
+        params: Type.Object({
+            id: Type.Integer(),
+        }),
+        res: StandardResponse
     }, async (req: AuthRequest, res: Response) => {
         try {
             const user = await Auth.as_user(config.models, req);

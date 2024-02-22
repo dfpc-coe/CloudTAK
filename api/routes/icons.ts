@@ -1,3 +1,5 @@
+import { Type } from '@sinclair/typebox'
+import Schema from '@openaddresses/batch-schema';
 import Auth from '../lib/auth.js';
 import path from 'node:path';
 import fs from 'node:fs/promises';
@@ -11,13 +13,14 @@ import archiver from 'archiver';
 import xml2js from 'xml2js';
 import { Param } from '@openaddresses/batch-generic';
 import { sql } from 'drizzle-orm';
+import { StandardResponse } from '../lib/types.js';
 
 export type SpriteRecord = {
     json: object;
     image: Buffer;
 }
 
-export default async function router(schema: any, config: Config) {
+export default async function router(schema: Schema, config: Config) {
     // Eventually look at replacing this with memcached?
     const SpriteMap: Record<string, SpriteRecord> = {
         default: {
@@ -29,7 +32,6 @@ export default async function router(schema: any, config: Config) {
     await schema.get('/iconset', {
         name: 'List Iconsets',
         group: 'Icons',
-        auth: 'user',
         description: 'List Iconsets',
         query: 'req.query.ListIconsets.json',
         res: 'res.ListIconsets.json'
@@ -56,7 +58,6 @@ export default async function router(schema: any, config: Config) {
     await schema.post('/iconset', {
         name: 'Create Iconset',
         group: 'Icons',
-        auth: 'user',
         description: 'Create Iconset',
         body: 'req.body.CreateIconset.json',
         res: 'iconsets.json'
@@ -75,9 +76,10 @@ export default async function router(schema: any, config: Config) {
     await schema.patch('/iconset/:iconset', {
         name: 'Update Iconset',
         group: 'Icons',
-        auth: 'user',
         description: 'Update Iconset',
-        ':iconset': 'string',
+        params: Type.Object({
+            iconset: Type.String()
+        }),
         body: 'req.body.PatchIconset.json',
         res: 'iconsets.json'
     }, async (req: AuthRequest, res: Response) => {
@@ -95,9 +97,10 @@ export default async function router(schema: any, config: Config) {
     await schema.get('/iconset/:iconset', {
         name: 'Get Iconset',
         group: 'Icons',
-        auth: 'user',
         description: 'Get Iconset',
-        ':iconset': 'string',
+        params: Type.Object({
+            iconset: Type.String()
+        }),
         query: {
             type: 'object',
             properties: {
@@ -174,9 +177,10 @@ export default async function router(schema: any, config: Config) {
     await schema.post('/iconset/:iconset/icon', {
         name: 'Create Icon',
         group: 'Icons',
-        auth: 'user',
         description: 'Create Icon',
-        ':iconset': 'string',
+        params: Type.Object({
+            iconset: Type.String()
+        }),
         body: 'req.body.CreateIcon.json',
         res: 'icons.json'
     }, async (req: AuthRequest, res: Response) => {
@@ -202,10 +206,11 @@ export default async function router(schema: any, config: Config) {
     await schema.delete('/iconset/:iconset', {
         name: 'Delete Iconset',
         group: 'Icons',
-        auth: 'user',
         description: 'Delete Iconset',
-        ':iconset': 'string',
-        res: 'res.Standard.json'
+        params: Type.Object({
+            iconset: Type.String()
+        }),
+        res: StandardResponse
     }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(config.models, req);
@@ -225,7 +230,6 @@ export default async function router(schema: any, config: Config) {
     await schema.get('/icon', {
         name: 'List Icons',
         group: 'Icons',
-        auth: 'user',
         description: 'List Icons',
         query: 'req.query.ListIcons.json',
         res: 'res.ListIcons.json'
@@ -256,9 +260,10 @@ export default async function router(schema: any, config: Config) {
     await schema.get('/iconset/:iconset/icon/:icon', {
         name: 'Get Icon',
         group: 'Icons',
-        auth: 'user',
-        ':iconset': 'string',
-        ':icon': 'string',
+        params: Type.Object({
+            iconset: Type.String(),
+            icon: Type.String()
+        }),
         description: 'Icon Metadata',
         res: 'icons.json'
     }, async (req: AuthRequest, res: Response) => {
@@ -274,9 +279,10 @@ export default async function router(schema: any, config: Config) {
     await schema.patch('/iconset/:iconset/icon/:icon', {
         name: 'Update Icon',
         group: 'Icons',
-        auth: 'user',
-        ':iconset': 'string',
-        ':icon': 'string',
+        params: Type.Object({
+            iconset: Type.String(),
+            icon: Type.String()
+        }),
         description: 'Update Icon in Iconset',
         body: {
             type: 'object',
@@ -308,11 +314,12 @@ export default async function router(schema: any, config: Config) {
     await schema.delete('/iconset/:iconset/icon/:icon', {
         name: 'Delete Icon',
         group: 'Icons',
-        auth: 'user',
-        ':iconset': 'string',
-        ':icon': 'string',
+        params: Type.Object({
+            iconset: Type.String(),
+            icon: Type.String()
+        }),
         description: 'Remove Icon from Iconset',
-        res: 'res.Standard.json'
+        res: StandardResponse
     }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(config.models, req);
@@ -329,9 +336,10 @@ export default async function router(schema: any, config: Config) {
     await schema.get('/iconset/:iconset/icon/:icon/raw', {
         name: 'Get Raw',
         group: 'Icons',
-        auth: 'user',
-        ':iconset': 'string',
-        ':icon': 'string',
+        params: Type.Object({
+            iconset: Type.String(),
+            icon: Type.String()
+        }),
         description: 'Icon Data',
     }, async (req: AuthRequest, res: Response) => {
         try {
@@ -349,9 +357,7 @@ export default async function router(schema: any, config: Config) {
     await schema.get('/icon/sprite.json', {
         name: 'CoT Type Sprites (json)',
         group: 'Icons',
-        auth: 'user',
         description: 'Get Spriteset JSON for CoT types',
-        ':iconset': 'string',
         query: {
             type: 'object',
             additionalProperties: false,
@@ -387,9 +393,7 @@ export default async function router(schema: any, config: Config) {
     await schema.get('/icon/sprite.png', {
         name: 'CoT Type Sprites',
         group: 'Icons',
-        auth: 'user',
         description: 'Return a sprite sheet for CoT Types',
-        ':iconset': 'string',
         query: {
             type: 'object',
             additionalProperties: false,

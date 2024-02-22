@@ -1,3 +1,5 @@
+import { Type } from '@sinclair/typebox'
+import Schema from '@openaddresses/batch-schema';
 import { check } from '@placemarkio/check-geojson';
 import bodyparser from 'body-parser';
 import Err from '@openaddresses/batch-error';
@@ -19,8 +21,9 @@ import { Feature } from 'geojson';
 import { Param } from '@openaddresses/batch-generic';
 import { sql } from 'drizzle-orm';
 import { AuthResourceAccess } from '@tak-ps/blueprint-login';
+import { StandardResponse } from '../lib/types.js';
 
-export default async function router(schema: any, config: Config) {
+export default async function router(schema: Schema, config: Config) {
     const alarm = new Alarm(config.StackName);
     const ddb = new DDBQueue(config.StackName);
     ddb.on('error', (err) => { console.error(err); });
@@ -28,7 +31,6 @@ export default async function router(schema: any, config: Config) {
     await schema.get('/layer', {
         name: 'List Layers',
         group: 'Layer',
-        auth: 'user',
         description: 'List layers',
         query: 'req.query.ListLayers.json',
         res: 'res.ListLayers.json'
@@ -71,7 +73,6 @@ export default async function router(schema: any, config: Config) {
     await schema.post('/layer', {
         name: 'Create Layer',
         group: 'Layer',
-        auth: 'admin',
         description: 'Register a new layer',
         body: 'req.body.CreateLayer.json',
         res: 'res.Layer.json'
@@ -129,9 +130,8 @@ export default async function router(schema: any, config: Config) {
     await schema.post('/layer/redeploy', {
         name: 'Redeploy Layers',
         group: 'Layer',
-        auth: 'admin',
         description: 'Redeploy all Layers with latest CloudFormation output',
-        res: 'res.Standard.json'
+        res: StandardResponse
     }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(config.models, req);
@@ -168,9 +168,10 @@ export default async function router(schema: any, config: Config) {
     await schema.patch('/layer/:layerid', {
         name: 'Update Layer',
         group: 'Layer',
-        auth: 'admin',
         description: 'Update a layer',
-        ':layerid': 'integer',
+        params: Type.Object({
+            layerid: Type.Integer(),
+        }),
         body: 'req.body.PatchLayer.json',
         res: 'res.Layer.json'
     }, async (req: AuthRequest, res: Response) => {
@@ -256,9 +257,10 @@ export default async function router(schema: any, config: Config) {
     await schema.get('/layer/:layerid', {
         name: 'Get Layer',
         group: 'Layer',
-        auth: 'user',
         description: 'Get a layer',
-        ':layerid': 'integer',
+        params: Type.Object({
+            layerid: Type.Integer(),
+        }),
         res: 'res.Layer.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
@@ -282,10 +284,9 @@ export default async function router(schema: any, config: Config) {
     await schema.post('/layer/:layerid/redeploy', {
         name: 'Redeploy Layers',
         group: 'Layer',
-        auth: 'admin',
         description: 'Redeploy a specific Layer with latest CloudFormation output',
         ':layerid': 'integer',
-        res: 'res.Standard.json'
+        res: StandardResponse
     }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(config.models, req);
@@ -318,10 +319,9 @@ export default async function router(schema: any, config: Config) {
     await schema.delete('/layer/:layerid', {
         name: 'Delete Layer',
         group: 'Layer',
-        auth: 'user',
         description: 'Delete a layer',
         ':layerid': 'integer',
-        res: 'res.Standard.json'
+        res: StandardResponse
     }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(config.models, req);
@@ -348,11 +348,10 @@ export default async function router(schema: any, config: Config) {
     await schema.post('/layer/:layerid/cot', {
         name: 'Post COT',
         group: 'Layer',
-        auth: 'admin',
         description: 'Post CoT data to a given layer',
         ':layerid': 'integer',
         query: 'req.query.PostCoT.json',
-        res: 'res.Standard.json'
+        res: StandardResponse
     }, bodyparser.raw({
         type: '*/*',
         limit: '50mb'

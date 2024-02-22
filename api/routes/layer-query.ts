@@ -1,3 +1,5 @@
+import { Type } from '@sinclair/typebox'
+import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Dynamo from '../lib/aws/dynamo.js';
 import Config from '../lib/config.js';
@@ -7,15 +9,16 @@ import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
 import { AuthResourceAccess } from '@tak-ps/blueprint-login';
 
-export default async function router(schema: any, config: Config) {
+export default async function router(schema: Schema, config: Config) {
     const ddb = new Dynamo(config.StackName);
 
     await schema.get('/layer/:layerid/query', {
         name: 'Get Layer',
         group: 'LayerQuery',
-        auth: 'user',
         description: 'Get the latest feature from a layer',
-        ':layerid': 'integer',
+        params: Type.Object({
+            layerid: Type.Integer(),
+        }),
         query: 'req.query.LayerQuery.json',
         res: 'res.LayerQuery.json'
     }, async (req: AuthRequest, res: Response) => {
@@ -51,10 +54,11 @@ export default async function router(schema: any, config: Config) {
     await schema.get('/layer/:layerid/query/:featid', {
         name: 'Get Layer',
         group: 'LayerQuery',
-        auth: 'user',
         description: 'Get the latest feature from a layer',
-        ':layerid': 'integer',
-        ':featid': 'string',
+        params: Type.Object({
+            layerid: Type.Integer(),
+            featid: Type.String()
+        }),
         res: 'res.LayerQueryFeature.json'
     }, async (req: AuthRequest, res: Response) => {
         try {

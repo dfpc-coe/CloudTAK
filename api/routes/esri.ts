@@ -1,3 +1,5 @@
+import { Type } from '@sinclair/typebox'
+import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
@@ -12,11 +14,10 @@ import {
     EsriProxyLayer
 } from '../lib/esri.js';
 
-export default async function router(schema: any, config: Config) {
+export default async function router(schema: Schema, config: Config) {
     await schema.post('/esri', {
         name: 'Validate & Auth',
         group: 'ESRI',
-        auth: 'user',
         description: `
             Helper API to configure ESRI MapServer Layers
 
@@ -96,7 +97,6 @@ export default async function router(schema: any, config: Config) {
     await schema.get('/esri/portal', {
         name: 'Portal Meta',
         group: 'ESRI',
-        auth: 'user',
         description: `
             Helper API to configure ESRI MapServers
             Return Portal Data
@@ -137,7 +137,6 @@ export default async function router(schema: any, config: Config) {
     await schema.get('/esri/portal/content', {
         name: 'Portal Content',
         group: 'ESRI',
-        auth: 'user',
         description: `
             Helper API to configure ESRI MapServers
             Return Portal Content
@@ -184,7 +183,6 @@ export default async function router(schema: any, config: Config) {
     await schema.post('/esri/portal/service', {
         name: 'Create Service',
         group: 'ESRI',
-        auth: 'user',
         description: 'Create Service to store Feature Layers',
         query: {
             type: 'object',
@@ -229,7 +227,6 @@ export default async function router(schema: any, config: Config) {
     await schema.get('/esri/portal/server', {
         name: 'List Servers',
         group: 'ESRI',
-        auth: 'user',
         description: `
             Helper API to configure ESRI MapServers
             List Servers associates with a given portal
@@ -283,7 +280,6 @@ export default async function router(schema: any, config: Config) {
     await schema.get('/esri/server', {
         name: 'List Services',
         group: 'ESRI',
-        auth: 'user',
         description: 'Helper API to configure ESRI MapServers - Get Services',
         query: {
             type: 'object',
@@ -332,7 +328,6 @@ export default async function router(schema: any, config: Config) {
     await schema.post('/esri/server/layer', {
         name: 'Create Layer',
         group: 'ESRI',
-        auth: 'user',
         description: 'Create Layer necessary to push CoT data',
         query: {
             type: 'object',
@@ -372,7 +367,6 @@ export default async function router(schema: any, config: Config) {
     await schema.delete('/esri/server/layer', {
         name: 'Delete Layer',
         group: 'ESRI',
-        auth: 'user',
         description: 'Delete an ESRI Layer',
         query: {
             type: 'object',
@@ -418,7 +412,6 @@ export default async function router(schema: any, config: Config) {
     await schema.get('/esri/server/layer', {
         name: 'Query Layer',
         group: 'ESRI',
-        auth: 'user',
         description: 'Return Sample features and count',
         query: {
             type: 'object',

@@ -1,3 +1,5 @@
+import { Type } from '@sinclair/typebox'
+import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
@@ -12,12 +14,13 @@ import TAKAPI, {
     APIAuthPassword
 } from '../lib/tak-api.js';
 
-export default async function router(schema: any, config: Config) {
+export default async function router(schema: Schema, config: Config) {
     await schema.post('/marti/missions/:name/log', {
         name: 'Create Log',
         group: 'MartiMissionLog',
-        auth: 'user',
-        ':name': 'string',
+        params: Type.Object({
+            name: Type.String(),
+        }),
         description: 'Helper API to add a log to a mission',
         body: {
             type: 'object',
@@ -50,11 +53,12 @@ export default async function router(schema: any, config: Config) {
     await schema.delete('/marti/missions/:name/log/:log', {
         name: 'Delete Log',
         group: 'MartiMissionLog',
-        auth: 'user',
-        ':name': 'string',
-        ':log': 'string',
+        params: Type.Object({
+            name: Type.String(),
+            log: Type.String()
+        }),
         description: 'Helper API to delete a log',
-        res: 'res.Standard.json'
+        res: StandardResponse
     }, async (req: AuthRequest, res: Response) => {
         try {
             const user = await Auth.as_user(config.models, req);

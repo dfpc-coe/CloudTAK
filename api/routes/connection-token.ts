@@ -1,3 +1,4 @@
+import { Type } from '@sinclair/typebox'
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
 import Err from '@openaddresses/batch-error';
@@ -6,14 +7,17 @@ import Config from '../lib/config.js';
 import { promisify } from 'util';
 import jwt from 'jsonwebtoken';
 import { sql } from 'drizzle-orm';
+import Schema from '@openaddresses/batch-schema';
+import { StandardResponse } from '../lib/types.js';
 
-export default async function router(schema: any, config: Config) {
+export default async function router(schema: Schema, config: Config) {
     await schema.get('/connection/:connectionid/token', {
         name: 'List Tokens',
         group: 'ConnectionToken',
-        auth: 'user',
         description: 'List all tokens associated with a given connection',
-        ':connectionid': 'integer',
+        params: Type.Object({
+            connectionid: Type.Integer()
+        }),
         query: 'req.query.ListConnectionTokens.json',
         res: 'res.ListConnectionTokens.json'
     }, async (req: AuthRequest, res: Response) => {
@@ -40,9 +44,10 @@ export default async function router(schema: any, config: Config) {
     await schema.post('/connection/:connectionid/token', {
         name: 'Create Tokens',
         group: 'ConnectionToken',
-        auth: 'user',
         description: 'Create a new API token for programatic access',
-        ':connectionid': 'integer',
+        params: Type.Object({
+            connectionid: Type.Integer()
+        }),
         body: 'req.body.CreateConnectionToken.json',
         res: 'res.CreateConnectionToken.json'
     }, async (req: AuthRequest, res: Response) => {
@@ -65,12 +70,13 @@ export default async function router(schema: any, config: Config) {
     await schema.patch('/connection/:connectionid/token/:id', {
         name: 'Update Token',
         group: 'ConnectionToken',
-        auth: 'user',
-        ':connectionid': 'integer',
-        ':id': 'integer',
+        params: Type.Object({
+            connectionid: Type.Integer()
+            id: Type.Integer()
+        }),
         description: 'Update properties of a Token',
         body: 'req.body.PatchConnectionToken.json',
-        res: 'res.Standard.json'
+        res: StandardResponse
     }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.as_user(config.models, req);
@@ -92,11 +98,12 @@ export default async function router(schema: any, config: Config) {
     await schema.delete('/connection/:connectionid/token/:id', {
         name: 'Delete Tokens',
         group: 'Token',
-        auth: 'user',
         description: 'Delete a user\'s API Token',
-        ':connectionid': 'integer',
-        ':id': 'integer',
-        res: 'res.Standard.json'
+        params: Type.Object({
+            connectionid: Type.Integer()
+            id: Type.Integer()
+        }),
+        res: StandardResponse
     }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.as_user(config.models, req);

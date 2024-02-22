@@ -1,3 +1,5 @@
+import { Type } from '@sinclair/typebox'
+import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import { Response } from 'express';
@@ -11,10 +13,9 @@ import TAKAPI, {
     APIAuthPassword
 } from '../lib/tak-api.js';
 
-export default async function router(schema: any, config: Config) {
+export default async function router(schema: Schema, config: Config) {
     await schema.get('/profile/overlay', {
         name: 'Get Overlays',
-        auth: 'user',
         group: 'ProfileOverlays',
         description: 'Get User\'s Profile Overlays',
         res: 'res.ListProfileOverlays.json'
@@ -34,7 +35,6 @@ export default async function router(schema: any, config: Config) {
 
     await schema.post('/profile/overlay', {
         name: 'Create Overlay',
-        auth: 'user',
         group: 'ProfileOverlay',
         description: 'Create Profile Overlay',
         body: 'req.body.CreateProfileOverlay.json',
@@ -64,7 +64,6 @@ export default async function router(schema: any, config: Config) {
 
     await schema.delete('/profile/overlay', {
         name: 'delete Overlay',
-        auth: 'user',
         group: 'ProfileOverlay',
         description: 'Create Profile Overlay',
         query: {
@@ -74,7 +73,7 @@ export default async function router(schema: any, config: Config) {
                 id: { type: 'string' }
             }
         },
-        res: 'res.Standard.json'
+        res: StandardResponse
     }, async (req: AuthRequest, res: Response) => {
         try {
             const user = await Auth.as_user(config.models, req);

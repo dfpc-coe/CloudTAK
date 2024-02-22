@@ -1,3 +1,5 @@
+import { Type } from '@sinclair/typebox'
+import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Cacher from '../lib/cacher.js';
 import Auth from '../lib/auth.js';
@@ -8,14 +10,16 @@ import Config from '../lib/config.js';
 import { Param } from '@openaddresses/batch-generic';
 import { sql, eq } from 'drizzle-orm';
 import { AuthResourceAccess } from '@tak-ps/blueprint-login';
+import { StandardResponse } from '../lib/types.js';
 
-export default async function router(schema: any, config: Config) {
+export default async function router(schema: Schema, config: Config) {
     await schema.get('/layer/:layerid/alert', {
         name: 'List Alerts',
         group: 'Layer Alerts',
-        auth: 'user',
         description: 'List layer alerts',
-        ':layerid': 'integer',
+        params: Type.Object({
+            layerid: Type.Integer()
+        }),
         query: 'req.query.ListLayerAlerts.json',
         res: 'res.ListLayerAlerts.json'
     }, async (req: AuthRequest, res: Response) => {
@@ -48,9 +52,10 @@ export default async function router(schema: any, config: Config) {
     await schema.post('/layer/:layerid/alert', {
         name: 'Create Alert',
         group: 'Layer Alerts',
-        auth: 'user',
         description: 'Create a new layer alert',
-        ':layerid': 'integer',
+        params: Type.Object({
+            layerid: Type.Integer()
+        }),
         body: 'req.body.CreateLayerAlert.json',
         res: 'layer_alerts.json'
     }, async (req: AuthRequest, res: Response) => {
@@ -81,10 +86,11 @@ export default async function router(schema: any, config: Config) {
     await schema.delete('/layer/:layerid/alert', {
         name: 'Delete Alerts',
         group: 'Layer Alerts',
-        auth: 'user',
         description: 'Delete all alerts for the layer',
-        ':layerid': 'integer',
-        res: 'res.Standard.json'
+        params: Type.Object({
+            layerid: Type.Integer()
+        }),
+        res: StandardResponse
     }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(config.models, req, {
@@ -109,11 +115,12 @@ export default async function router(schema: any, config: Config) {
     await schema.delete('/layer/:layerid/alert/:alertid', {
         name: 'Delete Alerts',
         group: 'Layer Alerts',
-        auth: 'user',
         description: 'Delete all alerts for the layer',
-        ':layerid': 'integer',
-        ':alertid': 'integer',
-        res: 'res.Standard.json'
+        params: Type.Object({
+            layerid: Type.Integer(),
+            alertid: Type.Integer()
+        }),
+        res: StandardResponse
     }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(config.models, req, {

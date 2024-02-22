@@ -1,3 +1,5 @@
+import { Type } from '@sinclair/typebox'
+import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
@@ -12,12 +14,13 @@ import TAKAPI, {
     APIAuthPassword
 } from '../lib/tak-api.js';
 
-export default async function router(schema: any, config: Config) {
+export default async function router(schema: Schema, config: Config) {
     await schema.get('/marti/missions/:name', {
         name: 'Get Mission',
         group: 'MartiMissions',
-        auth: 'user',
-        ':name': 'string',
+        params: Type.Object({
+            name: Type.String(),
+        }),
         description: 'Helper API to get a single mission',
         query: {
             type: 'object',
@@ -57,8 +60,9 @@ export default async function router(schema: any, config: Config) {
     await schema.delete('/marti/missions/:name', {
         name: 'Delete Mission',
         group: 'MartiMissions',
-        auth: 'user',
-        ':name': 'string',
+        params: Type.Object({
+            name: Type.String(),
+        }),
         description: 'Helper API to delete a single mission',
         query: {
             type: 'object',
@@ -92,8 +96,9 @@ export default async function router(schema: any, config: Config) {
     await schema.post('/marti/missions/:name', {
         name: 'Create Mission',
         group: 'MartiMissions',
-        auth: 'user',
-        ':name': 'string',
+        params: Type.Object({
+            name: Type.String(),
+        }),
         description: 'Helper API to create a mission',
         query: {
             type: 'object',
@@ -137,7 +142,6 @@ export default async function router(schema: any, config: Config) {
     await schema.get('/marti/mission', {
         name: 'List Missions',
         group: 'MartiMissions',
-        auth: 'user',
         description: 'Helper API to list missions',
         query: {
             type: 'object',
@@ -178,8 +182,9 @@ export default async function router(schema: any, config: Config) {
     await schema.get('/marti/missions/:name/subscription', {
         name: 'Mission Subscription',
         group: 'MartiMissions',
-        auth: 'user',
-        ':name': 'string',
+        params: Type.Object({
+            name: Type.String(),
+        }),
         description: 'Return subscriptions associated with your user',
         res: { type: 'object' }
     }, async (req: AuthRequest, res: Response) => {
@@ -201,8 +206,9 @@ export default async function router(schema: any, config: Config) {
     await schema.get('/marti/missions/:name/subscriptions', {
         name: 'Mission Subscriptions',
         group: 'MartiMissions',
-        auth: 'user',
-        ':name': 'string',
+        params: Type.Object({
+            name: Type.String(),
+        }),
         description: 'List subscriptions associated with a mission',
         res: 'res.Marti.json'
     }, async (req: AuthRequest, res: Response) => {
@@ -224,8 +230,9 @@ export default async function router(schema: any, config: Config) {
     await schema.get('/marti/missions/:name/subscriptions/roles', {
         name: 'Mission Subscriptions',
         group: 'MartiMissions',
-        auth: 'user',
-        ':name': 'string',
+        params: Type.Object({
+            name: Type.String(),
+        }),
         description: 'List subscriptions associated with a mission',
         res: 'res.Marti.json'
     }, async (req: AuthRequest, res: Response) => {
@@ -247,8 +254,9 @@ export default async function router(schema: any, config: Config) {
     await schema.get('/marti/missions/:name/contacts', {
         name: 'Mission Contacts',
         group: 'MartiMissions',
-        auth: 'user',
-        ':name': 'string',
+        params: Type.Object({
+            name: Type.String(),
+        }),
         description: 'List contacts associated with a mission',
         res: {
             type: 'array',
@@ -286,9 +294,9 @@ export default async function router(schema: any, config: Config) {
     await schema.post('/marti/missions/:name/upload', {
         name: 'Mission Upload',
         group: 'MartiMissions',
-        auth: 'user',
-        ':name': 'string',
-        ':hash': 'string',
+        params: Type.Object({
+            name: Type.String(),
+        }),
         description: 'Create an upload',
         query: {
             type: 'object',
@@ -336,9 +344,10 @@ export default async function router(schema: any, config: Config) {
     await schema.delete('/marti/missions/:name/upload/:hash', {
         nMissionSubscriptioname: 'Mission Upload Delete',
         group: 'MartiMissions',
-        auth: 'user',
-        ':name': 'string',
-        ':hash': 'string',
+        params: Type.Object({
+            name: Type.String(),
+            hash: Type.String()
+        }),
         description: 'Delete an upload by hash',
         res: 'res.Marti.json'
     }, async (req: AuthRequest, res: Response) => {

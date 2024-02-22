@@ -1,3 +1,5 @@
+import { Type } from '@sinclair/typebox'
+import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import Batch from '../lib/aws/batch.js';
@@ -7,14 +9,15 @@ import { AuthRequest } from '@tak-ps/blueprint-login';
 import Config from '../lib/config.js';
 import { AuthResourceAccess } from '@tak-ps/blueprint-login';
 
-export default async function router(schema: any, config: Config) {
+export default async function router(schema: Schema, config: Config) {
     await schema.get('/connection/:connectionid/data/:dataid/job', {
         name: 'List Jobs',
-        auth: 'user',
         group: 'DataJobs',
         description: 'List Data Jobs',
-        ':connectionid': 'integer',
-        ':dataid': 'integer',
+        params: Type.Object({
+            connectionid: Type.Integer()
+            dataid: Type.Integer()
+        }),
         res: 'res.ListDataJobs.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
@@ -37,12 +40,13 @@ export default async function router(schema: any, config: Config) {
 
     await schema.get('/connection/:connectionid/data/:dataid/job/:jobid', {
         name: 'List Jobs',
-        auth: 'user',
         group: 'DataJobs',
         description: 'List Data Jobs',
-        ':connectionid': 'integer',
-        ':dataid': 'integer',
-        ':jobid': 'string',
+        params: Type.Object({
+            connectionid: Type.Integer()
+            dataid: Type.Integer()
+            jobid: Type.String()
+        }),
         res: 'res.DataJob.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
@@ -62,12 +66,13 @@ export default async function router(schema: any, config: Config) {
 
     await schema.get('/connection/:connectionid/data/:dataid/job/:jobid/logs', {
         name: 'List Logs',
-        auth: 'user',
         group: 'DataJobLogs',
         description: 'List Data Job Logs',
-        ':connectionid': 'integer',
-        ':dataid': 'integer',
-        ':jobid': 'string',
+        params: Type.Object({
+            connectionid: Type.Integer()
+            dataid: Type.Integer()
+            jobid: Type.String()
+        }),
         res: 'res.DataJobLogs.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
