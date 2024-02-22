@@ -34,7 +34,7 @@ export default async function router(schema: Schema, config: Config) {
         description: 'List layers',
         query: 'req.query.ListLayers.json',
         res: 'res.ListLayers.json'
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
         try {
             await Auth.is_auth(config.models, req);
 
@@ -76,7 +76,7 @@ export default async function router(schema: Schema, config: Config) {
         description: 'Register a new layer',
         body: 'req.body.CreateLayer.json',
         res: 'res.Layer.json'
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
         try {
             await Auth.is_auth(config.models, req);
 
@@ -132,7 +132,7 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Layer',
         description: 'Redeploy all Layers with latest CloudFormation output',
         res: StandardResponse
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
         try {
             await Auth.is_auth(config.models, req);
 
@@ -174,7 +174,7 @@ export default async function router(schema: Schema, config: Config) {
         }),
         body: 'req.body.PatchLayer.json',
         res: 'res.Layer.json'
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
         try {
             await Auth.is_auth(config.models, req, {
                 resources: [{ access: AuthResourceAccess.LAYER, id: parseInt(req.params.layerid) }]
@@ -262,7 +262,7 @@ export default async function router(schema: Schema, config: Config) {
             layerid: Type.Integer(),
         }),
         res: 'res.Layer.json'
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
         try {
             await Auth.is_auth(config.models, req, {
                 resources: [{ access: AuthResourceAccess.LAYER, id: parseInt(req.params.layerid) }]
@@ -287,7 +287,7 @@ export default async function router(schema: Schema, config: Config) {
         description: 'Redeploy a specific Layer with latest CloudFormation output',
         ':layerid': 'integer',
         res: StandardResponse
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
         try {
             await Auth.is_auth(config.models, req);
 
@@ -322,7 +322,7 @@ export default async function router(schema: Schema, config: Config) {
         description: 'Delete a layer',
         ':layerid': 'integer',
         res: StandardResponse
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
         try {
             await Auth.is_auth(config.models, req);
 
@@ -355,7 +355,7 @@ export default async function router(schema: Schema, config: Config) {
     }, bodyparser.raw({
         type: '*/*',
         limit: '50mb'
-    }), async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
         try {
             await Auth.is_auth(config.models, req, {
                 resources: [{ access: AuthResourceAccess.LAYER, id: parseInt(req.params.layerid) }]

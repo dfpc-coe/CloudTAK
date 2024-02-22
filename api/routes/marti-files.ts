@@ -20,7 +20,7 @@ export default async function router(schema: Schema, config: Config) {
         }),
         description: 'Helper API to delete files by file hash',
         res: StandardResponse
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
         try {
             const user = await Auth.as_user(config.models, req, { token: true });
             const profile = await config.models.Profile.from(user.email);
@@ -50,7 +50,7 @@ export default async function router(schema: Schema, config: Config) {
             }
         },
         description: 'Helper API to download files by file hash',
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
         try {
             const user = await Auth.as_user(config.models, req, { token: true });
             const profile = await config.models.Profile.from(user.email);

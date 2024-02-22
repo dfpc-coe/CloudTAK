@@ -35,7 +35,7 @@ export default async function router(schema: Schema, config: Config) {
             dataid: Type.Integer()
         }),
         res: 'res.ListAssets.json'
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
         try {
             await Auth.is_auth(config.models, req, {
                 resources: [{ access: AuthResourceAccess.CONNECTION, id: parseInt(req.params.connectionid) }]
@@ -82,7 +82,7 @@ export default async function router(schema: Schema, config: Config) {
             }
         },
         res: 'res.Marti.json'
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
         await Auth.is_auth(config.models, req, {
             resources: [
                 // Connection tokens shouldn't use this, only internal Data/Lambda Tokens
@@ -125,7 +125,7 @@ export default async function router(schema: Schema, config: Config) {
             dataid: Type.Integer()
         }),
         res: StandardResponse
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
 
         let bb;
         let data: InferSelectModel<typeof Data>;
@@ -190,7 +190,7 @@ export default async function router(schema: Schema, config: Config) {
             ext: Type.String()
         }),
         res: StandardResponse
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
         try {
             await Auth.is_auth(config.models, req, {
                 resources: [
@@ -223,7 +223,7 @@ export default async function router(schema: Schema, config: Config) {
             ext: Type.String()
         }),
         res: StandardResponse
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
         try {
             await Auth.is_auth(config.models, req, {
                 resources: [
@@ -280,7 +280,7 @@ export default async function router(schema: Schema, config: Config) {
             asset: Type.String(),
             ext: Type.String()
         }),
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
         try {
             await Auth.is_auth(config.models, req, {
                 token: true,
@@ -307,7 +307,7 @@ export default async function router(schema: Schema, config: Config) {
             dataid: Type.Integer()
             asset: Type.String(),
         }),
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
         try {
             await Auth.is_auth(config.models, req, {
                 token: true,

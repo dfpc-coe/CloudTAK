@@ -15,7 +15,7 @@ export default async function router(schema: Schema, config: Config) {
         group: 'ProfileJobs',
         description: 'List Profile Jobs',
         res: 'res.ListProfileJobs.json'
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
         try {
             const user = await Auth.as_user(config.models, req);
             const list = await Batch.list(config, `profile-${user.email.replace('@', '_at_').replace(/[^a-zA-Z0-9]/g, '_')}`);
@@ -37,7 +37,7 @@ export default async function router(schema: Schema, config: Config) {
             jobid: Type.String(),
         }),
         res: 'res.ProfileJob.json'
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
         try {
             await Auth.is_auth(config.models, req);
 
@@ -59,7 +59,7 @@ export default async function router(schema: Schema, config: Config) {
             jobid: Type.String(),
         }),
         res: 'res.ProfileJobLogs.json'
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
         try {
             await Auth.is_auth(config.models, req);
 

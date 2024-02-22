@@ -55,7 +55,7 @@ export default async function router(schema: Schema, config: Config) {
                 }
             }
         }
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
         try {
             await Auth.is_auth(config.models, req, {
                 anyResources: true
@@ -112,7 +112,7 @@ export default async function router(schema: Schema, config: Config) {
             }
         },
         res: { type: 'object' }
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
         try {
             await Auth.is_auth(config.models, req, {
                 anyResources: true
@@ -153,7 +153,7 @@ export default async function router(schema: Schema, config: Config) {
             }
         },
         res: { type: "object" }
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
         try {
             await Auth.is_auth(config.models, req, {
                 anyResources: true
@@ -203,7 +203,7 @@ export default async function router(schema: Schema, config: Config) {
         res: {
             type: 'object'
         }
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
         try {
             await Auth.is_auth(config.models, req, {
                 anyResources: true
@@ -251,7 +251,7 @@ export default async function router(schema: Schema, config: Config) {
                 },
             }
         }
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
         try {
             await Auth.is_auth(config.models, req, {
                 anyResources: true
@@ -298,7 +298,7 @@ export default async function router(schema: Schema, config: Config) {
                 services: { type: 'array' },
             }
         }
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
         try {
             await Auth.is_auth(config.models, req, {
                 anyResources: true
@@ -341,7 +341,7 @@ export default async function router(schema: Schema, config: Config) {
         res: {
             type: 'object'
         }
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
         try {
             await Auth.is_auth(config.models, req, {
                 anyResources: true
@@ -380,7 +380,7 @@ export default async function router(schema: Schema, config: Config) {
         res: {
             type: 'object'
         }
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
         try {
             await Auth.is_auth(config.models, req, {
                 anyResources: true
@@ -426,7 +426,7 @@ export default async function router(schema: Schema, config: Config) {
         res: {
             type: 'object'
         }
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
         try {
             await Auth.is_auth(config.models, req, {
                 anyResources: true

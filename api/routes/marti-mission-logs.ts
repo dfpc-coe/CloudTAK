@@ -32,7 +32,7 @@ export default async function router(schema: Schema, config: Config) {
             }
         },
         res: 'res.Marti.json'
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
         try {
             const user = await Auth.as_user(config.models, req);
 
@@ -59,7 +59,7 @@ export default async function router(schema: Schema, config: Config) {
         }),
         description: 'Helper API to delete a log',
         res: StandardResponse
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
         try {
             const user = await Auth.as_user(config.models, req);
 

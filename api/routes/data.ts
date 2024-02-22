@@ -24,7 +24,7 @@ export default async function router(schema: Schema, config: Config) {
         `,
         query: 'req.query.ListData.json',
         res: 'res.ListData.json'
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
         try {
             await Auth.is_auth(config.models, req);
 
@@ -56,7 +56,7 @@ export default async function router(schema: Schema, config: Config) {
             dataid: Type.Integer()
         }),
         res: 'res.Data.json'
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
         try {
             await Auth.is_auth(config.models, req, {
                 resources: [
@@ -80,7 +80,7 @@ export default async function router(schema: Schema, config: Config) {
         description: 'List data',
         query: 'req.query.ListData.json',
         res: 'res.ListData.json'
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
         try {
             await Auth.is_auth(config.models, req, {
                 resources: [{ access: AuthResourceAccess.CONNECTION, id: parseInt(req.params.connectionid) }]
@@ -112,7 +112,7 @@ export default async function router(schema: Schema, config: Config) {
         }),
         body: 'req.body.CreateData.json',
         res: 'res.Data.json'
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
         try {
             await Auth.is_auth(config.models, req, {
                 resources: [{ access: AuthResourceAccess.CONNECTION, id: parseInt(req.params.connectionid) }]
@@ -152,7 +152,7 @@ export default async function router(schema: Schema, config: Config) {
         }),
         body: 'req.body.PatchData.json',
         res: 'res.Data.json'
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
         try {
             await Auth.is_auth(config.models, req, {
                 resources: [
@@ -194,7 +194,7 @@ export default async function router(schema: Schema, config: Config) {
             dataid: Type.Integer()
         }),
         res: 'res.Data.json'
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
         try {
             await Auth.is_auth(config.models, req, {
                 resources: [
@@ -233,7 +233,7 @@ export default async function router(schema: Schema, config: Config) {
             dataid: Type.Integer()
         }),
         res: StandardResponse
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
         try {
             await Auth.is_auth(config.models, req, {
                 resources: [{ access: AuthResourceAccess.CONNECTION, id: parseInt(req.params.connectionid) }]

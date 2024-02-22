@@ -13,7 +13,7 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Profile',
         description: 'Get User\'s Profile',
         res: 'res.Profile.json'
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
         try {
             const user = await Auth.as_user(config.models, req);
             const profile = await config.models.Profile.from(user.email);
@@ -30,7 +30,7 @@ export default async function router(schema: Schema, config: Config) {
         description: 'Update User\'s Profile',
         body: 'req.body.PatchProfile.json',
         res: 'res.Profile.json'
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
         try {
             const user = await Auth.as_user(config.models, req);
             const profile = await config.models.Profile.commit(user.email, req.body);

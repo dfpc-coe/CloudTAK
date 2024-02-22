@@ -19,7 +19,7 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Task',
         description: 'List Tasks',
         res: 'res.ListTasks.json'
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
         try {
             await Auth.is_auth(config.models, req);
 
@@ -58,7 +58,7 @@ export default async function router(schema: Schema, config: Config) {
         }),
         description: 'List Version for a specific task',
         res: 'res.ListTaskVersions.json'
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
         try {
             await Auth.is_auth(config.models, req);
 
@@ -93,7 +93,7 @@ export default async function router(schema: Schema, config: Config) {
         }),
         description: 'Get the status of a task stack in relation to a given layer',
         res: 'res.TaskStatus.json'
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
         try {
             await Auth.is_auth(config.models, req);
 
@@ -115,7 +115,7 @@ export default async function router(schema: Schema, config: Config) {
         }),
         description: 'Manually invoke a Task',
         res: StandardResponse
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
         try {
             await Auth.is_auth(config.models, req);
 
@@ -144,7 +144,7 @@ export default async function router(schema: Schema, config: Config) {
         }),
         description: 'Get the logs related to the given task',
         res: 'res.TaskLogs.json'
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
         try {
             await Auth.is_auth(config.models, req);
 
@@ -167,7 +167,7 @@ export default async function router(schema: Schema, config: Config) {
         description: 'Get the JSONSchema for the expected environment variables',
         query: 'req.query.TaskSchema.json',
         res: 'res.TaskSchema.json'
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
         try {
             await Auth.is_auth(config.models, req);
 
@@ -191,7 +191,7 @@ export default async function router(schema: Schema, config: Config) {
         }),
         description: 'Deploy a task stack',
         res: 'res.TaskStatus.json'
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
         try {
             await Auth.is_auth(config.models, req);
 

@@ -27,15 +27,11 @@ export default async function router(schema: Schema, config: Config) {
             page: Type.Optional(Type.Integer()),
             order: Type.Optional(Type.Enum(GenericListOrder)),
             sort: Type.Optional(Type.String({default: 'created'})),
-            filter: Type.Optional(Type.String({default: ''}))
+            filter: Type.Optional(Type.String({default: ''})),
+            enabled: Type.Optional(Type.Boolean())
         }),
         res: Type.Object({
             total: Type.Integer(),
-            status: Type.Object({
-                dead: Type.Integer({ description: 'The connection is not currently connected to a TAK server' }),
-                live: Type.Integer({ description: 'The connection is currently connected to a TAK server'}),
-                unknown: Type.Integer({ description: 'The status of the connection could not be determined'}),
-            }),
             items: Type.Array(ConnectionSinkResponse)
         })
     }, async (req, res) => {
@@ -45,13 +41,13 @@ export default async function router(schema: Schema, config: Config) {
             });
 
             const list = await config.models.ConnectionSink.list({
-                limit: Number(req.query.limit),
-                page: Number(req.query.page),
-                order: String(req.query.order),
-                sort: String(req.query.sort),
+                limit: req.query.limit,
+                page: req.query.page,
+                order: req.query.order,
+                sort: req.query.sort,
                 where: sql`
                     name ~* ${Param(req.query.filter)}
-                    AND connection = ${Param(req.query.connection)}
+                    AND connection = ${Param(req.params.connectionid)}
                     AND (${Param(req.query.enabled)}::BOOLEAN IS NULL OR enabled = ${Param(req.query.enabled)}::BOOLEAN)
                 `
             });
@@ -77,7 +73,7 @@ export default async function router(schema: Schema, config: Config) {
             body: Type.Object({
                 layer: Type.String(),
                 url: Type.String()
-            });
+            })
         }),
         res: ConnectionSinkResponse
     }, async (req, res) => {
@@ -170,25 +166,13 @@ export default async function router(schema: Schema, config: Config) {
             connectionid: Type.Integer(),
             sinkid: Type.Integer()
         }),
-        res: {
-            type: 'object',
-            required: ['stats'],
-            additionalProperties: false,
-            properties: {
-                stats: {
-                    type: 'array',
-                    items: {
-                        type: 'object',
-                        required: ['label', 'success', 'failure'],
-                        properties: {
-                            label: { type: 'string' },
-                            success: { type: 'integer' },
-                            failure: { type: 'integer' }
-                        }
-                    }
-                }
-            }
-        }
+        res: Type.Object({
+            stats: Type.Array(Type.Object({
+                label: Type.String(),
+                success: Type.Integer(),
+                failure: Type.Integer()
+            }))
+        })
     }, async (req, res) => {
         try {
             await Auth.is_auth(config, req, {

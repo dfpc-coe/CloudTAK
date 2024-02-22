@@ -43,7 +43,7 @@ export default async function router(schema: Schema, config: Config) {
             }
         },
         res: "imports.json"
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
         try {
             const user = await Auth.as_user(config.models, req);
 
@@ -71,7 +71,7 @@ export default async function router(schema: Schema, config: Config) {
         }),
         description: 'Import an asset into a previously configured import container',
         res: 'imports.json'
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
         try {
             const user = await Auth.as_user(config.models, req);
 
@@ -148,7 +148,7 @@ export default async function router(schema: Schema, config: Config) {
                 }
             }
         }
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
         try {
             const user = await Auth.as_user(config.models, req);
 
@@ -204,7 +204,7 @@ export default async function router(schema: Schema, config: Config) {
             import: Type.String()
         }),
         res: 'imports.json'
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
         try {
             await Auth.is_auth(config.models, req, {
                 resources: [{ access: AuthResourceAccess.IMPORT, id: req.params.import }]
@@ -227,7 +227,7 @@ export default async function router(schema: Schema, config: Config) {
         }),
         body: 'req.body.PatchImport.json',
         res: 'imports.json'
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
         try {
             await Auth.is_auth(config.models, req, {
                 resources: [{ access: AuthResourceAccess.IMPORT, id: req.params.import }]
@@ -250,7 +250,7 @@ export default async function router(schema: Schema, config: Config) {
         description: 'List Imports',
         query: 'req.query.ListImports.json',
         res: 'res.ListImports.json'
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
         try {
             await Auth.is_auth(config.models, req);
 
