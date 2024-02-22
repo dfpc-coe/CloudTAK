@@ -15,7 +15,13 @@ export const GenericMartiResponse = Type.Object({
     nodeId: Type.Optional(Type.String())
 });
 
-export const ConnectionTokenResponse = createSelectSchema(schemas.ConnectionSink, {
+/** Includes Token itself */
+export const CreateConnectionTokenResponse = createSelectSchema(schemas.ConnectionSink, {
+    id: Type.Integer(),
+    connection: Type.Integer()
+});
+
+export const ConnectionTokenResponse = Type.Object({
     id: Type.Integer(),
     connection: Type.Integer(),
     name: Type.String(),

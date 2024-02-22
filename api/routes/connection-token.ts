@@ -7,8 +7,9 @@ import Config from '../lib/config.js';
 import { promisify } from 'util';
 import jwt from 'jsonwebtoken';
 import { sql } from 'drizzle-orm';
+import { GenericListOrder } from '@openaddresses/batch-generic';
 import Schema from '@openaddresses/batch-schema';
-import { StandardResponse, ConnectionTokenResponse } from '../lib/types.js';
+import { StandardResponse, CreateConnectionTokenResponse, ConnectionTokenResponse } from '../lib/types.js';
 
 export default async function router(schema: Schema, config: Config) {
     await schema.get('/connection/:connectionid/token', {
@@ -57,8 +58,10 @@ export default async function router(schema: Schema, config: Config) {
         params: Type.Object({
             connectionid: Type.Integer()
         }),
-        body: 'req.body.CreateConnectionToken.json',
-        res: 'res.CreateConnectionToken.json'
+        body: Type.Object({
+            name: Type.String()
+        }),
+        res: CreateConnectionTokenResponse
     }, async (req, res) => {
         try {
             await Auth.as_user(config, req);
@@ -84,7 +87,9 @@ export default async function router(schema: Schema, config: Config) {
             id: Type.Integer()
         }),
         description: 'Update properties of a Token',
-        body: 'req.body.PatchConnectionToken.json',
+        body: Type.Object({
+            name: Type.Optional(Type.String())
+        }),
         res: StandardResponse
     }, async (req, res) => {
         try {
