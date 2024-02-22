@@ -109,13 +109,13 @@ export default async function router(schema: Schema, config: Config) {
             connectionid: Type.Integer()
         }),
         body: Type.Object({
-            name: Type.String(),
-            description: Type.String(),
-            enabled: Type.Boolean(),
-            auth: Type.Object({
+            name: Type.Optional(Type.String()),
+            description: Type.Optional(Type.String()),
+            enabled: Type.Optional(Type.Boolean()),
+            auth: Type.Optional(Type.Object({
                 key: Type.String(),
                 cert: Type.String()
-            })
+            }))
         }),
         res: ConnectionResponse
     }, async (req, res) => {
