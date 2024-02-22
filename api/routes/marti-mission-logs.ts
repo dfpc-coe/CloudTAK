@@ -34,7 +34,7 @@ export default async function router(schema: Schema, config: Config) {
         res: 'res.Marti.json'
     }, async (req, res) => {
         try {
-            const user = await Auth.as_user(config.models, req);
+            const user = await Auth.as_user(config, req);
 
             const auth = (await config.models.Profile.from(user.email)).auth;
             const creatorUid = user.email;
@@ -61,7 +61,7 @@ export default async function router(schema: Schema, config: Config) {
         res: StandardResponse
     }, async (req, res) => {
         try {
-            const user = await Auth.as_user(config.models, req);
+            const user = await Auth.as_user(config, req);
 
             const auth = (await config.models.Profile.from(user.email)).auth;
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));

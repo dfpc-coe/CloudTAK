@@ -36,7 +36,7 @@ export default async function router(schema: Schema, config: Config) {
         res: 'res.ListLayers.json'
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req);
+            await Auth.is_auth(config, req);
 
             const list = await config.models.Layer.list({
                 limit: Number(req.query.limit),
@@ -78,7 +78,7 @@ export default async function router(schema: Schema, config: Config) {
         res: 'res.Layer.json'
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req);
+            await Auth.is_auth(config, req);
 
             if (req.body.styles && req.body.styles.queries) {
                 req.body.styles = {
@@ -134,7 +134,7 @@ export default async function router(schema: Schema, config: Config) {
         res: StandardResponse
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req);
+            await Auth.is_auth(config, req);
 
             // TODO there is a limit here to how many will be returned
             // switch to an async iter or stream
@@ -176,7 +176,7 @@ export default async function router(schema: Schema, config: Config) {
         res: 'res.Layer.json'
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req, {
+            await Auth.is_auth(config, req, {
                 resources: [{ access: AuthResourceAccess.LAYER, id: parseInt(req.params.layerid) }]
             });
 
@@ -264,7 +264,7 @@ export default async function router(schema: Schema, config: Config) {
         res: 'res.Layer.json'
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req, {
+            await Auth.is_auth(config, req, {
                 resources: [{ access: AuthResourceAccess.LAYER, id: parseInt(req.params.layerid) }]
             });
 
@@ -289,7 +289,7 @@ export default async function router(schema: Schema, config: Config) {
         res: StandardResponse
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req);
+            await Auth.is_auth(config, req);
 
             const layer = await config.models.Layer.from(parseInt(req.params.layerid));
 
@@ -324,7 +324,7 @@ export default async function router(schema: Schema, config: Config) {
         res: StandardResponse
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req);
+            await Auth.is_auth(config, req);
 
             const layer = await config.models.Layer.from(parseInt(req.params.layerid));
 
@@ -357,7 +357,7 @@ export default async function router(schema: Schema, config: Config) {
         limit: '50mb'
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req, {
+            await Auth.is_auth(config, req, {
                 resources: [{ access: AuthResourceAccess.LAYER, id: parseInt(req.params.layerid) }]
             });
 

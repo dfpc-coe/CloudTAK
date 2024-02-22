@@ -16,7 +16,7 @@ export default async function router(schema: Schema, config: Config) {
         res: 'res.ListProfileChats.json'
     }, async (req, res) => {
         try {
-            const user = await Auth.as_user(config.models, req);
+            const user = await Auth.as_user(config, req);
             const chats = await config.models.ProfileChat.chats(user.email);
             return res.json(chats);
         } catch (err) {

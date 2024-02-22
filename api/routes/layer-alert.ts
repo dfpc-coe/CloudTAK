@@ -24,7 +24,7 @@ export default async function router(schema: Schema, config: Config) {
         res: 'res.ListLayerAlerts.json'
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req, {
+            await Auth.is_auth(config, req, {
                 resources: [{ access: AuthResourceAccess.LAYER, id: parseInt(req.params.layerid) }]
             });
 
@@ -60,7 +60,7 @@ export default async function router(schema: Schema, config: Config) {
         res: 'layer_alerts.json'
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req, {
+            await Auth.is_auth(config, req, {
                 resources: [{ access: AuthResourceAccess.LAYER, id: parseInt(req.params.layerid) }]
             });
 
@@ -93,7 +93,7 @@ export default async function router(schema: Schema, config: Config) {
         res: StandardResponse
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req, {
+            await Auth.is_auth(config, req, {
                 resources: [{ access: AuthResourceAccess.LAYER, id: parseInt(req.params.layerid) }]
             });
 
@@ -123,7 +123,7 @@ export default async function router(schema: Schema, config: Config) {
         res: StandardResponse
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req, {
+            await Auth.is_auth(config, req, {
                 resources: [{ access: AuthResourceAccess.LAYER, id: parseInt(req.params.layerid) }]
             });
 

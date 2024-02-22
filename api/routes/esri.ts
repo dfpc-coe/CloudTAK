@@ -57,7 +57,7 @@ export default async function router(schema: Schema, config: Config) {
         }
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req, {
+            await Auth.is_auth(config, req, {
                 anyResources: true
             });
 
@@ -114,7 +114,7 @@ export default async function router(schema: Schema, config: Config) {
         res: { type: 'object' }
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req, {
+            await Auth.is_auth(config, req, {
                 anyResources: true
             });
 
@@ -155,7 +155,7 @@ export default async function router(schema: Schema, config: Config) {
         res: { type: "object" }
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req, {
+            await Auth.is_auth(config, req, {
                 anyResources: true
             });
 
@@ -205,7 +205,7 @@ export default async function router(schema: Schema, config: Config) {
         }
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req, {
+            await Auth.is_auth(config, req, {
                 anyResources: true
             });
 
@@ -253,7 +253,7 @@ export default async function router(schema: Schema, config: Config) {
         }
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req, {
+            await Auth.is_auth(config, req, {
                 anyResources: true
             });
 
@@ -300,7 +300,7 @@ export default async function router(schema: Schema, config: Config) {
         }
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req, {
+            await Auth.is_auth(config, req, {
                 anyResources: true
             });
 
@@ -343,7 +343,7 @@ export default async function router(schema: Schema, config: Config) {
         }
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req, {
+            await Auth.is_auth(config, req, {
                 anyResources: true
             });
 
@@ -382,7 +382,7 @@ export default async function router(schema: Schema, config: Config) {
         }
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req, {
+            await Auth.is_auth(config, req, {
                 anyResources: true
             });
 
@@ -428,7 +428,7 @@ export default async function router(schema: Schema, config: Config) {
         }
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req, {
+            await Auth.is_auth(config, req, {
                 anyResources: true
             });
 

@@ -22,7 +22,7 @@ export default async function router(schema: Schema, config: Config) {
         res: StandardResponse
     }, async (req, res) => {
         try {
-            const user = await Auth.as_user(config.models, req, { token: true });
+            const user = await Auth.as_user(config, req, { token: true });
             const profile = await config.models.Profile.from(user.email);
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
             const file = await api.Files.delete(req.params.hash);
@@ -52,7 +52,7 @@ export default async function router(schema: Schema, config: Config) {
         description: 'Helper API to download files by file hash',
     }, async (req, res) => {
         try {
-            const user = await Auth.as_user(config.models, req, { token: true });
+            const user = await Auth.as_user(config, req, { token: true });
             const profile = await config.models.Profile.from(user.email);
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
 

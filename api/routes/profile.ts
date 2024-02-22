@@ -15,7 +15,7 @@ export default async function router(schema: Schema, config: Config) {
         res: 'res.Profile.json'
     }, async (req, res) => {
         try {
-            const user = await Auth.as_user(config.models, req);
+            const user = await Auth.as_user(config, req);
             const profile = await config.models.Profile.from(user.email);
 
             return res.json(profile);
@@ -32,7 +32,7 @@ export default async function router(schema: Schema, config: Config) {
         res: 'res.Profile.json'
     }, async (req, res) => {
         try {
-            const user = await Auth.as_user(config.models, req);
+            const user = await Auth.as_user(config, req);
             const profile = await config.models.Profile.commit(user.email, req.body);
 
             return res.json(profile);
