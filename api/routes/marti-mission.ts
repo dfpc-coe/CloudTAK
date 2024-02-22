@@ -40,7 +40,7 @@ export default async function router(schema: Schema, config: Config) {
             }
         },
         res: 'res.MartiMission.json'
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
         try {
             await Auth.is_auth(config.models, req);
 
@@ -76,7 +76,7 @@ export default async function router(schema: Schema, config: Config) {
             }
         },
         res: 'res.Marti.json'
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
         try {
             await Auth.is_auth(config.models, req);
 
@@ -122,7 +122,7 @@ export default async function router(schema: Schema, config: Config) {
             }
         },
         res: 'res.Marti.json'
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
         try {
             await Auth.is_auth(config.models, req);
 
@@ -162,7 +162,7 @@ export default async function router(schema: Schema, config: Config) {
             }
         },
         res: 'res.Marti.json'
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
         try {
             await Auth.is_auth(config.models, req);
 
@@ -187,7 +187,7 @@ export default async function router(schema: Schema, config: Config) {
         }),
         description: 'Return subscriptions associated with your user',
         res: { type: 'object' }
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
         try {
             await Auth.is_auth(config.models, req);
 
@@ -211,7 +211,7 @@ export default async function router(schema: Schema, config: Config) {
         }),
         description: 'List subscriptions associated with a mission',
         res: 'res.Marti.json'
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
         try {
             await Auth.is_auth(config.models, req);
 
@@ -235,7 +235,7 @@ export default async function router(schema: Schema, config: Config) {
         }),
         description: 'List subscriptions associated with a mission',
         res: 'res.Marti.json'
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
         try {
             await Auth.is_auth(config.models, req);
 
@@ -275,7 +275,7 @@ export default async function router(schema: Schema, config: Config) {
                 }
             }
         }
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
         try {
             await Auth.is_auth(config.models, req);
 
@@ -307,7 +307,7 @@ export default async function router(schema: Schema, config: Config) {
             }
         },
         res: 'res.Marti.json'
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
         try {
             await Auth.is_auth(config.models, req);
 
@@ -350,7 +350,7 @@ export default async function router(schema: Schema, config: Config) {
         }),
         description: 'Delete an upload by hash',
         res: 'res.Marti.json'
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
         try {
             await Auth.is_auth(config.models, req);
 

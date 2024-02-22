@@ -19,7 +19,7 @@ export default async function router(schema: Schema, config: Config) {
             dataid: Type.Integer()
         }),
         res: 'res.ListDataJobs.json'
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
         try {
             await Auth.is_auth(config.models, req, {
                 resources: [{ access: AuthResourceAccess.DATA, id: parseInt(req.params.dataid) }]
@@ -48,7 +48,7 @@ export default async function router(schema: Schema, config: Config) {
             jobid: Type.String()
         }),
         res: 'res.DataJob.json'
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
         try {
             await Auth.is_auth(config.models, req, {
                 resources: [{ access: AuthResourceAccess.DATA, id: parseInt(req.params.dataid) }]
@@ -74,7 +74,7 @@ export default async function router(schema: Schema, config: Config) {
             jobid: Type.String()
         }),
         res: 'res.DataJobLogs.json'
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
         try {
             await Auth.is_auth(config.models, req, {
                 resources: [{ access: AuthResourceAccess.DATA, id: parseInt(req.params.dataid) }]

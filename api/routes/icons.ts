@@ -35,7 +35,7 @@ export default async function router(schema: Schema, config: Config) {
         description: 'List Iconsets',
         query: 'req.query.ListIconsets.json',
         res: 'res.ListIconsets.json'
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
         try {
             await Auth.is_auth(config.models, req);
 
@@ -61,7 +61,7 @@ export default async function router(schema: Schema, config: Config) {
         description: 'Create Iconset',
         body: 'req.body.CreateIconset.json',
         res: 'iconsets.json'
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
         try {
             await Auth.is_auth(config.models, req);
 
@@ -82,7 +82,7 @@ export default async function router(schema: Schema, config: Config) {
         }),
         body: 'req.body.PatchIconset.json',
         res: 'iconsets.json'
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
         try {
             await Auth.is_auth(config.models, req);
 
@@ -115,7 +115,7 @@ export default async function router(schema: Schema, config: Config) {
             }
         },
         res: 'iconsets.json'
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
         try {
             await Auth.is_auth(config.models, req, { token: true });
 
@@ -183,7 +183,7 @@ export default async function router(schema: Schema, config: Config) {
         }),
         body: 'req.body.CreateIcon.json',
         res: 'icons.json'
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
         try {
             await Auth.is_auth(config.models, req);
 
@@ -211,7 +211,7 @@ export default async function router(schema: Schema, config: Config) {
             iconset: Type.String()
         }),
         res: StandardResponse
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
         try {
             await Auth.is_auth(config.models, req);
 
@@ -233,7 +233,7 @@ export default async function router(schema: Schema, config: Config) {
         description: 'List Icons',
         query: 'req.query.ListIcons.json',
         res: 'res.ListIcons.json'
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
         try {
             await Auth.is_auth(config.models, req);
 
@@ -266,7 +266,7 @@ export default async function router(schema: Schema, config: Config) {
         }),
         description: 'Icon Metadata',
         res: 'icons.json'
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
         try {
             await Auth.is_auth(config.models, req);
             const icon = await config.models.Icon.from(sql`${req.params.iconset} = iconset AND ${req.params.icon} = name`);
@@ -294,7 +294,7 @@ export default async function router(schema: Schema, config: Config) {
             }
         },
         res: 'icons.json'
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
         try {
             await Auth.is_auth(config.models, req);
             let icon = await config.models.Icon.from(sql`${req.params.iconset} = iconset AND ${req.params.icon} = name`);
@@ -320,7 +320,7 @@ export default async function router(schema: Schema, config: Config) {
         }),
         description: 'Remove Icon from Iconset',
         res: StandardResponse
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
         try {
             await Auth.is_auth(config.models, req);
             const icon = await config.models.Icon.delete(sql`${req.params.iconset} = iconset AND ${req.params.icon} = name`);
@@ -341,7 +341,7 @@ export default async function router(schema: Schema, config: Config) {
             icon: Type.String()
         }),
         description: 'Icon Data',
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
         try {
             await Auth.is_auth(config.models, req, { token: true });
 
@@ -365,7 +365,7 @@ export default async function router(schema: Schema, config: Config) {
                 iconset: { type: 'string' },
             }
         }
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
         try {
             await Auth.is_auth(config.models, req, { token: true });
 
@@ -401,7 +401,7 @@ export default async function router(schema: Schema, config: Config) {
                 iconset: { type: 'string' },
             }
         }
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
         try {
             await Auth.is_auth(config.models, req, { token: true });
 

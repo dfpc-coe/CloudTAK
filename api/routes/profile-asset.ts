@@ -21,7 +21,7 @@ export default async function router(schema: Schema, config: Config) {
         group: 'UserAssets',
         description: 'List Assets',
         res: 'res.ListAssets.json'
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
         try {
             const user = await Auth.as_user(config.models, req);
             return res.json(await assetList(config, `profile/${user.email}/`));
@@ -35,7 +35,7 @@ export default async function router(schema: Schema, config: Config) {
         group: 'UserAssets',
         description: 'Create a new asset',
         res: StandardResponse
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
 
         let bb;
         try {
@@ -93,7 +93,7 @@ export default async function router(schema: Schema, config: Config) {
             ext: Type.String()
         }),
         res: StandardResponse
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
         try {
             const user = await Auth.as_user(config.models, req);
             await Batch.submitUser(config, user.email, `${req.params.asset}.${req.params.ext}`, req.body);
@@ -116,7 +116,7 @@ export default async function router(schema: Schema, config: Config) {
             ext: Type.String()
         }),
         res: StandardResponse
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
         try {
             const user = await Auth.as_user(config.models, req);
 
@@ -139,7 +139,7 @@ export default async function router(schema: Schema, config: Config) {
             asset: Type.String(),
             ext: Type.String()
         }),
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
         try {
             const user = await Auth.as_user(config.models, req, { token: true });
 
@@ -158,7 +158,7 @@ export default async function router(schema: Schema, config: Config) {
         params: Type.Object({
             asset: Type.String(),
         }),
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
         try {
             const user = await Auth.as_user(config.models, req, { token: true });
 

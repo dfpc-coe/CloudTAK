@@ -22,7 +22,7 @@ export default async function router(schema: Schema, config: Config) {
         }),
         query: 'req.query.ListLayerAlerts.json',
         res: 'res.ListLayerAlerts.json'
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
         try {
             await Auth.is_auth(config.models, req, {
                 resources: [{ access: AuthResourceAccess.LAYER, id: parseInt(req.params.layerid) }]
@@ -58,7 +58,7 @@ export default async function router(schema: Schema, config: Config) {
         }),
         body: 'req.body.CreateLayerAlert.json',
         res: 'layer_alerts.json'
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
         try {
             await Auth.is_auth(config.models, req, {
                 resources: [{ access: AuthResourceAccess.LAYER, id: parseInt(req.params.layerid) }]
@@ -91,7 +91,7 @@ export default async function router(schema: Schema, config: Config) {
             layerid: Type.Integer()
         }),
         res: StandardResponse
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
         try {
             await Auth.is_auth(config.models, req, {
                 resources: [{ access: AuthResourceAccess.LAYER, id: parseInt(req.params.layerid) }]
@@ -121,7 +121,7 @@ export default async function router(schema: Schema, config: Config) {
             alertid: Type.Integer()
         }),
         res: StandardResponse
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
         try {
             await Auth.is_auth(config.models, req, {
                 resources: [{ access: AuthResourceAccess.LAYER, id: parseInt(req.params.layerid) }]

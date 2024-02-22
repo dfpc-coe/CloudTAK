@@ -18,7 +18,7 @@ export default async function router(schema: Schema, config: Config) {
         description: 'List all tokens associated with the requester\'s account',
         query: 'req.query.ListTokens.json',
         res: 'res.ListTokens.json'
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
         try {
             const user = await Auth.as_user(config.models, req);
 
@@ -45,7 +45,7 @@ export default async function router(schema: Schema, config: Config) {
         description: 'Create a new API token for programatic access',
         body: 'req.body.CreateToken.json',
         res: 'res.CreateToken.json'
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
         try {
             const user = await Auth.as_user(config.models, req);
 
@@ -70,7 +70,7 @@ export default async function router(schema: Schema, config: Config) {
         description: 'Update properties of a Token',
         body: 'req.body.PatchToken.json',
         res: StandardResponse
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
         try {
             const user = await Auth.as_user(config.models, req);
 
@@ -96,7 +96,7 @@ export default async function router(schema: Schema, config: Config) {
             id: Type.Integer(),
         }),
         res: StandardResponse
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
         try {
             const user = await Auth.as_user(config.models, req);
             let token = await config.models.Token.from(sql`id = ${Number(req.params.id)}::INT`);

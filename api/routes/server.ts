@@ -14,7 +14,7 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Server',
         description: 'Get Server',
         res: 'res.Server.json'
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
         try {
             await Auth.is_auth(config.models, req);
 
@@ -40,7 +40,7 @@ export default async function router(schema: Schema, config: Config) {
         description: 'Patch Server',
         body: 'req.body.Server.json',
         res: 'res.Server.json'
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
         try {
             await Auth.is_auth(config.models, req);
 

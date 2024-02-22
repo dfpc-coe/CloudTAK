@@ -8,7 +8,7 @@ import { promisify } from 'util';
 import jwt from 'jsonwebtoken';
 import { sql } from 'drizzle-orm';
 import Schema from '@openaddresses/batch-schema';
-import { StandardResponse } from '../lib/types.js';
+import { StandardResponse, ConnectionTokenResponse } from '../lib/types.js';
 
 export default async function router(schema: Schema, config: Config) {
     await schema.get('/connection/:connectionid/token', {
@@ -18,20 +18,29 @@ export default async function router(schema: Schema, config: Config) {
         params: Type.Object({
             connectionid: Type.Integer()
         }),
-        query: 'req.query.ListConnectionTokens.json',
-        res: 'res.ListConnectionTokens.json'
-    }, async (req: AuthRequest, res: Response) => {
+        query: Type.Object({
+            limit: Type.Optional(Type.Integer()),
+            page: Type.Optional(Type.Integer()),
+            order: Type.Optional(Type.Enum(GenericListOrder)),
+            sort: Type.Optional(Type.String({default: 'created'})),
+            filter: Type.Optional(Type.String({default: ''}))
+        }),
+        res: Type.Object({
+            total: Type.Integer(),
+            items: Type.Array(ConnectionTokenResponse)
+        })
+    }, async (req, res) => {
         try {
             await Auth.is_auth(config.models, req);
 
             const list = await config.models.ConnectionToken.list({
-                limit: Number(req.query.limit),
-                page: Number(req.query.page),
-                order: String(req.query.order),
-                sort: String(req.query.sort),
+                limit: req.query.limit,
+                page: req.query.page,
+                order: req.query.order,
+                sort: req.query.sort,
                 where: sql`
                     name ~* ${req.query.filter}
-                    AND connection = ${parseInt(String(req.params.connectionid))}
+                    AND connection = ${req.params.connectionid}
                 `
             });
 
@@ -50,7 +59,7 @@ export default async function router(schema: Schema, config: Config) {
         }),
         body: 'req.body.CreateConnectionToken.json',
         res: 'res.CreateConnectionToken.json'
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
         try {
             await Auth.as_user(config.models, req);
 
@@ -71,13 +80,13 @@ export default async function router(schema: Schema, config: Config) {
         name: 'Update Token',
         group: 'ConnectionToken',
         params: Type.Object({
-            connectionid: Type.Integer()
+            connectionid: Type.Integer(),
             id: Type.Integer()
         }),
         description: 'Update properties of a Token',
         body: 'req.body.PatchConnectionToken.json',
         res: StandardResponse
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
         try {
             await Auth.as_user(config.models, req);
 
@@ -100,11 +109,11 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Token',
         description: 'Delete a user\'s API Token',
         params: Type.Object({
-            connectionid: Type.Integer()
+            connectionid: Type.Integer(),
             id: Type.Integer()
         }),
         res: StandardResponse
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
         try {
             await Auth.as_user(config.models, req);
 
