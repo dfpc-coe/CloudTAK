@@ -15,6 +15,11 @@ export const GenericMartiResponse = Type.Object({
     nodeId: Type.Optional(Type.String())
 });
 
+export const ConnectionSinkResponse = createSelectSchema(schemas.ConnectionSink, {
+    id: Type.Integer(),
+    connection: Type.Integer(),
+});
+
 export const ConnectionResponse = Type.Object({
     id: Type.Integer(),
     created: Type.String(),

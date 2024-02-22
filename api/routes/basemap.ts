@@ -221,8 +221,8 @@ export default async function router(schema: Schema, config: Config) {
             maxzoom: Type.Optional(Type.Integer()),
             format: Type.Optional(Type.String()),
             type: Type.Optional(Type.String()),
-            bounds: Type.Array(Type.Number({minItems: 4, maxItems: 4})),
-            center: Type.Array(Type.Number())
+            bounds: Type.Optional(Type.Array(Type.Number({minItems: 4, maxItems: 4}))),
+            center: Type.Optional(Type.Array(Type.Number()))
         }),
         res: BasemapResponse
     }, async (req, res) => {
