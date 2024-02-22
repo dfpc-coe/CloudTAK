@@ -2,31 +2,46 @@ import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import { sql } from 'drizzle-orm';
 import Config from '../lib/config.js';
-import { Response } from 'express';
-import { AuthRequest } from '@tak-ps/blueprint-login';
 import CW from '../lib/aws/metric.js';
-import { AuthResourceAccess } from '@tak-ps/blueprint-login';
+import { AuthResourceAccess } from '../lib/auth.js';
 import { X509Certificate } from 'crypto';
+import { Type } from '@sinclair/typebox'
+import { GenericListOrder } from '@openaddresses/batch-generic';
+import { StandardResponse, ConnectionResponse } from '../lib/types.js';
+import Schema from '@openaddresses/batch-schema';
 
-export default async function router(schema: any, config: Config) {
+export default async function router(schema: Schema, config: Config) {
     const cw = new CW(config.StackName);
 
     await schema.get('/connection', {
         name: 'List Connections',
         group: 'Connection',
-        auth: 'user',
         description: 'List Connections',
-        query: 'req.query.ListConnections.json',
-        res: 'res.ListConnections.json'
-    }, async (req: AuthRequest, res: Response) => {
+        query: Type.Object({
+            limit: Type.Optional(Type.Integer()),
+            page: Type.Optional(Type.Integer()),
+            order: Type.Optional(Type.Enum(GenericListOrder)),
+            sort: Type.Optional(Type.String({default: 'created'})),
+            filter: Type.Optional(Type.String({default: ''}))
+        }),
+        res: Type.Object({
+            total: Type.Integer(),
+            status: Type.Object({
+                dead: Type.Integer({ description: 'The connection is not currently connected to a TAK server' }),
+                live: Type.Integer({ description: 'The connection is currently connected to a TAK server'}),
+                unknown: Type.Integer({ description: 'The status of the connection could not be determined'}),
+            }),
+            items: Type.Array(ConnectionResponse)
+        })
+    }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req);
+            await Auth.is_auth(config, req);
 
             const list = await config.models.Connection.list({
-                limit: Number(req.query.limit),
-                page: Number(req.query.page),
-                order: String(req.query.order),
-                sort: String(req.query.sort),
+                limit: req.query.limit,
+                page: req.query.page,
+                order: req.query.order,
+                sort: req.query.sort,
                 where: sql`
                     name ~* ${req.query.filter}
                 `
@@ -57,13 +72,20 @@ export default async function router(schema: any, config: Config) {
     await schema.post('/connection', {
         name: 'Create Connection',
         group: 'Connection',
-        auth: 'admin',
         description: 'Register a new connection',
-        body: 'req.body.CreateConnection.json',
-        res: 'res.Connection.json'
-    }, async (req: AuthRequest, res: Response) => {
+        body: Type.Object({
+            name: Type.String(),
+            description: Type.String(),
+            enabled: Type.Optional(Type.Boolean()),
+            auth: Type.Object({
+                key: Type.String(),
+                cert: Type.String()
+            })
+        }),
+        res: ConnectionResponse
+    }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req);
+            await Auth.is_auth(config, req);
 
             if (!config.server) throw new Err(400, null, 'TAK Server must be configured before a connection can be made');
             const conn = await config.models.Connection.generate(req.body);
@@ -82,14 +104,23 @@ export default async function router(schema: any, config: Config) {
     await schema.patch('/connection/:connectionid', {
         name: 'Update Connection',
         group: 'Connection',
-        auth: 'admin',
         description: 'Update a connection',
-        ':connectionid': 'integer',
-        body: 'req.body.PatchConnection.json',
-        res: 'res.Connection.json'
-    }, async (req: AuthRequest, res: Response) => {
+        params: Type.Object({
+            connectionid: Type.Integer()
+        }),
+        body: Type.Object({
+            name: Type.String(),
+            description: Type.String(),
+            enabled: Type.Boolean(),
+            auth: Type.Object({
+                key: Type.String(),
+                cert: Type.String()
+            })
+        }),
+        res: ConnectionResponse
+    }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req, {
+            await Auth.is_auth(config, req, {
                 resources: [{ access: AuthResourceAccess.CONNECTION, id: parseInt(req.params.connectionid) }]
             });
 
@@ -120,13 +151,14 @@ export default async function router(schema: any, config: Config) {
     await schema.get('/connection/:connectionid', {
         name: 'Get Connection',
         group: 'Connection',
-        auth: 'user',
         description: 'Get a connection',
-        ':connectionid': 'integer',
-        res: 'res.Connection.json'
-    }, async (req: AuthRequest, res: Response) => {
+        params: Type.Object({
+            connectionid: Type.Integer()
+        }),
+        res: ConnectionResponse
+    }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req, {
+            await Auth.is_auth(config, req, {
                 resources: [{ access: AuthResourceAccess.CONNECTION, id: parseInt(req.params.connectionid) }]
             });
 
@@ -146,13 +178,14 @@ export default async function router(schema: any, config: Config) {
     await schema.post('/connection/:connectionid/refresh', {
         name: 'Refresh Connection',
         group: 'Connection',
-        auth: 'admin',
         description: 'Refresh a connection',
-        ':connectionid': 'integer',
-        res: 'res.Connection.json'
-    }, async (req: AuthRequest, res: Response) => {
+        params: Type.Object({
+            connectionid: Type.Integer()
+        }),
+        res: ConnectionResponse
+    }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req, {
+            await Auth.is_auth(config, req, {
                 resources: [{ access: AuthResourceAccess.CONNECTION, id: parseInt(req.params.connectionid) }]
             });
 
@@ -182,13 +215,14 @@ export default async function router(schema: any, config: Config) {
     await schema.delete('/connection/:connectionid', {
         name: 'Delete Connection',
         group: 'Connection',
-        auth: 'user',
         description: 'Delete a connection',
-        ':connectionid': 'integer',
-        res: 'res.Standard.json'
-    }, async (req: AuthRequest, res: Response) => {
+        params: Type.Object({
+            connectionid: Type.Integer()
+        }),
+        res: StandardResponse
+    }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req);
+            await Auth.is_auth(config, req);
 
             await config.models.Connection.delete(parseInt(req.params.connectionid));
 
@@ -206,30 +240,19 @@ export default async function router(schema: any, config: Config) {
     await schema.get('/connection/:connectionid/stats', {
         name: 'Get Stats',
         group: 'Connection',
-        auth: 'admin',
         description: 'Return Conn Success/Failure Stats',
-        ':connectionid': 'integer',
-        res: {
-            type: 'object',
-            required: ['stats'],
-            additionalProperties: false,
-            properties: {
-                stats: {
-                    type: 'array',
-                    items: {
-                        type: 'object',
-                        required: ['label', 'success', 'failure'],
-                        properties: {
-                            label: { type: 'string' },
-                            success: { type: 'integer' },
-                        }
-                    }
-                }
-            }
-        }
-    }, async (req: AuthRequest, res: Response) => {
+        params: Type.Object({
+            connectionid: Type.Integer()
+        }),
+        res: Type.Object({
+            status: Type.Array(Type.Object({
+                label: Type.String(),
+                success: Type.Integer()
+            }))
+        })
+    }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req, {
+            await Auth.is_auth(config, req, {
                 resources: [{ access: AuthResourceAccess.CONNECTION, id: parseInt(req.params.connectionid) }]
             });
 

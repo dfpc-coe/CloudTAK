@@ -1,3 +1,5 @@
+import { Type } from '@sinclair/typebox'
+import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import ECR from '../lib/aws/ecr.js';
@@ -11,11 +13,10 @@ import Config from '../lib/config.js';
 import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
 
-export default async function router(schema: any, config: Config) {
+export default async function router(schema: Schema, config: Config) {
     await schema.get('/task', {
         name: 'List Tasks',
         group: 'Task',
-        auth: 'user',
         description: 'List Tasks',
         res: 'res.ListTasks.json'
     }, async (req: AuthRequest, res: Response) => {
@@ -52,8 +53,9 @@ export default async function router(schema: any, config: Config) {
     await schema.get('/task/:task', {
         name: 'List Tasks',
         group: 'Task',
-        auth: 'user',
-        ':task': 'string',
+        params: Type.Object({
+            task: Type.String(),
+        }),
         description: 'List Version for a specific task',
         res: 'res.ListTaskVersions.json'
     }, async (req: AuthRequest, res: Response) => {
@@ -86,8 +88,9 @@ export default async function router(schema: any, config: Config) {
     await schema.get('/layer/:layerid/task', {
         name: 'Task Status',
         group: 'Task',
-        auth: 'user',
-        ':layerid': 'integer',
+        params: Type.Object({
+            layerid: Type.Integer(),
+        }),
         description: 'Get the status of a task stack in relation to a given layer',
         res: 'res.TaskStatus.json'
     }, async (req: AuthRequest, res: Response) => {
@@ -107,10 +110,11 @@ export default async function router(schema: any, config: Config) {
     await schema.post('/layer/:layerid/task/invoke', {
         name: 'Run Task',
         group: 'Task',
-        auth: 'user',
-        ':layerid': 'integer',
+        params: Type.Object({
+            layerid: Type.Integer(),
+        }),
         description: 'Manually invoke a Task',
-        res: 'res.Standard.json'
+        res: StandardResponse
     }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(config.models, req);
@@ -135,8 +139,9 @@ export default async function router(schema: any, config: Config) {
     await schema.get('/layer/:layerid/task/logs', {
         name: 'Task Logs',
         group: 'Task',
-        auth: 'user',
-        ':layerid': 'integer',
+        params: Type.Object({
+            layerid: Type.Integer(),
+        }),
         description: 'Get the logs related to the given task',
         res: 'res.TaskLogs.json'
     }, async (req: AuthRequest, res: Response) => {
@@ -156,8 +161,9 @@ export default async function router(schema: any, config: Config) {
     await schema.get('/layer/:layerid/task/schema', {
         name: 'Task Schema',
         group: 'Task',
-        auth: 'user',
-        ':layerid': 'integer',
+        params: Type.Object({
+            layerid: Type.Integer(),
+        }),
         description: 'Get the JSONSchema for the expected environment variables',
         query: 'req.query.TaskSchema.json',
         res: 'res.TaskSchema.json'
@@ -180,8 +186,9 @@ export default async function router(schema: any, config: Config) {
     await schema.post('/layer/:layerid/task', {
         name: 'Task Deploy',
         group: 'Task',
-        auth: 'user',
-        ':layerid': 'integer',
+        params: Type.Object({
+            layerid: Type.Integer(),
+        }),
         description: 'Deploy a task stack',
         res: 'res.TaskStatus.json'
     }, async (req: AuthRequest, res: Response) => {

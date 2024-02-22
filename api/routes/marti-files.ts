@@ -1,3 +1,5 @@
+import { Type } from '@sinclair/typebox'
+import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
@@ -9,14 +11,15 @@ import TAKAPI, {
     APIAuthPassword
 } from '../lib/tak-api.js';
 
-export default async function router(schema: any, config: Config) {
+export default async function router(schema: Schema, config: Config) {
     await schema.delete('/marti/api/files/:hash', {
         name: 'delete File',
         group: 'MartiFiles',
-        auth: 'user',
-        ':hash': 'string',
+        params: Type.Object({
+            hash: Type.String(),
+        }),
         description: 'Helper API to delete files by file hash',
-        res: 'res.Standard.json'
+        res: StandardResponse
     }, async (req: AuthRequest, res: Response) => {
         try {
             const user = await Auth.as_user(config.models, req, { token: true });
@@ -36,8 +39,9 @@ export default async function router(schema: any, config: Config) {
     await schema.get('/marti/api/files/:hash', {
         name: 'Download File',
         group: 'MartiFiles',
-        auth: 'user',
-        ':hash': 'string',
+        params: Type.Object({
+            hash: Type.String(),
+        }),
         query: {
             type: 'object',
             additionalProperties: false,

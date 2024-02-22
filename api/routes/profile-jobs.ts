@@ -1,3 +1,5 @@
+import { Type } from '@sinclair/typebox'
+import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import Batch from '../lib/aws/batch.js';
@@ -7,13 +9,11 @@ import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
 import Config from '../lib/config.js';
 
-export default async function router(schema: any, config: Config) {
+export default async function router(schema: Schema, config: Config) {
     await schema.get('/profile/job', {
         name: 'List Jobs',
-        auth: 'user',
         group: 'ProfileJobs',
         description: 'List Profile Jobs',
-        ':dataid': 'integer',
         res: 'res.ListProfileJobs.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
@@ -31,10 +31,11 @@ export default async function router(schema: any, config: Config) {
 
     await schema.get('/profile/job/:jobid', {
         name: 'List Jobs',
-        auth: 'user',
         group: 'ProfileJobs',
         description: 'List Profile Jobs',
-        ':jobid': 'string',
+        params: Type.Object({
+            jobid: Type.String(),
+        }),
         res: 'res.ProfileJob.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
@@ -52,10 +53,11 @@ export default async function router(schema: any, config: Config) {
 
     await schema.get('/profile/job/:jobid/logs', {
         name: 'List Logs',
-        auth: 'user',
         group: 'ProfileJobs',
         description: 'List Profile Job Logs',
-        ':jobid': 'string',
+        params: Type.Object({
+            jobid: Type.String(),
+        }),
         res: 'res.ProfileJobLogs.json'
     }, async (req: AuthRequest, res: Response) => {
         try {

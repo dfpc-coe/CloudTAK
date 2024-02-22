@@ -1,3 +1,5 @@
+import { Type } from '@sinclair/typebox'
+import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
@@ -9,11 +11,10 @@ import TAKAPI, {
     APIAuthCertificate
 } from '../lib/tak-api.js';
 
-export default async function router(schema: any, config: Config) {
+export default async function router(schema: Schema, config: Config) {
     await schema.get('/marti/group', {
         name: 'List Groups',
         group: 'Marti',
-        auth: 'user',
         description: 'Helper API to list groups that the client is part of',
         query: {
             type: 'object',
@@ -58,7 +59,6 @@ export default async function router(schema: any, config: Config) {
     await schema.put('/marti/group', {
         name: 'Upate Groups',
         group: 'Marti',
-        auth: 'user',
         description: 'Helper API to update groups that the client is part of',
         query: {
             type: 'object',
@@ -115,7 +115,6 @@ export default async function router(schema: any, config: Config) {
     await schema.get('/marti/api/contacts/all', {
         name: 'List Contacts',
         group: 'Marti',
-        auth: 'user',
         description: 'Helper API to list contacts',
         res: 'res.Marti.json'
     }, async (req: AuthRequest, res: Response) => {
@@ -135,7 +134,6 @@ export default async function router(schema: any, config: Config) {
     await schema.post('/marti/signClient', {
         name: 'Sign Client',
         group: 'Marti',
-        auth: 'user',
         description: 'Helper API for obtaining a signed Certificate pair given LDAP Credentials',
         body: 'req.body.MartiSignClient.json',
         res: 'res.MartiSignClient.json'

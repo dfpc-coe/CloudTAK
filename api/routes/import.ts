@@ -1,3 +1,5 @@
+import { Type } from '@sinclair/typebox'
+import Schema from '@openaddresses/batch-schema';
 import path from 'node:path';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
@@ -11,11 +13,10 @@ import { Param } from '@openaddresses/batch-generic';
 import { sql } from 'drizzle-orm';
 import { AuthResourceAccess } from '@tak-ps/blueprint-login';
 
-export default async function router(schema: any, config: Config) {
+export default async function router(schema: Schema, config: Config) {
     await schema.post('/import', {
         name: 'Import',
         group: 'Import',
-        auth: 'user',
         description: 'Import an unknown asset into the imports manager',
         body: {
             type: 'object',
@@ -65,8 +66,9 @@ export default async function router(schema: any, config: Config) {
     await schema.put('/import/:import', {
         name: 'Import',
         group: 'Import',
-        auth: 'user',
-        ':import': 'string',
+        params: Type.Object({
+            import: Type.String()
+        }),
         description: 'Import an asset into a previously configured import container',
         res: 'imports.json'
     }, async (req: AuthRequest, res: Response) => {
@@ -119,7 +121,6 @@ export default async function router(schema: any, config: Config) {
     await schema.put('/import', {
         name: 'Import',
         group: 'Import',
-        auth: 'user',
         description: 'Import up to 5 unknown assets into the imports manager at a time',
         res: {
             type: 'object',
@@ -198,9 +199,10 @@ export default async function router(schema: any, config: Config) {
     await schema.get('/import/:import', {
         name: 'Get Import',
         group: 'Import',
-        auth: 'user',
         description: 'Get Import',
-        ':import': 'string',
+        params: Type.Object({
+            import: Type.String()
+        }),
         res: 'imports.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
@@ -219,9 +221,10 @@ export default async function router(schema: any, config: Config) {
     await schema.patch('/import/:import', {
         name: 'Update Import',
         group: 'Import',
-        auth: 'user',
         description: 'Update Import',
-        ':import': 'string',
+        params: Type.Object({
+            import: Type.String()
+        }),
         body: 'req.body.PatchImport.json',
         res: 'imports.json'
     }, async (req: AuthRequest, res: Response) => {
@@ -244,7 +247,6 @@ export default async function router(schema: any, config: Config) {
     await schema.get('/import', {
         name: 'List Imports',
         group: 'Import',
-        auth: 'user',
         description: 'List Imports',
         query: 'req.query.ListImports.json',
         res: 'res.ListImports.json'

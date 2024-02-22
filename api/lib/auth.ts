@@ -1,14 +1,66 @@
+import { Request } from 'express';
 import Err from '@openaddresses/batch-error';
-import {
-    AuthRequest,
-    AuthUser,
-    AuthResource, AuthResourceAccess
-} from '@tak-ps/blueprint-login';
-import Models from './models.js';
+import jwt from 'jsonwebtoken';
+import Config from './config.js';
+
+export enum AuthUserAccess {
+    ADMIN = 'admin',
+    USER = 'user'
+}
+
+function castUserAccessEnum(str: string): AuthUserAccess | undefined {
+  const value = AuthUserAccess[str.toUpperCase() as keyof typeof AuthUserAccess];
+  return value;
+}
 
 export type AuthResourceAccepted = {
     access: AuthResourceAccess;
     id: string | number;
+}
+
+export enum AuthResourceAccess {
+    DATA = 'data',
+    LAYER = 'layer',
+    IMPORT = 'import',
+    CONNECTION = 'connection'
+}
+
+function castResourceAccessEnum(str: string): AuthResourceAccess | undefined {
+  const value = AuthResourceAccess[str.toUpperCase() as keyof typeof AuthResourceAccess];
+  return value;
+}
+
+export class AuthResource {
+    id: number | string;
+    access: AuthResourceAccess;
+    token: string;
+    internal: boolean;
+
+    constructor(
+        token: string,
+        access: AuthResourceAccess,
+        id: number | string,
+        internal: boolean
+    ) {
+        this.token = token;
+        this.internal = internal;
+        this.access = access;
+        this.id = id;
+    }
+}
+
+export class AuthUser {
+    access: AuthUserAccess;
+    email: string;
+
+    constructor(access: AuthUserAccess, email: string) {
+        this.access = access;
+        this.email = email;
+    }
+
+    is_user() {
+        return this.email && this.email.length;
+    }
 }
 
 /**
@@ -21,22 +73,23 @@ export default class Auth {
      * @param {Object} req Express Request
      * @param {boolean} token Should URL query tokens be allowed (usually only for downloads)
      */
-    static async is_auth(models: Models, req: AuthRequest, opts: {
+    static async is_auth(config: Config, req: Request<unknown, unknown, unknown, any>, opts: {
         token?: boolean;
         anyResources?: boolean;
         resources?: Array<AuthResourceAccepted>;
-    } = {}): Promise<boolean> {
+    } = {}): Promise<AuthResource | AuthUser> {
         if (!opts.token) opts.token = false;
-        if (opts.token && req.token) req.auth = req.token;
         if (!opts.resources) opts.resources = [];
         if (!opts.anyResources) opts.anyResources = false;
 
-        if (!req.auth || !req.auth.access) {
+        const auth = auth_request(config, req, { token: opts.token });
+
+        if (!auth || !auth.access) {
             throw new Err(403, null, 'Authentication Required');
         }
 
-        if (req.auth instanceof AuthResource) {
-            const auth = req.auth as AuthResource;
+        if (auth instanceof AuthResource) {
+            const auth_resource = auth as AuthResource;
 
             if (opts.anyResources && opts.resources.length) {
                 throw new Err(403, null, 'Server cannot specify defined resource access any resource access together');
@@ -44,51 +97,143 @@ export default class Auth {
                 throw new Err(403, null, 'Resource token cannot access resource');
             }
 
-            if (!auth.internal) {
+            if (!auth_resource.internal) {
                 try {
-                    await models.ConnectionToken.from(auth.token);
+                    await config.models.ConnectionToken.from(auth_resource.token);
                 } catch (err) {
                     throw new Err(403, err instanceof Error ? err : new Error(String(err)), 'Token does not exist');
                 }
             }
 
             if (!opts.anyResources && !opts.resources.some((r) => {
-                return r.access === auth.access && r.id === auth.id;
+                return r.access === auth_resource.access && r.id === auth_resource.id;
             })) {
                 throw new Err(403, null, 'Resource token cannot access this resource');
             }
         }
 
-        return true;
+        return auth;
     }
 
-    static is_user(req: AuthRequest): boolean {
-        return req.auth instanceof AuthUser;
+    static is_user(config: Config, req: Request<unknown, unknown, unknown, any>): boolean {
+        const auth = this.is_auth(config, req);
+        return auth instanceof AuthUser;
     }
 
-    static is_resource(req: AuthRequest): boolean {
-        return req.auth instanceof AuthResource;
+    static is_resource(config: Config, req: Request<unknown, unknown, unknown, any>): boolean {
+        const auth = this.is_auth(config, req);
+        return auth instanceof AuthResource;
     }
 
-    static async as_resource(models: Models, req: AuthRequest, opts: {
+    static async as_resource(config: Config, req: Request<unknown, unknown, unknown, any>, opts: {
         token?: boolean;
     } = {}): Promise<AuthResource> {
         if (!opts.token) opts.token = false;
-        await this.is_auth(models, req, opts);
+        const auth = await this.is_auth(config, req, opts);
 
-        if (this.is_user(req)) throw new Err(401, null, 'Only a resource token can access this resource');
+        if (this.is_user(config, req)) throw new Err(401, null, 'Only a resource token can access this resource');
 
-        return req.auth as AuthResource;
+        return auth as AuthResource;
     }
 
-    static async as_user(models: Models, req: AuthRequest, opts: {
+    static async as_user(config: Config, req: Request<unknown, unknown, unknown, any>, opts: {
         token?: boolean;
     } = {}): Promise<AuthUser> {
         if (!opts.token) opts.token = false;
-        await this.is_auth(models, req, opts);
+        const auth = await this.is_auth(config, req, opts);
 
-        if (this.is_resource(req)) throw new Err(401, null, 'Only an authenticated user can access this resource');
+        if (this.is_resource(config, req)) throw new Err(401, null, 'Only an authenticated user can access this resource');
 
-        return req.auth as AuthUser;
+        return auth as AuthUser;
     }
 }
+
+function auth_request(config: Config, req: Request<unknown, unknown, unknown, any>, opts?: {
+    token: boolean
+}): AuthResource | AuthUser {
+    let auth;
+
+    if (req.headers && req.header('authorization')) {
+        const authorization = (req.header('authorization') || '').split(' ');
+
+        if (authorization[0].toLowerCase() !== 'bearer') {
+            throw new Err(401, null, 'Only "Bearer" authorization header is allowed')
+        }
+
+        if (!authorization[1]) {
+            throw new Err(401, null, 'No bearer token present');
+        }
+
+        try {
+            try {
+                auth = tokenParser(authorization[1], config.SigningSecret);
+            } catch (err) {
+                if (config.unsafe) {
+                    auth = tokenParser(authorization[1], config.UnsafeSigningSecret);
+                } else {
+                    throw err;
+                }
+            }
+
+            return auth;
+        } catch (err) {
+            if (err instanceof Err) throw err;
+            throw new Err(401, err instanceof Error ? err : new Error(String(err)), 'Invalid Token')
+        }
+    } else if (
+        opts
+        && opts.token
+        && req.query
+        && req.query.token
+        && typeof req.query.token === 'string') {
+        try {
+            try {
+                auth = tokenParser(req.query.token, config.SigningSecret);
+            } catch (err) {
+                if (config.unsafe) {
+                    auth = tokenParser(req.query.token, config.UnsafeSigningSecret);
+                } else {
+                    throw err;
+                }
+            }
+
+            return auth;
+        } catch (err) {
+            if (err instanceof Err) throw err;
+            throw new Err(401, err instanceof Error ? err : new Error(String(err)), 'Invalid Token')
+        }
+    }
+}
+
+export function tokenParser(token: string, secret: string): AuthUser | AuthResource {
+    if (token.startsWith('etl.')) {
+        token = token.replace(/^etl\./, '');
+        const decoded = jwt.verify(token, secret);
+        if (typeof decoded === 'string') throw new Err(400, null, 'Decoded JWT Should be Object');
+        if (!decoded.access || typeof decoded.access !== 'string') throw new Err(401, null, 'Invalid Token');
+        if (!decoded.internal || typeof decoded.internal !== 'boolean') decoded.internal = false;
+        if (!decoded.id) throw new Err(401, null, 'Invalid Token');
+        const access = castResourceAccessEnum(decoded.access);
+        if (!access) throw new Err(400, null, 'Invalid Resource Access Value');
+        return new AuthResource(`etl.${token}`, access, decoded.id, decoded.internal);
+    } else {
+        const decoded = jwt.verify(token, secret);
+        if (typeof decoded === 'string') throw new Err(400, null, 'Decoded JWT Should be Object');
+        if (!decoded.email || typeof decoded.email !== 'string') throw new Err(401, null, 'Invalid Token');
+        if (!decoded.access || typeof decoded.access !== 'string') throw new Err(401, null, 'Invalid Token');
+
+        const access = castUserAccessEnum(decoded.access);
+        if (!access) throw new Err(400, null, 'Invalid User Access Value');
+
+        const auth: {
+            access: AuthUserAccess;
+            email: string;
+        } = {
+            email: decoded.email,
+            access
+        };
+
+        return new AuthUser(auth.access, auth.email);
+    }
+}
+

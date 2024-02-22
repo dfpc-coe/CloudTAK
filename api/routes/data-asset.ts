@@ -1,3 +1,5 @@
+import { Type } from '@sinclair/typebox'
+import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import busboy from 'busboy';
 import fs from 'node:fs/promises';
@@ -16,20 +18,22 @@ import DataMission from '../lib/data-mission.js';
 import { AuthResourceAccess } from '@tak-ps/blueprint-login';
 import { InferSelectModel } from 'drizzle-orm';
 import { Data } from '../lib/schema.js';
+import { StandardResponse } from '../lib/types.js';
 import TAKAPI, {
     APIAuthToken,
     APIAuthCertificate,
     APIAuthPassword
 } from '../lib/tak-api.js';
 
-export default async function router(schema: any, config: Config) {
+export default async function router(schema: Schema, config: Config) {
     await schema.get('/connection/:connectionid/data/:dataid/asset', {
         name: 'List Assets',
-        auth: 'user',
         group: 'DataAssets',
         description: 'List Assets',
-        ':connectionid': 'integer',
-        ':dataid': 'integer',
+        params: Type.Object({
+            connectionid: Type.Integer()
+            dataid: Type.Integer()
+        }),
         res: 'res.ListAssets.json'
     }, async (req: AuthRequest, res: Response) => {
         try {
@@ -64,9 +68,10 @@ export default async function router(schema: any, config: Config) {
         private: true,
         name: 'Internal Upload',
         group: 'DataAssets',
-        auth: 'user',
-        ':connectionid': 'string',
-        ':dataid': 'string',
+        params: Type.Object({
+            connectionid: Type.Integer()
+            dataid: Type.Integer()
+        }),
         description: 'Create an upload after the file as been processed by Event Lambda',
         query: {
             type: 'object',
@@ -113,12 +118,13 @@ export default async function router(schema: any, config: Config) {
 
     await schema.post('/connection/:connectionid/data/:dataid/asset', {
         name: 'Create Asset',
-        auth: 'user',
         group: 'DataAssets',
         description: 'Create a new asset',
-        ':connectionid': 'integer',
-        ':dataid': 'integer',
-        res: 'res.Standard.json'
+        params: Type.Object({
+            connectionid: Type.Integer()
+            dataid: Type.Integer()
+        }),
+        res: StandardResponse
     }, async (req: AuthRequest, res: Response) => {
 
         let bb;
@@ -175,14 +181,15 @@ export default async function router(schema: any, config: Config) {
 
     await schema.post('/connection/:connectionid/data/:dataid/asset/:asset.:ext', {
         name: 'Convert Asset',
-        auth: 'user',
         group: 'DataAssets',
         description: 'Convert Asset into a cloud native or TAK Native format automatically',
-        ':connectionid': 'integer',
-        ':dataid': 'integer',
-        ':asset': 'string',
-        ':ext': 'string',
-        res: 'res.Standard.json'
+        params: Type.Object({
+            connectionid: Type.Integer()
+            dataid: Type.Integer()
+            asset: Type.String(),
+            ext: Type.String()
+        }),
+        res: StandardResponse
     }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(config.models, req, {
@@ -207,14 +214,15 @@ export default async function router(schema: any, config: Config) {
 
     await schema.delete('/connection/:connectionid/data/:dataid/asset/:asset.:ext', {
         name: 'Delete Asset',
-        auth: 'user',
         group: 'DataAssets',
         description: 'Delete Asset',
-        ':connectionid': 'integer',
-        ':dataid': 'integer',
-        ':asset': 'string',
-        ':ext': 'string',
-        res: 'res.Standard.json'
+        params: Type.Object({
+            connectionid: Type.Integer()
+            dataid: Type.Integer()
+            asset: Type.String(),
+            ext: Type.String()
+        }),
+        res: StandardResponse
     }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(config.models, req, {
@@ -264,13 +272,14 @@ export default async function router(schema: any, config: Config) {
 
     await schema.get('/connection/:connectionid/data/:dataid/asset/:asset.:ext', {
         name: 'Raw Asset',
-        auth: 'user',
         group: 'DataAssets',
         description: 'Get single raw asset',
-        ':connectionid': 'integer',
-        ':dataid': 'integer',
-        ':asset': 'string',
-        ':ext': 'string'
+        params: Type.Object({
+            connectionid: Type.Integer()
+            dataid: Type.Integer()
+            asset: Type.String(),
+            ext: Type.String()
+        }),
     }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(config.models, req, {
@@ -291,12 +300,13 @@ export default async function router(schema: any, config: Config) {
 
     await schema.get('/connection/:connectionid/data/:dataid/asset/:asset.pmtiles/tile', {
         name: 'PMTiles TileJSON',
-        auth: 'user',
         group: 'DataAssets',
         description: 'Get TileJSON ',
-        ':connectionid': 'integer',
-        ':dataid': 'integer',
-        ':asset': 'string'
+        params: Type.Object({
+            connectionid: Type.Integer()
+            dataid: Type.Integer()
+            asset: Type.String(),
+        }),
     }, async (req: AuthRequest, res: Response) => {
         try {
             await Auth.is_auth(config.models, req, {
