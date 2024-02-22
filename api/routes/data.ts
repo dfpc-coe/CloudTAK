@@ -26,7 +26,7 @@ export default async function router(schema: Schema, config: Config) {
         res: 'res.ListData.json'
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req);
+            await Auth.is_auth(config, req);
 
             const list = await config.models.Data.list({
                 limit: Number(req.query.limit),
@@ -58,7 +58,7 @@ export default async function router(schema: Schema, config: Config) {
         res: 'res.Data.json'
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req, {
+            await Auth.is_auth(config, req, {
                 resources: [
                     { access: AuthResourceAccess.DATA, id: parseInt(req.params.dataid) }
                 ]
@@ -82,7 +82,7 @@ export default async function router(schema: Schema, config: Config) {
         res: 'res.ListData.json'
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req, {
+            await Auth.is_auth(config, req, {
                 resources: [{ access: AuthResourceAccess.CONNECTION, id: parseInt(req.params.connectionid) }]
             });
 
@@ -114,7 +114,7 @@ export default async function router(schema: Schema, config: Config) {
         res: 'res.Data.json'
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req, {
+            await Auth.is_auth(config, req, {
                 resources: [{ access: AuthResourceAccess.CONNECTION, id: parseInt(req.params.connectionid) }]
             });
 
@@ -154,7 +154,7 @@ export default async function router(schema: Schema, config: Config) {
         res: 'res.Data.json'
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req, {
+            await Auth.is_auth(config, req, {
                 resources: [
                     { access: AuthResourceAccess.DATA, id: parseInt(req.params.dataid) },
                     { access: AuthResourceAccess.CONNECTION, id: parseInt(req.params.connectionid) }
@@ -196,7 +196,7 @@ export default async function router(schema: Schema, config: Config) {
         res: 'res.Data.json'
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req, {
+            await Auth.is_auth(config, req, {
                 resources: [
                     { access: AuthResourceAccess.DATA, id: parseInt(req.params.dataid) },
                     { access: AuthResourceAccess.CONNECTION, id: parseInt(req.params.connectionid) }
@@ -235,7 +235,7 @@ export default async function router(schema: Schema, config: Config) {
         res: StandardResponse
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req, {
+            await Auth.is_auth(config, req, {
                 resources: [{ access: AuthResourceAccess.CONNECTION, id: parseInt(req.params.connectionid) }]
             });
 

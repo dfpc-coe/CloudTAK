@@ -21,7 +21,7 @@ export default async function router(schema: Schema, config: Config) {
         res: 'res.ListDataJobs.json'
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req, {
+            await Auth.is_auth(config, req, {
                 resources: [{ access: AuthResourceAccess.DATA, id: parseInt(req.params.dataid) }]
             });
 
@@ -50,7 +50,7 @@ export default async function router(schema: Schema, config: Config) {
         res: 'res.DataJob.json'
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req, {
+            await Auth.is_auth(config, req, {
                 resources: [{ access: AuthResourceAccess.DATA, id: parseInt(req.params.dataid) }]
             });
 
@@ -76,7 +76,7 @@ export default async function router(schema: Schema, config: Config) {
         res: 'res.DataJobLogs.json'
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req, {
+            await Auth.is_auth(config, req, {
                 resources: [{ access: AuthResourceAccess.DATA, id: parseInt(req.params.dataid) }]
             });
 

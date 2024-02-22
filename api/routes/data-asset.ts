@@ -37,7 +37,7 @@ export default async function router(schema: Schema, config: Config) {
         res: 'res.ListAssets.json'
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req, {
+            await Auth.is_auth(config, req, {
                 resources: [{ access: AuthResourceAccess.CONNECTION, id: parseInt(req.params.connectionid) }]
             });
 
@@ -83,7 +83,7 @@ export default async function router(schema: Schema, config: Config) {
         },
         res: 'res.Marti.json'
     }, async (req, res) => {
-        await Auth.is_auth(config.models, req, {
+        await Auth.is_auth(config, req, {
             resources: [
                 // Connection tokens shouldn't use this, only internal Data/Lambda Tokens
                 { access: AuthResourceAccess.DATA, id: parseInt(req.params.dataid) }
@@ -130,7 +130,7 @@ export default async function router(schema: Schema, config: Config) {
         let bb;
         let data: InferSelectModel<typeof Data>;
         try {
-            await Auth.is_auth(config.models, req, {
+            await Auth.is_auth(config, req, {
                 resources: [
                     { access: AuthResourceAccess.DATA, id: parseInt(req.params.dataid) },
                     { access: AuthResourceAccess.CONNECTION, id: parseInt(req.params.connectionid) }
@@ -192,7 +192,7 @@ export default async function router(schema: Schema, config: Config) {
         res: StandardResponse
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req, {
+            await Auth.is_auth(config, req, {
                 resources: [
                     { access: AuthResourceAccess.DATA, id: parseInt(req.params.dataid) },
                     { access: AuthResourceAccess.CONNECTION, id: parseInt(req.params.connectionid) }
@@ -225,7 +225,7 @@ export default async function router(schema: Schema, config: Config) {
         res: StandardResponse
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req, {
+            await Auth.is_auth(config, req, {
                 resources: [
                     { access: AuthResourceAccess.DATA, id: parseInt(req.params.dataid) },
                     { access: AuthResourceAccess.CONNECTION, id: parseInt(req.params.connectionid) }
@@ -282,7 +282,7 @@ export default async function router(schema: Schema, config: Config) {
         }),
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req, {
+            await Auth.is_auth(config, req, {
                 token: true,
                 resources: [
                     { access: AuthResourceAccess.DATA, id: parseInt(req.params.dataid) },
@@ -309,7 +309,7 @@ export default async function router(schema: Schema, config: Config) {
         }),
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req, {
+            await Auth.is_auth(config, req, {
                 token: true,
                 resources: [
                     { access: AuthResourceAccess.DATA, id: parseInt(req.params.dataid) },

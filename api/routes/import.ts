@@ -45,7 +45,7 @@ export default async function router(schema: Schema, config: Config) {
         res: "imports.json"
     }, async (req, res) => {
         try {
-            const user = await Auth.as_user(config.models, req);
+            const user = await Auth.as_user(config, req);
 
             const imp = await config.models.Import.generate({
                 id: crypto.randomUUID(),
@@ -73,7 +73,7 @@ export default async function router(schema: Schema, config: Config) {
         res: 'imports.json'
     }, async (req, res) => {
         try {
-            const user = await Auth.as_user(config.models, req);
+            const user = await Auth.as_user(config, req);
 
             if (!req.headers['content-type'] || !req.headers['content-type'].startsWith('multipart/form-data')) {
                 throw new Err(400, null, 'Unsupported Content-Type');
@@ -150,7 +150,7 @@ export default async function router(schema: Schema, config: Config) {
         }
     }, async (req, res) => {
         try {
-            const user = await Auth.as_user(config.models, req);
+            const user = await Auth.as_user(config, req);
 
             if (!req.headers['content-type'] || !req.headers['content-type'].startsWith('multipart/form-data')) {
                 throw new Err(400, null, 'Unsupported Content-Type');
@@ -206,7 +206,7 @@ export default async function router(schema: Schema, config: Config) {
         res: 'imports.json'
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req, {
+            await Auth.is_auth(config, req, {
                 resources: [{ access: AuthResourceAccess.IMPORT, id: req.params.import }]
             });
 
@@ -229,7 +229,7 @@ export default async function router(schema: Schema, config: Config) {
         res: 'imports.json'
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req, {
+            await Auth.is_auth(config, req, {
                 resources: [{ access: AuthResourceAccess.IMPORT, id: req.params.import }]
             });
 
@@ -252,7 +252,7 @@ export default async function router(schema: Schema, config: Config) {
         res: 'res.ListImports.json'
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req);
+            await Auth.is_auth(config, req);
 
             const list = await config.models.Import.list({
                 limit: Number(req.query.limit),

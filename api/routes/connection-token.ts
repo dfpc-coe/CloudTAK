@@ -31,7 +31,7 @@ export default async function router(schema: Schema, config: Config) {
         })
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req);
+            await Auth.is_auth(config, req);
 
             const list = await config.models.ConnectionToken.list({
                 limit: req.query.limit,
@@ -61,7 +61,7 @@ export default async function router(schema: Schema, config: Config) {
         res: 'res.CreateConnectionToken.json'
     }, async (req, res) => {
         try {
-            await Auth.as_user(config.models, req);
+            await Auth.as_user(config, req);
 
             const connectionid = parseInt(String(req.params.connectionid));
             const token = await config.models.ConnectionToken.generate({
@@ -88,7 +88,7 @@ export default async function router(schema: Schema, config: Config) {
         res: StandardResponse
     }, async (req, res) => {
         try {
-            await Auth.as_user(config.models, req);
+            await Auth.as_user(config, req);
 
             const token = await config.models.ConnectionToken.from(sql`id = ${Number(req.params.id)}::INT`);
             if (token.connection !== parseInt(String(req.params.connectionid))) throw new Err(400, null, 'You can only modify your own tokens');
@@ -115,7 +115,7 @@ export default async function router(schema: Schema, config: Config) {
         res: StandardResponse
     }, async (req, res) => {
         try {
-            await Auth.as_user(config.models, req);
+            await Auth.as_user(config, req);
 
             const token = await config.models.ConnectionToken.from(sql`id = ${Number(req.params.id)}::INT`);
             if (token.connection !== parseInt(String(req.params.connectionid))) throw new Err(400, null, 'You can only modify your own tokens');

@@ -20,7 +20,7 @@ export default async function router(schema: Schema, config: Config) {
         res: 'res.ListTokens.json'
     }, async (req, res) => {
         try {
-            const user = await Auth.as_user(config.models, req);
+            const user = await Auth.as_user(config, req);
 
             const list = await config.models.Token.list({
                 limit: Number(req.query.limit),
@@ -47,7 +47,7 @@ export default async function router(schema: Schema, config: Config) {
         res: 'res.CreateToken.json'
     }, async (req, res) => {
         try {
-            const user = await Auth.as_user(config.models, req);
+            const user = await Auth.as_user(config, req);
 
             const token = await config.models.Token.generate({
                 ...req.body,
@@ -72,7 +72,7 @@ export default async function router(schema: Schema, config: Config) {
         res: StandardResponse
     }, async (req, res) => {
         try {
-            const user = await Auth.as_user(config.models, req);
+            const user = await Auth.as_user(config, req);
 
             let token = await config.models.Token.from(sql`id = ${Number(req.params.id)}::INT`);
             if (token.email !== user.email) throw new Err(400, null, 'You can only modify your own tokens');
@@ -98,7 +98,7 @@ export default async function router(schema: Schema, config: Config) {
         res: StandardResponse
     }, async (req, res) => {
         try {
-            const user = await Auth.as_user(config.models, req);
+            const user = await Auth.as_user(config, req);
             let token = await config.models.Token.from(sql`id = ${Number(req.params.id)}::INT`);
             if (token.email !== user.email) throw new Err(400, null, 'You can only modify your own tokens');
 
