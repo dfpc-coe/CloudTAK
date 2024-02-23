@@ -68,7 +68,7 @@ export default async function router(schema: Schema, config: Config) {
 
             const connectionid = parseInt(String(req.params.connectionid));
             const token = await config.models.ConnectionToken.generate({
-                ...req.body,
+                name: req.body.name,
                 token: 'etl.' + jwt.sign({ id: connectionid, access: 'connection' }, config.SigningSecret),
                 connection: connectionid
             });

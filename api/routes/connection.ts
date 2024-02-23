@@ -51,8 +51,11 @@ export default async function router(schema: Schema, config: Config) {
                 total: list.total,
                 status: { dead: 0, live: 0, unknown: 0 },
                 items: list.items.map((conn) => {
+                    const { validFrom, validTo } = new X509Certificate(conn.auth.cert);
+
                     return {
                         status: config.conns.status(conn.id),
+                        certificate: { validFrom, validTo },
                         ...conn
                     }
                 })
@@ -92,8 +95,11 @@ export default async function router(schema: Schema, config: Config) {
 
             if (conn.enabled) await config.conns.add(conn);
 
+            const { validFrom, validTo } = new X509Certificate(conn.auth.cert);
+
             return res.json({
                 status: config.conns.status(conn.id),
+                certificate: { validFrom, validTo },
                 ...conn
             });
         } catch (err) {
@@ -121,10 +127,10 @@ export default async function router(schema: Schema, config: Config) {
     }, async (req, res) => {
         try {
             await Auth.is_auth(config, req, {
-                resources: [{ access: AuthResourceAccess.CONNECTION, id: parseInt(req.params.connectionid) }]
+                resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }]
             });
 
-            const conn = await config.models.Connection.commit(parseInt(req.params.connectionid), {
+            const conn = await config.models.Connection.commit(req.params.connectionid, {
                 updated: sql`Now()`,
                 ...req.body
             });
@@ -159,10 +165,10 @@ export default async function router(schema: Schema, config: Config) {
     }, async (req, res) => {
         try {
             await Auth.is_auth(config, req, {
-                resources: [{ access: AuthResourceAccess.CONNECTION, id: parseInt(req.params.connectionid) }]
+                resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }]
             });
 
-            const conn = await config.models.Connection.from(parseInt(req.params.connectionid));
+            const conn = await config.models.Connection.from(req.params.connectionid);
             const { validFrom, validTo } = new X509Certificate(conn.auth.cert);
 
             return res.json({
@@ -186,10 +192,10 @@ export default async function router(schema: Schema, config: Config) {
     }, async (req, res) => {
         try {
             await Auth.is_auth(config, req, {
-                resources: [{ access: AuthResourceAccess.CONNECTION, id: parseInt(req.params.connectionid) }]
+                resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }]
             });
 
-            const conn = await config.models.Connection.from(parseInt(req.params.connectionid));
+            const conn = await config.models.Connection.from(req.params.connectionid);
 
             if (!conn.enabled) throw new Err(400, null, 'Connection is not currently enabled');
 
@@ -224,9 +230,9 @@ export default async function router(schema: Schema, config: Config) {
         try {
             await Auth.is_auth(config, req);
 
-            await config.models.Connection.delete(parseInt(req.params.connectionid));
+            await config.models.Connection.delete(req.params.connectionid);
 
-            config.conns.delete(parseInt(req.params.connectionid));
+            config.conns.delete(req.params.connectionid);
 
             return res.json({
                 status: 200,
@@ -245,7 +251,7 @@ export default async function router(schema: Schema, config: Config) {
             connectionid: Type.Integer()
         }),
         res: Type.Object({
-            status: Type.Array(Type.Object({
+            stats: Type.Array(Type.Object({
                 label: Type.String(),
                 success: Type.Integer()
             }))
@@ -253,10 +259,10 @@ export default async function router(schema: Schema, config: Config) {
     }, async (req, res) => {
         try {
             await Auth.is_auth(config, req, {
-                resources: [{ access: AuthResourceAccess.CONNECTION, id: parseInt(req.params.connectionid) }]
+                resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }]
             });
 
-            const conn = await config.models.Connection.from(parseInt(req.params.connectionid));
+            const conn = await config.models.Connection.from(req.params.connectionid);
 
             const stats = await cw.connection(conn.id);
 

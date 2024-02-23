@@ -7,6 +7,16 @@ export const StandardResponse = Type.Object({
     message: Type.String()
 });
 
+export const AssetResponse = Type.Object({
+    name: Type.String({ "description": "The filename of the asset" }),
+    sync: Type.Boolean({ "description": "If the Data is attached to a mission, signify if the asset is syncing with the mission" }),
+    visualized: Type.Union([Type.String(), Type.Boolean()])
+    vectorized: Type.Union([Type.String(), Type.Boolean()])
+    updated: Type.String(),
+    etag: Type.String({ "description": "AWS S3 generated ETag of the asset" }),
+    size: Type.String({ "description": "Size in bytes of the asset" })
+})
+
 export const GenericMartiResponse = Type.Object({
     version: Type.String(),
     type: Type.String(),
@@ -16,7 +26,7 @@ export const GenericMartiResponse = Type.Object({
 });
 
 /** Includes Token itself */
-export const CreateConnectionTokenResponse = createSelectSchema(schemas.ConnectionSink, {
+export const CreateConnectionTokenResponse = createSelectSchema(schemas.ConnectionToken, {
     id: Type.Integer(),
     connection: Type.Integer()
 });
@@ -39,6 +49,11 @@ export const ConnectionSinkResponse = createSelectSchema(schemas.ConnectionSink,
 
 export const ConnectionResponse = Type.Object({
     id: Type.Integer(),
+    status: Type.String(),
+    certificate: Type.Object({
+        validFrom: Type.String(),
+        validTo: Type.String()
+    }),
     created: Type.String(),
     updated: Type.String(),
     name: Type.String(),
