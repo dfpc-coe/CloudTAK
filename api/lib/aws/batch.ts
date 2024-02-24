@@ -45,7 +45,7 @@ export default class Batch {
         return batchres;
     }
 
-    static async submitData(config: Config, data: InferSelectModel<typeof Data>, asset: string, task: object): Promise<AWSBatch.SubmitJobCommandOutput> {
+    static async submitData(config: Config, data: InferSelectModel<typeof Data>, asset: string, task: object = {}): Promise<AWSBatch.SubmitJobCommandOutput> {
         const batch = new AWSBatch.BatchClient({ region: process.env.AWS_DEFAULT_REGION });
 
         let jobName = `data-${data.id}-${asset.replace(/[^a-zA-Z0-9]/g, '_').slice(0, 50)}`;
