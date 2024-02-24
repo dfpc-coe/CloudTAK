@@ -2,17 +2,15 @@ import { Type } from '@sinclair/typebox'
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
-import { Response } from 'express';
-import { AuthRequest } from '@tak-ps/blueprint-login';
-import { type InferSelectModel } from 'drizzle-orm';
 import { Data } from '../lib/schema.js';
 import Config from '../lib/config.js';
 import S3 from '../lib/aws/s3.js';
 import { Param } from '@openaddresses/batch-generic';
 import { sql, eq } from 'drizzle-orm';
 import DataMission from '../lib/data-mission.js';
+import { GenericListOrder } from '@openaddresses/batch-generic';
 import { AuthResourceAccess } from '@tak-ps/blueprint-login';
-import { StandardResponse } from '../lib/types.js';
+import { StandardResponse, DataResponse, DataListResponse } from '../lib/types.js';
 
 export default async function router(schema: Schema, config: Config) {
     await schema.get('/data', {
@@ -22,17 +20,26 @@ export default async function router(schema: Schema, config: Config) {
         description: `
             Used by the frontend UI to list data packages that the user can visualize
         `,
-        query: 'req.query.ListData.json',
-        res: 'res.ListData.json'
+        query: Type.Object({
+            limit: Type.Optional(Type.Integer()),
+            page: Type.Optional(Type.Integer()),
+            order: Type.Optional(Type.Enum(GenericListOrder)),
+            sort: Type.Optional(Type.String({default: 'created'})),
+            filter: Type.Optional(Type.String({default: ''}))
+        }),
+        res: Type.Object({
+            total: Type.Integer(),
+            items: Type.Array(DataListResponse)
+        })
     }, async (req, res) => {
         try {
             await Auth.is_auth(config, req);
 
             const list = await config.models.Data.list({
-                limit: Number(req.query.limit),
-                page: Number(req.query.page),
-                order: String(req.query.order),
-                sort: String(req.query.sort),
+                limit: req.query.limit,
+                page: req.query.page,
+                order: req.query.order,
+                sort: req.query.sort,
                 where: sql`name ~* ${req.query.filter}`
             });
 
@@ -55,7 +62,7 @@ export default async function router(schema: Schema, config: Config) {
             connectionid: Type.Integer(),
             dataid: Type.Integer()
         }),
-        res: 'res.Data.json'
+        res: DataResponse
     }, async (req, res) => {
         try {
             await Auth.is_auth(config, req, {
@@ -65,7 +72,21 @@ export default async function router(schema: Schema, config: Config) {
             });
 
             let data = await config.models.Data.from(req.params.dataid);
-            return res.json(data);
+
+            try {
+                const mission = await DataMission.sync(config, data);
+            } catch (err) {
+                return res.json({
+                    mission_exists: false,
+                    mission_error: err instanceof Error ? err.message : String(err),
+                    ...data
+                });
+            }
+
+            return res.json({
+                mission_exists: true,
+                ...data
+            });
         } catch (err) {
             return Err.respond(err, res);
         }
@@ -78,8 +99,17 @@ export default async function router(schema: Schema, config: Config) {
             connectionid: Type.Integer()
         }),
         description: 'List data',
-        query: 'req.query.ListData.json',
-        res: 'res.ListData.json'
+        query: Type.Object({
+            limit: Type.Optional(Type.Integer()),
+            page: Type.Optional(Type.Integer()),
+            order: Type.Optional(Type.Enum(GenericListOrder)),
+            sort: Type.Optional(Type.String({default: 'created'})),
+            filter: Type.Optional(Type.String({default: ''}))
+        }),
+        res: Type.Object({
+            total: Type.Integer(),
+            items: Type.Array(DataListResponse)
+        })
     }, async (req, res) => {
         try {
             await Auth.is_auth(config, req, {
@@ -87,10 +117,10 @@ export default async function router(schema: Schema, config: Config) {
             });
 
             const list = await config.models.Data.list({
-                limit: Number(req.query.limit),
-                page: Number(req.query.page),
-                order: String(req.query.order),
-                sort: String(req.query.sort),
+                limit: req.query.limit,
+                page: req.query.page,
+                order: req.query.order,
+                sort: req.query.sort,
                 where: sql`
                     name ~* ${req.query.filter}
                     AND (${Param(req.params.connectionid)}::BIGINT IS NULL OR connection = ${Param(req.params.connectionid)}::BIGINT)
@@ -110,8 +140,15 @@ export default async function router(schema: Schema, config: Config) {
         params: Type.Object({
             connectionid: Type.Integer()
         }),
-        body: 'req.body.CreateData.json',
-        res: 'res.Data.json'
+        body: Type.Object({
+            name: Type.String(),
+            description: Type.String(),
+            auto_transform: Type.Optional(Type.Boolean()),
+            mission_sync: Type.Optional(Type.Boolean()),
+            mission_groups: Type.Optional(Type.Array(Type.String())),
+            mission_role: Type.Optional(Type.String())
+        }),
+        res: DataResponse
     }, async (req, res) => {
         try {
             await Auth.is_auth(config, req, {
@@ -150,8 +187,13 @@ export default async function router(schema: Schema, config: Config) {
             connectionid: Type.Integer(),
             dataid: Type.Integer()
         }),
-        body: 'req.body.PatchData.json',
-        res: 'res.Data.json'
+        body: Type.Object({
+            name: Type.String(),
+            description: Type.String(),
+            auto_transform: Type.Optional(Type.Boolean()),
+            mission_sync: Type.Optional(Type.Boolean())
+        }),
+        res: DataResponse
     }, async (req, res) => {
         try {
             await Auth.is_auth(config, req, {
@@ -193,7 +235,7 @@ export default async function router(schema: Schema, config: Config) {
             connectionid: Type.Integer(),
             dataid: Type.Integer()
         }),
-        res: 'res.Data.json'
+        res: DataResponse
     }, async (req, res) => {
         try {
             await Auth.is_auth(config, req, {

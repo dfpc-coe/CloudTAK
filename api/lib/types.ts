@@ -7,6 +7,31 @@ export const StandardResponse = Type.Object({
     message: Type.String()
 });
 
+export const DataResponse = Type.Object({
+    id: Type.Integer(),
+    created: Type.String(),
+    updated: Type.String(),
+    name: Type.String(),
+    mission_sync: Type.Boolean(),
+    mission_exists: Type.Boolean({"description": "Does the mission exist in TAK Server"}),
+    mission_error: Type.Optional(Type.String({ description: "Returned only if there is an error syncing the mission with the TAK Server"})),
+    mission_groups: Type.Array(Type.String()),
+    mission_role: Type.String(),
+    assets: Type.Array(Type.String()),
+    description: Type.String(),
+    connection: Type.Integer(),
+    auto_transform: Type.Boolean()
+});
+
+export const DataListResponse = createSelectSchema(schemas.Data, {
+    id: Type.Integer(),
+    connection: Type.Integer(),
+    assets: Type.Array(Type.String()),
+    mission_groups: Type.Array(Type.String()),
+    auto_transform: Type.Boolean(),
+    mission_sync: Type.Boolean(),
+});
+
 export const DataJobLogResponse = Type.Object({
     message: Type.String(),
     timestamp: Type.Integer(),
