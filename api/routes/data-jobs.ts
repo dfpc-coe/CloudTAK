@@ -4,10 +4,9 @@ import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import Batch from '../lib/aws/batch.js';
 import Logs from '../lib/aws/batch-logs.js';
-import { Response } from 'express';
-import { AuthRequest } from '@tak-ps/blueprint-login';
 import Config from '../lib/config.js';
-import { AuthResourceAccess } from '@tak-ps/blueprint-login';
+import { DataJobResponse, DataJobLogResponse } from '../lib/types.js';
+import { AuthResourceAccess } from '../lib/auth.js';
 
 export default async function router(schema: Schema, config: Config) {
     await schema.get('/connection/:connectionid/data/:dataid/job', {
@@ -15,23 +14,34 @@ export default async function router(schema: Schema, config: Config) {
         group: 'DataJobs',
         description: 'List Data Jobs',
         params: Type.Object({
-            connectionid: Type.Integer()
+            connectionid: Type.Integer(),
             dataid: Type.Integer()
         }),
-        res: 'res.ListDataJobs.json'
+        res: Type.Object({
+            total: Type.Integer(),
+            items: Type.Array(DataJobResponse)
+        })
     }, async (req, res) => {
         try {
             await Auth.is_auth(config, req, {
-                resources: [{ access: AuthResourceAccess.DATA, id: parseInt(req.params.dataid) }]
+                resources: [{ access: AuthResourceAccess.DATA, id: req.params.dataid }]
             });
 
-            const data = await config.models.Data.from(parseInt(req.params.dataid));
+            const data = await config.models.Data.from(req.params.dataid);
 
             const list = await Batch.list(config, `data-${data.id}`);
 
             return res.json({
                 total: list.length,
-                items: list
+                items: list.map((job) => {
+                    return {
+                        id: job.id,
+                        asset: job.asset,
+                        status: job.status,
+                        created: job.created,
+                        updated: job.updated
+                    }
+                })
             });
         } catch (err) {
             return Err.respond(err, res);
@@ -39,26 +49,32 @@ export default async function router(schema: Schema, config: Config) {
     });
 
     await schema.get('/connection/:connectionid/data/:dataid/job/:jobid', {
-        name: 'List Jobs',
+        name: 'Get Jobs',
         group: 'DataJobs',
-        description: 'List Data Jobs',
+        description: 'Get Data Jobs',
         params: Type.Object({
-            connectionid: Type.Integer()
-            dataid: Type.Integer()
+            connectionid: Type.Integer(),
+            dataid: Type.Integer(),
             jobid: Type.String()
         }),
-        res: 'res.DataJob.json'
+        res: DataJobResponse
     }, async (req, res) => {
         try {
             await Auth.is_auth(config, req, {
-                resources: [{ access: AuthResourceAccess.DATA, id: parseInt(req.params.dataid) }]
+                resources: [{ access: AuthResourceAccess.DATA, id: req.params.dataid }]
             });
 
-            const data = await config.models.Data.from(parseInt(req.params.dataid));
+            const data = await config.models.Data.from(req.params.dataid);
 
             const job = await Batch.job(config, req.params.jobid);
 
-            return res.json(job)
+            return res.json({
+                id: job.id,
+                asset: job.asset,
+                status: job.status,
+                created: job.created,
+                updated: job.updated
+            });
         } catch (err) {
             return Err.respond(err, res);
         }
@@ -69,18 +85,20 @@ export default async function router(schema: Schema, config: Config) {
         group: 'DataJobLogs',
         description: 'List Data Job Logs',
         params: Type.Object({
-            connectionid: Type.Integer()
-            dataid: Type.Integer()
+            connectionid: Type.Integer(),
+            dataid: Type.Integer(),
             jobid: Type.String()
         }),
-        res: 'res.DataJobLogs.json'
+        res: Type.Object({
+            logs: Type.Array(DataJobLogResponse)
+        })
     }, async (req, res) => {
         try {
             await Auth.is_auth(config, req, {
-                resources: [{ access: AuthResourceAccess.DATA, id: parseInt(req.params.dataid) }]
+                resources: [{ access: AuthResourceAccess.DATA, id: req.params.dataid }]
             });
 
-            const data = await config.models.Data.from(parseInt(req.params.dataid));
+            const data = await config.models.Data.from(req.params.dataid);
 
             const job = await Batch.job(config, req.params.jobid);
 
