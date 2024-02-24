@@ -52,7 +52,7 @@ export default async function router(schema: Schema, config: Config) {
             connectin Id for subsequent calls
         `,
         params: Type.Object({
-            connectionid: Type.Integer()
+            connectionid: Type.Integer(),
             dataid: Type.Integer()
         }),
         res: 'res.Data.json'
@@ -60,11 +60,11 @@ export default async function router(schema: Schema, config: Config) {
         try {
             await Auth.is_auth(config, req, {
                 resources: [
-                    { access: AuthResourceAccess.DATA, id: parseInt(req.params.dataid) }
+                    { access: AuthResourceAccess.DATA, id: req.params.dataid }
                 ]
             });
 
-            let data = await config.models.Data.from(parseInt(req.params.dataid));
+            let data = await config.models.Data.from(req.params.dataid);
             return res.json(data);
         } catch (err) {
             return Err.respond(err, res);
@@ -83,7 +83,7 @@ export default async function router(schema: Schema, config: Config) {
     }, async (req, res) => {
         try {
             await Auth.is_auth(config, req, {
-                resources: [{ access: AuthResourceAccess.CONNECTION, id: parseInt(req.params.connectionid) }]
+                resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }]
             });
 
             const list = await config.models.Data.list({
@@ -115,7 +115,7 @@ export default async function router(schema: Schema, config: Config) {
     }, async (req, res) => {
         try {
             await Auth.is_auth(config, req, {
-                resources: [{ access: AuthResourceAccess.CONNECTION, id: parseInt(req.params.connectionid) }]
+                resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }]
             });
 
             const data = await config.models.Data.generate({
@@ -147,7 +147,7 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Data',
         description: 'Update a data source',
         params: Type.Object({
-            connectionid: Type.Integer()
+            connectionid: Type.Integer(),
             dataid: Type.Integer()
         }),
         body: 'req.body.PatchData.json',
@@ -156,12 +156,12 @@ export default async function router(schema: Schema, config: Config) {
         try {
             await Auth.is_auth(config, req, {
                 resources: [
-                    { access: AuthResourceAccess.DATA, id: parseInt(req.params.dataid) },
-                    { access: AuthResourceAccess.CONNECTION, id: parseInt(req.params.connectionid) }
+                    { access: AuthResourceAccess.DATA, id: req.params.dataid },
+                    { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }
                 ]
             });
 
-            let data = await config.models.Data.commit(parseInt(req.params.dataid), {
+            let data = await config.models.Data.commit(req.params.dataid, {
                 updated: sql`Now()`,
                 ...req.body
             });
@@ -190,7 +190,7 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Data',
         description: 'Get a data source',
         params: Type.Object({
-            connectionid: Type.Integer()
+            connectionid: Type.Integer(),
             dataid: Type.Integer()
         }),
         res: 'res.Data.json'
@@ -198,12 +198,12 @@ export default async function router(schema: Schema, config: Config) {
         try {
             await Auth.is_auth(config, req, {
                 resources: [
-                    { access: AuthResourceAccess.DATA, id: parseInt(req.params.dataid) },
-                    { access: AuthResourceAccess.CONNECTION, id: parseInt(req.params.connectionid) }
+                    { access: AuthResourceAccess.DATA, id: req.params.dataid },
+                    { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }
                 ]
             });
 
-            let data = await config.models.Data.from(parseInt(req.params.dataid));
+            let data = await config.models.Data.from(req.params.dataid);
 
             try {
                 const mission = await DataMission.sync(config, data);
@@ -229,24 +229,24 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Data',
         description: 'Delete a data source',
         params: Type.Object({
-            connectionid: Type.Integer()
+            connectionid: Type.Integer(),
             dataid: Type.Integer()
         }),
         res: StandardResponse
     }, async (req, res) => {
         try {
             await Auth.is_auth(config, req, {
-                resources: [{ access: AuthResourceAccess.CONNECTION, id: parseInt(req.params.connectionid) }]
+                resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }]
             });
 
-            const data = await config.models.Data.from(parseInt(req.params.dataid));
+            const data = await config.models.Data.from(req.params.dataid);
 
             await S3.del(`data-${String(req.params.dataid)}/`, { recurse: true });
 
             data.mission_sync = false;
             await DataMission.sync(config, data);
 
-            await config.models.Data.delete(parseInt(req.params.dataid));
+            await config.models.Data.delete(req.params.dataid);
 
             return res.json({
                 status: 200,
