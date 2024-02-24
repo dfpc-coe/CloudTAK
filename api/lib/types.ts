@@ -7,6 +7,19 @@ export const StandardResponse = Type.Object({
     message: Type.String()
 });
 
+export const DataJobLogResponse = Type.Object({
+    message: Type.String(),
+    timestamp: Type.Integer(),
+})
+
+export const DataJobResponse = Type.Object({
+    id: Type.String(),
+    asset: Type.String(),
+    status: Type.String(),
+    created: Type.Integer(),
+    updated: Type.Integer()
+});
+
 export const AssetResponse = Type.Object({
     name: Type.String({ "description": "The filename of the asset" }),
     sync: Type.Boolean({ "description": "If the Data is attached to a mission, signify if the asset is syncing with the mission" }),
