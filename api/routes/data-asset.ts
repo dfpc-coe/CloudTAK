@@ -1,4 +1,4 @@
-import { Type } from '@sinclair/typebox'
+import { Static, Type } from '@sinclair/typebox'
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import busboy from 'busboy';
@@ -51,20 +51,17 @@ export default async function router(schema: Schema, config: Config) {
 
             const list = await assetList(config, `data/${String(req.params.dataid)}/`);
 
-            list.assets = list.assets.map((a: any) => {
-                if (!data.mission_sync) {
-                    a.sync = false;
-                } else {
-                    for (const glob of data.assets) {
-                        a.sync = includesWithGlob([a.name], glob);
-                        if (a.sync) break;
-                    }
+            const assets: Array<Static<typeof AssetResponse>> = list.assets.map((a: any) => {
+                a.sync = false;
+                if (!data.mission_sync) return a
+                for (const glob of data.assets) {
+                    a.sync = includesWithGlob([a.name], glob);
+                    if (a.sync) break;
                 }
-
                 return a;
             });
 
-            return res.json(list);
+            return res.json({ ...list, assets });
         } catch (err) {
             return Err.respond(err, res);
         }
@@ -202,7 +199,7 @@ export default async function router(schema: Schema, config: Config) {
 
             const data = await config.models.Data.from(req.params.dataid);
 
-            await Batch.submitData(config, data, `${req.params.asset}.${req.params.ext}`, req.body);
+            await Batch.submitData(config, data, `${req.params.asset}.${req.params.ext}`);
 
             return res.json({
                 status: 200,

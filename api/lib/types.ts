@@ -10,8 +10,8 @@ export const StandardResponse = Type.Object({
 export const AssetResponse = Type.Object({
     name: Type.String({ "description": "The filename of the asset" }),
     sync: Type.Boolean({ "description": "If the Data is attached to a mission, signify if the asset is syncing with the mission" }),
-    visualized: Type.Union([Type.String(), Type.Boolean()])
-    vectorized: Type.Union([Type.String(), Type.Boolean()])
+    visualized: Type.Union([Type.String(), Type.Boolean()]),
+    vectorized: Type.Union([Type.String(), Type.Boolean()]),
     updated: Type.String(),
     etag: Type.String({ "description": "AWS S3 generated ETag of the asset" }),
     size: Type.String({ "description": "Size in bytes of the asset" })
