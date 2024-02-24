@@ -3,16 +3,7 @@ import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
-import { Response } from 'express';
-import { AuthRequest } from '@tak-ps/blueprint-login';
-import {
-    EsriType,
-    EsriAuth,
-    EsriBase,
-    EsriProxyPortal,
-    EsriProxyServer,
-    EsriProxyLayer
-} from '../lib/esri.js';
+import { EsriType, EsriAuth, EsriBase, EsriProxyPortal, EsriProxyServer, EsriProxyLayer } from '../lib/esri.js';
 
 export default async function router(schema: Schema, config: Config) {
     await schema.post('/esri', {
@@ -24,64 +15,49 @@ export default async function router(schema: Schema, config: Config) {
             The URL can either be an ESRI Portal URL or a Server URL that doesn't require auth
             or supports token generation
         `,
-        body: {
-            type: "object",
-            additionalProperties: false,
-            required: [ "url" ],
-            properties: {
-                url: { "type": "string" },
-                username: { "type": "string" },
-                password: { "type": "string" },
-                sinkid: { "type": "integer" },
-            }
-        },
-        res: {
-            type: "object",
-            additionalProperties: false,
-            required: ['type', 'base'],
-            properties: {
-                type: {
-                    type: 'string',
-                    enum: [ 'AGOL', 'PORTAL', 'SERVER' ]
-                },
-                base: { type: 'string' },
-                auth: {
-                    type: 'object',
-                    properties: {
-                        token: { type: 'string' },
-                        referer: { type: 'string' },
-                        expires: { type: 'integer' },
-                    }
-                }
-            }
-        }
+        body: Type.Object({
+            url: Type.String(),
+            username: Type.Optional(Type.String()),
+            password: Type.Optional(Type.String()),
+            sinkid: Type.Optional(Type.Integer())
+        }),
+        res: Type.Object({
+            type: Type.Enum(EsriType),
+            base: Type.String(),
+            auth: Type.Optional(Type.Object({
+                token: Type.String(),
+                referer: Type.String(),
+                expires: Type.Integer()
+            }))
+        })
     }, async (req, res) => {
         try {
             await Auth.is_auth(config, req, {
                 anyResources: true
             });
 
+            let url
             try {
-                req.body.url = new URL(req.body.url);
+                url = new URL(req.body.url);
             } catch (err) {
                 throw new Err(400, null, err instanceof Error ? err.message : String(err));
             }
 
             if (req.body.sinkid) {
-                const sink: any = await config.models.ConnectionSink.from(parseInt(req.body.sinkid));
+                const sink: any = await config.models.ConnectionSink.from(req.body.sinkid);
                 req.body.username = sink.body.username;
                 req.body.password = sink.body.password;
             }
 
             let base;
             if (req.body.username && req.body.password) {
-                base = await EsriBase.from(req.body.url, {
+                base = await EsriBase.from(url, {
                     username: req.body.username,
                     password: req.body.password,
                     referer: config.API_URL,
                 });
             } else {
-                base = await EsriBase.from(req.body.url);
+                base = await EsriBase.from(url);
             }
 
             return res.json({
@@ -101,17 +77,12 @@ export default async function router(schema: Schema, config: Config) {
             Helper API to configure ESRI MapServers
             Return Portal Data
         `,
-        query: {
-            type: "object",
-            additionalProperties: false,
-            required: [ 'portal' ],
-            properties: {
-                portal: { type: 'string' },
-                token: { type: 'string' },
-                expires: { type: 'string' },
-            }
-        },
-        res: { type: 'object' }
+        query: Type.Object({
+            portal: Type.String(),
+            token: Type.Optional(Type.String()),
+            expires: Type.Optional(Type.String())
+        }),
+        res: Type.Any()
     }, async (req, res) => {
         try {
             await Auth.is_auth(config, req, {
@@ -141,18 +112,13 @@ export default async function router(schema: Schema, config: Config) {
             Helper API to configure ESRI MapServers
             Return Portal Content
         `,
-        query: {
-            type: "object",
-            additionalProperties: false,
-            required: [ "portal" ],
-            properties: {
-                portal: { type: 'string' },
-                token: { type: 'string' },
-                expires: { type: 'string' },
-                title: { type: "string" },
-            }
-        },
-        res: { type: "object" }
+        query: Type.Object({
+            portal: Type.String(),
+            token: Type.Optional(Type.String()),
+            expires: Type.Optional(Type.String()),
+            title: Type.Optional(Type.String())
+        }),
+        res: Type.Any()
     }, async (req, res) => {
         try {
             await Auth.is_auth(config, req, {
@@ -184,25 +150,15 @@ export default async function router(schema: Schema, config: Config) {
         name: 'Create Service',
         group: 'ESRI',
         description: 'Create Service to store Feature Layers',
-        query: {
-            type: 'object',
-            required: ['portal', 'token', 'expires'],
-            properties: {
-                portal: { type: 'string' },
-                token: { type: 'string' },
-                expires: { type: 'string' },
-            }
-        },
-        body: {
-            type: 'object',
-            required: ['name'],
-            properties: {
-                name: { type: 'string' }
-            }
-        },
-        res: {
-            type: 'object'
-        }
+        query: Type.Object({
+            portal: Type.String(),
+            token: Type.String(),
+            expires: Type.Integer()
+        }),
+        body: Type.Object({
+            name: Type.String()
+        }),
+        res: Type.Any()
     }, async (req, res) => {
         try {
             await Auth.is_auth(config, req, {
@@ -211,8 +167,8 @@ export default async function router(schema: Schema, config: Config) {
 
             const base = new EsriBase(String(req.query.portal));
             base.token = {
-                token: String(req.query.token),
-                expires: Number(req.query.expires),
+                token: req.query.token,
+                expires: req.query.expires,
                 referer: config.API_URL
             }
 
@@ -231,26 +187,14 @@ export default async function router(schema: Schema, config: Config) {
             Helper API to configure ESRI MapServers
             List Servers associates with a given portal
         `,
-        query: {
-            type: "object",
-            additionalProperties: false,
-            required: [ "portal", "token" ],
-            properties: {
-                portal: { type: "string" },
-                token: { type: 'string' },
-                expires: { type: 'string' },
-            }
-        },
-        res: {
-            type: "object",
-            additionalProperties: false,
-            properties: {
-                servers: {
-                    type: "array",
-                    items: { type: "object" }
-                },
-            }
-        }
+        query: Type.Object({
+            portal: Type.String(),
+            token: Type.String(),
+            expires: Type.Integer()
+        }),
+        res: Type.Object({
+            servers: Type.Array(Type.Any())
+        })
     }, async (req, res) => {
         try {
             await Auth.is_auth(config, req, {
@@ -258,12 +202,10 @@ export default async function router(schema: Schema, config: Config) {
             });
 
             const base = new EsriBase(String(req.query.portal));
-            if (req.query.token && req.query.expires) {
-                base.token = {
-                    token: String(req.query.token),
-                    expires: Number(req.query.expires),
-                    referer: config.API_URL
-                }
+            base.token = {
+                token: req.query.token,
+                expires: req.query.expires,
+                referer: config.API_URL
             }
 
             const portal = new EsriProxyPortal(base);
@@ -281,23 +223,15 @@ export default async function router(schema: Schema, config: Config) {
         name: 'List Services',
         group: 'ESRI',
         description: 'Helper API to configure ESRI MapServers - Get Services',
-        query: {
-            type: 'object',
-            required: ['server'],
-            properties: {
-                server: { type: 'string' },
-                token: { type: 'string' },
-                expires: { type: 'number' }
-            }
-        },
-        res: {
-            type: 'object',
-            required: ['folders', 'services'],
-            properties: {
-                folders: { type: 'array' },
-                services: { type: 'array' },
-            }
-        }
+        query: Type.Object({
+            server: Type.String(),
+            token: Type.Optional(Type.String()),
+            expires: Type.Optional(Type.Integer())
+        }),
+        res: Type.Object({
+            folders: Type.Array(Type.Any()),
+            services: Type.Array(Type.Any())
+        })
     }, async (req, res) => {
         try {
             await Auth.is_auth(config, req, {
@@ -307,8 +241,8 @@ export default async function router(schema: Schema, config: Config) {
             const base = new EsriBase(String(req.query.server));
             if (req.query.token && req.query.expires) {
                 base.token = {
-                    token: String(req.query.token),
-                    expires: Number(req.query.expires),
+                    token: req.query.token,
+                    expires: req.query.expires,
                     referer: config.API_URL
                 }
             }
@@ -329,31 +263,24 @@ export default async function router(schema: Schema, config: Config) {
         name: 'Create Layer',
         group: 'ESRI',
         description: 'Create Layer necessary to push CoT data',
-        query: {
-            type: 'object',
-            required: ['server', 'portal', 'token'],
-            properties: {
-                server: { type: 'string' },
-                portal: { type: 'string' },
-                token: { type: 'string' }
-            }
-        },
-        res: {
-            type: 'object'
-        }
+        query: Type.Object({
+            server: Type.String(),
+            portal: Type.String(),
+            token: Type.String(),
+            expires: Type.Integer()
+        }),
+        res: Type.Any()
     }, async (req, res) => {
         try {
             await Auth.is_auth(config, req, {
                 anyResources: true
             });
 
-            const base = new EsriBase(String(req.query.server));
-            if (req.query.token && req.query.expires) {
-                base.token = {
-                    token: String(req.query.token),
-                    expires: Number(req.query.expires),
-                    referer: config.API_URL
-                }
+            const base = new EsriBase(req.query.server);
+            base.token = {
+                token: req.query.token,
+                expires: req.query.expires,
+                referer: config.API_URL
             }
 
             const server = new EsriProxyServer(base);
@@ -368,18 +295,13 @@ export default async function router(schema: Schema, config: Config) {
         name: 'Delete Layer',
         group: 'ESRI',
         description: 'Delete an ESRI Layer',
-        query: {
-            type: 'object',
-            required: ['server', 'portal', 'token'],
-            properties: {
-                server: { type: 'string' },
-                portal: { type: 'string' },
-                token: { type: 'string' }
-            }
-        },
-        res: {
-            type: 'object'
-        }
+        query: Type.Object({
+            server: Type.String(),
+            portal: Type.String(),
+            token: Type.String(),
+            expires: Type.Integer()
+        }),
+        res: Type.Any()
     }, async (req, res) => {
         try {
             await Auth.is_auth(config, req, {
@@ -393,12 +315,10 @@ export default async function router(schema: Schema, config: Config) {
             const layer_id = parseInt(parsed_layer[0].replace('/', ''));
 
             const base = new EsriBase(String(url));
-            if (req.query.token && req.query.expires) {
-                base.token = {
-                    token: String(req.query.token),
-                    expires: Number(req.query.expires),
-                    referer: config.API_URL
-                }
+            base.token = {
+                token: req.query.token,
+                expires: req.query.expires,
+                referer: config.API_URL
             }
 
             const server = new EsriProxyServer(base);
@@ -413,19 +333,13 @@ export default async function router(schema: Schema, config: Config) {
         name: 'Query Layer',
         group: 'ESRI',
         description: 'Return Sample features and count',
-        query: {
-            type: 'object',
-            required: ['layer', 'token', 'query'],
-            properties: {
-                layer: { type: 'string' },
-                token: { type: 'string' },
-                expires: { type: 'string' },
-                query: { type: 'string' }
-            }
-        },
-        res: {
-            type: 'object'
-        }
+        query: Type.Object({
+            layer: Type.String(),
+            token: Type.String(),
+            expires: Type.Integer(),
+            query: Type.String(),
+        }),
+        res: Type.Any()
     }, async (req, res) => {
         try {
             await Auth.is_auth(config, req, {
@@ -433,12 +347,10 @@ export default async function router(schema: Schema, config: Config) {
             });
 
             const base = new EsriBase(String(req.query.layer));
-            if (req.query.token && req.query.expires) {
-                base.token = {
-                    token: String(req.query.token),
-                    expires: Number(req.query.expires),
-                    referer: config.API_URL
-                }
+            base.token = {
+                token: String(req.query.token),
+                expires: Number(req.query.expires),
+                referer: config.API_URL
             }
 
             const layer = new EsriProxyLayer(base);
