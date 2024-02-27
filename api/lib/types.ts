@@ -85,14 +85,22 @@ export const DataJobResponse = Type.Object({
     updated: Type.Integer()
 });
 
+export const ProfileAssetResponse = Type.Object({
+    name: Type.String({ "description": "The filename of the asset" }),
+    visualized: Type.Optional(Type.String()),
+    vectorized: Type.Optional(Type.String()),
+    updated: Type.Integer(),
+    etag: Type.String({ "description": "AWS S3 generated ETag of the asset" }),
+    size: Type.Integer({ "description": "Size in bytes of the asset" })
+})
+
 export const AssetResponse = Type.Object({
     name: Type.String({ "description": "The filename of the asset" }),
-    sync: Type.Boolean({ "description": "If the Data is attached to a mission, signify if the asset is syncing with the mission" }),
-    visualized: Type.Union([Type.String(), Type.Boolean()]),
-    vectorized: Type.Union([Type.String(), Type.Boolean()]),
+    visualized: Type.Optional(Type.String()),
+    vectorized: Type.Optional(Type.String()),
     updated: Type.String(),
     etag: Type.String({ "description": "AWS S3 generated ETag of the asset" }),
-    size: Type.String({ "description": "Size in bytes of the asset" })
+    size: Type.Integer({ "description": "Size in bytes of the asset" })
 })
 
 export const GenericMartiResponse = Type.Object({
