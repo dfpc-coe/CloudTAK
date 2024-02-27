@@ -1,18 +1,16 @@
 import { Type } from '@sinclair/typebox'
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
-import Auth from '../lib/auth.js';
-import { Response } from 'express';
-import { AuthRequest } from '@tak-ps/blueprint-login';
+import Auth, { AuthResource } from '../lib/auth.js';
+import { ProfileResponse } from '../lib/types.js'
 import Config from '../lib/config.js';
-import { AuthResource } from '@tak-ps/blueprint-login';
 
 export default async function router(schema: Schema, config: Config) {
     await schema.get('/profile', {
         name: 'Get Profile',
         group: 'Profile',
         description: 'Get User\'s Profile',
-        res: 'res.Profile.json'
+        res: ProfileResponse
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
@@ -28,8 +26,16 @@ export default async function router(schema: Schema, config: Config) {
         name: 'Update Profile',
         group: 'Profile',
         description: 'Update User\'s Profile',
-        body: 'req.body.PatchProfile.json',
-        res: 'res.Profile.json'
+        body: Type.Object({
+            tak_callsign: Type.Optional(Type.String()),
+            tak_group: Type.Optional(Type.String()),
+            tak_role: Type.Optional(Type.String()),
+            tak_loc: Type.Optional(Type.Object({
+                type: Type.String(),
+                coordinates: Type.Array(Type.Number())
+            }))
+        }),
+        res: ProfileResponse
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
