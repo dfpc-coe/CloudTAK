@@ -1,10 +1,33 @@
 import { createSelectSchema } from 'drizzle-typebox';
 import { Type } from '@sinclair/typebox'
+import { StyleContainer } from './style.js';
 import * as schemas from './schema.js';
 
 export const StandardResponse = Type.Object({
     status: Type.Integer(),
     message: Type.String()
+});
+
+export const LayerResponse = Type.Object({
+    id: Type.Integer(),
+    status: Type.String(),
+    created: Type.String(),
+    updated: Type.String(),
+    name: Type.String(),
+    description: Type.String(),
+    enabled: Type.Boolean(),
+    enabled_styles: Type.Boolean(),
+    styles: StyleContainer,
+    logging: Type.Boolean(),
+    stale: Type.Integer(),
+    task: Type.String(),
+    connection: Type.Optional(Type.Integer()),
+    cron: Type.String(),
+    environment: Type.Any(),
+    memory: Type.Integer(),
+    timeout: Type.Integer(),
+    data: Type.Optional(Type.Integer()),
+    schema: Type.Any()
 });
 
 export const LayerAlertResponse = createSelectSchema(schemas.LayerAlert, {
