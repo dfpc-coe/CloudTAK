@@ -5,43 +5,28 @@ import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import busboy from 'busboy';
 import Config from '../lib/config.js';
-import { Response } from 'express';
-import { AuthRequest } from '@tak-ps/blueprint-login';
 import S3 from '../lib/aws/s3.js'
 import crypto from 'node:crypto';
 import { Param } from '@openaddresses/batch-generic';
 import { sql } from 'drizzle-orm';
 import { AuthResourceAccess } from '@tak-ps/blueprint-login';
 
+export ImportModeEnum {
+    UNKNOWN = 'Unknown',
+    MISSION = 'Mission'
+}
+
 export default async function router(schema: Schema, config: Config) {
     await schema.post('/import', {
         name: 'Import',
         group: 'Import',
         description: 'Import an unknown asset into the imports manager',
-        body: {
-            type: 'object',
-            required: ['name'],
-            additionalProperties: false,
-            properties: {
-                name: { type: 'string' },
-                mode: {
-                    type: 'string',
-                    default: 'Unknown',
-                    description: 'Import to a given subasset or attempt to determine where to import',
-                    enum: [
-                        'Unknown',
-                        'Mission'
-                    ]
-                },
-                mode_id: {
-                    type: 'string',
-                    description: 'ID of the subasset if given - don\'t set for an unknown mode'
-                },
-                config: {
-                    type: 'object'
-                }
-            }
-        },
+        body: Type.Object({
+            name: Type.String(),
+            mode: Type.Optional(Type.Enum(ImportModeEnum))
+            mode_id: Type.Optional(Type.String())
+            config: Type.Optional(Type.Any())
+        }),
         res: "imports.json"
     }, async (req, res) => {
         try {
