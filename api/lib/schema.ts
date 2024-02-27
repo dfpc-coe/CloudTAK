@@ -1,4 +1,5 @@
 import { sql } from 'drizzle-orm';
+import { Static } from '@sinclair/typebox'
 import { StyleContainer } from './style.js';
 import { geometry, GeometryType } from '@openaddresses/batch-generic';
 import { ConnectionAuth } from './connection-config.js';
@@ -145,16 +146,16 @@ export const Layer = pgTable('layers', {
     description: text('description').notNull().default(''),
     enabled: boolean('enabled').notNull().default(true),
     enabled_styles: boolean('enabled_styles').notNull().default(false),
-    styles: json('styles').$type<StyleContainer>().notNull().default({}),
+    styles: json('styles').$type<Static<typeof StyleContainer>>().notNull().default({}),
     logging: boolean('logging').notNull().default(true),
     stale: integer('stale').notNull().default(20000),
     task: text('task').notNull(),
-    connection: integer('connection').notNull().references(() => Connection.id),
+    connection: integer('connection').references(() => Connection.id),
     cron: text('cron'),
     environment: json('environment').notNull().default({}),
     memory: integer('memory').notNull().default(128),
     timeout: integer('timeout').notNull().default(128),
-    data: integer('data').notNull().references(() => Data.id),
+    data: integer('data').references(() => Data.id),
     schema: json('schema').notNull().default({})
 });
 
