@@ -1,11 +1,10 @@
 import { Type } from '@sinclair/typebox'
+import Config from '../lib/config.js';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
-import Auth from '../lib/auth.js';
+import Auth, { AuthResource } from '../lib/auth.js';
+import { StandardResponse, ProfileOverlayResponse } from '../lib/types.js'
 import { Response } from 'express';
-import { AuthRequest } from '@tak-ps/blueprint-login';
-import Config from '../lib/config.js';
-import { AuthResource } from '@tak-ps/blueprint-login';
 import { sql } from 'drizzle-orm';
 import TAKAPI, {
     APIAuthToken,
@@ -18,13 +17,20 @@ export default async function router(schema: Schema, config: Config) {
         name: 'Get Overlays',
         group: 'ProfileOverlays',
         description: 'Get User\'s Profile Overlays',
-        res: 'res.ListProfileOverlays.json'
+        query: Type.Object({
+            limit: Type.Optional(Type.Integer())
+        }),
+        res: Type.Object({
+            total: Type.Integer(),
+            items: Type.Array(ProfileOverlayResponse)
+        })
+
     }, async (req, res) => {
         try {
             await Auth.is_auth(config, req);
 
             const overlays = await config.models.ProfileOverlay.list({
-                limit: Number(req.query.limit)
+                limit: req.query.limit
             });
 
             return res.json(overlays);
@@ -37,8 +43,17 @@ export default async function router(schema: Schema, config: Config) {
         name: 'Create Overlay',
         group: 'ProfileOverlay',
         description: 'Create Profile Overlay',
-        body: 'req.body.CreateProfileOverlay.json',
-        res: 'profile_overlays.json'
+        body: Type.Object({
+            pos: Type.Optional(Type.Integer()),
+            type: Type.Optional(Type.String()),
+            opacity: Type.Optional(Type.Number()),
+            visible: Type.Optional(Type.Boolean()),
+            mode: Type.String(),
+            mode_id: Type.String(),
+            url: Type.String(),
+            name: Type.String()
+        }),
+        res: ProfileOverlayResponse
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
@@ -66,13 +81,9 @@ export default async function router(schema: Schema, config: Config) {
         name: 'delete Overlay',
         group: 'ProfileOverlay',
         description: 'Create Profile Overlay',
-        query: {
-            type: 'object',
-            required: ['id'],
-            properties: {
-                id: { type: 'string' }
-            }
-        },
+        query: Type.Object({
+            id: Type.String()
+        }),
         res: StandardResponse
     }, async (req, res) => {
         try {

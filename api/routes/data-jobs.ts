@@ -5,7 +5,7 @@ import Auth from '../lib/auth.js';
 import Batch from '../lib/aws/batch.js';
 import Logs from '../lib/aws/batch-logs.js';
 import Config from '../lib/config.js';
-import { DataJobResponse, DataJobLogResponse } from '../lib/types.js';
+import { JobResponse, JobLogResponse } from '../lib/types.js';
 import { AuthResourceAccess } from '../lib/auth.js';
 
 export default async function router(schema: Schema, config: Config) {
@@ -19,7 +19,7 @@ export default async function router(schema: Schema, config: Config) {
         }),
         res: Type.Object({
             total: Type.Integer(),
-            items: Type.Array(DataJobResponse)
+            items: Type.Array(JobResponse)
         })
     }, async (req, res) => {
         try {
@@ -57,7 +57,7 @@ export default async function router(schema: Schema, config: Config) {
             dataid: Type.Integer(),
             jobid: Type.String()
         }),
-        res: DataJobResponse
+        res: JobResponse
     }, async (req, res) => {
         try {
             await Auth.is_auth(config, req, {
@@ -90,7 +90,7 @@ export default async function router(schema: Schema, config: Config) {
             jobid: Type.String()
         }),
         res: Type.Object({
-            logs: Type.Array(DataJobLogResponse)
+            logs: Type.Array(JobLogResponse)
         })
     }, async (req, res) => {
         try {

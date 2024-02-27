@@ -8,6 +8,13 @@ export const StandardResponse = Type.Object({
     message: Type.String()
 });
 
+export const ProfileOverlayResponse = createSelectSchema(schemas.ProfileOverlay, {
+    id: Type.Integer(),
+    pos: Type.Integer(),
+    opacity: Type.Number(),
+    visible: Type.Boolean(),
+});
+
 export const LayerResponse = Type.Object({
     id: Type.Integer(),
     status: Type.String(),
@@ -72,17 +79,17 @@ export const DataListResponse = createSelectSchema(schemas.Data, {
     mission_sync: Type.Boolean(),
 });
 
-export const DataJobLogResponse = Type.Object({
+export const JobLogResponse = Type.Object({
     message: Type.String(),
     timestamp: Type.Integer(),
 })
 
-export const DataJobResponse = Type.Object({
+export const JobResponse = Type.Object({
     id: Type.String(),
     asset: Type.String(),
     status: Type.String(),
     created: Type.Integer(),
-    updated: Type.Integer()
+    updated: Type.Optional(Type.Integer())
 });
 
 export const ProfileAssetResponse = Type.Object({
