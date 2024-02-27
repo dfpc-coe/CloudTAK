@@ -1,10 +1,9 @@
 import { Type } from '@sinclair/typebox'
+import { StandardResponse } from '../lib/types.js';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
-import { Response } from 'express';
-import { AuthRequest } from '@tak-ps/blueprint-login';
 import TAKAPI, {
     APIAuthToken,
     APIAuthCertificate,
@@ -42,13 +41,9 @@ export default async function router(schema: Schema, config: Config) {
         params: Type.Object({
             hash: Type.String(),
         }),
-        query: {
-            type: 'object',
-            additionalProperties: false,
-            properties: {
-                name: { type: 'string' }
-            }
-        },
+        query: Type.Object({
+            name: Type.Optional(Type.String())
+        }),
         description: 'Helper API to download files by file hash',
     }, async (req, res) => {
         try {
