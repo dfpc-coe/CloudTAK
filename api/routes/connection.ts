@@ -1,9 +1,8 @@
 import Err from '@openaddresses/batch-error';
-import Auth from '../lib/auth.js';
 import { sql } from 'drizzle-orm';
 import Config from '../lib/config.js';
 import CW from '../lib/aws/metric.js';
-import { AuthResourceAccess } from '../lib/auth.js';
+import Auth, { AuthResourceAccess } from '../lib/auth.js';
 import { X509Certificate } from 'crypto';
 import { Type } from '@sinclair/typebox'
 import { GenericListOrder } from '@openaddresses/batch-generic';
