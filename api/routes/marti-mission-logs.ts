@@ -1,12 +1,11 @@
 import { Type } from '@sinclair/typebox'
+import { StandardResponse, GenericMartiResponse } from '../lib/types.js';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
 import bodyparser from 'body-parser';
 import S3 from '../lib/aws/s3.js';
-import { Response } from 'express';
-import { AuthRequest } from '@tak-ps/blueprint-login';
 import { AuthUser, AuthResource } from '@tak-ps/blueprint-login';
 import TAKAPI, {
     APIAuthToken,
@@ -22,16 +21,10 @@ export default async function router(schema: Schema, config: Config) {
             name: Type.String(),
         }),
         description: 'Helper API to add a log to a mission',
-        body: {
-            type: 'object',
-            required: ['content'],
-            properties: {
-                content: {
-                    type: 'string'
-                }
-            }
-        },
-        res: 'res.Marti.json'
+        body: Type.Object({
+            content: Type.String()
+        }),
+        res: GenericMartiResponse
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
