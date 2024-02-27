@@ -19,8 +19,13 @@ export default async function router(schema: Schema, config: Config) {
         params: Type.Object({
             layerid: Type.Integer(),
         }),
-        query: 'req.query.LayerQuery.json',
-        res: 'res.LayerQuery.json'
+        query: Type.Object({
+            filter: Type.Optional(Type.String({ "description": "Filter by Id prefix" }))
+        }),
+        res: Type.Object({
+            type: Type.String(),
+            features: Type.Array(Type.Any())
+        })
     }, async (req, res) => {
         try {
             await Auth.is_auth(config, req, {
@@ -59,7 +64,12 @@ export default async function router(schema: Schema, config: Config) {
             layerid: Type.Integer(),
             featid: Type.String()
         }),
-        res: 'res.LayerQueryFeature.json'
+        res: Type.Object({
+            id: Type.String(),
+            type: Type.String(),
+            properties: Type.Any(),
+            geometry: Type.Any()
+        })
     }, async (req, res) => {
         try {
             await Auth.is_auth(config, req, {
