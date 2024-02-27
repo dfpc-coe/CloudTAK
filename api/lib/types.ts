@@ -7,8 +7,13 @@ export const StandardResponse = Type.Object({
     message: Type.String()
 });
 
-export const ImportResponse = createSelectSchema(schemas.Import, {
+export const LayerAlertResponse = createSelectSchema(schemas.LayerAlert, {
+    id: Type.Integer(),
+    hidden: Type.Boolean(),
+    layer: Type.Integer(),
 });
+
+export const ImportResponse = createSelectSchema(schemas.Import, {});
 
 export const IconsetResponse = createSelectSchema(schemas.Iconset, {
     version: Type.Integer(),
