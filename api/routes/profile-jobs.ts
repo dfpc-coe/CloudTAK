@@ -4,9 +4,7 @@ import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import Batch from '../lib/aws/batch.js';
 import Logs from '../lib/aws/batch-logs.js';
-
-import { Response } from 'express';
-import { AuthRequest } from '@tak-ps/blueprint-login';
+import { JobResponse, JobLogResponse } from '../lib/types.js';
 import Config from '../lib/config.js';
 
 export default async function router(schema: Schema, config: Config) {
@@ -14,7 +12,10 @@ export default async function router(schema: Schema, config: Config) {
         name: 'List Jobs',
         group: 'ProfileJobs',
         description: 'List Profile Jobs',
-        res: 'res.ListProfileJobs.json'
+        res: Type.Object({
+            total: Type.Integer(),
+            items: Type.Array(JobResponse)
+        })
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
@@ -36,7 +37,7 @@ export default async function router(schema: Schema, config: Config) {
         params: Type.Object({
             jobid: Type.String(),
         }),
-        res: 'res.ProfileJob.json'
+        res: JobResponse
     }, async (req, res) => {
         try {
             await Auth.is_auth(config, req);
@@ -58,7 +59,9 @@ export default async function router(schema: Schema, config: Config) {
         params: Type.Object({
             jobid: Type.String(),
         }),
-        res: 'res.ProfileJobLogs.json'
+        res: Type.Object({
+            logs: Type.Array(JobLogResponse)
+        }) 
     }, async (req, res) => {
         try {
             await Auth.is_auth(config, req);
