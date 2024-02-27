@@ -8,6 +8,16 @@ export const StandardResponse = Type.Object({
     message: Type.String()
 });
 
+export const ProfileResponse = Type.Object({
+    username: Type.String(),
+    created: Type.String(),
+    updated: Type.String(),
+    tak_callsign: Type.String(),
+    tak_group: Type.String(),
+    tak_role: Type.String(),
+    tak_loc: Type.Any()
+});
+
 export const ProfileOverlayResponse = createSelectSchema(schemas.ProfileOverlay, {
     id: Type.Integer(),
     pos: Type.Integer(),
