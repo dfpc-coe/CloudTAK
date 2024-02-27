@@ -1,4 +1,5 @@
 import { Type } from '@sinclair/typebox'
+import { StandardResponse, ProfileAssetResponse } from '../lib/types.js';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import busboy from 'busboy';
@@ -20,7 +21,13 @@ export default async function router(schema: Schema, config: Config) {
         name: 'List Assets',
         group: 'UserAssets',
         description: 'List Assets',
-        res: 'res.ListAssets.json'
+        res: Type.Object({
+            total: Type.Integer(),
+            tiles: Type.Object({
+                url: Type.String()
+            }), 
+            assets: Type.Array(ProfileAssetResponse)
+        })
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
@@ -58,7 +65,7 @@ export default async function router(schema: Schema, config: Config) {
 
                     assets.push((async () => {
                         await S3.put(`profile/${user.email}/${blob.filename}`, passThrough);
-                        await Batch.submitUser(config, user.email, `${blob.filename}`, req.body);
+                        await Batch.submitUser(config, user.email, `${blob.filename}`);
                     })());
                 } catch (err) {
                     return Err.respond(err, res);
@@ -96,7 +103,7 @@ export default async function router(schema: Schema, config: Config) {
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
-            await Batch.submitUser(config, user.email, `${req.params.asset}.${req.params.ext}`, req.body);
+            await Batch.submitUser(config, user.email, `${req.params.asset}.${req.params.ext}`);
 
             return res.json({
                 status: 200,
