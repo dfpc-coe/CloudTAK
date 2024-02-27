@@ -7,6 +7,14 @@ export const StandardResponse = Type.Object({
     message: Type.String()
 });
 
+export const IconsetResponse = createSelectSchema(schemas.Iconset, {
+    version: Type.Integer(),
+    skip_resize: Type.Boolean(),
+});
+export const IconResponse = createSelectSchema(schemas.Icon, {
+    id: Type.Integer(),
+});
+
 export const DataResponse = Type.Object({
     id: Type.Integer(),
     created: Type.String(),
