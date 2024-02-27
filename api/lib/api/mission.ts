@@ -1,4 +1,5 @@
 import TAKAPI from '../tak-api.js';
+import { Type, Static } from '@sinclair/typebox';
 import Err from '@openaddresses/batch-error';
 import { Readable } from 'node:stream'
 import { TAKList } from './types.js';
@@ -35,17 +36,17 @@ export type Mission = {
     missionChanges?: Array<unknown>; // Only present on Mission.get()
 }
 
-export type MissionSubscriber = {
-    token?: string;
-    clientUid: string;
-    username: string;
-    createTime: string;
-    role: {
-        permissions: Array<string>;
-        hibernateLazyInitializer: object;
-        type: string;
-    }
-}
+export const MissionSubscriber = Type.Object({
+    token: Type.Optional(Type.String()),
+    clientUid: Type.String(),
+    username: Type.String(),
+    createTime: Type.String(),
+    role: Type.Object({
+        permissions: Type.Array(Type.String()),
+        hibernateLazyInitializer: Type.Any(),
+        type: Type.String()
+    })
+})
 
 /**
  * @class
@@ -110,7 +111,7 @@ export default class {
     /**
      * Return UIDs associated with any subscribed users
      */
-    async subscriptions(name: string): Promise<TAKList<MissionSubscriber>> {
+    async subscriptions(name: string): Promise<TAKList<Static<typeof MissionSubscriber>>> {
         const url = new URL(`/Marti/api/missions/${encodeURIComponent(name)}/subscriptions`, this.api.url);
         return await this.api.fetch(url, {
             method: 'GET'
@@ -130,7 +131,7 @@ export default class {
     /**
      * Return permissions associated with a given mission if subscribed
      */
-    async subscription(name: string): Promise<MissionSubscriber> {
+    async subscription(name: string): Promise<Static<typeof MissionSubscriber>> {
         const url = new URL(`/Marti/api/missions/${encodeURIComponent(name)}/subscription`, this.api.url);
         const res = await this.api.fetch(url, {
             method: 'GET'
