@@ -428,7 +428,11 @@ function cotStyles(id, opts = {
             id: `${id}-icon`,
             type: 'symbol',
             source: id,
-            filter: [ 'all', ['==', '$type', 'Point'] ],
+            filter: [
+                'all',
+                ['==', '$type', 'Point'],
+                ['has', 'icon']
+            ],
             paint: {
                 'icon-opacity': ['get', 'icon-opacity'],
                 'icon-halo-color': '#ffffff',
@@ -463,14 +467,21 @@ function cotStyles(id, opts = {
     }
 
     if (opts.group) {
+        const groupFilter = [
+            'all',
+            ['==', '$type', 'Point'],
+            ['has', 'color']
+        ]
+
+        if (opts.icons) {
+            groupFilter.push(['!has', 'icon']);
+        }
+
         styles.push({
             id: 'cots-group',
             type: 'circle',
             source: 'cots',
-            filter: [ 'all',
-                ['==', '$type', 'Point'],
-                ['has', 'color']
-            ],
+            filter: groupFilter,
             paint: {
                 'circle-color': ['get', 'color'],
                 'circle-stroke-color': '#ffffff',

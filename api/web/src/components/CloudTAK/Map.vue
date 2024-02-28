@@ -275,6 +275,8 @@ export default {
                     cotStore.add(msg.data);
                 } else if (msg.type === 'chat') {
                     console.log(msg.data);
+                } else {
+                    console.log('UNKNOWN', msg.data);
                 }
             });
         },
