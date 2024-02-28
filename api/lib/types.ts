@@ -8,6 +8,17 @@ export const StandardResponse = Type.Object({
     message: Type.String()
 });
 
+export const ServerResponse = Type.Object({
+    id: Type.Integer(),
+    status: Type.String(),
+    created: Type.String(),
+    updated: Type.String(),
+    name: Type.String(),
+    url: Type.String(),
+    api: Type.String(),
+    auth: Type.Boolean({ "description": "Once an admin certificate is configured it is not retrivable. This boolean refers to if a certificate is currently loaded" })
+})
+
 export const ProfileResponse = Type.Object({
     username: Type.String(),
     created: Type.String(),
