@@ -1,32 +1,40 @@
 import { Type } from '@sinclair/typebox'
 import Schema from '@openaddresses/batch-schema';
-import { Response } from 'express';
-import { AuthRequest } from '@tak-ps/blueprint-login';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
 import { promisify } from 'util';
 import jwt from 'jsonwebtoken';
 import { Param } from '@openaddresses/batch-generic';
+import { GenericListOrder } from '@openaddresses/batch-generic';
 import { sql } from 'drizzle-orm';
-import { AuthResource } from '@tak-ps/blueprint-login';
+import { StandardResponse, CreateProfileTokenResponse, ProfileTokenResponse } from '../lib/types.js';
 
 export default async function router(schema: Schema, config: Config) {
     await schema.get('/token', {
         name: 'List Tokens',
         group: 'Token',
         description: 'List all tokens associated with the requester\'s account',
-        query: 'req.query.ListTokens.json',
-        res: 'res.ListTokens.json'
+        query: Type.Object({
+            limit: Type.Optional(Type.Integer()),
+            page: Type.Optional(Type.Integer()),
+            order: Type.Optional(Type.Enum(GenericListOrder)),
+            sort: Type.Optional(Type.String({default: 'created'})),
+            filter: Type.Optional(Type.String({default: ''}))
+        }),
+        res: Type.Object({
+            total: Type.Integer(),
+            items: Type.Array(ProfileTokenResponse)
+        })
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
 
             const list = await config.models.Token.list({
-                limit: Number(req.query.limit),
-                page: Number(req.query.page),
-                order: String(req.query.order),
-                sort: String(req.query.sort),
+                limit: req.query.limit,
+                page: req.query.page,
+                order: req.query.order,
+                sort: req.query.sort,
                 where: sql`
                     name ~* ${req.query.filter}
                     AND email = ${user.email}
@@ -43,8 +51,10 @@ export default async function router(schema: Schema, config: Config) {
         name: 'Create Tokens',
         group: 'Token',
         description: 'Create a new API token for programatic access',
-        body: 'req.body.CreateToken.json',
-        res: 'res.CreateToken.json'
+        body: Type.Object({
+            name: Type.String()
+        }),
+        res: CreateProfileTokenResponse,
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
@@ -68,7 +78,9 @@ export default async function router(schema: Schema, config: Config) {
             id: Type.Integer(),
         }),
         description: 'Update properties of a Token',
-        body: 'req.body.PatchToken.json',
+        body: Type.Object({
+            name: Type.Optional(Type.String())
+        }),
         res: StandardResponse
     }, async (req, res) => {
         try {
