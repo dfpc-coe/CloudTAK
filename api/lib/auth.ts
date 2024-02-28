@@ -151,8 +151,6 @@ export default class Auth {
 function auth_request(config: Config, req: Request<unknown, unknown, unknown, any>, opts?: {
     token: boolean
 }): AuthResource | AuthUser {
-    let auth;
-
     if (req.headers && req.header('authorization')) {
         const authorization = (req.header('authorization') || '').split(' ');
 
@@ -166,16 +164,14 @@ function auth_request(config: Config, req: Request<unknown, unknown, unknown, an
 
         try {
             try {
-                auth = tokenParser(authorization[1], config.SigningSecret);
+                return tokenParser(authorization[1], config.SigningSecret);
             } catch (err) {
                 if (config.unsafe) {
-                    auth = tokenParser(authorization[1], config.UnsafeSigningSecret);
+                    return tokenParser(authorization[1], config.UnsafeSigningSecret);
                 } else {
                     throw err;
                 }
             }
-
-            return auth;
         } catch (err) {
             if (err instanceof Err) throw err;
             throw new Err(401, err instanceof Error ? err : new Error(String(err)), 'Invalid Token')
@@ -188,21 +184,22 @@ function auth_request(config: Config, req: Request<unknown, unknown, unknown, an
         && typeof req.query.token === 'string') {
         try {
             try {
-                auth = tokenParser(req.query.token, config.SigningSecret);
+                return tokenParser(req.query.token, config.SigningSecret);
             } catch (err) {
                 if (config.unsafe) {
-                    auth = tokenParser(req.query.token, config.UnsafeSigningSecret);
+                    return tokenParser(req.query.token, config.UnsafeSigningSecret);
                 } else {
                     throw err;
                 }
             }
 
-            return auth;
         } catch (err) {
             if (err instanceof Err) throw err;
             throw new Err(401, err instanceof Error ? err : new Error(String(err)), 'Invalid Token')
         }
     }
+
+    throw new Err(500, null, 'Auth Parsing Error');
 }
 
 export function tokenParser(token: string, secret: string): AuthUser | AuthResource {
