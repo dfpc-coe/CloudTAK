@@ -7,8 +7,6 @@ import SwaggerUI from 'swagger-ui-express';
 import history, {Context} from 'connect-history-api-fallback';
 import Schema from '@openaddresses/batch-schema';
 import { ProfileConnConfig } from './lib/connection-config.js';
-import Err from '@openaddresses/batch-error';
-import Modeler from '@openaddresses/batch-generic';
 import minimist from 'minimist';
 import { ConnectionWebSocket } from './lib/connection-web.js';
 import sleep from './lib/sleep.js';
@@ -17,8 +15,6 @@ import { WebSocket, WebSocketServer } from 'ws';
 import Config from './lib/config.js';
 import { tokenParser, AuthUser } from './lib/auth.js'
 import process from 'node:process';
-
-import * as pgschema from './lib/schema.js';
 
 const args = minimist(process.argv, {
     boolean: [

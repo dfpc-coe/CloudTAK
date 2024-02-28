@@ -10,15 +10,22 @@ import Logs from '../lib/aws/lambda-logs.js';
 import semver from 'semver-sort';
 import Cacher from '../lib/cacher.js';
 import Config from '../lib/config.js';
-import { Response } from 'express';
-import { AuthRequest } from '@tak-ps/blueprint-login';
+import { StandardResponse, JobLogResponse } from '../lib/types.js';
+
+export enum TaskSchemaEnum {
+    OUTPUT = 'schema:input',
+    INPUT = 'schema:input'
+}
 
 export default async function router(schema: Schema, config: Config) {
     await schema.get('/task', {
         name: 'List Tasks',
         group: 'Task',
         description: 'List Tasks',
-        res: 'res.ListTasks.json'
+        res: Type.Object({
+            total: Type.Integer(),
+            items: Type.Array(Type.Any())
+        })
     }, async (req, res) => {
         try {
             await Auth.is_auth(config, req);
@@ -57,7 +64,10 @@ export default async function router(schema: Schema, config: Config) {
             task: Type.String(),
         }),
         description: 'List Version for a specific task',
-        res: 'res.ListTaskVersions.json'
+        res: Type.Object({
+            total: Type.Integer(),
+            versions: Type.Array(Type.Any())
+        })
     }, async (req, res) => {
         try {
             await Auth.is_auth(config, req);
@@ -92,7 +102,9 @@ export default async function router(schema: Schema, config: Config) {
             layerid: Type.Integer(),
         }),
         description: 'Get the status of a task stack in relation to a given layer',
-        res: 'res.TaskStatus.json'
+        res: Type.Object({
+            status: Type.String()
+        })
     }, async (req, res) => {
         try {
             await Auth.is_auth(config, req);
@@ -129,8 +141,6 @@ export default async function router(schema: Schema, config: Config) {
                 status: 200,
                 message: 'Manually Invoked Lambda'
             });
-
-            return res.json(await CF.status(config, layer.id));
         } catch (err) {
             return Err.respond(err, res);
         }
@@ -143,7 +153,9 @@ export default async function router(schema: Schema, config: Config) {
             layerid: Type.Integer(),
         }),
         description: 'Get the logs related to the given task',
-        res: 'res.TaskLogs.json'
+        res: Type.Object({
+            logs: Type.Array(JobLogResponse)
+        })
     }, async (req, res) => {
         try {
             await Auth.is_auth(config, req);
@@ -165,8 +177,12 @@ export default async function router(schema: Schema, config: Config) {
             layerid: Type.Integer(),
         }),
         description: 'Get the JSONSchema for the expected environment variables',
-        query: 'req.query.TaskSchema.json',
-        res: 'res.TaskSchema.json'
+        query: Type.Object({
+            type: Type.Enum(TaskSchemaEnum)
+        }),
+        res: Type.Object({
+            schema: Type.Any()
+        })
     }, async (req, res) => {
         try {
             await Auth.is_auth(config, req);
@@ -190,7 +206,9 @@ export default async function router(schema: Schema, config: Config) {
             layerid: Type.Integer(),
         }),
         description: 'Deploy a task stack',
-        res: 'res.TaskStatus.json'
+        res: Type.Object({
+            status: Type.String()
+        })
     }, async (req, res) => {
         try {
             await Auth.is_auth(config, req);
