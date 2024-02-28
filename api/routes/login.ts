@@ -125,14 +125,16 @@ export default async function router(schema: Schema, config: Config) {
         name: 'Get Login',
         group: 'Login',
         res: Type.Object({
+            email: Type.String(),
             access: Type.String()
         })
     }, async (req, res) => {
-        const auth = await Auth.is_auth(config, req);
+        const user = await Auth.as_user(config, req);
 
         try {
             return res.json({
-                access: auth.access
+                email: user.email,
+                access: user.access
             });
         } catch (err) {
             Err.respond(err, res);

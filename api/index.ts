@@ -211,7 +211,12 @@ export default async function server(config: Config) {
                 throw new Error('Unauthorized');
             }
         } catch (err) {
-            ws.send(JSON.stringify({type: 'Error', message: err instanceof Error ? String(err.message) : String(err) }));
+            ws.send(JSON.stringify({
+                type: 'Error',
+                properties: {
+                    message: err instanceof Error ? String(err.message) : String(err) 
+                }
+            }));
             await sleep(500);
             ws.close();
         }
