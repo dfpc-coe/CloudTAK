@@ -113,7 +113,7 @@ export default async function router(schema: Schema, config: Config) {
 
             return res.json({
                 access: 'user',
-                token: jwt.sign({ access: 'user', email: contents.sub }, this.secret),
+                token: jwt.sign({ access: 'user', email: contents.sub }, config.SigningSecret),
                 email: contents.sub
             });
         } catch (err) {
