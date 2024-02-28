@@ -153,6 +153,18 @@ export const ConnectionTokenResponse = Type.Object({
     updated: Type.String(),
 });
 
+/** Includes Token itself */
+export const CreateProfileTokenResponse = createSelectSchema(schemas.Token, {
+    id: Type.Integer(),
+});
+
+export const ProfileTokenResponse = Type.Object({
+    id: Type.Integer(),
+    name: Type.String(),
+    created: Type.String(),
+    updated: Type.String(),
+});
+
 export const ConnectionSinkResponse = createSelectSchema(schemas.ConnectionSink, {
     id: Type.Integer(),
     connection: Type.Integer(),
