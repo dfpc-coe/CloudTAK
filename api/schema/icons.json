@@ -2,8 +2,14 @@
     "type": "object",
     "additionalProperties": false,
     "properties": {
-        "id": {
-            "$ref": "./icons/id.json"
+        "iconset": {
+            "$ref": "./icons/iconset.json"
+        },
+        "name": {
+            "$ref": "./icons/name.json"
+        },
+        "type2525b": {
+            "$ref": "./icons/type2525b.json"
         },
         "created": {
             "$ref": "./icons/created.json"
@@ -11,30 +17,24 @@
         "updated": {
             "$ref": "./icons/updated.json"
         },
-        "name": {
-            "$ref": "./icons/name.json"
-        },
-        "iconset": {
-            "$ref": "./icons/iconset.json"
-        },
-        "type2525b": {
-            "$ref": "./icons/type2525b.json"
-        },
         "data": {
             "$ref": "./icons/data.json"
         },
         "path": {
             "$ref": "./icons/path.json"
+        },
+        "id": {
+            "$ref": "./icons/id.json"
         }
     },
     "required": [
-        "id",
+        "iconset",
+        "name",
+        "type2525b",
         "created",
         "updated",
-        "name",
-        "iconset",
-        "type2525b",
         "data",
-        "path"
+        "path",
+        "id"
     ]
 }
