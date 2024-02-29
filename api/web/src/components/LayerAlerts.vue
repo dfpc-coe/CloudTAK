@@ -28,7 +28,7 @@
                         <TablerLoading v-if='loading.alerts' desc='Loading Alerts'/>
                         <TablerNone v-else-if='!list.total' :create='false'/>
                         <div v-else>
-                            <div :key='alert.id' v-for='alert in list.alerts' class='row'>
+                            <div :key='alert.id' v-for='alert in list.items' class='hover-light'>
                                 <div class='row px-3 py-2'>
                                     <div class='d-flex'>
                                         <span class='subheader' v-text='alert.title'/>
