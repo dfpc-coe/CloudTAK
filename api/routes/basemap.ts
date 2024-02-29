@@ -257,7 +257,8 @@ export default async function router(schema: Schema, config: Config) {
         }),
         query: Type.Object({
             download: Type.Optional(Type.Boolean()),
-            format: Type.Optional(Type.String())
+            format: Type.Optional(Type.String()),
+            token: Type.Optional(Type.String()),
         }),
         res: Type.Union([BasemapResponse, Type.String()])
     }, async (req, res) => {
@@ -308,6 +309,9 @@ export default async function router(schema: Schema, config: Config) {
             x: Type.Integer(),
             y: Type.Integer(),
         }),
+        query: Type.Object({
+            token: Type.Optional(Type.String()),
+        })
     }, async (req, res) => {
         try {
             await Auth.is_auth(config, req, { token: true });
