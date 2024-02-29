@@ -52,7 +52,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class='col-lg-12'>
+                        <div class='col-lg-12 d-flex px-3 py-3'>
                             <TablerPager v-if='list.total > paging.limit' @page='paging.page = $event' :page='paging.page'  :total='list.total' :limit='paging.limit'/>
                         </div>
                     </div>
