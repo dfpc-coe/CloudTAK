@@ -13,7 +13,7 @@ import Config from '../lib/config.js';
 import { StandardResponse, JobLogResponse } from '../lib/types.js';
 
 export enum TaskSchemaEnum {
-    OUTPUT = 'schema:input',
+    OUTPUT = 'schema:output',
     INPUT = 'schema:input'
 }
 
@@ -178,7 +178,9 @@ export default async function router(schema: Schema, config: Config) {
         }),
         description: 'Get the JSONSchema for the expected environment variables',
         query: Type.Object({
-            type: Type.Enum(TaskSchemaEnum)
+            type: Type.Enum(TaskSchemaEnum, {
+                default: TaskSchemaEnum.INPUT
+            })
         }),
         res: Type.Object({
             schema: Type.Any()
