@@ -7,19 +7,39 @@
     "GET /openapi": {
         "body": false,
         "query": false,
-        "res": false
-    },
-    "POST /login": {
-        "body": true,
-        "query": false,
         "res": true
     },
-    "GET /login": {
+    "PUT /basemap": {
         "body": false,
         "query": false,
         "res": true
     },
-    "PUT /basemap": {
+    "GET /basemap": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "POST /basemap": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "PATCH /basemap/:basemapid": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "GET /basemap/:basemapid": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "GET /basemap/:basemapid/tiles/:z/:x/:y": {
+        "body": false,
+        "query": true,
+        "res": false
+    },
+    "DELETE /basemap/:basemapid": {
         "body": false,
         "query": false,
         "res": true
@@ -29,37 +49,37 @@
         "query": false,
         "res": true
     },
-    "GET /connection/:connectionid/token": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
     "GET /connection/:connectionid/sink": {
         "body": false,
         "query": true,
         "res": true
     },
-    "GET /basemap": {
-        "body": false,
-        "query": true,
+    "POST /connection/:connectionid/sink": {
+        "body": true,
+        "query": false,
         "res": true
     },
-    "GET /connection": {
-        "body": false,
-        "query": true,
+    "PATCH /connection/:connectionid/sink/:sinkid": {
+        "body": true,
+        "query": false,
         "res": true
     },
-    "GET /connection/:connectionid/data/:dataid/asset": {
+    "GET /connection/:connectionid/sink/:sinkid": {
         "body": false,
         "query": false,
         "res": true
     },
-    "GET /connection/:connectionid/data/:dataid/job": {
+    "GET /connection/:connectionid/sink/:sinkid/stats": {
         "body": false,
         "query": false,
         "res": true
     },
-    "POST /connection/:connectionid/data/:dataid/upload": {
+    "DELETE /connection/:connectionid/sink/:sinkid": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /connection/:connectionid/token": {
         "body": false,
         "query": true,
         "res": true
@@ -69,8 +89,88 @@
         "query": false,
         "res": true
     },
-    "POST /connection/:connectionid/sink": {
+    "PATCH /connection/:connectionid/token/:id": {
         "body": true,
+        "query": false,
+        "res": true
+    },
+    "DELETE /connection/:connectionid/token/:id": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /connection": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "POST /connection": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "PATCH /connection/:connectionid": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "GET /connection/:connectionid": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "POST /connection/:connectionid/refresh": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "DELETE /connection/:connectionid": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /connection/:connectionid/stats": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /connection/:connectionid/data/:dataid/asset": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "POST /connection/:connectionid/data/:dataid/upload": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "POST /connection/:connectionid/data/:dataid/asset": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "POST /connection/:connectionid/data/:dataid/asset/:asset.:ext": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "DELETE /connection/:connectionid/data/:dataid/asset/:asset.:ext": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /connection/:connectionid/data/:dataid/asset/:asset.:ext": {
+        "body": false,
+        "query": false,
+        "res": false
+    },
+    "GET /connection/:connectionid/data/:dataid/asset/:asset.pmtiles/tile": {
+        "body": false,
+        "query": false,
+        "res": false
+    },
+    "GET /connection/:connectionid/data/:dataid/job": {
+        "body": false,
         "query": false,
         "res": true
     },
@@ -79,12 +179,42 @@
         "query": false,
         "res": true
     },
-    "POST /basemap": {
+    "GET /connection/:connectionid/data/:dataid/job/:jobid/logs": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /data": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "GET /data/:dataid": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /connection/:connectionid/data": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "POST /connection/:connectionid/data": {
         "body": true,
         "query": false,
         "res": true
     },
-    "POST /connection/:connectionid/data/:dataid/asset": {
+    "PATCH /connection/:connectionid/data/:dataid": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "GET /connection/:connectionid/data/:dataid": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "DELETE /connection/:connectionid/data/:dataid": {
         "body": false,
         "query": false,
         "res": true
@@ -134,88 +264,8 @@
         "query": true,
         "res": true
     },
-    "GET /connection/:connectionid/data/:dataid/job/:jobid/logs": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "POST /connection": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "POST /connection/:connectionid/data/:dataid/asset/:asset.:ext": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "DELETE /connection/:connectionid/data/:dataid/asset/:asset.:ext": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /connection/:connectionid/data/:dataid/asset/:asset.:ext": {
-        "body": false,
-        "query": false,
-        "res": false
-    },
-    "GET /connection/:connectionid/data/:dataid/asset/:asset.pmtiles/tile": {
-        "body": false,
-        "query": false,
-        "res": false
-    },
-    "PATCH /connection/:connectionid/token/:id": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "GET /data": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "PATCH /connection/:connectionid/sink/:sinkid": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "DELETE /connection/:connectionid/token/:id": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "PATCH /basemap/:basemapid": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "GET /data/:dataid": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
     "POST /import": {
         "body": true,
-        "query": false,
-        "res": true
-    },
-    "PATCH /connection/:connectionid": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "GET /connection/:connectionid/sink/:sinkid": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /connection/:connectionid/sink/:sinkid/stats": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "DELETE /connection/:connectionid/sink/:sinkid": {
-        "body": false,
         "query": false,
         "res": true
     },
@@ -229,34 +279,19 @@
         "query": false,
         "res": true
     },
-    "GET /connection/:connectionid": {
+    "GET /import/:import": {
         "body": false,
         "query": false,
         "res": true
     },
-    "GET /basemap/:basemapid": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "GET /basemap/:basemapid/tiles/:z/:x/:y": {
-        "body": false,
+    "PATCH /import/:import": {
+        "body": true,
         "query": false,
-        "res": false
-    },
-    "GET /connection/:connectionid/data": {
-        "body": false,
-        "query": true,
         "res": true
     },
-    "GET /layer/:layerid/query": {
+    "GET /import": {
         "body": false,
         "query": true,
-        "res": true
-    },
-    "DELETE /basemap/:basemapid": {
-        "body": false,
-        "query": false,
         "res": true
     },
     "GET /layer/:layerid/alert": {
@@ -264,27 +299,27 @@
         "query": true,
         "res": true
     },
-    "GET /import/:import": {
+    "POST /layer/:layerid/alert": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "DELETE /layer/:layerid/alert": {
         "body": false,
         "query": false,
+        "res": true
+    },
+    "DELETE /layer/:layerid/alert/:alertid": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /layer/:layerid/query": {
+        "body": false,
+        "query": true,
         "res": true
     },
     "GET /layer/:layerid/query/:featid": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "POST /connection/:connectionid/refresh": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "DELETE /connection/:connectionid": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /connection/:connectionid/stats": {
         "body": false,
         "query": false,
         "res": true
@@ -294,152 +329,7 @@
         "query": true,
         "res": true
     },
-    "DELETE /marti/api/files/:hash": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /marti/api/files/:hash": {
-        "body": false,
-        "query": true,
-        "res": false
-    },
-    "POST /connection/:connectionid/data": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "POST /marti/missions/:name/log": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "POST /layer/:layerid/alert": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "PATCH /import/:import": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "GET /marti/missions/:name": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "DELETE /marti/missions/:name/log/:log": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "DELETE /layer/:layerid/alert": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /marti/group": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "GET /layer": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "DELETE /marti/missions/:name": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
     "POST /iconset": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "DELETE /layer/:layerid/alert/:alertid": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "PUT /marti/group": {
-        "body": true,
-        "query": true,
-        "res": true
-    },
-    "POST /marti/missions/:name": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "PATCH /connection/:connectionid/data/:dataid": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "GET /profile/asset": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /profile/chat": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /marti/api/contacts/all": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /marti/mission": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "GET /marti/missions/:name/subscription": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /profile/job": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "POST /profile/asset": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /connection/:connectionid/data/:dataid": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /marti/missions/:name/subscriptions": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /profile/job/:jobid": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /import": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "POST /profile/asset/:asset.:ext": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "POST /layer": {
         "body": true,
         "query": false,
         "res": true
@@ -449,143 +339,13 @@
         "query": false,
         "res": true
     },
-    "POST /marti/signClient": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "DELETE /connection/:connectionid/data/:dataid": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /marti/missions/:name/subscriptions/roles": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /marti/missions/:name/contacts": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /profile/job/:jobid/logs": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "DELETE /profile/asset/:asset.:ext": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /profile/asset/:asset.:ext": {
-        "body": false,
-        "query": false,
-        "res": false
-    },
-    "GET /profile/asset/:asset.pmtiles/tile": {
-        "body": false,
-        "query": false,
-        "res": false
-    },
-    "POST /layer/redeploy": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /profile": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /profile/overlay": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "POST /marti/missions/:name/upload": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "GET /server": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
     "GET /iconset/:iconset": {
         "body": false,
         "query": true,
         "res": true
     },
-    "DELETE /marti/missions/:name/upload/:hash": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /task": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /task/:task": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "PATCH /layer/:layerid": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "PATCH /profile": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "POST /profile/overlay": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "PATCH /server": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "GET /layer/:layerid/task": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
     "POST /iconset/:iconset/icon": {
         "body": true,
-        "query": false,
-        "res": true
-    },
-    "DELETE /profile/overlay": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "POST /layer/:layerid/task/invoke": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /token": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "GET /layer/:layerid": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /layer/:layerid/task/logs": {
-        "body": false,
         "query": false,
         "res": true
     },
@@ -594,52 +354,12 @@
         "query": false,
         "res": true
     },
-    "POST /layer/:layerid/redeploy": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "DELETE /layer/:layerid": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /layer/:layerid/task/schema": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "POST /layer/:layerid/task": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "POST /token": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "POST /layer/:layerid/cot": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
     "GET /icon": {
         "body": false,
         "query": true,
         "res": true
     },
-    "PATCH /token/:id": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
     "GET /iconset/:iconset/icon/:icon": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "DELETE /token/:id": {
         "body": false,
         "query": false,
         "res": true
@@ -656,7 +376,7 @@
     },
     "GET /iconset/:iconset/icon/:icon/raw": {
         "body": false,
-        "query": false,
+        "query": true,
         "res": false
     },
     "GET /icon/sprite.json": {
@@ -668,5 +388,285 @@
         "body": false,
         "query": true,
         "res": false
+    },
+    "GET /layer": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "POST /layer": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "POST /layer/redeploy": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "PATCH /layer/:layerid": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "GET /layer/:layerid": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "POST /layer/:layerid/redeploy": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "DELETE /layer/:layerid": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "POST /layer/:layerid/cot": {
+        "body": true,
+        "query": true,
+        "res": true
+    },
+    "POST /login": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "GET /login": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "DELETE /marti/api/files/:hash": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "GET /marti/api/files/:hash": {
+        "body": false,
+        "query": true,
+        "res": false
+    },
+    "POST /marti/missions/:name/log": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "DELETE /marti/missions/:name/log/:log": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /marti/missions/:name": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "DELETE /marti/missions/:name": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "POST /marti/missions/:name": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "GET /marti/mission": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "GET /marti/missions/:name/subscription": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /marti/missions/:name/subscriptions": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /marti/missions/:name/subscriptions/roles": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /marti/missions/:name/contacts": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "POST /marti/missions/:name/upload": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "DELETE /marti/missions/:name/upload/:hash": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /marti/group": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "PUT /marti/group": {
+        "body": true,
+        "query": true,
+        "res": true
+    },
+    "GET /marti/api/contacts/all": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "POST /marti/signClient": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "GET /profile/asset": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "POST /profile/asset": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "POST /profile/asset/:asset.:ext": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "DELETE /profile/asset/:asset.:ext": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /profile/asset/:asset.:ext": {
+        "body": false,
+        "query": true,
+        "res": false
+    },
+    "GET /profile/asset/:asset.pmtiles/tile": {
+        "body": false,
+        "query": true,
+        "res": false
+    },
+    "GET /profile/chat": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /profile/job": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /profile/job/:jobid": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /profile/job/:jobid/logs": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /profile/overlay": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "POST /profile/overlay": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "DELETE /profile/overlay": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "GET /profile": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "PATCH /profile": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "GET /server": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "PATCH /server": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "GET /task": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /task/:task": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /layer/:layerid/task": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "POST /layer/:layerid/task/invoke": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /layer/:layerid/task/logs": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /layer/:layerid/task/schema": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "POST /layer/:layerid/task": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /token": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "POST /token": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "PATCH /token/:id": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "DELETE /token/:id": {
+        "body": false,
+        "query": false,
+        "res": true
     }
 }
