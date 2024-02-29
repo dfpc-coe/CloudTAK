@@ -427,7 +427,7 @@ export default async function router(schema: Schema, config: Config) {
             const style = new Style(layer);
 
             try {
-                req.body = check(req.body);
+                req.body = check(JSON.stringify(req.body));
             } catch (err) {
                 throw new Err(400, null, err instanceof Error ? err.message : String(err));
             }
