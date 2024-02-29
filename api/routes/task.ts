@@ -35,7 +35,7 @@ export default async function router(schema: Schema, config: Config) {
             let total: number = 0;
             const tasks = new Map();
 
-            for (const image of (images.imageIds || [])) {
+            for (const image of images) {
                 const match = String(image.imageTag).match(/^(.*)-v([0-9]+\.[0-9]+\.[0-9]+)$/);
                 if (!match) continue;
                 total++;
@@ -78,7 +78,7 @@ export default async function router(schema: Schema, config: Config) {
             let total: number = 0;
             const tasks = new Map();
 
-            for (const image of (images.imageIds || [])) {
+            for (const image of images) {
                 const match = String(image.imageTag).match(/^(.*)-v([0-9]+\.[0-9]+\.[0-9]+)$/);
                 if (!match) continue;
                 total++;
