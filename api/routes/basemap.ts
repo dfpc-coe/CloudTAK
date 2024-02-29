@@ -5,36 +5,55 @@ import Cacher from '../lib/cacher.js';
 import busboy from 'busboy';
 import Config from '../lib/config.js';
 import { Response } from 'express';
-import { AuthRequest } from '@tak-ps/blueprint-login';
 import xml2js from 'xml2js';
 import { Readable } from 'node:stream';
 import stream2buffer from '../lib/stream.js';
 import bboxPolygon from '@turf/bbox-polygon';
-import { Param } from '@openaddresses/batch-generic'
+import { Param, GenericListOrder } from '@openaddresses/batch-generic'
 import { sql } from 'drizzle-orm';
+import Schema from '@openaddresses/batch-schema';
+import { Geometry, BBox } from 'geojson';
+import { Type } from '@sinclair/typebox'
+import { StandardResponse, BasemapResponse } from '../lib/types.js';
+import { Basemap } from '../lib/schema.js';
 
-export default async function router(schema: any, config: Config) {
+enum BasemapType {
+    vector = 'vector',
+    raster = 'raster',
+    terrain = 'terrain'
+}
+
+export default async function router(schema: Schema, config: Config) {
     await schema.put('/basemap', {
         name: 'Import BaseMaps',
         group: 'BaseMap',
-        auth: 'user',
         description: `
             If the Content-Type if text/plain, then assume the body contains a TileJSON URL
             Alternatively, if the Content-Type is a MultiPart upload, assume the input is a TAK XML document
 
             Both return as many BaseMap fields as possible to use in the creation of a new BaseMap
         `,
-        res: 'res.ImportBaseMap.json'
-    }, async (req: AuthRequest, res: Response) => {
+        res: Type.Object({
+            name: Type.Optional(Type.String()),
+            url: Type.Optional(Type.String()),
+            bounds: Type.Optional(Type.Any()),
+            center: Type.Optional(Type.Any()),
+            minzoom: Type.Optional(Type.Integer()),
+            maxzoom: Type.Optional(Type.Integer()),
+            format: Type.Optional(Type.String())
+        })
+    }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req);
+            await Auth.is_auth(config, req);
 
             const imported: {
                 name?: string;
-                minzoom?: Number;
-                maxzoom?: Number;
-                format?: string;
                 url?: string;
+                bounds?: object;
+                center?: object;
+                minzoom?: number;
+                maxzoom?: number;
+                format?: string;
             } = {};
 
             if (req.headers['content-type'] && req.headers['content-type'].startsWith('multipart/form-data')) {
@@ -113,19 +132,28 @@ export default async function router(schema: any, config: Config) {
     await schema.get('/basemap', {
         name: 'List BaseMaps',
         group: 'BaseMap',
-        auth: 'user',
         description: 'List BaseMaps',
-        query: 'req.query.ListBaseMaps.json',
-        res: 'res.ListBaseMaps.json'
-    }, async (req: AuthRequest, res: Response) => {
+        query: Type.Object({
+            limit: Type.Optional(Type.Integer()),
+            page: Type.Optional(Type.Integer()),
+            order: Type.Optional(Type.Enum(GenericListOrder)),
+            type: Type.Optional(Type.Enum(BasemapType)),
+            sort: Type.Optional(Type.String({default: 'created', enum: Object.keys(Basemap) })),
+            filter: Type.Optional(Type.String({default: ''}))
+        }),
+        res: Type.Object({
+            total: Type.Integer(),
+            items: Type.Array(BasemapResponse)
+        })
+    }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req);
+            await Auth.is_auth(config, req);
 
             const list = await config.models.Basemap.list({
-                limit: Number(req.query.limit),
-                page: Number(req.query.page),
-                order: String(req.query.order),
-                sort: String(req.query.sort),
+                limit: req.query.limit,
+                page: req.query.page,
+                order: req.query.order,
+                sort: req.query.sort,
                 where: sql`
                     name ~* ${Param(req.query.filter)}
                     AND (${Param(req.query.type)}::TEXT IS NULL or ${Param(req.query.type)}::TEXT = type)
@@ -141,18 +169,38 @@ export default async function router(schema: any, config: Config) {
     await schema.post('/basemap', {
         name: 'Create BaseMap',
         group: 'BaseMap',
-        auth: 'admin',
         description: 'Register a new basemap',
-        body: 'req.body.CreateBaseMap.json',
-        res: 'basemaps.json'
-    }, async (req: AuthRequest, res: Response) => {
+        body: Type.Object({
+            name: Type.String(),
+            url: Type.String(),
+            minzoom: Type.Optional(Type.Integer()),
+            maxzoom: Type.Optional(Type.Integer()),
+            format: Type.Optional(Type.String()),
+            type: Type.Optional(Type.String()),
+            bounds: Type.Array(Type.Number({minItems: 4, maxItems: 4})),
+            center: Type.Array(Type.Number())
+        }),
+        res: BasemapResponse
+    }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req);
+            await Auth.is_auth(config, req);
 
-            if (req.body.bounds) req.body.bounds = bboxPolygon(req.body.bounds).geometry;
-            if (req.body.center) req.body.center = { type: 'Point', coordinates: req.body.center };
+            let bounds: Geometry;
+            if (req.body.bounds) {
+                bounds = bboxPolygon(req.body.bounds as BBox).geometry;
+                delete req.body.bounds;
+            }
+            let center: Geometry;
+            if (req.body.center) {
+                center = { type: 'Point', coordinates: req.body.center };
+                delete req.body.center;
+            }
 
-            const basemap = await config.models.Basemap.generate(req.body);
+            const basemap = await config.models.Basemap.generate({
+                ...req.body,
+                bounds,
+                center,
+            });
 
             return res.json(basemap);
         } catch (err) {
@@ -163,20 +211,33 @@ export default async function router(schema: any, config: Config) {
     await schema.patch('/basemap/:basemapid', {
         name: 'Update BaseMap',
         group: 'BaseMap',
-        auth: 'admin',
         description: 'Update a basemap',
-        ':basemapid': 'integer',
-        body: 'req.body.PatchBaseMap.json',
-        res: 'basemaps.json'
-    }, async (req: AuthRequest, res: Response) => {
+        params: Type.Object({
+            basemapid: Type.Integer()
+        }),
+        body: Type.Object({
+            name: Type.Optional(Type.String()),
+            url: Type.Optional(Type.String()),
+            minzoom: Type.Optional(Type.Integer()),
+            maxzoom: Type.Optional(Type.Integer()),
+            format: Type.Optional(Type.String()),
+            type: Type.Optional(Type.String()),
+            bounds: Type.Optional(Type.Array(Type.Number({minItems: 4, maxItems: 4}))),
+            center: Type.Optional(Type.Array(Type.Number()))
+        }),
+        res: BasemapResponse
+    }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req);
+            await Auth.is_auth(config, req);
 
-            if (req.body.bounds) req.body.bounds = bboxPolygon(req.body.bounds).geometry;
-            if (req.body.center) req.body.center = { type: 'Point', coordinates: req.body.center };
+            let bounds: Geometry;
+            let center: Geometry;
+            if (req.body.bounds) bounds = bboxPolygon(req.body.bounds as BBox).geometry;
+            if (req.body.center) center = { type: 'Point', coordinates: req.body.center };
 
             const basemap = await config.models.Basemap.commit(Number(req.params.basemapid), {
                 updated: sql`Now()`,
+                bounds, center,
                 ...req.body
             });
 
@@ -191,14 +252,19 @@ export default async function router(schema: any, config: Config) {
     await schema.get('/basemap/:basemapid', {
         name: 'Get BaseMap',
         group: 'BaseMap',
-        auth: 'user',
         description: 'Get a basemap',
-        ':basemapid': 'integer',
-        query: 'req.query.BaseMap.json',
-        res: 'basemaps.json'
-    }, async (req: AuthRequest, res: Response) => {
+        params: Type.Object({
+            basemapid: Type.Integer()
+        }),
+        query: Type.Object({
+            download: Type.Optional(Type.Boolean()),
+            format: Type.Optional(Type.String()),
+            token: Type.Optional(Type.String()),
+        }),
+        res: Type.Union([BasemapResponse, Type.String()])
+    }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req, { token: true });
+            await Auth.is_auth(config, req, { token: true });
 
             const basemap = await config.cacher.get(Cacher.Miss(req.query, `basemap-${req.params.basemapid}`), async () => {
                 return await config.models.Basemap.from(Number(req.params.basemapid))
@@ -213,7 +279,7 @@ export default async function router(schema: any, config: Config) {
 
                 res.setHeader('Content-Type', 'text/xml');
 
-                const xml = builder.buildObject({
+                const xml: string = builder.buildObject({
                     customMapSource: {
                         name: { _: basemap.name },
                         minZoom: { _: basemap.minzoom },
@@ -237,15 +303,19 @@ export default async function router(schema: any, config: Config) {
     await schema.get('/basemap/:basemapid/tiles/:z/:x/:y', {
         name: 'Get BaseMap Tile',
         group: 'BaseMap',
-        auth: 'user',
         description: 'Get a basemap tile',
-        ':basemapid': 'integer',
-        ':z': 'integer',
-        ':x': 'integer',
-        ':y': 'integer',
-    }, async (req: AuthRequest, res: Response) => {
+        params: Type.Object({
+            basemapid: Type.Integer(),
+            z: Type.Integer(),
+            x: Type.Integer(),
+            y: Type.Integer(),
+        }),
+        query: Type.Object({
+            token: Type.Optional(Type.String()),
+        })
+    }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req, { token: true });
+            await Auth.is_auth(config, req, { token: true });
 
             const basemap = await config.cacher.get(Cacher.Miss(req.query, `basemap-${req.params.basemapid}`), async () => {
                 return await config.models.Basemap.from(Number(req.params.basemapid));
@@ -276,13 +346,14 @@ export default async function router(schema: any, config: Config) {
     await schema.delete('/basemap/:basemapid', {
         name: 'Delete BaseMap',
         group: 'BaseMap',
-        auth: 'user',
         description: 'Delete a basemap',
-        ':basemapid': 'integer',
-        res: 'res.Standard.json'
-    }, async (req: AuthRequest, res: Response) => {
+        params: Type.Object({
+            basemapid: Type.Integer()
+        }),
+        res: StandardResponse
+    }, async (req, res: Response) => {
         try {
-            await Auth.is_auth(config.models, req);
+            await Auth.is_auth(config, req);
 
             await config.models.Basemap.delete(Number(req.params.basemapid));
 

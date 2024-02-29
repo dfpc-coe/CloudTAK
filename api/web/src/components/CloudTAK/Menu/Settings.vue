@@ -15,10 +15,10 @@
                     <TablerInput label='User Callsign' v-model='profile.tak_callsign'/>
                 </div>
                 <div class='col-12'>
-                    <TablerEnum label='User Group' v-model='profile.tak_group' :options='profileSchema.properties.tak_group.enum'/>
+                    <TablerEnum label='User Group' v-model='profile.tak_group' :options='tak_groups'/>
                 </div>
                 <div class='col-12'>
-                    <TablerEnum label='User Role' v-model='profile.tak_role' :options='profileSchema.properties.tak_role.enum'/>
+                    <TablerEnum label='User Role' v-model='profile.tak_role' :options='tak_roles'/>
                 </div>
                 <div class='col-12 d-flex py-3'>
                     <div class='ms-auto'>
@@ -69,22 +69,28 @@ export default {
             profileSchema: {}
         }
     },
+    computed: {
+        tak_groups: function() {
+            return this.profileSchema.properties.tak_group.anyOf.map((a) => { return a.const });
+        },
+        tak_roles: function() {
+            return this.profileSchema.properties.tak_role.anyOf.map((a) => { return a.const });
+        }
+    },
     mounted: async function() {
+        this.loading = true;
         await this.fetchProfileSchema();
         await profileStore.load();
         this.profile = JSON.parse(JSON.stringify(profileStore.profile));
+        this.loading = false;
     },
     methods: {
         fetchProfileSchema: async function() {
-            this.loading = true;
             this.profileSchema = (await window.std('/api/schema?method=PATCH&url=/profile')).body
-            this.loading = false;
         },
         updateProfile: async function() {
-            this.loading = true;
             await profileStore.update(this.profile);
             this.mode = 'settings';
-            this.loading = false;
         }
     },
     components: {

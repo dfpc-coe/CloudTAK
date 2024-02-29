@@ -1,3 +1,5 @@
+import { Static, Type } from '@sinclair/typebox'
+import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import busboy from 'busboy';
 import fs from 'node:fs/promises';
@@ -16,45 +18,50 @@ import DataMission from '../lib/data-mission.js';
 import { AuthResourceAccess } from '@tak-ps/blueprint-login';
 import { InferSelectModel } from 'drizzle-orm';
 import { Data } from '../lib/schema.js';
+import { StandardResponse, AssetResponse, GenericMartiResponse } from '../lib/types.js';
 import TAKAPI, {
     APIAuthToken,
     APIAuthCertificate,
     APIAuthPassword
 } from '../lib/tak-api.js';
 
-export default async function router(schema: any, config: Config) {
+export default async function router(schema: Schema, config: Config) {
     await schema.get('/connection/:connectionid/data/:dataid/asset', {
         name: 'List Assets',
-        auth: 'user',
         group: 'DataAssets',
         description: 'List Assets',
-        ':connectionid': 'integer',
-        ':dataid': 'integer',
-        res: 'res.ListAssets.json'
-    }, async (req: AuthRequest, res: Response) => {
+        params: Type.Object({
+            connectionid: Type.Integer(),
+            dataid: Type.Integer()
+        }),
+        res: Type.Object({
+            total: Type.Integer(),
+            tiles: Type.Object({
+                url: Type.String()
+            }),
+            assets: Type.Array(AssetResponse)
+        })
+    }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req, {
-                resources: [{ access: AuthResourceAccess.CONNECTION, id: parseInt(req.params.connectionid) }]
+            await Auth.is_auth(config, req, {
+                resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }]
             });
 
-            const data = await config.models.Data.from(parseInt(req.params.dataid))
+            const data = await config.models.Data.from(req.params.dataid)
 
             const list = await assetList(config, `data/${String(req.params.dataid)}/`);
 
-            list.assets = list.assets.map((a: any) => {
-                if (!data.mission_sync) {
-                    a.sync = false;
-                } else {
-                    for (const glob of data.assets) {
-                        a.sync = includesWithGlob([a.name], glob);
-                        if (a.sync) break;
-                    }
+            const assets: Array<Static<typeof AssetResponse>> = list.assets.map((a: any) => {
+                a.sync = false;
+                if (!data.mission_sync) return a
+                for (const glob of data.assets) {
+                    a.sync = includesWithGlob([a.name], glob);
+                    if (a.sync) break;
                 }
-
                 return a;
             });
 
-            return res.json(list);
+            return res.json({ ...list, assets });
         } catch (err) {
             return Err.respond(err, res);
         }
@@ -64,31 +71,27 @@ export default async function router(schema: any, config: Config) {
         private: true,
         name: 'Internal Upload',
         group: 'DataAssets',
-        auth: 'user',
-        ':connectionid': 'string',
-        ':dataid': 'string',
+        params: Type.Object({
+            connectionid: Type.Integer(),
+            dataid: Type.Integer()
+        }),
         description: 'Create an upload after the file as been processed by Event Lambda',
-        query: {
-            type: 'object',
-            additionalProperties: false,
-            required: ['name'],
-            properties: {
-                name: { type: 'string' }
-            }
-        },
-        res: 'res.Marti.json'
-    }, async (req: AuthRequest, res: Response) => {
-        await Auth.is_auth(config.models, req, {
+        query: Type.Object({
+            name: Type.String()
+        }),
+        res: GenericMartiResponse
+    }, async (req, res) => {
+        await Auth.is_auth(config, req, {
             resources: [
                 // Connection tokens shouldn't use this, only internal Data/Lambda Tokens
-                { access: AuthResourceAccess.DATA, id: parseInt(req.params.dataid) }
+                { access: AuthResourceAccess.DATA, id: req.params.dataid }
             ]
         });
 
         try {
-            const auth = (await config.models.Connection.from(parseInt(String(req.params.connectionid)))).auth;
+            const auth = (await config.models.Connection.from(req.params.connectionid)).auth;
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
-            const data = await config.models.Data.from(parseInt(req.params.dataid));
+            const data = await config.models.Data.from(req.params.dataid);
 
             const content = await api.Files.upload({
                 name: String(req.query.name),
@@ -113,25 +116,26 @@ export default async function router(schema: any, config: Config) {
 
     await schema.post('/connection/:connectionid/data/:dataid/asset', {
         name: 'Create Asset',
-        auth: 'user',
         group: 'DataAssets',
         description: 'Create a new asset',
-        ':connectionid': 'integer',
-        ':dataid': 'integer',
-        res: 'res.Standard.json'
-    }, async (req: AuthRequest, res: Response) => {
+        params: Type.Object({
+            connectionid: Type.Integer(),
+            dataid: Type.Integer()
+        }),
+        res: StandardResponse
+    }, async (req, res) => {
 
         let bb;
         let data: InferSelectModel<typeof Data>;
         try {
-            await Auth.is_auth(config.models, req, {
+            await Auth.is_auth(config, req, {
                 resources: [
-                    { access: AuthResourceAccess.DATA, id: parseInt(req.params.dataid) },
-                    { access: AuthResourceAccess.CONNECTION, id: parseInt(req.params.connectionid) }
+                    { access: AuthResourceAccess.DATA, id: req.params.dataid },
+                    { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }
                 ]
             });
 
-            data = await config.models.Data.from(parseInt(req.params.dataid));
+            data = await config.models.Data.from(req.params.dataid);
 
             if (!req.headers['content-type']) throw new Err(400, null, 'Missing Content-Type Header');
 
@@ -175,26 +179,27 @@ export default async function router(schema: any, config: Config) {
 
     await schema.post('/connection/:connectionid/data/:dataid/asset/:asset.:ext', {
         name: 'Convert Asset',
-        auth: 'user',
         group: 'DataAssets',
         description: 'Convert Asset into a cloud native or TAK Native format automatically',
-        ':connectionid': 'integer',
-        ':dataid': 'integer',
-        ':asset': 'string',
-        ':ext': 'string',
-        res: 'res.Standard.json'
-    }, async (req: AuthRequest, res: Response) => {
+        params: Type.Object({
+            connectionid: Type.Integer(),
+            dataid: Type.Integer(),
+            asset: Type.String(),
+            ext: Type.String()
+        }),
+        res: StandardResponse
+    }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req, {
+            await Auth.is_auth(config, req, {
                 resources: [
-                    { access: AuthResourceAccess.DATA, id: parseInt(req.params.dataid) },
-                    { access: AuthResourceAccess.CONNECTION, id: parseInt(req.params.connectionid) }
+                    { access: AuthResourceAccess.DATA, id: req.params.dataid },
+                    { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }
                 ]
             });
 
-            const data = await config.models.Data.from(parseInt(req.params.dataid));
+            const data = await config.models.Data.from(req.params.dataid);
 
-            await Batch.submitData(config, data, `${req.params.asset}.${req.params.ext}`, req.body);
+            await Batch.submitData(config, data, `${req.params.asset}.${req.params.ext}`);
 
             return res.json({
                 status: 200,
@@ -207,26 +212,27 @@ export default async function router(schema: any, config: Config) {
 
     await schema.delete('/connection/:connectionid/data/:dataid/asset/:asset.:ext', {
         name: 'Delete Asset',
-        auth: 'user',
         group: 'DataAssets',
         description: 'Delete Asset',
-        ':connectionid': 'integer',
-        ':dataid': 'integer',
-        ':asset': 'string',
-        ':ext': 'string',
-        res: 'res.Standard.json'
-    }, async (req: AuthRequest, res: Response) => {
+        params: Type.Object({
+            connectionid: Type.Integer(),
+            dataid: Type.Integer(),
+            asset: Type.String(),
+            ext: Type.String()
+        }),
+        res: StandardResponse
+    }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req, {
+            await Auth.is_auth(config, req, {
                 resources: [
-                    { access: AuthResourceAccess.DATA, id: parseInt(req.params.dataid) },
-                    { access: AuthResourceAccess.CONNECTION, id: parseInt(req.params.connectionid) }
+                    { access: AuthResourceAccess.DATA, id: req.params.dataid },
+                    { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }
                 ]
             });
 
-            const auth = (await config.models.Connection.from(parseInt(String(req.params.connectionid)))).auth;
+            const auth = (await config.models.Connection.from(req.params.connectionid)).auth;
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
-            const data = await config.models.Data.from(parseInt(req.params.dataid));
+            const data = await config.models.Data.from(req.params.dataid);
 
             const file = `${req.params.asset}.${req.params.ext}`;
             try {
@@ -264,20 +270,21 @@ export default async function router(schema: any, config: Config) {
 
     await schema.get('/connection/:connectionid/data/:dataid/asset/:asset.:ext', {
         name: 'Raw Asset',
-        auth: 'user',
         group: 'DataAssets',
         description: 'Get single raw asset',
-        ':connectionid': 'integer',
-        ':dataid': 'integer',
-        ':asset': 'string',
-        ':ext': 'string'
-    }, async (req: AuthRequest, res: Response) => {
+        params: Type.Object({
+            connectionid: Type.Integer(),
+            dataid: Type.Integer(),
+            asset: Type.String(),
+            ext: Type.String()
+        }),
+    }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req, {
+            await Auth.is_auth(config, req, {
                 token: true,
                 resources: [
-                    { access: AuthResourceAccess.DATA, id: parseInt(req.params.dataid) },
-                    { access: AuthResourceAccess.CONNECTION, id: parseInt(req.params.connectionid) }
+                    { access: AuthResourceAccess.DATA, id: req.params.dataid },
+                    { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }
                 ]
             });
 
@@ -291,23 +298,24 @@ export default async function router(schema: any, config: Config) {
 
     await schema.get('/connection/:connectionid/data/:dataid/asset/:asset.pmtiles/tile', {
         name: 'PMTiles TileJSON',
-        auth: 'user',
         group: 'DataAssets',
         description: 'Get TileJSON ',
-        ':connectionid': 'integer',
-        ':dataid': 'integer',
-        ':asset': 'string'
-    }, async (req: AuthRequest, res: Response) => {
+        params: Type.Object({
+            connectionid: Type.Integer(),
+            dataid: Type.Integer(),
+            asset: Type.String(),
+        }),
+    }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req, {
+            await Auth.is_auth(config, req, {
                 token: true,
                 resources: [
-                    { access: AuthResourceAccess.DATA, id: parseInt(req.params.dataid) },
-                    { access: AuthResourceAccess.CONNECTION, id: parseInt(req.params.connectionid) }
+                    { access: AuthResourceAccess.DATA, id: req.params.dataid },
+                    { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }
                 ]
             });
 
-            const data = await config.models.Data.from(parseInt(req.params.dataid));
+            const data = await config.models.Data.from(req.params.dataid);
 
             const token = jwt.sign({ access: 'user' }, config.SigningSecret)
             const url = new URL(`${config.PMTILES_URL}/tiles/data/${data.id}/${req.params.asset}`);

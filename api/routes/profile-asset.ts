@@ -1,3 +1,6 @@
+import { Type } from '@sinclair/typebox'
+import { StandardResponse, ProfileAssetResponse } from '../lib/types.js';
+import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import busboy from 'busboy';
 import fs from 'node:fs/promises';
@@ -13,16 +16,21 @@ import { Response } from 'express';
 import { AuthRequest } from '@tak-ps/blueprint-login';
 import Config from '../lib/config.js';
 
-export default async function router(schema: any, config: Config) {
+export default async function router(schema: Schema, config: Config) {
     await schema.get('/profile/asset', {
         name: 'List Assets',
-        auth: 'user',
         group: 'UserAssets',
         description: 'List Assets',
-        res: 'res.ListAssets.json'
-    }, async (req: AuthRequest, res: Response) => {
+        res: Type.Object({
+            total: Type.Integer(),
+            tiles: Type.Object({
+                url: Type.String()
+            }), 
+            assets: Type.Array(ProfileAssetResponse)
+        })
+    }, async (req, res) => {
         try {
-            const user = await Auth.as_user(config.models, req);
+            const user = await Auth.as_user(config, req);
             return res.json(await assetList(config, `profile/${user.email}/`));
         } catch (err) {
             return Err.respond(err, res);
@@ -31,15 +39,14 @@ export default async function router(schema: any, config: Config) {
 
     await schema.post('/profile/asset', {
         name: 'Create Asset',
-        auth: 'user',
         group: 'UserAssets',
         description: 'Create a new asset',
-        res: 'res.Standard.json'
-    }, async (req: AuthRequest, res: Response) => {
+        res: StandardResponse
+    }, async (req, res) => {
 
         let bb;
         try {
-            const user = await Auth.as_user(config.models, req);
+            const user = await Auth.as_user(config, req);
 
             if (!req.headers['content-type']) throw new Err(400, null, 'Missing Content-Type Header');
 
@@ -58,7 +65,7 @@ export default async function router(schema: any, config: Config) {
 
                     assets.push((async () => {
                         await S3.put(`profile/${user.email}/${blob.filename}`, passThrough);
-                        await Batch.submitUser(config, user.email, `${blob.filename}`, req.body);
+                        await Batch.submitUser(config, user.email, `${blob.filename}`);
                     })());
                 } catch (err) {
                     return Err.respond(err, res);
@@ -86,16 +93,17 @@ export default async function router(schema: any, config: Config) {
 
     await schema.post('/profile/asset/:asset.:ext', {
         name: 'Convert Asset',
-        auth: 'user',
         group: 'UserAssets',
         description: 'Convert Asset into a cloud native or TAK Native format automatically',
-        ':asset': 'string',
-        ':ext': 'string',
-        res: 'res.Standard.json'
-    }, async (req: AuthRequest, res: Response) => {
+        params: Type.Object({
+            asset: Type.String(),
+            ext: Type.String()
+        }),
+        res: StandardResponse
+    }, async (req, res) => {
         try {
-            const user = await Auth.as_user(config.models, req);
-            await Batch.submitUser(config, user.email, `${req.params.asset}.${req.params.ext}`, req.body);
+            const user = await Auth.as_user(config, req);
+            await Batch.submitUser(config, user.email, `${req.params.asset}.${req.params.ext}`);
 
             return res.json({
                 status: 200,
@@ -108,15 +116,16 @@ export default async function router(schema: any, config: Config) {
 
     await schema.delete('/profile/asset/:asset.:ext', {
         name: 'Delete Asset',
-        auth: 'user',
         group: 'UserAssets',
         description: 'Delete Asset',
-        ':asset': 'string',
-        ':ext': 'string',
-        res: 'res.Standard.json'
-    }, async (req: AuthRequest, res: Response) => {
+        params: Type.Object({
+            asset: Type.String(),
+            ext: Type.String()
+        }),
+        res: StandardResponse
+    }, async (req, res) => {
         try {
-            const user = await Auth.as_user(config.models, req);
+            const user = await Auth.as_user(config, req);
 
             await S3.del(`profile/${user.email}/${req.params.asset}.${req.params.ext}`);
 
@@ -131,14 +140,18 @@ export default async function router(schema: any, config: Config) {
 
     await schema.get('/profile/asset/:asset.:ext', {
         name: 'Raw Asset',
-        auth: 'user',
         group: 'UserAssets',
         description: 'Get single raw asset',
-        ':asset': 'string',
-        ':ext': 'string'
-    }, async (req: AuthRequest, res: Response) => {
+        query: Type.Object({
+            token: Type.Optional(Type.String())
+        }),
+        params: Type.Object({
+            asset: Type.String(),
+            ext: Type.String()
+        }),
+    }, async (req, res) => {
         try {
-            const user = await Auth.as_user(config.models, req, { token: true });
+            const user = await Auth.as_user(config, req, { token: true });
 
             const stream = await S3.get(`profile/${user.email}/${req.params.asset}.${req.params.ext}`);
 
@@ -150,13 +163,17 @@ export default async function router(schema: any, config: Config) {
 
     await schema.get('/profile/asset/:asset.pmtiles/tile', {
         name: 'PMTiles TileJSON',
-        auth: 'user',
         group: 'UserAssets',
         description: 'Get TileJSON ',
-        ':asset': 'string'
-    }, async (req: AuthRequest, res: Response) => {
+        query: Type.Object({
+            token: Type.Optional(Type.String())
+        }),
+        params: Type.Object({
+            asset: Type.String(),
+        }),
+    }, async (req, res) => {
         try {
-            const user = await Auth.as_user(config.models, req, { token: true });
+            const user = await Auth.as_user(config, req, { token: true });
 
             const token = jwt.sign({ access: 'profile', email: user.email }, config.SigningSecret)
             const url = new URL(`${config.PMTILES_URL}/tiles/profile/${user.email}/${req.params.asset}`);

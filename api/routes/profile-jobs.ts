@@ -1,23 +1,24 @@
+import { Type } from '@sinclair/typebox'
+import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import Batch from '../lib/aws/batch.js';
 import Logs from '../lib/aws/batch-logs.js';
-
-import { Response } from 'express';
-import { AuthRequest } from '@tak-ps/blueprint-login';
+import { JobResponse, JobLogResponse } from '../lib/types.js';
 import Config from '../lib/config.js';
 
-export default async function router(schema: any, config: Config) {
+export default async function router(schema: Schema, config: Config) {
     await schema.get('/profile/job', {
         name: 'List Jobs',
-        auth: 'user',
         group: 'ProfileJobs',
         description: 'List Profile Jobs',
-        ':dataid': 'integer',
-        res: 'res.ListProfileJobs.json'
-    }, async (req: AuthRequest, res: Response) => {
+        res: Type.Object({
+            total: Type.Integer(),
+            items: Type.Array(JobResponse)
+        })
+    }, async (req, res) => {
         try {
-            const user = await Auth.as_user(config.models, req);
+            const user = await Auth.as_user(config, req);
             const list = await Batch.list(config, `profile-${user.email.replace('@', '_at_').replace(/[^a-zA-Z0-9]/g, '_')}`);
 
             return res.json({
@@ -31,14 +32,15 @@ export default async function router(schema: any, config: Config) {
 
     await schema.get('/profile/job/:jobid', {
         name: 'List Jobs',
-        auth: 'user',
         group: 'ProfileJobs',
         description: 'List Profile Jobs',
-        ':jobid': 'string',
-        res: 'res.ProfileJob.json'
-    }, async (req: AuthRequest, res: Response) => {
+        params: Type.Object({
+            jobid: Type.String(),
+        }),
+        res: JobResponse
+    }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req);
+            await Auth.is_auth(config, req);
 
             const job = await Batch.job(config, req.params.jobid);
 
@@ -52,14 +54,17 @@ export default async function router(schema: any, config: Config) {
 
     await schema.get('/profile/job/:jobid/logs', {
         name: 'List Logs',
-        auth: 'user',
         group: 'ProfileJobs',
         description: 'List Profile Job Logs',
-        ':jobid': 'string',
-        res: 'res.ProfileJobLogs.json'
-    }, async (req: AuthRequest, res: Response) => {
+        params: Type.Object({
+            jobid: Type.String(),
+        }),
+        res: Type.Object({
+            logs: Type.Array(JobLogResponse)
+        }) 
+    }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req);
+            await Auth.is_auth(config, req);
 
             const job = await Batch.job(config, req.params.jobid);
 

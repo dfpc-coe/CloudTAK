@@ -1,8 +1,5 @@
 {
-    "type": [
-        "string",
-        "null"
-    ],
+    "type": "string",
     "description": "",
     "$comment": "text"
 }

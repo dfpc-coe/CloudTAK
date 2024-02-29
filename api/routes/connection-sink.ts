@@ -3,36 +3,51 @@ import Auth from '../lib/auth.js';
 import CW from '../lib/aws/metric.js';
 import Config from '../lib/config.js';
 import { Response } from 'express';
-import { AuthRequest } from '@tak-ps/blueprint-login';
 import { Param } from '@openaddresses/batch-generic';
 import { sql } from 'drizzle-orm';
 import { AuthResourceAccess } from '@tak-ps/blueprint-login';
+import { Type } from '@sinclair/typebox'
+import { GenericListOrder } from '@openaddresses/batch-generic';
+import { StandardResponse, ConnectionSinkResponse } from '../lib/types.js';
+import { ConnectionSink } from '../lib/schema.js';
+import Schema from '@openaddresses/batch-schema';
 
-export default async function router(schema: any, config: Config) {
+export default async function router(schema: Schema, config: Config) {
     const cw = new CW(config.StackName);
 
     await schema.get('/connection/:connectionid/sink', {
         name: 'List Sinks',
         group: 'ConnectionSink',
-        auth: 'user',
         description: 'List Sinks',
-        ':connectionid': 'integer',
-        query: 'req.query.ListConnectionSinks.json',
-        res: 'res.ListConnectionSinks.json'
-    }, async (req: AuthRequest, res: Response) => {
+        params: Type.Object({
+            connectionid: Type.Integer(),
+        }),
+        query: Type.Object({
+            limit: Type.Optional(Type.Integer()),
+            page: Type.Optional(Type.Integer()),
+            order: Type.Optional(Type.Enum(GenericListOrder)),
+            sort: Type.Optional(Type.String({default: 'created', enum: Object.keys(ConnectionSink)})),
+            filter: Type.Optional(Type.String({default: ''})),
+            enabled: Type.Optional(Type.Boolean())
+        }),
+        res: Type.Object({
+            total: Type.Integer(),
+            items: Type.Array(ConnectionSinkResponse)
+        })
+    }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req, {
-                resources: [{ access: AuthResourceAccess.CONNECTION, id: parseInt(req.params.connectionid) }]
+            await Auth.is_auth(config, req, {
+                resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }]
             });
 
             const list = await config.models.ConnectionSink.list({
-                limit: Number(req.query.limit),
-                page: Number(req.query.page),
-                order: String(req.query.order),
-                sort: String(req.query.sort),
+                limit: req.query.limit,
+                page: req.query.page,
+                order: req.query.order,
+                sort: req.query.sort,
                 where: sql`
                     name ~* ${Param(req.query.filter)}
-                    AND connection = ${Param(req.query.connection)}
+                    AND connection = ${Param(req.params.connectionid)}
                     AND (${Param(req.query.enabled)}::BOOLEAN IS NULL OR enabled = ${Param(req.query.enabled)}::BOOLEAN)
                 `
             });
@@ -46,18 +61,28 @@ export default async function router(schema: any, config: Config) {
     await schema.post('/connection/:connectionid/sink', {
         name: 'Create Sink',
         group: 'ConnectionSink',
-        auth: 'admin',
         description: 'Register a new connection sink',
-        ':connectionid': 'integer',
-        body: 'req.body.CreateConnectionSink.json',
-        res: 'res.ConnectionSink.json'
-    }, async (req: AuthRequest, res: Response) => {
+        params: Type.Object({
+            connectionid: Type.Integer(),
+        }),
+        body: Type.Object({
+            name: Type.String(),
+            type: Type.String(),
+            logging: Type.Boolean(),
+            enabled: Type.Boolean(),
+            body: Type.Object({
+                layer: Type.String(),
+                url: Type.String()
+            })
+        }),
+        res: ConnectionSinkResponse
+    }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req, {
-                resources: [{ access: AuthResourceAccess.CONNECTION, id: parseInt(req.params.connectionid) }]
+            await Auth.is_auth(config, req, {
+                resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }]
             });
 
-            const conn = await config.models.Connection.from(parseInt(req.params.connectionid));
+            const conn = await config.models.Connection.from(req.params.connectionid);
 
             const sink = await config.models.ConnectionSink.generate({
                 ...req.body,
@@ -75,20 +100,25 @@ export default async function router(schema: any, config: Config) {
     await schema.patch('/connection/:connectionid/sink/:sinkid', {
         name: 'Update Sink',
         group: 'ConnectionSink',
-        auth: 'admin',
         description: 'Update a connection sink',
-        ':connectionid': 'integer',
-        ':sinkid': 'integer',
-        body: 'req.body.PatchConnectionSink.json',
-        res: 'res.ConnectionSink.json'
-    }, async (req: AuthRequest, res: Response) => {
+        params: Type.Object({
+            connectionid: Type.Integer(),
+            sinkid: Type.Integer()
+        }),
+        body: Type.Object({
+            name: Type.Optional(Type.String()),
+            type: Type.Optional(Type.String()),
+            logging: Type.Optional(Type.Boolean()),
+        }),
+        res: ConnectionSinkResponse
+    }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req, {
-                resources: [{ access: AuthResourceAccess.CONNECTION, id: parseInt(req.params.connectionid) }]
+            await Auth.is_auth(config, req, {
+                resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }]
             });
 
-            const conn = await config.models.Connection.from(parseInt(req.params.connectionid));
-            let sink = await config.models.ConnectionSink.from(parseInt(req.params.sinkid));
+            const conn = await config.models.Connection.from(req.params.connectionid);
+            let sink = await config.models.ConnectionSink.from(req.params.sinkid);
 
             if (sink.connection !== conn.id) throw new Err(400, null, 'Sink must belong to parent connection');
 
@@ -105,20 +135,21 @@ export default async function router(schema: any, config: Config) {
     await schema.get('/connection/:connectionid/sink/:sinkid', {
         name: 'Get Sink',
         group: 'ConnectionSink',
-        auth: 'admin',
         description: 'Get a connection sink',
-        ':connectionid': 'integer',
-        ':sinkid': 'integer',
-        res: 'res.ConnectionSink.json'
-    }, async (req: AuthRequest, res: Response) => {
+        params: Type.Object({
+            connectionid: Type.Integer(),
+            sinkid: Type.Integer()
+        }),
+        res: ConnectionSinkResponse
+    }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req, {
-                resources: [{ access: AuthResourceAccess.CONNECTION, id: parseInt(req.params.connectionid) }]
+            await Auth.is_auth(config, req, {
+                resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }]
             });
 
 
-            const conn = await config.models.Connection.from(parseInt(req.params.connectionid));
-            const sink = await config.models.ConnectionSink.from(parseInt(req.params.sinkid));
+            const conn = await config.models.Connection.from(req.params.connectionid);
+            const sink = await config.models.ConnectionSink.from(req.params.sinkid);
             if (sink.connection !== conn.id) throw new Err(400, null, 'Sink must belong to parent connection');
 
             return res.json(sink);
@@ -130,37 +161,26 @@ export default async function router(schema: any, config: Config) {
     await schema.get('/connection/:connectionid/sink/:sinkid/stats', {
         name: 'Get Stats',
         group: 'ConnectionSink',
-        auth: 'admin',
         description: 'Return Sink Success/Failure Stats',
-        ':connectionid': 'integer',
-        ':sinkid': 'integer',
-        res: {
-            type: 'object',
-            required: ['stats'],
-            additionalProperties: false,
-            properties: {
-                stats: {
-                    type: 'array',
-                    items: {
-                        type: 'object',
-                        required: ['label', 'success', 'failure'],
-                        properties: {
-                            label: { type: 'string' },
-                            success: { type: 'integer' },
-                            failure: { type: 'integer' }
-                        }
-                    }
-                }
-            }
-        }
-    }, async (req: AuthRequest, res: Response) => {
+        params: Type.Object({
+            connectionid: Type.Integer(),
+            sinkid: Type.Integer()
+        }),
+        res: Type.Object({
+            stats: Type.Array(Type.Object({
+                label: Type.String(),
+                success: Type.Integer(),
+                failure: Type.Integer()
+            }))
+        })
+    }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req, {
-                resources: [{ access: AuthResourceAccess.CONNECTION, id: parseInt(req.params.connectionid) }]
+            await Auth.is_auth(config, req, {
+                resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }]
             });
 
-            const conn = await config.models.Connection.from(parseInt(req.params.connectionid));
-            const sink = await config.models.ConnectionSink.from(parseInt(req.params.sinkid));
+            const conn = await config.models.Connection.from(req.params.connectionid);
+            const sink = await config.models.ConnectionSink.from(req.params.sinkid);
             if (sink.connection !== conn.id) throw new Err(400, null, 'Sink must belong to parent connection');
 
             const stats = await cw.sink(sink.id);
@@ -209,19 +229,20 @@ export default async function router(schema: any, config: Config) {
     await schema.delete('/connection/:connectionid/sink/:sinkid', {
         name: 'Delete Sink',
         group: 'ConnectionSink',
-        auth: 'admin',
         description: 'Delete a connection sink',
-        ':connectionid': 'integer',
-        ':sinkid': 'integer',
-        res: 'res.Standard.json'
-    }, async (req: AuthRequest, res: Response) => {
+        params: Type.Object({
+            connectionid: Type.Integer(),
+            sinkid: Type.Integer()
+        }),
+        res: StandardResponse
+    }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req, {
-                resources: [{ access: AuthResourceAccess.CONNECTION, id: parseInt(req.params.connectionid) }]
+            await Auth.is_auth(config, req, {
+                resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }]
             });
 
-            const conn = await config.models.Connection.from(parseInt(req.params.connectionid));
-            const sink = await config.models.ConnectionSink.from(parseInt(req.params.sinkid));
+            const conn = await config.models.Connection.from(req.params.connectionid);
+            const sink = await config.models.ConnectionSink.from(req.params.sinkid);
             if (sink.connection !== conn.id) throw new Err(400, null, 'Sink must belong to parent connection');
 
             await config.models.ConnectionSink.delete(sink.id);

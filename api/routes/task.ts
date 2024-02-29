@@ -1,3 +1,5 @@
+import { Type } from '@sinclair/typebox'
+import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import ECR from '../lib/aws/ecr.js';
@@ -8,19 +10,25 @@ import Logs from '../lib/aws/lambda-logs.js';
 import semver from 'semver-sort';
 import Cacher from '../lib/cacher.js';
 import Config from '../lib/config.js';
-import { Response } from 'express';
-import { AuthRequest } from '@tak-ps/blueprint-login';
+import { StandardResponse, JobLogResponse } from '../lib/types.js';
 
-export default async function router(schema: any, config: Config) {
+export enum TaskSchemaEnum {
+    OUTPUT = 'schema:output',
+    INPUT = 'schema:input'
+}
+
+export default async function router(schema: Schema, config: Config) {
     await schema.get('/task', {
         name: 'List Tasks',
         group: 'Task',
-        auth: 'user',
         description: 'List Tasks',
-        res: 'res.ListTasks.json'
-    }, async (req: AuthRequest, res: Response) => {
+        res: Type.Object({
+            total: Type.Integer(),
+            items: Type.Any()
+        })
+    }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req);
+            await Auth.is_auth(config, req);
 
             const images = await ECR.list();
 
@@ -52,13 +60,17 @@ export default async function router(schema: any, config: Config) {
     await schema.get('/task/:task', {
         name: 'List Tasks',
         group: 'Task',
-        auth: 'user',
-        ':task': 'string',
+        params: Type.Object({
+            task: Type.String(),
+        }),
         description: 'List Version for a specific task',
-        res: 'res.ListTaskVersions.json'
-    }, async (req: AuthRequest, res: Response) => {
+        res: Type.Object({
+            total: Type.Integer(),
+            versions: Type.Array(Type.Any())
+        })
+    }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req);
+            await Auth.is_auth(config, req);
 
             // Stuck with this approach for now - https://github.com/aws/containers-roadmap/issues/418
             const images = await ECR.list();
@@ -86,13 +98,16 @@ export default async function router(schema: any, config: Config) {
     await schema.get('/layer/:layerid/task', {
         name: 'Task Status',
         group: 'Task',
-        auth: 'user',
-        ':layerid': 'integer',
+        params: Type.Object({
+            layerid: Type.Integer(),
+        }),
         description: 'Get the status of a task stack in relation to a given layer',
-        res: 'res.TaskStatus.json'
-    }, async (req: AuthRequest, res: Response) => {
+        res: Type.Object({
+            status: Type.String()
+        })
+    }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req);
+            await Auth.is_auth(config, req);
 
             const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
                 return await config.models.Layer.from(parseInt(String(req.params.layerid)));
@@ -107,13 +122,14 @@ export default async function router(schema: any, config: Config) {
     await schema.post('/layer/:layerid/task/invoke', {
         name: 'Run Task',
         group: 'Task',
-        auth: 'user',
-        ':layerid': 'integer',
+        params: Type.Object({
+            layerid: Type.Integer(),
+        }),
         description: 'Manually invoke a Task',
-        res: 'res.Standard.json'
-    }, async (req: AuthRequest, res: Response) => {
+        res: StandardResponse
+    }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req);
+            await Auth.is_auth(config, req);
 
             const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
                 return await config.models.Layer.from(parseInt(String(req.params.layerid)));
@@ -125,8 +141,6 @@ export default async function router(schema: any, config: Config) {
                 status: 200,
                 message: 'Manually Invoked Lambda'
             });
-
-            return res.json(await CF.status(config, layer.id));
         } catch (err) {
             return Err.respond(err, res);
         }
@@ -135,13 +149,16 @@ export default async function router(schema: any, config: Config) {
     await schema.get('/layer/:layerid/task/logs', {
         name: 'Task Logs',
         group: 'Task',
-        auth: 'user',
-        ':layerid': 'integer',
+        params: Type.Object({
+            layerid: Type.Integer(),
+        }),
         description: 'Get the logs related to the given task',
-        res: 'res.TaskLogs.json'
-    }, async (req: AuthRequest, res: Response) => {
+        res: Type.Object({
+            logs: Type.Array(JobLogResponse)
+        })
+    }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req);
+            await Auth.is_auth(config, req);
 
             const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
                 return await config.models.Layer.from(parseInt(String(req.params.layerid)));
@@ -156,14 +173,21 @@ export default async function router(schema: any, config: Config) {
     await schema.get('/layer/:layerid/task/schema', {
         name: 'Task Schema',
         group: 'Task',
-        auth: 'user',
-        ':layerid': 'integer',
+        params: Type.Object({
+            layerid: Type.Integer(),
+        }),
         description: 'Get the JSONSchema for the expected environment variables',
-        query: 'req.query.TaskSchema.json',
-        res: 'res.TaskSchema.json'
-    }, async (req: AuthRequest, res: Response) => {
+        query: Type.Object({
+            type: Type.Enum(TaskSchemaEnum, {
+                default: TaskSchemaEnum.INPUT
+            })
+        }),
+        res: Type.Object({
+            schema: Type.Any()
+        })
+    }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req);
+            await Auth.is_auth(config, req);
 
             const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
                 return await config.models.Layer.from(parseInt(String(req.params.layerid)));
@@ -180,13 +204,16 @@ export default async function router(schema: any, config: Config) {
     await schema.post('/layer/:layerid/task', {
         name: 'Task Deploy',
         group: 'Task',
-        auth: 'user',
-        ':layerid': 'integer',
+        params: Type.Object({
+            layerid: Type.Integer(),
+        }),
         description: 'Deploy a task stack',
-        res: 'res.TaskStatus.json'
-    }, async (req: AuthRequest, res: Response) => {
+        res: Type.Object({
+            status: Type.String()
+        })
+    }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req);
+            await Auth.is_auth(config, req);
 
             const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
                 return await config.models.Layer.from(parseInt(String(req.params.layerid)));

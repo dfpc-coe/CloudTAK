@@ -1,37 +1,27 @@
+import { Type } from '@sinclair/typebox'
+import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
-import Auth from '../lib/auth.js';
+import { GenericMartiResponse } from '../lib/types.js';
+import Auth, { AuthUser, AuthResource } from '../lib/auth.js';
 import Config from '../lib/config.js';
-import { Response } from 'express';
-import { AuthUser, AuthResource } from '@tak-ps/blueprint-login';
-import { AuthRequest } from '@tak-ps/blueprint-login';
 import TAKAPI, {
     APIAuthPassword,
     APIAuthCertificate
 } from '../lib/tak-api.js';
 
-export default async function router(schema: any, config: Config) {
+export default async function router(schema: Schema, config: Config) {
     await schema.get('/marti/group', {
         name: 'List Groups',
         group: 'Marti',
-        auth: 'user',
         description: 'Helper API to list groups that the client is part of',
-        query: {
-            type: 'object',
-            properties: {
-                connection: {
-                    type: 'integer',
-                    description: 'Use Connection auth'
-                },
-                useCache: {
-                    type: 'boolean',
-                    description: 'This tells TAK server to return the users cached group selection vs the groups that came directly from the auth backend.'
-                }
-            }
-        },
-        res: 'res.Marti.json'
-    }, async (req: AuthRequest, res: Response) => {
+        query: Type.Object({
+            connection: Type.Optional(Type.Integer({ description: 'Use Connection auth' })),
+            useCache: Type.Optional(Type.Boolean({ description: 'This tells TAK server to return the users cached group selection vs the groups that came directly from the auth backend.' })),
+        }),
+        res: GenericMartiResponse
+    }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req);
+            await Auth.is_auth(config, req);
 
             let api;
             if (req.query.connection) {
@@ -39,7 +29,7 @@ export default async function router(schema: any, config: Config) {
                 api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(connection.auth.cert, connection.auth.key));
 
             } else {
-                const user = await Auth.as_user(config.models, req);
+                const user = await Auth.as_user(config, req);
                 const profile = await config.models.Profile.from(user.email);
                 api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
             }
@@ -58,35 +48,24 @@ export default async function router(schema: any, config: Config) {
     await schema.put('/marti/group', {
         name: 'Upate Groups',
         group: 'Marti',
-        auth: 'user',
         description: 'Helper API to update groups that the client is part of',
-        query: {
-            type: 'object',
-            properties: {
-                clientUid: { type: 'string' },
-                connection: { type: 'integer' }
-            }
-        },
-        body: {
-            type: 'array',
-            items: {
-                type: 'object',
-                required: ['name', 'direction', 'created', 'type', 'bitpos', 'active'],
-                properties: {
-                    name: { type: "string" },
-                    direction: { type: "string" },
-                    created: { type: 'string' },
-                    type: { type: "string" },
-                    bitpos: { type: 'integer' },
-                    active: { type: 'boolean' },
-                    description: { type: "string" }
-                }
-            }
-        },
-        res: 'res.Marti.json'
-    }, async (req: AuthRequest, res: Response) => {
+        query: Type.Object({
+            clientUid: Type.Optional(Type.String()),
+            connection: Type.Optional(Type.Integer())
+        }),
+        body: Type.Array(Type.Object({
+            name: Type.String(),
+            direction: Type.String(),
+            created: Type.String(),
+            type: Type.String(),
+            bitpos: Type.Integer(),
+            active: Type.Boolean(),
+            description: Type.Optional(Type.String()),
+        })),
+        res: GenericMartiResponse
+    }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req);
+            await Auth.is_auth(config, req);
 
             let api;
             if (req.query.connection) {
@@ -94,7 +73,7 @@ export default async function router(schema: any, config: Config) {
                 api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(connection.auth.cert, connection.auth.key));
 
             } else {
-                const user = await Auth.as_user(config.models, req);
+                const user = await Auth.as_user(config, req);
                 const profile = await config.models.Profile.from(user.email);
                 api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
             }
@@ -115,12 +94,11 @@ export default async function router(schema: any, config: Config) {
     await schema.get('/marti/api/contacts/all', {
         name: 'List Contacts',
         group: 'Marti',
-        auth: 'user',
         description: 'Helper API to list contacts',
-        res: 'res.Marti.json'
-    }, async (req: AuthRequest, res: Response) => {
+        res: GenericMartiResponse
+    }, async (req, res) => {
         try {
-            const user = await Auth.as_user(config.models, req);
+            const user = await Auth.as_user(config, req);
             const profile = await config.models.Profile.from(user.email);
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
 
@@ -135,13 +113,18 @@ export default async function router(schema: any, config: Config) {
     await schema.post('/marti/signClient', {
         name: 'Sign Client',
         group: 'Marti',
-        auth: 'user',
         description: 'Helper API for obtaining a signed Certificate pair given LDAP Credentials',
-        body: 'req.body.MartiSignClient.json',
-        res: 'res.MartiSignClient.json'
-    }, async (req: AuthRequest, res: Response) => {
+        body: Type.Object({
+            username: Type.String(),
+            password: Type.String()
+        }),
+        res: Type.Object({
+            key: Type.String(),
+            cert: Type.String()
+        })
+    }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req);
+            await Auth.is_auth(config, req);
 
             const api = await TAKAPI.init(new URL(config.MartiAPI), new APIAuthPassword(req.body.username, req.body.password));
 

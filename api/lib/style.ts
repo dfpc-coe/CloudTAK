@@ -1,58 +1,60 @@
+import { Type, Static } from '@sinclair/typebox'
 import jsonata from 'jsonata';
 import { Feature } from 'geojson';
 import handlebars from 'handlebars';
 import Err from '@openaddresses/batch-error';
 
-export type StyleContainer = {
-    line?: StyleLine;
-    point?: StylePoint;
-    polygon?: StylePolygon;
-    queries?: Array<StyleSingleContainer>;
-}
+export const StylePoint = Type.Object({
+    color: Type.Optional(Type.String()),
+    remarks: Type.Optional(Type.String()),
+    callsign: Type.Optional(Type.String())
+});
 
-export type StyleSingleContainer = {
-    query: string;
+export const StyleLine = Type.Object({
+    stroke: Type.Optional(Type.String()),
+    'stroke-style': Type.Optional(Type.String()),
+    'stroke-opacity': Type.Optional(Type.String()),
+    'stroke-width': Type.Optional(Type.String()),
+    remarks: Type.Optional(Type.String()),
+    callsign: Type.Optional(Type.String()),
+});
+
+export const StylePolygon = Type.Object({
+    stroke: Type.Optional(Type.String()),
+    'stroke-style': Type.Optional(Type.String()),
+    'stroke-opacity': Type.Optional(Type.String()),
+    'stroke-width': Type.Optional(Type.String()),
+    fill: Type.Optional(Type.String()),
+    'fill-opacity': Type.Optional(Type.String()),
+    remarks: Type.Optional(Type.String()),
+    callsign: Type.Optional(Type.String())
+});
+
+export const StyleSingle = Type.Object({
+    line: Type.Optional(StyleLine),
+    point: Type.Optional(StylePoint),
+    polygon: Type.Optional(StylePolygon)
+
+})
+
+export const StyleSingleContainer = Type.Object({
+    query: Type.String(),
     styles: StyleSingle
-}
+})
 
-export type StyleSingle = {
-    line?: StyleLine;
-    point?: StylePoint;
-    polygon?: StylePolygon;
 
-}
-
-// Also note these are defined in schema/util/styles.json
-export type StylePoint = {
-    color?: string;
-    remarks?: string;
-    callsign?: string;
-};
-export type StyleLine = {
-    stroke?: string;
-    'stroke-style'?: string;
-    'stroke-opacity'?: string;
-    'stroke-width'?: string;
-    remarks?: string;
-    callsign?: string;
-};
-export type StylePolygon = {
-    stroke?: string;
-    'stroke-style'?: string;
-    'stroke-opacity'?: string;
-    'stroke-width'?: string;
-    fill?: string;
-    'fill-opacity'?: string;
-    remarks?: string;
-    callsign?: string;
-};
+export const StyleContainer = Type.Object({
+    line: Type.Optional(StyleLine),
+    point: Type.Optional(StylePoint),
+    polygon: Type.Optional(StylePolygon),
+    queries: Type.Optional(Type.Array(StyleSingleContainer))
+})
 
 export interface StyleInterface {
-    stale: number;    
+    stale: number;
     enabled_styles: boolean;
-    styles: StyleContainer;
+    styles: Static<typeof StyleContainer>;
 }
-
 
 /**
  * Apply layer styling to CoT Messages
@@ -67,7 +69,7 @@ export default class Style {
         this.style = style;
     }
 
-    static validate(styles: StyleContainer) {
+    static validate(styles: Static<typeof StyleContainer>) {
         try {
             if (styles.queries) {
                 for (const q of styles.queries) {
@@ -113,7 +115,7 @@ export default class Style {
         }
     }
 
-    #by_geom(style: StyleSingle, feature: Feature) {
+    #by_geom(style: Static<typeof StyleSingle>, feature: Feature) {
         if (!feature.properties) feature.properties = {};
 
         if (feature.geometry.type === 'Point' && style.point) {

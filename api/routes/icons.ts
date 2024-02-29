@@ -1,9 +1,9 @@
+import { Type } from '@sinclair/typebox'
+import Schema from '@openaddresses/batch-schema';
 import Auth from '../lib/auth.js';
 import path from 'node:path';
 import fs from 'node:fs/promises';
 import Err from '@openaddresses/batch-error';
-import { Response } from 'express';
-import { AuthRequest } from '@tak-ps/blueprint-login';
 import Config from '../lib/config.js';
 import Sprites from '../lib/sprites.js';
 import Cacher from '../lib/cacher.js';
@@ -11,13 +11,21 @@ import archiver from 'archiver';
 import xml2js from 'xml2js';
 import { Param } from '@openaddresses/batch-generic';
 import { sql } from 'drizzle-orm';
+import { StandardResponse, IconResponse, IconsetResponse } from '../lib/types.js';
+import { GenericListOrder } from '@openaddresses/batch-generic';
+import{ Icon, Iconset } from '../lib/schema.js'
 
 export type SpriteRecord = {
     json: object;
     image: Buffer;
 }
 
-export default async function router(schema: any, config: Config) {
+export enum IconsetFormatEnum {
+    JSON = 'json',
+    ZIP = 'zip'
+}
+
+export default async function router(schema: Schema, config: Config) {
     // Eventually look at replacing this with memcached?
     const SpriteMap: Record<string, SpriteRecord> = {
         default: {
@@ -29,19 +37,27 @@ export default async function router(schema: any, config: Config) {
     await schema.get('/iconset', {
         name: 'List Iconsets',
         group: 'Icons',
-        auth: 'user',
         description: 'List Iconsets',
-        query: 'req.query.ListIconsets.json',
-        res: 'res.ListIconsets.json'
-    }, async (req: AuthRequest, res: Response) => {
+        query: Type.Object({
+            limit: Type.Optional(Type.Integer()),
+            page: Type.Optional(Type.Integer()),
+            order: Type.Optional(Type.Enum(GenericListOrder)),
+            sort: Type.Optional(Type.String({default: 'created', enum: Object.keys(Iconset) })),
+            filter: Type.Optional(Type.String({default: ''}))
+        }),
+        res: Type.Object({
+            total: Type.Integer(),
+            items: Type.Array(IconsetResponse)
+        })
+    }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req);
+            await Auth.is_auth(config, req);
 
             const list = await config.models.Iconset.list({
-                limit: Number(req.query.limit),
-                page: Number(req.query.page),
-                order: String(req.query.order),
-                sort: String(req.query.sort),
+                limit: req.query.limit,
+                page: req.query.page,
+                order: req.query.order,
+                sort: req.query.sort,
                 where: sql`
                     name ~* ${req.query.filter}
                 `
@@ -56,13 +72,22 @@ export default async function router(schema: any, config: Config) {
     await schema.post('/iconset', {
         name: 'Create Iconset',
         group: 'Icons',
-        auth: 'user',
         description: 'Create Iconset',
-        body: 'req.body.CreateIconset.json',
-        res: 'iconsets.json'
-    }, async (req: AuthRequest, res: Response) => {
+        body: Type.Object({
+            uid: Type.String(),
+            version: Type.Integer(),
+            name: Type.String(),
+            default_group: Type.Optional(Type.String()),
+            default_friendly: Type.Optional(Type.String()),
+            default_hostile: Type.Optional(Type.String()),
+            default_neutral: Type.Optional(Type.String()),
+            default_unknown: Type.Optional(Type.String()),
+            skip_resize: Type.Optional(Type.Boolean())
+        }),
+        res: IconsetResponse
+    }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req);
+            await Auth.is_auth(config, req);
 
             const iconset = await config.models.Iconset.generate(req.body);
 
@@ -75,14 +100,22 @@ export default async function router(schema: any, config: Config) {
     await schema.patch('/iconset/:iconset', {
         name: 'Update Iconset',
         group: 'Icons',
-        auth: 'user',
         description: 'Update Iconset',
-        ':iconset': 'string',
-        body: 'req.body.PatchIconset.json',
-        res: 'iconsets.json'
-    }, async (req: AuthRequest, res: Response) => {
+        params: Type.Object({
+            iconset: Type.String()
+        }),
+        body: Type.Object({
+            default_group: Type.Optional(Type.String()),
+            default_friendly: Type.Optional(Type.String()),
+            default_hostile: Type.Optional(Type.String()),
+            default_neutral: Type.Optional(Type.String()),
+            default_unknown: Type.Optional(Type.String()),
+            skip_resize: Type.Optional(Type.Boolean())
+        }),
+        res: IconsetResponse
+    }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req);
+            await Auth.is_auth(config, req);
 
             const iconset = await config.models.Iconset.commit(String(req.params.iconset), req.body);
 
@@ -95,26 +128,19 @@ export default async function router(schema: any, config: Config) {
     await schema.get('/iconset/:iconset', {
         name: 'Get Iconset',
         group: 'Icons',
-        auth: 'user',
         description: 'Get Iconset',
-        ':iconset': 'string',
-        query: {
-            type: 'object',
-            properties: {
-                format: {
-                    type: 'string',
-                    enum: ['json', 'zip'],
-                    default: 'json'
-                },
-                download: {
-                    type: 'boolean'
-                }
-            }
-        },
-        res: 'iconsets.json'
-    }, async (req: AuthRequest, res: Response) => {
+        params: Type.Object({
+            iconset: Type.String()
+        }),
+        query: Type.Object({
+            format: Type.Optional(Type.Enum(IconsetFormatEnum)),
+            download: Type.Optional(Type.Boolean()),
+            token: Type.Optional(Type.String()),
+        }),
+        res: IconsetResponse
+    }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req, { token: true });
+            await Auth.is_auth(config, req, { token: true });
 
             const iconset = await config.models.Iconset.from(String(req.params.iconset));
 
@@ -174,14 +200,19 @@ export default async function router(schema: any, config: Config) {
     await schema.post('/iconset/:iconset/icon', {
         name: 'Create Icon',
         group: 'Icons',
-        auth: 'user',
         description: 'Create Icon',
-        ':iconset': 'string',
-        body: 'req.body.CreateIcon.json',
-        res: 'icons.json'
-    }, async (req: AuthRequest, res: Response) => {
+        params: Type.Object({
+            iconset: Type.String()
+        }),
+        body: Type.Object({
+            name: Type.String(),
+            data: Type.String(),
+            type2525b: Type.Optional(Type.Union([Type.String(), Type.Null()]))
+        }),
+        res: IconResponse
+    }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req);
+            await Auth.is_auth(config, req);
 
             const iconset = await config.models.Iconset.from(String(req.params.iconset));
 
@@ -202,13 +233,14 @@ export default async function router(schema: any, config: Config) {
     await schema.delete('/iconset/:iconset', {
         name: 'Delete Iconset',
         group: 'Icons',
-        auth: 'user',
         description: 'Delete Iconset',
-        ':iconset': 'string',
-        res: 'res.Standard.json'
-    }, async (req: AuthRequest, res: Response) => {
+        params: Type.Object({
+            iconset: Type.String()
+        }),
+        res: StandardResponse
+    }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req);
+            await Auth.is_auth(config, req);
 
             await config.models.Icon.delete(sql`iconset = ${req.params.iconset}`);
             await config.models.Iconset.delete(String(req.params.iconset));
@@ -225,21 +257,30 @@ export default async function router(schema: any, config: Config) {
     await schema.get('/icon', {
         name: 'List Icons',
         group: 'Icons',
-        auth: 'user',
         description: 'List Icons',
-        query: 'req.query.ListIcons.json',
-        res: 'res.ListIcons.json'
-    }, async (req: AuthRequest, res: Response) => {
+        query: Type.Object({
+            limit: Type.Optional(Type.Integer()),
+            page: Type.Optional(Type.Integer()),
+            order: Type.Optional(Type.Enum(GenericListOrder)),
+            sort: Type.Optional(Type.String({default: 'created', enum: Object.keys(Icon) })),
+            iconset: Type.Optional(Type.String()),
+            filter: Type.Optional(Type.String({default: ''}))
+        }),
+        res: Type.Object({
+            total: Type.Integer(),
+            items: Type.Array(IconResponse)
+        })
+    }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req);
+            await Auth.is_auth(config, req);
 
-            req.query.filter = String(req.query.filter).toLowerCase();
+            req.query.filter = req.query.filter.toLowerCase();
 
             const list = await config.models.Icon.list({
-                limit: Number(req.query.limit),
-                page: Number(req.query.page),
-                order: String(req.query.order),
-                sort: String(req.query.sort),
+                limit: req.query.limit,
+                page: req.query.page,
+                order: req.query.order,
+                sort: req.query.sort,
                 where: sql`
                     name ~* ${req.query.filter}
                     AND (${Param(req.query.iconset)}::TEXT IS NULL OR ${Param(req.query.iconset)}::TEXT = iconset)
@@ -256,14 +297,15 @@ export default async function router(schema: any, config: Config) {
     await schema.get('/iconset/:iconset/icon/:icon', {
         name: 'Get Icon',
         group: 'Icons',
-        auth: 'user',
-        ':iconset': 'string',
-        ':icon': 'string',
+        params: Type.Object({
+            iconset: Type.String(),
+            icon: Type.String()
+        }),
         description: 'Icon Metadata',
-        res: 'icons.json'
-    }, async (req: AuthRequest, res: Response) => {
+        res: IconResponse
+    }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req);
+            await Auth.is_auth(config, req);
             const icon = await config.models.Icon.from(sql`${req.params.iconset} = iconset AND ${req.params.icon} = name`);
             return res.json(icon);
         } catch (err) {
@@ -274,29 +316,28 @@ export default async function router(schema: any, config: Config) {
     await schema.patch('/iconset/:iconset/icon/:icon', {
         name: 'Update Icon',
         group: 'Icons',
-        auth: 'user',
-        ':iconset': 'string',
-        ':icon': 'string',
+        params: Type.Object({
+            iconset: Type.String(),
+            icon: Type.String()
+        }),
         description: 'Update Icon in Iconset',
-        body: {
-            type: 'object',
-            additionalProperties: false,
-            properties: {
-                name: { type: 'string' },
-                data: { type: 'string' },
-                type2525b: { type: ['string', 'null'] },
-            }
-        },
-        res: 'icons.json'
-    }, async (req: AuthRequest, res: Response) => {
+        body: Type.Object({
+            name: Type.Optional(Type.String()),
+            data: Type.Optional(Type.String()),
+            type2525b: Type.Optional(Type.Union([Type.String(), Type.Null()]))
+        }),
+        res: IconResponse
+    }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req);
+            await Auth.is_auth(config, req);
             let icon = await config.models.Icon.from(sql`${req.params.iconset} = iconset AND ${req.params.icon} = name`);
 
             if (req.body.name && path.parse(req.body.name).ext !== '.png') throw new Err(400, null, 'Name must have .png extension');
-            if (req.body.name) req.body.path = `${icon.iconset}/${req.body.name}`;
-
+            if (req.body.name) {
+                await config.models.Icon.commit(icon.id, { path: `${icon.iconset}/${req.body.name}` });
+            }
             if (req.body.type2525b === '') delete req.body.type2525b;
+
             icon = await config.models.Icon.commit(icon.id, req.body);
 
             return res.json(icon);
@@ -308,14 +349,15 @@ export default async function router(schema: any, config: Config) {
     await schema.delete('/iconset/:iconset/icon/:icon', {
         name: 'Delete Icon',
         group: 'Icons',
-        auth: 'user',
-        ':iconset': 'string',
-        ':icon': 'string',
+        params: Type.Object({
+            iconset: Type.String(),
+            icon: Type.String()
+        }),
         description: 'Remove Icon from Iconset',
-        res: 'res.Standard.json'
-    }, async (req: AuthRequest, res: Response) => {
+        res: StandardResponse
+    }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req);
+            await Auth.is_auth(config, req);
             const icon = await config.models.Icon.delete(sql`${req.params.iconset} = iconset AND ${req.params.icon} = name`);
             return res.json({
                 status: 200,
@@ -329,13 +371,17 @@ export default async function router(schema: any, config: Config) {
     await schema.get('/iconset/:iconset/icon/:icon/raw', {
         name: 'Get Raw',
         group: 'Icons',
-        auth: 'user',
-        ':iconset': 'string',
-        ':icon': 'string',
+        params: Type.Object({
+            iconset: Type.String(),
+            icon: Type.String()
+        }),
+        query: Type.Object({
+            token: Type.Optional(Type.String()),
+        }),
         description: 'Icon Data',
-    }, async (req: AuthRequest, res: Response) => {
+    }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req, { token: true });
+            await Auth.is_auth(config, req, { token: true });
 
             const icon = await config.models.Icon.from(sql`
                 (${req.params.iconset} = iconset AND ${req.params.icon} = name)
@@ -349,22 +395,17 @@ export default async function router(schema: any, config: Config) {
     await schema.get('/icon/sprite.json', {
         name: 'CoT Type Sprites (json)',
         group: 'Icons',
-        auth: 'user',
         description: 'Get Spriteset JSON for CoT types',
-        ':iconset': 'string',
-        query: {
-            type: 'object',
-            additionalProperties: false,
-            properties: {
-                iconset: { type: 'string' },
-            }
-        }
-    }, async (req: AuthRequest, res: Response) => {
+        query: Type.Object({
+            iconset: Type.Optional(Type.String()),
+            token: Type.Optional(Type.String()),
+        })
+    }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req, { token: true });
+            await Auth.is_auth(config, req, { token: true });
 
-            if (SpriteMap[String(req.query.iconset)]) {
-                return res.json(SpriteMap[String(req.query.iconset)].json);
+            if (SpriteMap[req.query.iconset]) {
+                return res.json(SpriteMap[req.query.iconset].json);
             } else {
                 const icons = await config.models.Icon.list({
                     limit: 1000,
@@ -375,7 +416,7 @@ export default async function router(schema: any, config: Config) {
 
                 const sprites = await Sprites(icons.items);
 
-                SpriteMap[String(req.query.iconset)] = { image: sprites.image, json: sprites.json };
+                SpriteMap[req.query.iconset] = { image: sprites.image, json: sprites.json };
 
                 return res.json(sprites.json);
             }
@@ -387,23 +428,18 @@ export default async function router(schema: any, config: Config) {
     await schema.get('/icon/sprite.png', {
         name: 'CoT Type Sprites',
         group: 'Icons',
-        auth: 'user',
         description: 'Return a sprite sheet for CoT Types',
-        ':iconset': 'string',
-        query: {
-            type: 'object',
-            additionalProperties: false,
-            properties: {
-                iconset: { type: 'string' },
-            }
-        }
-    }, async (req: AuthRequest, res: Response) => {
+        query: Type.Object({
+            iconset: Type.Optional(Type.String()),
+            token: Type.Optional(Type.String()),
+        })
+    }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req, { token: true });
+            await Auth.is_auth(config, req, { token: true });
 
             res.type('png');
-            if (SpriteMap[String(req.query.iconset)]) {
-                return res.send(SpriteMap[String(req.query.iconset)].image);
+            if (SpriteMap[req.query.iconset]) {
+                return res.send(SpriteMap[req.query.iconset].image);
             } else {
                 const icons = await config.models.Icon.list({
                     limit: 1000,
@@ -413,7 +449,7 @@ export default async function router(schema: any, config: Config) {
                 })
                 const sprites = await Sprites(icons.items);
 
-                SpriteMap[String(req.query.iconset)] = { image: sprites.image, json: sprites.json };
+                SpriteMap[req.query.iconset] = { image: sprites.image, json: sprites.json };
 
                 return res.send(sprites.image);
             }
