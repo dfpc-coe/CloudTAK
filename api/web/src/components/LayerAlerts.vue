@@ -52,6 +52,9 @@
                                 </div>
                             </div>
                         </div>
+                        <div class='col-lg-12'>
+                            <TablerPager v-if='list.total > paging.limit' @page='paging.page = $event' :page='paging.page'  :total='list.total' :limit='paging.limit'/>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -71,6 +74,7 @@ import {
 } from '@tabler/icons-vue';
 import {
     TablerNone,
+    TablerPager,
     TablerLoading,
     TablerBreadCrumb,
 } from '@tak-ps/vue-tabler'
@@ -79,7 +83,9 @@ export default {
     name: 'LayerAlerts',
     data: function() {
         return {
-            params: {
+            paging: {
+                limit: 20,
+                page: 0,
                 filter: ''
             },
             loading: {
@@ -90,6 +96,14 @@ export default {
             }
         }
     },
+    watch: {
+        paging: {
+            deep: true,
+            handler: async function() {
+                await this.query();
+            }
+        }
+    },
     mounted: async function() {
         await this.query();
     },
@@ -97,7 +111,9 @@ export default {
         query: async function() {
             this.loading.alerts = true;
             const url = window.stdurl(`/api/layer/${this.$route.params.layerid}/alert`);
-            url.searchParams.append('filter', this.params.filter);
+            url.searchParams.append('filter', this.paging.filter);
+            url.searchParams.append('limit', this.paging.limit);
+            url.searchParams.append('page', this.paging.page);
             this.list = await window.std(url);
             this.loading.alerts = false;
         },
@@ -117,6 +133,7 @@ export default {
     },
     components: {
         TablerNone,
+        TablerPager,
         PageFooter,
         IconTrash,
         IconRefresh,
