@@ -12,7 +12,7 @@
 
             <div v-if='user' class='ms-auto'>
                 <div class='btn-list'>
-                    <a href="/docs/" class="btn btn-dark" target="_blank" rel="noreferrer">
+                    <a :href="docsURL" class="btn btn-dark" target="_blank" rel="noreferrer">
                         <IconCode/>Docs
                     </a>
                     <div class='dropdown'>
@@ -159,6 +159,11 @@ export default {
                 window.clearTimeout(this.dragTimer);
             }
         });
+    },
+    computed: {
+        docsURL: function() {
+            return window.stdurl('/docs')
+        }
     },
     methods: {
         logout: function() {

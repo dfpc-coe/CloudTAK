@@ -1,9 +1,10 @@
-import Err from '@openaddresses/batch-error';
-import Auth from '../lib/auth.js';
-import { Response } from 'express';
-import { AuthRequest } from '@tak-ps/blueprint-login';
+import { Type } from '@sinclair/typebox'
 import Config from '../lib/config.js';
-import { AuthResource } from '@tak-ps/blueprint-login';
+import Schema from '@openaddresses/batch-schema';
+import Err from '@openaddresses/batch-error';
+import Auth, { AuthResource } from '../lib/auth.js';
+import { StandardResponse, ProfileOverlayResponse } from '../lib/types.js'
+import { Response } from 'express';
 import { sql } from 'drizzle-orm';
 import TAKAPI, {
     APIAuthToken,
@@ -11,19 +12,25 @@ import TAKAPI, {
     APIAuthPassword
 } from '../lib/tak-api.js';
 
-export default async function router(schema: any, config: Config) {
+export default async function router(schema: Schema, config: Config) {
     await schema.get('/profile/overlay', {
         name: 'Get Overlays',
-        auth: 'user',
         group: 'ProfileOverlays',
         description: 'Get User\'s Profile Overlays',
-        res: 'res.ListProfileOverlays.json'
-    }, async (req: AuthRequest, res: Response) => {
+        query: Type.Object({
+            limit: Type.Optional(Type.Integer())
+        }),
+        res: Type.Object({
+            total: Type.Integer(),
+            items: Type.Array(ProfileOverlayResponse)
+        })
+
+    }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req);
+            await Auth.is_auth(config, req);
 
             const overlays = await config.models.ProfileOverlay.list({
-                limit: Number(req.query.limit)
+                limit: req.query.limit
             });
 
             return res.json(overlays);
@@ -34,14 +41,22 @@ export default async function router(schema: any, config: Config) {
 
     await schema.post('/profile/overlay', {
         name: 'Create Overlay',
-        auth: 'user',
         group: 'ProfileOverlay',
         description: 'Create Profile Overlay',
-        body: 'req.body.CreateProfileOverlay.json',
-        res: 'profile_overlays.json'
-    }, async (req: AuthRequest, res: Response) => {
+        body: Type.Object({
+            pos: Type.Optional(Type.Integer()),
+            type: Type.Optional(Type.String()),
+            opacity: Type.Optional(Type.Number()),
+            visible: Type.Optional(Type.Boolean()),
+            mode: Type.String(),
+            mode_id: Type.String(),
+            url: Type.String(),
+            name: Type.String()
+        }),
+        res: ProfileOverlayResponse
+    }, async (req, res) => {
         try {
-            const user = await Auth.as_user(config.models, req);
+            const user = await Auth.as_user(config, req);
 
             const overlay = await config.models.ProfileOverlay.generate({
                 ...req.body,
@@ -64,20 +79,15 @@ export default async function router(schema: any, config: Config) {
 
     await schema.delete('/profile/overlay', {
         name: 'delete Overlay',
-        auth: 'user',
         group: 'ProfileOverlay',
         description: 'Create Profile Overlay',
-        query: {
-            type: 'object',
-            required: ['id'],
-            properties: {
-                id: { type: 'string' }
-            }
-        },
-        res: 'res.Standard.json'
-    }, async (req: AuthRequest, res: Response) => {
+        query: Type.Object({
+            id: Type.String()
+        }),
+        res: StandardResponse
+    }, async (req, res) => {
         try {
-            const user = await Auth.as_user(config.models, req);
+            const user = await Auth.as_user(config, req);
 
             const overlay = await config.models.ProfileOverlay.from(parseInt(String(req.query.id)));
 

@@ -1,7 +1,9 @@
 import { sql } from 'drizzle-orm';
+import { Static } from '@sinclair/typebox'
 import { StyleContainer } from './style.js';
 import { geometry, GeometryType } from '@openaddresses/batch-generic';
 import { ConnectionAuth } from './connection-config.js';
+import { TAKGroup, TAKRole } from  './api/types.js';
 
 import {
     json,
@@ -28,8 +30,8 @@ export const SpatialRefSys = pgTable('spatial_ref_sys', {
 
 export const Basemap = pgTable('basemaps', {
     id: serial('id').primaryKey(),
-    created: timestamp('created', { withTimezone: true }).notNull().default(sql`Now()`),
-    updated: timestamp('updated', { withTimezone: true }).notNull().default(sql`Now()`),
+    created: timestamp('created', { withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    updated: timestamp('updated', { withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     name: text('name').notNull(),
     url: text('url').notNull(),
     bounds: geometry('bounds', { type: GeometryType.Polygon, srid: 4326 }),
@@ -43,11 +45,11 @@ export const Basemap = pgTable('basemaps', {
 export const Profile = pgTable('profile', {
     username: text('username').primaryKey(),
     auth: json('auth').$type<ConnectionAuth>().notNull(),
-    created: timestamp('created', { withTimezone: true }).notNull().default(sql`Now()`),
-    updated: timestamp('updated', { withTimezone: true }).notNull().default(sql`Now()`),
+    created: timestamp('created', { withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    updated: timestamp('updated', { withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     tak_callsign: text('tak_callsign').notNull().default('CloudTAK User'),
-    tak_group: text('tak_group').notNull().default('Orange'),
-    tak_role: text('tak_role').notNull().default('Team Member'),
+    tak_group: text('tak_group').$type<TAKGroup>().notNull().default(TAKGroup.ORANGE),
+    tak_role: text('tak_role').$type<TAKRole>().notNull().default(TAKRole.TEAM_MEMBER),
     tak_loc: geometry('tak_loc', { srid: 4326, type: GeometryType.Point })
 });
 
@@ -56,16 +58,16 @@ export const ProfileChat = pgTable('profile_chats', {
     chatroom: text('chatroom').notNull(),
     sender_callsign: text('sender_callsign').notNull(),
     sender_uid: text('sender_uid').notNull(),
-    created: timestamp('created', { withTimezone: true }).notNull().default(sql`Now()`),
-    updated: timestamp('updated', { withTimezone: true }).notNull().default(sql`Now()`),
+    created: timestamp('created', { withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    updated: timestamp('updated', { withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     message_id: text('message_id').notNull(),
     message: text('message').notNull()
 });
 
 export const Import = pgTable('imports', {
     id: text('id').primaryKey(),
-    created: timestamp('created', { withTimezone: true }).notNull().default(sql`Now()`),
-    updated: timestamp('updated', { withTimezone: true }).notNull().default(sql`Now()`),
+    created: timestamp('created', { withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    updated: timestamp('updated', { withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     name: text('name').notNull(),
     status: text('status').notNull().default('Pending'),
     error: text('error'),
@@ -78,8 +80,8 @@ export const Import = pgTable('imports', {
 
 export const Iconset = pgTable('iconsets', {
     uid: text('uid').primaryKey(),
-    created: timestamp('created', { withTimezone: true }).notNull().default(sql`Now()`),
-    updated: timestamp('updated', { withTimezone: true }).notNull().default(sql`Now()`),
+    created: timestamp('created', { withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    updated: timestamp('updated', { withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     version: integer('version').notNull(),
     name: text('name').notNull(),
     default_group: text('default_group'),
@@ -92,8 +94,8 @@ export const Iconset = pgTable('iconsets', {
 
 export const Icon = pgTable('icons', {
     id: serial('id').primaryKey(),
-    created: timestamp('created', { withTimezone: true }).notNull().default(sql`Now()`),
-    updated: timestamp('updated', { withTimezone: true }).notNull().default(sql`Now()`),
+    created: timestamp('created', { withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    updated: timestamp('updated', { withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     name: text('name').notNull(),
     iconset: text('iconset').notNull().references(() => Iconset.uid),
     type2525b: text('type2525b'),
@@ -103,8 +105,8 @@ export const Icon = pgTable('icons', {
 
 export const Connection = pgTable('connections', {
     id: serial('id').primaryKey(),
-    created: timestamp('created', { withTimezone: true }).notNull().default(sql`Now()`),
-    updated: timestamp('updated', { withTimezone: true }).notNull().default(sql`Now()`),
+    created: timestamp('created', { withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    updated: timestamp('updated', { withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     name: text('name').notNull(),
     description: text('description').notNull().default(''),
     enabled: boolean('enabled').notNull().default(true),
@@ -113,8 +115,8 @@ export const Connection = pgTable('connections', {
 
 export const ConnectionSink = pgTable('connection_sinks', {
     id: serial('id').primaryKey(),
-    created: timestamp('created', { withTimezone: true }).notNull().default(sql`Now()`),
-    updated: timestamp('updated', { withTimezone: true }).notNull().default(sql`Now()`),
+    created: timestamp('created', { withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    updated: timestamp('updated', { withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     name: text('name').notNull(),
     enabled: boolean('enabled').notNull().default(true),
     connection: integer('connection').notNull().references(() => Connection.id),
@@ -125,8 +127,8 @@ export const ConnectionSink = pgTable('connection_sinks', {
 
 export const Data = pgTable('data', {
     id: serial('id').primaryKey(),
-    created: timestamp('created', { withTimezone: true }).notNull().default(sql`Now()`),
-    updated: timestamp('updated', { withTimezone: true }).notNull().default(sql`Now()`),
+    created: timestamp('created', { withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    updated: timestamp('updated', { withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     name: text('name').notNull(),
     description: text('description').notNull().default(''),
     auto_transform: boolean('auto_transform').notNull().default(false),
@@ -139,29 +141,29 @@ export const Data = pgTable('data', {
 
 export const Layer = pgTable('layers', {
     id: serial('id').primaryKey(),
-    created: timestamp('created', { withTimezone: true }).notNull().default(sql`Now()`),
-    updated: timestamp('updated', { withTimezone: true }).notNull().default(sql`Now()`),
+    created: timestamp('created', { withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    updated: timestamp('updated', { withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     name: text('name').notNull(),
     description: text('description').notNull().default(''),
     enabled: boolean('enabled').notNull().default(true),
     enabled_styles: boolean('enabled_styles').notNull().default(false),
-    styles: json('styles').$type<StyleContainer>().notNull().default({}),
+    styles: json('styles').$type<Static<typeof StyleContainer>>().notNull().default({}),
     logging: boolean('logging').notNull().default(true),
     stale: integer('stale').notNull().default(20000),
     task: text('task').notNull(),
-    connection: integer('connection').notNull().references(() => Connection.id),
+    connection: integer('connection').references(() => Connection.id),
     cron: text('cron'),
     environment: json('environment').notNull().default({}),
     memory: integer('memory').notNull().default(128),
     timeout: integer('timeout').notNull().default(128),
-    data: integer('data').notNull().references(() => Data.id),
+    data: integer('data').references(() => Data.id),
     schema: json('schema').notNull().default({})
 });
 
 export const LayerAlert = pgTable('layer_alerts', {
     id: serial('id').primaryKey(),
-    created: timestamp('created', { withTimezone: true }).notNull().default(sql`Now()`),
-    updated: timestamp('updated', { withTimezone: true }).notNull().default(sql`Now()`),
+    created: timestamp('created', { withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    updated: timestamp('updated', { withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     layer: integer('layer').notNull().references(() => Layer.id),
     icon: text('icon').notNull().default('alert-circle'),
     priority: text('priority').notNull().default('yellow'),
@@ -172,8 +174,8 @@ export const LayerAlert = pgTable('layer_alerts', {
 
 export const Server = pgTable('server', {
     id: serial('id').primaryKey(),
-    created: timestamp('created', { withTimezone: true }).notNull().default(sql`Now()`),
-    updated: timestamp('updated', { withTimezone: true }).notNull().default(sql`Now()`),
+    created: timestamp('created', { withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    updated: timestamp('updated', { withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     name: text('name').notNull().default('Default'),
     url: text('url').notNull(),
     auth: json('auth').$type<{
@@ -188,8 +190,8 @@ export const Token = pgTable('tokens', {
     email: text('email').notNull(),
     name: text('name').notNull(),
     token: text('token').primaryKey(),
-    created: timestamp('created', { withTimezone: true }).notNull().default(sql`Now()`),
-    updated: timestamp('updated', { withTimezone: true }).notNull().default(sql`Now()`),
+    created: timestamp('created', { withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    updated: timestamp('updated', { withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
 });
 
 export const ConnectionToken = pgTable('connection_tokens', {
@@ -197,16 +199,16 @@ export const ConnectionToken = pgTable('connection_tokens', {
     connection: integer('connection').notNull().references(() => Connection.id),
     name: text('name').notNull(),
     token: text('token').primaryKey(),
-    created: timestamp('created', { withTimezone: true }).notNull().default(sql`Now()`),
-    updated: timestamp('updated', { withTimezone: true }).notNull().default(sql`Now()`),
+    created: timestamp('created', { withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    updated: timestamp('updated', { withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
 });
 
 export const ProfileOverlay = pgTable('profile_overlays', {
     id: serial('id').primaryKey(),
     name: text('name').notNull(),
     username: text('username').notNull().references(() => Profile.username),
-    created: timestamp('created', { withTimezone: true }).notNull().default(sql`Now()`),
-    updated: timestamp('updated', { withTimezone: true }).notNull().default(sql`Now()`),
+    created: timestamp('created', { withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    updated: timestamp('updated', { withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     pos: integer('pos').notNull().default(5),
     type: text('type').notNull().default('vector'),
     opacity: integer('opacity').notNull().default(1),

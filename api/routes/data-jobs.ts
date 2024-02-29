@@ -1,34 +1,47 @@
+import { Type } from '@sinclair/typebox'
+import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import Batch from '../lib/aws/batch.js';
 import Logs from '../lib/aws/batch-logs.js';
-import { Response } from 'express';
-import { AuthRequest } from '@tak-ps/blueprint-login';
 import Config from '../lib/config.js';
-import { AuthResourceAccess } from '@tak-ps/blueprint-login';
+import { JobResponse, JobLogResponse } from '../lib/types.js';
+import { AuthResourceAccess } from '../lib/auth.js';
 
-export default async function router(schema: any, config: Config) {
+export default async function router(schema: Schema, config: Config) {
     await schema.get('/connection/:connectionid/data/:dataid/job', {
         name: 'List Jobs',
-        auth: 'user',
         group: 'DataJobs',
         description: 'List Data Jobs',
-        ':connectionid': 'integer',
-        ':dataid': 'integer',
-        res: 'res.ListDataJobs.json'
-    }, async (req: AuthRequest, res: Response) => {
+        params: Type.Object({
+            connectionid: Type.Integer(),
+            dataid: Type.Integer()
+        }),
+        res: Type.Object({
+            total: Type.Integer(),
+            items: Type.Array(JobResponse)
+        })
+    }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req, {
-                resources: [{ access: AuthResourceAccess.DATA, id: parseInt(req.params.dataid) }]
+            await Auth.is_auth(config, req, {
+                resources: [{ access: AuthResourceAccess.DATA, id: req.params.dataid }]
             });
 
-            const data = await config.models.Data.from(parseInt(req.params.dataid));
+            const data = await config.models.Data.from(req.params.dataid);
 
             const list = await Batch.list(config, `data-${data.id}`);
 
             return res.json({
                 total: list.length,
-                items: list
+                items: list.map((job) => {
+                    return {
+                        id: job.id,
+                        asset: job.asset,
+                        status: job.status,
+                        created: job.created,
+                        updated: job.updated
+                    }
+                })
             });
         } catch (err) {
             return Err.respond(err, res);
@@ -36,25 +49,32 @@ export default async function router(schema: any, config: Config) {
     });
 
     await schema.get('/connection/:connectionid/data/:dataid/job/:jobid', {
-        name: 'List Jobs',
-        auth: 'user',
+        name: 'Get Jobs',
         group: 'DataJobs',
-        description: 'List Data Jobs',
-        ':connectionid': 'integer',
-        ':dataid': 'integer',
-        ':jobid': 'string',
-        res: 'res.DataJob.json'
-    }, async (req: AuthRequest, res: Response) => {
+        description: 'Get Data Jobs',
+        params: Type.Object({
+            connectionid: Type.Integer(),
+            dataid: Type.Integer(),
+            jobid: Type.String()
+        }),
+        res: JobResponse
+    }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req, {
-                resources: [{ access: AuthResourceAccess.DATA, id: parseInt(req.params.dataid) }]
+            await Auth.is_auth(config, req, {
+                resources: [{ access: AuthResourceAccess.DATA, id: req.params.dataid }]
             });
 
-            const data = await config.models.Data.from(parseInt(req.params.dataid));
+            const data = await config.models.Data.from(req.params.dataid);
 
             const job = await Batch.job(config, req.params.jobid);
 
-            return res.json(job)
+            return res.json({
+                id: job.id,
+                asset: job.asset,
+                status: job.status,
+                created: job.created,
+                updated: job.updated
+            });
         } catch (err) {
             return Err.respond(err, res);
         }
@@ -62,20 +82,23 @@ export default async function router(schema: any, config: Config) {
 
     await schema.get('/connection/:connectionid/data/:dataid/job/:jobid/logs', {
         name: 'List Logs',
-        auth: 'user',
         group: 'DataJobLogs',
         description: 'List Data Job Logs',
-        ':connectionid': 'integer',
-        ':dataid': 'integer',
-        ':jobid': 'string',
-        res: 'res.DataJobLogs.json'
-    }, async (req: AuthRequest, res: Response) => {
+        params: Type.Object({
+            connectionid: Type.Integer(),
+            dataid: Type.Integer(),
+            jobid: Type.String()
+        }),
+        res: Type.Object({
+            logs: Type.Array(JobLogResponse)
+        })
+    }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req, {
-                resources: [{ access: AuthResourceAccess.DATA, id: parseInt(req.params.dataid) }]
+            await Auth.is_auth(config, req, {
+                resources: [{ access: AuthResourceAccess.DATA, id: req.params.dataid }]
             });
 
-            const data = await config.models.Data.from(parseInt(req.params.dataid));
+            const data = await config.models.Data.from(req.params.dataid);
 
             const job = await Batch.job(config, req.params.jobid);
 

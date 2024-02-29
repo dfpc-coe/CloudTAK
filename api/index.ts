@@ -5,22 +5,16 @@ import jwt from 'jsonwebtoken';
 import express, { Request, Response } from 'express';
 import SwaggerUI from 'swagger-ui-express';
 import history, {Context} from 'connect-history-api-fallback';
-// @ts-ignore
 import Schema from '@openaddresses/batch-schema';
 import { ProfileConnConfig } from './lib/connection-config.js';
-import Err from '@openaddresses/batch-error';
-import Modeler from '@openaddresses/batch-generic';
 import minimist from 'minimist';
 import { ConnectionWebSocket } from './lib/connection-web.js';
 import sleep from './lib/sleep.js';
 import EventsPool from './lib/events-pool.js';
 import { WebSocket, WebSocketServer } from 'ws';
-import BlueprintLogin, { tokenParser, AuthUser } from '@tak-ps/blueprint-login';
 import Config from './lib/config.js';
-import TAKAPI, { APIAuthPassword } from './lib/tak-api.js';
+import { tokenParser, AuthUser } from './lib/auth.js'
 import process from 'node:process';
-
-import * as pgschema from './lib/schema.js';
 
 const args = minimist(process.argv, {
     boolean: [
@@ -80,8 +74,8 @@ export default async function server(config: Config) {
     const app = express();
 
     const schema = new Schema(express.Router(), {
-        schemas: new URL('./schema', import.meta.url),
-        openapi: true
+        logging: true,
+        limit: 50
     });
 
     app.disable('x-powered-by');
@@ -118,33 +112,6 @@ export default async function server(config: Config) {
 
     await schema.api();
 
-    const login = new BlueprintLogin({
-        secret: config.SigningSecret,
-        unsafe: config.unsafe ? config.UnsafeSigningSecret : undefined,
-        group: config.AuthGroup,
-        api: config.local ? 'http://localhost:5001' : config.MartiAPI
-    });
-    const ProfileModel = new Modeler(config.pg, pgschema.Profile);
-
-    login.on('login', async (user) => {
-        try {
-            await ProfileModel.from(user.username);
-        } catch (err) {
-            if (err instanceof Err && err.status === 404) {
-                const api = await TAKAPI.init(new URL(config.MartiAPI), new APIAuthPassword(user.username, user.password));
-
-                await ProfileModel.generate({
-                    username: user.username,
-                    auth: await api.Credentials.generate()
-                });
-            } else {
-                return console.error(err);
-            }
-        }
-    });
-
-    await schema.blueprint(login);
-
     if (config.local) {
         // Mock WebTAK API to allow any username & Password
         app.get('/oauth/token', (req: Request, res: Response) => {
@@ -169,8 +136,6 @@ export default async function server(config: Config) {
             silent: !!config.silent
         }
     );
-    schema.not_found();
-    schema.error();
 
     app.use('/docs', SwaggerUI.serve, SwaggerUI.setup(schema.docs.base));
 
@@ -229,7 +194,7 @@ export default async function server(config: Config) {
             } else if (auth instanceof AuthUser && parsedParams.connection === auth.email) {
                 let client;
                 if (!config.conns.has(parsedParams.connection)) {
-                    const profile = await ProfileModel.from(parsedParams.connection);
+                    const profile = await config.models.Profile.from(parsedParams.connection);
                     if (!profile.auth.cert || !profile.auth.key) throw new Error('No Cert Found on profile');
 
                     client = await config.conns.add(new ProfileConnConfig(parsedParams.connection, profile.auth), true);
@@ -246,7 +211,12 @@ export default async function server(config: Config) {
                 throw new Error('Unauthorized');
             }
         } catch (err) {
-            ws.send(JSON.stringify({type: 'Error', message: err instanceof Error ? String(err.message) : String(err) }));
+            ws.send(JSON.stringify({
+                type: 'Error',
+                properties: {
+                    message: err instanceof Error ? String(err.message) : String(err) 
+                }
+            }));
             await sleep(500);
             ws.close();
         }

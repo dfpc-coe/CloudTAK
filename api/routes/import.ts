@@ -1,50 +1,38 @@
+import { Type } from '@sinclair/typebox'
+import Schema from '@openaddresses/batch-schema';
+import { GenericListOrder } from '@openaddresses/batch-generic';
 import path from 'node:path';
 import Err from '@openaddresses/batch-error';
-import Auth from '../lib/auth.js';
 import busboy from 'busboy';
 import Config from '../lib/config.js';
-import { Response } from 'express';
-import { AuthRequest } from '@tak-ps/blueprint-login';
 import S3 from '../lib/aws/s3.js'
 import crypto from 'node:crypto';
 import { Param } from '@openaddresses/batch-generic';
 import { sql } from 'drizzle-orm';
-import { AuthResourceAccess } from '@tak-ps/blueprint-login';
+import Auth, { AuthResourceAccess } from '../lib/auth.js';
+import { ImportResponse } from '../lib/types.js';
+import { Import } from '../lib/schema.js';
 
-export default async function router(schema: any, config: Config) {
+export enum ImportModeEnum {
+    UNKNOWN = 'Unknown',
+    MISSION = 'Mission'
+}
+
+export default async function router(schema: Schema, config: Config) {
     await schema.post('/import', {
         name: 'Import',
         group: 'Import',
-        auth: 'user',
         description: 'Import an unknown asset into the imports manager',
-        body: {
-            type: 'object',
-            required: ['name'],
-            additionalProperties: false,
-            properties: {
-                name: { type: 'string' },
-                mode: {
-                    type: 'string',
-                    default: 'Unknown',
-                    description: 'Import to a given subasset or attempt to determine where to import',
-                    enum: [
-                        'Unknown',
-                        'Mission'
-                    ]
-                },
-                mode_id: {
-                    type: 'string',
-                    description: 'ID of the subasset if given - don\'t set for an unknown mode'
-                },
-                config: {
-                    type: 'object'
-                }
-            }
-        },
-        res: "imports.json"
-    }, async (req: AuthRequest, res: Response) => {
+        body: Type.Object({
+            name: Type.String(),
+            mode: Type.Optional(Type.Enum(ImportModeEnum)),
+            mode_id: Type.Optional(Type.String()),
+            config: Type.Optional(Type.Any()),
+        }),
+        res: ImportResponse
+    }, async (req, res) => {
         try {
-            const user = await Auth.as_user(config.models, req);
+            const user = await Auth.as_user(config, req);
 
             const imp = await config.models.Import.generate({
                 id: crypto.randomUUID(),
@@ -65,19 +53,20 @@ export default async function router(schema: any, config: Config) {
     await schema.put('/import/:import', {
         name: 'Import',
         group: 'Import',
-        auth: 'user',
-        ':import': 'string',
+        params: Type.Object({
+            import: Type.String()
+        }),
         description: 'Import an asset into a previously configured import container',
-        res: 'imports.json'
-    }, async (req: AuthRequest, res: Response) => {
+        res: ImportResponse
+    }, async (req, res) => {
         try {
-            const user = await Auth.as_user(config.models, req);
+            const user = await Auth.as_user(config, req);
 
             if (!req.headers['content-type'] || !req.headers['content-type'].startsWith('multipart/form-data')) {
                 throw new Err(400, null, 'Unsupported Content-Type');
             }
 
-            const imported = await config.models.Import.from(String(req.params.import));
+            const imported = await config.models.Import.from(req.params.import);
 
             if (imported.status !== 'Empty') throw new Err(400, null, 'An asset is already associated with this import');
             if (imported.username !== user.email) throw new Err(400, null, 'You did not create this import');
@@ -119,37 +108,17 @@ export default async function router(schema: any, config: Config) {
     await schema.put('/import', {
         name: 'Import',
         group: 'Import',
-        auth: 'user',
         description: 'Import up to 5 unknown assets into the imports manager at a time',
-        res: {
-            type: 'object',
-            required: ['imports'],
-            additionalProperties: false,
-            properties: {
-                imports: {
-                    type: 'array',
-                    items: {
-                        type: 'object',
-                        required: ['file', 'uid', 'ext'],
-                        additionalProperties: false,
-                        properties: {
-                            file: {
-                                type: 'string'
-                            },
-                            uid: {
-                                type: 'string'
-                            },
-                            ext: {
-                                type: 'string'
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }, async (req: AuthRequest, res: Response) => {
+        res: Type.Object({
+            imports: Type.Array(Type.Object({
+                file: Type.String(),
+                uid: Type.String(),
+                ext: Type.String()
+            }))
+        })
+    }, async (req, res) => {
         try {
-            const user = await Auth.as_user(config.models, req);
+            const user = await Auth.as_user(config, req);
 
             if (!req.headers['content-type'] || !req.headers['content-type'].startsWith('multipart/form-data')) {
                 throw new Err(400, null, 'Unsupported Content-Type');
@@ -160,7 +129,11 @@ export default async function router(schema: any, config: Config) {
                 limits: { files: 5 }
             });
 
-            const uploads: Promise<unknown>[] = [];
+            const uploads: Promise<{
+                file: string;
+                uid: string;
+                ext: string;
+            }>[] = [];
             bb.on('file', async (fieldname, file, blob) => {
                 uploads.push((async function() {
                     const res = {
@@ -198,17 +171,18 @@ export default async function router(schema: any, config: Config) {
     await schema.get('/import/:import', {
         name: 'Get Import',
         group: 'Import',
-        auth: 'user',
         description: 'Get Import',
-        ':import': 'string',
-        res: 'imports.json'
-    }, async (req: AuthRequest, res: Response) => {
+        params: Type.Object({
+            import: Type.String()
+        }),
+        res: ImportResponse
+    }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req, {
+            await Auth.is_auth(config, req, {
                 resources: [{ access: AuthResourceAccess.IMPORT, id: req.params.import }]
             });
 
-            const imported = await config.models.Import.from(String(req.params.import));
+            const imported = await config.models.Import.from(req.params.import);
 
             return res.json(imported);
         } catch (err) {
@@ -219,18 +193,23 @@ export default async function router(schema: any, config: Config) {
     await schema.patch('/import/:import', {
         name: 'Update Import',
         group: 'Import',
-        auth: 'user',
         description: 'Update Import',
-        ':import': 'string',
-        body: 'req.body.PatchImport.json',
-        res: 'imports.json'
-    }, async (req: AuthRequest, res: Response) => {
+        params: Type.Object({
+            import: Type.String()
+        }),
+        body: Type.Object({
+            status: Type.Optional(Type.String()),
+            error: Type.Optional(Type.String()),
+            result: Type.Optional(Type.Any())
+        }),
+        res: ImportResponse
+    }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req, {
+            await Auth.is_auth(config, req, {
                 resources: [{ access: AuthResourceAccess.IMPORT, id: req.params.import }]
             });
 
-            const imported = await config.models.Import.commit(String(req.params.import), {
+            const imported = await config.models.Import.commit(req.params.import, {
                 ...req.body,
                 updated: sql`Now()`
             });
@@ -244,19 +223,28 @@ export default async function router(schema: any, config: Config) {
     await schema.get('/import', {
         name: 'List Imports',
         group: 'Import',
-        auth: 'user',
         description: 'List Imports',
-        query: 'req.query.ListImports.json',
-        res: 'res.ListImports.json'
-    }, async (req: AuthRequest, res: Response) => {
+        query: Type.Object({
+            limit: Type.Optional(Type.Integer()),
+            page: Type.Optional(Type.Integer()),
+            order: Type.Optional(Type.Enum(GenericListOrder)),
+            sort: Type.Optional(Type.String({default: 'created', enum: Object.keys(Import) })),
+            mode: Type.Optional(Type.String()),
+            mode_id: Type.Optional(Type.String())
+        }),
+        res: Type.Object({
+            total: Type.Integer(),
+            items: Type.Array(ImportResponse)
+        })
+    }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req);
+            await Auth.is_auth(config, req);
 
             const list = await config.models.Import.list({
-                limit: Number(req.query.limit),
-                page: Number(req.query.page),
-                order: String(req.query.order),
-                sort: String(req.query.sort),
+                limit: req.query.limit,
+                page: req.query.page,
+                order: req.query.order,
+                sort: req.query.sort,
                 where: sql`
                     (${Param(req.query.mode)}::TEXT IS NULL OR ${Param(req.query.mode)}::TEXT = mode)
                     AND (${Param(req.query.mode_id)}::TEXT IS NULL OR ${Param(req.query.mode_id)}::TEXT = mode_id)

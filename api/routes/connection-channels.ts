@@ -1,25 +1,28 @@
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
-import { Response } from 'express';
-import { AuthRequest } from '@tak-ps/blueprint-login';
 import TAKAPI, { APIAuthCertificate, } from '../lib/tak-api.js';
 import { AuthResourceAccess } from '@tak-ps/blueprint-login';
+import { Type } from '@sinclair/typebox'
+import { GenericListOrder } from '@openaddresses/batch-generic';
+import { StandardResponse, ConnectionResponse, GenericMartiResponse } from '../lib/types.js';
+import Schema from '@openaddresses/batch-schema';
 
-export default async function router(schema: any, config: Config) {
+export default async function router(schema: Schema, config: Config) {
     await schema.get('/connection/:connectionid/channel', {
         name: 'List Channels',
         group: 'Connection',
-        auth: 'admin',
         description: 'List channels that a given connection is broadcasting to',
-        ':connectionid': 'integer',
-        res: 'res.Marti.json'
-    }, async (req: AuthRequest, res: Response) => {
+        params: Type.Object({
+            connectionid: Type.Integer()
+        }),
+        res: GenericMartiResponse
+    }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req, {
-                resources: [{ access: AuthResourceAccess.CONNECTION, id: parseInt(req.params.connectionid) }]
+            await Auth.is_auth(config, req, {
+                resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }]
             });
-            const conn = await config.models.Connection.from(parseInt(req.params.connectionid));
+            const conn = await config.models.Connection.from(req.params.connectionid);
 
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(conn.auth.cert, conn.auth.key));
 

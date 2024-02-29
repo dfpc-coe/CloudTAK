@@ -1,20 +1,20 @@
+import { Type } from '@sinclair/typebox'
+import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
-import Auth from '../lib/auth.js';
-import { Response } from 'express';
-import { AuthRequest } from '@tak-ps/blueprint-login';
+import Auth, { AuthResource } from '../lib/auth.js';
+import { ProfileResponse } from '../lib/types.js'
 import Config from '../lib/config.js';
-import { AuthResource } from '@tak-ps/blueprint-login';
+import { TAKRole, TAKGroup } from '../lib/api/types.js'
 
-export default async function router(schema: any, config: Config) {
+export default async function router(schema: Schema, config: Config) {
     await schema.get('/profile', {
         name: 'Get Profile',
-        auth: 'user',
         group: 'Profile',
         description: 'Get User\'s Profile',
-        res: 'res.Profile.json'
-    }, async (req: AuthRequest, res: Response) => {
+        res: ProfileResponse
+    }, async (req, res) => {
         try {
-            const user = await Auth.as_user(config.models, req);
+            const user = await Auth.as_user(config, req);
             const profile = await config.models.Profile.from(user.email);
 
             return res.json(profile);
@@ -25,14 +25,21 @@ export default async function router(schema: any, config: Config) {
 
     await schema.patch('/profile', {
         name: 'Update Profile',
-        auth: 'user',
         group: 'Profile',
         description: 'Update User\'s Profile',
-        body: 'req.body.PatchProfile.json',
-        res: 'res.Profile.json'
-    }, async (req: AuthRequest, res: Response) => {
+        body: Type.Object({
+            tak_callsign: Type.Optional(Type.String()),
+            tak_group: Type.Optional(Type.Enum(TAKGroup)),
+            tak_role: Type.Optional(Type.Enum(TAKRole)),
+            tak_loc: Type.Optional(Type.Object({
+                type: Type.String(),
+                coordinates: Type.Array(Type.Number())
+            }))
+        }),
+        res: ProfileResponse
+    }, async (req, res) => {
         try {
-            const user = await Auth.as_user(config.models, req);
+            const user = await Auth.as_user(config, req);
             const profile = await config.models.Profile.commit(user.email, req.body);
 
             return res.json(profile);

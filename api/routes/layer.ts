@@ -1,26 +1,28 @@
+import { Type, Static } from '@sinclair/typebox'
+import { GenericListOrder } from '@openaddresses/batch-generic';
+import Schema from '@openaddresses/batch-schema';
 import { check } from '@placemarkio/check-geojson';
 import bodyparser from 'body-parser';
 import Err from '@openaddresses/batch-error';
 import { CoT } from '@tak-ps/node-tak';
 import { Item as QueueItem } from '../lib/queue.js'
 import Cacher from '../lib/cacher.js';
-import Auth from '../lib/auth.js';
+import Auth, { AuthResourceAccess } from '../lib/auth.js';
 import Lambda from '../lib/aws/lambda.js';
 import CloudFormation from '../lib/aws/cloudformation.js';
-import Style from '../lib/style.js';
+import Style, { StyleContainer } from '../lib/style.js';
 import Alarm from '../lib/aws/alarm.js';
 import DDBQueue from '../lib/queue.js';
-import { Response } from 'express';
-import { AuthRequest } from '@tak-ps/blueprint-login';
 import Config from '../lib/config.js';
 import Schedule from '../lib/schedule.js';
 import S3 from '../lib/aws/s3.js';
 import { Feature } from 'geojson';
 import { Param } from '@openaddresses/batch-generic';
 import { sql } from 'drizzle-orm';
-import { AuthResourceAccess } from '@tak-ps/blueprint-login';
+import { StandardResponse, LayerResponse } from '../lib/types.js';
+import { Layer } from '../lib/schema.js';
 
-export default async function router(schema: any, config: Config) {
+export default async function router(schema: Schema, config: Config) {
     const alarm = new Alarm(config.StackName);
     const ddb = new DDBQueue(config.StackName);
     ddb.on('error', (err) => { console.error(err); });
@@ -28,19 +30,34 @@ export default async function router(schema: any, config: Config) {
     await schema.get('/layer', {
         name: 'List Layers',
         group: 'Layer',
-        auth: 'user',
         description: 'List layers',
-        query: 'req.query.ListLayers.json',
-        res: 'res.ListLayers.json'
-    }, async (req: AuthRequest, res: Response) => {
+        query: Type.Object({
+            limit: Type.Optional(Type.Integer()),
+            page: Type.Optional(Type.Integer()),
+            order: Type.Optional(Type.Enum(GenericListOrder)),
+            sort: Type.Optional(Type.String({default: 'created', enum: Object.keys(Layer)})),
+            filter: Type.Optional(Type.String({default: ''})),
+            data: Type.Optional(Type.Integer()),
+            connection: Type.Optional(Type.Integer()),
+        }),
+        res: Type.Object({
+            total: Type.Integer(),
+            status: Type.Object({
+                healthy: Type.Integer(),
+                alarm: Type.Integer(),
+                unknown: Type.Integer(),
+            }),
+            items: Type.Array(LayerResponse)
+        })
+    }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req);
+            await Auth.is_auth(config, req);
 
             const list = await config.models.Layer.list({
-                limit: Number(req.query.limit),
-                page: Number(req.query.page),
-                order: String(req.query.order),
-                sort: String(req.query.sort),
+                limit: req.query.limit,
+                page: req.query.page,
+                order: req.query.order,
+                sort: req.query.sort,
                 where: sql`
                     name ~* ${req.query.filter}
                     AND (${Param(req.query.connection)}::BIGINT IS NULL OR ${Param(req.query.connection)}::BIGINT = layers.connection)
@@ -59,6 +76,7 @@ export default async function router(schema: any, config: Config) {
 
             res.json({
                 status,
+                total: list.total,
                 items: list.items.map((layer) => {
                     return { status: alarms.get(layer.id) || 'unknown', ...layer }
                 })
@@ -71,24 +89,41 @@ export default async function router(schema: any, config: Config) {
     await schema.post('/layer', {
         name: 'Create Layer',
         group: 'Layer',
-        auth: 'admin',
         description: 'Register a new layer',
-        body: 'req.body.CreateLayer.json',
-        res: 'res.Layer.json'
-    }, async (req: AuthRequest, res: Response) => {
+        body: Type.Object({
+            name: Type.String(),
+            description: Type.String(),
+            enabled: Type.Boolean(),
+            task: Type.String(),
+            cron: Type.String(),
+            logging: Type.Boolean(),
+            stale: Type.Integer(),
+            connection: Type.Optional(Type.Integer()),
+            data: Type.Optional(Type.Integer()),
+            schema: Type.Any(),
+            styles: Type.Optional(StyleContainer)
+        }),
+        res: LayerResponse
+    }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req);
+            await Auth.is_auth(config, req);
 
-            if (req.body.styles && req.body.styles.queries) {
-                req.body.styles = {
-                    queries: req.body.styles.queries
-                };
-            } else if (req.body.styles) {
-                req.body.styles = {
-                    point: req.body.styles.point,
-                    line: req.body.styles.line,
-                    polygon: req.body.styles.polygon
-                };
+            if (req.body.styles) {
+                await Style.validate(req.body.styles);
+
+                const style = req.body.styles as Static<typeof StyleContainer>;
+
+                if (style.queries) {
+                    req.body.styles = {
+                        queries: style.queries
+                    };
+                } else {
+                    req.body.styles = {
+                        point: style.point,
+                        line: style.line,
+                        polygon: style.polygon
+                    };
+                }
             }
 
             if ((!req.body.connection && !req.body.data) || (req.body.connection && req.body.data)) {
@@ -129,12 +164,11 @@ export default async function router(schema: any, config: Config) {
     await schema.post('/layer/redeploy', {
         name: 'Redeploy Layers',
         group: 'Layer',
-        auth: 'admin',
         description: 'Redeploy all Layers with latest CloudFormation output',
-        res: 'res.Standard.json'
-    }, async (req: AuthRequest, res: Response) => {
+        res: StandardResponse
+    }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req);
+            await Auth.is_auth(config, req);
 
             // TODO there is a limit here to how many will be returned
             // switch to an async iter or stream
@@ -168,29 +202,48 @@ export default async function router(schema: any, config: Config) {
     await schema.patch('/layer/:layerid', {
         name: 'Update Layer',
         group: 'Layer',
-        auth: 'admin',
         description: 'Update a layer',
-        ':layerid': 'integer',
-        body: 'req.body.PatchLayer.json',
-        res: 'res.Layer.json'
-    }, async (req: AuthRequest, res: Response) => {
+        params: Type.Object({
+            layerid: Type.Integer(),
+        }),
+        body: Type.Object({
+            name: Type.Optional(Type.String()),
+            description: Type.Optional(Type.String()),
+            cron: Type.Optional(Type.String()),
+            memory: Type.Optional(Type.Integer()),
+            timeout: Type.Optional(Type.Integer()),
+            enabled: Type.Optional(Type.Boolean()),
+            enabled_styles: Type.Optional(Type.Boolean()),
+            task: Type.Optional(Type.String()),
+            styles: Type.Optional(StyleContainer),
+            logging: Type.Optional(Type.Boolean()),
+            stale: Type.Optional(Type.Integer()),
+            connection: Type.Optional(Type.Integer()),
+            data: Type.Optional(Type.Integer()),
+            environment: Type.Optional(Type.Any()),
+            schema: Type.Optional(Type.Any())
+        }),
+        res: LayerResponse
+    }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req, {
-                resources: [{ access: AuthResourceAccess.LAYER, id: parseInt(req.params.layerid) }]
+            await Auth.is_auth(config, req, {
+                resources: [{ access: AuthResourceAccess.LAYER, id: req.params.layerid }]
             });
 
             if (req.body.styles) {
                 await Style.validate(req.body.styles);
 
-                if (req.body.styles && req.body.styles.queries) {
+                const style = req.body.styles as Static<typeof StyleContainer>;
+
+                if (style.queries) {
                     req.body.styles = {
-                        queries: req.body.styles.queries
+                        queries: style.queries
                     };
                 } else {
                     req.body.styles = {
-                        point: req.body.styles.point,
-                        line: req.body.styles.line,
-                        polygon: req.body.styles.polygon
+                        point: style.point,
+                        line: style.line,
+                        polygon: style.polygon
                     };
                 }
             }
@@ -205,7 +258,7 @@ export default async function router(schema: any, config: Config) {
 
             if (req.body.cron) Schedule.is_valid(req.body.cron);
 
-            let layer = await config.models.Layer.from(parseInt(req.params.layerid));
+            let layer = await config.models.Layer.from(req.params.layerid);
 
             let changed = false;
             // Avoid Updating CF unless necessary as it blocks further updates until deployed
@@ -215,7 +268,7 @@ export default async function router(schema: any, config: Config) {
             }
 
             if (changed) {
-                const status = (await CloudFormation.status(config, parseInt(req.params.layerid))).status;
+                const status = (await CloudFormation.status(config, req.params.layerid)).status;
                 if (!status.endsWith('_COMPLETE')) throw new Err(400, null, 'Layer is still Deploying, Wait for Deploy to succeed before updating')
             }
 
@@ -256,18 +309,19 @@ export default async function router(schema: any, config: Config) {
     await schema.get('/layer/:layerid', {
         name: 'Get Layer',
         group: 'Layer',
-        auth: 'user',
         description: 'Get a layer',
-        ':layerid': 'integer',
-        res: 'res.Layer.json'
-    }, async (req: AuthRequest, res: Response) => {
+        params: Type.Object({
+            layerid: Type.Integer(),
+        }),
+        res: LayerResponse
+    }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req, {
-                resources: [{ access: AuthResourceAccess.LAYER, id: parseInt(req.params.layerid) }]
+            await Auth.is_auth(config, req, {
+                resources: [{ access: AuthResourceAccess.LAYER, id: req.params.layerid }]
             });
 
             const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
-                return await config.models.Layer.from(parseInt(req.params.layerid));
+                return await config.models.Layer.from(req.params.layerid);
             });
 
             return res.json({
@@ -282,17 +336,18 @@ export default async function router(schema: any, config: Config) {
     await schema.post('/layer/:layerid/redeploy', {
         name: 'Redeploy Layers',
         group: 'Layer',
-        auth: 'admin',
         description: 'Redeploy a specific Layer with latest CloudFormation output',
-        ':layerid': 'integer',
-        res: 'res.Standard.json'
-    }, async (req: AuthRequest, res: Response) => {
+        params: Type.Object({
+            layerid: Type.Integer()
+        }),
+        res: StandardResponse
+    }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req);
+            await Auth.is_auth(config, req);
 
-            const layer = await config.models.Layer.from(parseInt(req.params.layerid));
+            const layer = await config.models.Layer.from(req.params.layerid);
 
-            const status = (await CloudFormation.status(config, parseInt(req.params.layerid))).status;
+            const status = (await CloudFormation.status(config, req.params.layerid)).status;
             if (!status.endsWith('_COMPLETE')) throw new Err(400, null, 'Layer is still Deploying, Wait for Deploy to succeed before updating')
 
             try {
@@ -318,21 +373,22 @@ export default async function router(schema: any, config: Config) {
     await schema.delete('/layer/:layerid', {
         name: 'Delete Layer',
         group: 'Layer',
-        auth: 'user',
         description: 'Delete a layer',
-        ':layerid': 'integer',
-        res: 'res.Standard.json'
-    }, async (req: AuthRequest, res: Response) => {
+        params: Type.Object({
+            layerid: Type.Integer()
+        }),
+        res: StandardResponse
+    }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req);
+            await Auth.is_auth(config, req);
 
-            const layer = await config.models.Layer.from(parseInt(req.params.layerid));
+            const layer = await config.models.Layer.from(req.params.layerid);
 
             await CloudFormation.delete(config, layer.id);
 
             if (config.events) config.events.delete(layer.id);
 
-            await config.models.Layer.delete(parseInt(req.params.layerid));
+            await config.models.Layer.delete(req.params.layerid);
 
             await config.cacher.del(`layer-${req.params.layerid}`);
 
@@ -348,39 +404,37 @@ export default async function router(schema: any, config: Config) {
     await schema.post('/layer/:layerid/cot', {
         name: 'Post COT',
         group: 'Layer',
-        auth: 'admin',
         description: 'Post CoT data to a given layer',
-        ':layerid': 'integer',
-        query: 'req.query.PostCoT.json',
-        res: 'res.Standard.json'
-    }, bodyparser.raw({
-        type: '*/*',
-        limit: '50mb'
-    }), async (req: AuthRequest, res: Response) => {
+        params: Type.Object({
+            layerid: Type.Integer()
+        }),
+        query: Type.Object({
+            logging: Type.Optional(Type.Boolean({ "description": "If logging is enabled for the layer, allow callers to skip logging for a particular CoT payload" }))
+        }),
+        body: Type.Any(),
+        res: StandardResponse
+    }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req, {
-                resources: [{ access: AuthResourceAccess.LAYER, id: parseInt(req.params.layerid) }]
+            await Auth.is_auth(config, req, {
+                resources: [{ access: AuthResourceAccess.LAYER, id: req.params.layerid }]
             });
 
             if (!req.headers['content-type']) throw new Err(400, null, 'Content-Type not set');
 
             const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
-                return await config.models.Layer.from(parseInt(req.params.layerid));
+                return await config.models.Layer.from(req.params.layerid);
             });
 
             const style = new Style(layer);
-            req.body = String(req.body);
 
-            if (req.headers['content-type'] === 'application/json') {
-                try {
-                    req.body = check(req.body);
-                } catch (err) {
-                    throw new Err(400, null, err instanceof Error ? err.message : String(err));
-                }
+            try {
+                req.body = check(JSON.stringify(req.body));
+            } catch (err) {
+                throw new Err(400, null, err instanceof Error ? err.message : String(err));
+            }
 
-                for (let i = 0; i < req.body.features.length; i++) {
-                    req.body.features[i] = await style.feat(req.body.features[i])
-                }
+            for (let i = 0; i < req.body.features.length; i++) {
+                req.body.features[i] = await style.feat(req.body.features[i])
             }
 
             let pooledClient;
@@ -414,32 +468,26 @@ export default async function router(schema: any, config: Config) {
                 return res.json({ status: 200, message: 'Recieved but Connection Paused' });
             }
 
-            if (req.headers['content-type'] === 'application/json') {
-                if (cots.length === 0) return res.json({ status: 200, message: 'No features found' });
+            if (cots.length === 0) return res.json({ status: 200, message: 'No features found' });
 
-                console.error(cots[0].to_xml());
-                pooledClient.tak.write(cots);
-                for (const cot of cots) config.conns.cot(pooledClient.config, cot);
+            console.error(cots[0].to_xml());
+            pooledClient.tak.write(cots);
+            for (const cot of cots) config.conns.cot(pooledClient.config, cot);
 
-                // TODO Only GeoJSON Features go to Dynamo, this should also store CoT XML
-                // @ts-ignore
-                if (layer.logging && req.query.logging !== false) ddb.queue(req.body.features.map((feat: Feature) => {
-                    const item: QueueItem = {
-                        id: String(feat.id),
-                        layer: layer.id,
-                        type: feat.type,
-                        // @ts-ignore
-                        properties: feat.properties,
-                        geometry: feat.geometry
-                    }
+            // TODO Only GeoJSON Features go to Dynamo, this should also store CoT XML
+            // @ts-ignore
+            if (layer.logging && req.query.logging !== false) ddb.queue(req.body.features.map((feat: Feature) => {
+                const item: QueueItem = {
+                    id: String(feat.id),
+                    layer: layer.id,
+                    type: feat.type,
+                    // @ts-ignore
+                    properties: feat.properties,
+                    geometry: feat.geometry
+                }
 
-                    return item;
-                }));
-            } else if (layer.connection && req.headers['content-type'] === 'application/xml') {
-                pooledClient.tak.write_xml(req.body);
-            } else {
-                throw new Err(400, null, 'Unsupported Content-Type');
-            }
+                return item;
+            }));
 
             res.json({
                 status: 200,
@@ -449,5 +497,4 @@ export default async function router(schema: any, config: Config) {
             return Err.respond(err, res);
         }
     });
-
 }

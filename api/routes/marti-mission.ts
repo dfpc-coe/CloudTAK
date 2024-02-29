@@ -1,47 +1,40 @@
+import { Type } from '@sinclair/typebox'
+import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
-import bodyparser from 'body-parser';
-import { Profile, Connection } from '../lib/schema.js';
+import { GenericMartiResponse } from '../lib/types.js';
+import { MissionSubscriber } from '../lib/api/mission.js';
+import { Profile } from '../lib/schema.js';
 import S3 from '../lib/aws/s3.js';
-import { Response } from 'express';
-import { AuthRequest } from '@tak-ps/blueprint-login';
 import TAKAPI, {
     APIAuthToken,
     APIAuthCertificate,
     APIAuthPassword
 } from '../lib/tak-api.js';
 
-export default async function router(schema: any, config: Config) {
+export default async function router(schema: Schema, config: Config) {
     await schema.get('/marti/missions/:name', {
         name: 'Get Mission',
         group: 'MartiMissions',
-        auth: 'user',
-        ':name': 'string',
+        params: Type.Object({
+            name: Type.String(),
+        }),
         description: 'Helper API to get a single mission',
-        query: {
-            type: 'object',
-            properties: {
-                password: {
-                    type: 'boolean',
-                    default: false,
-                },
-                changes: {
-                    type: 'boolean',
-                    default: false
-                },
-                logs: { type: 'string' },
-                secago: { type: 'string' },
-                start: { type: 'string' },
-                end: { type: 'string' }
-            }
-        },
-        res: 'res.MartiMission.json'
-    }, async (req: AuthRequest, res: Response) => {
+        query: Type.Object({
+            password: Type.Optional(Type.Boolean()),
+            changes: Type.Optional(Type.Boolean()),
+            logs: Type.Optional(Type.String()),
+            secago: Type.Optional(Type.String()),
+            start: Type.Optional(Type.String()),
+            end: Type.Optional(Type.String())
+        }),
+        res: Type.Any()
+    }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req);
+            await Auth.is_auth(config, req);
 
-            const user = await Auth.as_user(config.models, req);
+            const user = await Auth.as_user(config, req);
             const auth = (await config.models.Profile.from(user.email)).auth;
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
@@ -57,26 +50,20 @@ export default async function router(schema: any, config: Config) {
     await schema.delete('/marti/missions/:name', {
         name: 'Delete Mission',
         group: 'MartiMissions',
-        auth: 'user',
-        ':name': 'string',
+        params: Type.Object({
+            name: Type.String(),
+        }),
         description: 'Helper API to delete a single mission',
-        query: {
-            type: 'object',
-            properties: {
-                creatorUid: {
-                    type: 'string'
-                },
-                deepDelete: {
-                    type: 'boolean'
-                }
-            }
-        },
-        res: 'res.Marti.json'
-    }, async (req: AuthRequest, res: Response) => {
+        query: Type.Object({
+            creatorUid: Type.Optional(Type.String()),
+            deepDelete: Type.Optional(Type.Boolean())
+        }),
+        res: GenericMartiResponse
+    }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req);
+            await Auth.is_auth(config, req);
 
-            const user = await Auth.as_user(config.models, req);
+            const user = await Auth.as_user(config, req);
             const auth = (await config.models.Profile.from(user.email)).auth;
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
@@ -92,36 +79,33 @@ export default async function router(schema: any, config: Config) {
     await schema.post('/marti/missions/:name', {
         name: 'Create Mission',
         group: 'MartiMissions',
-        auth: 'user',
-        ':name': 'string',
+        params: Type.Object({
+            name: Type.String(),
+        }),
         description: 'Helper API to create a mission',
-        query: {
-            type: 'object',
-            additionalProperties: false,
-            properties: {
-                creatorUid: { type: 'string' },
-                group: { type: 'array', items: { type: 'string' } },
-                description: { type: 'string' },
-                chatRoom: { type: 'string' },
-                baseLayer: { type: 'string' },
-                bbox: { type: 'string' },
-                boundingPolygon: { type: 'string' },
-                path: { type: 'string' },
-                classification: { type: 'string' },
-                tool: { type: 'string' },
-                password: { type: 'string' },
-                defaultRole: { type: 'string' },
-                expiration: { type: 'string' },
-                inviteOnly: { type: 'string' },
-                allowDupe: { type: 'string' },
-            }
-        },
-        res: 'res.Marti.json'
-    }, async (req: AuthRequest, res: Response) => {
+        query: Type.Object({
+            creatorUid: Type.Optional(Type.String()),
+            group: Type.Optional(Type.Array(Type.String())),
+            description: Type.Optional(Type.String()),
+            chatRoom: Type.Optional(Type.String()),
+            baseLayer: Type.Optional(Type.String()),
+            bbox: Type.Optional(Type.String()),
+            boundingPolygon: Type.Optional(Type.String()),
+            path: Type.Optional(Type.String()),
+            classification: Type.Optional(Type.String()),
+            tool: Type.Optional(Type.String()),
+            password: Type.Optional(Type.String()),
+            defaultRole: Type.Optional(Type.String()),
+            expiration: Type.Optional(Type.String()),
+            inviteOnly: Type.Optional(Type.String()),
+            allowDupe: Type.Optional(Type.String()),
+        }),
+        res: GenericMartiResponse
+    }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req);
+            await Auth.is_auth(config, req);
 
-            const user = await Auth.as_user(config.models, req);
+            const user = await Auth.as_user(config, req);
             const auth = (await config.models.Profile.from(user.email)).auth;
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
@@ -137,32 +121,19 @@ export default async function router(schema: any, config: Config) {
     await schema.get('/marti/mission', {
         name: 'List Missions',
         group: 'MartiMissions',
-        auth: 'user',
         description: 'Helper API to list missions',
-        query: {
-            type: 'object',
-            properties: {
-                passwordProtected: {
-                    type: 'boolean',
-                    default: false,
-                },
-                defaultRole: {
-                    type: 'boolean',
-                },
-                nameFilter: {
-                    type: 'string'
-                },
-                tool: {
-                    type: 'string'
-                }
-            }
-        },
-        res: 'res.Marti.json'
-    }, async (req: AuthRequest, res: Response) => {
+        query: Type.Object({
+            passwordProtected: Type.Optional(Type.Boolean()),
+            defaultRole: Type.Optional(Type.Boolean()),
+            nameFilter: Type.Optional(Type.String()),
+            tool: Type.Optional(Type.String()),
+        }),
+        res: GenericMartiResponse
+    }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req);
+            await Auth.is_auth(config, req);
 
-            const user = await Auth.as_user(config.models, req);
+            const user = await Auth.as_user(config, req);
             const auth = (await config.models.Profile.from(user.email)).auth;
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
@@ -178,15 +149,16 @@ export default async function router(schema: any, config: Config) {
     await schema.get('/marti/missions/:name/subscription', {
         name: 'Mission Subscription',
         group: 'MartiMissions',
-        auth: 'user',
-        ':name': 'string',
+        params: Type.Object({
+            name: Type.String(),
+        }),
         description: 'Return subscriptions associated with your user',
-        res: { type: 'object' }
-    }, async (req: AuthRequest, res: Response) => {
+        res: MissionSubscriber
+    }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req);
+            await Auth.is_auth(config, req);
 
-            const user = await Auth.as_user(config.models, req);
+            const user = await Auth.as_user(config, req);
             const auth = (await config.models.Profile.from(user.email)).auth;
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
@@ -201,15 +173,16 @@ export default async function router(schema: any, config: Config) {
     await schema.get('/marti/missions/:name/subscriptions', {
         name: 'Mission Subscriptions',
         group: 'MartiMissions',
-        auth: 'user',
-        ':name': 'string',
+        params: Type.Object({
+            name: Type.String(),
+        }),
         description: 'List subscriptions associated with a mission',
-        res: 'res.Marti.json'
-    }, async (req: AuthRequest, res: Response) => {
+        res: GenericMartiResponse
+    }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req);
+            await Auth.is_auth(config, req);
 
-            const user = await Auth.as_user(config.models, req);
+            const user = await Auth.as_user(config, req);
             const auth = (await config.models.Profile.from(user.email)).auth;
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
@@ -224,15 +197,16 @@ export default async function router(schema: any, config: Config) {
     await schema.get('/marti/missions/:name/subscriptions/roles', {
         name: 'Mission Subscriptions',
         group: 'MartiMissions',
-        auth: 'user',
-        ':name': 'string',
+        params: Type.Object({
+            name: Type.String(),
+        }),
         description: 'List subscriptions associated with a mission',
-        res: 'res.Marti.json'
-    }, async (req: AuthRequest, res: Response) => {
+        res: GenericMartiResponse
+    }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req);
+            await Auth.is_auth(config, req);
 
-            const user = await Auth.as_user(config.models, req);
+            const user = await Auth.as_user(config, req);
             const auth = (await config.models.Profile.from(user.email)).auth;
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
@@ -247,31 +221,24 @@ export default async function router(schema: any, config: Config) {
     await schema.get('/marti/missions/:name/contacts', {
         name: 'Mission Contacts',
         group: 'MartiMissions',
-        auth: 'user',
-        ':name': 'string',
+        params: Type.Object({
+            name: Type.String(),
+        }),
         description: 'List contacts associated with a mission',
-        res: {
-            type: 'array',
-            items: {
-                type: 'object',
-                required: [ 'filterGroups', 'notes', 'callsign', 'team', 'role', 'takv', 'uid' ],
-                additionalPropeties: false,
-                properties: {
-                    'filterGroups': { type: 'array', items: { type: 'string' } },
-                    'notes': { type: 'string' },
-                    'callsign': { type: 'string' },
-                    'team': { type: 'string' },
-                    'role': { type: 'string' },
-                    'takv': { type: 'string' },
-                    'uid': { type: 'string' },
-                }
-            }
-        }
-    }, async (req: AuthRequest, res: Response) => {
+        res: Type.Array(Type.Object({
+            filterGroups: Type.Array(Type.String()),
+            notes: Type.String(),
+            callsign: Type.String(),
+            team: Type.String(),
+            role: Type.String(),
+            takv: Type.String(),
+            uid: Type.String(),
+        })),
+    }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req);
+            await Auth.is_auth(config, req);
 
-            const user = await Auth.as_user(config.models, req);
+            const user = await Auth.as_user(config, req);
             const auth = (await config.models.Profile.from(user.email)).auth;
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
@@ -286,24 +253,19 @@ export default async function router(schema: any, config: Config) {
     await schema.post('/marti/missions/:name/upload', {
         name: 'Mission Upload',
         group: 'MartiMissions',
-        auth: 'user',
-        ':name': 'string',
-        ':hash': 'string',
+        params: Type.Object({
+            name: Type.String(),
+        }),
         description: 'Create an upload',
-        query: {
-            type: 'object',
-            additionalProperties: false,
-            required: ['name'],
-            properties: {
-                name: { type: 'string' }
-            }
-        },
-        res: 'res.Marti.json'
-    }, async (req: AuthRequest, res: Response) => {
+        query: Type.Object({
+            name: Type.String()
+        }),
+        res: GenericMartiResponse
+    }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req);
+            await Auth.is_auth(config, req);
 
-            const user = await Auth.as_user(config.models, req);
+            const user = await Auth.as_user(config, req);
             const profile = await config.models.Profile.from(user.email);
             const auth = profile.auth;
             const creatorUid = profile.username;
@@ -334,22 +296,21 @@ export default async function router(schema: any, config: Config) {
     });
 
     await schema.delete('/marti/missions/:name/upload/:hash', {
-        nMissionSubscriptioname: 'Mission Upload Delete',
+        name: 'Mission Upload Delete',
         group: 'MartiMissions',
-        auth: 'user',
-        ':name': 'string',
-        ':hash': 'string',
+        params: Type.Object({
+            name: Type.String(),
+            hash: Type.String()
+        }),
         description: 'Delete an upload by hash',
-        res: 'res.Marti.json'
-    }, async (req: AuthRequest, res: Response) => {
+        res: GenericMartiResponse
+    }, async (req, res) => {
         try {
-            await Auth.is_auth(config.models, req);
+            await Auth.is_auth(config, req);
 
-            const user = await Auth.as_user(config.models, req);
+            const user = await Auth.as_user(config, req);
             const profile = await config.models.Profile.from(user.email);
             const auth = profile.auth;
-
-            const name = String(req.query.name);
 
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
