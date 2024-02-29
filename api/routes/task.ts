@@ -24,7 +24,7 @@ export default async function router(schema: Schema, config: Config) {
         description: 'List Tasks',
         res: Type.Object({
             total: Type.Integer(),
-            items: Type.Array(Type.Any())
+            items: Type.Any()
         })
     }, async (req, res) => {
         try {
