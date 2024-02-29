@@ -15,6 +15,7 @@ import Schema from '@openaddresses/batch-schema';
 import { Geometry, BBox } from 'geojson';
 import { Type } from '@sinclair/typebox'
 import { StandardResponse, BasemapResponse } from '../lib/types.js';
+import { Basemap } from '../lib/schema.js';
 
 enum BasemapType {
     vector = 'vector',
@@ -137,7 +138,7 @@ export default async function router(schema: Schema, config: Config) {
             page: Type.Optional(Type.Integer()),
             order: Type.Optional(Type.Enum(GenericListOrder)),
             type: Type.Optional(Type.Enum(BasemapType)),
-            sort: Type.Optional(Type.String({default: 'created'})),
+            sort: Type.Optional(Type.String({default: 'created', enum: Object.keys(Basemap) })),
             filter: Type.Optional(Type.String({default: ''}))
         }),
         res: Type.Object({

@@ -3,13 +3,13 @@ import Auth from '../lib/auth.js';
 import CW from '../lib/aws/metric.js';
 import Config from '../lib/config.js';
 import { Response } from 'express';
-import { AuthRequest } from '@tak-ps/blueprint-login';
 import { Param } from '@openaddresses/batch-generic';
 import { sql } from 'drizzle-orm';
 import { AuthResourceAccess } from '@tak-ps/blueprint-login';
 import { Type } from '@sinclair/typebox'
 import { GenericListOrder } from '@openaddresses/batch-generic';
 import { StandardResponse, ConnectionSinkResponse } from '../lib/types.js';
+import { ConnectionSink } from '../lib/schema.js';
 import Schema from '@openaddresses/batch-schema';
 
 export default async function router(schema: Schema, config: Config) {
@@ -26,7 +26,7 @@ export default async function router(schema: Schema, config: Config) {
             limit: Type.Optional(Type.Integer()),
             page: Type.Optional(Type.Integer()),
             order: Type.Optional(Type.Enum(GenericListOrder)),
-            sort: Type.Optional(Type.String({default: 'created'})),
+            sort: Type.Optional(Type.String({default: 'created', enum: Object.keys(ConnectionSink)})),
             filter: Type.Optional(Type.String({default: ''})),
             enabled: Type.Optional(Type.Boolean())
         }),

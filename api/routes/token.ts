@@ -8,6 +8,7 @@ import jwt from 'jsonwebtoken';
 import { Param } from '@openaddresses/batch-generic';
 import { GenericListOrder } from '@openaddresses/batch-generic';
 import { sql } from 'drizzle-orm';
+import { Token } from '../lib/schema.js';
 import { StandardResponse, CreateProfileTokenResponse, ProfileTokenResponse } from '../lib/types.js';
 
 export default async function router(schema: Schema, config: Config) {
@@ -19,7 +20,7 @@ export default async function router(schema: Schema, config: Config) {
             limit: Type.Optional(Type.Integer()),
             page: Type.Optional(Type.Integer()),
             order: Type.Optional(Type.Enum(GenericListOrder)),
-            sort: Type.Optional(Type.String({default: 'created'})),
+            sort: Type.Optional(Type.String({default: 'created', enum: Object.keys(Token) })),
             filter: Type.Optional(Type.String({default: ''}))
         }),
         res: Type.Object({
