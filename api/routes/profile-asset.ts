@@ -142,6 +142,9 @@ export default async function router(schema: Schema, config: Config) {
         name: 'Raw Asset',
         group: 'UserAssets',
         description: 'Get single raw asset',
+        query: Type.Object({
+            token: Type.Optional(Type.String())
+        }),
         params: Type.Object({
             asset: Type.String(),
             ext: Type.String()
@@ -162,6 +165,9 @@ export default async function router(schema: Schema, config: Config) {
         name: 'PMTiles TileJSON',
         group: 'UserAssets',
         description: 'Get TileJSON ',
+        query: Type.Object({
+            token: Type.Optional(Type.String())
+        }),
         params: Type.Object({
             asset: Type.String(),
         }),

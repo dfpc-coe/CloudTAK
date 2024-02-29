@@ -133,7 +133,8 @@ export default async function router(schema: Schema, config: Config) {
         }),
         query: Type.Object({
             format: Type.Optional(Type.Enum(IconsetFormatEnum)),
-            download: Type.Optional(Type.Boolean())
+            download: Type.Optional(Type.Boolean()),
+            token: Type.Optional(Type.String()),
         }),
         res: IconsetResponse
     }, async (req, res) => {
@@ -373,6 +374,9 @@ export default async function router(schema: Schema, config: Config) {
             iconset: Type.String(),
             icon: Type.String()
         }),
+        query: Type.Object({
+            token: Type.Optional(Type.String()),
+        }),
         description: 'Icon Data',
     }, async (req, res) => {
         try {
@@ -393,6 +397,7 @@ export default async function router(schema: Schema, config: Config) {
         description: 'Get Spriteset JSON for CoT types',
         query: Type.Object({
             iconset: Type.Optional(Type.String()),
+            token: Type.Optional(Type.String()),
         })
     }, async (req, res) => {
         try {
@@ -425,6 +430,7 @@ export default async function router(schema: Schema, config: Config) {
         description: 'Return a sprite sheet for CoT Types',
         query: Type.Object({
             iconset: Type.Optional(Type.String()),
+            token: Type.Optional(Type.String()),
         })
     }, async (req, res) => {
         try {

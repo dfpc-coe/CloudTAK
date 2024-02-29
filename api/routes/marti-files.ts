@@ -17,6 +17,9 @@ export default async function router(schema: Schema, config: Config) {
         params: Type.Object({
             hash: Type.String(),
         }),
+        query: Type.Object({
+            token: Type.Optional(Type.String())
+        }),
         description: 'Helper API to delete files by file hash',
         res: StandardResponse
     }, async (req, res) => {
@@ -42,7 +45,8 @@ export default async function router(schema: Schema, config: Config) {
             hash: Type.String(),
         }),
         query: Type.Object({
-            name: Type.Optional(Type.String())
+            name: Type.Optional(Type.String()),
+            token: Type.Optional(Type.String())
         }),
         description: 'Helper API to download files by file hash',
     }, async (req, res) => {
