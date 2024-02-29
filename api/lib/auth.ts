@@ -115,13 +115,21 @@ export default class Auth {
         return auth;
     }
 
-    static is_user(config: Config, req: Request<unknown, unknown, unknown, any>): boolean {
-        const auth = this.is_auth(config, req);
+    static async is_user(config: Config, req: Request<unknown, unknown, unknown, any>): Promise<boolean> {
+        const auth = await this.is_auth(config, req);
+        return this.#is_user(auth);
+    }
+
+    static #is_user(auth: AuthResource | AuthUser): boolean {
         return auth instanceof AuthUser;
     }
 
-    static is_resource(config: Config, req: Request<unknown, unknown, unknown, any>): boolean {
-        const auth = this.is_auth(config, req);
+    static async is_resource(config: Config, req: Request<unknown, unknown, unknown, any>): Promise<boolean> {
+        const auth = await this.is_auth(config, req);
+        return this.#is_resource(auth);
+    }
+
+    static #is_resource(auth: AuthResource | AuthUser): boolean {
         return auth instanceof AuthResource;
     }
 
@@ -131,7 +139,7 @@ export default class Auth {
         if (!opts.token) opts.token = false;
         const auth = await this.is_auth(config, req, opts);
 
-        if (this.is_user(config, req)) throw new Err(401, null, 'Only a resource token can access this resource');
+        if (this.#is_user(auth)) throw new Err(401, null, 'Only a resource token can access this resource');
 
         return auth as AuthResource;
     }
@@ -142,7 +150,7 @@ export default class Auth {
         if (!opts.token) opts.token = false;
         const auth = await this.is_auth(config, req, opts);
 
-        if (this.is_resource(config, req)) throw new Err(401, null, 'Only an authenticated user can access this resource');
+        if (this.#is_resource(auth)) throw new Err(401, null, 'Only an authenticated user can access this resource');
 
         return auth as AuthUser;
     }
@@ -151,18 +159,18 @@ export default class Auth {
 function auth_request(config: Config, req: Request<unknown, unknown, unknown, any>, opts?: {
     token: boolean
 }): AuthResource | AuthUser {
-    if (req.headers && req.header('authorization')) {
-        const authorization = (req.header('authorization') || '').split(' ');
+    try {
+        if (req.headers && req.header('authorization')) {
+            const authorization = (req.header('authorization') || '').split(' ');
 
-        if (authorization[0].toLowerCase() !== 'bearer') {
-            throw new Err(401, null, 'Only "Bearer" authorization header is allowed')
-        }
+            if (authorization[0].toLowerCase() !== 'bearer') {
+                throw new Err(401, null, 'Only "Bearer" authorization header is allowed')
+            }
 
-        if (!authorization[1]) {
-            throw new Err(401, null, 'No bearer token present');
-        }
+            if (!authorization[1]) {
+                throw new Err(401, null, 'No bearer token present');
+            }
 
-        try {
             try {
                 return tokenParser(authorization[1], config.SigningSecret);
             } catch (err) {
@@ -172,17 +180,13 @@ function auth_request(config: Config, req: Request<unknown, unknown, unknown, an
                     throw err;
                 }
             }
-        } catch (err) {
-            if (err instanceof Err) throw err;
-            throw new Err(401, err instanceof Error ? err : new Error(String(err)), 'Invalid Token')
-        }
-    } else if (
-        opts
-        && opts.token
-        && req.query
-        && req.query.token
-        && typeof req.query.token === 'string') {
-        try {
+        } else if (
+            opts
+            && opts.token
+            && req.query
+            && req.query.token
+            && typeof req.query.token === 'string'
+        ) {
             try {
                 return tokenParser(req.query.token, config.SigningSecret);
             } catch (err) {
@@ -192,14 +196,11 @@ function auth_request(config: Config, req: Request<unknown, unknown, unknown, an
                     throw err;
                 }
             }
-
-        } catch (err) {
-            if (err instanceof Err) throw err;
-            throw new Err(401, err instanceof Error ? err : new Error(String(err)), 'Invalid Token')
         }
+    } catch (err) {
+        if (err instanceof Err) throw err;
+        throw new Err(401, err instanceof Error ? err : new Error(String(err)), 'Invalid Token')
     }
-
-    throw new Err(500, null, 'Auth Parsing Error');
 }
 
 export function tokenParser(token: string, secret: string): AuthUser | AuthResource {
