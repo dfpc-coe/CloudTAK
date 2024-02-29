@@ -2,6 +2,7 @@ import { createSelectSchema } from 'drizzle-typebox';
 import { Type } from '@sinclair/typebox'
 import { StyleContainer } from './style.js';
 import * as schemas from './schema.js';
+import { TAKGroup, TAKRole } from './api/types.js';
 
 export const StandardResponse = Type.Object({
     status: Type.Integer(),
@@ -24,8 +25,8 @@ export const ProfileResponse = Type.Object({
     created: Type.String(),
     updated: Type.String(),
     tak_callsign: Type.String(),
-    tak_group: Type.String(),
-    tak_role: Type.String(),
+    tak_group: Type.Enum(TAKGroup),
+    tak_role: Type.Enum(TAKRole),
     tak_loc: Type.Any()
 });
 

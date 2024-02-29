@@ -4,6 +4,7 @@ import Err from '@openaddresses/batch-error';
 import Auth, { AuthResource } from '../lib/auth.js';
 import { ProfileResponse } from '../lib/types.js'
 import Config from '../lib/config.js';
+import { TAKRole, TAKGroup } from '../lib/api/types.js'
 
 export default async function router(schema: Schema, config: Config) {
     await schema.get('/profile', {
@@ -28,8 +29,8 @@ export default async function router(schema: Schema, config: Config) {
         description: 'Update User\'s Profile',
         body: Type.Object({
             tak_callsign: Type.Optional(Type.String()),
-            tak_group: Type.Optional(Type.String()),
-            tak_role: Type.Optional(Type.String()),
+            tak_group: Type.Optional(Type.Enum(TAKGroup)),
+            tak_role: Type.Optional(Type.Enum(TAKRole)),
             tak_loc: Type.Optional(Type.Object({
                 type: Type.String(),
                 coordinates: Type.Array(Type.Number())

@@ -3,6 +3,7 @@ import { Static } from '@sinclair/typebox'
 import { StyleContainer } from './style.js';
 import { geometry, GeometryType } from '@openaddresses/batch-generic';
 import { ConnectionAuth } from './connection-config.js';
+import { TAKGroup, TAKRole } from  './api/types.js';
 
 import {
     json,
@@ -47,8 +48,8 @@ export const Profile = pgTable('profile', {
     created: timestamp('created', { withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp('updated', { withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     tak_callsign: text('tak_callsign').notNull().default('CloudTAK User'),
-    tak_group: text('tak_group').notNull().default('Orange'),
-    tak_role: text('tak_role').notNull().default('Team Member'),
+    tak_group: text('tak_group').$type<TAKGroup>().notNull().default(TAKGroup.ORANGE),
+    tak_role: text('tak_role').$type<TAKRole>().notNull().default(TAKRole.TEAM_MEMBER),
     tak_loc: geometry('tak_loc', { srid: 4326, type: GeometryType.Point })
 });
 

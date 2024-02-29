@@ -35,8 +35,8 @@ export default async function router(schema: Schema, config: Config) {
         res: Type.Object({
             name: Type.Optional(Type.String()),
             url: Type.Optional(Type.String()),
-            bounds: Type.Optional(Type.Object({})),
-            center: Type.Optional(Type.Object({})),
+            bounds: Type.Optional(Type.Any()),
+            center: Type.Optional(Type.Any()),
             minzoom: Type.Optional(Type.Integer()),
             maxzoom: Type.Optional(Type.Integer()),
             format: Type.Optional(Type.String())
