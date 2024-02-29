@@ -13,6 +13,7 @@ import { Param } from '@openaddresses/batch-generic';
 import { sql } from 'drizzle-orm';
 import { StandardResponse, IconResponse, IconsetResponse } from '../lib/types.js';
 import { GenericListOrder } from '@openaddresses/batch-generic';
+import{ Icon, Iconset } from '../lib/schema.js'
 
 export type SpriteRecord = {
     json: object;
@@ -41,7 +42,7 @@ export default async function router(schema: Schema, config: Config) {
             limit: Type.Optional(Type.Integer()),
             page: Type.Optional(Type.Integer()),
             order: Type.Optional(Type.Enum(GenericListOrder)),
-            sort: Type.Optional(Type.String({default: 'created'})),
+            sort: Type.Optional(Type.String({default: 'created', enum: Object.keys(Iconset) })),
             filter: Type.Optional(Type.String({default: ''}))
         }),
         res: Type.Object({
@@ -261,7 +262,7 @@ export default async function router(schema: Schema, config: Config) {
             limit: Type.Optional(Type.Integer()),
             page: Type.Optional(Type.Integer()),
             order: Type.Optional(Type.Enum(GenericListOrder)),
-            sort: Type.Optional(Type.String({default: 'created'})),
+            sort: Type.Optional(Type.String({default: 'created', enum: Object.keys(Icon) })),
             iconset: Type.Optional(Type.String()),
             filter: Type.Optional(Type.String({default: ''}))
         }),

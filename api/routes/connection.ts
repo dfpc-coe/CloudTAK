@@ -7,6 +7,7 @@ import { X509Certificate } from 'crypto';
 import { Type } from '@sinclair/typebox'
 import { GenericListOrder } from '@openaddresses/batch-generic';
 import { StandardResponse, ConnectionResponse } from '../lib/types.js';
+import { Connection } from '../lib/schema.js';
 import Schema from '@openaddresses/batch-schema';
 
 export default async function router(schema: Schema, config: Config) {
@@ -20,7 +21,7 @@ export default async function router(schema: Schema, config: Config) {
             limit: Type.Optional(Type.Integer()),
             page: Type.Optional(Type.Integer()),
             order: Type.Optional(Type.Enum(GenericListOrder)),
-            sort: Type.Optional(Type.String({default: 'created'})),
+            sort: Type.Optional(Type.String({default: 'created', enum: Object.keys(Connection)})),
             filter: Type.Optional(Type.String({default: ''}))
         }),
         res: Type.Object({

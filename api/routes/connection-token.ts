@@ -8,6 +8,7 @@ import { promisify } from 'util';
 import jwt from 'jsonwebtoken';
 import { sql } from 'drizzle-orm';
 import { GenericListOrder } from '@openaddresses/batch-generic';
+import { ConnectionToken } from '../lib/schema.js';
 import Schema from '@openaddresses/batch-schema';
 import { StandardResponse, CreateConnectionTokenResponse, ConnectionTokenResponse } from '../lib/types.js';
 
@@ -23,7 +24,7 @@ export default async function router(schema: Schema, config: Config) {
             limit: Type.Optional(Type.Integer()),
             page: Type.Optional(Type.Integer()),
             order: Type.Optional(Type.Enum(GenericListOrder)),
-            sort: Type.Optional(Type.String({default: 'created'})),
+            sort: Type.Optional(Type.String({default: 'created', enum: Object.keys(ConnectionToken)})),
             filter: Type.Optional(Type.String({default: ''}))
         }),
         res: Type.Object({

@@ -11,6 +11,7 @@ import { Param } from '@openaddresses/batch-generic';
 import { sql } from 'drizzle-orm';
 import Auth, { AuthResourceAccess } from '../lib/auth.js';
 import { ImportResponse } from '../lib/types.js';
+import { Import } from '../lib/schema.js';
 
 export enum ImportModeEnum {
     UNKNOWN = 'Unknown',
@@ -227,7 +228,7 @@ export default async function router(schema: Schema, config: Config) {
             limit: Type.Optional(Type.Integer()),
             page: Type.Optional(Type.Integer()),
             order: Type.Optional(Type.Enum(GenericListOrder)),
-            sort: Type.Optional(Type.String({default: 'created'})),
+            sort: Type.Optional(Type.String({default: 'created', enum: Object.keys(Import) })),
             mode: Type.Optional(Type.String()),
             mode_id: Type.Optional(Type.String())
         }),

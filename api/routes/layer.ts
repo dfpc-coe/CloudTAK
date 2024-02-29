@@ -20,6 +20,7 @@ import { Feature } from 'geojson';
 import { Param } from '@openaddresses/batch-generic';
 import { sql } from 'drizzle-orm';
 import { StandardResponse, LayerResponse } from '../lib/types.js';
+import { Layer } from '../lib/schema.js';
 
 export default async function router(schema: Schema, config: Config) {
     const alarm = new Alarm(config.StackName);
@@ -34,7 +35,7 @@ export default async function router(schema: Schema, config: Config) {
             limit: Type.Optional(Type.Integer()),
             page: Type.Optional(Type.Integer()),
             order: Type.Optional(Type.Enum(GenericListOrder)),
-            sort: Type.Optional(Type.String({default: 'created'})),
+            sort: Type.Optional(Type.String({default: 'created', enum: Object.keys(Layer)})),
             filter: Type.Optional(Type.String({default: ''})),
             data: Type.Optional(Type.Integer()),
             connection: Type.Optional(Type.Integer()),
