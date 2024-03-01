@@ -8,6 +8,7 @@ import { Type } from '@sinclair/typebox'
 import { GenericListOrder } from '@openaddresses/batch-generic';
 import { StandardResponse, ConnectionResponse } from '../lib/types.js';
 import { Connection } from '../lib/schema.js';
+import { MachineConnConfig } from '../lib/connection-config.js';
 import Schema from '@openaddresses/batch-schema';
 
 export default async function router(schema: Schema, config: Config) {
@@ -93,7 +94,7 @@ export default async function router(schema: Schema, config: Config) {
             if (!config.server) throw new Err(400, null, 'TAK Server must be configured before a connection can be made');
             const conn = await config.models.Connection.generate(req.body);
 
-            if (conn.enabled) await config.conns.add(conn);
+            if (conn.enabled) await config.conns.add(new MachineConnConfig(config, conn));
 
             const { validFrom, validTo } = new X509Certificate(conn.auth.cert);
 
@@ -136,10 +137,10 @@ export default async function router(schema: Schema, config: Config) {
             });
 
             if (conn.enabled && !config.conns.has(conn.id)) {
-                await config.conns.add(conn);
+                await config.conns.add(new MachineConnConfig(config, conn));
             } else if (!conn.enabled && config.conns.has(conn.id)) {
                 await config.conns.delete(conn.id);
-                await config.conns.add(conn);
+                await config.conns.add(new MachineConnConfig(config, conn));
             }
 
             const { validFrom, validTo } = new X509Certificate(conn.auth.cert);
@@ -201,9 +202,9 @@ export default async function router(schema: Schema, config: Config) {
 
             if (config.conns.has(conn.id)) {
                 await config.conns.delete(conn.id);
-                await config.conns.add(conn);
+                await config.conns.add(new MachineConnConfig(config, conn));
             } else {
-                await config.conns.add(conn);
+                await config.conns.add(new MachineConnConfig(config, conn));
             }
 
             const { validFrom, validTo } = new X509Certificate(conn.auth.cert);

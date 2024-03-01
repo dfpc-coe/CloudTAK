@@ -120,9 +120,8 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
         }
 
         if (!ephemeral && !this.config.nosinks && cot.is_atom()) {
-            const c = conn as InferSelectModel<typeof Connection>;
             try {
-                await this.sinks.cot(c, cot);
+                await this.sinks.cot(conn, cot);
             } catch (err) {
                 console.error('Error', err);
             }

@@ -14,7 +14,7 @@ export default interface ConnectionConfig {
     auth: ConnectionAuth;
     config: Config;
 
-    subscriptions: () => Array<string>;
+    subscriptions: () => Promise<Array<string>>;
 }
 
 export class MachineConnConfig implements ConnectionConfig {
@@ -32,7 +32,7 @@ export class MachineConnConfig implements ConnectionConfig {
         this.auth = connection.auth;
     }
 
-    async subscriptions(): Array<string> {
+    async subscriptions(): Promise<Array<string>> {
         return [];
     }
 }
@@ -56,7 +56,7 @@ export class ProfileConnConfig implements ConnectionConfig {
         this.auth = auth;
     }
 
-    async subscriptions(): Array<string> {
+    async subscriptions(): Promise<Array<string>> {
         return [];
     }
 }
