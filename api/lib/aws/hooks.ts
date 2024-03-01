@@ -12,7 +12,7 @@ export default class HookQueue {
         this.sqs = new SQS.SQSClient({ region: process.env.AWS_DEFAULT_REGION });
     }
 
-    async submit(connectionid: number, MessageBody: string) {
+    async submit(connectionid: number | string, MessageBody: string) {
         try {
             const res = await this.sqs.send(new SQS.SendMessageCommand({
                 QueueUrl: process.env.HookURL,
