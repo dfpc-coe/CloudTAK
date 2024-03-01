@@ -187,7 +187,26 @@ const router = new VueRouter.createRouter({
 
         { path: '/login', name: 'login', component: () => import('./components/Login.vue') },
 
-        { path: '/admin', name: 'admin', component: () => import('./components/Admin.vue') },
+        {
+            path: '/admin',
+            name: 'admin',
+            component: () => import('./components/Admin.vue'),
+            children: [{
+                path: '',
+                name: 'admin-default',
+                redirect: to => {
+                    return { name: 'admin-server' };
+                }
+            },{
+                path: 'task',
+                name: 'admin-task',
+                component: () => import('./components/Admin/AdminTasks.vue')
+            },{
+                path: 'server',
+                name: 'admin-server',
+                component: () => import('./components/Admin/AdminServer.vue')
+            }]
+        },
 
         { path: '/:catchAll(.*)', name: 'lost', component: () => import('./components/Lost.vue') },
     ]
