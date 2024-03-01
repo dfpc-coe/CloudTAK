@@ -7,6 +7,7 @@ import Modeler from '@openaddresses/batch-generic';
 import { Connection } from './schema.js';
 import { InferSelectModel } from 'drizzle-orm';
 import sleep from './sleep.js';
+import TAKAPI, { APIAuthCertificate, } from '../lib/tak-api.js';
 import ConnectionConfig, {
     MachineConnConfig
 }from './connection-config.js';
@@ -128,34 +129,44 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
         }
     }
 
-    async add(config: ConnectionConfig, ephemeral=false): Promise<ConnectionClient> {
-        if (!config.auth || !config.auth.cert || !config.auth.key) throw new Err(400, null, 'Connection must have auth.cert & auth.key');
-        const tak = await TAK.connect(config.id, new URL(this.config.server.url), config.auth);
-        const connClient = new ConnectionClient(config, tak, ephemeral);
+    async add(connConfig: ConnectionConfig, ephemeral=false): Promise<ConnectionClient> {
+        if (!connConfig.auth || !connConfig.auth.cert || !connConfig.auth.key) throw new Err(400, null, 'Connection must have auth.cert & auth.key');
+        const tak = await TAK.connect(connConfig.id, new URL(this.config.server.url), connConfig.auth);
+        const connClient = new ConnectionClient(connConfig, tak, ephemeral);
 
-        this.set(config.id, connClient);
+        const api = await TAKAPI.init(new URL(String(this.config.server.api)), new APIAuthCertificate(connConfig.auth.cert, connConfig.auth.key));
+        this.set(connConfig.id, connClient);
 
         tak.on('cot', async (cot: CoT) => {
             connClient.retry = 0;
             connClient.initial = false;
 
-            this.cot(config, cot, ephemeral);
+            this.cot(connConfig, cot, ephemeral);
+        }).on('secureConnect', async () => {
+            for (const sub of await connConfig.subscriptions()) {
+                try {
+                    await api.Mission.subscribe(sub, { uid: String(connConfig.id) });
+                    console.log(`Connection: ${connConfig.id} - Sync: ${sub}: Subscribed!`);
+                } catch (err) {
+                    console.warn(`Connection: ${connConfig.id} - Sync: ${sub}: ${err.message}`);
+                }
+            }
         }).on('end', async () => {
-            console.error(`not ok - ${config.id} - ${config.name} @ end`);
+            console.error(`not ok - ${connConfig.id} - ${connConfig.name} @ end`);
             this.retry(connClient);
         }).on('timeout', async () => {
-            console.error(`not ok - ${config.id} - ${config.name} @ timeout`);
+            console.error(`not ok - ${connConfig.id} - ${connConfig.name} @ timeout`);
             this.retry(connClient);
         }).on('ping', async () => {
-            if (this.config.StackName !== 'test' && !ephemeral && typeof config.id === 'number') {
+            if (this.config.StackName !== 'test' && !ephemeral && typeof connConfig.id === 'number') {
                 try {
-                    await this.metrics.post(config.id);
+                    await this.metrics.post(connConfig.id);
                 } catch (err) {
                     console.error(`not ok - failed to push metrics - ${err}`);
                 }
             }
         }).on('error', async (err) => {
-            console.error(`not ok - ${config.id} - ${config.name} @ error:${err}`);
+            console.error(`not ok - ${connConfig.id} - ${connConfig.name} @ error:${err}`);
             this.retry(connClient);
         });
 
