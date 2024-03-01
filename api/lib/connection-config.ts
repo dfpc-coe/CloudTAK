@@ -1,5 +1,5 @@
 import { Connection } from './schema.js';
-import { InferSelectModel } from 'drizzle-orm';
+import { InferSelectModel, sql } from 'drizzle-orm';
 import Config from './config.js';
 
 export type ConnectionAuth = {
@@ -33,7 +33,16 @@ export class MachineConnConfig implements ConnectionConfig {
     }
 
     async subscriptions(): Promise<Array<string>> {
-        return [];
+        const missions = await this.config.models.Data.list({
+            where: sql`
+                connection = ${this.id}::INT
+                AND mission_sync IS True
+            `
+        });
+
+        return missions.items.map((m) => {
+            return m.name;
+        })
     }
 }
 
