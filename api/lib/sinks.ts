@@ -4,7 +4,7 @@ import ESRISink from './sinks/esri.js';
 import SinkInterface from './sink.js';
 import HookQueue from './aws/hooks.js';
 import Cacher from './cacher.js';
-import { Connection, ConnectionSink } from './schema.js';
+import { ConnectionSink } from './schema.js';
 import { sql } from 'drizzle-orm';
 import Modeler from '@openaddresses/batch-generic';
 import ConnectionConfig from './connection-config.js';
