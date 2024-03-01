@@ -1,3 +1,4 @@
+import sharp from 'sharp';
 import { Type } from '@sinclair/typebox'
 import Schema from '@openaddresses/batch-schema';
 import Auth from '../lib/auth.js';
@@ -135,6 +136,7 @@ export default async function router(schema: Schema, config: Config) {
         query: Type.Object({
             format: Type.Optional(Type.Enum(IconsetFormatEnum)),
             download: Type.Optional(Type.Boolean()),
+            resize: Type.Optional(Type.Boolean({ description: 'Resize Images to 32x32px'})),
             token: Type.Optional(Type.String()),
         }),
         res: IconsetResponse
@@ -173,9 +175,14 @@ export default async function router(schema: Schema, config: Config) {
                 };
 
                 for (const icon of (await config.models.Icon.list({
-                    limit: 1000,
                     where: sql`iconset = ${String(req.params.iconset)}`
                 })).items) {
+                    let buffer = Buffer.from(icon.data, 'base64');
+
+                    if (req.query.resize) {
+                        buffer = await sharp(buffer).resize(32).toBuffer()
+                    }
+
                     archive.append(Buffer.from(icon.data, 'base64'), { name: icon.name });
                     // @ts-ignore
                     xmljson.iconset.icon.push({ $: { name: path.parse(icon.name).base, type2525b: icon.type2525b } })
