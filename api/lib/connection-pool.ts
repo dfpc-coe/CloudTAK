@@ -70,7 +70,7 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
         return new Promise((resolve, reject) => {
             stream.on('data', async (conn: InferSelectModel<typeof Connection>) => {
                 if (conn.enabled && !this.config.local) {
-                    conns.push(this.add(new MachineConnConfig(conn)));
+                    conns.push(this.add(new MachineConnConfig(this.config, conn)));
                 }
             }).on('error', (err) => {
                 return reject(err);
