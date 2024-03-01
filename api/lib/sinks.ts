@@ -4,10 +4,10 @@ import ESRISink from './sinks/esri.js';
 import SinkInterface from './sink.js';
 import HookQueue from './aws/hooks.js';
 import Cacher from './cacher.js';
-import { Connection, ConnectionSink } from './schema.js';
-import { type InferSelectModel } from 'drizzle-orm';
+import { ConnectionSink } from './schema.js';
 import { sql } from 'drizzle-orm';
 import Modeler from '@openaddresses/batch-generic';
+import ConnectionConfig from './connection-config.js';
 
 export default class Sinks extends Map<string, typeof SinkInterface> {
     config: Config;
@@ -22,7 +22,7 @@ export default class Sinks extends Map<string, typeof SinkInterface> {
         this.set('ArcGIS', ESRISink);
     }
 
-    async cot(conn: InferSelectModel<typeof Connection>, cot: CoT): Promise<boolean> {
+    async cot(conn: ConnectionConfig, cot: CoT): Promise<boolean> {
         const sinks = await this.config.cacher.get(Cacher.Miss({}, `connection-${conn.id}-sinks`), async () => {
             const ConnectionSinkModel = new Modeler(this.config.pg, ConnectionSink);
 
