@@ -37,8 +37,14 @@ export default async function router(schema: Schema, config: Config) {
             url.searchParams.append('username', req.body.username);
             url.searchParams.append('password', req.body.password);
 
+            const jar = new CookieJar();
+            const agent = new CookieAgent({ cookies: { jar } });
+
             const authres = await fetch(url, {
-                method: 'POST'
+                method: 'POST',
+                credentials: 'include',
+                // @ts-expect-error
+                dispatcher: agent
             });
 
             if (!authres.ok) {
@@ -54,15 +60,7 @@ export default async function router(schema: Schema, config: Config) {
             }
 
             if (config.AuthGroup) {
-                const url = new URL('/Marti/api/groups/all', config.local ? 'http://localhost:5001' : config.MartiAPI);
-
-                const jar = new CookieJar();
-                await jar.setCookie(new Cookie({
-                    key: 'access_token',
-                    value: body.access_token
-                }), config.local ? 'http://localhost:5001' : config.MartiAPI);
-
-                const agent = new CookieAgent({ cookies: { jar } });
+                const url = new URL('/Marti/api/groups/all?useCache=true', config.local ? 'http://localhost:5001' : config.MartiAPI);
 
                 const groupres = await fetch(url, {
                     credentials: 'include',
