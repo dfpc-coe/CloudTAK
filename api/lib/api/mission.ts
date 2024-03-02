@@ -48,6 +48,11 @@ export const MissionSubscriber = Type.Object({
     })
 })
 
+export const AttachContentsInput = Type.Object({
+    hashes: Type.Optional(Type.Array(Type.String())),
+    uids: Type.Optional(Type.Array(Type.String())),
+});
+
 /**
  * @class
  */
@@ -84,14 +89,12 @@ export default class {
     /**
      * Attach a file resource by hash from the TAK Server file manager
      */
-    async attachContents(name: string, hashes: string[]) {
+    async attachContents(name: string, body: Static<typeof AttachContentsInput>) {
         const url = new URL(`/Marti/api/missions/${encodeURIComponent(name)}/contents`, this.api.url);
 
         return await this.api.fetch(url, {
             method: 'PUT',
-            body: {
-                hashes: hashes
-            }
+            body
         });
     }
 
