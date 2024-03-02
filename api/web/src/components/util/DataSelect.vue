@@ -6,7 +6,7 @@
     <template v-else>
         <div class='d-flex'>
             <template v-if='selected.id'>
-                <span class='mt-2' v-text='selected.name'/>
+                <span @click='$router.push(`/connection/${selected.connection}/data/${selected.id}`)' class='mt-2 cursor-pointer' v-text='selected.name'/>
             </template>
             <template v-else>
                 <span class='mt-2'>No Data Repo Selected</span>
