@@ -59,7 +59,6 @@ export default async function router(schema: Schema, config: Config) {
             connectin Id for subsequent calls
         `,
         params: Type.Object({
-            connectionid: Type.Integer(),
             dataid: Type.Integer()
         }),
         res: DataResponse

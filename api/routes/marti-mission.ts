@@ -287,7 +287,9 @@ export default async function router(schema: Schema, config: Config) {
                 remoteAddress: req._remoteAddress
             }
 
-            const missionContent = await api.Mission.attachContents(req.params.name, [content.Hash]);
+            const missionContent = await api.Mission.attachContents(req.params.name, {
+                hashes: [content.Hash]
+            });
 
             return res.json(missionContent);
         } catch (err) {
