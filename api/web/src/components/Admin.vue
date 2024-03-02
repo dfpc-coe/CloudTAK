@@ -30,6 +30,10 @@
                                             "active": $route.name === "admin-task",
                                             "cursor-pointer": $route.name !== "admin-task"
                                         }'><IconBrandDocker/><span class='mx-3'>ETL Tasks</span></span>
+                                        <span @click='$router.push(`/admin/layer`)' class="list-group-item list-group-item-action d-flex align-items-center" :class='{
+                                            "active": $route.name === "admin-layer",
+                                            "cursor-pointer": $route.name !== "admin-layer"
+                                        }'><IconBuildingBroadcastTower/><span class='mx-3'>Layers</span></span>
                                     </div>
                                 </div>
                             </div>
@@ -60,7 +64,8 @@ import {
 } from '@tak-ps/vue-tabler'
 import {
     IconServer,
-    IconBrandDocker
+    IconBrandDocker,
+    IconBuildingBroadcastTower,
 } from '@tabler/icons-vue'
 
 export default {
@@ -68,6 +73,7 @@ export default {
     components: {
         IconServer,
         IconBrandDocker,
+        IconBuildingBroadcastTower,
         PageFooter,
         TablerLoading,
         TablerBreadCrumb,
