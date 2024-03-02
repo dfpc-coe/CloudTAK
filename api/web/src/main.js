@@ -17,7 +17,6 @@ const router = new VueRouter.createRouter({
 
         { path: '/layer', name: 'layers', component: () => import('./components/Layers.vue') },
         { path: '/layer/new', name: 'layer-new', component: () => import('./components/LayerEdit.vue') },
-        { path: '/layer/admin', name: 'layer-admin', component: () => import('./components/LayerAdmin.vue') },
 
         {
             path: '/layer/:layerid',
@@ -197,6 +196,10 @@ const router = new VueRouter.createRouter({
                 redirect: to => {
                     return { name: 'admin-server' };
                 }
+            },{
+                path: 'layer',
+                name: 'admin-layer',
+                component: () => import('./components/Admin/AdminLayers.vue')
             },{
                 path: 'task',
                 name: 'admin-task',
