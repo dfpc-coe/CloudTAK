@@ -4,37 +4,37 @@ import Err from '@openaddresses/batch-error';
 import { Readable } from 'node:stream'
 import { TAKList } from './types.js';
 
-export type Mission = {
-    name: string;
-    description: string;
-    chatRoom: string;
-    baseLayer: string;
-    bbox: string;
-    path: string;
-    classification: string;
-    tool: string;
-    keywords: Array<unknown>;
-    creatorUid: string;
-    createTime: string;
-    externalData: Array<unknown>;
-    feeds: Array<unknown>;
-    mapLayers: Array<unknown>;
-    ownerRole: Array<unknown>;
-    inviteOnly: boolean;
-    expiration: number;
-    guid: string;
-    uids: Array<unknown>,
-    contents: Array<{
-        data: {
-            name: string;
-            hash: string;
-        }
-    }>,
-    passwordProtected: boolean;
-    token?: string; // Only present when mission created
-    groups?: Array<string>; // Only present on Mission.get()
-    missionChanges?: Array<unknown>; // Only present on Mission.get()
-}
+export const Mission = Type.Object({
+    name: Type.String(),
+    description: Type.String(),
+    chatRoom: Type.String(),
+    baseLayer: Type.String(),
+    bbox: Type.String(),
+    path: Type.String(),
+    classification: Type.String(),
+    tool: Type.String(),
+    keywords: Type.Array(Type.Unknown()),
+    creatorUid: Type.String(),
+    createTime: Type.String(),
+    externalData: Type.Array(Type.Unknown()),
+    feeds: Type.Array(Type.Unknown()),
+    mapLayers: Type.Array(Type.Unknown()),
+    ownerRole: Type.Array(Type.Unknown()),
+    inviteOnly: Type.Boolean(),
+    expiration: Type.Number(),
+    guid: Type.String(),
+    uids: Type.Array(Type.Unknown()),
+    contents: Type.Array(Type.Object({
+        data: Type.Object({
+            name: Type.String(),
+            hash: Type.String()
+        })
+    })),
+    passwordProtected: Type.Boolean(),
+    token: Type.Optional(Type.String()),                        // Only present when mission created
+    groups: Type.Optional(Type.Array(Type.String())),           // Only present on Mission.get()
+    missionChanges: Type.Optional(Type.Array(Type.Unknown()))   // Only present on Mission.get()
+});
 
 export const MissionSubscriber = Type.Object({
     token: Type.Optional(Type.String()),
@@ -223,11 +223,11 @@ export default class {
         end?: string;
 
         [key: string]: unknown;
-    }): Promise<Mission> {
+    }): Promise<Static<typeof Mission>> {
         const url = new URL(`/Marti/api/missions/guid/${encodeURIComponent(guid)}`, this.api.url);
 
         for (const q in query) url.searchParams.append(q, String(query[q]));
-        const missions: TAKList<Mission> = await this.api.fetch(url, {
+        const missions: TAKList<Static <typeof Mission>> = await this.api.fetch(url, {
             method: 'GET'
         });
 
@@ -247,11 +247,11 @@ export default class {
         end?: string;
 
         [key: string]: unknown;
-    }): Promise<Mission> {
+    }): Promise<Static<typeof Mission>> {
         const url = new URL(`/Marti/api/missions/${encodeURIComponent(name)}`, this.api.url);
 
         for (const q in query) url.searchParams.append(q, String(query[q]));
-        const missions: TAKList<Mission> = await this.api.fetch(url, {
+        const missions: TAKList<Static<typeof Mission>> = await this.api.fetch(url, {
             method: 'GET'
         });
 
@@ -280,7 +280,7 @@ export default class {
         allowDupe?: string;
 
         [key: string]: unknown;
-    }): Promise<TAKList<Mission>> {
+    }): Promise<TAKList<Static<typeof Mission>>> {
         const url = new URL(`/Marti/api/missions/${encodeURIComponent(name)}`, this.api.url);
 
         if (query.group && Array.isArray(query.group)) query.group = query.group.join(',');
