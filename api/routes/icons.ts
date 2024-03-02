@@ -40,7 +40,7 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Icons',
         description: 'List Iconsets',
         query: Type.Object({
-            limit: Type.Optional(Type.Integer()),
+            limit: Type.Optional(Type.Integer({ default: 25 })),
             page: Type.Optional(Type.Integer()),
             order: Type.Optional(Type.Enum(GenericListOrder)),
             sort: Type.Optional(Type.String({default: 'created', enum: Object.keys(Iconset) })),
@@ -266,7 +266,7 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Icons',
         description: 'List Icons',
         query: Type.Object({
-            limit: Type.Optional(Type.Integer()),
+            limit: Type.Optional(Type.Integer({ default: 100 })),
             page: Type.Optional(Type.Integer()),
             order: Type.Optional(Type.Enum(GenericListOrder)),
             sort: Type.Optional(Type.String({default: 'created', enum: Object.keys(Icon) })),
