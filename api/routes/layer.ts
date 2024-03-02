@@ -21,6 +21,7 @@ import { Param } from '@openaddresses/batch-generic';
 import { sql } from 'drizzle-orm';
 import { StandardResponse, LayerResponse } from '../lib/types.js';
 import { Layer } from '../lib/schema.js';
+import TAKAPI, { APIAuthCertificate, } from '../lib/tak-api.js';
 
 export default async function router(schema: Schema, config: Config) {
     const alarm = new Alarm(config.StackName);
@@ -438,19 +439,18 @@ export default async function router(schema: Schema, config: Config) {
             }
 
             let pooledClient;
+            let data;
             const cots = [];
-            if (layer.connection) {
+            if (!layer.data && layer.connection) {
                 pooledClient = await config.conns.get(layer.connection);
 
                 for (const feat of req.body.features) {
                     cots.push(CoT.from_geojson(feat))
                 }
             } else if (layer.data) {
-                const data = await config.models.Data.from(layer.data);
+                data = await config.models.Data.from(layer.data);
 
-                if (req.headers['content-type'] !== 'application/json') {
-                    throw new Err(400, null, 'Data Sync layers must be application/json');
-                } else if (!data.mission_sync) {
+                if (!data.mission_sync) {
                     return res.status(202).json({ status: 202, message: 'Recieved but Data Mission Sync Disabled' });
                 }
 
@@ -470,9 +470,15 @@ export default async function router(schema: Schema, config: Config) {
 
             if (cots.length === 0) return res.json({ status: 200, message: 'No features found' });
 
-            console.error(cots[0].to_xml());
             pooledClient.tak.write(cots);
             for (const cot of cots) config.conns.cot(pooledClient.config, cot);
+
+            if (data) {
+                const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(pooledClient.config.auth.cert, pooledClient.config.auth.key));
+                const missionContent = await api.Mission.attachContents(data.name, {
+                    uids: cots.map((cot) => { return cot.raw.event._attributes.uid })
+                });
+            }
 
             // TODO Only GeoJSON Features go to Dynamo, this should also store CoT XML
             // @ts-ignore
