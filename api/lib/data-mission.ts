@@ -1,4 +1,5 @@
 import { Data } from './schema.js';
+import { Static } from '@sinclair/typebox';
 import { InferSelectModel } from 'drizzle-orm';
 import TAKAPI, {
     APIAuthCertificate,
@@ -7,7 +8,7 @@ import Config from './config.js';
 import { Mission } from './api/mission.js';
 
 export default class DataMission {
-    static async sync(config: Config, data: InferSelectModel<typeof Data>): Promise<Mission | void> {
+    static async sync(config: Config, data: InferSelectModel<typeof Data>): Promise<Static<typeof Mission> | void> {
 
         const connection = await config.models.Connection.from(data.connection);
 
