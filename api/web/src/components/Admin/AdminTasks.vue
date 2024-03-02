@@ -1,21 +1,47 @@
 <template>
 <div>
     <div class="card-header">
-        <h3 class='card-title'>ETL Tasks</h3>
+        <template v-if='task'>
+            <IconCircleArrowLeft @click='task = null' class='cursor-pointer'/>
+            <h3 class='mx-2 card-title'>ETL Tasks</h3>
+        </template>
+        <template v-else>
+            <h3 class='card-title'>ETL Tasks</h3>
+        </template>
         <div class='ms-auto'>
             <div class='btn-list'>
             </div>
         </div>
     </div>
     <TablerLoading v-if='loading'/>
-    <div v-else class="card-body">
-        <div :key='task' v-for='task in Object.keys(tasks.items)' class='hover-light px-2 py-2 d-flex'>
-            <div v-text='task'/>
-            <div class='ms-auto'>
-                <span v-text='tasks.items[task].length'/> Versions
-            </div>
+    <TablerNone
+        v-else-if='!Object.keys(tasks.items)'
+        label='Tasks'
+        :create='false'
+    />
+    <template v-else-if='task'>
+        <div class="table-responsive">
+            <table class="table card-table table-hover table-vcenter datatable cursor-pointer">
+                <tbody>
+                    <tr :key='version' v-for='version in tasks.items[task]'>
+                        <td v-text='version'/>
+                    </tr>
+                </tbody>
+            </table>
         </div>
-    </div>
+    </template>
+    <template v-else>
+        <div class="table-responsive">
+            <table class="table card-table table-hover table-vcenter datatable cursor-pointer">
+                <tbody>
+                    <tr @click='task = t' :key='t' v-for='t in Object.keys(tasks.items)'>
+                        <td v-text='t'/>
+                        <td v-text='`${tasks.items[t].length} Versions`'/>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </template>
 </div>
 </template>
 
@@ -24,6 +50,7 @@ import {
     TablerLoading,
 } from '@tak-ps/vue-tabler';
 import {
+    IconCircleArrowLeft
 } from '@tabler/icons-vue';
 
 export default {
@@ -31,6 +58,7 @@ export default {
     data: function() {
         return {
             loading: true,
+            task: null,
             tasks: {
                 total: 0,
                 items: []
@@ -49,6 +77,7 @@ export default {
     },
     components: {
         TablerLoading,
+        IconCircleArrowLeft,
     }
 }
 </script>
