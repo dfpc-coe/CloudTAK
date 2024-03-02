@@ -3,7 +3,7 @@
     <div class="card-header">
         <template v-if='task'>
             <IconCircleArrowLeft @click='task = null' class='cursor-pointer'/>
-            <h3 class='mx-2 card-title'>ETL Tasks</h3>
+            <h3 class='mx-2 card-title' v-text='task'></h3>
         </template>
         <template v-else>
             <h3 class='card-title'>ETL Tasks</h3>
