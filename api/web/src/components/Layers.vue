@@ -15,9 +15,6 @@
                                 <a @click='$router.push("/layer/new")' class="cursor-pointer btn btn-primary">
                                     New Layer
                                 </a>
-                                <a @click='$router.push("/layer/admin")' class="cursor-pointer btn btn-secondary">
-                                    <IconSettings/>
-                                </a>
                             </div>
                         </div>
                     </div>
