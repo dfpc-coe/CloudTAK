@@ -7,7 +7,8 @@ import Err from '@openaddresses/batch-error';
 export const StylePoint = Type.Object({
     color: Type.Optional(Type.String()),
     remarks: Type.Optional(Type.String()),
-    callsign: Type.Optional(Type.String())
+    callsign: Type.Optional(Type.String()),
+    icon: Type.Optional(Type.String())
 });
 
 export const StyleLine = Type.Object({
