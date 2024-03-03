@@ -3,7 +3,7 @@ import * as pmtiles from 'pmtiles';
 import mapgl from 'maplibre-gl'
 import * as terraDraw from 'terra-draw';
 import pointOnFeature from '@turf/point-on-feature';
-import { useOverlayStore } from './overlays.js'
+import { useOverlayStore } from './overlays.ts'
 const overlayStore = useOverlayStore();
 
 export const useMapStore = defineStore('cloudtak', {
