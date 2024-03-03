@@ -5,6 +5,7 @@
     "private": true,
     "scripts": {
         "serve": "vite serve --port 8080",
+        "check": "vue-tsc",
         "build": "vite build",
         "lint": "vite lint"
     },
@@ -39,7 +40,8 @@
         "@vitejs/plugin-vue": "^5.0.0",
         "eslint": "^8.11.0",
         "eslint-plugin-vue": "^9.0.0",
-        "vite": "^5.0.0"
+        "vite": "^5.0.0",
+        "vue-tsc": "^2.0.3"
     },
     "eslintConfig": {
         "root": true,
