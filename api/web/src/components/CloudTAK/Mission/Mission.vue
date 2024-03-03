@@ -211,7 +211,7 @@ import {
     TablerInput,
     TablerLoading
 } from '@tak-ps/vue-tabler';
-import { useOverlayStore } from '/src/stores/overlays.js';
+import { useOverlayStore } from '/src/stores/overlays.ts';
 import { useMapStore } from '/src/stores/map.js';
 const overlayStore = useOverlayStore();
 const mapStore = useMapStore();

@@ -58,7 +58,7 @@ import {
     TablerNone,
     TablerLoading
 } from '@tak-ps/vue-tabler';
-import { useOverlayStore } from '/src/stores/overlays.js';
+import { useOverlayStore } from '/src/stores/overlays.ts';
 const overlayStore = useOverlayStore();
 
 export default {
