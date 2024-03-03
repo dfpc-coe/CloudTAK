@@ -129,7 +129,10 @@ export const useCOTStore = defineStore('cots', {
                     // Format of icon needs to change for spritesheet
                     feat.properties.icon = feat.properties.icon.replace('/', ':').replace(/.png$/, '');
                 } else {
-                    feat.properties.icon = `${feat.properties.type}`;
+                    // TODO Only add icon if one actually exists in the spritejson
+                    if (!['u-d-p'].includes(feat.properties.type)) {
+                        feat.properties.icon = `${feat.properties.type}`;
+                    }
                 }
             } else if (feat.geometry.type.includes('Line') || feat.geometry.type.includes('Polygon')) {
                 if (!feat.properties['stroke']) feat.properties.stroke = '#d63939';

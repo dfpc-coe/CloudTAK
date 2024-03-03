@@ -417,6 +417,7 @@ export default {
                         feat.properties.type = 'u-d-f';
                     } else if (mapStore.draw.getMode() === 'point') {
                         feat.properties.type = 'u-d-p';
+                        feat.properties.color = '#00FF00'
                     }
 
                     mapStore.draw._store.delete([id]);

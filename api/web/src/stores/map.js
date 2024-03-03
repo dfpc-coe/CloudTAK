@@ -470,7 +470,7 @@ function cotStyles(id, opts = {
         const groupFilter = [
             'all',
             ['==', '$type', 'Point'],
-            ['has', 'color']
+            ['has', 'group']
         ]
         styles.push({
             id: 'cots-group',
