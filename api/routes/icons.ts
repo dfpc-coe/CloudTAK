@@ -175,6 +175,7 @@ export default async function router(schema: Schema, config: Config) {
                 };
 
                 for (const icon of (await config.models.Icon.list({
+                    limit: 1000,
                     where: sql`iconset = ${String(req.params.iconset)}`
                 })).items) {
                     let buffer = Buffer.from(icon.data, 'base64');
