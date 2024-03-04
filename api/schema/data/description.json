@@ -1,5 +1,0 @@
-{
-    "type": "string",
-    "description": "Human readable description of Data Sync package",
-    "$comment": "text"
-}

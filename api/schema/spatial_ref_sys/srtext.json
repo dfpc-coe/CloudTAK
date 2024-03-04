@@ -1,9 +1,0 @@
-{
-    "type": [
-        "string",
-        "null"
-    ],
-    "maxLength": 2048,
-    "description": "",
-    "$comment": "varchar"
-}

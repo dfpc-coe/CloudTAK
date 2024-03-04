@@ -1,9 +1,0 @@
-{
-    "type": "string",
-    "default": "asc",
-    "enum": [
-        "desc",
-        "asc"
-    ],
-    "description": "Sort order to apply to results"
-}
