@@ -4,10 +4,8 @@ import Err from '@openaddresses/batch-error';
 import Dynamo from '../lib/aws/dynamo.js';
 import Config from '../lib/config.js';
 import Cacher from '../lib/cacher.js';
-import Auth from '../lib/auth.js';
+import Auth, { AuthResourceAccess }  from '../lib/auth.js';
 import { Response } from 'express';
-import { AuthRequest } from '@tak-ps/blueprint-login';
-import { AuthResourceAccess } from '@tak-ps/blueprint-login';
 
 export default async function router(schema: Schema, config: Config) {
     const ddb = new Dynamo(config.StackName);

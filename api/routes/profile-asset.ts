@@ -13,7 +13,6 @@ import jwt from 'jsonwebtoken';
 import { includesWithGlob } from "array-includes-with-glob";
 import assetList from '../lib/asset.js';
 import { Response } from 'express';
-import { AuthRequest } from '@tak-ps/blueprint-login';
 import Config from '../lib/config.js';
 
 export default async function router(schema: Schema, config: Config) {

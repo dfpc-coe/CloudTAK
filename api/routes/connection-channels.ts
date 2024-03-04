@@ -1,8 +1,7 @@
 import Err from '@openaddresses/batch-error';
-import Auth from '../lib/auth.js';
+import Auth, { AuthResourceAccess } from '../lib/auth.js';
 import Config from '../lib/config.js';
 import TAKAPI, { APIAuthCertificate, } from '../lib/tak-api.js';
-import { AuthResourceAccess } from '@tak-ps/blueprint-login';
 import { Type } from '@sinclair/typebox'
 import { GenericListOrder } from '@openaddresses/batch-generic';
 import { StandardResponse, ConnectionResponse, GenericMartiResponse } from '../lib/types.js';

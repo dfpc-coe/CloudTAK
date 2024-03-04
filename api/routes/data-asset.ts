@@ -4,18 +4,15 @@ import Err from '@openaddresses/batch-error';
 import busboy from 'busboy';
 import fs from 'node:fs/promises';
 import path from 'path';
-import Auth from '../lib/auth.js';
+import Auth, { AuthResourceAccess }  from '../lib/auth.js';
 import S3 from '../lib/aws/s3.js';
 import Stream from 'node:stream';
 import Batch from '../lib/aws/batch.js';
 import jwt from 'jsonwebtoken';
 import { includesWithGlob } from "array-includes-with-glob";
 import assetList from '../lib/asset.js';
-import { Response } from 'express';
-import { AuthRequest } from '@tak-ps/blueprint-login';
 import Config from '../lib/config.js';
 import DataMission from '../lib/data-mission.js';
-import { AuthResourceAccess } from '@tak-ps/blueprint-login';
 import { InferSelectModel } from 'drizzle-orm';
 import { Data } from '../lib/schema.js';
 import { StandardResponse, AssetResponse, GenericMartiResponse } from '../lib/types.js';
@@ -91,6 +88,7 @@ export default async function router(schema: Schema, config: Config) {
         try {
             const auth = (await config.models.Connection.from(req.params.connectionid)).auth;
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
+
             const data = await config.models.Data.from(req.params.dataid);
 
             const content = await api.Files.upload({
@@ -106,12 +104,19 @@ export default async function router(schema: Schema, config: Config) {
                 remoteAddress: req._remoteAddress || '127.0.0.1'
             }
 
+            try {
+                const mission = await DataMission.sync(config, data);
+            } catch (err) {
+                console.error(err)
+            }
+
             const missionContent = await api.Mission.attachContents(data.name, {
                 hashes: [content.Hash]
             });
 
             return res.json(missionContent);
         } catch (err) {
+            console.error(err);
             return Err.respond(err, res);
         }
     });

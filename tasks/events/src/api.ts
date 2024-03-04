@@ -53,6 +53,7 @@ export default class API {
         const json = await res.json();
 
         if (!res.ok) {
+            console.error(JSON.stringify(json))
             const err = json as { message: string };
             throw new Error(err.message);
         }

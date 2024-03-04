@@ -3,12 +3,11 @@ import { GenericListOrder } from '@openaddresses/batch-generic';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Cacher from '../lib/cacher.js';
-import Auth from '../lib/auth.js';
+import Auth, { AuthResourceAccess } from '../lib/auth.js';
 import { LayerAlert } from '../lib/schema.js';
 import Config from '../lib/config.js';
 import { Param } from '@openaddresses/batch-generic';
 import { sql, eq, InferSelectModel } from 'drizzle-orm';
-import { AuthResourceAccess } from '@tak-ps/blueprint-login';
 import { StandardResponse, LayerAlertResponse } from '../lib/types.js';
 
 export enum LayerAlertPriority {
