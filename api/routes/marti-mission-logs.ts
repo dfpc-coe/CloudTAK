@@ -6,7 +6,6 @@ import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
 import bodyparser from 'body-parser';
 import S3 from '../lib/aws/s3.js';
-import { AuthUser, AuthResource } from '@tak-ps/blueprint-login';
 import TAKAPI, {
     APIAuthToken,
     APIAuthCertificate,
