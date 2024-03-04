@@ -1,5 +1,0 @@
-{
-    "type": "boolean",
-    "description": "Is the layer passing CoT messages",
-    "$comment": "bool"
-}

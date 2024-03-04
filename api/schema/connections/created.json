@@ -1,6 +1,0 @@
-{
-    "type": "string",
-    "description": "Creation TimeStamp",
-    "$comment": "timestamptz",
-    "format": "date-time"
-}

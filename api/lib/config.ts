@@ -130,10 +130,7 @@ export default class Config {
 
         const pg: Pool<typeof pgtypes> = await Pool.connect(args.postgres, pgtypes, {
             ssl: process.env.StackName === 'test' ? undefined  : { rejectUnauthorized: false },
-            migrationsFolder: (new URL('../migrations', import.meta.url)).pathname,
-            jsonschema: {
-                dir: new URL('../schema', import.meta.url)
-            }
+            migrationsFolder: (new URL('../migrations', import.meta.url)).pathname
         })
 
         const models = new Models(pg);

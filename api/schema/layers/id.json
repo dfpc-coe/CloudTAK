@@ -1,5 +1,0 @@
-{
-    "type": "number",
-    "description": "Unique Layer ID",
-    "$comment": "int4"
-}

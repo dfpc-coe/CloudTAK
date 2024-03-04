@@ -1,5 +1,0 @@
-{
-    "type": "number",
-    "description": "Unique Connection ID",
-    "$comment": "int4"
-}
