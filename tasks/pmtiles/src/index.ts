@@ -1,7 +1,7 @@
 import Lambda from "aws-lambda";
 import jwt from 'jsonwebtoken';
 import S3 from "@aws-sdk/client-s3";
-import pmtiles from 'pmtiles';
+import * as pmtiles from 'pmtiles';
 import zlib from "zlib";
 // @ts-ignore
 import vtquery from '@mapbox/vtquery';

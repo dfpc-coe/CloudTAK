@@ -3,7 +3,7 @@ import * as pmtiles from 'pmtiles';
 import mapgl from 'maplibre-gl'
 import * as terraDraw from 'terra-draw';
 import pointOnFeature from '@turf/point-on-feature';
-import { useOverlayStore } from './overlays.js'
+import { useOverlayStore } from './overlays.ts'
 const overlayStore = useOverlayStore();
 
 export const useMapStore = defineStore('cloudtak', {
@@ -243,7 +243,7 @@ export const useMapStore = defineStore('cloudtak', {
                         { id: layer.id, type: 'feat' }
                     ]
                 }, cotStyles(layer.id, {
-                    sourceLayer: layer.type === 'vector',
+                    sourceLayer: layer.type === 'vector' ? 'out' : undefined,
                     icons: layer.type === 'geojson',
                     labels: layer.type === 'geojson',
                 }), {
@@ -470,7 +470,7 @@ function cotStyles(id, opts = {
         const groupFilter = [
             'all',
             ['==', '$type', 'Point'],
-            ['has', 'color']
+            ['has', 'group']
         ]
         styles.push({
             id: 'cots-group',
@@ -487,7 +487,9 @@ function cotStyles(id, opts = {
     }
 
     return styles.map((s) => {
-        if (opts.sourceLayer) s['source-layer'] = opts.sourceLayer;
+        if (opts.sourceLayer && typeof opts.sourceLayer === 'string') {
+            s['source-layer'] = opts.sourceLayer;
+        }
         return s;
     });
 }
