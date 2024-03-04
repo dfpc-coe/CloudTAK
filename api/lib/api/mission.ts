@@ -63,11 +63,15 @@ export default class {
         this.api = api;
     }
 
+    #encodeName(name: string): string {
+        return encodeURIComponent(name.trim())
+    }
+
     /**
      * Return users associated with this mission
      */
     async contacts(name: string) {
-        const url = new URL(`/Marti/api/missions/${encodeURIComponent(name)}/contacts`, this.api.url);
+        const url = new URL(`/Marti/api/missions/${this.#encodeName(name)}/contacts`, this.api.url);
 
         return await this.api.fetch(url, {
             method: 'GET'
@@ -78,7 +82,7 @@ export default class {
      * Remove a file from the mission
      */
     async detachContents(name: string, hash: string) {
-        const url = new URL(`/Marti/api/missions/${encodeURIComponent(name)}/contents`, this.api.url);
+        const url = new URL(`/Marti/api/missions/${this.#encodeName(name)}/contents`, this.api.url);
         url.searchParams.append('hash', hash);
 
         return await this.api.fetch(url, {
@@ -90,7 +94,7 @@ export default class {
      * Attach a file resource by hash from the TAK Server file manager
      */
     async attachContents(name: string, body: Static<typeof AttachContentsInput>) {
-        const url = new URL(`/Marti/api/missions/${encodeURIComponent(name)}/contents`, this.api.url);
+        const url = new URL(`/Marti/api/missions/${this.#encodeName(name)}/contents`, this.api.url);
 
         return await this.api.fetch(url, {
             method: 'PUT',
@@ -102,7 +106,7 @@ export default class {
      * Upload a Mission Package
      */
     async upload(name: string, creatorUid: string, body: Readable) {
-        const url = new URL(`/Marti/api/missions/${encodeURIComponent(name)}/contents/missionpackage`, this.api.url);
+        const url = new URL(`/Marti/api/missions/${this.#encodeName(name)}/contents/missionpackage`, this.api.url);
         url.searchParams.append('creatorUid', creatorUid);
 
         return await this.api.fetch(url, {
@@ -115,7 +119,7 @@ export default class {
      * Return UIDs associated with any subscribed users
      */
     async subscriptions(name: string): Promise<TAKList<Static<typeof MissionSubscriber>>> {
-        const url = new URL(`/Marti/api/missions/${encodeURIComponent(name)}/subscriptions`, this.api.url);
+        const url = new URL(`/Marti/api/missions/${this.#encodeName(name)}/subscriptions`, this.api.url);
         return await this.api.fetch(url, {
             method: 'GET'
         });
@@ -125,7 +129,7 @@ export default class {
      * Return permissions associated with any subscribed users
      */
     async subscriptionRoles(name: string): Promise<TAKList<any>> {
-        const url = new URL(`/Marti/api/missions/${encodeURIComponent(name)}/subscriptions/roles`, this.api.url);
+        const url = new URL(`/Marti/api/missions/${this.#encodeName(name)}/subscriptions/roles`, this.api.url);
         return await this.api.fetch(url, {
             method: 'GET'
         });
@@ -135,7 +139,7 @@ export default class {
      * Return permissions associated with a given mission if subscribed
      */
     async subscription(name: string): Promise<Static<typeof MissionSubscriber>> {
-        const url = new URL(`/Marti/api/missions/${encodeURIComponent(name)}/subscription`, this.api.url);
+        const url = new URL(`/Marti/api/missions/${this.#encodeName(name)}/subscription`, this.api.url);
         const res = await this.api.fetch(url, {
             method: 'GET'
         });
@@ -155,7 +159,7 @@ export default class {
 
         [key: string]: unknown;
     }) {
-        const url = new URL(`/Marti/api/missions/${encodeURIComponent(name)}/subscription`, this.api.url);
+        const url = new URL(`/Marti/api/missions/${this.#encodeName(name)}/subscription`, this.api.url);
 
         for (const q in query) url.searchParams.append(q, String(query[q]));
         return await this.api.fetch(url, {
@@ -171,7 +175,7 @@ export default class {
 
         [key: string]: unknown;
     }) {
-        const url = new URL(`/Marti/api/missions/${encodeURIComponent(name)}/subscription`, this.api.url);
+        const url = new URL(`/Marti/api/missions/${this.#encodeName(name)}/subscription`, this.api.url);
 
         for (const q in query) url.searchParams.append(q, String(query[q]));
         return await this.api.fetch(url, {
@@ -188,7 +192,7 @@ export default class {
 
         [key: string]: unknown;
     }) {
-        const url = new URL(`/Marti/api/missions/${encodeURIComponent(name)}/subscription`, this.api.url);
+        const url = new URL(`/Marti/api/missions/${this.#encodeName(name)}/subscription`, this.api.url);
 
         for (const q in query) url.searchParams.append(q, String(query[q]));
         return await this.api.fetch(url, {
@@ -251,9 +255,12 @@ export default class {
 
         [key: string]: unknown;
     }): Promise<Static<typeof Mission>> {
-        const url = new URL(`/Marti/api/missions/${encodeURIComponent(name)}`, this.api.url);
+        name = name.trim();
+        const url = new URL(`/Marti/api/missions/${this.#encodeName(name)}`, this.api.url);
+        console.error(url)
 
         for (const q in query) url.searchParams.append(q, String(query[q]));
+
         const missions: TAKList<Static<typeof Mission>> = await this.api.fetch(url, {
             method: 'GET'
         });
@@ -284,7 +291,7 @@ export default class {
 
         [key: string]: unknown;
     }): Promise<TAKList<Static<typeof Mission>>> {
-        const url = new URL(`/Marti/api/missions/${encodeURIComponent(name)}`, this.api.url);
+        const url = new URL(`/Marti/api/missions/${this.#encodeName(name)}`, this.api.url);
 
         if (query.group && Array.isArray(query.group)) query.group = query.group.join(',');
         for (const q in query) url.searchParams.append(q, String(query[q]));
@@ -302,7 +309,7 @@ export default class {
 
         [key: string]: unknown;
     }) {
-        const url = new URL(`/Marti/api/missions/${encodeURIComponent(name)}`, this.api.url);
+        const url = new URL(`/Marti/api/missions/${this.#encodeName(name)}`, this.api.url);
 
         for (const q in query) url.searchParams.append(q, String(query[q]));
         return await this.api.fetch(url, {
