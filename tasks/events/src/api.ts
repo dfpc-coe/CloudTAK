@@ -88,7 +88,6 @@ export default class API {
         const res = await fetch(new URL(`/api/data/${event.ID}`, process.env.TAK_ETL_API), {
             method: 'GET',
             headers: {
-                'Content-Type': 'application/json',
                 'Authorization': `Bearer ${event.Token}`
             }
         });
@@ -96,6 +95,7 @@ export default class API {
         const json = await res.json();
 
         if (!res.ok) {
+            console.error(JSON.stringify(json))
             const err = json as { message: string };
             throw new Error(err.message);
         }
