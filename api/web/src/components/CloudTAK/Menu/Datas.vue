@@ -202,7 +202,7 @@ export default {
                     url: url,
                     name: id,
                     source: id,
-                    type: 'vector',
+                    type: 'raster',
                     before: 'CoT Icons',
                     clickable: [
                         { id: `${id}-poly`, type: 'feat' },

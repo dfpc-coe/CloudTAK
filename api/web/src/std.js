@@ -1,61 +1,62 @@
-function std() {
-    window.stdurl = function(url) {
-        try {
-            url = new URL(url);
-        } catch (err) {
-            url = new URL(url, window.location.origin);
-        }
-
-        // Allow serving through Vue for hotloading
-        if (url.hostname === 'localhost') url.port = '5001'
-
-        return url;
+export function stdurl(url) {
+    try {
+        url = new URL(url);
+    } catch (err) {
+        url = new URL(url, window.location.origin);
     }
 
-    /**
-     * Standardize interactions with the backend API
-     *
-     * @param {URL|String} url      - Full URL or API fragment to request
-     * @param {Object} [opts={}]    - Options
-     */
-    window.std = async function(url, opts = {}) {
-        url = window.stdurl(url)
+    // Allow serving through Vue for hotloading
+    if (url.hostname === 'localhost') url.port = '5001'
 
-        try {
-            if (!opts.headers) opts.headers = {};
+    return url;
+}
 
-            if (!(opts.body instanceof FormData) && typeof opts.body === 'object' && !opts.headers['Content-Type']) {
-                opts.body = JSON.stringify(opts.body);
-                opts.headers['Content-Type'] = 'application/json';
-            }
+/**
+ * Standardize interactions with the backend API
+ *
+ * @param {URL|String} url      - Full URL or API fragment to request
+ * @param {Object} [opts={}]    - Options
+ */
+export async function std(url, opts = {}) {
+    url = window.stdurl(url)
 
-            if (localStorage.token && !opts.headers.Authorization) {
-                opts.headers['Authorization'] = 'Bearer ' + localStorage.token;
-            }
+    try {
+        if (!opts.headers) opts.headers = {};
 
-            const res = await fetch(url, opts);
-
-            let bdy = {};
-            if ((res.status < 200 || res.status >= 400) && ![401].includes(res.status)) {
-                try {
-                    bdy = await res.json();
-                } catch (err) {
-                    throw new Error(`Status Code: ${res.status}`);
-                }
-
-                const err = new Error(bdy.message || `Status Code: ${res.status}`);
-                err.body = bdy;
-                throw err;
-            } else if (res.status === 401) {
-                delete localStorage.token;
-                throw new Error(401);
-            }
-
-            return await res.json();
-        } catch (err) {
-            throw new Error(err.message);
+        if (!(opts.body instanceof FormData) && typeof opts.body === 'object' && !opts.headers['Content-Type']) {
+            opts.body = JSON.stringify(opts.body);
+            opts.headers['Content-Type'] = 'application/json';
         }
+
+        if (localStorage.token && !opts.headers.Authorization) {
+            opts.headers['Authorization'] = 'Bearer ' + localStorage.token;
+        }
+
+        const res = await fetch(url, opts);
+
+        let bdy = {};
+        if ((res.status < 200 || res.status >= 400) && ![401].includes(res.status)) {
+            try {
+                bdy = await res.json();
+            } catch (err) {
+                throw new Error(`Status Code: ${res.status}`);
+            }
+
+            const err = new Error(bdy.message || `Status Code: ${res.status}`);
+            err.body = bdy;
+            throw err;
+        } else if (res.status === 401) {
+            delete localStorage.token;
+            throw new Error(401);
+        }
+
+        return await res.json();
+    } catch (err) {
+        throw new Error(err.message);
     }
 }
 
-export default std;
+export default function init() {
+    window.stdurl = stdurl;
+    window.std = std;
+}
