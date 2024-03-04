@@ -103,7 +103,7 @@ export default async function router(schema: Schema, config: Config) {
             // @ts-expect-error Morgan will throw an error after not getting req.ip and there not being req.connection.remoteAddress
             req.connection = {
                 // @ts-expect-error
-                remoteAddress: req._remoteAddress
+                remoteAddress: req._remoteAddress || '127.0.0.1'
             }
 
             const missionContent = await api.Mission.attachContents(data.name, {
