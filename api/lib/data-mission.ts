@@ -48,6 +48,11 @@ export default class DataMission {
 
             if (!missions.data.length) throw new Error('Create Mission didn\'t return a mission or an error');
             mission = missions.data[0];
+
+            await config.models.Data.commit(data.id, {
+                mission_token: mission.token
+            });
+
         }
 
         return mission;
