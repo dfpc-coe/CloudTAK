@@ -1,7 +1,0 @@
-{
-    "type": "integer",
-    "default": 100,
-    "maximum": 100,
-    "minimum": 1,
-    "description": "Limit number of returned items"
-}

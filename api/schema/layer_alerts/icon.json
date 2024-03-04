@@ -1,9 +1,0 @@
-{
-    "type": "string",
-    "description": "",
-    "$comment": "text",
-    "enum": [
-        "alert-hexagon",
-        "alert-circle"
-    ]
-}

@@ -1,6 +1,0 @@
-{
-    "type": "string",
-    "format": "date",
-    "description": "",
-    "$comment": "date"
-}
