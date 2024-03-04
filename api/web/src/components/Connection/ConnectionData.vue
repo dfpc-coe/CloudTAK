@@ -3,8 +3,9 @@
     <div class='card-header d-flex'>
         Data Stores
 
-        <div class='ms-auto'>
+        <div class='ms-auto btn-list'>
             <IconPlus @click='$router.push(`/connection/${connection.id}/data/new`)' v-tooltip='"Create Store"' class='cursor-pointer'/>
+            <IconRefresh @click='listData' v-tooltip='"Refresh"' class='cursor-pointer'/>
         </div>
     </div>
 
@@ -53,6 +54,7 @@ import {
 import {
     IconAccessPoint,
     IconAccessPointOff,
+    IconRefresh,
     IconPlus
 } from '@tabler/icons-vue';
 
@@ -109,9 +111,10 @@ export default {
     components: {
         IconAccessPoint,
         IconAccessPointOff,
+        IconRefresh,
+        IconPlus,
         TablerNone,
         Alert,
-        IconPlus,
         TablerLoading,
         TableFooter,
     }

@@ -37,6 +37,26 @@
                             </div>
                         </div>
                         <TablerMarkdown class='card-body' :markdown='data.description'/>
+
+                        <div v-if='data.mission_error' class='card-body bg-red-lt'>
+                            <div class='header'>TAK Server Sync Error</div>
+
+                            <div class='datagrid'>
+                                <div class="datagrid-item">
+                                    <div class="datagrid-title">Status</div>
+                                    <div class="datagrid-content" v-text='JSON.parse(data.mission_error).status'></div>
+                                </div>
+                                <div class="datagrid-item">
+                                    <div class="datagrid-title">Code</div>
+                                    <div class="datagrid-content" v-text='JSON.parse(data.mission_error).code'></div>
+                                </div>
+                                <div class="datagrid-item">
+                                    <div class="datagrid-title">Message</div>
+                                    <div class="datagrid-content" v-text='JSON.parse(data.mission_error).message'></div>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="card-footer">
                             Last updated <span v-text='timeDiff(data.updated)'/>
                         </div>
