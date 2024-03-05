@@ -329,6 +329,10 @@ export default async function router(schema: Schema, config: Config) {
 
             const data = await config.models.Data.from(req.params.dataid);
 
+            if (!await S3.exists(`data/${req.params.dataid}/${req.params.asset}.${req.params.ext}`)) {
+                throw new Error(404, null, 'Asset does not exist');
+            }
+
             const token = jwt.sign({ access: 'user' }, config.SigningSecret)
             const url = new URL(`${config.PMTILES_URL}/tiles/data/${data.id}/${req.params.asset}`);
             url.searchParams.append('token', token);
