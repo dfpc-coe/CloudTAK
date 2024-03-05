@@ -31,7 +31,7 @@ export default class LogGroup {
                 })
             }
         } catch (err) {
-            if (err instanceof Error && err.message.includes('The specified log stream does not exist')) {
+            if (String(err).startsWith('ResourceNotFoundException')) {
                 return { logs: [] }
             } else {
                 throw new Error(err instanceof Error ? err.message : String(err));
