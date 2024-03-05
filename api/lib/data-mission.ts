@@ -25,11 +25,15 @@ export default class DataMission {
         let mission;
 
         try {
-            mission = await api.Mission.get(data.name, {});
+            mission = await api.Mission.get(data.name, {}, {
+                token: data.mission_token
+            });
             //TODO Update Groups: Not supported by TAK Server at this time
 
             if (!data.mission_sync) {
-                await api.Mission.delete(data.name, {});
+                await api.Mission.delete(data.name, {}, {
+                    token: data.mission_token
+                });
                 return;
             }
         } catch (err) {
