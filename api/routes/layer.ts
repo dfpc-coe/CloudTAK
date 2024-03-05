@@ -477,6 +477,8 @@ export default async function router(schema: Schema, config: Config) {
                 const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(pooledClient.config.auth.cert, pooledClient.config.auth.key));
                 const missionContent = await api.Mission.attachContents(data.name, {
                     uids: cots.map((cot) => { return cot.raw.event._attributes.uid })
+                }, {
+                    token: data.mission_token
                 });
             }
 
