@@ -23,14 +23,24 @@
 
     <TablerLoading v-if='loading'/>
     <template v-else-if='mode === "user"'>
-        <div :key='a.id' v-for='a in assetList.assets' class="col-lg-12">
-            <div class='col-12 py-2 px-2 d-flex align-items-center'>
-                <IconEyeX v-if='!a.visualized' v-tooltip='"No Viz Layer"'/>
-                <IconEye v-else-if='a.visible' @click='flipVisible(a)' class='cursor-pointer'/>
-                <IconEyeOff v-else @click='flipVisible(a)' class='cursor-pointer'/>
-                <span class="mx-2 cursor-pointer" v-text='a.name'></span>
+        <TablerNone
+            v-if='!assetList.assets.length'
+            label='User Uploads'
+            @create='$router.push("/profile/files")'
+        />
+        <template v-else>
+            <div :key='a.id' v-for='a in assetList.assets' class="cursor-pointer col-12 py-2 px-3 hover-dark">
+                <div class='col-12 py-2 px-2 d-flex align-items-center'>
+                    <IconEyeX v-if='!a.visualized' v-tooltip='"No Viz Layer"'/>
+                    <IconEye v-else-if='a.visible' @click='flipVisible(a)' class='cursor-pointer'/>
+                    <IconEyeOff v-else @click='flipVisible(a)' class='cursor-pointer'/>
+                    <span class="mx-2 cursor-pointer" v-text='a.name'></span>
+                    <div class='ms-auto btn-list'>
+                        <TablerDelete displaytype='icon' @delete='deleteProfileAsset(a)'/>
+                    </div>
+                </div>
             </div>
-        </div>
+        </template>
     </template>
     <template v-else-if='mode === "data"'>
         <template v-if='data'>
@@ -40,7 +50,7 @@
             </div>
 
             <div class='modal-body my-2'>
-                <div :key='a.id' v-for='a in assetList.assets' class='cursor-pointer col-12 py-2 px-3 rounded hover-dark'>
+                <div :key='a.id' v-for='a in assetList.assets' class='cursor-pointer col-12 py-2 px-3 hover-dark'>
                     <div class='col-12 py-2 px-2 d-flex align-items-center'>
                         <IconEyeX v-if='!a.visualized' v-tooltip='"No Viz Layer"'/>
                         <IconEye v-else-if='a.visible' @click='flipVisible(a)' class='cursor-pointer'/>
@@ -58,7 +68,7 @@
             />
             <template v-else>
                 <div class='modal-body my-2'>
-                    <div @click='data = d' :key='d.id' v-for='d in list.items' class='cursor-pointer col-12 py-2 px-3 rounded hover-dark'>
+                    <div @click='data = d' :key='d.id' v-for='d in list.items' class='cursor-pointer col-12 py-2 px-3 hover-dark'>
                         <div class='col-12 py-2 px-2 d-flex align-items-center'>
                             <IconFolder/><span class="mx-2" v-text='d.name'></span>
                         </div>
@@ -80,6 +90,7 @@ const mapStore = useMapStore();
 import {
     TablerNone,
     TablerPager,
+    TablerDelete,
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import {
@@ -176,6 +187,14 @@ export default {
                     await this.createOverlay(id, url, a)
                 }
             }
+        },
+        deleteProfileAsset: async function(a) {
+            this.loading = true;
+            const url = window.stdurl(`/api/profile/asset/${a.name}`);
+            await window.std(url, {
+                method: 'DELETE'
+            });
+            this.fetchUserAssetList();
         },
         createOverlay: async function(id, url, a) {
             this.loading = true;
@@ -274,6 +293,7 @@ export default {
         IconSettings,
         IconSearch,
         TablerLoading,
+        TablerDelete,
         IconCircleArrowLeft
     }
 }
