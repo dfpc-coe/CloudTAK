@@ -28,6 +28,17 @@
             </template>
         </div>
     </template>
+    <template v-if='mode === "display"'>
+        <div class='col-12 border-bottom border-light'>
+            <div class='modal-header px-0 mx-2'>
+                <IconCircleArrowLeft @click='mode = "settings"' class='cursor-pointer'/>
+                <div class='modal-title'>Display Preferences</div>
+                <div/>
+            </div>
+        </div>
+        <div class='col-12 px-2 py-2'>
+        </div>
+    </template>
     <template v-else-if='mode === "settings"'>
         <div class='col-12 border-bottom border-light'>
             <div class='modal-header px-0 mx-2'>
@@ -41,6 +52,10 @@
                 <IconUserCog size='32'/>
                 <span class='mx-2' style='font-size: 18px;'>Callsign &amp; Device Preferences</span>
             </div>
+            <div @click='mode = "display"' class='cursor-pointer col-12 py-2 px-3 d-flex align-items-center hover-dark'>
+                <IconAdjustments size='32'/>
+                <span class='mx-2' style='font-size: 18px;'>Display Preferences</span>
+            </div>
         </div>
     </template>
 </div>
@@ -49,6 +64,7 @@
 <script>
 import {
     IconUserCog,
+    IconAdjustments,
     IconCircleArrowLeft
 } from '@tabler/icons-vue';
 import {
@@ -95,6 +111,7 @@ export default {
     },
     components: {
         IconUserCog,
+        IconAdjustments,
         TablerInput,
         TablerEnum,
         TablerLoading,
