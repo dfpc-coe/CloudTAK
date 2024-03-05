@@ -112,6 +112,8 @@ export default async function router(schema: Schema, config: Config) {
 
             const missionContent = await api.Mission.attachContents(data.name, {
                 hashes: [content.Hash]
+            }, {
+                token: data.mission_token
             });
 
             return res.json(missionContent);
@@ -244,12 +246,15 @@ export default async function router(schema: Schema, config: Config) {
             const file = `${req.params.asset}.${req.params.ext}`;
             try {
                 if (data.mission_sync) {
-                    let mission = await api.Mission.get(data.name, {});
+                    let mission = await api.Mission.get(data.name, {}, {
+                        token: data.mission_token
+                    });
 
                     for (const content of mission.contents) {
                         if (content.data.name === file) {
-                            await api.Mission.get(data.name, {});
-                            await api.Mission.detachContents(data.name, content.data.hash);
+                            await api.Mission.detachContents(data.name, content.data.hash, {
+                                token: data.mission_token
+                            });
                         }
                     }
                 }
