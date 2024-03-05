@@ -48,6 +48,10 @@ export const MissionSubscriber = Type.Object({
     })
 })
 
+export const MissionOptions = Type.Object({
+    token: Type.Optional(Type.String())
+});
+
 export const AttachContentsInput = Type.Object({
     hashes: Type.Optional(Type.Array(Type.String())),
     uids: Type.Optional(Type.Array(Type.String())),
@@ -67,37 +71,50 @@ export default class {
         return encodeURIComponent(name.trim())
     }
 
+    #headers(opts?: Static<typeof MissionOptions>): object {
+        if (opts.token) {
+            return {
+                MissionAuthorization: `Bearer ${opts.token}`
+            }
+        } else {
+            return {};
+        }
+    }
+
     /**
      * Return users associated with this mission
      */
-    async contacts(name: string) {
+    async contacts(name: string, opts?: Static<typeof MissionOptions>) {
         const url = new URL(`/Marti/api/missions/${this.#encodeName(name)}/contacts`, this.api.url);
 
         return await this.api.fetch(url, {
-            method: 'GET'
+            method: 'GET',
+            headers: this.#headers(opts)
         });
     }
 
     /**
      * Remove a file from the mission
      */
-    async detachContents(name: string, hash: string) {
+    async detachContents(name: string, hash: string, opts?: Static<typeof MissionOptions>) {
         const url = new URL(`/Marti/api/missions/${this.#encodeName(name)}/contents`, this.api.url);
         url.searchParams.append('hash', hash);
 
         return await this.api.fetch(url, {
             method: 'DELETE',
+            headers: this.#headers(opts),
         });
     }
 
     /**
      * Attach a file resource by hash from the TAK Server file manager
      */
-    async attachContents(name: string, body: Static<typeof AttachContentsInput>) {
+    async attachContents(name: string, body: Static<typeof AttachContentsInput>, opts?: Static<typeof MissionOptions>) {
         const url = new URL(`/Marti/api/missions/${this.#encodeName(name)}/contents`, this.api.url);
 
         return await this.api.fetch(url, {
             method: 'PUT',
+            headers: this.#headers(opts),
             body
         });
     }
@@ -105,12 +122,13 @@ export default class {
     /**
      * Upload a Mission Package
      */
-    async upload(name: string, creatorUid: string, body: Readable) {
+    async upload(name: string, creatorUid: string, body: Readable, opts?: Static<typeof MissionOptions>) {
         const url = new URL(`/Marti/api/missions/${this.#encodeName(name)}/contents/missionpackage`, this.api.url);
         url.searchParams.append('creatorUid', creatorUid);
 
         return await this.api.fetch(url, {
             method: 'PUT',
+            headers: this.#headers(opts),
             body
         });
     }
@@ -118,30 +136,33 @@ export default class {
     /**
      * Return UIDs associated with any subscribed users
      */
-    async subscriptions(name: string): Promise<TAKList<Static<typeof MissionSubscriber>>> {
+    async subscriptions(name: string, opts?: Static<typeof MissionOptions>): Promise<TAKList<Static<typeof MissionSubscriber>>> {
         const url = new URL(`/Marti/api/missions/${this.#encodeName(name)}/subscriptions`, this.api.url);
         return await this.api.fetch(url, {
-            method: 'GET'
+            method: 'GET',
+            headers: this.#headers(opts),
         });
     }
 
     /**
      * Return permissions associated with any subscribed users
      */
-    async subscriptionRoles(name: string): Promise<TAKList<any>> {
+    async subscriptionRoles(name: string, opts?: Static<typeof MissionOptions>): Promise<TAKList<any>> {
         const url = new URL(`/Marti/api/missions/${this.#encodeName(name)}/subscriptions/roles`, this.api.url);
         return await this.api.fetch(url, {
-            method: 'GET'
+            method: 'GET',
+            headers: this.#headers(opts),
         });
     }
 
     /**
      * Return permissions associated with a given mission if subscribed
      */
-    async subscription(name: string): Promise<Static<typeof MissionSubscriber>> {
+    async subscription(name: string, opts?: Static<typeof MissionOptions>): Promise<Static<typeof MissionSubscriber>> {
         const url = new URL(`/Marti/api/missions/${this.#encodeName(name)}/subscription`, this.api.url);
         const res = await this.api.fetch(url, {
-            method: 'GET'
+            method: 'GET',
+            headers: this.#headers(opts),
         });
 
         return res.data;
@@ -158,12 +179,13 @@ export default class {
         end?: string;
 
         [key: string]: unknown;
-    }) {
+    }, opts?: Static<typeof MissionOptions>) {
         const url = new URL(`/Marti/api/missions/${this.#encodeName(name)}/subscription`, this.api.url);
 
         for (const q in query) url.searchParams.append(q, String(query[q]));
         return await this.api.fetch(url, {
-            method: 'PUT'
+            method: 'PUT',
+            headers: this.#headers(opts),
         });
     }
 
@@ -174,12 +196,13 @@ export default class {
         uid: string;
 
         [key: string]: unknown;
-    }) {
+    }, opts?: Static<typeof MissionOptions>) {
         const url = new URL(`/Marti/api/missions/${this.#encodeName(name)}/subscription`, this.api.url);
 
         for (const q in query) url.searchParams.append(q, String(query[q]));
         return await this.api.fetch(url, {
-            method: 'GET'
+            method: 'GET',
+            headers: this.#headers(opts),
         });
     }
 
@@ -191,12 +214,13 @@ export default class {
         disconnectOnly?: string;
 
         [key: string]: unknown;
-    }) {
+    }, opts?: Static<typeof MissionOptions>) {
         const url = new URL(`/Marti/api/missions/${this.#encodeName(name)}/subscription`, this.api.url);
 
         for (const q in query) url.searchParams.append(q, String(query[q]));
         return await this.api.fetch(url, {
-            method: 'DELETE'
+            method: 'DELETE',
+            headers: this.#headers(opts),
         });
     }
 
@@ -230,12 +254,13 @@ export default class {
         end?: string;
 
         [key: string]: unknown;
-    }): Promise<Static<typeof Mission>> {
+    },  opts?: Static<typeof MissionOptions>): Promise<Static<typeof Mission>> {
         const url = new URL(`/Marti/api/missions/guid/${encodeURIComponent(guid)}`, this.api.url);
 
         for (const q in query) url.searchParams.append(q, String(query[q]));
         const missions: TAKList<Static <typeof Mission>> = await this.api.fetch(url, {
-            method: 'GET'
+            method: 'GET',
+            headers: this.#headers(opts),
         });
 
         if (!missions.data.length) throw new Err(404, null, `No Mission for GUID: ${guid}`);
@@ -254,7 +279,7 @@ export default class {
         end?: string;
 
         [key: string]: unknown;
-    }): Promise<Static<typeof Mission>> {
+    }, opts?: Static<typeof MissionOptions>): Promise<Static<typeof Mission>> {
         name = name.trim();
         const url = new URL(`/Marti/api/missions/${this.#encodeName(name)}`, this.api.url);
         console.error(url)
@@ -262,7 +287,8 @@ export default class {
         for (const q in query) url.searchParams.append(q, String(query[q]));
 
         const missions: TAKList<Static<typeof Mission>> = await this.api.fetch(url, {
-            method: 'GET'
+            method: 'GET',
+            headers: this.#headers(opts),
         });
 
         if (!missions.data.length) throw new Err(404, null, `No Mission for Name: ${name}`);
@@ -308,12 +334,13 @@ export default class {
         deepDelete?: string;
 
         [key: string]: unknown;
-    }) {
+    }, opts?: Static<typeof MissionOptions>) {
         const url = new URL(`/Marti/api/missions/${this.#encodeName(name)}`, this.api.url);
 
         for (const q in query) url.searchParams.append(q, String(query[q]));
         return await this.api.fetch(url, {
-            method: 'DELETE'
+            method: 'DELETE',
+            headers: this.#headers(opts),
         });
     }
 }
