@@ -11,7 +11,7 @@
     </div>
     <TablerLoading v-if='loading'/>
     <template v-else>
-        <div :key='layer.url' v-for='layer in layers' class="col-lg py-2 px2 hover-dark">
+        <div :key='layer.url' v-for='layer in layers' class="col-lg py-2 px-3 hover-dark">
             <div class='py-2 px-2 hover-dark'>
                 <div class='col-12 d-flex align-items-center'>
                     <IconEye v-if='layer.visible === "visible"' @click='flipVisible(layer)' class='cursor-pointer' v-tooltip='"Hide Layer"'/>
