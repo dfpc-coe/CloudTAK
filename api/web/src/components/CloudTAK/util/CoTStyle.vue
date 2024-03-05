@@ -1,5 +1,5 @@
 <template>
-<div class='col-12'>
+<div class='px-3 pb-2 col-12'>
     <label class='subheader'>COT Style</label>
     <div class='mx-3 py-3'>
         <div class='row g-2 rounded px-2 bg-gray-500'>

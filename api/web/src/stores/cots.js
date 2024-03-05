@@ -88,6 +88,7 @@ export const useCOTStore = defineStore('cots', {
             feat.properties.id = feat.id;
 
             if (!feat.properties.center) {
+                console.error(feat.geometry)
                 feat.properties.center = pointOnFeature(feat.geometry).geometry.coordinates;
             }
 
