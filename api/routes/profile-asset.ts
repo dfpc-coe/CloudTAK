@@ -182,8 +182,8 @@ export default async function router(schema: Schema, config: Config) {
         try {
             const user = await Auth.as_user(config, req, { token: true });
 
-            if (!await S3.exists(`profile/${user.email}/${req.params.asset}.${req.params.ext}`)) {
-                throw new Error(404, null, 'Asset does not exist');
+            if (!await S3.exists(`profile/${user.email}/${req.params.asset}.pmtiles`)) {
+                throw new Err(404, null, 'Asset does not exist');
             }
 
             const token = jwt.sign({ access: 'profile', email: user.email }, config.SigningSecret)
