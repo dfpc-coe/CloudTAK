@@ -1,6 +1,8 @@
 import { Type } from '@sinclair/typebox'
+import path from 'node:path';
 import Config from '../lib/config.js';
 import Schema from '@openaddresses/batch-schema';
+import S3 from '../lib/aws/s3.js';
 import Err from '@openaddresses/batch-error';
 import Auth, { AuthResource } from '../lib/auth.js';
 import { StandardResponse, ProfileOverlayResponse } from '../lib/types.js'
@@ -16,12 +18,18 @@ export default async function router(schema: Schema, config: Config) {
     await schema.get('/profile/overlay', {
         name: 'Get Overlays',
         group: 'ProfileOverlays',
-        description: 'Get User\'s Profile Overlays',
+        description: `
+            Return a list of Profile Overlay's that are curently active.
+
+            Each item is checked to ensure it is still present and if not the overlay is removed from the list
+            before being returned.
+        `,
         query: Type.Object({
             limit: Type.Optional(Type.Integer())
         }),
         res: Type.Object({
             total: Type.Integer(),
+            removed: Type.Array(ProfileOverlayResponse),
             items: Type.Array(ProfileOverlayResponse)
         })
 
@@ -33,7 +41,26 @@ export default async function router(schema: Schema, config: Config) {
                 limit: req.query.limit
             });
 
-            return res.json(overlays);
+            const removed = [];
+
+            for (let i = 0; i < overlays.items.length; i++) {
+                const item = overlays.items[i];
+
+                // TODO someday surface these to the user that the underlying resources don't exist
+                if (
+                    (item.mode === 'profile' && !(await S3.exists(`profile/${item.username}/${path.parse(item.url.replace(/\/tile$/, '')).name}.pmtiles`)))
+                    || (item.mode === 'data' && !(await S3.exists(`data/${item.mode_id}/${path.parse(item.url.replace(/\/tile$/, '')).name}.pmtiles`)))
+                ) {
+                    await config.models.ProfileOverlay.delete(item.id);
+                    removed.push(...overlays.items.splice(i, 1));
+                    overlays.total--;
+                }
+            }
+
+            return res.json({
+                removed,
+                ...overlays
+            });
         } catch (err) {
             return Err.respond(err, res);
         }
