@@ -128,6 +128,14 @@ export default async function router(schema: Schema, config: Config) {
 
             await S3.del(`profile/${user.email}/${req.params.asset}.${req.params.ext}`);
 
+            if (await S3.exists(`profile/${user.email}/${req.params.asset}.geojsonld`)) {
+                await S3.del(`profile/${user.email}/${req.params.asset}.geojsonld`);
+            }
+
+            if (await S3.exists(`profile/${user.email}/${req.params.asset}.pmtiles`)) {
+                await S3.del(`profile/${user.email}/${req.params.asset}.pmtiles`);
+            }
+
             return res.json({
                 status: 200,
                 message: 'Asset Deleted'

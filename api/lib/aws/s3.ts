@@ -75,9 +75,7 @@ export default class S3 {
             }));
             return true;
         } catch (err) {
-            //@ts-ignore
-            if (err.code === 'NotFound') return false;
-
+            if (String(err).startsWith('NotFound')) return false;
             throw new Err(500, new Error(err instanceof Error ? err.message : String(err)), 'Failed to determine existance');
         }
     }
