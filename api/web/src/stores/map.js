@@ -65,20 +65,26 @@ export const useMapStore = defineStore('cloudtak', {
                 })
                 this.map.on('click', click.id, (e) => {
                     if (this.draw && this.draw.getMode() !== 'static') return;
-                    const flyTo = { speed: Infinity };
-                    if (e.features[0].geometry.type === 'Point') {
-                        flyTo.center = e.features[0].geometry.coordinates;
+
+                    if (e.point.x < 150 || e.point.y < 150) {
+                        const flyTo = { speed: Infinity };
+                        if (e.features[0].geometry.type === 'Point') {
+                            flyTo.center = e.features[0].geometry.coordinates;
+                        } else {
+                            flyTo.center = pointOnFeature(e.features[0].geometry).geometry.coordinates;
+                        }
+
+                        // This is required to ensure the map has nowhere to flyTo - ie the whole world is shown
+                        // and then the radial menu won't actually be on the CoT when the CoT is clicked
+                        if (this.map.getZoom() < 3) flyTo.zoom = 4;
+                        this.map.flyTo(flyTo)
+
+                        this.radial.x = this.container.clientWidth / 2;
+                        this.radial.y = this.container.clientHeight / 2;
                     } else {
-                        flyTo.center = pointOnFeature(e.features[0].geometry).geometry.coordinates;
+                        this.radial.x = e.point.x;
+                        this.radial.y = e.point.y;
                     }
-
-                    // This is required to ensure the map has nowhere to flyTo - ie the whole world is shown
-                    // and then the radial menu won't actually be on the CoT when the CoT is clicked
-                    if (this.map.getZoom() < 3) flyTo.zoom = 4;
-                    this.map.flyTo(flyTo)
-
-                    this.radial.x = this.container.clientWidth / 2;
-                    this.radial.y = this.container.clientHeight / 2;
 
                     this.radial.cot = e.features[0];
                     this.radial.mode = click.type;
@@ -321,17 +327,25 @@ export const useMapStore = defineStore('cloudtak', {
             this.map.on('rotate', () => { this.bearing = this.map.getBearing() })
             this.map.on('contextmenu', (e) => {
                 this.radial.mode = 'context';
-                const flyTo = {
-                    speed: Infinity,
-                    center: [e.lngLat.lng, e.lngLat.lat]
-                };
 
-                if (this.map.getZoom() < 3) flyTo.zoom = 4;
-                this.map.flyTo(flyTo)
+                if (e.point.x < 150 || e.point.y < 150) {
+                    const flyTo = {
+                        speed: Infinity,
+                        center: [e.lngLat.lng, e.lngLat.lat]
+                    };
 
-                this.radial.x = this.container.clientWidth / 2;
-                this.radial.y = this.container.clientHeight / 2;
+                    if (this.map.getZoom() < 3) flyTo.zoom = 4;
+                    this.map.flyTo(flyTo)
+
+                    this.radial.x = this.container.clientWidth / 2;
+                    this.radial.y = this.container.clientHeight / 2;
+                } else {
+                    this.radial.x = e.point.x;
+                    this.radial.y = e.point.y;
+                }
+
                 this.radial.cot = {
+                    id: window.crypto.randomUUID(),
                     type: 'Feature',
                     properties: {
                         callsign: 'New Feature',
