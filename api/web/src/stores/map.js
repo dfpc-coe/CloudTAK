@@ -331,6 +331,18 @@ export const useMapStore = defineStore('cloudtak', {
 
                 this.radial.x = this.container.clientWidth / 2;
                 this.radial.y = this.container.clientHeight / 2;
+                this.radial.cot = {
+                    type: 'Feature',
+                    properties: {
+                        callsign: 'New Feature',
+                        type: 'u-d-p',
+                        color: '#00ff00'
+                    },
+                    geometry: {
+                        type: 'Point',
+                        coordinates: [e.lngLat.lng, e.lngLat.lat]
+                    }
+                };
             });
         },
         initOverlays: async function() {

@@ -161,7 +161,7 @@ export default {
 
         window.addEventListener('keydown', (e) => {
             if (e.key == 'Escape') {
-                if (this.radial.mode) {
+                if (mapStore.radial.mode) {
                     this.closeRadial()
                 } else if (this.menu.main) {
                     this.menu.main = false;
@@ -209,12 +209,12 @@ export default {
     },
     watch: {
         'radial.cot': function() {
-            if (this.radial.cot) {
+            if (mapStore.radial.cot) {
                 mapStore.map.scrollZoom.disable();
                 mapStore.map.touchZoomRotate.disableRotation();
                 mapStore.map.dragRotate.disable();
                 mapStore.map.dragPan.disable();
-                this.locked.push(this.radial.cot.properties.id);
+                this.locked.push(mapStore.radial.cot.properties.id);
             } else {
                 mapStore.map.scrollZoom.enable();
                 mapStore.map.touchZoomRotate.enableRotation();
@@ -225,7 +225,7 @@ export default {
         },
         edit: function() {
             if (this.edit) {
-                mapStore.draw._store.create([this.radial.cot]);
+                mapStore.draw._store.create([mapStore.radial.cot]);
                 mapStore.draw.start();
                 mapStore.draw.setMode('polygon');
             }
@@ -312,17 +312,21 @@ export default {
         },
         handleRadial: function(event) {
             if (event === 'cot:view') {
-                const cot = this.radial.cot;
+                const cot = mapStore.radial.cot;
                 this.closeRadial()
                 this.cot = cot;
             } else if (event === 'cot:delete') {
-                const cot = this.radial.cot;
+                const cot = mapStore.radial.cot;
                 this.closeRadial()
                 this.deleteCOT(cot);
             } else if (event === 'cot:edit') {
                 //this.edit = true;
             } else if (event === 'feat:view') {
-                this.feat = this.radial.cot;
+                this.feat = mapStore.radial.cot;
+                this.closeRadial()
+            } else if (event === 'context:new') {
+                cotStore.add(mapStore.radial.cot);
+                this.updateCOT();
                 this.closeRadial()
             } else {
                 this.closeRadial()

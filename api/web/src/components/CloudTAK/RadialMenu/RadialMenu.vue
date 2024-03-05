@@ -43,11 +43,6 @@ export default {
             default: 200
         },
     },
-    watch: {
-        mode: function() {
-
-        }
-    },
     data: function() {
         return {
             menuItems: [],
