@@ -168,6 +168,28 @@ export default async function router(schema: Schema, config: Config) {
         }
     });
 
+    await schema.get('/profile/asset/:asset.pmtiles/exists', {
+        name: 'PMTiles Exists',
+        group: 'UserAssets',
+        description: 'Asset Exists',
+        params: Type.Object({
+            asset: Type.String(),
+        }),
+        res: StandardResponse
+    }, async (req, res) => {
+        try {
+            const user = await Auth.as_user(config, req, { token: true });
+
+            if (!await S3.exists(`profile/${user.email}/${req.params.asset}.pmtiles`)) {
+                throw new Err(404, null, 'Asset does not exist');
+            } else {
+                return res.json({ status: 200, message: 'Asset Exists' })
+            }
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
+
     await schema.get('/profile/asset/:asset.pmtiles/tile', {
         name: 'PMTiles TileJSON',
         group: 'UserAssets',

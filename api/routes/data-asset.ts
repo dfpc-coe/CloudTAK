@@ -308,6 +308,38 @@ export default async function router(schema: Schema, config: Config) {
         }
     });
 
+    await schema.get('/connection/:connectionid/data/:dataid/asset/:asset.pmtiles/exists', {
+        name: 'PMTiles Exists',
+        group: 'DataAssets',
+        description: 'Asset Exists',
+        params: Type.Object({
+            connectionid: Type.Integer(),
+            dataid: Type.Integer(),
+            asset: Type.String(),
+        }),
+        res: StandardResponse
+    }, async (req, res) => {
+        try {
+            await Auth.is_auth(config, req, {
+                token: true,
+                resources: [
+                    { access: AuthResourceAccess.DATA, id: req.params.dataid },
+                    { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }
+                ]
+            });
+
+            const data = await config.models.Data.from(req.params.dataid);
+
+            if (!await S3.exists(`data/${req.params.dataid}/${req.params.asset}.pmtiles`)) {
+                throw new Err(404, null, 'Asset does not exist');
+            } else {
+                return res.json({ status: 200, message: 'Asset Exists' })
+            }
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
+
     await schema.get('/connection/:connectionid/data/:dataid/asset/:asset.pmtiles/tile', {
         name: 'PMTiles TileJSON',
         group: 'DataAssets',

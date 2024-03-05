@@ -33,10 +33,10 @@ export const useOverlayStore = defineStore('overlays', {
             this.overlays = (await std(`/api/profile/overlay`)).items;
 
             this.subscriptions.clear();
-            for (const sub of this.overlays) {
-                if (sub.mode === 'mission') {
+            for (const overlay of this.overlays) {
+                if (overlay.mode === 'mission') {
                     // mode_id is GUID for mission type
-                    this.subscriptions.set(sub.mode_id, sub);
+                    this.subscriptions.set(overlay.mode_id, overlay);
                 }
             }
 
