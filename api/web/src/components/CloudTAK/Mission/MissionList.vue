@@ -4,7 +4,7 @@
         <div class='modal-header px-0 mx-2'>
             <IconCircleArrowLeft @click='$emit("close")' class='cursor-pointer'/>
             <div class='modal-title'>Missions</div>
-            <div class='btn-list' v-if='!loading'>
+            <div class='btn-list'>
                 <IconPlus @click='$emit("create")' class='cursor-pointer' v-tooltip='"Create Mission"'/>
                 <IconRefresh @click='fetchMissions' class='cursor-pointer' v-tooltip='"Refresh"'/>
             </div>
