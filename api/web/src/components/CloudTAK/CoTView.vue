@@ -39,7 +39,7 @@
             <CoTStyle v-model='feat'/>
         </template>
 
-        <div class='col-12 d-flex align-items-center'>
+        <div v-if='false' class='col-12 d-flex align-items-center'>
             <div class='d-flex'>
                 <button class='btn bg-gray-500'><IconShare2/></button>
                 <button class='btn bg-gray-500'><IconPencil/></button>
