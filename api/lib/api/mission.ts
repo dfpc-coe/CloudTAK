@@ -72,7 +72,7 @@ export default class {
     }
 
     #headers(opts?: Static<typeof MissionOptions>): object {
-        if (opts.token) {
+        if (opts && opts.token) {
             return {
                 MissionAuthorization: `Bearer ${opts.token}`
             }
