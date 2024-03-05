@@ -24,7 +24,7 @@ export default async function router(schema: Schema, config: Config) {
             total: Type.Integer(),
             tiles: Type.Object({
                 url: Type.String()
-            }), 
+            }),
             assets: Type.Array(ProfileAssetResponse)
         })
     }, async (req, res) => {
@@ -181,6 +181,10 @@ export default async function router(schema: Schema, config: Config) {
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req, { token: true });
+
+            if (!await S3.exists(`profile/${user.email}/${req.params.asset}.${req.params.ext}`)) {
+                throw new Error(404, null, 'Asset does not exist');
+            }
 
             const token = jwt.sign({ access: 'profile', email: user.email }, config.SigningSecret)
             const url = new URL(`${config.PMTILES_URL}/tiles/profile/${user.email}/${req.params.asset}`);
