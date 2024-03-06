@@ -406,7 +406,7 @@ export default {
 
             mapStore.init(this.$refs.map, basemap);
 
-            mapStore.map.once('load', async () => {
+            mapStore.map.once('idle', async () => {
                 await mapStore.initLayers(basemap);
 
                 const iconsets = await window.std('/api/iconset');
