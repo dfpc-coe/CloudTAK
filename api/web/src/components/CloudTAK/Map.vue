@@ -263,6 +263,7 @@ export default {
             url.searchParams.append('format', 'geojson');
             url.searchParams.append('connection', this.user.email);
             url.searchParams.append('token', localStorage.token);
+
             if (window.location.hostname === 'localhost') {
                 url.protocol = 'ws:';
             } else {
@@ -272,7 +273,8 @@ export default {
             this.ws = new WebSocket(url);
             this.ws.addEventListener('error', (err) => { this.$emit('err') });
             this.ws.addEventListener('close', () => {
-                this.connectSocket();
+                // Otherwise the user is probably logged out
+                if (localStorage.token) this.connectSocket();
             });
             this.ws.addEventListener('message', (msg) => {
                 msg = JSON.parse(msg.data);
