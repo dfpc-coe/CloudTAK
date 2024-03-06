@@ -9,7 +9,7 @@ export default class {
         this.api = api;
     }
 
-    async download(hash: string) {
+    async download(hash: string): Promise<Readable> {
         const url = new URL(`/Marti/sync/content`, this.api.url);
         url.searchParams.append('hash', hash);
 
@@ -17,7 +17,7 @@ export default class {
             method: 'GET'
         }, true);
 
-        return res.body.getReader();
+        return res.body;
     }
 
     async delete(hash: string) {
