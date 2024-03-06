@@ -98,10 +98,10 @@ export default async function router(schema: Schema, config: Config) {
             task: Type.String(),
             cron: Type.String(),
             logging: Type.Boolean(),
-            stale: Type.Integer(),
+            stale: Type.Optional(Type.Integer()),
             connection: Type.Optional(Type.Integer()),
             data: Type.Optional(Type.Integer()),
-            schema: Type.Any(),
+            schema: Type.Optional(Type.Any()),
             styles: Type.Optional(StyleContainer)
         }),
         res: LayerResponse
