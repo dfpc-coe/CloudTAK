@@ -17,6 +17,28 @@ export enum TaskSchemaEnum {
     INPUT = 'schema:input'
 }
 
+async function listTask(): Map<String, Array<String>> {
+    const images = await ECR.list();
+
+    let total: number = 0;
+    const tasks: Map<String, Array<String>> = new Map();
+
+    for (const image of images) {
+        const match = String(image.imageTag).match(/^(.*)-v([0-9]+\.[0-9]+\.[0-9]+)$/);
+        if (!match) continue;
+        total++;
+        if (!tasks.has(match[1])) tasks.set(match[1], []);
+        tasks.get(match[1]).push(match[2]);
+    }
+
+    const taskarr = new Array()
+    for (const key of tasks.keys()) {
+        tasks.set(key, semver.desc(tasks.get(key)));
+    }
+
+    return tasks;
+}
+
 export default async function router(schema: Schema, config: Config) {
     await schema.get('/task', {
         name: 'List Tasks',
@@ -30,23 +52,7 @@ export default async function router(schema: Schema, config: Config) {
         try {
             await Auth.is_auth(config, req);
 
-            const images = await ECR.list();
-
-            let total: number = 0;
-            const tasks = new Map();
-
-            for (const image of images) {
-                const match = String(image.imageTag).match(/^(.*)-v([0-9]+\.[0-9]+\.[0-9]+)$/);
-                if (!match) continue;
-                total++;
-                if (!tasks.has(match[1])) tasks.set(match[1], []);
-                tasks.get(match[1]).push(match[2]);
-            }
-
-            const taskarr = new Array()
-            for (const key of tasks.keys()) {
-                tasks.set(key, semver.desc(tasks.get(key)));
-            }
+            const tasks = await listTasks();
 
             return res.json({
                 total,
@@ -73,22 +79,39 @@ export default async function router(schema: Schema, config: Config) {
             await Auth.is_auth(config, req);
 
             // Stuck with this approach for now - https://github.com/aws/containers-roadmap/issues/418
-            const images = await ECR.list();
-
-            let total: number = 0;
-            const tasks = new Map();
-
-            for (const image of images) {
-                const match = String(image.imageTag).match(/^(.*)-v([0-9]+\.[0-9]+\.[0-9]+)$/);
-                if (!match) continue;
-                total++;
-                if (!tasks.has(match[1])) tasks.set(match[1], []);
-                tasks.get(match[1]).push(match[2]);
-            }
+            const tasks = await listTasks();
 
             return res.json({
                 total: tasks.get(req.params.task).length || 0,
                 versions: semver.desc(tasks.get(req.params.task) || [])
+            });
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
+
+    await schema.delete('/task/:task/version/:version', {
+        name: 'Delete Version',
+        group: 'Task',
+        params: Type.Object({
+            task: Type.String(),
+            version: Type.String(),
+        }),
+        description: 'Delete a given task version',
+        res: StandardResponse
+    }, async (req, res) => {
+        try {
+            await Auth.is_auth(config, req);
+
+            const tasks = await listTasks();
+
+            const versions = tasks.get(req.params.task);
+            if (!versions) throw new Err(400, null, 'Task does not exist');
+            if (!versions.includes(req.params.version)) throw new Err(400, null, 'Task Version does not exist');
+
+            return res.json({
+                standard: 200,
+                message: 'Deleted Task Version'
             });
         } catch (err) {
             return Err.respond(err, res);

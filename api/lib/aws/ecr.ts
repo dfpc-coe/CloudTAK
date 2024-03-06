@@ -25,4 +25,17 @@ export default class ECR {
             throw new Err(500, new Error(err instanceof Error ? err.message : String(err)), 'Failed to list ECR Tasks');
         }
     }
+
+    static async delete(task: string, version: string): Promise<void> {
+        const ecr = new AWSECR.ECRClient({ region: process.env.AWS_DEFAULT_REGION });
+
+        try {
+            await ecr.send(new AWSECR.BatchDeleteImageCommand({
+                repositoryName: 'coe-ecr-etl-tasks',
+                imageIds: [`${task}-${version}`]
+            }));
+        } catch (err) {
+            throw new Err(500, new Error(err instanceof Error ? err.message : String(err)), 'Failed to delete ECR Tasks');
+        }
+    }
 }
