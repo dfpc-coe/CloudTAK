@@ -115,6 +115,7 @@ export default {
                             Action: [
                                 'ecr:Describe*',
                                 'ecr:Get*',
+                                'ecr:BatchDeleteImage',
                                 'ecr:List*'
                             ],
                             Resource: [
