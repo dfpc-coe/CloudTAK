@@ -204,7 +204,7 @@ export const ConnectionToken = pgTable('connection_tokens', {
     updated: timestamp('updated', { withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
 });
 
-export const ProfileMissions = pgTable('profile_missions', {
+export const ProfileMission = pgTable('profile_missions', {
     id: serial('id').primaryKey(),
     name: text('name').notNull(),
     guid: text('guid').notNull(),
