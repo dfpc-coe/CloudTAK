@@ -59,13 +59,7 @@ export default async function router(schema: Schema, config: Config) {
 
             const file = await api.Files.download(req.params.hash);
 
-            let { done, value } = await file.read();
-            while (!done) {
-                res.write(value);
-                ({ done, value } = await file.read());
-            }
-
-            res.end()
+            file.pipe(res);
         } catch (err) {
             return Err.respond(err, res);
         }

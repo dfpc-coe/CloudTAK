@@ -282,7 +282,6 @@ export default class {
     }, opts?: Static<typeof MissionOptions>): Promise<Static<typeof Mission>> {
         name = name.trim();
         const url = new URL(`/Marti/api/missions/${this.#encodeName(name)}`, this.api.url);
-        console.error(url)
 
         for (const q in query) url.searchParams.append(q, String(query[q]));
 
