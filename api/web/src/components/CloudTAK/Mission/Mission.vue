@@ -65,6 +65,10 @@
                         "bg-blue-lt": mode === "users",
                         "cursor-pointer": mode !== "users"
                     }'><IconUsers v-tooltip='"Users"'/></div>
+                    <div @click='mode = "timeline"' class='px-2 py-2' :class='{
+                        "bg-blue-lt": mode === "timeline",
+                        "cursor-pointer": mode !== "timeline"
+                    }'><IconTimeline v-tooltip='"Timeline"'/></div>
                     <div @click='mode = "logs"' class='px-2 py-2' :class='{
                         "bg-blue-lt": mode === "logs",
                         "cursor-pointer": mode !== "logs"
@@ -151,6 +155,32 @@
                             </div>
                         </template>
                     </template>
+                    <template v-else-if='mode === "timeline"'>
+                        <TablerNone v-if='!mission.missionChanges.length' :create='false'/>
+                        <div v-else class='rows overflow-auto' style='height: 50vh;'>
+                            <div :key='change' v-for='change in mission.missionChanges' class='col-12 hover-dark px-2 py-1'>
+                                <template v-if='change.type === "CREATE_MISSION"'>
+                                    <IconVolcano/><span class='mx-2' v-text='`Mission Created: ${change.missionName}`'/>
+                                </template>
+                                <template v-else-if='change.type === "ADD_CONTENT" && change.contentResource'>
+                                    <IconFile/><span class='mx-2' v-text='change.contentResource.name'/>
+                                </template>
+                                <template v-else-if='change.type === "ADD_CONTENT" && change.details'>
+                                    <IconPolygon/><span class='mx-2' v-text='`${change.details.callsign} (${change.details.type})`'/>
+                                </template>
+                                <template v-else-if='change.type === "REMOVE_CONTENT" && change.contentResource'>
+                                    <IconFileX/><span class='mx-2' v-text='change.contentResource.name'/>
+                                </template>
+                                <template v-else>
+                                    <span v-text='change'/>
+                                </template>
+                                <div class='col-12 d-flex'>
+                                    <label class='subheader' v-text='change.type'/>
+                                    <label class='subheader ms-auto' v-text='change.timestamp'/>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
                     <template v-else-if='mode === "logs"'>
                         <TablerLoading v-if='loading.logs'/>
                         <template v-else-if='createLog !== false'>
@@ -189,9 +219,14 @@
 <script>
 import {
     IconPlus,
+    IconVolcano,
+    IconFileX,
     IconArticle,
+    IconTimeline,
     IconDownload,
     IconFiles,
+    IconFile,
+    IconPolygon,
     IconLock,
     IconInfoSquare,
     IconUser,
@@ -391,10 +426,13 @@ export default {
         TablerDelete,
         TablerToggle,
         TablerInput,
+        IconVolcano,
         IconPlus,
         IconArticle,
         IconDownload,
         IconFiles,
+        IconFile,
+        IconPolygon,
         IconInfoSquare,
         IconUser,
         IconUsers,
@@ -402,7 +440,9 @@ export default {
         IconTrash,
         IconRefresh,
         IconLock,
-        IconLockOpen
+        IconFileX,
+        IconLockOpen,
+        IconTimeline
     }
 }
 </script>
