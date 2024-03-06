@@ -211,10 +211,11 @@ export default async function server(config: Config) {
                 throw new Error('Unauthorized');
             }
         } catch (err) {
+            console.error('WebSocket Error', err);
             ws.send(JSON.stringify({
                 type: 'Error',
                 properties: {
-                    message: err instanceof Error ? String(err.message) : String(err) 
+                    message: err instanceof Error ? String(err.message) : String(err)
                 }
             }));
             await sleep(500);
