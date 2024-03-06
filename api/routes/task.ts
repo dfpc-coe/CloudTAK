@@ -113,7 +113,7 @@ export default async function router(schema: Schema, config: Config) {
             if (!versions) throw new Err(400, null, 'Task does not exist');
             if (!versions.includes(req.params.version)) throw new Err(400, null, 'Task Version does not exist');
 
-            const task = `${req.params.task}-${req.params.version}`;
+            const task = `${req.params.task}-v${req.params.version}`;
             const layers = await config.models.Layer.list({
                 limit: 1,
                 where: sql`
