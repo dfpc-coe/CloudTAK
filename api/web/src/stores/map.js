@@ -45,7 +45,7 @@ export const useMapStore = defineStore('cloudtak', {
             const beforePos = this.getLayerPos(layer.before)
             if (layer.before && beforePos !== false) {
                 layer.before = this.layers[beforePos].layers[0].id;
-                this.layers.splice(layer.before, 0, layer);
+                this.layers.splice(beforePos, 0, layer);
             } else {
                 this.layers.push(layer);
             }
