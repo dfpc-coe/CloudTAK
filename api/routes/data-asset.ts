@@ -253,7 +253,7 @@ export default async function router(schema: Schema, config: Config) {
                     for (const content of mission.contents) {
                         if (content.data.name === file) {
                             await api.Mission.detachContents(data.name, {
-                                hashes: [content.data.hash]
+                                hash: content.data.hash
                             }, {
                                 token: data.mission_token
                             });
