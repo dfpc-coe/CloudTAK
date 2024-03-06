@@ -1,4 +1,5 @@
 import { Type } from '@sinclair/typebox'
+import { sql } from 'drizzle-orm';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
@@ -17,11 +18,14 @@ export enum TaskSchemaEnum {
     INPUT = 'schema:input'
 }
 
-async function listTask(): Map<String, Array<String>> {
+async function listTasks(): Promise<{
+    total: number,
+    tasks: Map<string, Array<string>>
+}> {
     const images = await ECR.list();
 
     let total: number = 0;
-    const tasks: Map<String, Array<String>> = new Map();
+    const tasks: Map<string, Array<string>> = new Map();
 
     for (const image of images) {
         const match = String(image.imageTag).match(/^(.*)-v([0-9]+\.[0-9]+\.[0-9]+)$/);
@@ -36,7 +40,7 @@ async function listTask(): Map<String, Array<String>> {
         tasks.set(key, semver.desc(tasks.get(key)));
     }
 
-    return tasks;
+    return { total, tasks }
 }
 
 export default async function router(schema: Schema, config: Config) {
@@ -52,7 +56,7 @@ export default async function router(schema: Schema, config: Config) {
         try {
             await Auth.is_auth(config, req);
 
-            const tasks = await listTasks();
+            const { total, tasks } = await listTasks();
 
             return res.json({
                 total,
@@ -79,7 +83,7 @@ export default async function router(schema: Schema, config: Config) {
             await Auth.is_auth(config, req);
 
             // Stuck with this approach for now - https://github.com/aws/containers-roadmap/issues/418
-            const tasks = await listTasks();
+            const { total, tasks } = await listTasks();
 
             return res.json({
                 total: tasks.get(req.params.task).length || 0,
@@ -103,14 +107,26 @@ export default async function router(schema: Schema, config: Config) {
         try {
             await Auth.is_auth(config, req);
 
-            const tasks = await listTasks();
+            const { total, tasks } = await listTasks();
 
             const versions = tasks.get(req.params.task);
             if (!versions) throw new Err(400, null, 'Task does not exist');
             if (!versions.includes(req.params.version)) throw new Err(400, null, 'Task Version does not exist');
 
+            const task = `${req.params.task}-${req.params.version}`;
+            const layers = await config.models.Layer.list({
+                limit: 1,
+                where: sql`
+                    task = ${task}::TEXT
+                `
+            });
+
+            if (layers.total !== 0) throw new Err(400, null, 'Cannot delete a layer that is in use');
+
+            await ECR.delete(req.params.task, req.params.version);
+
             return res.json({
-                standard: 200,
+                status: 200,
                 message: 'Deleted Task Version'
             });
         } catch (err) {
