@@ -120,10 +120,12 @@ import RadialMenu from './RadialMenu/RadialMenu.vue';
 import moment from 'moment';
 import { mapState, mapActions } from 'pinia'
 import { useMapStore } from '/src/stores/map.js';
+import { useOverlayStore } from '/src/stores/overlays.ts';
 import { useProfileStore } from '/src/stores/profile.js';
 import { useCOTStore } from '/src/stores/cots.js';
 const cotStore = useCOTStore();
 const mapStore = useMapStore();
+const overlayStore = useOverlayStore();
 const profileStore = useProfileStore();
 
 export default {
@@ -147,6 +149,12 @@ export default {
         noMenuShown: function() {
             return !this.cot && !this.feat && !this.menu.main
         }
+    },
+    unmounted: function() {
+        cotStore.$reset();
+        mapStore.$reset();
+        overlayStore.$reset();
+        profileStore.$reset();
     },
     mounted: async function() {
         // ensure uncaught errors in the stack are captured into vue context
