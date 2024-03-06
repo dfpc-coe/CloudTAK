@@ -11,8 +11,9 @@ import cp from 'node:child_process';
 // Formats
 import KML from './lib/kml.js';
 import Translate from './lib/translate.js';
+import GeoJSON from './lib/geojson.js'
 
-const FORMATS = [KML, Translate];
+const FORMATS = [KML, Translate, GeoJSON];
 const formats = new Map();
 
 // TODO load all conversion files from a directory
