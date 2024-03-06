@@ -4,7 +4,7 @@ import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
 import { GenericMartiResponse } from '../lib/types.js';
-import { MissionSubscriber } from '../lib/api/mission.js';
+import { MissionSubscriber, Mission, ChangesInput } from '../lib/api/mission.js';
 import { Profile } from '../lib/schema.js';
 import S3 from '../lib/aws/s3.js';
 import TAKAPI, {
@@ -29,7 +29,7 @@ export default async function router(schema: Schema, config: Config) {
             start: Type.Optional(Type.String()),
             end: Type.Optional(Type.String())
         }),
-        res: Type.Any()
+        res: Mission
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
@@ -52,12 +52,7 @@ export default async function router(schema: Schema, config: Config) {
             name: Type.String(),
         }),
         description: 'Helper API to get mission changes',
-        query: Type.Object({
-            secago: Type.Optional(Type.String()),
-            start: Type.Optional(Type.String()),
-            end: Type.Optional(Type.String()),
-            squashed: Type.Optional(Type.Boolean())
-        }),
+        query: ChangesInput,
         res: Type.Any()
     }, async (req, res) => {
         try {
@@ -65,9 +60,8 @@ export default async function router(schema: Schema, config: Config) {
             const auth = (await config.models.Profile.from(user.email)).auth;
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
-            const query: Record<string, string> = {};
-            for (const q in req.query) query[q] = String(req.query[q]);
-            const changes = await api.Mission.changes(req.params.name, query);
+            const changes = await api.Mission.changes(req.params.name, req.query);
+
             return res.json(changes);
         } catch (err) {
             return Err.respond(err, res);
