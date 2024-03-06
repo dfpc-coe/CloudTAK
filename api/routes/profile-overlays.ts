@@ -94,7 +94,7 @@ export default async function router(schema: Schema, config: Config) {
                 const profile = await config.models.Profile.from(user.email);
                 const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
 
-                const mission = await api.Mission.getGuid(overlay.mode_id, { uid: user.email });
+                const mission = await api.Mission.getGuid(overlay.mode_id, {});
                 await api.Mission.subscribe(mission.name, { uid: user.email });
             }
 
@@ -127,7 +127,7 @@ export default async function router(schema: Schema, config: Config) {
             if (overlay.mode === 'mission') {
                 const profile = await config.models.Profile.from(user.email);
                 const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
-                const mission = await api.Mission.getGuid(overlay.mode_id, { uid: user.email });
+                const mission = await api.Mission.getGuid(overlay.mode_id, {});
                 await api.Mission.unsubscribe(mission.name, { uid: user.email });
             }
 
