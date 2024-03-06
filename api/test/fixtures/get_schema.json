@@ -624,6 +624,11 @@
         "query": false,
         "res": true
     },
+    "DELETE /task/:task/version/:version": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
     "GET /layer/:layerid/task": {
         "body": false,
         "query": false,
