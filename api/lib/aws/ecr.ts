@@ -32,7 +32,7 @@ export default class ECR {
         try {
             await ecr.send(new AWSECR.BatchDeleteImageCommand({
                 repositoryName: 'coe-ecr-etl-tasks',
-                imageIds: [`${task}-${version}`]
+                imageIds: [{ imageTag: `${task}-${version}` }]
             }));
         } catch (err) {
             throw new Err(500, new Error(err instanceof Error ? err.message : String(err)), 'Failed to delete ECR Tasks');

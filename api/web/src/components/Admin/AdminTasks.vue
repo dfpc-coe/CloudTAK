@@ -20,11 +20,19 @@
         :create='false'
     />
     <template v-else-if='task'>
-        <div class="table-responsive">
+        <TablerNone v-if='!tasks.items[task].length' label='Versions' :create='false'/>
+        <div v-else class="table-responsive">
             <table class="table card-table table-hover table-vcenter datatable cursor-pointer">
                 <tbody>
                     <tr :key='version' v-for='version in tasks.items[task]'>
-                        <td v-text='version'/>
+                        <td>
+                            <div class='d-flex'>
+                                <span v-text='version'/>
+                                <div class='ms-auto'>
+                                    <TablerDelete displaytype='icon' @delete='deleteVersion(task, version)'/>
+                                </div>
+                            </div>
+                        </td>
                     </tr>
                 </tbody>
             </table>
@@ -48,6 +56,8 @@
 <script>
 import {
     TablerLoading,
+    TablerDelete,
+    TablerNone,
 } from '@tak-ps/vue-tabler';
 import {
     IconCircleArrowLeft
@@ -73,10 +83,20 @@ export default {
             this.loading = true;
             this.tasks = await window.std(`/api/task`);
             this.loading = false;
+        },
+        deleteVersion: async function(task, version) {
+            this.loading = true;
+            this.tasks = await window.std(`/api/task/${task}/version/${version}`, {
+                method: 'DELETE'
+            });
+
+            await this.fetch();
         }
     },
     components: {
         TablerLoading,
+        TablerDelete,
+        TablerNone,
         IconCircleArrowLeft,
     }
 }
