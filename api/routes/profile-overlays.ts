@@ -35,10 +35,13 @@ export default async function router(schema: Schema, config: Config) {
 
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req);
+            const user = await Auth.as_user(config, req);
 
             const overlays = await config.models.ProfileOverlay.list({
-                limit: req.query.limit
+                limit: req.query.limit,
+                where: sql`
+                    username = ${user.email}
+                `
             });
 
             const removed = [];
