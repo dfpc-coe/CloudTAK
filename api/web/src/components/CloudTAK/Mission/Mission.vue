@@ -407,7 +407,7 @@ export default {
             try {
                 this.loading.mission = true;
                 const url = window.stdurl(`/api/marti/missions/${this.mission.name}`);
-                url.searchParams.append('changes', 'true');
+                url.searchParams.append('changes', 'false');
                 url.searchParams.append('logs', 'true');
                 this.mission = await window.std(url);
             } catch (err) {

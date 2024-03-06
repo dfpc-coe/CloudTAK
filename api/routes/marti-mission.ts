@@ -32,8 +32,6 @@ export default async function router(schema: Schema, config: Config) {
         res: Type.Any()
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req);
-
             const user = await Auth.as_user(config, req);
             const auth = (await config.models.Profile.from(user.email)).auth;
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
@@ -47,8 +45,37 @@ export default async function router(schema: Schema, config: Config) {
         }
     });
 
+    await schema.get('/marti/missions/:name/changes', {
+        name: 'Mission Changes',
+        group: 'MartiMissions',
+        params: Type.Object({
+            name: Type.String(),
+        }),
+        description: 'Helper API to get mission changes',
+        query: Type.Object({
+            secago: Type.Optional(Type.String()),
+            start: Type.Optional(Type.String()),
+            end: Type.Optional(Type.String()),
+            squashed: Type.Optional(Type.Boolean())
+        }),
+        res: Type.Any()
+    }, async (req, res) => {
+        try {
+            const user = await Auth.as_user(config, req);
+            const auth = (await config.models.Profile.from(user.email)).auth;
+            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
+
+            const query: Record<string, string> = {};
+            for (const q in req.query) query[q] = String(req.query[q]);
+            const changes = await api.Mission.changes(req.params.name, query);
+            return res.json(changes);
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
+
     await schema.delete('/marti/missions/:name', {
-        name: 'Delete Mission',
+        name: 'Mission Delete',
         group: 'MartiMissions',
         params: Type.Object({
             name: Type.String(),
@@ -61,8 +88,6 @@ export default async function router(schema: Schema, config: Config) {
         res: GenericMartiResponse
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req);
-
             const user = await Auth.as_user(config, req);
             const auth = (await config.models.Profile.from(user.email)).auth;
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
@@ -103,8 +128,6 @@ export default async function router(schema: Schema, config: Config) {
         res: GenericMartiResponse
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req);
-
             const user = await Auth.as_user(config, req);
             const auth = (await config.models.Profile.from(user.email)).auth;
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
@@ -131,8 +154,6 @@ export default async function router(schema: Schema, config: Config) {
         res: GenericMartiResponse
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req);
-
             const user = await Auth.as_user(config, req);
             const auth = (await config.models.Profile.from(user.email)).auth;
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
@@ -156,8 +177,6 @@ export default async function router(schema: Schema, config: Config) {
         res: MissionSubscriber
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req);
-
             const user = await Auth.as_user(config, req);
             const auth = (await config.models.Profile.from(user.email)).auth;
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
@@ -180,8 +199,6 @@ export default async function router(schema: Schema, config: Config) {
         res: GenericMartiResponse
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req);
-
             const user = await Auth.as_user(config, req);
             const auth = (await config.models.Profile.from(user.email)).auth;
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
@@ -204,8 +221,6 @@ export default async function router(schema: Schema, config: Config) {
         res: GenericMartiResponse
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req);
-
             const user = await Auth.as_user(config, req);
             const auth = (await config.models.Profile.from(user.email)).auth;
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
@@ -236,8 +251,6 @@ export default async function router(schema: Schema, config: Config) {
         })),
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req);
-
             const user = await Auth.as_user(config, req);
             const auth = (await config.models.Profile.from(user.email)).auth;
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
@@ -263,8 +276,6 @@ export default async function router(schema: Schema, config: Config) {
         res: GenericMartiResponse
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req);
-
             const user = await Auth.as_user(config, req);
             const profile = await config.models.Profile.from(user.email);
             const auth = profile.auth;
@@ -308,8 +319,6 @@ export default async function router(schema: Schema, config: Config) {
         res: GenericMartiResponse
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req);
-
             const user = await Auth.as_user(config, req);
             const profile = await config.models.Profile.from(user.email);
             const auth = profile.auth;
