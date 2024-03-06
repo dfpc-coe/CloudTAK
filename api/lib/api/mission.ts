@@ -36,6 +36,18 @@ export const Mission = Type.Object({
     missionChanges: Type.Optional(Type.Array(Type.Unknown()))   // Only present on Mission.get()
 });
 
+export const MissionChange = Type.Object({
+    isFederatedChange: Type.Boolean(),
+    type: Type.String(),
+    missionName: Type.String(),
+    timestamp: Type.String(),
+    serverTime: Type.String(),
+    creatorUid: Type.String(),
+    contentUid: Type.Optional(Type.String()),
+    details: Type.Optional(Type.Any()),
+    contentResource: Type.Optional(Type.Any())
+});
+
 export const MissionSubscriber = Type.Object({
     token: Type.Optional(Type.String()),
     clientUid: Type.String(),
@@ -153,7 +165,7 @@ export default class {
         name: string,
         query: Static<typeof ChangesInput>,
         opts?: Static<typeof MissionOptions>
-    ) {
+    ): Promise<TAKList<Static<typeof MissionChange>>> {
         const url = new URL(`/Marti/api/missions/${this.#encodeName(name)}/changes`, this.api.url);
 
         for (const q in query) url.searchParams.append(q, String(query[q]));
