@@ -53,7 +53,7 @@ export default async function router(schema: Schema, config: Config) {
         }),
         description: 'Helper API to get mission changes',
         query: ChangesInput,
-        res: Type.Any()
+        res: GenericMartiResponse
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
