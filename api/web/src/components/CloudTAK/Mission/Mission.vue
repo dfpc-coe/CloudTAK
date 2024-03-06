@@ -156,9 +156,9 @@
                         </template>
                     </template>
                     <template v-else-if='mode === "timeline"'>
-                        <TablerNone v-if='!mission.missionChanges.length' :create='false'/>
+                        <TablerNone v-if='!changes.length' :create='false'/>
                         <div v-else class='rows overflow-auto' style='height: 50vh;'>
-                            <div :key='change' v-for='change in mission.missionChanges' class='col-12 hover-dark px-2 py-1'>
+                            <div :key='change' v-for='change in changes' class='col-12 hover-dark px-2 py-1'>
                                 <template v-if='change.type === "CREATE_MISSION"'>
                                     <IconVolcano/><span class='mx-2' v-text='`Mission Created: ${change.missionName}`'/>
                                 </template>
@@ -270,6 +270,7 @@ export default {
             password: '',
             upload: false,
             createLog: false,
+            changes: [],
             loading: {
                 initial: !this.initial.passwordProtected,
                 mission: !this.initial.passwordProtected,
