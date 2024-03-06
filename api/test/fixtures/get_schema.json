@@ -364,6 +364,16 @@
         "query": true,
         "res": true
     },
+    "POST /login": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "GET /login": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
     "GET /iconset": {
         "body": false,
         "query": true,
@@ -428,16 +438,6 @@
         "body": false,
         "query": true,
         "res": false
-    },
-    "POST /login": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "GET /login": {
-        "body": false,
-        "query": false,
-        "res": true
     },
     "DELETE /marti/api/files/:hash": {
         "body": false,
@@ -620,6 +620,11 @@
         "res": true
     },
     "GET /task/:task": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "DELETE /task/:task/version/:version": {
         "body": false,
         "query": false,
         "res": true
