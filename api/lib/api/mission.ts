@@ -86,7 +86,7 @@ export default class {
         }
     }
 
-    changes(name: string, query: {
+    async changes(name: string, query: {
         secago: number;
         start: string;
         end: string;
@@ -103,7 +103,7 @@ export default class {
         });
     }
 
-    latestCots(name: string, opts?: Static<typeof MissionOptions>): Promise<string> {
+    async latestCots(name: string, opts?: Static<typeof MissionOptions>): Promise<string> {
         const url = new URL(`/Marti/api/missions/${this.#encodeName(name)}/cot`, this.api.url);
 
         return await this.api.fetch(url, {
@@ -129,7 +129,8 @@ export default class {
      */
     async detachContents(name: string, body: Static<typeof DetachContentsInput>, opts?: Static<typeof MissionOptions>) {
         const url = new URL(`/Marti/api/missions/${this.#encodeName(name)}/contents`, this.api.url);
-        if (body.hash) url.searchParams.append('hash', hash);
+        if (body.hash) url.searchParams.append('hash', body.hash);
+        if (body.uid) url.searchParams.append('uid', body.uid);
 
         return await this.api.fetch(url, {
             method: 'DELETE',

@@ -204,6 +204,15 @@ export const ConnectionToken = pgTable('connection_tokens', {
     updated: timestamp('updated', { withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
 });
 
+export const ProfileMissions = pgTable('profile_missions', {
+    id: serial('id').primaryKey(),
+    name: text('name').notNull(),
+    guid: text('guid').notNull(),
+    token: text('token').notNull(),
+    created: timestamp('created', { withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    updated: timestamp('updated', { withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+});
+
 export const ProfileOverlay = pgTable('profile_overlays', {
     id: serial('id').primaryKey(),
     name: text('name').notNull(),
