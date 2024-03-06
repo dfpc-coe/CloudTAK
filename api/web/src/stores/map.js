@@ -66,25 +66,20 @@ export const useMapStore = defineStore('cloudtak', {
                 this.map.on('click', click.id, (e) => {
                     if (this.draw && this.draw.getMode() !== 'static') return;
 
-                    if (e.point.x < 150 || e.point.y < 150) {
-                        const flyTo = { speed: Infinity };
-                        if (e.features[0].geometry.type === 'Point') {
-                            flyTo.center = e.features[0].geometry.coordinates;
-                        } else {
-                            flyTo.center = pointOnFeature(e.features[0].geometry).geometry.coordinates;
-                        }
-
-                        // This is required to ensure the map has nowhere to flyTo - ie the whole world is shown
-                        // and then the radial menu won't actually be on the CoT when the CoT is clicked
-                        if (this.map.getZoom() < 3) flyTo.zoom = 4;
-                        this.map.flyTo(flyTo)
-
-                        this.radial.x = this.container.clientWidth / 2;
-                        this.radial.y = this.container.clientHeight / 2;
+                    const flyTo = { speed: Infinity };
+                    if (e.features[0].geometry.type === 'Point') {
+                        flyTo.center = e.features[0].geometry.coordinates;
                     } else {
-                        this.radial.x = e.point.x;
-                        this.radial.y = e.point.y;
+                        flyTo.center = pointOnFeature(e.features[0].geometry).geometry.coordinates;
                     }
+
+                    // This is required to ensure the map has nowhere to flyTo - ie the whole world is shown
+                    // and then the radial menu won't actually be on the CoT when the CoT is clicked
+                    if (this.map.getZoom() < 3) flyTo.zoom = 4;
+                    this.map.flyTo(flyTo)
+
+                    this.radial.x = this.container.clientWidth / 2;
+                    this.radial.y = this.container.clientHeight / 2;
 
                     this.radial.cot = e.features[0];
                     this.radial.mode = click.type;
