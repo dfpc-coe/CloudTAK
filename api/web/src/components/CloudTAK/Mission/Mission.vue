@@ -274,6 +274,7 @@ export default {
                 initial: !this.initial.passwordProtected,
                 mission: !this.initial.passwordProtected,
                 logs: false,
+                changes: true,
                 users: true,
                 delete: false
             },
@@ -325,6 +326,7 @@ export default {
 
             await Promise.all([
                 this.fetchSubscriptions(),
+                this.fetchChanges(),
                 this.fetchImports()
             ]);
         },
@@ -379,6 +381,16 @@ export default {
                 this.err = err;
             }
             this.loading.users = false;
+        },
+        fetchChanges: async function() {
+            this.loading.changes = true;
+            try {
+                const url = await window.stdurl(`/api/marti/missions/${this.mission.name}/changes`);
+                this.changes = (await window.std(url)).data;
+            } catch (err) {
+                this.err = err;
+            }
+            this.loading.changes = false;
         },
         fetchSubscriptions: async function() {
             try {
