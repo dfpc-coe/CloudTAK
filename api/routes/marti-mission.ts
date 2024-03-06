@@ -45,6 +45,29 @@ export default async function router(schema: Schema, config: Config) {
         }
     });
 
+    await schema.get('/marti/missions/:name/cot', {
+        name: 'Mission Changes',
+        group: 'MartiMissions',
+        params: Type.Object({
+            name: Type.String(),
+        }),
+        description: 'Helper API to get latest CoTs',
+        res: Type.Any()
+    }, async (req, res) => {
+        try {
+            const user = await Auth.as_user(config, req);
+            const auth = (await config.models.Profile.from(user.email)).auth;
+            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
+
+            const cots = await api.Mission.latestCots(req.params.name);
+            console.error(cots)
+
+            return res.json(cots);
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
+
     await schema.get('/marti/missions/:name/changes', {
         name: 'Mission Changes',
         group: 'MartiMissions',
