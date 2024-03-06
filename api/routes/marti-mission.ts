@@ -316,7 +316,9 @@ export default async function router(schema: Schema, config: Config) {
 
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
-            const missionContent = await api.Mission.detachContents(req.params.name, req.params.hash);
+            const missionContent = await api.Mission.detachContents(req.params.name, {
+                hashes [req.params.hash]
+            });
 
             return res.json(missionContent);
         } catch (err) {
