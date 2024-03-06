@@ -57,6 +57,11 @@ export const AttachContentsInput = Type.Object({
     uids: Type.Optional(Type.Array(Type.String())),
 });
 
+export const DetachContentsInput = Type.Object({
+    hash: Type.Optional(Type.String()),
+    uid: Type.Optional(Type.String())
+});
+
 /**
  * @class
  */
@@ -81,6 +86,32 @@ export default class {
         }
     }
 
+    changes(name: string, query: {
+        secago: number;
+        start: string;
+        end: string;
+        squashed: boolean;
+
+        [key: string]: unknown;
+    }, opts?: Static<typeof MissionOptions>) {
+        const url = new URL(`/Marti/api/missions/${this.#encodeName(name)}/changes`, this.api.url);
+
+        for (const q in query) url.searchParams.append(q, String(query[q]));
+        return await this.api.fetch(url, {
+            method: 'GET',
+            headers: this.#headers(opts),
+        });
+    }
+
+    latestCots(name: string, opts?: Static<typeof MissionOptions>): Promise<string> {
+        const url = new URL(`/Marti/api/missions/${this.#encodeName(name)}/cot`, this.api.url);
+
+        return await this.api.fetch(url, {
+            method: 'GET',
+            headers: this.#headers(opts)
+        });
+    }
+
     /**
      * Return users associated with this mission
      */
@@ -96,9 +127,9 @@ export default class {
     /**
      * Remove a file from the mission
      */
-    async detachContents(name: string, hash: string, opts?: Static<typeof MissionOptions>) {
+    async detachContents(name: string, body: Static<typeof DetachContentsInput>, opts?: Static<typeof MissionOptions>) {
         const url = new URL(`/Marti/api/missions/${this.#encodeName(name)}/contents`, this.api.url);
-        url.searchParams.append('hash', hash);
+        if (body.hash) url.searchParams.append('hash', hash);
 
         return await this.api.fetch(url, {
             method: 'DELETE',
