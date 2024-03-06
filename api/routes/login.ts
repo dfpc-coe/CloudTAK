@@ -62,7 +62,7 @@ export default async function router(schema: Schema, config: Config) {
             }
 
             if (config.AuthGroup) {
-                const url = new URL('/Marti/api/groups/all?useCache=true', config.local ? 'http://localhost:5001' : config.MartiAPI);
+                const url = new URL('/Marti/api/groups/all', config.local ? 'http://localhost:5001' : config.MartiAPI);
 
                 const groupres = await fetch(url, {
                     credentials: 'include',
