@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import pointOnFeature from '@turf/point-on-feature';
+import { std, stdurl } from '../std.js';
 import moment from 'moment';
 
 export const useCOTStore = defineStore('cots', {
@@ -7,7 +8,7 @@ export const useCOTStore = defineStore('cots', {
         return {
             archive: new Map(),     // Store all archived CoT messages
             cots: new Map(),        // Store all on-screen CoT messages
-            missions: new Map()     // Store All Mission CoT messages
+            subscriptions: new Map()     // Store All Mission CoT messages by GUID
         }
     },
     actions: {
@@ -23,6 +24,18 @@ export const useCOTStore = defineStore('cots', {
         },
 
         /**
+         * Load Latest CoTs from Mission Sync
+         */
+        loadMission: async function(guid) {
+             try {
+                 const fc = await window.std(`/api/marti/missions/${encodeURIComponent(guid)}/cot`);
+                 for (const feat of fc.features) this.add(feat, guid);
+             } catch (err) {
+                console.error(err);
+            }
+        },
+
+        /**
          * Save Archived CoTs from localStorage - called automatically every time an
          * archived CoT changes
          */
@@ -33,13 +46,21 @@ export const useCOTStore = defineStore('cots', {
         /**
          * Return CoTs as a FeatureCollection
          */
-        collection: function() {
-            return {
-                type: 'FeatureCollection',
-                features:  Array.from(this.cots.values()).map((cot) => {
-                    cot.properties['icon-opacity'] = moment().subtract(5, 'minutes').isBefore(moment(cot.properties.stale)) ? 1 : 0.5;
-                    return cot;
-                })
+        collection: function(store) {
+            if (!store) {
+                return {
+                    type: 'FeatureCollection',
+                    features:  Array.from(this.cots.values()).map((cot) => {
+                        // TODO if not archived set color opacity
+                        cot.properties['icon-opacity'] = moment().subtract(5, 'minutes').isBefore(moment(cot.properties.stale)) ? 1 : 0.5;
+                        return cot;
+                    })
+                }
+            } else {
+                return {
+                    type: 'FeatureCollection',
+                    features: Array.from(store.values())
+                }
             }
         },
 
@@ -87,7 +108,7 @@ export const useCOTStore = defineStore('cots', {
         /**
          * Add a CoT GeoJSON to the store and modify props to meet MapLibre style requirements
          */
-        add: function(feat, mission=null) {
+        add: function(feat, mission_guid=null) {
             //Vector Tiles only support integer IDs
             feat.properties.id = feat.id;
 
@@ -161,11 +182,11 @@ export const useCOTStore = defineStore('cots', {
                 }
             }
 
-            if (mission)  {
-                let cots = this.missions.get(mission);
+            if (mission_guid)  {
+                let cots = this.subscriptions.get(mission_guid);
                 if (!cots) {
                     cots = new Map();
-                    this.missions.set(mission, cots);
+                    this.subscriptions.set(mission_guid, cots);
                 }
 
                 cots.set(feat.id, feat);

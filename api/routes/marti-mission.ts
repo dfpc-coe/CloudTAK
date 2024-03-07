@@ -1,11 +1,14 @@
 import { Type } from '@sinclair/typebox'
+import TAK from '@tak-ps/node-tak';
 import Schema from '@openaddresses/batch-schema';
+import { Feature } from 'geojson';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
 import { GenericMartiResponse } from '../lib/types.js';
 import { MissionSubscriber, Mission, ChangesInput } from '../lib/api/mission.js';
 import { Profile } from '../lib/schema.js';
+import { CoT } from '@tak-ps/node-tak';
 import S3 from '../lib/aws/s3.js';
 import TAKAPI, {
     APIAuthToken,
@@ -39,6 +42,7 @@ export default async function router(schema: Schema, config: Config) {
             const query: Record<string, string> = {};
             for (const q in req.query) query[q] = String(req.query[q]);
             const mission = await api.Mission.get(req.params.name, query);
+
             return res.json(mission);
         } catch (err) {
             return Err.respond(err, res);
@@ -52,17 +56,33 @@ export default async function router(schema: Schema, config: Config) {
             name: Type.String(),
         }),
         description: 'Helper API to get latest CoTs',
-        res: Type.Any()
+        res: Type.Object({
+            type: Type.String(),
+            features: Type.Array(Type.Any())
+        })
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
             const auth = (await config.models.Profile.from(user.email)).auth;
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
-            const cots = await api.Mission.latestCots(req.params.name);
-            console.error(cots)
+            const cots: Feature[] = [];
 
-            return res.json(cots);
+            let partial = {
+                event: '',
+                remainder: await api.Mission.latestCots(req.params.name),
+                discard: ''
+            };
+
+            do {
+                partial = TAK.findCoT(partial.remainder)
+                if (partial && partial.event) cots.push((new CoT(partial.event)).to_geojson());
+            } while (partial && partial.remainder);
+
+            return res.json({
+                type: 'FeatureCollection',
+                features: cots
+            });
         } catch (err) {
             return Err.respond(err, res);
         }
