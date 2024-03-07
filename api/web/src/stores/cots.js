@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import pointOnFeature from '@turf/point-on-feature';
+import { std, stdurl } from '../std.js';
 import moment from 'moment';
 
 export const useCOTStore = defineStore('cots', {
@@ -7,7 +8,7 @@ export const useCOTStore = defineStore('cots', {
         return {
             archive: new Map(),     // Store all archived CoT messages
             cots: new Map(),        // Store all on-screen CoT messages
-            missions: new Map()     // Store All Mission CoT messages
+            subscriptions: new Map()     // Store All Mission CoT messages
         }
     },
     actions: {
@@ -20,6 +21,13 @@ export const useCOTStore = defineStore('cots', {
                 this.archive.set(a.id, a);
                 this.cots.set(a.id, a);
             }
+        },
+
+        /**
+         * Load Latest CoTs from Mission Sync
+         */
+        loadMission: async function(mission) {
+             const cots = await window.std(`/api/marti/missions/${encodeURIComponent(mission)}/cot`);
         },
 
         /**
@@ -162,10 +170,10 @@ export const useCOTStore = defineStore('cots', {
             }
 
             if (mission)  {
-                let cots = this.missions.get(mission);
+                let cots = this.subscriptions.get(mission);
                 if (!cots) {
                     cots = new Map();
-                    this.missions.set(mission, cots);
+                    this.subscriptions.set(mission, cots);
                 }
 
                 cots.set(feat.id, feat);

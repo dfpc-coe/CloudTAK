@@ -2,6 +2,8 @@ import { defineStore } from 'pinia'
 import { std } from '../std.js';
 import * as pmtiles from 'pmtiles';
 import pointOnFeature from '@turf/point-on-feature';
+import { useCOTStore } from './cots.js'
+const cotStore = useCOTStore();
 
 export const useOverlayStore = defineStore('overlays', {
     state: () => {
@@ -37,6 +39,7 @@ export const useOverlayStore = defineStore('overlays', {
                 if (overlay.mode === 'mission') {
                     // mode_id is GUID for mission type
                     this.subscriptions.set(overlay.mode_id, overlay);
+                    await cotStore.loadMission(overlay.name);
                 }
             }
 
