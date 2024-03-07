@@ -60,7 +60,7 @@ export default class {
 
         let cert = '-----BEGIN CERTIFICATE-----\n' + res.signedCert;
         if (!res.signedCert.endsWith('\n')) cert = cert + '\n';
-        cert + '-----END CERTIFICATE-----';
+        cert = cert + '-----END CERTIFICATE-----';
 
         return {
             cert,
