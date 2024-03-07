@@ -16,6 +16,7 @@ export default class Models {
     Profile: Modeler<typeof pgtypes.Profile>;
     ProfileChat: ProfileChat;
     ProfileOverlay: Modeler<typeof pgtypes.ProfileOverlay>;
+    ProfileMission: Modeler<typeof pgtypes.ProfileMission>;
 
     Iconset: Modeler<typeof pgtypes.Iconset>;
     Icon: Modeler<typeof pgtypes.Icon>;
@@ -30,6 +31,7 @@ export default class Models {
         this.Server = new Modeler(pg, pgtypes.Server);
         this.Profile = new Modeler(pg, pgtypes.Profile);
         this.ProfileOverlay = new Modeler(pg, pgtypes.ProfileOverlay);
+        this.ProfileMission = new Modeler(pg, pgtypes.ProfileMission);
         this.Basemap = new Modeler(pg, pgtypes.Basemap);
         this.Import = new Modeler(pg, pgtypes.Import);
         this.Connection = new Modeler(pg, pgtypes.Connection);
