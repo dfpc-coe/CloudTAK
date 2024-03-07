@@ -49,13 +49,21 @@ export const useCOTStore = defineStore('cots', {
         /**
          * Return CoTs as a FeatureCollection
          */
-        collection: function() {
-            return {
-                type: 'FeatureCollection',
-                features:  Array.from(this.cots.values()).map((cot) => {
-                    cot.properties['icon-opacity'] = moment().subtract(5, 'minutes').isBefore(moment(cot.properties.stale)) ? 1 : 0.5;
-                    return cot;
-                })
+        collection: function(store) {
+            if (!store) {
+                return {
+                    type: 'FeatureCollection',
+                    features:  Array.from(this.cots.values()).map((cot) => {
+                        // TODO if not archived set color opacity
+                        cot.properties['icon-opacity'] = moment().subtract(5, 'minutes').isBefore(moment(cot.properties.stale)) ? 1 : 0.5;
+                        return cot;
+                    })
+                }
+            } else {
+                return {
+                    type: 'FeatureCollection',
+                    features: Array.from(store.values())
+                }
             }
         },
 
@@ -103,7 +111,7 @@ export const useCOTStore = defineStore('cots', {
         /**
          * Add a CoT GeoJSON to the store and modify props to meet MapLibre style requirements
          */
-        add: function(feat, mission=null) {
+        add: function(feat, mission_guid=null) {
             //Vector Tiles only support integer IDs
             feat.properties.id = feat.id;
 
@@ -177,11 +185,11 @@ export const useCOTStore = defineStore('cots', {
                 }
             }
 
-            if (mission)  {
-                let cots = this.subscriptions.get(mission);
+            if (mission_guid)  {
+                let cots = this.subscriptions.get(mission_guid);
                 if (!cots) {
                     cots = new Map();
-                    this.subscriptions.set(mission, cots);
+                    this.subscriptions.set(mission_guid, cots);
                 }
 
                 cots.set(feat.id, feat);
