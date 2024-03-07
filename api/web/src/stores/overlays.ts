@@ -39,8 +39,7 @@ export const useOverlayStore = defineStore('overlays', {
                 if (overlay.mode === 'mission') {
                     // mode_id is GUID for mission type
                     this.subscriptions.set(overlay.mode_id, overlay);
-                    // @TODO Eventually allow name changes so use GUID
-                    await cotStore.loadMission(overlay.name);
+                    await cotStore.loadMission(overlay.mode_id);
                 }
             }
 

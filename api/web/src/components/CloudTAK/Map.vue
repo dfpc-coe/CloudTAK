@@ -362,8 +362,10 @@ export default {
             mapStore.map.getSource('cots').setData(cotStore.collection())
 
             for (const sub of cotStore.subscriptions.keys()) {
-                if (overlayStore.subscriptions.has())
-                console.error(sub);
+                const overlay = overlayStore.subscriptions.get(sub)
+                if (!overlay) continue;
+
+                mapStore.map.getSource(overlay.id).setData(cotStore.collection(cotStore.subscriptions.get(sub)))
             }
 
             if (this.locked.length && cotStore.has(this.locked[this.locked.length - 1])) {
