@@ -29,10 +29,7 @@ export const useCOTStore = defineStore('cots', {
         loadMission: async function(guid) {
              try {
                  const fc = await window.std(`/api/marti/missions/${encodeURIComponent(guid)}/cot`);
-                 if (!this.subscriptions.has(guid)) this.subscriptions.set(guid, new Map());
-                 const cots = this.subscriptions.get(guid);
-                 cots.clear();
-                 for (const feat of fc.features) cots.set(feat.id, feat);
+                 for (const feat of fc.features) this.add(feat, guid);
              } catch (err) {
                 console.error(err);
             }
