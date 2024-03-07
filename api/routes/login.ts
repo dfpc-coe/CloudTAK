@@ -3,6 +3,7 @@ import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import Cacher from '../lib/cacher.js';
 import busboy from 'busboy';
+import moment from 'moment';
 import Config from '../lib/config.js';
 import xml2js from 'xml2js';
 import { Readable } from 'node:stream';
@@ -16,6 +17,7 @@ import jwt from 'jsonwebtoken';
 import { CookieJar, Cookie } from 'tough-cookie';
 import { CookieAgent } from 'http-cookie-agent/undici';
 import TAKAPI, { APIAuthPassword } from '../lib/tak-api.js';
+import { X509Certificate } from 'crypto';
 
 export default async function router(schema: Schema, config: Config) {
     await schema.post('/login', {
@@ -93,12 +95,13 @@ export default async function router(schema: Schema, config: Config) {
             if (split.length < 2) throw new Err(500, null, 'Unexpected TAK JWT Format');
             const contents: { sub: string; aud: string; nbf: number; exp: number; iat: number; } = JSON.parse(split[1]);
 
+            let profile;
+            const api = await TAKAPI.init(new URL(config.MartiAPI), new APIAuthPassword(req.body.username, req.body.password));
+
             try {
-                await config.models.Profile.from(req.body.username);
+                profile = await config.models.Profile.from(req.body.username);
             } catch (err) {
                 if (err instanceof Err && err.status === 404) {
-                    const api = await TAKAPI.init(new URL(config.MartiAPI), new APIAuthPassword(req.body.username, req.body.password));
-
                     await config.models.Profile.generate({
                         username: req.body.username,
                         auth: await api.Credentials.generate()
@@ -106,6 +109,23 @@ export default async function router(schema: Schema, config: Config) {
                 } else {
                     return console.error(err);
                 }
+            }
+
+            let validTo;
+
+            try {
+                const cert = new X509Certificate(profile.auth.cert);
+
+                validTo = cert.validTo
+                // The validTo date looks like: 'Mar  6 20:38:58 2025 GMT'
+                if (moment(validTo, "MMM DD hh:mm:ss YYYY").isBefore(moment().add(7, 'days'))) {
+                    throw new Error('Expired Certificate has expired or is about to');
+                }
+            } catch (err) {
+                console.error(`Error: CertificateExpiration: ${validTo}: ${err}`);
+                await config.models.Profile.commit(req.body.username, {
+                    auth: await api.Credentials.generate()
+                });
             }
 
 

@@ -127,6 +127,13 @@
       "when": 1709588304086,
       "tag": "0017_fantastic_robbie_robertson",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "5",
+      "when": 1709741317451,
+      "tag": "0018_first_bucky",
+      "breakpoints": true
     }
   ]
 }

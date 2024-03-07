@@ -120,10 +120,12 @@ import RadialMenu from './RadialMenu/RadialMenu.vue';
 import moment from 'moment';
 import { mapState, mapActions } from 'pinia'
 import { useMapStore } from '/src/stores/map.js';
+import { useOverlayStore } from '/src/stores/overlays.ts';
 import { useProfileStore } from '/src/stores/profile.js';
 import { useCOTStore } from '/src/stores/cots.js';
 const cotStore = useCOTStore();
 const mapStore = useMapStore();
+const overlayStore = useOverlayStore();
 const profileStore = useProfileStore();
 
 export default {
@@ -147,6 +149,12 @@ export default {
         noMenuShown: function() {
             return !this.cot && !this.feat && !this.menu.main
         }
+    },
+    unmounted: function() {
+        cotStore.$reset();
+        mapStore.$reset();
+        overlayStore.$reset();
+        profileStore.$reset();
     },
     mounted: async function() {
         // ensure uncaught errors in the stack are captured into vue context
@@ -263,6 +271,7 @@ export default {
             url.searchParams.append('format', 'geojson');
             url.searchParams.append('connection', this.user.email);
             url.searchParams.append('token', localStorage.token);
+
             if (window.location.hostname === 'localhost') {
                 url.protocol = 'ws:';
             } else {
@@ -272,7 +281,8 @@ export default {
             this.ws = new WebSocket(url);
             this.ws.addEventListener('error', (err) => { this.$emit('err') });
             this.ws.addEventListener('close', () => {
-                this.connectSocket();
+                // Otherwise the user is probably logged out
+                if (localStorage.token) this.connectSocket();
             });
             this.ws.addEventListener('message', (msg) => {
                 msg = JSON.parse(msg.data);
@@ -396,7 +406,7 @@ export default {
 
             mapStore.init(this.$refs.map, basemap);
 
-            mapStore.map.once('load', async () => {
+            mapStore.map.once('idle', async () => {
                 await mapStore.initLayers(basemap);
 
                 const iconsets = await window.std('/api/iconset');

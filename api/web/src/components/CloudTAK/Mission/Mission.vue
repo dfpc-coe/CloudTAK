@@ -156,9 +156,9 @@
                         </template>
                     </template>
                     <template v-else-if='mode === "timeline"'>
-                        <TablerNone v-if='!mission.missionChanges.length' :create='false'/>
+                        <TablerNone v-if='!changes.length' :create='false'/>
                         <div v-else class='rows overflow-auto' style='height: 50vh;'>
-                            <div :key='change' v-for='change in mission.missionChanges' class='col-12 hover-dark px-2 py-1'>
+                            <div :key='change' v-for='change in changes' class='col-12 hover-dark px-2 py-1'>
                                 <template v-if='change.type === "CREATE_MISSION"'>
                                     <IconVolcano/><span class='mx-2' v-text='`Mission Created: ${change.missionName}`'/>
                                 </template>
@@ -270,10 +270,12 @@ export default {
             password: '',
             upload: false,
             createLog: false,
+            changes: [],
             loading: {
                 initial: !this.initial.passwordProtected,
                 mission: !this.initial.passwordProtected,
                 logs: false,
+                changes: true,
                 users: true,
                 delete: false
             },
@@ -325,6 +327,7 @@ export default {
 
             await Promise.all([
                 this.fetchSubscriptions(),
+                this.fetchChanges(),
                 this.fetchImports()
             ]);
         },
@@ -380,6 +383,16 @@ export default {
             }
             this.loading.users = false;
         },
+        fetchChanges: async function() {
+            this.loading.changes = true;
+            try {
+                const url = await window.stdurl(`/api/marti/missions/${this.mission.name}/changes`);
+                this.changes = (await window.std(url)).data;
+            } catch (err) {
+                this.err = err;
+            }
+            this.loading.changes = false;
+        },
         fetchSubscriptions: async function() {
             try {
                 const url = await window.stdurl(`/api/marti/missions/${this.mission.name}/subscriptions/roles`);
@@ -407,7 +420,7 @@ export default {
             try {
                 this.loading.mission = true;
                 const url = window.stdurl(`/api/marti/missions/${this.mission.name}`);
-                url.searchParams.append('changes', 'true');
+                url.searchParams.append('changes', 'false');
                 url.searchParams.append('logs', 'true');
                 this.mission = await window.std(url);
             } catch (err) {

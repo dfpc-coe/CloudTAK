@@ -5,8 +5,9 @@ import moment from 'moment';
 export const useCOTStore = defineStore('cots', {
     state: () => {
         return {
-            archive: new Map(), // Store all archived CoT messages
-            cots: new Map(),    // Store all on-screen CoT messages
+            archive: new Map(),     // Store all archived CoT messages
+            cots: new Map(),        // Store all on-screen CoT messages
+            missions: new Map()     // Store All Mission CoT messages
         }
     },
     actions: {
@@ -20,6 +21,7 @@ export const useCOTStore = defineStore('cots', {
                 this.cots.set(a.id, a);
             }
         },
+
         /**
          * Save Archived CoTs from localStorage - called automatically every time an
          * archived CoT changes
@@ -27,6 +29,7 @@ export const useCOTStore = defineStore('cots', {
         saveArchive: function() {
             localStorage.setItem('archive', JSON.stringify(Array.from(this.archive.values())))
         },
+
         /**
          * Return CoTs as a FeatureCollection
          */
@@ -39,6 +42,7 @@ export const useCOTStore = defineStore('cots', {
                 })
             }
         },
+
         /**
          * Update a feature that exists in the store - bypasses feature standardization
          */
@@ -83,12 +87,11 @@ export const useCOTStore = defineStore('cots', {
         /**
          * Add a CoT GeoJSON to the store and modify props to meet MapLibre style requirements
          */
-        add: function(feat) {
+        add: function(feat, mission=null) {
             //Vector Tiles only support integer IDs
             feat.properties.id = feat.id;
 
             if (!feat.properties.center) {
-                console.error(feat.geometry)
                 feat.properties.center = pointOnFeature(feat.geometry).geometry.coordinates;
             }
 
@@ -158,11 +161,21 @@ export const useCOTStore = defineStore('cots', {
                 }
             }
 
-            this.cots.set(feat.id, feat);
+            if (mission)  {
+                let cots = this.missions.get(mission);
+                if (!cots) {
+                    cots = new Map();
+                    this.missions.set(mission, cots);
+                }
 
-            if (feat.properties.archive) {
-                this.archive.set(feat.id, feat);
-                this.saveArchive();
+                cots.set(feat.id, feat);
+            } else {
+                this.cots.set(feat.id, feat);
+
+                if (feat.properties.archive) {
+                    this.archive.set(feat.id, feat);
+                    this.saveArchive();
+                }
             }
         }
     }
