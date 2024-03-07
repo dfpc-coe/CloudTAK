@@ -42,6 +42,7 @@ export default async function router(schema: Schema, config: Config) {
             const query: Record<string, string> = {};
             for (const q in req.query) query[q] = String(req.query[q]);
             const mission = await api.Mission.get(req.params.name, query);
+
             return res.json(mission);
         } catch (err) {
             return Err.respond(err, res);
@@ -66,7 +67,7 @@ export default async function router(schema: Schema, config: Config) {
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
             const cots: Feature[] = [];
-        
+
             let partial = {
                 event: '',
                 remainder: await api.Mission.latestCots(req.params.name),
