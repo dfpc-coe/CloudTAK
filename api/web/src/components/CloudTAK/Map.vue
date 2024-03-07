@@ -361,6 +361,11 @@ export default {
         updateCOT: function() {
             mapStore.map.getSource('cots').setData(cotStore.collection())
 
+            for (const sub of cotStore.subscriptions.keys()) {
+                if (overlayStore.subscriptions.has())
+                console.error(sub);
+            }
+
             if (this.locked.length && cotStore.has(this.locked[this.locked.length - 1])) {
                 const flyTo = {
                     center: cotStore.get(this.locked[this.locked.length - 1]).properties.center,

@@ -8,7 +8,7 @@ export const useCOTStore = defineStore('cots', {
         return {
             archive: new Map(),     // Store all archived CoT messages
             cots: new Map(),        // Store all on-screen CoT messages
-            subscriptions: new Map()     // Store All Mission CoT messages
+            subscriptions: new Map()     // Store All Mission CoT messages by GUID
         }
     },
     actions: {
@@ -26,8 +26,16 @@ export const useCOTStore = defineStore('cots', {
         /**
          * Load Latest CoTs from Mission Sync
          */
-        loadMission: async function(mission) {
-             const cots = await window.std(`/api/marti/missions/${encodeURIComponent(mission)}/cot`);
+        loadMission: async function(guid) {
+             try {
+                 const fc = await window.std(`/api/marti/missions/${encodeURIComponent(guid)}/cot`);
+                 if (!this.subscriptions.has(guid)) this.subscriptions.set(guid, new Map());
+                 const cots = this.subscriptions.get(guid);
+                 cots.clear();
+                 for (const feat of fc.features) cots.set(feat.id, feat);
+             } catch (err) {
+                console.error(err);
+            }
         },
 
         /**
