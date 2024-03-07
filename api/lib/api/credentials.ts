@@ -58,8 +58,12 @@ export default class {
             body: keys.csr
         });
 
+        let cert = '-----BEGIN CERTIFICATE-----\n' + res.signedCert;
+        if (!res.signedCert.endsWith('\n')) cert = cert + '\n';
+        cert + '-----END CERTIFICATE-----';
+
         return {
-            cert: '-----BEGIN CERTIFICATE-----\n' + res.signedCert + '\n-----END CERTIFICATE-----',
+            cert,
             key: keys.clientKey
         }
     }
