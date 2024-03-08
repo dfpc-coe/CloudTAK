@@ -5,7 +5,7 @@
 >
     <div class='col-12 border-light border-bottom d-flex'>
         <div class='col-auto card-header row mx-1 my-2'>
-            <div class='card-title mx-2' v-text='feat.properties.name'></div>
+            <div class='card-title mx-2' v-text='feat.properties.name || "No Name"'></div>
         </div>
         <div class='col-auto btn-list my-2 ms-auto d-flex align-items-center mx-2'>
             <IconZoomPan @click='zoomTo' class='cursor-pointer' v-tooltip='"Zoom To"'/>
@@ -17,7 +17,27 @@
 
     <div class='col-12'>
         <template v-if='mode === "default"'>
-            <Coordinate :coordinates='center'/>
+            <div class='col-12 px-3 py-2'>
+                <Coordinate :coordinates='center'/>
+            </div>
+
+            <div class='col-12 px-3 pb-2'>
+                <label class='subheader'>Remarks</label>
+                <div class='table-responsive rounded mx-2 py-2 px-2'>
+                    <table class="table card-table table-hover table-vcenter datatable">
+                        <thead>
+                            <th>Key</th>
+                            <th>Value</th>
+                        </thead>
+                        <tbody class='bg-gray-500'>
+                            <tr :key='prop' v-for='prop of Object.keys(feat.properties)'>
+                                <td v-text='prop'/>
+                                <td v-text='feat.properties[prop]'/>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </template>
         <template v-else-if='mode === "raw"'>
             <pre v-text='feat'/>
