@@ -25,7 +25,8 @@ export default {
         ELBSecurityGroup: {
             Type : 'AWS::EC2::SecurityGroup',
             Properties : {
-                GroupDescription: cf.join('-', [cf.stackName, 'elb-sg']),
+                GroupName: cf.join('-', [cf.stackName, 'elb-sg']),
+                GroupDescription: 'Allow 443 and 80 Access to ELB',
                 SecurityGroupIngress: [{
                     CidrIp: '0.0.0.0/0',
                     IpProtocol: 'tcp',
@@ -377,7 +378,8 @@ export default {
         ServiceSecurityGroup: {
             Type: 'AWS::EC2::SecurityGroup',
             Properties: {
-                GroupDescription: cf.join('-', [cf.stackName, 'ec2-sg']),
+                GroupName: cf.join('-', [cf.stackName, 'ec2-sg']),
+                GroupDescription: 'Allow access to docker port 5000',
                 VpcId: cf.importValue(cf.join(['coe-vpc-', cf.ref('Environment'), '-vpc'])),
                 SecurityGroupIngress: [{
                     CidrIp: '0.0.0.0/0',
