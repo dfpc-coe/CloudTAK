@@ -154,8 +154,8 @@ export default {
             handler: function() {
                 if (!this.isEditing || !this.isEditing.single) return;
 
-                if (this.isEditing.single['fill-opacity']) {
-                    mapStore.map.setPaintProperty('fill-opacity', this.isEditing.single['fill-opacity']);
+                if (this.isEditing.single.paint['fill-opacity']) {
+                    mapStore.map.setPaintProperty(this.isEditing.single.id, 'fill-opacity', this.isEditing.single.paint['fill-opacity']);
                 }
             }
         }
