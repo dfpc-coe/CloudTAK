@@ -31,6 +31,7 @@
             </div>
             <div :key='p' v-for='p of Object.keys(isEditing.single.layout)' class='col-12 d-flex bg-gray-500 px-2 my-2 py-2'>
                 <span v-text='p'/>
+
                 <span class='ms-auto' v-text='isEditing.single.layout[p]'/>
             </div>
         </div>
@@ -41,7 +42,13 @@
             </div>
             <div :key='p' v-for='p of Object.keys(isEditing.single.paint)' class='col-12 d-flex bg-gray-500 px-2 my-2 py-2'>
                 <span v-text='p'/>
-                <span class='ms-auto' v-text='isEditing.single.paint[p]'/>
+
+                <template v-if='p === "fill-opacity"'>
+                    <TablerRange label='Opacity' v-model='isEditing.single.paint[p]' :min='0' :max='1' :step='0.1'/>
+                </template>
+                <template v-else>
+                    <span class='ms-auto' v-text='isEditing.single.paint[p]'/>
+                </template>
             </div>
         </div>
     </template>
@@ -112,6 +119,7 @@
 import {
     TablerDelete,
     TablerLoading,
+    TablerInput,
     TablerRange
 } from '@tak-ps/vue-tabler';
 import {
@@ -139,6 +147,18 @@ export default {
     },
     computed: {
         ...mapState(useMapStore, ['layers'])
+    },
+    watch: {
+        isEditing: {
+            deep: true,
+            handler: function() {
+                if (!this.isEditing || !this.isEditing.single) return;
+
+                if (this.isEditing.single['fill-opacity']) {
+                    mapStore.map.setPaintProperty('fill-opacity', this.isEditing.single['fill-opacity']);
+                }
+            }
+        }
     },
     methods: {
         removeLayer: async function(layer) {
@@ -175,6 +195,7 @@ export default {
     },
     components: {
         TablerRange,
+        TablerInput,
         TablerLoading,
         TablerDelete,
         IconMaximize,
