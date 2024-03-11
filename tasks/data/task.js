@@ -107,7 +107,7 @@ export default class Task {
                     force: true,
                     zoom: {
                         min: 0,
-                        max: 10
+                        max: 14
                     }
                 }
             );

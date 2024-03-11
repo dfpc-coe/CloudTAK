@@ -11,7 +11,7 @@
     },
     "dependencies": {
         "@tabler/core": "^1.0.0-beta16",
-        "@tabler/icons-vue": "^2.44.0",
+        "@tabler/icons-vue": "^3.0.0",
         "@tak-ps/vue-tabler": "^3.15.0",
         "@turf/point-on-feature": "^6.5.0",
         "apexcharts": "^3.41.0",
