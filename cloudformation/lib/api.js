@@ -163,6 +163,14 @@ export default {
                         },{ // ------------ Permissions Required to stand up lambda tasks ------------
                             Effect: 'Allow',
                             Action: [
+                                'cloudformation:DescribeStacks'
+                            ],
+                            Resource: [
+                                cf.join(['arn:', cf.partition, ':cloudformation:', cf.region, ':', cf.accountId, ':stack/', cf.stackName])
+                            ]
+                        },{
+                            Effect: 'Allow',
+                            Action: [
                                 'iam:PassRole'
                             ],
                             Resource: [
