@@ -41,12 +41,11 @@
                 None
             </div>
             <div :key='p' v-for='p of Object.keys(isEditing.single.paint)' class='col-12 d-flex bg-gray-500 px-2 my-2 py-2'>
-                <span v-text='p'/>
-
                 <template v-if='p === "fill-opacity"'>
-                    <TablerRange label='Opacity' v-model='isEditing.single.paint[p]' :min='0' :max='1' :step='0.1'/>
+                    <TablerRange label='Fill Opacity' v-model='isEditing.single.paint[p]' :min='0' :max='1' :step='0.1'/>
                 </template>
                 <template v-else>
+                    <span v-text='p'/>
                     <span class='ms-auto' v-text='isEditing.single.paint[p]'/>
                 </template>
             </div>
