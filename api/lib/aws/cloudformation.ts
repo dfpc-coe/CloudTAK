@@ -1,5 +1,3 @@
-// @ts-ignore
-import cf from '@openaddresses/cloudfriend';
 import Config from '../config.js';
 import AWSCloudFormation from '@aws-sdk/client-cloudformation';
 import AWSCWL from '@aws-sdk/client-cloudwatch-logs';
@@ -13,7 +11,19 @@ export default class CloudFormation {
         return `${config.StackName}-layer-${layerid}`;
     }
 
-    static async create(config: Config, layerid: number, stack: object) {
+    static async self(config: Config): Promise<AWSCloudFormation.Stack> {
+        const cf = new AWSCloudFormation.CloudFormationClient({ region: process.env.AWS_DEFAULT_REGION });
+
+        const res = await cf.send(new AWSCloudFormation.DescribeStacksCommand({
+            StackName: config.StackName
+        }));
+
+        if (!res.Stacks.length) throw new Error(`Stack with id ${config.StackName} does not exist`);
+
+        return res.Stacks[0];
+    }
+
+    static async create(config: Config, layerid: number, stack: object): Promise<void> {
         const cf = new AWSCloudFormation.CloudFormationClient({ region: process.env.AWS_DEFAULT_REGION });
         const cwl = new AWSCWL.CloudWatchLogsClient({ region: process.env.AWS_DEFAULT_REGION });
 
@@ -28,7 +38,8 @@ export default class CloudFormation {
 
         await cf.send(new AWSCloudFormation.CreateStackCommand({
             StackName: this.stdname(config, layerid),
-            TemplateBody: JSON.stringify(stack)
+            TemplateBody: JSON.stringify(stack),
+            Tags: (await this.self(config)).Tags
         }));
     }
 
@@ -37,7 +48,8 @@ export default class CloudFormation {
 
         await cf.send(new AWSCloudFormation.UpdateStackCommand({
             StackName: this.stdname(config, layerid),
-            TemplateBody: JSON.stringify(stack)
+            TemplateBody: JSON.stringify(stack),
+            Tags: (await this.self(config)).Tags
         }));
     }
 

@@ -88,7 +88,8 @@ export default {
         DBSubnet: {
             Type: 'AWS::RDS::DBSubnetGroup',
             Properties: {
-                DBSubnetGroupDescription: cf.join('-', [cf.stackName, 'rds-subnets']),
+                DBSubnetGroupName: cf.join('-', [cf.stackName, 'rds-subnets']),
+                DBSubnetGroupDescription: 'Group Private Subnets',
                 SubnetIds: [
                     cf.importValue(cf.join(['coe-vpc-', cf.ref('Environment'), '-subnet-private-a'])),
                     cf.importValue(cf.join(['coe-vpc-', cf.ref('Environment'), '-subnet-private-b']))
@@ -98,7 +99,8 @@ export default {
         DBVPCSecurityGroup: {
             Type: 'AWS::EC2::SecurityGroup',
             Properties: {
-                GroupDescription: cf.join('-', [cf.stackName, 'rds-sg']),
+                GroupName: cf.join('-', [cf.stackName, 'rds-sg']),
+                GroupDescription: 'Allow RDS Database Ingress',
                 VpcId: cf.importValue(cf.join(['coe-vpc-', cf.ref('Environment'), '-vpc'])),
                 SecurityGroupIngress: [{
                     IpProtocol: '-1',
