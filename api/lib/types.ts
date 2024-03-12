@@ -37,9 +37,17 @@ export const ProfileOverlayResponse = createSelectSchema(schemas.ProfileOverlay,
     visible: Type.Boolean(),
 });
 
+const enum Layer_Priority {
+    HIGH = 'high',
+    MED = 'med',
+    LOW = 'low',
+    OFF = 'off',
+};
+
 export const LayerResponse = Type.Object({
     id: Type.Integer(),
     status: Type.String(),
+    priority: Type.Enum(Layer_Priority),
     created: Type.String(),
     updated: Type.String(),
     name: Type.String(),
