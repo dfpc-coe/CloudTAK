@@ -37,7 +37,7 @@ export const ProfileOverlayResponse = createSelectSchema(schemas.ProfileOverlay,
     visible: Type.Boolean(),
 });
 
-const enum Layer_Priority {
+export enum Layer_Priority {
     HIGH = 'high',
     MED = 'med',
     LOW = 'low',
