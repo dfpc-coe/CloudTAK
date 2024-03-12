@@ -3,19 +3,8 @@ import { Static } from '@sinclair/typebox'
 import { StyleContainer } from './style.js';
 import { geometry, GeometryType } from '@openaddresses/batch-generic';
 import { ConnectionAuth } from './connection-config.js';
-import { TAKGroup, TAKRole } from  './api/types.js';
-
-import {
-    json,
-    boolean,
-    integer,
-    timestamp,
-    pgTable,
-    serial,
-    varchar,
-    text,
-    unique
-} from 'drizzle-orm/pg-core';
+import { TAKGroup, TAKRole, Layer_Priority } from  './api/types.js';
+import { json, boolean, integer, timestamp, pgTable, serial, varchar, text, unique } from 'drizzle-orm/pg-core';
 
 /** Internal Tables for Postgis for use with drizzle-kit push:pg */
 export const SpatialRefSys = pgTable('spatial_ref_sys', {
@@ -145,6 +134,7 @@ export const Layer = pgTable('layers', {
     created: timestamp('created', { withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp('updated', { withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     name: text('name').notNull(),
+    priority: text('priority').$type<Layer_Priority>().notNull().default(Layer_Priority.OFF),
     description: text('description').notNull().default(''),
     enabled: boolean('enabled').notNull().default(true),
     enabled_styles: boolean('enabled_styles').notNull().default(false),
