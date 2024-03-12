@@ -88,8 +88,7 @@ export default {
         DBSubnet: {
             Type: 'AWS::RDS::DBSubnetGroup',
             Properties: {
-                DBSubnetGroupName: cf.join('-', [cf.stackName, 'rds-subnets']),
-                DBSubnetGroupDescription: 'Group Private Subnets',
+                DBSubnetGroupDescription: cf.join('-', [cf.stackName, 'rds-subnets']),
                 SubnetIds: [
                     cf.importValue(cf.join(['coe-vpc-', cf.ref('Environment'), '-subnet-private-a'])),
                     cf.importValue(cf.join(['coe-vpc-', cf.ref('Environment'), '-subnet-private-b']))
