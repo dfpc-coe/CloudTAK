@@ -3,7 +3,8 @@ import { Static } from '@sinclair/typebox'
 import { StyleContainer } from './style.js';
 import { geometry, GeometryType } from '@openaddresses/batch-generic';
 import { ConnectionAuth } from './connection-config.js';
-import { TAKGroup, TAKRole, Layer_Priority } from  './api/types.js';
+import { TAKGroup, TAKRole } from  './api/types.js';
+import { Layer_Priority } from  './enums.js';
 import { json, boolean, integer, timestamp, pgTable, serial, varchar, text, unique } from 'drizzle-orm/pg-core';
 
 /** Internal Tables for Postgis for use with drizzle-kit push:pg */

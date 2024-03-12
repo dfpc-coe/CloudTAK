@@ -3,6 +3,7 @@ import { Type } from '@sinclair/typebox'
 import { StyleContainer } from './style.js';
 import * as schemas from './schema.js';
 import { TAKGroup, TAKRole } from './api/types.js';
+import { Layer_Priority } from './enums.js';
 
 export const StandardResponse = Type.Object({
     status: Type.Integer(),
@@ -36,13 +37,6 @@ export const ProfileOverlayResponse = createSelectSchema(schemas.ProfileOverlay,
     opacity: Type.Number(),
     visible: Type.Boolean(),
 });
-
-export enum Layer_Priority {
-    HIGH = 'high',
-    MED = 'med',
-    LOW = 'low',
-    OFF = 'off',
-};
 
 export const LayerResponse = Type.Object({
     id: Type.Integer(),
