@@ -98,6 +98,10 @@ export default {
         DBVPCSecurityGroup: {
             Type: 'AWS::EC2::SecurityGroup',
             Properties: {
+                Tags: [{
+                    Key: 'Name',
+                    Value: cf.join('-', [cf.stackName, 'rds-sg'])
+                }],
                 GroupName: cf.join('-', [cf.stackName, 'rds-sg']),
                 GroupDescription: 'Allow RDS Database Ingress',
                 VpcId: cf.importValue(cf.join(['coe-vpc-', cf.ref('Environment'), '-vpc'])),

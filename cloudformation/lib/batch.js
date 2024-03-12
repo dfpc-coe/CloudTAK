@@ -134,6 +134,10 @@ export default {
         BatchSecurityGroup: {
             Type: 'AWS::EC2::SecurityGroup',
             Properties: {
+                Tags: [{
+                    Key: 'Name',
+                    Value: cf.join('-', [cf.stackName, 'vpc'])
+                }],
                 VpcId: cf.importValue(cf.join(['coe-vpc-', cf.ref('Environment'), '-vpc'])),
                 GroupName: cf.join([cf.stackName, '-batch']),
                 GroupDescription: cf.join([cf.stackName, ' Batch Security Group']),
