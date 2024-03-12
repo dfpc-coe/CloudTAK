@@ -166,7 +166,7 @@ export default {
                                 'cloudformation:DescribeStacks'
                             ],
                             Resource: [
-                                cf.join(['arn:', cf.partition, ':cloudformation:', cf.region, ':', cf.accountId, ':stack/', cf.stackName])
+                                cf.join(['arn:', cf.partition, ':cloudformation:', cf.region, ':', cf.accountId, ':stack/', cf.stackName, '/*'])
                             ]
                         },{
                             Effect: 'Allow',
@@ -215,6 +215,7 @@ export default {
                         },{
                             Effect: 'Allow',
                             Action: [
+                                'logs:TagResource',
                                 'logs:CreateLogGroup',
                                 'logs:DeleteLogGroup',
                                 'logs:PutRetentionPolicy',
