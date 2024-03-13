@@ -68,7 +68,7 @@
                 <div v-if='errors.task' v-text='errors.task' class="invalid-feedback"></div>
             </div>
             <div class="col-md-4">
-                <TablerEnum v-model='config.priority' label='Priority Level' :disabled='disabled' class='w-100' :options='["off", "high", "low"]' />
+                <TablerEnum v-model='config.priority' label='Alarm Urgency' :disabled='disabled' class='w-100' :options='["off", "high", "low"]' />
             </div>
             <div class="col-md-4">
                 <TablerInput v-model='config.stale' label='Stale Value (ms)' :disabled='disabled' type='number' min='1' step='1'/>
