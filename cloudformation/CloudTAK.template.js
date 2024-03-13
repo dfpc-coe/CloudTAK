@@ -50,7 +50,7 @@ export default cf.merge(
     },
     ELBAlarms({
         prefix: 'BatchELB',
-        topic: cf.ref('AlarmTopic'),
+        topic: cf.ref('HighUrgencyAlarmTopic'),
         apache: cf.stackName,
         cluster: cf.join(['coe-ecs-', cf.ref('Environment')]),
         service: cf.getAtt('Service', 'Name'),
@@ -60,7 +60,7 @@ export default cf.merge(
     }),
     RDSAlarms({
         prefix: 'Batch',
-        topic: cf.ref('AlarmTopic'),
+        topic: cf.ref('HighUrgencyAlarmTopic'),
         instance: cf.ref('DBInstance')
 
     })

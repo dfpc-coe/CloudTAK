@@ -2,10 +2,18 @@ import cf from '@openaddresses/cloudfriend';
 
 export default {
     Resources: {
-        AlarmTopic: {
+        HighUrgencyAlarmTopic: {
             Type: 'AWS::SNS::Topic',
             Properties: {
-                TopicName: cf.stackName
+                DisplayName: cf.join([cf.stackName, '-high-urgency']),
+                TopicName: cf.join([cf.stackName, '-high-urgency']),
+            }
+        },
+        LowUrgencyAlarmTopic: {
+            Type: 'AWS::SNS::Topic',
+            Properties: {
+                DisplayName: cf.join([cf.stackName, '-low-urgency']),
+                TopicName: cf.join([cf.stackName, '-low-urgency']),
             }
         },
 
@@ -29,8 +37,8 @@ export default {
                 EvaluationPeriods: 5,
                 Statistic: 'Maximum',
                 Period: 60,
-                AlarmActions: [cf.ref('AlarmTopic')],
-                InsufficientDataActions: [cf.ref('AlarmTopic')],
+                AlarmActions: [cf.ref('HighUrgencyAlarmTopic')],
+                InsufficientDataActions: [cf.ref('HighUrgencyAlarmTopic')],
                 Dimensions: [{
                     Name: 'QueueName',
                     Value: cf.getAtt('HookDeadQueue', 'QueueName')
