@@ -8,6 +8,7 @@
     </div>
 
     <TablerLoading v-if='loading.save' desc='Saving Config'/>
+    <TablerLoading v-else-if='loading.init' desc='Loading Config'/>
     <div v-else class='card-body'>
         <div class='row g-4'>
             <div class="col-md-4">
@@ -67,9 +68,7 @@
                 <div v-if='errors.task' v-text='errors.task' class="invalid-feedback"></div>
             </div>
             <div class="col-md-4">
-                <div class='d-flex'>
-                    <TablerEnum v-model='config.priority' label='Priority Level' :disabled='disabled' :options='["off", "high", "low"]' />
-                </div>
+                <TablerEnum v-model='config.priority' label='Priority Level' :disabled='disabled' class='w-100' :options='["off", "high", "low"]' />
             </div>
             <div class="col-md-4">
                 <TablerInput v-model='config.stale' label='Stale Value (ms)' :disabled='disabled' type='number' min='1' step='1'/>
@@ -158,12 +157,14 @@ export default {
             taskmodal: false,
             newTaskVersion: false,
             loading: {
+                init: true,
                 version: false,
                 save: false
             },
             destination: 'connection',
             config: {
                 connection: null,
+                priority: 'off',
                 data: null,
                 task: '',
                 timeout: 60,
@@ -187,6 +188,7 @@ export default {
     },
     mounted: function() {
         this.reload();
+        this.loading.init = false;
     },
     methods: {
         reload: function() {
@@ -197,6 +199,7 @@ export default {
             this.config.memory = this.layer.memory;
             this.config.cron = this.layer.cron;
             this.config.stale = this.layer.stale;
+            this.config.priority = this.layer.priority;
 
             if (this.layer.connection) this.destination = 'connection';
             else this.destination = 'data';
