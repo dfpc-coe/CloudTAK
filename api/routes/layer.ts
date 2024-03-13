@@ -269,7 +269,7 @@ export default async function router(schema: Schema, config: Config) {
 
             let changed = false;
             // Avoid Updating CF unless necessary as it blocks further updates until deployed
-            for (const prop of ['cron', 'task', 'memory', 'timeout', 'enabled']) {
+            for (const prop of ['cron', 'task', 'memory', 'timeout', 'enabled', 'priority']) {
                 // @ts-ignore
                 if (req.body[prop] !== undefined && req.body[prop] !== layer[prop]) changed = true;
             }
