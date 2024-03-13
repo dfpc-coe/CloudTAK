@@ -49,12 +49,19 @@ export default class Lambda {
                 },
             },
             Resources: {
+                ETLFunctionLogs: {
+                    Type: 'AWS::Logs::LogGroup',
+                    Properties: {
+                        LogGroupName: `/aws/lambda/${StackName}`,
+                        RetentionInDays: 7
+                    }
+                },
                 LambdaAlarm: {
                     Type: 'AWS::CloudWatch::Alarm',
                     Properties: {
                         AlarmName: StackName,
                         ActionsEnabled: true,
-                        AlarmActions: [ cf.join(['arn:', cf.partition, ':sns:', cf.region, `:`, cf.accountId, `:${config.StackName}`]) ],
+                        AlarmActions: [ ],
                         MetricName: 'Errors',
                         Namespace: 'AWS/Lambda',
                         Statistic: 'Maximum',
@@ -68,13 +75,6 @@ export default class Lambda {
                         Threshold: 0,
                         ComparisonOperator: 'GreaterThanThreshold',
                         TreatMissingData: 'missing'
-                    }
-                },
-                ETLFunctionLogs: {
-                    Type: 'AWS::Logs::LogGroup',
-                    Properties: {
-                        LogGroupName: `/aws/lambda/${StackName}`,
-                        RetentionInDays: 7
                     }
                 },
                 ETLFunction: {
@@ -99,6 +99,12 @@ export default class Lambda {
                     }
                 }
             }
+        }
+
+        if (layer.priority !== 'off') {
+            stack.Parameters.LambdaAlarm.Properties.AlarmActions.push(
+                cf.join(['arn:', cf.partition, ':sns:', cf.region, `:`, cf.accountId, `:${config.StackName}-${layer.priority}-urgency`])
+            )
         }
 
         if (Schedule.is_aws(layer.cron)) {
