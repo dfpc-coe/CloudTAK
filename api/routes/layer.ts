@@ -1,4 +1,5 @@
 import { Type, Static } from '@sinclair/typebox'
+import sleep from '../lib/sleep.js';
 import { GenericListOrder } from '@openaddresses/batch-generic';
 import Schema from '@openaddresses/batch-schema';
 import { check } from '@placemarkio/check-geojson';
@@ -171,25 +172,27 @@ export default async function router(schema: Schema, config: Config) {
         try {
             await Auth.is_auth(config, req);
 
-            // TODO there is a limit here to how many will be returned
-            // switch to an async iter or stream
-            const list = await config.models.Layer.list();
+            let page = 0;
+            let list;
+            do {
+                list = await config.models.Layer.list({ page, limit: 25 });
+                ++page;
 
-            for (const layer of list.items) {
-                const status = (await CloudFormation.status(config, layer.id)).status;
-                if (!status.endsWith('_COMPLETE')) continue;
+                for (const layer of list.items) {
+                    try {
+                        const lambda = await Lambda.generate(config, layer);
+                        if (await CloudFormation.exists(config, layer.id)) {
+                            await CloudFormation.update(config, layer.id, lambda);
+                        } else {
+                            await CloudFormation.create(config, layer.id, lambda);
+                        }
 
-                try {
-                    const lambda = await Lambda.generate(config, layer);
-                    if (await CloudFormation.exists(config, layer.id)) {
-                        await CloudFormation.update(config, layer.id, lambda);
-                    } else {
-                        await CloudFormation.create(config, layer.id, lambda);
+                        await sleep(50) //Otherwise AWS will throw Throttling exceptions
+                    } catch (err) {
+                        console.error(err);
                     }
-                } catch (err) {
-                    console.error(err);
                 }
-            }
+            } while (list.items.length)
 
             return res.json({
                 status: 200,
