@@ -10,7 +10,7 @@
     <TablerLoading v-if='loading.save' desc='Saving Config'/>
     <div v-else class='card-body'>
         <div class='row g-4'>
-            <div class="col-md-6">
+            <div class="col-md-4">
                 <div class='d-flex'>
                     <label class='form-label'>Cron Expression</label>
                     <div v-if='!disabled' class='ms-auto'>
@@ -33,7 +33,7 @@
                 <div v-if='errors.cron' v-text='errors.cron' class="invalid-feedback"></div>
                 <label v-if='config.cron' v-text='cronstr(config.cron)'/>
             </div>
-            <div class="col-md-6">
+            <div class="col-md-4">
                 <div class='d-flex'>
                     <label class='form-label'>Schedule Task</label>
                     <div class='ms-auto'>
@@ -65,6 +65,11 @@
                     "is-invalid": errors.task
                 }' class="form-control" placeholder='Schedule Task'/>
                 <div v-if='errors.task' v-text='errors.task' class="invalid-feedback"></div>
+            </div>
+            <div class="col-md-4">
+                <div class='d-flex'>
+                    <TablerEnum v-model='config.priority' label='Priority Level' :disabled='disabled' :options='["off", "high", "low"]' />
+                </div>
             </div>
             <div class="col-md-4">
                 <TablerInput v-model='config.stale' label='Stale Value (ms)' :disabled='disabled' type='number' min='1' step='1'/>
@@ -123,6 +128,7 @@ import cronstrue from 'cronstrue';
 import TaskModal from './utils/TaskModal.vue';
 import {
     TablerInput,
+    TablerEnum,
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import {
@@ -248,7 +254,8 @@ export default {
         IconBuildingBroadcastTower,
         IconDatabase,
         TaskModal,
-        TablerInput
+        TablerInput,
+        TablerEnum,
     }
 }
 </script>
