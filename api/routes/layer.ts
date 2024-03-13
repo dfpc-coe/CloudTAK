@@ -1,4 +1,5 @@
 import { Type, Static } from '@sinclair/typebox'
+import sleep from '../lib/sleep.js';
 import { GenericListOrder } from '@openaddresses/batch-generic';
 import Schema from '@openaddresses/batch-schema';
 import { check } from '@placemarkio/check-geojson';
@@ -175,11 +176,9 @@ export default async function router(schema: Schema, config: Config) {
             let list;
             do {
                 list = await config.models.Layer.list({ page, limit: 25 });
+                ++page;
 
                 for (const layer of list.items) {
-                    const status = (await CloudFormation.status(config, layer.id)).status;
-                    if (!status.endsWith('_COMPLETE')) continue;
-
                     try {
                         const lambda = await Lambda.generate(config, layer);
                         if (await CloudFormation.exists(config, layer.id)) {
@@ -187,6 +186,8 @@ export default async function router(schema: Schema, config: Config) {
                         } else {
                             await CloudFormation.create(config, layer.id, lambda);
                         }
+
+                        await sleep(50) //Otherwise AWS will throw Throttling exceptions
                     } catch (err) {
                         console.error(err);
                     }
