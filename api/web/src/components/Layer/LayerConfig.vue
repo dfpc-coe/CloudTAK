@@ -8,9 +8,10 @@
     </div>
 
     <TablerLoading v-if='loading.save' desc='Saving Config'/>
+    <TablerLoading v-else-if='loading.init' desc='Loading Config'/>
     <div v-else class='card-body'>
         <div class='row g-4'>
-            <div class="col-md-6">
+            <div class="col-md-4">
                 <div class='d-flex'>
                     <label class='form-label'>Cron Expression</label>
                     <div v-if='!disabled' class='ms-auto'>
@@ -33,7 +34,7 @@
                 <div v-if='errors.cron' v-text='errors.cron' class="invalid-feedback"></div>
                 <label v-if='config.cron' v-text='cronstr(config.cron)'/>
             </div>
-            <div class="col-md-6">
+            <div class="col-md-4">
                 <div class='d-flex'>
                     <label class='form-label'>Schedule Task</label>
                     <div class='ms-auto'>
@@ -65,6 +66,9 @@
                     "is-invalid": errors.task
                 }' class="form-control" placeholder='Schedule Task'/>
                 <div v-if='errors.task' v-text='errors.task' class="invalid-feedback"></div>
+            </div>
+            <div class="col-md-4">
+                <TablerEnum v-model='config.priority' label='Alarm Urgency' :disabled='disabled' class='w-100' :options='["off", "high", "low"]' />
             </div>
             <div class="col-md-4">
                 <TablerInput v-model='config.stale' label='Stale Value (ms)' :disabled='disabled' type='number' min='1' step='1'/>
@@ -123,6 +127,7 @@ import cronstrue from 'cronstrue';
 import TaskModal from './utils/TaskModal.vue';
 import {
     TablerInput,
+    TablerEnum,
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import {
@@ -152,12 +157,14 @@ export default {
             taskmodal: false,
             newTaskVersion: false,
             loading: {
+                init: true,
                 version: false,
                 save: false
             },
             destination: 'connection',
             config: {
                 connection: null,
+                priority: 'off',
                 data: null,
                 task: '',
                 timeout: 60,
@@ -181,6 +188,7 @@ export default {
     },
     mounted: function() {
         this.reload();
+        this.loading.init = false;
     },
     methods: {
         reload: function() {
@@ -191,6 +199,7 @@ export default {
             this.config.memory = this.layer.memory;
             this.config.cron = this.layer.cron;
             this.config.stale = this.layer.stale;
+            this.config.priority = this.layer.priority;
 
             if (this.layer.connection) this.destination = 'connection';
             else this.destination = 'data';
@@ -248,7 +257,8 @@ export default {
         IconBuildingBroadcastTower,
         IconDatabase,
         TaskModal,
-        TablerInput
+        TablerInput,
+        TablerEnum,
     }
 }
 </script>

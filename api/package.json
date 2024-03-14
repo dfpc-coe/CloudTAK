@@ -36,7 +36,7 @@
         "@humanwhocodes/momoa": "^3.0.0",
         "@openaddresses/batch-error": "^2.1.4",
         "@openaddresses/batch-generic": "^17.0.0",
-        "@openaddresses/batch-schema": "^10.0.2",
+        "@openaddresses/batch-schema": "^10.7.0",
         "@openaddresses/cloudfriend": "^7.0.0",
         "@placemarkio/check-geojson": "^0.1.12",
         "@sinclair/typebox": "^0.32.14",
