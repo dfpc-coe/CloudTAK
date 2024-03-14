@@ -150,8 +150,8 @@ export default async function router(schema: Schema, config: Config) {
             }
 
             try {
-                const lambda = await Lambda.generate(config, layer);
-                await CloudFormation.create(config, layer.id, lambda);
+                const stack = await Lambda.generate(config, layer);
+                await CloudFormation.create(config, layer.id, stack);
             } catch (err) {
                 console.error(err);
             }
@@ -182,11 +182,11 @@ export default async function router(schema: Schema, config: Config) {
 
                 for (const layer of list.items) {
                     try {
-                        const lambda = await Lambda.generate(config, layer);
+                        const stack = await Lambda.generate(config, layer);
                         if (await CloudFormation.exists(config, layer.id)) {
-                            await CloudFormation.update(config, layer.id, lambda);
+                            await CloudFormation.update(config, layer.id, stack);
                         } else {
-                            await CloudFormation.create(config, layer.id, lambda);
+                            await CloudFormation.create(config, layer.id, stack);
                         }
 
                         await sleep(50) //Otherwise AWS will throw Throttling exceptions
@@ -270,7 +270,6 @@ export default async function router(schema: Schema, config: Config) {
             let changed = false;
             // Avoid Updating CF unless necessary as it blocks further updates until deployed
             for (const prop of ['cron', 'task', 'memory', 'timeout', 'enabled', 'priority']) {
-                // @ts-ignore
                 if (req.body[prop] !== undefined && req.body[prop] !== layer[prop]) changed = true;
             }
 
@@ -283,11 +282,11 @@ export default async function router(schema: Schema, config: Config) {
 
             if (changed) {
                 try {
-                    const lambda = await Lambda.generate(config, layer);
+                    const stack = await Lambda.generate(config, layer);
                     if (await CloudFormation.exists(config, layer.id)) {
-                        await CloudFormation.update(config, layer.id, lambda);
+                        await CloudFormation.update(config, layer.id, stack);
                     } else {
-                        await CloudFormation.create(config, layer.id, lambda);
+                        await CloudFormation.create(config, layer.id, stack);
                     }
                 } catch (err) {
                     console.error(err);
@@ -358,11 +357,11 @@ export default async function router(schema: Schema, config: Config) {
             if (!status.endsWith('_COMPLETE')) throw new Err(400, null, 'Layer is still Deploying, Wait for Deploy to succeed before updating')
 
             try {
-                const lambda = await Lambda.generate(config, layer);
+                const stack = await Lambda.generate(config, layer);
                 if (await CloudFormation.exists(config, layer.id)) {
-                    await CloudFormation.update(config, layer.id, lambda);
+                    await CloudFormation.update(config, layer.id, stack);
                 } else {
-                    await CloudFormation.create(config, layer.id, lambda);
+                    await CloudFormation.create(config, layer.id, stack);
                 }
             } catch (err) {
                 console.error(err);

@@ -1,5 +1,7 @@
 // @ts-ignore
 import cf from '@openaddresses/cloudfriend';
+import { InferSelectModel } from 'drizzle-orm';
+import { Layer } from '../schema.js';
 import AWSLambda from '@aws-sdk/client-lambda';
 import Config from '../config.js';
 import jwt from 'jsonwebtoken';
@@ -37,7 +39,7 @@ export default class Lambda {
         }));
     }
 
-    static generate(config: Config, layer: any): any {
+    static generate(config: Config, layer: InferSelectModel<typeof Layer>): object {
         const StackName = `${config.StackName}-layer-${layer.id}`;
 
         const stack: any = {
@@ -102,7 +104,7 @@ export default class Lambda {
         }
 
         if (layer.priority !== 'off') {
-            stack.Parameters.LambdaAlarm.Properties.AlarmActions.push(
+            stack.Resources.LambdaAlarm.Properties.AlarmActions.push(
                 cf.join(['arn:', cf.partition, ':sns:', cf.region, `:`, cf.accountId, `:${config.StackName}-${layer.priority}-urgency`])
             )
         }
