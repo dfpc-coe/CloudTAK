@@ -50,7 +50,7 @@ export default async function router(schema: Schema, config: Config) {
             });
 
             if (!authres.ok) {
-                throw new Err(500, new Error(await authres.text()), 'Non-200 Response from Auth Server - Token');
+                throw new Err(500, new Error(`Status: ${authres.status}: ${await authres.text()}`), 'Non-200 Response from Auth Server - Token');
             }
 
             const body = await authres.json();
@@ -71,7 +71,7 @@ export default async function router(schema: Schema, config: Config) {
                 });
 
                 if (!groupres.ok) {
-                    throw new Err(500, new Error(await authres.text()), 'Non-200 Response from Auth Server - Groups');
+                    throw new Err(500, new Error(`Status: ${groupres.status}: ${await groupres.text()}`), 'Non-200 Response from Auth Server - Groups');
                 }
 
                 const gbody: {
@@ -127,7 +127,6 @@ export default async function router(schema: Schema, config: Config) {
                     auth: await api.Credentials.generate()
                 });
             }
-
 
             return res.json({
                 access: 'user',
