@@ -104,7 +104,7 @@ export default class Lambda {
         }
 
         if (layer.priority !== 'off') {
-            stack.Parameters.LambdaAlarm.Properties.AlarmActions.push(
+            stack.Resources.LambdaAlarm.Properties.AlarmActions.push(
                 cf.join(['arn:', cf.partition, ':sns:', cf.region, `:`, cf.accountId, `:${config.StackName}-${layer.priority}-urgency`])
             )
         }
