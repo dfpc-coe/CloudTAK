@@ -19,7 +19,7 @@ export const Mission = Type.Object({
     externalData: Type.Array(Type.Unknown()),
     feeds: Type.Array(Type.Unknown()),
     mapLayers: Type.Array(Type.Unknown()),
-    ownerRole: Type.Array(Type.Unknown()),
+    ownerRole: Type.Optional(Type.Array(Type.Unknown())),
     inviteOnly: Type.Boolean(),
     expiration: Type.Number(),
     guid: Type.String(),
