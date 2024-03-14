@@ -21,6 +21,7 @@ import { Feature } from 'geojson';
 import { Param } from '@openaddresses/batch-generic';
 import { sql } from 'drizzle-orm';
 import { StandardResponse, LayerResponse } from '../lib/types.js';
+import { Layer_Priority } from '../lib/enums.js';
 import { Layer } from '../lib/schema.js';
 import TAKAPI, { APIAuthCertificate, } from '../lib/tak-api.js';
 
@@ -94,6 +95,7 @@ export default async function router(schema: Schema, config: Config) {
         description: 'Register a new layer',
         body: Type.Object({
             name: Type.String(),
+            priority: Type.Optional(Type.Enum(Layer_Priority)),
             description: Type.String(),
             enabled: Type.Boolean(),
             task: Type.String(),
@@ -212,6 +214,7 @@ export default async function router(schema: Schema, config: Config) {
         }),
         body: Type.Object({
             name: Type.Optional(Type.String()),
+            priority: Type.Optional(Type.Enum(Layer_Priority)),
             description: Type.Optional(Type.String()),
             cron: Type.Optional(Type.String()),
             memory: Type.Optional(Type.Integer()),
@@ -266,7 +269,7 @@ export default async function router(schema: Schema, config: Config) {
 
             let changed = false;
             // Avoid Updating CF unless necessary as it blocks further updates until deployed
-            for (const prop of ['cron', 'task', 'memory', 'timeout', 'enabled']) {
+            for (const prop of ['cron', 'task', 'memory', 'timeout', 'enabled', 'priority']) {
                 // @ts-ignore
                 if (req.body[prop] !== undefined && req.body[prop] !== layer[prop]) changed = true;
             }
