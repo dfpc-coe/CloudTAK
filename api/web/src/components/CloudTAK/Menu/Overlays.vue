@@ -41,8 +41,18 @@
                 None
             </div>
             <div :key='p' v-for='p of Object.keys(isEditing.single.paint)' class='col-12 d-flex bg-gray-500 px-2 my-2 py-2'>
-                <template v-if='p === "fill-opacity"'>
-                    <TablerRange label='Fill Opacity' v-model='isEditing.single.paint[p]' :min='0' :max='1' :step='0.1'/>
+                <template v-if='["fill-opacity", "line-opacity"].includes(p)'>
+                    <TablerRange label='Opacity' v-model='isEditing.single.paint[p]' :min='0' :max='1' :step='0.1'>
+                        <span class='float-right' v-text='Math.round(isEditing.single.paint[p] * 100) + "%"'/>
+                    </TablerRange>
+                </template>
+                <template v-else-if='["line-width"].includes(p)'>
+                    <TablerRange label='Width' v-model='isEditing.single.paint[p]' :min='1' :max='10' :step='1'>
+                        <span class='float-right' v-text='isEditing.single.paint[p]'/>
+                    </TablerRange>
+                </template>
+                <template v-else-if='["fill-color", "line-color"].includes(p)'>
+                    <TablerColour label='Colour' v-model='isEditing.single.paint[p]' :min='0' :max='1' :step='0.1'/>
                 </template>
                 <template v-else>
                     <span v-text='p'/>
@@ -119,6 +129,7 @@ import {
     TablerDelete,
     TablerLoading,
     TablerInput,
+    TablerColour,
     TablerRange
 } from '@tak-ps/vue-tabler';
 import {
@@ -153,8 +164,10 @@ export default {
             handler: function() {
                 if (!this.isEditing || !this.isEditing.single) return;
 
-                if (this.isEditing.single.paint['fill-opacity']) {
-                    mapStore.map.setPaintProperty(this.isEditing.single.id, 'fill-opacity', this.isEditing.single.paint['fill-opacity']);
+                for (const paint of ['fill-opacity', 'fill-color', 'line-opacity', 'line-color', 'line-width']) {
+                    if (this.isEditing.single.paint[paint]) {
+                        mapStore.map.setPaintProperty(this.isEditing.single.id, paint, this.isEditing.single.paint[paint]);
+                    }
                 }
             }
         }
@@ -194,6 +207,7 @@ export default {
     },
     components: {
         TablerRange,
+        TablerColour,
         TablerInput,
         TablerLoading,
         TablerDelete,
