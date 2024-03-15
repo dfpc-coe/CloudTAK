@@ -142,6 +142,7 @@ export default async function router(schema: Schema, config: Config) {
             name: Type.String(),
             description: Type.String(),
             auto_transform: Type.Optional(Type.Boolean()),
+            mission_diff: Type.Optional(Type.Boolean()),
             mission_sync: Type.Optional(Type.Boolean()),
             mission_groups: Type.Optional(Type.Array(Type.String())),
             mission_role: Type.Optional(Type.String())
@@ -189,6 +190,7 @@ export default async function router(schema: Schema, config: Config) {
             name: Type.String(),
             description: Type.String(),
             auto_transform: Type.Optional(Type.Boolean()),
+            mission_diff: Type.Optional(Type.Boolean()),
             mission_sync: Type.Optional(Type.Boolean())
         }),
         res: DataResponse
