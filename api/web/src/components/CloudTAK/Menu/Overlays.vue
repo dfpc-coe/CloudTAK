@@ -41,17 +41,17 @@
                 None
             </div>
             <div :key='p' v-for='p of Object.keys(isEditing.single.paint)' class='col-12 d-flex bg-gray-500 px-2 my-2 py-2'>
-                <template v-if='["fill-opacity", "line-opacity"].includes(p)'>
+                <template v-if='["fill-opacity", "line-opacity", "circle-opacity"].includes(p)'>
                     <TablerRange label='Opacity' v-model='isEditing.single.paint[p]' :min='0' :max='1' :step='0.1'>
                         <span class='float-right' v-text='Math.round(isEditing.single.paint[p] * 100) + "%"'/>
                     </TablerRange>
                 </template>
-                <template v-else-if='["line-width"].includes(p)'>
+                <template v-else-if='["line-width", "circle-radius"].includes(p)'>
                     <TablerRange label='Width' v-model='isEditing.single.paint[p]' :min='1' :max='10' :step='1'>
                         <span class='float-right' v-text='isEditing.single.paint[p]'/>
                     </TablerRange>
                 </template>
-                <template v-else-if='["fill-color", "line-color"].includes(p)'>
+                <template v-else-if='["fill-color", "line-color", "circle-color"].includes(p)'>
                     <TablerColour label='Colour' v-model='isEditing.single.paint[p]' :min='0' :max='1' :step='0.1'/>
                 </template>
                 <template v-else>

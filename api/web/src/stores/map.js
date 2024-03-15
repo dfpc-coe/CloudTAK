@@ -437,6 +437,7 @@ function cotStyles(id, opts = {
         type: 'circle',
         source: id,
         filter: ['all', ["==", "$type", "Point"], ['!has', 'icon']],
+        layout: {},
         paint: {
             'circle-color': ["string", ["get", "circle-color"], "#00FF00"],
             'circle-radius': ["number", ["get", "circle-radius"], 4],
