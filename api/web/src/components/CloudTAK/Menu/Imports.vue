@@ -24,12 +24,14 @@
             </div>
         </div>
     </template>
+    <TablerPager v-if='list.total > paging.limit' @page='paging.page = $event' :page='paging.page'  :total='list.total' :limit='paging.limit'/>
 </div>
 </template>
 
 <script>
 import {
     TablerNone,
+    TablerPager,
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import {
@@ -46,7 +48,19 @@ export default {
         return {
             err: false,
             loading: true,
+            paging: {
+                limit: 20,
+                page: 0
+            },
             list: []
+        }
+    },
+    watch: {
+        paging: {
+            deep: true,
+            handler: async function() {
+                await this.fetchList()
+            }
         }
     },
     mounted: async function() {
@@ -60,6 +74,8 @@ export default {
             this.loading = true;
             const url = window.stdurl('/api/import');
             url.searchParams.append('order', 'desc');
+            url.searchParams.append('page', this.paging.page);
+            url.searchParams.append('limit', this.paging.limit);
             url.searchParams.append('sort', 'created');
             this.list = await window.std(url);
             this.loading = false;
@@ -68,6 +84,7 @@ export default {
     components: {
         Status,
         TablerNone,
+        TablerPager,
         TablerLoading,
         IconRefresh,
         IconCircleFilled,
