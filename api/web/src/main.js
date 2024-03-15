@@ -197,6 +197,10 @@ const router = new VueRouter.createRouter({
                     return { name: 'admin-server' };
                 }
             },{
+                path: 'basemap',
+                name: 'admin-basemap',
+                component: () => import('./components/Admin/AdminBasemaps.vue')
+            },{
                 path: 'layer',
                 name: 'admin-layer',
                 component: () => import('./components/Admin/AdminLayers.vue')
