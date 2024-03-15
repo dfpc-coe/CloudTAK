@@ -42,7 +42,7 @@
                                     <div class='col-12 d-flex'>
                                         <label>Data Groups</label>
                                         <div class='ms-auto' v-if='!$route.params.dataid'>
-                                            <IconSettings @click='modal = true' class='cursor-pointer'/>
+                                            <IconSettings @click='modal = true' size='32' class='cursor-pointer'/>
                                         </div>
                                     </div>
 

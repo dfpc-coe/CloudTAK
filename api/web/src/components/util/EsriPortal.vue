@@ -34,10 +34,10 @@
                 </h1>
 
                 <div class='ms-auto btn-list mx-3'>
-                    <IconRefresh v-if='!disabled && !err && !loading.main' @click='generateToken' v-tooltip='"Refresh"' class='cursor-pointer'/>
+                    <IconRefresh v-if='!disabled && !err && !loading.main' @click='generateToken' v-tooltip='"Refresh"' size='32' class='cursor-pointer'/>
 
-                    <IconPlus v-if='!readonly && !disabled && !err && !loading.main' @click='createModal = true' v-tooltip='"Create Hosted Service"' class='cursor-pointer'/>
-                    <IconX v-if='pane && !disabled' @click='$emit("close")' v-tooltip='"Close Explorer"' class='cursor-pointer'/>
+                    <IconPlus v-if='!readonly && !disabled && !err && !loading.main' @click='createModal = true' v-tooltip='"Create Hosted Service"' size='32' class='cursor-pointer'/>
+                    <IconX v-if='pane && !disabled' @click='$emit("close")' v-tooltip='"Close Explorer"' size='32' class='cursor-pointer'/>
                 </div>
             </div>
 
@@ -97,7 +97,7 @@
                         <tbody>
                             <tr @click='fmtserver(res)' :key='res.id' v-for='res in content.results'>
                                 <td>
-                                    <IconMap/>
+                                    <IconMap size='32'/>
                                     <span v-text='res.title' class='mx-1'/>
                                 </td>
                                 <td>

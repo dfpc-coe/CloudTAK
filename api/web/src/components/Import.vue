@@ -25,7 +25,7 @@
                                 </div>
                             </h3>
                             <div class='ms-auto btn-list'>
-                                <IconRefresh @click='fetch' v-tooltip='`Refresh Import`' class='cursor-pointer'/>
+                                <IconRefresh @click='fetch' v-tooltip='`Refresh Import`' size='32' class='cursor-pointer'/>
                             </div>
                         </div>
                         <div class='card-body'>

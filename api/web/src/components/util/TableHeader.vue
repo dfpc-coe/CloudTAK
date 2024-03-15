@@ -5,14 +5,14 @@
             <div class='d-flex'>
                 <span @click='sort = h.name' v-text='h.name' class='cursor-pointer'/>
                 <span v-if='h.name === sort' class='ms-auto'>
-                    <IconChevronDown height='16' @click='order = "desc"' v-if='order === "asc"' class='cursor-pointer'/>
-                    <IconChevronUp height='16' @click='order = "asc"' v-else class='cursor-pointer'/>
+                    <IconChevronDown size='16' @click='order = "desc"' v-if='order === "asc"' class='cursor-pointer'/>
+                    <IconChevronUp size='16' @click='order = "asc"' v-else class='cursor-pointer'/>
                 </span>
 
                 <template v-if='shown[shown.length - 1] === h'>
                     <div class='ms-auto'>
                         <div class="dropdown">
-                            <IconSettings height='16' width='16' class='mx-2 dropdown-toggle cursor-pointer' data-bs-toggle="dropdown"/>
+                            <IconSettings size='16' class='mx-2 dropdown-toggle cursor-pointer' data-bs-toggle="dropdown"/>
                             <div class="dropdown-menu">
                                 <div :key='h_it' v-for='(h, h_it) of header'>
                                     <label class='form-check subheader mb-0'>

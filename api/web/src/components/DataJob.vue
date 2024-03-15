@@ -23,7 +23,7 @@
 
                             <div class='ms-auto'>
                                 <div class='btn-list'>
-                                    <IconRefresh @click='fetchLogs' class='cursor-pointer'/>
+                                    <IconRefresh @click='fetchLogs' size='32' class='cursor-pointer'/>
                                 </div>
                             </div>
                         </div>

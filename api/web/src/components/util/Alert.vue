@@ -3,8 +3,8 @@
     <div class='d-flex justify-content-center' :class='{
         "mt-4 mb-2": !compact
     }'>
-        <IconAlertTriangle v-if='compact' width='32' height='32' />
-        <IconAlertTriangle v-else width='48' height='48' />
+        <IconAlertTriangle v-if='compact' size='32' />
+        <IconAlertTriangle v-else size='48'/>
     </div>
 
     <h3 class='pt-3 text-center' v-text='title'></h3>

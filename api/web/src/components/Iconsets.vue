@@ -21,9 +21,9 @@
                             <h3 class='card-title'>Iconsets</h3>
 
                             <div class='ms-auto btn-list'>
-                                <IconFileUpload v-if='!upload' @click='upload = true' v-tooltip='"Zip Upload"' class='cursor-pointer'/>
-                                <IconPlus v-tooltip='"Manual Creation"' @click='$router.push(`/iconset/new`)' class='cursor-pointer'/>
-                                <IconRefresh v-tooltip='"Refresh"' @click='fetchList' class='cursor-pointer'/>
+                                <IconFileUpload v-if='!upload' @click='upload = true' v-tooltip='"Zip Upload"' size='32' class='cursor-pointer'/>
+                                <IconPlus v-tooltip='"Manual Creation"' @click='$router.push(`/iconset/new`)' size='32' class='cursor-pointer'/>
+                                <IconRefresh v-tooltip='"Refresh"' @click='fetchList' size='32' class='cursor-pointer'/>
                             </div>
                         </div>
                         <TablerLoading v-if='loading'/>
@@ -54,7 +54,7 @@
                                         <div class='d-flex'>
                                             <span v-text='iconset.uid'/>
                                             <div class='ms-auto'>
-                                                <IconDownload v-tooltip='"Download TAK Zip"' class='cursor-pointer' @click.stop='download(iconset)'/>
+                                                <IconDownload v-tooltip='"Download TAK Zip"' size='32' class='cursor-pointer' @click.stop='download(iconset)'/>
                                             </div>
                                         </div>
                                     </td>

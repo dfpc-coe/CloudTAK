@@ -1,12 +1,12 @@
 <template>
 <div>
     <div class="card-header">
-        <IconCircleArrowLeft @click='$router.push("/profile/jobs")' class='cursor-pointer' v-tooltip='"Back"'/>
+        <IconCircleArrowLeft @click='$router.push("/profile/jobs")' size='32' class='cursor-pointer' v-tooltip='"Back"'/>
         <Status :status='job.status'/>
         <h2 class='card-title mx-2'>Job Logs</h2>
         <div class='ms-auto'>
             <div class='btn-list'>
-                <IconRefresh @click='fetchLogs' class='cursor-pointer'/>
+                <IconRefresh @click='fetchLogs' size='32' class='cursor-pointer'/>
             </div>
         </div>
     </div>

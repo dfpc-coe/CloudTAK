@@ -12,10 +12,10 @@
             </div>
         </div>
         <div class='col-auto btn-list my-2 mx-3 ms-auto d-flex align-items-center'>
-            <IconZoomPan @click='zoomTo' class='cursor-pointer' v-tooltip='"Zoom To"'/>
+            <IconZoomPan @click='zoomTo' size='32' class='cursor-pointer' v-tooltip='"Zoom To"'/>
 
-            <IconCode v-if='mode === "default"' @click='mode = "raw"' class='cursor-pointer' v-tooltip='"Raw View"'/>
-            <IconX v-if='mode === "raw"' @click='mode = "default"' class='cursor-pointer' v-tooltip='"Default View"'/>
+            <IconCode v-if='mode === "default"' @click='mode = "raw"' size='32' class='cursor-pointer' v-tooltip='"Raw View"'/>
+            <IconX v-if='mode === "raw"' @click='mode = "default"' size='32' class='cursor-pointer' v-tooltip='"Default View"'/>
         </div>
     </div>
 
@@ -41,8 +41,8 @@
 
         <div v-if='false' class='col-12 d-flex align-items-center'>
             <div class='d-flex'>
-                <button class='btn bg-gray-500'><IconShare2/></button>
-                <button class='btn bg-gray-500'><IconPencil/></button>
+                <button class='btn bg-gray-500'><IconShare2 size='32'/></button>
+                <button class='btn bg-gray-500'><IconPencil size='32'/></button>
             </div>
         </div>
     </template>

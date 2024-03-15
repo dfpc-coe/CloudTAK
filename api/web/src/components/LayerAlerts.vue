@@ -20,8 +20,8 @@
                         <div class='card-header d-flex'>
                             <h1 class='card-title'>Layer Alerts</h1>
                             <div class='ms-auto btn-list'>
-                                <IconTrash @click='deleteAlerts()' class='cursor-pointer'/>
-                                <IconRefresh @click='query' class='cursor-pointer'/>
+                                <IconTrash @click='deleteAlerts()' size='32' class='cursor-pointer'/>
+                                <IconRefresh @click='query' size='32' class='cursor-pointer'/>
                             </div>
                         </div>
 
@@ -42,11 +42,11 @@
                                             "text-yellow": alert.priority === "yellow",
                                             "text-red": alert.priority === "red"
                                         }'>
-                                            <IconAlertCircle class='mx-auto my-auto'/>
+                                            <IconAlertCircle size='32' class='mx-auto my-auto'/>
                                         </div>
                                         <span v-text='alert.description'/>
                                         <div class='ms-auto my-1'>
-                                            <IconTrash @click='deleteAlerts(alert.id)' class='cursor-pointer'/>
+                                            <IconTrash @click='deleteAlerts(alert.id)' size='32' class='cursor-pointer'/>
                                         </div>
                                     </div>
                                 </div>

@@ -3,10 +3,10 @@
     <template v-if='isEditing && isEditing.single'>
         <div class='col-12 border-bottom border-light'>
             <div class='modal-header px-0 mx-2'>
-                <IconCircleArrowLeft @click='isEditing.single = false' class='cursor-pointer'/>
+                <IconCircleArrowLeft @click='isEditing.single = false' size='32' class='cursor-pointer'/>
 
                 <div class='modal-title'>
-                    <IconPaintFilled v-if='isEditing.single.type === "fill"'/>
+                    <IconPaintFilled v-if='isEditing.single.type === "fill"' size='32'/>
                     <span v-text='isEditing.single.id'/>
                 </div>
                 <div class='btn-list'></div>
@@ -64,7 +64,7 @@
     <template v-else-if='isEditing'>
         <div class='col-12 border-bottom border-light'>
             <div class='modal-header px-0 mx-2'>
-                <IconCircleArrowLeft @click='isEditing = false' class='cursor-pointer'/>
+                <IconCircleArrowLeft @click='isEditing = false' size='32' class='cursor-pointer'/>
                 <div class='modal-title' v-text='isEditing.layer.name'></div>
                 <div class='btn-list'></div>
             </div>
@@ -78,10 +78,10 @@
     <template v-else>
         <div class='col-12 border-bottom border-light'>
             <div class='modal-header px-0 mx-2'>
-                <IconCircleArrowLeft @click='$emit("close")' class='cursor-pointer'/>
+                <IconCircleArrowLeft @click='$emit("close")' size='32' class='cursor-pointer'/>
                 <div class='modal-title'>Overlays</div>
                 <div class='btn-list'>
-                    <IconPlus @click='$emit("datas")' class='cursor-pointer' v-tooltip='"Add Overlay"'/>
+                    <IconPlus @click='$emit("datas")' class='cursor-pointer' size='32' v-tooltip='"Add Overlay"'/>
                 </div>
             </div>
         </div>
@@ -92,18 +92,18 @@
                     "cursor-pointer": ["data", "profile"].includes(layer.mode) && layer.type === "vector"
                 }'>
                     <div class='col-12 d-flex align-items-center'>
-                        <IconEye v-if='layer.visible === "visible"' @click.stop.prevent='flipVisible(layer)' class='cursor-pointer' v-tooltip='"Hide Layer"'/>
-                        <IconEyeOff v-else @click.stop.prevent='flipVisible(layer)' class='cursor-pointer' v-tooltip='"Show Layer"'/>
+                        <IconEye v-if='layer.visible === "visible"' @click.stop.prevent='flipVisible(layer)' size='32' class='cursor-pointer' v-tooltip='"Hide Layer"'/>
+                        <IconEyeOff v-else @click.stop.prevent='flipVisible(layer)' size='32' class='cursor-pointer' v-tooltip='"Show Layer"'/>
 
                         <span class='mx-2'>
-                            <IconMap v-if='layer.type === "raster"' v-tooltip='"Raster"'/>
-                            <IconVector v-else v-tooltip='"Vector"'/>
+                            <IconMap v-if='layer.type === "raster"' v-tooltip='"Raster"' size='32'/>
+                            <IconVector v-else v-tooltip='"Vector"' size='32'/>
                         </span>
 
                         <span class='mx-2 user-select-none' v-text='layer.name'/>
 
                         <div class='ms-auto btn-list'>
-                            <IconMaximize v-if='getSource(layer).bounds' @click.stop.prevent='zoomTo(getSource(layer).bounds)' class='cursor-pointer' v-tooltip='"Zoom To Overlay"'/>
+                            <IconMaximize v-if='getSource(layer).bounds' @click.stop.prevent='zoomTo(getSource(layer).bounds)' size='32' class='cursor-pointer' v-tooltip='"Zoom To Overlay"'/>
                             <TablerDelete
                                 :key='layer.id'
                                 v-if='layer.mode === "mission" || layer.name.startsWith("data-") || layer.name.startsWith("profile-")'

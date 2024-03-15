@@ -3,7 +3,7 @@
     <div class='card-header'>
         <h3 class='card-title'>Layer Config</h3>
         <div class='ms-auto btn-list'>
-            <IconSettings v-if='disabled' @click='disabled = false' class='cursor-pointer'/>
+            <IconSettings v-if='disabled' @click='disabled = false' size='32' class='cursor-pointer'/>
         </div>
     </div>
 
@@ -17,7 +17,7 @@
                     <div v-if='!disabled' class='ms-auto'>
                         <div class='dropdown'>
                             <div class="dropdown-toggle" type="button" id="dropdownCron" data-bs-toggle="dropdown" aria-expanded="false">
-                                <IconSettings width='16' height='16' class='cursor-pointer dropdown-toggle'/>
+                                <IconSettings size='16' class='cursor-pointer dropdown-toggle'/>
                             </div>
                             <ul class="dropdown-menu px-1 py-1" aria-labelledby="dropdownCron">
                                 <li class='py-1' @click='config.cron = "rate(1 minute)"'>rate(1 minute)</li>
@@ -44,7 +44,7 @@
                                     v-if='!newTaskVersion && !loading.version'
                                     @click='latestVersion'
                                     v-tooltip='"Check for new version"'
-                                    width='16' height='16'
+                                    size='16'
                                     class='cursor-pointer'
                                 />
                                 <div v-else-if='loading.version' class='d-flex justify-content-center'>
@@ -57,7 +57,7 @@
                                 </span>
                             </div>
                             <div v-if='!disabled'>
-                                <IconSettings @click='taskmodal = true' width='16' height='16' class='cursor-pointer'/>
+                                <IconSettings @click='taskmodal = true' size='16' class='cursor-pointer'/>
                             </div>
                         </div>
                     </div>
@@ -87,10 +87,10 @@
                     <div class='col-12 d-flex align-items-center'>
                         <div class='btn-group' role="group">
                             <input :disabled='disabled' v-model='destination' value='connection' type="radio" class="btn-check" name="connection-toolbar" id="connection-toolbar-connection" autocomplete="off">
-                            <label for="connection-toolbar-connection" class="btn btn-icon"><IconBuildingBroadcastTower/></label>
+                            <label for="connection-toolbar-connection" class="btn btn-icon"><IconBuildingBroadcastTower size='32'/></label>
 
                             <input :disabled='disabled' v-model='destination' value='data' type="radio" class="btn-check" name="connection-toolbar" id="connection-toolbar-data" autocomplete="off">
-                            <label for="connection-toolbar-data" class="btn btn-icon"><IconDatabase/></label>
+                            <label for="connection-toolbar-data" class="btn btn-icon"><IconDatabase size='32'/></label>
                         </div>
                         <ConnectionSelect
                             v-if='destination === "connection"'

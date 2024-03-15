@@ -13,44 +13,44 @@
             <div v-if='user' class='ms-auto'>
                 <div class='btn-list'>
                     <a :href="docsURL" class="btn btn-dark" target="_blank" rel="noreferrer">
-                        <IconCode/>Docs
+                        <IconCode size='32'/>Docs
                     </a>
                     <div class='dropdown'>
                         <div type="button" id="userProfileButton" data-bs-toggle="dropdown" aria-expanded="false" class='btn btn-dark'>
-                            <IconUser/>
+                            <IconUser size='32'/>
                             </div>
                                 <ul class="dropdown-menu" aria-labelledby='userProfileButton'>
                                     <div @click='$router.push("/profile")' class='d-flex dropdown-item cursor-pointer hover-dark'>
-                                        <IconUser/>
+                                        <IconUser size='32'/>
                                         <span class="mx-2">Profile</span>
                                     </div>
                                     <div @click='$router.push("/connection")' class='d-flex dropdown-item cursor-pointer hover-dark'>
-                                        <IconNetwork/>
+                                        <IconNetwork size='32'/>
                                         <span class="mx-2">Connections</span>
                                     </div>
                                     <div @click='$router.push("/layer")' class='d-flex dropdown-item cursor-pointer hover-dark'>
-                                        <IconBuildingBroadcastTower/>
+                                        <IconBuildingBroadcastTower size='32'/>
                                         <span class="mx-2">Layers</span>
                                     </div>
                                     <div @click='$router.push("/basemap")' class='d-flex dropdown-item cursor-pointer hover-dark'>
-                                        <IconMap/>
+                                        <IconMap size='32'/>
                                         <span class="mx-2">Basemaps</span>
                                     </div>
                                     <div @click='$router.push("/iconset")' class='d-flex dropdown-item cursor-pointer hover-dark'>
-                                        <IconPhoto/>
+                                        <IconPhoto size='32'/>
                                         <span class="mx-2">Iconsets</span>
                                     </div>
                                     <div @click='$router.push("/import")' class='d-flex dropdown-item cursor-pointer hover-dark'>
-                                        <IconFileImport/>
+                                        <IconFileImport size='32'/>
                                         <span class="mx-2">Imports</span>
                                     </div>
                                     <div @click='$router.push("/admin")' class='d-flex dropdown-item cursor-pointer hover-dark'>
-                                        <IconSettings/>
+                                        <IconSettings size='32'/>
                                         <span class='mx-2'>Server</span>
                                         <span class='ms-auto badge border border-red bg-red text-white'>Admin</span>
                                     </div>
                                     <div @click='logout' class='d-flex dropdown-item cursor-pointer hover-dark'>
-                                        <IconLogout/>
+                                        <IconLogout size='32'/>
                                         <span class="mx-2">Logout</span>
                                     </div>
                                 </ul>

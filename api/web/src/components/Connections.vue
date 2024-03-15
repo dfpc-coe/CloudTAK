@@ -56,7 +56,7 @@
 
                                     <div class='ms-auto'>
                                         <div class='btn-list'>
-                                            <IconSettings class='cursor-pointer' @click='$router.push(`/connection/${connection.id}/edit`)'/>
+                                            <IconSettings size='32' class='cursor-pointer' @click='$router.push(`/connection/${connection.id}/edit`)'/>
                                         </div>
                                     </div>
                                 </div>

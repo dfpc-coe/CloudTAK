@@ -4,8 +4,8 @@
         <h3 class='card-title'>User Assets</h3>
 
         <div class='ms-auto btn-list'>
-            <IconPlus @click='upload = true' class='cursor-pointer' v-tooltip='"Upload"'/>
-            <IconRefresh @click='fetchList' class='cursor-pointer' v-tooltip='"Refresh"'/>
+            <IconPlus @click='upload = true' size='32' class='cursor-pointer' v-tooltip='"Upload"'/>
+            <IconRefresh @click='fetchList' size='32' class='cursor-pointer' v-tooltip='"Refresh"'/>
         </div>
     </div>
 
@@ -23,8 +23,8 @@
                     <td>
                         <div class='d-flex'>
                             <div class='btn-list'>
-                                <IconMap v-if='asset.visualized' v-tooltip='"Visualizable"'/>
-                                <IconMapOff v-else v-tooltip='"Not Cloud Optimized"'/>
+                                <IconMap v-if='asset.visualized' v-tooltip='"Visualizable"' size='32'/>
+                                <IconMapOff v-else v-tooltip='"Not Cloud Optimized"' size='32'/>
                             </div>
 
                             <span v-text='asset.name' class='mx-2'/>
@@ -37,8 +37,8 @@
                         <TablerEpoch :date='asset.updated'/>
                         <div class='ms-auto btn-list'>
                             <TablerDelete displaytype='icon' @delete='deleteAsset(asset)' v-tooltip='"Delete Asset"'/>
-                            <IconTransform v-if='!asset.visualized' @click='initTransform(asset)' v-tooltip='"Convert Asset"' class='cursor-pointer'/>
-                            <IconDownload @click='downloadAsset(asset)' class='cursor-pointer' v-tooltip='"Download Asset"'/>
+                            <IconTransform v-if='!asset.visualized' @click='initTransform(asset)' v-tooltip='"Convert Asset"' size='32' class='cursor-pointer'/>
+                            <IconDownload @click='downloadAsset(asset)' size='32' class='cursor-pointer' v-tooltip='"Download Asset"'/>
                         </div>
                     </td>
                 </tr>

@@ -35,8 +35,8 @@
                                             <input disabled v-model='sink.enabled' class="form-check-input" type="checkbox">
                                         </label>
                                     </div>
-                                    <IconRefresh class='cursor-pointer' @click='fetch'/>
-                                    <IconSettings class='cursor-pointer' @click='$router.push(`/connection/${$route.params.connectionid}/sink/${$route.params.sinkid}/edit`)'/>
+                                    <IconRefresh size='32' class='cursor-pointer' @click='fetch'/>
+                                    <IconSettings size='32' class='cursor-pointer' @click='$router.push(`/connection/${$route.params.connectionid}/sink/${$route.params.sinkid}/edit`)'/>
                                 </div>
                             </div>
                         </div>
