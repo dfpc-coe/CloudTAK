@@ -61,8 +61,8 @@
                             <div class='card-header d-flex'>
                                 <h3 class='card-title'>Connection Authentication</h3>
                                 <div v-if='!$route.params.connectionid || regen' class='ms-auto btn-list'>
-                                    <IconLogin @click='modal.login = true' class='cursor-pointer' v-tooltip='"User Login"'/>
-                                    <IconPlus @click='modal.upload = true' class='cursor-pointer' v-tooltip='"P12 Upload"'/>
+                                    <IconLogin @click='modal.login = true' size='32' class='cursor-pointer' v-tooltip='"User Login"'/>
+                                    <IconPlus @click='modal.upload = true' size='32' class='cursor-pointer' v-tooltip='"P12 Upload"'/>
                                 </div>
                             </div>
                             <div class='card-body'>
@@ -88,7 +88,7 @@
                                     <template v-else>
                                         <div class='border px-3 py-3'>
                                             <div class='d-flex justify-content-center'>
-                                                <IconLock width='50' height='50'/>
+                                                <IconLock size='50'/>
                                             </div>
                                             <div class='d-flex justify-content-center my-3'>
                                                 Once Certificates are generated they cannot be viewed

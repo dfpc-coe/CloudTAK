@@ -27,17 +27,20 @@
                                 <div class='btn-list'>
 
                                     <IconAlertTriangle
+                                        size='32'
                                         class='cursor-pointer'
                                         :class='{ "text-red": alerts.total }'
                                         v-tooltip='"Layer Alerts"'
                                         @click='$router.push(`/layer/${layer.id}/alert`)'
                                     />
                                     <IconDatabase
+                                        size='32'
                                         class='cursor-pointer'
                                         v-tooltip='"CoT Logging"'
                                         @click='$router.push(`/layer/${layer.id}/query`)'
                                     />
                                     <IconSettings
+                                        size='32'
                                         class='cursor-pointer'
                                         v-tooltip='"Edit"'
                                         @click='$router.push(`/layer/${layer.id}/edit`)'
@@ -62,23 +65,23 @@
                                         <span @click='$router.push(`/layer/${$route.params.layerid}/deployment`)' class="list-group-item list-group-item-action d-flex align-items-center" :class='{
                                             "active": $route.name === "layer-deployment",
                                             "cursor-pointer": $route.name !== "layer-deployment"
-                                        }'><IconPlaneDeparture/><span class='mx-3'>Deployment</span></span>
+                                        }'><IconPlaneDeparture size='32'/><span class='mx-3'>Deployment</span></span>
                                         <span @click='$router.push(`/layer/${$route.params.layerid}/config`)' class="list-group-item list-group-item-action d-flex align-items-center" :class='{
                                             "active": $route.name === "layer-config",
                                             "cursor-pointer": $route.name !== "layer-config"
-                                        }'><IconAdjustments/><span class='mx-3'>Config</span></span>
+                                        }'><IconAdjustments size='32'/><span class='mx-3'>Config</span></span>
                                         <span @click='$router.push(`/layer/${$route.params.layerid}/environment`)' class="list-group-item list-group-item-action d-flex align-items-center" :class='{
                                             "active": $route.name === "layer-environment",
                                             "cursor-pointer": $route.name !== "layer-environment"
-                                        }'><IconBeach/><span class='mx-3'>Environment</span></span>
+                                        }'><IconBeach size='32'/><span class='mx-3'>Environment</span></span>
                                         <span @click='$router.push(`/layer/${$route.params.layerid}/schema`)' class="list-group-item list-group-item-action d-flex align-items-center" :class='{
                                             "active": $route.name === "layer-schema",
                                             "cursor-pointer": $route.name !== "layer-schema"
-                                        }'><IconSchema/><span class='mx-3'>Schema</span></span>
+                                        }'><IconSchema size='32'/><span class='mx-3'>Schema</span></span>
                                         <span @click='$router.push(`/layer/${$route.params.layerid}/styles`)' class="list-group-item list-group-item-action d-flex align-items-center" :class='{
                                             "active": $route.name === "layer-styles",
                                             "cursor-pointer": $route.name !== "layer-styles"
-                                        }'><IconPaint/><span class='mx-3'>Styling</span></span>
+                                        }'><IconPaint size='32'/><span class='mx-3'>Styling</span></span>
                                     </div>
                                 </div>
                             </div>

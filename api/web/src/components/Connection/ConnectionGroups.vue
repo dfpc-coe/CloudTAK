@@ -4,7 +4,7 @@
         <h3 class="card-title">User Groups</h3>
 
         <div class='ms-auto btn-list'>
-            <IconRefresh @click='fetch' class='cursor-pointer' v-tooltip='"Refresh"'/>
+            <IconRefresh @click='fetch' size='32' class='cursor-pointer' v-tooltip='"Refresh"'/>
         </div>
     </div>
     <TablerLoading v-if='loading'/>
@@ -21,8 +21,8 @@
                 <tr :key='group.name' v-for='group in processChannels'>
                     <td>
                         <div class='d-flex'>
-                            <IconEye v-if='group.active' @click='setStatus(group, false)' v-tooltip='"Disable"' class='cursor-pointer'/>
-                            <IconEyeOff v-else @click='setStatus(group, true)' v-tooltip='"Enable"' class='cursor-pointer'/>
+                            <IconEye v-if='group.active' @click='setStatus(group, false)' v-tooltip='"Disable"' size='32' class='cursor-pointer'/>
+                            <IconEyeOff v-else @click='setStatus(group, true)' v-tooltip='"Enable"' size='32' class='cursor-pointer'/>
                             <span class='mx-2' v-text='group.name'/>
                         </div>
                     </td>

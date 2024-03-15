@@ -4,8 +4,8 @@
         Data Stores
 
         <div class='ms-auto btn-list'>
-            <IconPlus @click='$router.push(`/connection/${connection.id}/data/new`)' v-tooltip='"Create Store"' class='cursor-pointer'/>
-            <IconRefresh @click='listData' v-tooltip='"Refresh"' class='cursor-pointer'/>
+            <IconPlus @click='$router.push(`/connection/${connection.id}/data/new`)' v-tooltip='"Create Store"' size='32' class='cursor-pointer'/>
+            <IconRefresh @click='listData' v-tooltip='"Refresh"' size='32' class='cursor-pointer'/>
         </div>
     </div>
 
@@ -26,8 +26,8 @@
                             <div class='d-flex'>
                                 <span class='mt-2' v-text='data.name'/>
                                 <div class='ms-auto'>
-                                    <IconAccessPoint v-if='data.mission_sync' class='cursor-pointer text-green' v-tooltip='"Mission Sync On"'/>
-                                    <IconAccessPointOff v-else class='cursor-pointer text-red' v-tooltip='"Mission Sync Off"'/>
+                                    <IconAccessPoint v-if='data.mission_sync' size='32' class='cursor-pointer text-green' v-tooltip='"Mission Sync On"'/>
+                                    <IconAccessPointOff v-else size='32' class='cursor-pointer text-red' v-tooltip='"Mission Sync Off"'/>
                                 </div>
                             </div>
                         </td>

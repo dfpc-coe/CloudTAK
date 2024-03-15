@@ -4,7 +4,7 @@
         <div class="row align-items-center">
             <div class="col-auto">
                 <span @click='$router.push("/layer")' class="bg-primary text-white avatar cursor-pointer">
-                    <IconBuildingBroadcastTower/>
+                    <IconBuildingBroadcastTower size='32'/>
                 </span>
             </div>
             <div class="col">

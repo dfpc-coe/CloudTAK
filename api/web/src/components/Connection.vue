@@ -26,8 +26,8 @@
 
                             <div class='ms-auto'>
                                 <div class='btn-list'>
-                                    <IconRefresh class='cursor-pointer' @click='refresh' v-tooltip='"Refresh"' />
-                                    <IconSettings class='cursor-pointer' @click='$router.push(`/connection/${connection.id}/edit`)' v-tooltip='"Edit"'/>
+                                    <IconRefresh size='32' class='cursor-pointer' @click='refresh' v-tooltip='"Refresh"' />
+                                    <IconSettings size='32' class='cursor-pointer' @click='$router.push(`/connection/${connection.id}/edit`)' v-tooltip='"Edit"'/>
                                 </div>
                             </div>
                         </div>
@@ -64,27 +64,27 @@
                                         <span @click='$router.push(`/connection/${$route.params.connectionid}/layer`)' class="list-group-item list-group-item-action d-flex align-items-center" :class='{
                                             "active": $route.name === "connection-layer",
                                             "cursor-pointer": $route.name !== "connection-layer"
-                                        }'><IconBuildingBroadcastTower/><span class='mx-3'>Layers</span></span>
+                                        }'><IconBuildingBroadcastTower size='32'/><span class='mx-3'>Layers</span></span>
                                         <span @click='$router.push(`/connection/${$route.params.connectionid}/groups`)' class="list-group-item list-group-item-action d-flex align-items-center" :class='{
                                             "active": $route.name === "connection-groups",
                                             "cursor-pointer": $route.name !== "connection-groups"
-                                        }'><IconAffiliate/><span class='mx-3'>Channels</span></span>
+                                        }'><IconAffiliate size='32'/><span class='mx-3'>Channels</span></span>
                                         <span @click='$router.push(`/connection/${$route.params.connectionid}/data`)' class="list-group-item list-group-item-action d-flex align-items-center" :class='{
                                             "active": $route.name === "connection-data",
                                             "cursor-pointer": $route.name !== "connection-data"
-                                        }'><IconDatabase/><span class='mx-3'>Data Store</span></span>
+                                        }'><IconDatabase size='32'/><span class='mx-3'>Data Store</span></span>
                                         <span @click='$router.push(`/connection/${$route.params.connectionid}/sink`)' class="list-group-item list-group-item-action d-flex align-items-center" :class='{
                                             "active": $route.name === "connection-sink",
                                             "cursor-pointer": $route.name !== "connection-sink"
-                                        }'><IconOutbound/><span class='mx-3'>Outbounds Sinks</span></span>
+                                        }'><IconOutbound size='32'/><span class='mx-3'>Outbounds Sinks</span></span>
                                         <span @click='$router.push(`/connection/${$route.params.connectionid}/health`)' class="list-group-item list-group-item-action d-flex align-items-center" :class='{
                                             "active": $route.name === "connection-health",
                                             "cursor-pointer": $route.name !== "connection-health"
-                                        }'><IconCloudDataConnection/><span class='mx-3'>Health &amp; Metrics</span></span>
+                                        }'><IconCloudDataConnection size='32'/><span class='mx-3'>Health &amp; Metrics</span></span>
                                         <span @click='$router.push(`/connection/${$route.params.connectionid}/tokens`)' class="list-group-item list-group-item-action d-flex align-items-center" :class='{
                                             "active": $route.name === "connection-tokens",
                                             "cursor-pointer": $route.name !== "connection-tokens"
-                                        }'><IconRobot/><span class='mx-3'>API Tokens</span></span>
+                                        }'><IconRobot size='32'/><span class='mx-3'>API Tokens</span></span>
                                     </div>
                                 </div>
                             </div>

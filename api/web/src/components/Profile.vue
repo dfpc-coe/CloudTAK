@@ -24,19 +24,19 @@
                                         <span @click='$router.push(`/profile/groups`)' class="list-group-item list-group-item-action d-flex align-items-center" :class='{
                                             "active": $route.name === "profile-groups",
                                             "cursor-pointer": $route.name !== "profile-groups"
-                                        }'><IconAffiliate/><span class='mx-3'>Channels</span></span>
+                                        }'><IconAffiliate size='32'/><span class='mx-3'>Channels</span></span>
                                         <span @click='$router.push(`/profile/tokens`)' class="list-group-item list-group-item-action d-flex align-items-center" :class='{
                                             "active": $route.name === "profile-tokens",
                                             "cursor-pointer": $route.name !== "profile-tokens"
-                                        }'><IconRobot/><span class='mx-3'>API Tokens</span></span>
+                                        }'><IconRobot size='32'/><span class='mx-3'>API Tokens</span></span>
                                         <span @click='$router.push(`/profile/files`)' class="list-group-item list-group-item-action d-flex align-items-center" :class='{
                                             "active": $route.name === "profile-files",
                                             "cursor-pointer": $route.name !== "profile-files"
-                                        }'><IconFiles/><span class='mx-3'>Files</span></span>
+                                        }'><IconFiles size='32'/><span class='mx-3'>Files</span></span>
                                         <span @click='$router.push(`/profile/jobs`)' class="list-group-item list-group-item-action d-flex align-items-center" :class='{
                                             "active": $route.name === "profile-jobs",
                                             "cursor-pointer": $route.name !== "profile-jobs"
-                                        }'><IconTransform/><span class='mx-3'>Jobs</span></span>
+                                        }'><IconTransform size='32'/><span class='mx-3'>Jobs</span></span>
                                     </div>
                                 </div>
                             </div>

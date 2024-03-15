@@ -5,8 +5,8 @@
         <div class='modal-header'>
             <div class='row'>
                 <div class='col-auto'>
-                    <IconLock v-if='mission.passwordProtected'/>
-                    <IconLockOpen v-else/>
+                    <IconLock size='32' v-if='mission.passwordProtected'/>
+                    <IconLockOpen size='32' v-else/>
                 </div>
                 <div class='col-auto row'>
                     <div class='col-12'>
@@ -25,7 +25,7 @@
                     <label class='px-2 w-100'>Groups (Channels)</label>
                     <div class='mx-1 d-flex' style='padding-right: 15px;'>
                         <input type='text' class='form-control' disabled :value='mission.groups.length ? mission.groups.join(", ") : "None"'/>
-                        <button @click='modal.groups = true' class='btn btn-sm'><IconListSearch class='cursor-pointer mx-2'/></button>
+                        <button @click='modal.groups = true' class='btn btn-sm'><IconListSearch size='32' class='cursor-pointer mx-2'/></button>
                     </div>
                 </div>
 
@@ -34,8 +34,8 @@
                 </TablerInput>
 
                 <label @click='advanced = !advanced' class='subheader mt-3 cursor-pointer'>
-                    <IconSquareChevronRight v-if='!advanced'/>
-                    <IconChevronDown v-else/>
+                    <IconSquareChevronRight size='32' v-if='!advanced'/>
+                    <IconChevronDown size='32' v-else/>
                     Advanced Options
                 </label>
 

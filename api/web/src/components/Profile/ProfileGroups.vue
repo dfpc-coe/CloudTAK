@@ -4,7 +4,7 @@
         <h3 class="card-title">User Groups</h3>
 
         <div class='ms-auto btn-list'>
-            <IconRefresh @click='fetch' class='cursor-pointer' v-tooltip='"Refresh"'/>
+            <IconRefresh @click='fetch' size='32' class='cursor-pointer' v-tooltip='"Refresh"'/>
         </div>
     </div>
     <TablerLoading v-if='loading'/>

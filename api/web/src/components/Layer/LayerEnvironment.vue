@@ -4,11 +4,11 @@
         <h3 class='card-title'>Environment</h3>
         <div class='ms-auto btn-list'>
             <template v-if='!raw && disabled'>
-                <IconCode @click='raw = true' v-tooltip='"Raw View"' class='cursor-pointer'/>
-                <IconSettings @click='disabled = false' class='cursor-pointer'/>
+                <IconCode @click='raw = true' v-tooltip='"Raw View"' size='32' class='cursor-pointer'/>
+                <IconSettings @click='disabled = false' size='32' class='cursor-pointer'/>
             </template>
             <template v-else-if='raw'>
-                <IconX @click='raw = false' v-tooltip='"Close View"' class='cursor-pointer'/>
+                <IconX @click='raw = false' v-tooltip='"Close View"' size='32' class='cursor-pointer'/>
             </template>
         </div>
     </div>

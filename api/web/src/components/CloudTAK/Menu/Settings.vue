@@ -3,7 +3,7 @@
     <template v-if='mode === "callsign"'>
         <div class='col-12 border-bottom border-light'>
             <div class='modal-header px-0 mx-2'>
-                <IconCircleArrowLeft @click='mode = "settings"' class='cursor-pointer'/>
+                <IconCircleArrowLeft @click='mode = "settings"' size='32' class='cursor-pointer'/>
                 <div class='modal-title'>Callsign &amp; Device</div>
                 <div/>
             </div>
@@ -31,7 +31,7 @@
     <template v-if='mode === "display"'>
         <div class='col-12 border-bottom border-light'>
             <div class='modal-header px-0 mx-2'>
-                <IconCircleArrowLeft @click='mode = "settings"' class='cursor-pointer'/>
+                <IconCircleArrowLeft @click='mode = "settings"' size='32' class='cursor-pointer'/>
                 <div class='modal-title'>Display Preferences</div>
                 <div/>
             </div>
@@ -42,7 +42,7 @@
     <template v-else-if='mode === "settings"'>
         <div class='col-12 border-bottom border-light'>
             <div class='modal-header px-0 mx-2'>
-                <IconCircleArrowLeft @click='$emit("close")' class='cursor-pointer'/>
+                <IconCircleArrowLeft @click='$emit("close")' size='32' class='cursor-pointer'/>
                 <div class='modal-title'>Settings</div>
                 <div/>
             </div>

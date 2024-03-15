@@ -3,21 +3,21 @@
     <div class='card-header'>
         <h3 class='card-title'>Style Overrides</h3>
         <div class='ms-auto btn-list'>
-            <IconSettings v-if='disabled' @click='disabled = false' class='cursor-pointer'/>
+            <IconSettings v-if='disabled' @click='disabled = false' size='32' class='cursor-pointer'/>
             <template v-else>
                 <div class='row d-flex mx-2'>
                     <div class="btn-group" role="group">
                         <input v-model='mode' type="radio" class="btn-check" name="type-toolbar" value='basic'>
                         <label @click='mode="basic"' class="btn btn-icon px-3">
-                            <IconAbc/> Basic
+                            <IconAbc size='32'/> Basic
                         </label>
                         <input v-model='mode' type="radio" class="btn-check" name="type-toolbar" value='query'>
                         <label @click='mode="query"' class="btn btn-icon px-3">
-                            <IconCode/> Query
+                            <IconCode size='32'/> Query
                         </label>
                         <input v-model='mode' type="radio" class="btn-check" name="type-toolbar" value='disabled'>
                         <label @click='mode="disabled"' class="btn btn-icon px-3">
-                            <IconBrushOff/> Disabled
+                            <IconBrushOff size='32'/> Disabled
                         </label>
                     </div>
                 </div>
@@ -45,18 +45,18 @@
                 <div class='ms-auto btn-list'>
                     <template v-if='mode === "query" && !disabled'>
                         <button @click='help("query")' class='btn'>
-                            <IconHelp/>
+                            <IconHelp size='32'/>
                         </button>
                         <button v-if='query === null' @click='newQuery' class='btn'>
-                            <IconPlus/>
+                            <IconPlus size='32'/>
                         </button>
                     </template>
                     <template v-else-if='mode === "query"'>
                         <button @click='help("query")' class='btn'>
-                            <IconHelp/>
+                            <IconHelp size='32'/>
                         </button>
                         <button v-if='query' @click='query = null' class='btn'>
-                            <IconX/>
+                            <IconX size='32'/>
                         </button>
                     </template>
                 </div>
@@ -69,7 +69,7 @@
                                 <div class='d-flex'>
                                     <div class='align-self-center' v-text='q.query'></div>
                                     <div class='ms-auto'>
-                                        <div v-if='!disabled' @click.stop='queries.splice(q_idx, 1)' class='btn'><IconTrash/></div>
+                                        <div v-if='!disabled' @click.stop='queries.splice(q_idx, 1)' class='btn'><IconTrash size='32'/></div>
                                     </div>
                                 </div>
                             </div>

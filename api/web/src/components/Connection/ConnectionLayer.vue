@@ -4,7 +4,7 @@
         <h2 class='card-title'>Layers</h2>
 
         <div class='ms-auto btn-list'>
-            <IconPlus v-tooltip='"Create Layer"' @click='$router.push("/layer/new")' class='cursor-pointer'/>
+            <IconPlus v-tooltip='"Create Layer"' @click='$router.push("/layer/new")' size='32' class='cursor-pointer'/>
         </div>
     </div>
 

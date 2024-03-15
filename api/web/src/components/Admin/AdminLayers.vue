@@ -7,14 +7,14 @@
             <IconCloudUpload
                 @click='redeploy'
                 v-tooltip='"Redeploy"'
-                width='24' height='24'
+                size='32'
                 class='cursor-pointer'
             />
 
             <IconRefresh
                 @click='fetchList'
                 v-tooltip='"Refresh"'
-                width='24' height='24'
+                size='32'
                 class='cursor-pointer'
             />
         </div>

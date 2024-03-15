@@ -25,12 +25,12 @@
             <div v-if='!disabled' class='ms-auto'>
                 <TablerDropdown>
                     <template #default>
-                        <IconSettings class='cursor-pointer dropdown-toggle'/>
+                        <IconSettings size='32' class='cursor-pointer dropdown-toggle'/>
                     </template>
                     <template #dropdown>
                         <label class='w-100 subheader d-flex'>
                             <span class='mx-2 d-flex justify-content-center align-items-center'>Iconsets</span>
-                            <IconSearch @click.stop.prevent='params.showFilter = !params.showFilter' class='ms-auto cursor-pointer mx-2'/>
+                            <IconSearch @click.stop.prevent='params.showFilter = !params.showFilter' size='32' class='ms-auto cursor-pointer mx-2'/>
                         </label>
                         <TablerEnum v-model='params.iconset' :options='setsName'/>
                         <TablerInput v-if='params.showFilter' placeholder='Icon Search' v-model='params.filter'/>

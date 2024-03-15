@@ -29,10 +29,10 @@
 
                             <div class='ms-auto'>
                                 <div class='btn-list'>
-                                    <IconAccessPoint v-if='data.mission_sync' class='text-green' v-tooltip='"Mission Sync On"'/>
-                                    <IconAccessPointOff v-else class='text-red' v-tooltip='"Mission Sync Off"'/>
+                                    <IconAccessPoint v-if='data.mission_sync' size='32' class='text-green' v-tooltip='"Mission Sync On"'/>
+                                    <IconAccessPointOff v-else size='32' class='text-red' v-tooltip='"Mission Sync Off"'/>
 
-                                    <IconSettings class='cursor-pointer' @click='$router.push(`/connection/${$route.params.connectionid}/data/${data.id}/edit`)' v-tooltip='"Edit"'/>
+                                    <IconSettings size='32' class='cursor-pointer' @click='$router.push(`/connection/${$route.params.connectionid}/data/${data.id}/edit`)' v-tooltip='"Edit"'/>
                                 </div>
                             </div>
                         </div>
@@ -72,19 +72,19 @@
                                         <span @click='$router.push(`/connection/${$route.params.connectionid}/data/${$route.params.dataid}/groups`)' class="list-group-item list-group-item-action d-flex align-items-center" :class='{
                                             "active": $route.name === "data-groups",
                                             "cursor-pointer": $route.name !== "data-groups"
-                                        }'><IconAffiliate/><span class='mx-3'>Channels</span></span>
+                                        }'><IconAffiliate size='32'/><span class='mx-3'>Channels</span></span>
                                         <span @click='$router.push(`/connection/${$route.params.connectionid}/data/${$route.params.dataid}/files`)' class="list-group-item list-group-item-action d-flex align-items-center" :class='{
                                             "active": $route.name === "data-files",
                                             "cursor-pointer": $route.name !== "data-files"
-                                        }'><IconFiles/><span class='mx-3'>Files</span></span>
+                                        }'><IconFiles size='32'/><span class='mx-3'>Files</span></span>
                                         <span @click='$router.push(`/connection/${$route.params.connectionid}/data/${$route.params.dataid}/layer`)' class="list-group-item list-group-item-action d-flex align-items-center" :class='{
                                             "active": $route.name === "data-layer",
                                             "cursor-pointer": $route.name !== "data-layer"
-                                        }'><IconBuildingBroadcastTower/><span class='mx-3'>Layers</span></span>
+                                        }'><IconBuildingBroadcastTower size='32'/><span class='mx-3'>Layers</span></span>
                                         <span @click='$router.push(`/connection/${$route.params.connectionid}/data/${$route.params.dataid}/jobs`)' class="list-group-item list-group-item-action d-flex align-items-center" :class='{
                                             "active": $route.name === "data-jobs",
                                             "cursor-pointer": $route.name !== "data-jobs"
-                                        }'><IconTransform/><span class='mx-3'>Jobs</span></span>
+                                        }'><IconTransform size='32'/><span class='mx-3'>Jobs</span></span>
                                     </div>
                                 </div>
                             </div>

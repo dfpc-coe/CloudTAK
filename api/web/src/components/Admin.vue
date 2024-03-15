@@ -25,15 +25,15 @@
                                         <span @click='$router.push(`/admin/server`)' class="list-group-item list-group-item-action d-flex align-items-center" :class='{
                                             "active": $route.name === "admin-server",
                                             "cursor-pointer": $route.name !== "admin-server"
-                                        }'><IconServer/><span class='mx-3'>TAK Server</span></span>
+                                        }'><IconServer size='32'/><span class='mx-3'>TAK Server</span></span>
                                         <span @click='$router.push(`/admin/task`)' class="list-group-item list-group-item-action d-flex align-items-center" :class='{
                                             "active": $route.name === "admin-task",
                                             "cursor-pointer": $route.name !== "admin-task"
-                                        }'><IconBrandDocker/><span class='mx-3'>ETL Tasks</span></span>
+                                        }'><IconBrandDocker size='32'/><span class='mx-3'>ETL Tasks</span></span>
                                         <span @click='$router.push(`/admin/layer`)' class="list-group-item list-group-item-action d-flex align-items-center" :class='{
                                             "active": $route.name === "admin-layer",
                                             "cursor-pointer": $route.name !== "admin-layer"
-                                        }'><IconBuildingBroadcastTower/><span class='mx-3'>Layers</span></span>
+                                        }'><IconBuildingBroadcastTower size='32'/><span class='mx-3'>Layers</span></span>
                                     </div>
                                 </div>
                             </div>

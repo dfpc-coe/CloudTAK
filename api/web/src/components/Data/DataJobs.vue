@@ -3,7 +3,7 @@
     <div class='card-header d-flex'>
         <h3 class='card-title'>Data Transforms</h3>
         <div class='ms-auto btn-list'>
-            <IconRefresh @click='fetchList' class='cursor-pointer'/>
+            <IconRefresh @click='fetchList' size='32' class='cursor-pointer'/>
         </div>
     </div>
 
