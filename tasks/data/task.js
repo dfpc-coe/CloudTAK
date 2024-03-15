@@ -105,6 +105,10 @@ export default class Task {
                     description: 'Automatically Converted by @tak-ps/etl',
                     layer: 'out',
                     force: true,
+                    limit: {
+                        features: false,
+                        size: false
+                    },
                     zoom: {
                         min: 0,
                         max: 14
