@@ -63,7 +63,7 @@ export default async function router(schema: Schema, config: Config) {
             const user = await Auth.as_user(config, req);
             const auth = (await config.models.Profile.from(user.email)).auth;
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
-            const features = await api.Mission.latestFeats(req.params.name),
+            const features = await api.Mission.latestFeats(req.params.name);
             return res.json({ type: 'FeatureCollection', features });
         } catch (err) {
             return Err.respond(err, res);
