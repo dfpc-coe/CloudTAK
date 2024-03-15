@@ -32,10 +32,6 @@
                                         <IconBuildingBroadcastTower size='32'/>
                                         <span class="mx-2">Layers</span>
                                     </div>
-                                    <div @click='$router.push("/basemap")' class='d-flex dropdown-item cursor-pointer hover-dark'>
-                                        <IconMap size='32'/>
-                                        <span class="mx-2">Basemaps</span>
-                                    </div>
                                     <div @click='$router.push("/iconset")' class='d-flex dropdown-item cursor-pointer hover-dark'>
                                         <IconPhoto size='32'/>
                                         <span class="mx-2">Iconsets</span>
@@ -103,7 +99,6 @@ import {
     IconHome,
     IconLogout,
     IconUser,
-    IconMap,
     IconFileImport,
     IconPhoto,
     IconNetwork,
@@ -202,7 +197,6 @@ export default {
         IconSettings,
         IconLogout,
         IconUser,
-        IconMap,
         IconNetwork,
         IconFileImport,
         TablerError,
