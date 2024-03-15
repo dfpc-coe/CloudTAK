@@ -136,6 +136,13 @@ export default async function router(schema: Schema, config: Config) {
                 req.body.data = null;
             } else if (req.body.data) {
                 req.body.connection = null;
+
+                const data = await config.models.Data.from(req.body.data);
+                if (data.mission_diff && await config.models.Layer.count({
+                    where: sql`data = ${req.body.data}`
+                }) > 1) {
+                    throw new Err(400, null, 'Only a single layer can be added to a DataSync with Mission Diff Enabled')
+                }
             }
 
             Schedule.is_valid(req.body.cron);
