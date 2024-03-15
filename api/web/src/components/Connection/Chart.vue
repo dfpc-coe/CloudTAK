@@ -4,7 +4,7 @@
         <h2 class='card-title'>Connection Throughput</h2>
 
         <div class='ms-auto btn-list'>
-            <IconRefresh @click='fetchData' class='cursor-pointer'/>
+            <IconRefresh @click='fetchData' size='32' class='cursor-pointer'/>
         </div>
     </div>
     <div class='card-body'>

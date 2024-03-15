@@ -21,7 +21,7 @@
                             <h3 class='card-title'>Imports</h3>
 
                             <div class='ms-auto btn-list'>
-                                <IconRefresh @click='fetchList' v-tooltip='`Refresh Import`' class='cursor-pointer'/>
+                                <IconRefresh @click='fetchList' v-tooltip='`Refresh Import`' size='32' class='cursor-pointer'/>
                             </div>
                         </div>
                         <TablerLoading v-if='loading'/>

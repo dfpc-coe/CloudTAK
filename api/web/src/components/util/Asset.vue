@@ -2,11 +2,11 @@
 <div class='row'>
     <div class='col-12 d-flex'>
         <div class='py-2'>
-            <IconFolder/><span class='px-2' v-text='asset.name'/>
+            <IconFolder size='32'/><span class='px-2' v-text='asset.name'/>
         </div>
 
         <div class='ms-auto'>
-            <div @click='download' class='btn btn-sm'><IconDownload/></div>
+            <div @click='download' class='btn btn-sm'><IconDownload size='32'/></div>
         </div>
     </div>
 </div>

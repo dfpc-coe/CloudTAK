@@ -21,8 +21,8 @@
                             <h3 class='card-title'>Iconset <span v-text='iconset.name'/></h3>
 
                             <div class='ms-auto btn-list'>
-                                <IconPlus v-tooltip='"Create Icon"' @click='$router.push(`/iconset/${$route.params.iconset}/icon`)' class='cursor-pointer'/>
-                                <IconDownload v-tooltip='"Download TAK Zip"' class='cursor-pointer' @click.stop='download'/>
+                                <IconPlus v-tooltip='"Create Icon"' @click='$router.push(`/iconset/${$route.params.iconset}/icon`)' size='32' class='cursor-pointer'/>
+                                <IconDownload v-tooltip='"Download TAK Zip"' size='32' class='cursor-pointer' @click.stop='download'/>
                                 <TablerDelete displaytype='icon' @delete='deleteIconset'/>
                             </div>
                         </div>

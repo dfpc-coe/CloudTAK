@@ -2,7 +2,7 @@
 <div class='col-12 py-2 d-flex hover-dark cursor-pointer'>
     <div class='row col-12 align-items-center'>
         <div class='col-auto'>
-            <IconCircleFilled style='margin-left: 16px;' :class='{
+            <IconCircleFilled style='margin-left: 16px;' size='32' :class='{
                 "text-yellow": contact.team === "Yellow",
                 "text-cyan": contact.team === "Cyan",
                 "text-lime": contact.team === "Green",
@@ -24,8 +24,20 @@
             <div v-text='contact.notes.trim()' class='subheader'></div>
         </div>
         <div class='col-auto ms-auto btn-list'>
-            <IconMessage @click='$emit("chat", contact.uid)' v-if='isChatable(contact)' v-tooltip='"Start Chat"' class='cursor-pointer'/>
-            <IconZoomPan @click='flyTo(contact)' v-if='isZoomable(contact)' v-tooltip='"Zoom To"' class='cursor-pointer'/>
+            <IconMessage
+                @click='$emit("chat", contact.uid)'
+                v-if='isChatable(contact)'
+                v-tooltip='"Start Chat"'
+                size='32'
+                class='cursor-pointer'
+            />
+            <IconZoomPan
+                @click='flyTo(contact)'
+                v-if='isZoomable(contact)'
+                v-tooltip='"Zoom To"'
+                size='32'
+                class='cursor-pointer'
+            />
         </div>
     </div>
 </div>

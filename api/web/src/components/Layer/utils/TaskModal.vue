@@ -14,7 +14,7 @@
             </template>
             <template v-else-if='!version'>
                 <div class='d-flex'>
-                    <IconArrowBack class='mx-3' @click='newtask=null'/>
+                    <IconArrowBack size='32' class='mx-3' @click='newtask=null'/>
                     <h3 class='subtitle-header'>Available Versions</h3>
                 </div>
 
@@ -24,7 +24,7 @@
             </template>
             <template v-else>
                 <div class='d-flex'>
-                    <IconArrowBack class='mx-3' @click='version=null'/>
+                    <IconArrowBack size='32' class='mx-3' @click='version=null'/>
                     <h3 class='subtitle-header'>Selected Task</h3>
                 </div>
 

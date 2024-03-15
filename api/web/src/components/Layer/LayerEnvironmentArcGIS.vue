@@ -31,8 +31,8 @@
     </div>
 
     <label @click='advanced = !advanced' class='subheader mt-3 cursor-pointer'>
-        <IconSquareChevronRight v-if='!advanced'/>
-        <IconChevronDown v-else/>
+        <IconSquareChevronRight v-if='!advanced' size='32'/>
+        <IconChevronDown size='32' v-else/>
         Advanced Options
     </label>
 
@@ -47,7 +47,7 @@
                             v-model='environment.ARCGIS_QUERY'
                         />
                     </div>
-                    <button v-if='!disabled' @click='filterModal = true' class='btn' style='margin-left: 8px; margin-top: 26px;'><IconFilter/> Query Editor</button>
+                    <button v-if='!disabled' @click='filterModal = true' class='btn' style='margin-left: 8px; margin-top: 26px;'><IconFilter size='32'/> Query Editor</button>
                 </div>
             </div>
             <div class="col-12 mt-3">

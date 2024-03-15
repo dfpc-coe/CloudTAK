@@ -6,15 +6,15 @@
                 <div class="btn-group" role="group">
                     <input v-model='mode' type="radio" class="btn-check" name="geom-toolbar" value='point'>
                     <label @click='mode="point"' class="btn btn-icon px-3">
-                        <IconPoint/> Points
+                        <IconPoint size='32'/> Points
                     </label>
                     <input v-model='mode' type="radio" class="btn-check" name="geom-toolbar" value='line'>
                     <label @click='mode="line"' class="btn btn-icon px-3">
-                        <IconLine/> Lines
+                        <IconLine size='32'/> Lines
                     </label>
                     <input v-model='mode' type="radio" class="btn-check" name="geom-toolbar" value='polygon'>
                     <label @click='mode="polygon"' class="btn btn-icon px-3">
-                        <IconPolygon/> Polygons
+                        <IconPolygon size='32'/> Polygons
                     </label>
                 </div>
             </div>

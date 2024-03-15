@@ -4,7 +4,7 @@
         <h1 class='card-title'>Sink Logging</h1>
 
         <div class='ms-auto btn-list'>
-            <IconRefresh @click='fetchData' class='cursor-pointer'/>
+            <IconRefresh @click='fetchData' size='32' class='cursor-pointer'/>
         </div>
     </div>
     <div class='card-body'>

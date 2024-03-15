@@ -8,7 +8,7 @@
                     v-if='mode !== "logs"'
                     @click='invoke'
                     v-tooltip='"Manually Run"'
-                    width='24' height='24'
+                    size='24'
                     class='cursor-pointer'
                 />
 
@@ -16,7 +16,7 @@
                     v-if='mode !== "logs"'
                     @click='mode = "logs"'
                     v-tooltip='"View Logs"'
-                    width='24' height='24'
+                    size='24'
                     class='cursor-pointer'
                 />
 
@@ -24,7 +24,7 @@
                     v-if='mode !== "logs"'
                     @click='redeploy'
                     v-tooltip='"Redeploy"'
-                    width='24' height='24'
+                    size='24'
                     class='cursor-pointer'
                 />
 
@@ -32,7 +32,7 @@
                     v-if='mode !== "status"'
                     @click='mode = "status"'
                     v-tooltip='"View Stack"'
-                    width='24' height='24'
+                    size='24'
                     class='cursor-pointer'
                 />
 
@@ -40,7 +40,7 @@
                     v-if='!loading.small'
                     @click='refresh'
                     v-tooltip='"Refresh"'
-                    width='24' height='24'
+                    size='24'
                     class='cursor-pointer'
                 />
                 <div v-else class='d-flex justify-content-center'>

@@ -4,6 +4,7 @@ import Err from '@openaddresses/batch-error';
 import { GenericMartiResponse } from '../lib/types.js';
 import Auth, { AuthUser, AuthResource } from '../lib/auth.js';
 import Config from '../lib/config.js';
+import { Contact } from '../lib/api/contacts.js'
 import TAKAPI, {
     APIAuthPassword,
     APIAuthCertificate
@@ -95,7 +96,7 @@ export default async function router(schema: Schema, config: Config) {
         name: 'List Contacts',
         group: 'Marti',
         description: 'Helper API to list contacts',
-        res: GenericMartiResponse
+        res: Type.Array(Contact)
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
