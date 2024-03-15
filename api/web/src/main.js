@@ -135,7 +135,6 @@ const router = new VueRouter.createRouter({
 
         { path: '/connection/:connectionid/edit', name: 'connection-edit', component: () => import('./components/ConnectionEdit.vue') },
 
-        { path: '/basemap', name: 'basemaps', component: () => import('./components/BaseMaps.vue') },
         { path: '/basemap/new', name: 'basemap-new', component: () => import('./components/BaseMapEdit.vue') },
         { path: '/basemap/:basemapid', name: 'basemap', component: () => import('./components/BaseMap.vue') },
         { path: '/basemap/:basemapid/edit', name: 'basemap-edit', component: () => import('./components/BaseMapEdit.vue') },
