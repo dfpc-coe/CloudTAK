@@ -468,9 +468,13 @@ export default async function router(schema: Schema, config: Config) {
 
                 pooledClient = await config.conns.get(data.connection);
 
-                for (const feat of req.body.features) {
-                    feat.properties.dest = [{ mission: data.name }];
-                    cots.push(CoT.from_geojson(feat))
+                if (data.mission_diff) {
+
+                } else {
+                    for (const feat of req.body.features) {
+                        feat.properties.dest = [{ mission: data.name }];
+                        cots.push(CoT.from_geojson(feat))
+                    }
                 }
             } else {
                 throw new Err(400, null, 'Either connection or data must be set');
