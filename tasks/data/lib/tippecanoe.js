@@ -63,6 +63,7 @@ export default class Tippecanoe {
             if (options.quiet) base.concat(['--quiet']);
 
 
+            console.log(`tippecanoe ${base}`);
             const tippecanoe = CP.spawn('tippecanoe', base, {
                 env: process.env
             })

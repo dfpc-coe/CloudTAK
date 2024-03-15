@@ -52,7 +52,7 @@
                     </TablerRange>
                 </template>
                 <template v-else-if='["fill-color", "line-color", "circle-color"].includes(p)'>
-                    <TablerColour label='Colour' v-model='isEditing.single.paint[p]' :min='0' :max='1' :step='0.1'/>
+                    <TablerInput class='w-100' type='color' label='Colour' v-model='isEditing.single.paint[p]'/>
                 </template>
                 <template v-else>
                     <span v-text='p'/>
@@ -129,7 +129,6 @@ import {
     TablerDelete,
     TablerLoading,
     TablerInput,
-    TablerColour,
     TablerRange
 } from '@tak-ps/vue-tabler';
 import {
@@ -207,7 +206,6 @@ export default {
     },
     components: {
         TablerRange,
-        TablerColour,
         TablerInput,
         TablerLoading,
         TablerDelete,
