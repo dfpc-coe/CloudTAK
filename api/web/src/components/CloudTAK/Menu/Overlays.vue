@@ -6,7 +6,6 @@
                 <IconCircleArrowLeft @click='isEditing.single = false' size='32' class='cursor-pointer'/>
 
                 <div class='modal-title'>
-                    <IconPaintFilled v-if='isEditing.single.type === "fill"' size='32'/>
                     <span v-text='isEditing.single.id'/>
                 </div>
                 <div class='btn-list'></div>
@@ -133,7 +132,6 @@ import {
 } from '@tak-ps/vue-tabler';
 import {
     IconCircleArrowLeft,
-    IconPaintFilled,
     IconMaximize,
     IconVector,
     IconEyeOff,
@@ -212,7 +210,6 @@ export default {
         IconMaximize,
         IconCircleArrowLeft,
         IconEye,
-        IconPaintFilled,
         IconEyeOff,
         IconPlus,
         IconVector,
