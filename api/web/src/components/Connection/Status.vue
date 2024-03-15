@@ -1,7 +1,7 @@
 <template>
 <div class='d-flex justify-content-center align-items-center' style='width: 36px;'>
     <template v-if='!connection.enabled'>
-        <IconPlayerPause/>
+        <IconPlayerPause size='32'/>
     </template>
     <template v-else>
         <span class="status-indicator status-indicator-animated" :class='{

@@ -2,7 +2,11 @@
 <div>
     <div class="card-header">
         <template v-if='task'>
-            <IconCircleArrowLeft @click='task = null' class='cursor-pointer'/>
+            <IconCircleArrowLeft
+                @click='task = null'
+                size='32'
+                class='cursor-pointer'
+            />
             <h3 class='mx-2 card-title' v-text='task'></h3>
         </template>
         <template v-else>

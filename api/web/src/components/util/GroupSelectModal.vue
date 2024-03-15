@@ -9,8 +9,8 @@
             <TablerLoading v-if='loading.groups'  desc='Loading Channels'/>
             <template v-else>
                 <div @click='updateGroup(group)' :key='group.name' v-for='group in groups' class='col-12 cursor-pointer'>
-                    <IconCircleFilled  v-if='selected.has(group.name)' class='cursor-pointer'/>
-                    <IconCircle v-else class='cursor-pointer'/>
+                    <IconCircleFilled  v-if='selected.has(group.name)' size='32' class='cursor-pointer'/>
+                    <IconCircle v-else size='32' class='cursor-pointer'/>
                     <span v-text='group.name' class='mx-2'/>
                 </div>
                 <div class="col-12 mt-3">

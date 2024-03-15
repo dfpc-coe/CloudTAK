@@ -10,7 +10,7 @@
                         <div class='ms-auto'>
                             <div class='btn-list'>
                                 <a @click='query = !query' class="cursor-pointer btn btn-secondary">
-                                    <IconSearch/>
+                                    <IconSearch size='32'/>
                                 </a>
                                 <a @click='$router.push("/layer/new")' class="cursor-pointer btn btn-primary">
                                     New Layer
@@ -61,6 +61,7 @@
                                         <div class='btn-list'>
                                             <IconSettings
                                                 class='cursor-pointer'
+                                                size='32'
                                                 v-tooltip='"Edit Layer"' 
                                                 @click='$router.push(`/layer/${layer.id}/edit`)'
                                             />

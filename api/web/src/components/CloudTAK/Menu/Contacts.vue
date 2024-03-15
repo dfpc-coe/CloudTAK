@@ -2,10 +2,10 @@
 <div>
     <div class='col-12 border-bottom border-light'>
         <div class='modal-header px-0 mx-2'>
-            <IconCircleArrowLeft @click='$emit("close")' class='cursor-pointer'/>
+            <IconCircleArrowLeft @click='$emit("close")' size='32' class='cursor-pointer'/>
             <div class='modal-title'>Contacts</div>
             <div class='btn-list'>
-                <IconRefresh v-if='!loading' @click='fetchList' class='cursor-pointer' v-tooltip='"Refresh"'/>
+                <IconRefresh v-if='!loading' @click='fetchList' size='32' class='cursor-pointer' v-tooltip='"Refresh"'/>
             </div>
         </div>
     </div>

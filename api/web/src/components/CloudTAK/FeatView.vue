@@ -8,10 +8,10 @@
             <div class='card-title mx-2' v-text='feat.properties.name || "No Name"'></div>
         </div>
         <div class='col-auto btn-list my-2 ms-auto d-flex align-items-center mx-2'>
-            <IconZoomPan @click='zoomTo' class='cursor-pointer' v-tooltip='"Zoom To"'/>
+            <IconZoomPan @click='zoomTo' size='32' class='cursor-pointer' v-tooltip='"Zoom To"'/>
 
-            <IconCode v-if='mode === "default"' @click='mode = "raw"' class='cursor-pointer' v-tooltip='"Raw View"'/>
-            <IconX v-if='mode === "raw"' @click='mode = "default"' class='cursor-pointer' v-tooltip='"Default View"'/>
+            <IconCode v-if='mode === "default"' @click='mode = "raw"' size='32' class='cursor-pointer' v-tooltip='"Raw View"'/>
+            <IconX v-if='mode === "raw"' @click='mode = "default"' size='32' class='cursor-pointer' v-tooltip='"Default View"'/>
         </div>
     </div>
 

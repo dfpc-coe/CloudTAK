@@ -19,6 +19,7 @@
                 <div class="dropdown">
                     <div class="dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
                         <IconSettings
+                            size='32'
                             class='cursor-pointer dropdown-toggle'
                         />
                     </div>

@@ -27,9 +27,9 @@
 
                                 <div class='ms-auto'>
                                     <div class='btn-list'>
-                                        <IconShare2 v-tooltip='"Share BaseMap"' class='cursor-pointer' @click='share = true'/>
-                                        <IconDownload v-tooltip='"Download TAK XML"' class='cursor-pointer' @click='download'/>
-                                        <IconSettings v-tooltip='"Edit Basemap"' class='cursor-pointer' @click='$router.push(`/basemap/${basemap.id}/edit`)'/>
+                                        <IconShare2 v-tooltip='"Share BaseMap"' size='32' class='cursor-pointer' @click='share = true'/>
+                                        <IconDownload v-tooltip='"Download TAK XML"' size='32' class='cursor-pointer' @click='download'/>
+                                        <IconSettings v-tooltip='"Edit Basemap"' size='32' class='cursor-pointer' @click='$router.push(`/basemap/${basemap.id}/edit`)'/>
                                     </div>
                                 </div>
                             </div>

@@ -2,7 +2,7 @@
 <div>
     <div class='col-12 border-bottom border-light'>
         <div class='modal-header px-0 mx-2'>
-            <IconCircleArrowLeft @click='$emit("close")' class='cursor-pointer'/>
+            <IconCircleArrowLeft @click='$emit("close")' size='32' class='cursor-pointer'/>
             <div class='modal-title' v-text='contact.properties.callsign'></div>
             <div/>
         </div>

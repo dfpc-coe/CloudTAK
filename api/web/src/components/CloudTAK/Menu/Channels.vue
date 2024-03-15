@@ -2,10 +2,10 @@
 <div>
     <div class='col-12 border-bottom border-light'>
         <div class='modal-header px-0 mx-2'>
-            <IconCircleArrowLeft @click='$emit("close")' class='cursor-pointer'/>
+            <IconCircleArrowLeft @click='$emit("close")' size='32' class='cursor-pointer'/>
             <div class='modal-title'>Channels</div>
             <div class='btn-list'>
-                <IconRefresh v-if='!loading' @click='fetchList' class='cursor-pointer' v-tooltip='"Refresh"'/>
+                <IconRefresh v-if='!loading' @click='fetchList' size='32' class='cursor-pointer' v-tooltip='"Refresh"'/>
             </div>
         </div>
     </div>
@@ -16,8 +16,8 @@
             <div class='hover-dark'>
                 <div class='px-2'>
                     <div class='col-12 py-2 px-2 d-flex align-items-center'>
-                        <IconEye v-if='ch.active' @click='setStatus(ch, false)' v-tooltip='"Disable"' class='cursor-pointer'/>
-                        <IconEyeOff v-else @click='setStatus(ch, true)' v-tooltip='"Enable"' class='cursor-pointer'/>
+                        <IconEye v-if='ch.active' @click='setStatus(ch, false)' v-tooltip='"Disable"' size='32' class='cursor-pointer'/>
+                        <IconEyeOff v-else @click='setStatus(ch, true)' v-tooltip='"Enable"' size='32' class='cursor-pointer'/>
                         <span class="mx-2" v-text='ch.name'></span>
                     </div>
                 </div>

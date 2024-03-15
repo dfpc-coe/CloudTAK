@@ -14,8 +14,8 @@
         <div v-if='profile' class='position-absolute bottom-0 begin-0 text-white' style='z-index: 1; width: 200px; background-color: rgba(0, 0, 0, 0.5);'>
             <div class='d-flex align-items-center'>
                 <div class='mx-2 hover-dark rounded py-2 px-2 cursor-pointer' v-tooltip='"Set Location"'>
-                    <IconLocationOff @click='setLocation' v-if='!profile.tak_loc'/>
-                    <IconLocation @click='setLocation' v-else/>
+                    <IconLocationOff size='32' @click='setLocation' v-if='!profile.tak_loc'/>
+                    <IconLocation size='32' @click='setLocation' v-else/>
                 </div>
                 <div
                     v-text='profile.tak_callsign'
@@ -34,8 +34,8 @@
                 <svg width="40" height="40" :transform='`rotate(${360 - bearing})`' viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" /><path d="M12 8l-4 4" /><path d="M12 8v8" /><path d="M16 12l-4 -4" /></svg>
                 <div v-if='bearing !== 0' class='text-center' v-text='humanBearing'></div>
             </div>
-            <IconFocus2 v-if='!radial.cot && !locked.length' @click='getLocation' :size='40' class='cursor-pointer'/>
-            <IconLockAccess v-else-if='!radial.cot' @click='locked.splice(0, locked.length)' :size='40' class='cursor-pointer'/>
+            <IconFocus2 v-if='!radial.cot && !locked.length' @click='getLocation' size='40' class='cursor-pointer'/>
+            <IconLockAccess v-else-if='!radial.cot' @click='locked.splice(0, locked.length)' size='40' class='cursor-pointer'/>
 
             <div class='mt-3'>
                 <IconPlus size='40' @click='setZoom(getZoom() + 1);' class='cursor-pointer'/>

@@ -5,7 +5,7 @@
         <div class='row g-2 rounded px-2 bg-gray-500'>
             <template v-if='feat.geometry.type === "Point"'>
                 <div class='col-12'>
-                    <IconSelect label='Point Icon' v-model='feat.properties.icon'/>
+                    <IconSelect label='Point Icon' v-model='feat.properties.icon' size='32'/>
                 </div>
                 <div class='col-12'>
                     <label class='subheader'>Point Colour</label>

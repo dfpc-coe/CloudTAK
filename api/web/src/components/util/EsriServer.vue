@@ -4,10 +4,10 @@
         <h1 class='subheader px-3 col-9 text-truncate' v-text='server'></h1>
 
         <div class='ms-auto btn-list mx-3'>
-            <IconRefresh v-if='!disabled && !err && !loading' @click='getList' v-tooltip='"Refresh"' class='cursor-pointer'/>
+            <IconRefresh v-if='!disabled && !err && !loading' @click='getList' v-tooltip='"Refresh"' size='32' class='cursor-pointer'/>
 
-            <IconArrowBack v-if='!disabled && !err && !loading' @click='back' v-tooltip='"Back"' class='cursor-pointer'/>
-            <IconX v-if='!disabled' @click='$emit("close")' v-tooltip='"Close Explorer"' class='cursor-pointer'/>
+            <IconArrowBack v-if='!disabled && !err && !loading' @click='back' v-tooltip='"Back"' size='32' class='cursor-pointer'/>
+            <IconX v-if='!disabled' @click='$emit("close")' v-tooltip='"Close Explorer"' size='32' class='cursor-pointer'/>
         </div>
     </div>
 
@@ -28,11 +28,11 @@
                     <tbody><tr @click='listpath.push(l)' :key='l.id' v-for='l in list'>
                         <td>
                             <template v-if='l.type === "folder"'>
-                                <IconFolder/>
+                                <IconFolder size='32'/>
                                 <span v-text='l.name' class='mx-3'/>
                             </template>
                             <template v-else>
-                                <IconMap/>
+                                <IconMap size='32'/>
                                 <span v-text='l.name' class='mx-3'/>
                             </template>
                         </td>
@@ -70,9 +70,9 @@
                     <tbody><tr @click='!disabled && (layer && layer.id === lyr.id) ? layer = nulll : layer = lyr' :key='lyr.id' v-for='lyr in container.layers'>
                         <td>
                             <div class='d-flex'>
-                                <IconMap/><span v-text='lyr.name' class='mx-3'/>
+                                <IconMap size='32'/><span v-text='lyr.name' class='mx-3'/>
                                 <div class='ms-auto btn-list'>
-                                    <IconCheck v-if='layer && layer.id === lyr.id'/>
+                                    <IconCheck v-if='layer && layer.id === lyr.id' size='32'/>
                                     <TablerDelete v-if='!readonly && !disabled' @delete='deleteLayer(lyr)' displaytype='icon' label='Delete Layer'/>
                                 </div>
                             </div>

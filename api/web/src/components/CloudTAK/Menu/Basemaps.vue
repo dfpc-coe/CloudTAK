@@ -2,11 +2,11 @@
 <div>
     <div class='col-12 border-bottom border-light'>
         <div class='modal-header px-0 mx-2'>
-            <IconCircleArrowLeft @click='$emit("close")' class='cursor-pointer'/>
+            <IconCircleArrowLeft @click='$emit("close")' size='32' class='cursor-pointer'/>
             <div class='modal-title'>BaseMaps</div>
             <div class='btn-list'>
-                <IconPlus @click='$router.push("/basemap/new")' class='cursor-pointer' v-tooltip='"Create BaseMap"'/>
-                <IconRefresh v-if='!loading' @click='fetchList' class='cursor-pointer' v-tooltip='"Refresh"'/>
+                <IconPlus @click='$router.push("/basemap/new")' size='32' class='cursor-pointer' v-tooltip='"Create BaseMap"'/>
+                <IconRefresh v-if='!loading' @click='fetchList' size='32' class='cursor-pointer' v-tooltip='"Refresh"'/>
             </div>
         </div>
     </div>
@@ -22,8 +22,8 @@
                 <span class='mx-2' style='font-size: 18px;' v-text='basemap.name'/>
 
                 <div class='ms-auto btn-list'>
-                    <IconShare2 v-if='false' v-tooltip='"Share BaseMap"' class='cursor-pointer' @click='share(basemap)'/>
-                    <IconSettings v-tooltip='"Edit Basemap"' class='cursor-pointer' @click='$router.push(`/basemap/${basemap.id}/edit`)'/>
+                    <IconShare2 v-if='false' v-tooltip='"Share BaseMap"' size='32' class='cursor-pointer' @click='share(basemap)'/>
+                    <IconSettings v-tooltip='"Edit Basemap"' size='32' class='cursor-pointer' @click='$router.push(`/basemap/${basemap.id}/edit`)'/>
                 </div>
             </div>
         </div>

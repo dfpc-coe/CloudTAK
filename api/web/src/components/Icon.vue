@@ -22,7 +22,7 @@
 
                             <div class='ms-auto btn-list'>
                                 <TablerDelete displaytype='icon' @delete='deleteIcon'/>
-                                <IconSettings @click='$router.push(`/iconset/${$route.params.iconset}/icon/${encodeURIComponent($route.params.icon)}/edit`)' class='cursor-pointer'/>
+                                <IconSettings @click='$router.push(`/iconset/${$route.params.iconset}/icon/${encodeURIComponent($route.params.icon)}/edit`)' size='32' class='cursor-pointer'/>
                             </div>
                         </div>
                         <div class='card-body'>

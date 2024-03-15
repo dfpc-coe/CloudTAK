@@ -30,9 +30,9 @@
             <div class='d-flex'>
                 <label class='form-label' v-text='key'/>
                 <div class='ms-auto'>
-                    <IconTrash v-if='!disabled && schema.properties[key].display === "table" && schema.properties[key].items.properties' @click='this.data[key].splice(0, this.data[key].length)' class='cursor-pointer'/>
-                    <IconDatabaseImport v-if='!disabled && schema.properties[key].display === "table" && schema.properties[key].items.properties' @click='importModal(Object.keys(schema.properties[key].items.properties), data[key])' class='cursor-pointer'/>
-                    <IconPlus v-if='!disabled' @click='push(key)' class='cursor-pointer'/>
+                    <IconTrash v-if='!disabled && schema.properties[key].display === "table" && schema.properties[key].items.properties' @click='this.data[key].splice(0, this.data[key].length)' size='32' class='cursor-pointer'/>
+                    <IconDatabaseImport v-if='!disabled && schema.properties[key].display === "table" && schema.properties[key].items.properties' @click='importModal(Object.keys(schema.properties[key].items.properties), data[key])' size='32' class='cursor-pointer'/>
+                    <IconPlus v-if='!disabled' @click='push(key)' size='32' class='cursor-pointer'/>
                 </div>
             </div>
 
@@ -58,8 +58,8 @@
                                                     <TablerInput v-model='arr[prop]' class='w-full'/>
                                                 </div>
                                                 <div class='ms-auto btn-list' style='padding-left: 12px;'>
-                                                    <IconCheck @click='removeEdit(key, arr, i)' class='my-1 cursor-pointer'/>
-                                                    <IconTrash @click='remove(key, arr, i)' class='my-1 cursor-pointer'/>
+                                                    <IconCheck @click='removeEdit(key, arr, i)' size='32' class='my-1 cursor-pointer'/>
+                                                    <IconTrash @click='remove(key, arr, i)' size='32' class='my-1 cursor-pointer'/>
                                                 </div>
                                             </div>
                                         </template>
@@ -72,7 +72,7 @@
                                             <div class='d-flex'>
                                                 <span v-text='arr[prop]' class='w-full'/>
                                                 <div class='ms-auto' style='padding-left: 12px;'>
-                                                    <IconPencil @click='edit[key].set(arr, true)' class='my-1 cursor-pointer'/>
+                                                    <IconPencil @click='edit[key].set(arr, true)' size='32' class='my-1 cursor-pointer'/>
                                                 </div>
                                             </div>
                                         </template>
@@ -92,7 +92,7 @@
                     <div class='d-flex'>
                         <div class='mx-2 my-2'>Entry <span v-text='i + 1'/></div>
                         <div class='ms-auto mx-2 my-2'>
-                            <IconTrash v-if='!disabled' @click='data[key].splice(i, 1)' class='cursor-pointer'/>
+                            <IconTrash v-if='!disabled' @click='data[key].splice(i, 1)' size='32' class='cursor-pointer'/>
                         </div>
                     </div>
 

@@ -4,9 +4,9 @@
         <h3 class='card-title'>Layer Schema</h3>
 
         <div class='ms-auto btn-list'>
-            <IconPlus v-if='!disabled' v-tooltip='"Manual Addition"' @click='create = true' class='cursor-pointer'/>
-            <IconWorldDownload v-if='!disabled' v-tooltip='"Automated Schema"' @click='fetchSchema' class='cursor-pointer'/>
-            <IconSettings @click='disabled = false' class='cursor-pointer'/>
+            <IconPlus v-if='!disabled' v-tooltip='"Manual Addition"' @click='create = true' size='32' class='cursor-pointer'/>
+            <IconWorldDownload v-if='!disabled' v-tooltip='"Automated Schema"' @click='fetchSchema' size='32' class='cursor-pointer'/>
+            <IconSettings @click='disabled = false' size='32' class='cursor-pointer'/>
         </div>
     </div>
 
@@ -29,16 +29,16 @@
                     <td>
                         <span class='mx-3'>
                             <template v-if='field.type === "string"'>
-                                <IconAlphabetLatin/>
+                                <IconAlphabetLatin size='32'/>
                             </template>
                             <template v-else-if='field.type === "number"'>
-                                <IconDecimal/>
+                                <IconDecimal size='32'/>
                             </template>
                             <template v-else-if='field.type === "integer"'>
-                                <IconSort09/>
+                                <IconSort09 size='32'/>
                             </template>
                             <template v-else>
-                                <IconBinary/>
+                                <IconBinary size='32'/>
                             </template>
                         </span>
                         <span v-text='field.name'/>
@@ -50,7 +50,7 @@
                         <div class='d-flex'>
                             <span v-if='field.required' class='badge mx-1 mb-1 bg-red text-white'>Required</span>
                             <div class='ms-auto'>
-                                <IconTrash v-if='!disabled' @click.stop='schema.splice(field_it, 1)' class='cursor-pointer'/>
+                                <IconTrash v-if='!disabled' @click.stop='schema.splice(field_it, 1)' size='32' class='cursor-pointer'/>
                             </div>
                         </div>
                     </td>

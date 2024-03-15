@@ -5,8 +5,8 @@
         <div class='d-flex px-1 py-1'>
             <div class='row'>
                 <div class='col-auto d-flex justify-content-center align-items-center mx-2'>
-                    <IconLock v-if='mission.passwordProtected'/>
-                    <IconLockOpen v-else/>
+                    <IconLock v-if='mission.passwordProtected' size='32'/>
+                    <IconLockOpen v-else size='32'/>
                 </div>
                 <div class='col-auto row'>
                     <div class='col-12'>
@@ -28,13 +28,13 @@
                     <!--<IconPencil class='cursor-pointer' v-tooltip='"Edit"'/>-->
                 </template>
                 <template v-else-if='mode === "contents"'>
-                    <IconPlus v-if='!upload' @click='upload = true' v-tooltip='"Upload File"' class='cursor-pointer'/>
+                    <IconPlus v-if='!upload' @click='upload = true' v-tooltip='"Upload File"' size='32' class='cursor-pointer'/>
                 </template>
                 <template v-else-if='mode === "logs"'>
-                    <IconPlus @click='createLog = ""' v-tooltip='"Create Log"' class='cursor-pointer'/>
+                    <IconPlus @click='createLog = ""' v-tooltip='"Create Log"' size='32' class='cursor-pointer'/>
                 </template>
 
-                <IconRefresh v-if='!loading.initial' @click='refresh' class='cursor-pointer' v-tooltip='"Refresh"'/>
+                <IconRefresh v-if='!loading.initial' @click='refresh' size='32' class='cursor-pointer' v-tooltip='"Refresh"'/>
             </div>
         </div>
         <TablerLoading v-if='loading.mission' desc='Loading Mission'/>
@@ -43,7 +43,7 @@
         <template v-else-if='this.initial.passwordProtected && !password'>
             <div class='modal-body'>
                 <div class='d-flex justify-content-center py-3'>
-                    <IconLock width='32' height='32' />
+                    <IconLock size='32'/>
                 </div>
                 <h3 class='text-center'>Mission Locked</h3>
                 <div class='col-12 d-flex pt-2'>
@@ -60,23 +60,23 @@
                     <div @click='mode = "info"' class='px-2 py-2' :class='{
                         "bg-blue-lt": mode === "info",
                         "cursor-pointer": mode !== "info"
-                    }'><IconInfoSquare v-tooltip='"Metadata"'/></div>
+                    }'><IconInfoSquare size='32' v-tooltip='"Metadata"'/></div>
                     <div @click='mode = "users"' class='px-2 py-2' :class='{
                         "bg-blue-lt": mode === "users",
                         "cursor-pointer": mode !== "users"
-                    }'><IconUsers v-tooltip='"Users"'/></div>
+                    }'><IconUsers size='32' v-tooltip='"Users"'/></div>
                     <div @click='mode = "timeline"' class='px-2 py-2' :class='{
                         "bg-blue-lt": mode === "timeline",
                         "cursor-pointer": mode !== "timeline"
-                    }'><IconTimeline v-tooltip='"Timeline"'/></div>
+                    }'><IconTimeline size='32' v-tooltip='"Timeline"'/></div>
                     <div @click='mode = "logs"' class='px-2 py-2' :class='{
                         "bg-blue-lt": mode === "logs",
                         "cursor-pointer": mode !== "logs"
-                    }'><IconArticle v-tooltip='"Logs"'/></div>
+                    }'><IconArticle size='32' v-tooltip='"Logs"'/></div>
                     <div @click='mode = "contents"' class='px-2 py-2' :class='{
                         "bg-blue-lt": mode === "contents",
                         "cursor-pointer": mode !== "contents"
-                    }'><IconFiles v-tooltip='"Contents"'/></div>
+                    }'><IconFiles size='32' v-tooltip='"Contents"'/></div>
                 </div>
                 <div class="mx-2 my-2" style='width: calc(100% - 40px);'>
                     <template v-if='mode === "info"'>
@@ -137,7 +137,7 @@
                                 </div>
                                 <div class='ms-auto btn-list'>
                                     <TablerDelete @delete='deleteFile(content.data)' displaytype='icon'/>
-                                    <a :href='downloadFile(content.data)' v-tooltip='"Download Asset"'><IconDownload class='cursor-pointer'/></a>
+                                    <a :href='downloadFile(content.data)' v-tooltip='"Download Asset"'><IconDownload size='32' class='cursor-pointer'/></a>
                                 </div>
                             </div>
                         </template>
@@ -160,16 +160,16 @@
                         <div v-else class='rows overflow-auto' style='height: 50vh;'>
                             <div :key='change' v-for='change in changes' class='col-12 hover-dark px-2 py-1'>
                                 <template v-if='change.type === "CREATE_MISSION"'>
-                                    <IconVolcano/><span class='mx-2' v-text='`Mission Created: ${change.missionName}`'/>
+                                    <IconVolcano size='32'/><span class='mx-2' v-text='`Mission Created: ${change.missionName}`'/>
                                 </template>
                                 <template v-else-if='change.type === "ADD_CONTENT" && change.contentResource'>
-                                    <IconFile/><span class='mx-2' v-text='change.contentResource.name'/>
+                                    <IconFile size='32'/><span class='mx-2' v-text='change.contentResource.name'/>
                                 </template>
                                 <template v-else-if='change.type === "ADD_CONTENT" && change.details'>
-                                    <IconPolygon/><span class='mx-2' v-text='`${change.details.callsign} (${change.details.type})`'/>
+                                    <IconPolygon size='32'/><span class='mx-2' v-text='`${change.details.callsign} (${change.details.type})`'/>
                                 </template>
                                 <template v-else-if='change.type === "REMOVE_CONTENT" && change.contentResource'>
-                                    <IconFileX/><span class='mx-2' v-text='change.contentResource.name'/>
+                                    <IconFileX size='32'/><span class='mx-2' v-text='change.contentResource.name'/>
                                 </template>
                                 <template v-else>
                                     <span v-text='change'/>
@@ -200,7 +200,7 @@
                                     <label class='subheader ms-auto' v-text='log.created'/>
                                 </div>
                                 <div class='col-12 position-relative'>
-                                    <IconTrash @click='deleteLog(log)' class='position-absolute cursor-pointer end-0 mx-2 my-2'/>
+                                    <IconTrash @click='deleteLog(log)' size='32' class='position-absolute cursor-pointer end-0 mx-2 my-2'/>
                                     <pre v-text='log.content || "None"'/>
                                 </div>
                             </div>
