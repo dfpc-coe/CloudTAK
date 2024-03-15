@@ -36,10 +36,6 @@
                                         <IconPhoto size='32'/>
                                         <span class="mx-2">Iconsets</span>
                                     </div>
-                                    <div @click='$router.push("/import")' class='d-flex dropdown-item cursor-pointer hover-dark'>
-                                        <IconFileImport size='32'/>
-                                        <span class="mx-2">Imports</span>
-                                    </div>
                                     <div @click='$router.push("/admin")' class='d-flex dropdown-item cursor-pointer hover-dark'>
                                         <IconSettings size='32'/>
                                         <span class='mx-2'>Server</span>

@@ -56,6 +56,11 @@
                 @close='mode = null'
             />
         </template>
+        <template v-else-if='mode === "imports"'>
+            <MenuImports
+                @close='mode = null'
+            />
+        </template>
         <template v-else>
             <div class='col-12 border-bottom border-light'>
                 <div class='modal-header px-0 mx-2 align-center'>
@@ -92,6 +97,10 @@
                 <IconMessage size='32'/>
                 <span class='mx-2' style='font-size: 18px;'>Chats</span>
             </div>
+            <div @click='mode = "imports"' class='cursor-pointer col-12 py-2 px-3 d-flex align-items-center hover-dark'>
+                <IconFileImport size='32'/>
+                <span class='mx-2' style='font-size: 18px;'>Imports</span>
+            </div>
         </template>
     </div>
 </div>
@@ -105,8 +114,10 @@ import {
     IconSettings,
     IconAmbulance,
     IconBoxMultiple,
+    IconFileImport,
     IconAffiliate,
 } from '@tabler/icons-vue';
+import MenuImports from './Menu/Imports.vue';
 import MenuBasemaps from './Menu/Basemaps.vue';
 import MenuOverlays from './Menu/Overlays.vue';
 import MenuDatas from './Menu/Datas.vue';
@@ -132,6 +143,7 @@ export default {
         MenuContacts,
         MenuChannels,
         MenuMissions,
+        MenuImports,
         MenuChats,
         MenuChat,
         MenuDatas,
@@ -139,6 +151,7 @@ export default {
         IconAffiliate,
         IconAmbulance,
         IconSettings,
+        IconFileImport,
         IconUsers,
         IconMap
     }
