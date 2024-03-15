@@ -50,20 +50,20 @@ export default class Tippecanoe {
                 '-o', output_path
             ];
 
-            base = base.concat(['-l', options.layer || 'out']);
+            base.push(...['-l', options.layer || 'out']);
 
-            if (options.force) base = base.concat(['-f']);
-            if (options.name) base = base.concat(['-n', `"${options.name}"`]);
-            if (options.attribution) base = base.concat(['-A', `"${options.attribution}"`]);
-            if (options.description) base = base.concat(['-N', `"${options.description}"`]);
-            if (options.zoom.max) base = base.concat(['--maximum-zoom', options.zoom.max]);
-            if (options.zoom.min) base = base.concat(['--minimum-zoom', options.zoom.min]);
-            if (options.limit.features === false) base.concat(['--no-feature-limit']);
-            if (options.limit.size === false) base.concat(['--no-tile-size-limit']);
-            if (options.quiet) base.concat(['--quiet']);
+            if (options.force) base.push('-f');
+            if (options.name) base.push(...['-n', `"${options.name}"`]);
+            if (options.attribution) base.push(...['-A', `"${options.attribution}"`]);
+            if (options.description) base.concat(...['-N', `"${options.description}"`]);
+            if (options.zoom.max) base.push(...['--maximum-zoom', options.zoom.max]);
+            if (options.zoom.min) base.push(...['--minimum-zoom', options.zoom.min]);
+            if (options.limit.features === false) base.push('--no-feature-limit');
+            if (options.limit.size === false) base.push('--no-tile-size-limit');
+            if (options.quiet) base.push('--quiet');
 
 
-            console.log(`tippecanoe ${base}`);
+            console.log(`tippecanoe ${base.join(' ')}`);
             const tippecanoe = CP.spawn('tippecanoe', base, {
                 env: process.env
             })
