@@ -123,6 +123,7 @@ export const Data = pgTable('data', {
     description: text('description').notNull().default(''),
     auto_transform: boolean('auto_transform').notNull().default(false),
     mission_sync: boolean('mission_sync').notNull().default(false),
+    mission_diff: boolean('mission_diff').notNull().default(false),
     mission_role: text('mission_role').notNull().default('MISSION_SUBSCRIBER'),
     mission_token: text('mission_token'),
     mission_groups: text('mission_groups').array().notNull().default([]),
