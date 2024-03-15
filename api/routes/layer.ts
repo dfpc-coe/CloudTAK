@@ -469,7 +469,13 @@ export default async function router(schema: Schema, config: Config) {
                 pooledClient = await config.conns.get(data.connection);
 
                 if (data.mission_diff) {
+                    const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(pooledClient.config.auth.cert, pooledClient.config.auth.key));
+                    const existFeats = new Set()
+                    const inputFeats = new Set()
 
+                    const features = await api.Mission.latestFeats(data.name);
+
+                    console.error(features)
                 } else {
                     for (const feat of req.body.features) {
                         feat.properties.dest = [{ mission: data.name }];
