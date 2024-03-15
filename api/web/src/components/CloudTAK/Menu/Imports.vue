@@ -12,7 +12,7 @@
     <TablerLoading v-if='loading'/>
     <TablerNone v-else-if='!list.items.length' label='Imports' :create='false'/>
     <template v-else>
-        <div :key='imported.id' v-for='imported in list.items'>
+        <div @click='$router.push(`/import/${imported.id}`)' :key='imported.id' v-for='imported in list.items'>
             <div class='cursor-pointer col-12 py-2 px-3 d-flex align-items-center hover-dark'>
                 <div class='col-auto'>
                     <Status :status='imported.status'/>
