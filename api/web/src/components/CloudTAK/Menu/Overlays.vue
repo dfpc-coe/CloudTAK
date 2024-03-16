@@ -4,10 +4,10 @@
     <template v-else>
         <div class='col-12 border-bottom border-light'>
             <div class='modal-header px-0 mx-2'>
-                <IconCircleArrowLeft @click='$emit("close")' size='32' class='cursor-pointer'/>
+                <IconCircleArrowLeft @click='$router.back()' size='32' class='cursor-pointer'/>
                 <div class='modal-title'>Overlays</div>
                 <div class='btn-list'>
-                    <IconPlus @click='$emit("datas")' class='cursor-pointer' size='32' v-tooltip='"Add Overlay"'/>
+                    <IconPlus @click='$router.push("/menu/datas")' class='cursor-pointer' size='32' v-tooltip='"Add Overlay"'/>
                 </div>
             </div>
         </div>
