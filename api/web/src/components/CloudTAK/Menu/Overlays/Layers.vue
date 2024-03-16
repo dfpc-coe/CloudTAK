@@ -9,7 +9,7 @@
                 <div class='btn-list'></div>
             </div>
         </div>
-        <div :key='l' v-for='l of overlay.layers' class="col-lg py-2 px-3 hover-dark">
+        <div @click='layer = l' :key='l' v-for='l of overlay.layers' class="col-lg py-2 px-3 hover-dark">
             <div class='py-2 px-2 hover-dark cursor-pointer d-flex align-items-center'>
                 <span>
                     <IconPaint v-if='l.type === "fill"' size='24'/>
@@ -17,7 +17,7 @@
                     <IconCircle v-else-if='l.type === "circle"' size='24'/>
                 </span>
 
-                <div @click='layer = l' class='user-select-none mx-2' v-text='l.id'/>
+                <div class='user-select-none mx-2' v-text='l.id || l.name'/>
             </div>
         </div>
     </template>
