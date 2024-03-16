@@ -7,8 +7,8 @@
             class='position-absolute top-0 end-0 text-white py-2'
             style='z-index: 1; width: 60px; background-color: rgba(0, 0, 0, 0.5);'
        >
-            <IconMenu2 v-if='noMenuShown' @click='menu.main = true' size='40' class='mx-2 cursor-pointer'/>
-            <IconX v-if='!noMenuShown' @click='menu.main = cot = feat = false' size='40' class='mx-2 cursor-pointer bg-dark'/>
+            <IconMenu2 v-if='noMenuShown' @click='$router.push("/menu")' size='40' class='mx-2 cursor-pointer'/>
+            <IconX v-if='!noMenuShown' @click='$router.push("/")' size='40' class='mx-2 cursor-pointer bg-dark'/>
         </div>
 
         <div v-if='profile' class='position-absolute bottom-0 begin-0 text-white' style='z-index: 1; width: 200px; background-color: rgba(0, 0, 0, 0.5);'>
@@ -62,10 +62,8 @@
             </TablerDropdown>
         </div>
 
-        <CloudTAKMenu
-            v-if='menu.main && mode === "Default"'
-            @reset='deleteCOT()'
-        />
+        <router-view @reset='deleteCOT()'/>
+
         <CloudTAKCoTView
             v-if='cot && mode === "Default"'
             :cot='cot'
@@ -147,7 +145,7 @@ export default {
             }
         },
         noMenuShown: function() {
-            return !this.cot && !this.feat && !this.menu.main
+            return !this.cot && !this.feat && !this.$route.path.startsWith('/menu')
         }
     },
     unmounted: function() {
@@ -171,8 +169,8 @@ export default {
             if (e.key == 'Escape') {
                 if (mapStore.radial.mode) {
                     this.closeRadial()
-                } else if (this.menu.main) {
-                    this.menu.main = false;
+                } else if (this.$route.path.startsWith("/")) {
+                    this.$router.push("/");
                 }
             }
         });
@@ -188,7 +186,6 @@ export default {
             mode: 'Default',
             menu: {
                 // Menu State Functions - true for shown
-                main: false,
                 draw: false,
             },
             locked: [],         // Lock the map view to a given CoT - The last element is the currently locked value

@@ -2,7 +2,7 @@
 <div>
     <div class='col-12 border-bottom border-light'>
         <div class='modal-header px-0 mx-2'>
-            <IconCircleArrowLeft @click='$emit("close")' size='32' class='cursor-pointer'/>
+            <IconCircleArrowLeft @click='$router.back()' size='32' class='cursor-pointer'/>
             <div class='modal-title' v-text='contact.properties.callsign'></div>
             <div/>
         </div>
@@ -37,17 +37,13 @@ const cotStore = useCOTStore();
 
 export default {
     name: 'Chat',
-    props: {
-        uid: {
-            type: String,
-            required: true
-        }
-    },
     data: function() {
+        if (!cotStore.cots.get(this.$route.params.uid)) this.$router.push("/menu/chats");
+
         return {
             loading: false,
             message: '',
-            contact: cotStore.cots.get(this.uid)
+            contact: cotStore.cots.get(this.$route.params.uid)
         }
     },
     mounted: async function() {

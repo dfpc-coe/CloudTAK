@@ -2,7 +2,7 @@
 <div>
     <div class='col-12 border-bottom border-light'>
         <div class='modal-header px-0 mx-2'>
-            <IconCircleArrowLeft @click='$emit("close")' size='32' class='cursor-pointer'/>
+            <IconCircleArrowLeft @click='$router.back()' size='32' class='cursor-pointer'/>
             <div class='modal-title'>Contacts</div>
             <div class='btn-list'>
                 <IconRefresh v-if='!loading' @click='fetchList' size='32' class='cursor-pointer' v-tooltip='"Refresh"'/>
@@ -13,7 +13,7 @@
     <TablerNone v-else-if='!contacts.length' :create='false'/>
     <template v-else>
         <div :key='a.id' v-for='a of visibleContacts' class="col-lg-12">
-            <Contact @chat='$emit("chat", $event)' :contact='a'/>
+            <Contact @chat='$router.push(`/menu/chats/${$event}`)' :contact='a'/>
         </div>
     </template>
 </div>
