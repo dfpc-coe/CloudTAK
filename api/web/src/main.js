@@ -30,6 +30,10 @@ const router = new VueRouter.createRouter({
                     name: 'menu-imports',
                     component: () => import('./components/CloudTAK/Menu/Imports.vue')
                 },{
+                    path: 'imports/:import',
+                    name: 'menu-import',
+                    component: () => import('./components/CloudTAK/Menu/Import.vue')
+                },{
                     path: 'basemaps',
                     name: 'menu-basemaps',
                     component: () => import('./components/CloudTAK/Menu/Basemaps.vue')
@@ -225,8 +229,6 @@ const router = new VueRouter.createRouter({
         { path: '/iconset/:iconset/icon', name: 'icon-new', component: () => import('./components/IconEdit.vue') },
         { path: '/iconset/:iconset/icon/:icon', name: 'icon', component: () => import('./components/Icon.vue') },
         { path: '/iconset/:iconset/icon/:icon/edit', name: 'icon-edit', component: () => import('./components/IconEdit.vue') },
-
-        { path: '/import/:import', name: 'import', component: () => import('./components/Import.vue') },
 
         { path: '/login', name: 'login', component: () => import('./components/Login.vue') },
 
