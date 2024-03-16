@@ -10,8 +10,14 @@
             </div>
         </div>
         <div :key='l' v-for='l of overlay.layers' class="col-lg py-2 px-3 hover-dark">
-            <div class='py-2 px-2 hover-dark cursor-pointer'>
-                <div @click='layer = l' class='user-select-none' v-text='l.id'/>
+            <div class='py-2 px-2 hover-dark cursor-pointer d-flex align-items-center'>
+                <span>
+                    <IconPaint v-if='l.type === "fill"' size='24'/>
+                    <IconLine v-else-if='l.type === "line"' size='24'/>
+                    <IconCircle v-else-if='l.type === "circle"' size='24'/>
+                </span>
+
+                <div @click='layer = l' class='user-select-none mx-2' v-text='l.id'/>
             </div>
         </div>
     </template>
@@ -26,6 +32,9 @@ import {
 } from '@tak-ps/vue-tabler';
 import {
     IconCircleArrowLeft,
+    IconPaint,
+    IconLine,
+    IconCircle,
     IconPlus,
 } from '@tabler/icons-vue';
 import { useMapStore } from '/src/stores/map.js';
@@ -52,6 +61,9 @@ export default {
     },
     components: {
         OverlayLayer,
+        IconPaint,
+        IconLine,
+        IconCircle,
         TablerLoading,
         TablerDelete,
         IconCircleArrowLeft,
