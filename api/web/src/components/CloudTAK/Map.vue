@@ -8,7 +8,7 @@
             style='z-index: 1; width: 60px; background-color: rgba(0, 0, 0, 0.5);'
        >
             <IconMenu2 v-if='noMenuShown' @click='$router.push("/menu")' size='40' class='mx-2 cursor-pointer'/>
-            <IconX v-if='!noMenuShown' @click='$router.push("/")' size='40' class='mx-2 cursor-pointer bg-dark'/>
+            <IconX v-if='!noMenuShown' @click='$router.push("/"); cot = feat = false' size='40' class='mx-2 cursor-pointer bg-dark'/>
         </div>
 
         <div v-if='profile' class='position-absolute bottom-0 begin-0 text-white' style='z-index: 1; width: 200px; background-color: rgba(0, 0, 0, 0.5);'>
