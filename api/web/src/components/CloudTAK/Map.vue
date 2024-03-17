@@ -356,21 +356,26 @@ export default {
             }));
         },
         updateCOT: function() {
-            mapStore.map.getSource('cots').setData(cotStore.collection())
+            try {
+                mapStore.map.getSource('cots').setData(cotStore.collection())
 
-            for (const sub of cotStore.subscriptions.keys()) {
-                const overlay = overlayStore.subscriptions.get(sub)
-                if (!overlay) continue;
+                for (const sub of cotStore.subscriptions.keys()) {
+                    const overlay = overlayStore.subscriptions.get(sub)
+                    if (!overlay) continue;
 
-                mapStore.map.getSource(overlay.id).setData(cotStore.collection(cotStore.subscriptions.get(sub)))
-            }
+                    const overlayStore = mapStore.map.getSource(overlay.id);
+                    if (overlayStore) overlayStore.setData(cotStore.collection(cotStore.subscriptions.get(sub)))
+                }
 
-            if (this.locked.length && cotStore.has(this.locked[this.locked.length - 1])) {
-                const flyTo = {
-                    center: cotStore.get(this.locked[this.locked.length - 1]).properties.center,
-                    speed: Infinity
-                };
-                mapStore.map.flyTo(flyTo);
+                if (this.locked.length && cotStore.has(this.locked[this.locked.length - 1])) {
+                    const flyTo = {
+                        center: cotStore.get(this.locked[this.locked.length - 1]).properties.center,
+                        speed: Infinity
+                    };
+                    mapStore.map.flyTo(flyTo);
+                }
+            } catch (err) {
+                console.error(err);
             }
         },
         setYou: function() {
