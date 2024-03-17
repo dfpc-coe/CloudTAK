@@ -71,10 +71,14 @@
             </template>
             <template v-else-if='["fill-color", "line-color", "circle-color"].includes(p)'>
                 <template v-if='Array.isArray(l.paint[p]) && l.paint[p][0] === "string"'>
-                    <TablerInput class='w-100' type='color' label='colour' v-model='l.paint[p][l.paint[p].length -1]'/>
+                    <TablerInput class='w-100' type='color' label='Colour' v-model='l.paint[p][l.paint[p].length -1]'>
+                        <span class='float-right' v-text='l.paint[p][l.paint[p].length -1]'/>
+                    </TablerInput>
                 </template>
                 <template v-else-if='typeof l.paint[p] === "string"'>
-                    <TablerInput class='w-100' type='color' label='colour' v-model='l.paint[p]'/>
+                    <TablerInput class='w-100' type='color' label='Colour' v-model='l.paint[p]'>
+                        <span class='float-right' v-text='l.paint[p]'/>
+                    </TablerInput>
                 </template>
                 <template v-else>
                     <pre v-text='l.paint[p]'/>
