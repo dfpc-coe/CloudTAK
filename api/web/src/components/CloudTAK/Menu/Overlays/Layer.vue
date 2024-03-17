@@ -40,17 +40,45 @@
         </div>
         <div :key='p' v-for='p of Object.keys(l.paint)' class='col-12 d-flex bg-gray-500 px-2 my-2 py-2'>
             <template v-if='["fill-opacity", "line-opacity", "circle-opacity"].includes(p)'>
-                <TablerRange label='Opacity' v-model='l.paint[p]' :min='0' :max='1' :step='0.1'>
-                    <span class='float-right' v-text='Math.round(l.paint[p] * 100) + "%"'/>
-                </TablerRange>
+                <template v-if='Array.isArray(l.paint[p]) && l.paint[p][0] === "number"'>
+                    <TablerRange label='Opacity' v-model='l.paint[p][l.paint[p].length -1]' :min='0' :max='1' :step='0.1'>
+                        <span class='float-right' v-text='Math.round(l.paint[p][l.paint[p].length -1] * 100) + "%"'/>
+                    </TablerRange>
+                </template>
+                <template v-else-if='!isNaN(Number(l.paint[p]))'>
+                    <TablerRange label='Opacity' v-model='l.paint[p]' :min='0' :max='1' :step='0.1'>
+                        <span class='float-right' v-text='Math.round(l.paint[p] * 100) + "%"'/>
+                    </TablerRange>
+                </template>
+                <template v-else>
+                    <pre v-text='l.paint[p]'/>
+                </template>
             </template>
             <template v-else-if='["line-width", "circle-radius"].includes(p)'>
-                <TablerRange label='Width' v-model='l.paint[p]' :min='1' :max='10' :step='1'>
-                    <span class='float-right' v-text='l.paint[p]'/>
-                </TablerRange>
+                <template v-if='Array.isArray(l.paint[p]) && l.paint[p][0] === "number"'>
+                    <TablerRange label='Width' v-model='l.paint[p][l.paint[p].length -1]' :min='1' :max='10' :step='1'>
+                        <span class='float-right' v-text='l.paint[p][l.paint[p].length -1]'/>
+                    </TablerRange>
+                </template>
+                <template v-else-if='!isNaN(Number(l.paint[p]))'>
+                    <TablerRange label='Width' v-model='l.paint[p]' :min='1' :max='10' :step='1'>
+                        <span class='float-right' v-text='l.paint[p]'/>
+                    </TablerRange>
+                </template>
+                <template v-else>
+                    <pre v-text='l.paint[p]'/>
+                </template>
             </template>
             <template v-else-if='["fill-color", "line-color", "circle-color"].includes(p)'>
-                <TablerInput class='w-100' type='color' label='Colour' v-model='l.paint[p]'/>
+                <template v-if='Array.isArray(l.paint[p]) && l.paint[p][0] === "string"'>
+                    <TablerInput class='w-100' type='color' label='colour' v-model='l.paint[p][l.paint[p].length -1]'/>
+                </template>
+                <template v-else-if='typeof l.paint[p] === "string"'>
+                    <TablerInput class='w-100' type='color' label='colour' v-model='l.paint[p]'/>
+                </template>
+                <template v-else>
+                    <pre v-text='l.paint[p]'/>
+                </template>
             </template>
             <template v-else>
                 <span v-text='p'/>
