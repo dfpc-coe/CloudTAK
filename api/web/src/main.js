@@ -42,6 +42,10 @@ const router = new VueRouter.createRouter({
                     name: 'menu-overlays',
                     component: () => import('./components/CloudTAK/Menu/Overlays.vue')
                 },{
+                    path: 'datas',
+                    name: 'menu-datas',
+                    component: () => import('./components/CloudTAK/Menu/Datas.vue')
+                },{
                     path: 'contacts',
                     name: 'menu-contacts',
                     component: () => import('./components/CloudTAK/Menu/Contacts.vue')
