@@ -363,8 +363,8 @@ export default {
                     const overlay = overlayStore.subscriptions.get(sub)
                     if (!overlay) continue;
 
-                    const overlayStore = mapStore.map.getSource(overlay.id);
-                    if (overlayStore) overlayStore.setData(cotStore.collection(cotStore.subscriptions.get(sub)))
+                    const oStore = mapStore.map.getSource(overlay.id);
+                    if (oStore) oStore.setData(cotStore.collection(cotStore.subscriptions.get(sub)))
                 }
 
                 if (this.locked.length && cotStore.has(this.locked[this.locked.length - 1])) {
