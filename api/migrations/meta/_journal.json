@@ -155,6 +155,13 @@
       "when": 1710533672651,
       "tag": "0021_dapper_sunfire",
       "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "5",
+      "when": 1710795634535,
+      "tag": "0022_lowly_iron_monger",
+      "breakpoints": true
     }
   ]
 }
