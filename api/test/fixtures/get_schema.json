@@ -324,6 +324,56 @@
         "query": false,
         "res": true
     },
+    "GET /layer": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "POST /layer": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "POST /layer/redeploy": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "PATCH /layer/:layerid": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "GET /layer/:layerid": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "POST /layer/:layerid/redeploy": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "DELETE /layer/:layerid": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "POST /layer/:layerid/cot": {
+        "body": true,
+        "query": true,
+        "res": true
+    },
+    "POST /login": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "GET /login": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
     "GET /iconset": {
         "body": false,
         "query": true,
@@ -388,56 +438,6 @@
         "body": false,
         "query": true,
         "res": false
-    },
-    "GET /layer": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "POST /layer": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "POST /layer/redeploy": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "PATCH /layer/:layerid": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "GET /layer/:layerid": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "POST /layer/:layerid/redeploy": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "DELETE /layer/:layerid": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "POST /layer/:layerid/cot": {
-        "body": true,
-        "query": true,
-        "res": true
-    },
-    "POST /login": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "GET /login": {
-        "body": false,
-        "query": false,
-        "res": true
     },
     "DELETE /marti/api/files/:hash": {
         "body": false,
@@ -592,6 +592,11 @@
     "GET /profile/overlay": {
         "body": false,
         "query": true,
+        "res": true
+    },
+    "PATCH /profile/overlay/:overlay": {
+        "body": true,
+        "query": false,
         "res": true
     },
     "POST /profile/overlay": {
