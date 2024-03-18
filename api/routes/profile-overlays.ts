@@ -1,4 +1,5 @@
 import { Type } from '@sinclair/typebox'
+import { validate } from '@maplibre/maplibre-gl-style-spec';
 import path from 'node:path';
 import Config from '../lib/config.js';
 import Schema from '@openaddresses/batch-schema';
@@ -64,6 +65,41 @@ export default async function router(schema: Schema, config: Config) {
                 removed,
                 ...overlays
             });
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
+
+    await schema.patch('/profile/overlay/:overlay', {
+        name: 'Update Overlay',
+        group: 'ProfileOverlay',
+        description: 'Update Profile Overlay',
+        params: Type.Object({
+            overlay: Type.Integer()
+        }),
+        body: Type.Object({
+            pos: Type.Optional(Type.Integer()),
+            name: Type.Optional(Type.String()),
+            opacity: Type.Optional(Type.Number()),
+            visible: Type.Optional(Type.Boolean()),
+            styles: Type.Any()
+        }),
+        res: ProfileOverlayResponse
+    }, async (req, res) => {
+        try {
+            const user = await Auth.as_user(config, req);
+
+            const overlay = await config.models.ProfileOverlay.from(req.params.overlay)
+            if (overlay.username !== user.email) throw new Err(401, null, 'Cannot edit another\'s overlay');
+
+            if (req.body.styles) {
+                const errors = validate(req.body.styles)
+                if (errors.length) throw new Err(400, null, JSON.stringify(errors));
+            }
+
+            await config.models.ProfileOverlay.commit(req.params.overlay, req.body)
+
+            return res.json(overlay);
         } catch (err) {
             return Err.respond(err, res);
         }
