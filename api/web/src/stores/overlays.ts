@@ -4,7 +4,7 @@ import * as pmtiles from 'pmtiles';
 import pointOnFeature from '@turf/point-on-feature';
 import { useCOTStore } from './cots.js'
 const cotStore = useCOTStore();
-import type { ProfileOverlayResponse } from '../../../lib/types.js';
+import type { ProfileOverlay } from '../types/types.js';
 import type { OverlayContainer } from './map.js';
 import type { Static } from '@sinclair/typebox';
 
