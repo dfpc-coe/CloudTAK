@@ -31,6 +31,7 @@
 </template>
 
 <script>
+import { std, stdurl } from '/src/std.ts';
 import PageFooter from './PageFooter.vue';
 import ConnectionSinks from './Connection/Sinks.vue';
 import {
@@ -53,7 +54,7 @@ export default {
     methods: {
         fetch: async function() {
             this.loading = true;
-            this.connection = await window.std(`/api/connection/${this.$route.params.connectionid}`);
+            this.connection = await std(`/api/connection/${this.$route.params.connectionid}`);
             this.loading = false;
         },
     },

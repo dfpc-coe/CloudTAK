@@ -65,6 +65,7 @@
 </template>
 
 <script>
+import { std, stdurl } from '/src/std.ts';
 import {
     IconRefreshDot,
     IconRefreshOff,
@@ -115,10 +116,10 @@ export default {
             };
         },
         uploadURL: function() {
-            return window.stdurl(`/api/profile/asset`);
+            return stdurl(`/api/profile/asset`);
         },
         downloadAsset: async function(asset) {
-            const url = window.stdurl(`/api/profile/asset/${asset.name}`);
+            const url = stdurl(`/api/profile/asset/${asset.name}`);
             url.searchParams.append('token', localStorage.token);
             window.open(url, "_blank")
         },
@@ -133,7 +134,7 @@ export default {
         },
         deleteAsset: async function(asset) {
             this.loading.list = true;
-            await window.std(`/api/profile/asset/${asset.name}`, {
+            await std(`/api/profile/asset/${asset.name}`, {
                 method: 'DELETE'
             });
 
@@ -145,7 +146,7 @@ export default {
             try {
                 this.loading.list = true;
                 this.err = false;
-                this.list = await window.std(`/api/profile/asset`);
+                this.list = await std(`/api/profile/asset`);
                 this.loading.list = false;
                 this.$emit('assets', this.list);
             } catch (err) {

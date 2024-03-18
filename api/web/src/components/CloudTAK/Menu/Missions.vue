@@ -3,7 +3,7 @@
         :modal='false'
         @create='mode = "create"'
         @mission='mission = $event'
-        @close='$emit("close")'
+        @close='$router.back()'
     />
     <TablerModal size='xl' v-if='mode !== "list"'>
         <div class="modal-status bg-red"></div>

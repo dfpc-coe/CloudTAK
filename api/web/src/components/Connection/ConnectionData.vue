@@ -45,6 +45,7 @@
 </template>
 
 <script>
+import { std, stdurl } from '/src/std.ts';
 import TableFooter from '../util/TableFooter.vue';
 import Alert from '../util/Alert.vue';
 import {
@@ -96,12 +97,12 @@ export default {
         listData: async function() {
             this.loading = true;
             try {
-                const url = window.stdurl(`/api/connection/${this.$route.params.connectionid}/data`);
+                const url = stdurl(`/api/connection/${this.$route.params.connectionid}/data`);
                 url.searchParams.append('limit', this.paging.limit);
                 url.searchParams.append('page', this.paging.page);
                 url.searchParams.append('filter', this.paging.filter);
                 url.searchParams.append('connection', this.$route.params.connectionid);
-                this.list = await window.std(url);
+                this.list = await std(url);
             } catch (err) {
                 this.err = err;
             }

@@ -76,6 +76,7 @@
 </template>
 
 <script>
+import { std, stdurl } from '/src/std.ts';
 import LayerSchemaModal from './utils/LayerSchemaModal.vue';
 import {
     TablerNone,
@@ -156,7 +157,7 @@ export default {
                 }
             }
 
-            const layer = await window.std(`/api/layer/${this.$route.params.layerid}`, {
+            const layer = await std(`/api/layer/${this.$route.params.layerid}`, {
                 method: 'PATCH',
                 body: {
                     schema: {
@@ -174,9 +175,9 @@ export default {
         },
         fetchSchema: async function() {
             this.loading.schema = true;
-            const url = window.stdurl(`/api/layer/${this.$route.params.layerid}/task/schema`);
+            const url = stdurl(`/api/layer/${this.$route.params.layerid}/task/schema`);
             url.searchParams.append('type', 'schema:output');
-            const schema = await window.std(url);
+            const schema = await std(url);
 
             this.processModelValue(schema.schema)
             this.loading.schema = false;

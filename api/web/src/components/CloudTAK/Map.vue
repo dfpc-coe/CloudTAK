@@ -7,8 +7,8 @@
             class='position-absolute top-0 end-0 text-white py-2'
             style='z-index: 1; width: 60px; background-color: rgba(0, 0, 0, 0.5);'
        >
-            <IconMenu2 v-if='noMenuShown' @click='menu.main = true' size='40' class='mx-2 cursor-pointer'/>
-            <IconX v-if='!noMenuShown' @click='menu.main = cot = feat = false' size='40' class='mx-2 cursor-pointer bg-dark'/>
+            <IconMenu2 v-if='noMenuShown' @click='$router.push("/menu")' size='40' class='mx-2 cursor-pointer'/>
+            <IconX v-if='!noMenuShown' @click='$router.push("/"); cot = feat = false' size='40' class='mx-2 cursor-pointer bg-dark'/>
         </div>
 
         <div v-if='profile' class='position-absolute bottom-0 begin-0 text-white' style='z-index: 1; width: 200px; background-color: rgba(0, 0, 0, 0.5);'>
@@ -62,10 +62,8 @@
             </TablerDropdown>
         </div>
 
-        <CloudTAKMenu
-            v-if='menu.main && mode === "Default"'
-            @reset='deleteCOT()'
-        />
+        <router-view @reset='deleteCOT()'/>
+
         <CloudTAKCoTView
             v-if='cot && mode === "Default"'
             :cot='cot'
@@ -93,6 +91,7 @@
 </template>
 
 <script>
+import { std, stdurl } from '/src/std.ts';
 import {
     IconLocationOff,
     IconLocation,
@@ -119,10 +118,10 @@ import CloudTAKFeatView from './FeatView.vue';
 import RadialMenu from './RadialMenu/RadialMenu.vue';
 import moment from 'moment';
 import { mapState, mapActions } from 'pinia'
-import { useMapStore } from '/src/stores/map.js';
+import { useMapStore } from '/src/stores/map.ts';
 import { useOverlayStore } from '/src/stores/overlays.ts';
 import { useProfileStore } from '/src/stores/profile.js';
-import { useCOTStore } from '/src/stores/cots.js';
+import { useCOTStore } from '/src/stores/cots.ts';
 const cotStore = useCOTStore();
 const mapStore = useMapStore();
 const overlayStore = useOverlayStore();
@@ -147,7 +146,7 @@ export default {
             }
         },
         noMenuShown: function() {
-            return !this.cot && !this.feat && !this.menu.main
+            return !this.cot && !this.feat && !this.$route.path.startsWith('/menu')
         }
     },
     unmounted: function() {
@@ -171,8 +170,8 @@ export default {
             if (e.key == 'Escape') {
                 if (mapStore.radial.mode) {
                     this.closeRadial()
-                } else if (this.menu.main) {
-                    this.menu.main = false;
+                } else if (this.$route.path.startsWith("/")) {
+                    this.$router.push("/");
                 }
             }
         });
@@ -188,7 +187,6 @@ export default {
             mode: 'Default',
             menu: {
                 // Menu State Functions - true for shown
-                main: false,
                 draw: false,
             },
             locked: [],         // Lock the map view to a given CoT - The last element is the currently locked value
@@ -267,7 +265,7 @@ export default {
             });
         },
         connectSocket: function() {
-            const url = window.stdurl('/api');
+            const url = stdurl('/api');
             url.searchParams.append('format', 'geojson');
             url.searchParams.append('connection', this.user.email);
             url.searchParams.append('token', localStorage.token);
@@ -359,21 +357,26 @@ export default {
             }));
         },
         updateCOT: function() {
-            mapStore.map.getSource('cots').setData(cotStore.collection())
+            try {
+                mapStore.map.getSource('cots').setData(cotStore.collection())
 
-            for (const sub of cotStore.subscriptions.keys()) {
-                const overlay = overlayStore.subscriptions.get(sub)
-                if (!overlay) continue;
+                for (const sub of cotStore.subscriptions.keys()) {
+                    const overlay = overlayStore.subscriptions.get(sub)
+                    if (!overlay) continue;
 
-                mapStore.map.getSource(overlay.id).setData(cotStore.collection(cotStore.subscriptions.get(sub)))
-            }
+                    const oStore = mapStore.map.getSource(overlay.id);
+                    if (oStore) oStore.setData(cotStore.collection(cotStore.subscriptions.get(sub)))
+                }
 
-            if (this.locked.length && cotStore.has(this.locked[this.locked.length - 1])) {
-                const flyTo = {
-                    center: cotStore.get(this.locked[this.locked.length - 1]).properties.center,
-                    speed: Infinity
-                };
-                mapStore.map.flyTo(flyTo);
+                if (this.locked.length && cotStore.has(this.locked[this.locked.length - 1])) {
+                    const flyTo = {
+                        center: cotStore.get(this.locked[this.locked.length - 1]).properties.center,
+                        speed: Infinity
+                    };
+                    mapStore.map.flyTo(flyTo);
+                }
+            } catch (err) {
+                console.error(err);
             }
         },
         setYou: function() {
@@ -392,22 +395,22 @@ export default {
         mountMap: async function() {
             let basemap, terrain;
 
-            const burl = window.stdurl('/api/basemap');
+            const burl = stdurl('/api/basemap');
             burl.searchParams.append('type', 'raster');
-            const basemaps = await window.std(burl);
+            const basemaps = await std(burl);
             if (basemaps.items.length > 0) {
                 basemap = basemaps.items[0];
-                basemap.url = String(window.stdurl(`/api/basemap/${basemap.id}/tiles/`)) + `{z}/{x}/{y}?token=${localStorage.token}`;
+                basemap.url = String(stdurl(`/api/basemap/${basemap.id}/tiles/`)) + `{z}/{x}/{y}?token=${localStorage.token}`;
             }
 
-            const turl = window.stdurl('/api/basemap');
+            const turl = stdurl('/api/basemap');
             turl.searchParams.append('type', 'raster-dem');
 
             /* Disabled for now
-            const terrains = await window.std(turl);
+            const terrains = await std(turl);
             if (terrains.items.length > 0) {
                 terrain = terrains.items[0];
-                terrain.url = String(window.stdurl(`/api/basemap/${terrain.id}/tiles/`)) + `{z}/{x}/{y}?token=${localStorage.token}`;
+                terrain.url = String(stdurl(`/api/basemap/${terrain.id}/tiles/`)) + `{z}/{x}/{y}?token=${localStorage.token}`;
             }
             */
 
@@ -416,9 +419,9 @@ export default {
             mapStore.map.once('idle', async () => {
                 await mapStore.initLayers(basemap);
 
-                const iconsets = await window.std('/api/iconset');
+                const iconsets = await std('/api/iconset');
                 for (const iconset of iconsets.items) {
-                    mapStore.map.addSprite(iconset.uid, String(window.stdurl(`/api/icon/sprite?token=${localStorage.token}&iconset=${iconset.uid}`)))
+                    mapStore.map.addSprite(iconset.uid, String(stdurl(`/api/icon/sprite?token=${localStorage.token}&iconset=${iconset.uid}`)))
                 }
 
                 await mapStore.initOverlays();

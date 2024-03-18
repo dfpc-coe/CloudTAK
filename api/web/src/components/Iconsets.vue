@@ -76,6 +76,7 @@
 </template>
 
 <script>
+import { std, stdurl } from '/src/std.ts';
 import PageFooter from './PageFooter.vue';
 import Upload from './util/Upload.vue';
 import IconCombineds from './cards/Icons.vue'
@@ -122,15 +123,15 @@ export default {
             };
         },
         download: async function(iconset) {
-            window.location.href = window.stdurl(`api/iconset/${iconset.uid}?format=zip&download=true&token=${localStorage.token}`);
+            window.location.href = stdurl(`api/iconset/${iconset.uid}?format=zip&download=true&token=${localStorage.token}`);
         },
         uploadURL: function() {
-            return window.stdurl(`/api/import`);
+            return stdurl(`/api/import`);
         },
         fetchList: async function() {
             this.loading = true;
-            const url = window.stdurl('/api/iconset');
-            this.list = await window.std(url);
+            const url = stdurl('/api/iconset');
+            this.list = await std(url);
             this.loading = false;
         }
     },

@@ -58,6 +58,7 @@
     // `true` by default if the `target` is `ES2020` or higher.
     // Explicitly set it to `true` here in case some users want to overwrite the `target`.
     "useDefineForClassFields": true,
+    "lib": [ "dom" ],
 
     // Recommended
     "esModuleInterop": true,

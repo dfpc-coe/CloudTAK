@@ -1,4 +1,4 @@
-export function stdurl(url) {
+export function stdurl(url: string | URL): URL {
     try {
         url = new URL(url);
     } catch (err) {
@@ -17,8 +17,8 @@ export function stdurl(url) {
  * @param {URL|String} url      - Full URL or API fragment to request
  * @param {Object} [opts={}]    - Options
  */
-export async function std(url, opts = {}) {
-    url = window.stdurl(url)
+export async function std(url: string | URL, opts: any = {}): Promise<any> {
+    url = stdurl(url)
 
     try {
         if (!opts.headers) opts.headers = {};
@@ -54,9 +54,4 @@ export async function std(url, opts = {}) {
     } catch (err) {
         throw new Error(err.message);
     }
-}
-
-export default function init() {
-    window.stdurl = stdurl;
-    window.std = std;
 }

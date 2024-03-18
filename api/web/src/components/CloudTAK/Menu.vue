@@ -4,58 +4,10 @@
     style='z-index: 1; width: 400px; top: 56px;'
 >
     <div class='position-relative h-100'>
-        <template v-if='mode === "settings"'>
-            <MenuSettings
-                @close='mode = null'
-            />
-        </template>
-        <template v-else-if='mode === "missions"'>
-            <MenuMissions
-                @chat='mode = `chat:${$event}`'
-                @close='mode = null'
-            />
-        </template>
-        <template v-else-if='mode && mode.startsWith("chat:")'>
-            <MenuChat
-                :uid='mode.split(":")[1]'
-                @close='mode = null'
-            />
-        </template>
-        <template v-else-if='mode === "chats"'>
-            <MenuChats
-                @close='mode = null'
-                @mode='mode = $event'
-            />
-        </template>
-        <template v-else-if='mode === "channels"'>
-            <MenuChannels
-                @close='mode = null'
-                @reset='$emit("reset")'
-            />
-        </template>
-        <template v-else-if='mode === "contacts"'>
-            <MenuContacts
-                @close='mode = null'
-                @chat='mode = `chat:${$event}`'
-            />
-        </template>
-        <template v-else-if='mode === "datas"'>
-            <MenuDatas
-                @close='mode = null'
-                @mode='mode = $event'
-            />
-        </template>
-        <template v-else-if='mode === "overlays"'>
-            <MenuOverlays
-                @close='mode = null'
-                @datas='mode = "datas"'
-            />
-        </template>
-        <template v-else-if='mode === "basemaps"'>
-            <MenuBasemaps
-                @close='mode = null'
-            />
-        </template>
+        <router-view
+            v-if='$route.name !== "menu"'
+            @reset='$emit("reset")'
+        />
         <template v-else>
             <div class='col-12 border-bottom border-light'>
                 <div class='modal-header px-0 mx-2 align-center'>
@@ -64,33 +16,37 @@
                     <div/>
                 </div>
             </div>
-            <div @click='mode = "settings"' class='cursor-pointer col-12 py-2 px-3 d-flex align-items-center hover-dark'>
+            <div @click='$router.push("/menu/settings")' class='cursor-pointer col-12 py-2 px-3 d-flex align-items-center hover-dark'>
                 <IconSettings size='32'/>
                 <span class='mx-2' style='font-size: 18px;'>Settings</span>
             </div>
-            <div @click='mode = "overlays"' class='cursor-pointer col-12 py-2 px-3 d-flex align-items-center hover-dark'>
+            <div @click='$router.push("/menu/overlays")' class='cursor-pointer col-12 py-2 px-3 d-flex align-items-center hover-dark'>
                 <IconBoxMultiple size='32'/>
                 <span class='mx-2' style='font-size: 18px;'>Overlays</span>
             </div>
-            <div @click='mode = "contacts"' class='cursor-pointer col-12 py-2 px-3 d-flex align-items-center hover-dark'>
+            <div @click='$router.push("/menu/contacts")' class='cursor-pointer col-12 py-2 px-3 d-flex align-items-center hover-dark'>
                 <IconUsers size='32'/>
                 <span class='mx-2' style='font-size: 18px;'>Contacts</span>
             </div>
-            <div @click='mode = "basemaps"' class='cursor-pointer col-12 py-2 px-3 d-flex align-items-center hover-dark'>
+            <div @click='$router.push("/menu/basemaps")' class='cursor-pointer col-12 py-2 px-3 d-flex align-items-center hover-dark'>
                 <IconMap size='32'/>
                 <span class='mx-2' style='font-size: 18px;'>BaseMaps</span>
             </div>
-            <div @click='mode = "missions"' class='cursor-pointer col-12 py-2 px-3 d-flex align-items-center hover-dark'>
+            <div @click='$router.push("/menu/missions")' class='cursor-pointer col-12 py-2 px-3 d-flex align-items-center hover-dark'>
                 <IconAmbulance size='32'/>
                 <span class='mx-2' style='font-size: 18px;'>Mission Sync</span>
             </div>
-            <div @click='mode = "channels"' class='cursor-pointer col-12 py-2 px-3 d-flex align-items-center hover-dark'>
+            <div @click='$router.push("/menu/channels")' class='cursor-pointer col-12 py-2 px-3 d-flex align-items-center hover-dark'>
                 <IconAffiliate size='32'/>
                 <span class='mx-2' style='font-size: 18px;'>Channels</span>
             </div>
-            <div @click='mode = "chats"' class='cursor-pointer col-12 py-2 px-3 d-flex align-items-center hover-dark'>
+            <div @click='$router.push("/menu/chats")' class='cursor-pointer col-12 py-2 px-3 d-flex align-items-center hover-dark'>
                 <IconMessage size='32'/>
                 <span class='mx-2' style='font-size: 18px;'>Chats</span>
+            </div>
+            <div @click='$router.push("/menu/imports")' class='cursor-pointer col-12 py-2 px-3 d-flex align-items-center hover-dark'>
+                <IconFileImport size='32'/>
+                <span class='mx-2' style='font-size: 18px;'>Imports</span>
             </div>
         </template>
     </div>
@@ -105,8 +61,10 @@ import {
     IconSettings,
     IconAmbulance,
     IconBoxMultiple,
+    IconFileImport,
     IconAffiliate,
 } from '@tabler/icons-vue';
+import MenuImports from './Menu/Imports.vue';
 import MenuBasemaps from './Menu/Basemaps.vue';
 import MenuOverlays from './Menu/Overlays.vue';
 import MenuDatas from './Menu/Datas.vue';
@@ -132,6 +90,7 @@ export default {
         MenuContacts,
         MenuChannels,
         MenuMissions,
+        MenuImports,
         MenuChats,
         MenuChat,
         MenuDatas,
@@ -139,6 +98,7 @@ export default {
         IconAffiliate,
         IconAmbulance,
         IconSettings,
+        IconFileImport,
         IconUsers,
         IconMap
     }

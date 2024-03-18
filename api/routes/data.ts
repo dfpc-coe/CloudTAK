@@ -142,6 +142,7 @@ export default async function router(schema: Schema, config: Config) {
             name: Type.String(),
             description: Type.String(),
             auto_transform: Type.Optional(Type.Boolean()),
+            mission_diff: Type.Optional(Type.Boolean()),
             mission_sync: Type.Optional(Type.Boolean()),
             mission_groups: Type.Optional(Type.Array(Type.String())),
             mission_role: Type.Optional(Type.String())
@@ -152,6 +153,10 @@ export default async function router(schema: Schema, config: Config) {
             await Auth.is_auth(config, req, {
                 resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }]
             });
+
+            if (req.body.mission_diff && req.body.mission_role !== 'MISSION_READONLY_SUBSCRIBER') {
+                throw new Err(400, null, 'MissionDiff can only be used when role is: MISSION_READONLY_SUBSCRIBER')
+            }
 
             const data = await config.models.Data.generate({
                 ...req.body,
@@ -189,6 +194,7 @@ export default async function router(schema: Schema, config: Config) {
             name: Type.String(),
             description: Type.String(),
             auto_transform: Type.Optional(Type.Boolean()),
+            mission_diff: Type.Optional(Type.Boolean()),
             mission_sync: Type.Optional(Type.Boolean())
         }),
         res: DataResponse
@@ -200,6 +206,12 @@ export default async function router(schema: Schema, config: Config) {
                     { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }
                 ]
             });
+
+            if (req.body.mission_diff && await config.models.Layer.count({
+                where: sql`data = ${req.params.dataid}`
+            }) > 1) {
+                throw new Err(400, null, 'MissionDiff can only be enabled with a single layer')
+            }
 
             let data = await config.models.Data.commit(req.params.dataid, {
                 updated: sql`Now()`,

@@ -26,6 +26,7 @@
 </template>
 
 <script>
+import { std, stdurl } from '/src/std.ts';
 import {
     TablerModal,
     TablerInput,
@@ -58,7 +59,7 @@ export default {
     },
     methods: {
         deleteToken: async function() {
-            await window.std(`/api/connection/${this.$route.params.connectionid}/token/${this.token.id}`, {
+            await std(`/api/connection/${this.$route.params.connectionid}/token/${this.token.id}`, {
                 method: 'DELETE',
             });
 
@@ -66,13 +67,13 @@ export default {
         },
         saveToken: async function() {
             if (this.token.id) {
-                const newtoken = await window.std(`/api/connection/${this.$route.params.connectionid}/token/${this.token.id}`, {
+                const newtoken = await std(`/api/connection/${this.$route.params.connectionid}/token/${this.token.id}`, {
                     method: 'PATCH',
                     body: this.editToken
                 });
                 this.$emit('refresh');
             } else {
-                const newtoken = await window.std(`/api/connection/${this.$route.params.connectionid}/token`, {
+                const newtoken = await std(`/api/connection/${this.$route.params.connectionid}/token`, {
                     method: 'POST',
                     body: this.editToken
                 });

@@ -68,6 +68,7 @@
 </template>
 
 <script>
+import { std, stdurl } from '/src/std.ts';
 import {
     IconRefreshDot,
     IconRefreshOff,
@@ -124,10 +125,10 @@ export default {
             };
         },
         uploadURL: function() {
-            return window.stdurl(`/api/connection/${this.$route.params.connectionid}/data/${this.$route.params.dataid}/asset`);
+            return stdurl(`/api/connection/${this.$route.params.connectionid}/data/${this.$route.params.dataid}/asset`);
         },
         downloadAsset: async function(asset) {
-            const url = window.stdurl(`/api/connection/${this.$route.params.connectionid}/data/${this.$route.params.dataid}/asset/${asset.name}`);
+            const url = stdurl(`/api/connection/${this.$route.params.connectionid}/data/${this.$route.params.dataid}/asset/${asset.name}`);
             url.searchParams.append('token', localStorage.token);
             window.open(url, "_blank")
         },
@@ -142,7 +143,7 @@ export default {
         },
         deleteAsset: async function(asset) {
             this.loading.list = true;
-            await window.std(`/api/connection/${this.$route.params.connectionid}/data/${this.$route.params.dataid}/asset/${asset.name}`, {
+            await std(`/api/connection/${this.$route.params.connectionid}/data/${this.$route.params.dataid}/asset/${asset.name}`, {
                 method: 'DELETE'
             });
 
@@ -154,7 +155,7 @@ export default {
             try {
                 this.loading.list = true;
                 this.err = false;
-                this.list = await window.std(`/api/connection/${this.$route.params.connectionid}/data/${this.$route.params.dataid}/asset`);
+                this.list = await std(`/api/connection/${this.$route.params.connectionid}/data/${this.$route.params.dataid}/asset`);
                 this.loading.list = false;
                 this.$emit('assets', this.list);
             } catch (err) {

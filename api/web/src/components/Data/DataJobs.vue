@@ -43,6 +43,7 @@
 </template>
 
 <script>
+import { std, stdurl } from '/src/std.ts';
 import Alert from '../util/Alert.vue';
 import {
     IconRefresh
@@ -75,7 +76,7 @@ export default {
             try {
                 this.loading.list = true;
                 this.err = null;
-                const list = await window.std(`/api/connection/${this.$route.params.connectionid}/data/${this.$route.params.dataid}/job`);
+                const list = await std(`/api/connection/${this.$route.params.connectionid}/data/${this.$route.params.dataid}/job`);
                 list.items = list.items.map((l) => {
                     if (l.status === 'SUBMITTED') l.status = 'Unknown';
                     if (l.status === 'PENDING') l.status = 'Pending';

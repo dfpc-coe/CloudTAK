@@ -9,6 +9,7 @@
 </template>
 
 <script>
+import { std, stdurl } from '/src/std.ts';
 import mapgl from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css';
 
@@ -42,9 +43,9 @@ export default {
     },
     methods: {
         basemap: async function() {
-            const list = await window.std('/api/basemap?limit=1&order=asc&sort=created');
+            const list = await std('/api/basemap?limit=1&order=asc&sort=created');
             if (list.items.length) {
-                const url = String(window.stdurl(`/api/basemap/${list.items[0].id}/tiles/`)) + `{z}/{x}/{y}?token=${localStorage.token}`;
+                const url = String(stdurl(`/api/basemap/${list.items[0].id}/tiles/`)) + `{z}/{x}/{y}?token=${localStorage.token}`;
                 this.style.sources = {
                     basemap: {
                         type: 'raster',

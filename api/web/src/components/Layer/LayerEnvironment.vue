@@ -41,6 +41,7 @@
 </template>
 
 <script>
+import { std, stdurl } from '/src/std.ts';
 import {
     TablerInput,
     TablerLoading,
@@ -91,7 +92,7 @@ export default {
 
             try {
                 this.loading.schema = true;
-                this.schema = (await window.std(`/api/layer/${this.$route.params.layerid}/task/schema`)).schema;
+                this.schema = (await std(`/api/layer/${this.$route.params.layerid}/task/schema`)).schema;
             } catch (err) {
                 this.alert = true;
             }
@@ -101,7 +102,7 @@ export default {
         saveLayer: async function() {
             this.loading.save = true;
 
-            const layer = await window.std(`/api/layer/${this.$route.params.layerid}`, {
+            const layer = await std(`/api/layer/${this.$route.params.layerid}`, {
                 method: 'PATCH',
                 body: {
                     environment: this.environment

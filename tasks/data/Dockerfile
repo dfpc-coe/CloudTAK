@@ -10,7 +10,7 @@ RUN curl -L https://github.com/protomaps/go-pmtiles/releases/download/v1.11.1/go
     mv pmtiles /usr/bin/
 
 # Download and install Tippecanoe
-RUN git clone -b 2.40.0 --depth 1 https://github.com/felt/tippecanoe.git /tmp/tippecanoe && \
+RUN git clone -b 2.51.0 --depth 1 https://github.com/felt/tippecanoe.git /tmp/tippecanoe && \
     cd /tmp/tippecanoe && \
     make && \
     PREFIX=/usr/local make install && \

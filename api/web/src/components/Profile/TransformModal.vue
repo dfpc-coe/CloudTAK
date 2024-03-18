@@ -22,6 +22,7 @@
 </template>
 
 <script>
+import { std, stdurl } from '/src/std.ts';
 import {
     TablerModal,
     TablerLoading
@@ -43,7 +44,7 @@ export default {
     methods: {
         submit: async function() {
             this.loading = true;
-            await window.std(`/api/profile/asset/${this.asset.name}`, {
+            await std(`/api/profile/asset/${this.asset.name}`, {
                 method: 'POST',
             });
             this.loading = false;

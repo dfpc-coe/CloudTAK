@@ -13,6 +13,7 @@
 </template>
 
 <script>
+import { std, stdurl } from '/src/std.ts';
 import {
     IconFolder,
     IconDownload
@@ -36,10 +37,10 @@ export default {
     },
     methods: {
         fetch: async function() {
-            this.asset = await window.std(`/api/asset/${this.asset_id}`);
+            this.asset = await std(`/api/asset/${this.asset_id}`);
         },
         download: function() {
-            window.open(window.stdurl(`/api/asset/${this.asset_id}/raw`), "_blank")
+            window.open(stdurl(`/api/asset/${this.asset_id}/raw`), "_blank")
         }
     },
     components: {

@@ -126,6 +126,7 @@
 </template>
 
 <script>
+import { std, stdurl } from '/src/std.ts';
 import {
     TablerLoading,
     TablerInput,
@@ -234,7 +235,7 @@ export default {
                     url: this.url || this.server.url
                 }
 
-                const res = await window.std('/api/esri', {
+                const res = await std('/api/esri', {
                     method: 'POST',
                     body
                 });
@@ -257,7 +258,7 @@ export default {
         fetchPortal: async function() {
             this.loading.main = true;
             try {
-                const url = window.stdurl('/api/esri/portal');
+                const url = stdurl('/api/esri/portal');
                 if (this.token) {
                     url.searchParams.append('token', this.token.token);
                     url.searchParams.append('expires', this.token.expires);
@@ -265,7 +266,7 @@ export default {
 
                 url.searchParams.append('portal', this.url);
 
-                const res = await window.std(url);
+                const res = await std(url);
 
                 this.portal = res;
 
@@ -278,7 +279,7 @@ export default {
         fetchContent: async function() {
             this.loading.content = true;
             try {
-                const url = window.stdurl('/api/esri/portal/content');
+                const url = stdurl('/api/esri/portal/content');
                 if (this.token) {
                     url.searchParams.append('token', this.token.token);
                     url.searchParams.append('expires', this.token.expires);
@@ -286,7 +287,7 @@ export default {
                 url.searchParams.append('portal', this.url);
                 url.searchParams.append('title', this.contentFilter.title);
 
-                const res = await window.std(url);
+                const res = await std(url);
 
                 this.content = res;
             } catch (err) {
@@ -297,14 +298,14 @@ export default {
         fetchServers: async function() {
             this.loading.main = true;
             try {
-                const url = window.stdurl('/api/esri/portal/server');
+                const url = stdurl('/api/esri/portal/server');
                 if (this.token) {
                     url.searchParams.append('token', this.token.token);
                     url.searchParams.append('expires', this.token.expires);
                 }
                 url.searchParams.append('portal', this.url);
 
-                const res = await window.std(url);
+                const res = await std(url);
 
                 if (!res.servers) throw new Error('No Servers Present');
                 this.servers = res.servers;
@@ -318,12 +319,12 @@ export default {
 
             this.loading.main = true;
             try {
-                const url = window.stdurl('/api/esri/portal/service');
+                const url = stdurl('/api/esri/portal/service');
                 url.searchParams.append('token', this.token.token);
                 url.searchParams.append('expires', this.token.expires);
                 url.searchParams.append('portal', this.url);
 
-                const res = await window.std(url, { method: 'POST', body });
+                const res = await std(url, { method: 'POST', body });
 
                 this.server = {
                     url: res.encodedServiceURL

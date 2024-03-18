@@ -66,6 +66,7 @@
 </template>
 
 <script>
+import { std, stdurl } from '/src/std.ts';
 import PageFooter from './PageFooter.vue';
 import {
     IconTrash,
@@ -110,21 +111,21 @@ export default {
     methods: {
         query: async function() {
             this.loading.alerts = true;
-            const url = window.stdurl(`/api/layer/${this.$route.params.layerid}/alert`);
+            const url = stdurl(`/api/layer/${this.$route.params.layerid}/alert`);
             url.searchParams.append('filter', this.paging.filter);
             url.searchParams.append('limit', this.paging.limit);
             url.searchParams.append('page', this.paging.page);
-            this.list = await window.std(url);
+            this.list = await std(url);
             this.loading.alerts = false;
         },
         deleteAlerts: async function(id) {
             this.loading.alerts = true;
             if (id) {
-                await window.std(`/api/layer/${this.$route.params.layerid}/alert/${id}`, {
+                await std(`/api/layer/${this.$route.params.layerid}/alert/${id}`, {
                     method: 'DELETE'
                 });
             } else {
-                await window.std(`/api/layer/${this.$route.params.layerid}/alert`, {
+                await std(`/api/layer/${this.$route.params.layerid}/alert`, {
                     method: 'DELETE'
                 });
             }

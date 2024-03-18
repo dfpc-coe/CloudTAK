@@ -2,7 +2,7 @@
 <div>
     <div class='col-12 border-bottom border-light'>
         <div class='modal-header px-0 mx-2'>
-            <IconCircleArrowLeft @click='$emit("close")' size='32' class='cursor-pointer'/>
+            <IconCircleArrowLeft @click='$router.back()' size='32' class='cursor-pointer'/>
             <div class='modal-title'>BaseMaps</div>
             <div class='btn-list'>
                 <IconPlus @click='$router.push("/basemap/new")' size='32' class='cursor-pointer' v-tooltip='"Create BaseMap"'/>
@@ -36,6 +36,7 @@
 </template>
 
 <script>
+import { std, stdurl } from '/src/std.ts';
 import {
     TablerNone,
     TablerPager,
@@ -50,7 +51,7 @@ import {
     IconDownload,
     IconSearch
 } from '@tabler/icons-vue'
-import { useMapStore } from '/src/stores/map.js';
+import { useMapStore } from '/src/stores/map.ts';
 const mapStore = useMapStore();
 
 export default {
@@ -90,7 +91,7 @@ export default {
         setBasemap: function(basemap) {
             mapStore.removeLayerBySource('basemap')
 
-            const url = String(window.stdurl(`/api/basemap/${basemap.id}/tiles/`)) + `{z}/{x}/{y}?token=${localStorage.token}`;
+            const url = String(stdurl(`/api/basemap/${basemap.id}/tiles/`)) + `{z}/{x}/{y}?token=${localStorage.token}`;
             mapStore.map.addSource('basemap', { type: 'raster', tileSize: 256, tiles: [ url ] });
             mapStore.addLayer({
                 name: basemap.name,
@@ -111,11 +112,11 @@ export default {
         },
         fetchList: async function() {
             this.loading = true;
-            const url = window.stdurl('/api/basemap');
+            const url = stdurl('/api/basemap');
             if (this.query && this.paging.filter) url.searchParams.append('filter', this.paging.filter);
             url.searchParams.append('limit', this.paging.limit);
             url.searchParams.append('page', this.paging.page);
-            this.list = await window.std(url);
+            this.list = await std(url);
             this.loading = false;
         }
     },

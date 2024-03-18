@@ -136,6 +136,7 @@
 </template>
 
 <script>
+import { std, stdurl } from '/src/std.ts';
 import PageFooter from './PageFooter.vue';
 import Upload from './util/UploadP12.vue';
 import LoginCertModal from './util/LoginCertModal.vue';
@@ -182,7 +183,7 @@ export default {
     methods: {
         fetch: async function() {
             this.loading = true;
-            this.connection = await window.std(`/api/connection/${this.$route.params.connectionid}`);
+            this.connection = await std(`/api/connection/${this.$route.params.connectionid}`);
             this.connection.auth = { cert: '', key: '' }
             this.loading = false;
         },
@@ -225,13 +226,13 @@ export default {
                 const connection = JSON.parse(JSON.stringify(this.connection));
                 if (!this.regen) delete connection.auth;
 
-                const create = await window.std(`/api/connection/${this.$route.params.connectionid}`, {
+                const create = await std(`/api/connection/${this.$route.params.connectionid}`, {
                     method: 'PATCH',
                     body: connection
                 });
                 this.$router.push(`/connection/${create.id}`);
             } else {
-                const create = await window.std('/api/connection', {
+                const create = await std('/api/connection', {
                     method: 'POST',
                     body: this.connection
                 });
@@ -239,7 +240,7 @@ export default {
             }
         },
         del: async function() {
-            await window.std(`/api/connection/${this.$route.params.connectionid}`, {
+            await std(`/api/connection/${this.$route.params.connectionid}`, {
                 method: 'DELETE'
             });
             this.$router.push('/connection');

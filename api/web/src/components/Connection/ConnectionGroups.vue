@@ -35,6 +35,7 @@
 </template>
 
 <script>
+import { std, stdurl } from '/src/std.ts';
 import {
     IconEye,
     IconEyeOff,
@@ -77,7 +78,7 @@ export default {
     methods: {
         fetch: async function() {
             this.loading = true;
-            this.rawChannels = (await window.std(`/api/connection/${this.$route.params.connectionid}/channel`)).data;
+            this.rawChannels = (await std(`/api/connection/${this.$route.params.connectionid}/channel`)).data;
             this.loading = false;
         },
         setStatus: async function(channel, active=false) {
@@ -86,9 +87,9 @@ export default {
                 return ch;
             });
 
-            const url = window.stdurl('/api/marti/group');
+            const url = stdurl('/api/marti/group');
             url.searchParams.append('connection', this.$route.params.connectionid);
-            await window.std(url, {
+            await std(url, {
                 method: 'PUT',
                 body: this.rawChannels
             });

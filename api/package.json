@@ -34,6 +34,7 @@
         "@aws-sdk/lib-dynamodb": "^3.279.0",
         "@aws-sdk/lib-storage": "^3.299.0",
         "@humanwhocodes/momoa": "^3.0.0",
+        "@maplibre/maplibre-gl-style-spec": "^20.1.1",
         "@openaddresses/batch-error": "^2.1.4",
         "@openaddresses/batch-generic": "^17.0.0",
         "@openaddresses/batch-schema": "^10.7.0",

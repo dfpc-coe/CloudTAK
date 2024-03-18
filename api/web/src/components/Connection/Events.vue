@@ -17,6 +17,7 @@
 </template>
 
 <script>
+import { std, stdurl } from '/src/std.ts';
 import {
     IconTrash,
     IconPlayerPlay,
@@ -41,7 +42,7 @@ export default {
         this.ws.close();
     },
     mounted: function() {
-        const url = window.stdurl('/api');
+        const url = stdurl('/api');
         url.searchParams.append('connection', this.$route.params.connectionid);
         url.searchParams.append('token', localStorage.token);
         if (window.location.hostname === 'localhost') {

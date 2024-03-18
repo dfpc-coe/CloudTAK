@@ -39,12 +39,13 @@
                                     />
                                 </div>
                                 <div class='col-md-12'>
-                                    <div class='col-12 d-flex'>
-                                        <label>Data Groups</label>
-                                        <div class='ms-auto' v-if='!$route.params.dataid'>
-                                            <IconSettings @click='modal = true' size='32' class='cursor-pointer'/>
-                                        </div>
-                                    </div>
+                                    <TablerInput
+                                        label='Mission Sync Groups'
+                                        description='Choose which TAK Channels this Data Sync should be availiable in'
+                                        :value='data.mission_groups.length === 0 ? "All Groups" : data.mission_groups.join(",")'
+                                    >
+                                        <IconSettings v-if='!$route.params.dataid' @click='modal = true' size='32' class='cursor-pointer'/>
+                                    </TablerInput>
 
                                     <GroupSelectModal
                                         v-if='modal'
@@ -52,18 +53,6 @@
                                         @close='modal = false'
                                         v-model='data.mission_groups'
                                     />
-
-                                    <template v-if='data.mission_groups.length === 0'>
-                                        <div class='col-12'>
-                                            <span>All Groups</span>
-                                        </div>
-
-                                    </template>
-                                    <template v-else>
-                                        <div :key='group.name' v-for='group in data.mission_groups' class='col-12'>
-                                            <span v-text='group' class='mx-2'/>
-                                        </div>
-                                    </template>
                                 </div>
                                 <div class='col-md-12'>
                                     <TablerEnum
@@ -76,9 +65,20 @@
                                 </div>
                                 <div class="col-md-12">
                                     <TablerToggle
-                                        label='Misison Sync'
+                                        label='Mission Sync'
                                         description='If Enabled, Assets will be uploaded to the Mission'
                                         v-model='data.mission_sync'
+                                    />
+                                </div>
+                                <div class="col-md-12">
+                                    <TablerToggle
+                                        label='Mission Layer Diff'
+                                        description='
+                                            If Enabled only a single layer will be allowed to be associated with the data sync
+                                            and CoTs submitted will be diff against existing CoTs, with CoTs not in each new
+                                            FeatureSet being removed from the Mission Sync
+                                        '
+                                        v-model='data.mission_diff'
                                     />
                                 </div>
                                 <div class="col-md-12">
@@ -112,6 +112,7 @@
 </template>
 
 <script>
+import { std, stdurl } from '/src/std.ts';
 import PageFooter from './PageFooter.vue';
 import {
     TablerBreadCrumb,
@@ -144,6 +145,7 @@ export default {
                 mission_sync: true,
                 mission_groups: [],
                 mission_role: 'MISSION_SUBSCRIBER',
+                mission_diff: false,
                 description: '',
             }
         }
@@ -158,11 +160,11 @@ export default {
     methods: {
         fetch: async function() {
             this.loading.data = true;
-            this.data = await window.std(`/api/connection/${this.$route.params.connectionid}/data/${this.$route.params.dataid}`);
+            this.data = await std(`/api/connection/${this.$route.params.connectionid}/data/${this.$route.params.dataid}`);
             this.loading.data = false;
         },
         deleteData: async function() {
-            await window.std(`/api/connection/${this.$route.params.connectionid}/data/${this.$route.params.dataid}`, {
+            await std(`/api/connection/${this.$route.params.connectionid}/data/${this.$route.params.dataid}`, {
                 method: 'DELETE'
             });
 
@@ -181,15 +183,15 @@ export default {
                 const body = JSON.parse(JSON.stringify(this.data));
 
                 if (this.$route.params.dataid) {
-                    url = window.stdurl(`/api/connection/${this.$route.params.connectionid}/data/${this.$route.params.dataid}`);
+                    url = stdurl(`/api/connection/${this.$route.params.connectionid}/data/${this.$route.params.dataid}`);
                     method = 'PATCH'
                 } else {
-                    url = window.stdurl(`/api/connection/${this.$route.params.connectionid}/data`);
+                    url = stdurl(`/api/connection/${this.$route.params.connectionid}/data`);
                     method = 'POST'
                     body.connection = parseInt(this.$route.params.connectionid);
                 }
 
-                const create = await window.std(url, { method, body });
+                const create = await std(url, { method, body });
 
                 this.loading.data = false;
 
