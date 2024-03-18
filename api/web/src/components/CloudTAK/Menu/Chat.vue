@@ -32,7 +32,7 @@ import {
 import {
     IconCircleArrowLeft
 } from '@tabler/icons-vue'
-import { useCOTStore } from '/src/stores/cots.js';
+import { useCOTStore } from '/src/stores/cots.ts';
 const cotStore = useCOTStore();
 
 export default {
