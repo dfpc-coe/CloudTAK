@@ -121,6 +121,7 @@
 </template>
 
 <script>
+import { std, stdurl } from '/std.ts';
 import ConnectionSelect from '../util/ConnectionSelect.vue';
 import DataSelect from '../util/DataSelect.vue';
 import cronstrue from 'cronstrue';
@@ -209,7 +210,7 @@ export default {
         saveLayer: async function() {
             this.loading.save = true;
 
-            const layer = await window.std(`/api/layer/${this.$route.params.layerid}`, {
+            const layer = await std(`/api/layer/${this.$route.params.layerid}`, {
                 method: 'PATCH',
                 body: this.config
             });
@@ -240,7 +241,7 @@ export default {
             const task = match[1];
             const version = match[2];
 
-            const list = await window.std(`/api/task/${task}`);
+            const list = await std(`/api/task/${task}`);
 
             if (list.versions.indexOf(version) !== 0) {
                 this.newTaskVersion = list.versions[0];

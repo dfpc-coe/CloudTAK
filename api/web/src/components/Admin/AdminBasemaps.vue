@@ -61,6 +61,7 @@
 </template>
 
 <script>
+import { std, stdurl } from '/std.ts';
 import TableHeader from '../util/TableHeader.vue'
 import TableFooter from '../util/TableFooter.vue'
 import {
@@ -107,7 +108,7 @@ export default {
     },
     methods: {
         listSchema: async function() {
-            const schema = await window.std('/api/schema?method=GET&url=/basemap');
+            const schema = await std('/api/schema?method=GET&url=/basemap');
             this.header = ['name', 'type'].map((h) => {
                 return { name: h, display: true };
             });
@@ -126,11 +127,11 @@ export default {
         },
         fetchList: async function() {
             this.loading = true;
-            const url = window.stdurl('/api/basemap');
+            const url = stdurl('/api/basemap');
             if (this.query && this.paging.filter) url.searchParams.append('filter', this.paging.filter);
             url.searchParams.append('limit', this.paging.limit);
             url.searchParams.append('page', this.paging.page);
-            this.list = await window.std(url);
+            this.list = await std(url);
             this.loading = false;
         }
     },

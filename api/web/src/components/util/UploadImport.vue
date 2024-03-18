@@ -27,6 +27,7 @@
 </template>
 
 <script>
+import { std, stdurl } from '/std.ts';
 import {
     TablerLoading,
     TablerProgress
@@ -65,7 +66,7 @@ export default {
             const file = event.target.files[0];
             this.name = file.name;
 
-            const imported = await window.std('/api/import', {
+            const imported = await std('/api/import', {
                 method: 'POST',
                 body: {
                     name: this.name,
@@ -79,7 +80,7 @@ export default {
                 const xhr = new XMLHttpRequest()
                 const formData = new FormData()
 
-                xhr.open('PUT', window.stdurl(`/api/import/${imported.id}`), true)
+                xhr.open('PUT', stdurl(`/api/import/${imported.id}`), true)
                 xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
 
                 xhr.setRequestHeader('Authorization', `Bearer ${localStorage.token}`);

@@ -130,6 +130,7 @@
 </template>
 
 <script>
+import { std, stdurl } from '/std.ts';
 import PageFooter from './PageFooter.vue';
 import Upload from './util/Upload.vue';
 import {
@@ -180,7 +181,7 @@ export default {
         fetchTileJSON: async function() {
             this.loading = true;
             try {
-                this.basemap = await window.std('/api/basemap', {
+                this.basemap = await std('/api/basemap', {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'text/plain'
@@ -204,11 +205,11 @@ export default {
             };
         },
         uploadURL: function() {
-            return window.stdurl(`/api/basemap`);
+            return stdurl(`/api/basemap`);
         },
         fetch: async function() {
             this.loading = true;
-            this.basemap = await window.std(`/api/basemap/${this.$route.params.basemapid}`);
+            this.basemap = await std(`/api/basemap/${this.$route.params.basemapid}`);
             this.loading = false;
         },
         create: async function() {
@@ -229,13 +230,13 @@ export default {
                     if (!basemap.bounds || !basemap.bounds.length) delete basemap.bounds;
                     if (!basemap.center || !basemap.center.length) delete basemap.center;
 
-                    const create = await window.std(`/api/basemap/${this.$route.params.basemapid}`, {
+                    const create = await std(`/api/basemap/${this.$route.params.basemapid}`, {
                         method: 'PATCH',
                         body: basemap
                     });
                     this.$router.push(`/basemap/${create.id}`);
                 } else {
-                    const create = await window.std('/api/basemap', {
+                    const create = await std('/api/basemap', {
                         method: 'POST',
                         body: this.basemap
                     });
@@ -250,7 +251,7 @@ export default {
         del: async function() {
             this.loading = true;
             try {
-                await window.std(`/api/basemap/${this.$route.params.basemapid}`, {
+                await std(`/api/basemap/${this.$route.params.basemapid}`, {
                     method: 'DELETE'
                 });
                 this.$router.push('/basemap');

@@ -20,6 +20,7 @@
 </template>
 
 <script>
+import { std, stdurl } from '/std.ts';
 import {
     TablerNone,
     TablerLoading
@@ -53,8 +54,8 @@ export default {
     methods: {
         fetchList: async function() {
             this.loading = true;
-            const url = window.stdurl('/api/marti/api/contacts/all');
-            this.contacts = await window.std(url);
+            const url = stdurl('/api/marti/api/contacts/all');
+            this.contacts = await std(url);
             this.loading = false;
         },
     },

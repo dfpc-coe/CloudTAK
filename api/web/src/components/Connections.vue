@@ -80,6 +80,7 @@
 </template>
 
 <script>
+import { std, stdurl } from '/std.ts';
 import PageFooter from './PageFooter.vue';
 import ConnectionStatus from './Connection/Status.vue';
 import timeDiff from '../timediff.js';
@@ -129,11 +130,11 @@ export default {
         },
         fetchList: async function() {
             this.loading = true;
-            const url = window.stdurl('/api/connection');
+            const url = stdurl('/api/connection');
             url.searchParams.append('filter', this.paging.filter);
             url.searchParams.append('limit', this.paging.limit);
             url.searchParams.append('page', this.paging.page);
-            this.list = await window.std(url);
+            this.list = await std(url);
             this.loading = false;
         }
     },

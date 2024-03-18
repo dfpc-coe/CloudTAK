@@ -21,6 +21,7 @@
 </template>
 
 <script>
+import { std, stdurl } from '/std.ts';
 import {
     TablerNone,
     TablerLoading
@@ -47,8 +48,8 @@ export default {
     methods: {
         fetchList: async function() {
             this.loading = true;
-            const url = window.stdurl('/api/profile/chat');
-            this.chats = await window.std(url);
+            const url = stdurl('/api/profile/chat');
+            this.chats = await std(url);
             this.loading = false;
         },
     },

@@ -42,6 +42,7 @@
 </template>
 
 <script>
+import { std, stdurl } from '/std.ts';
 import PageFooter from './PageFooter.vue';
 import {
     TablerBreadCrumb,
@@ -79,21 +80,21 @@ export default {
     methods: {
         fetch: async function() {
             this.loading.icon = true;
-            this.icon = await window.std(`/api/iconset/${this.$route.params.iconset}/icon/${encodeURIComponent(this.$route.params.icon)}`);
+            this.icon = await std(`/api/iconset/${this.$route.params.iconset}/icon/${encodeURIComponent(this.$route.params.icon)}`);
             this.loading.icon = false;
         },
         submit: async function() {
             if (this.$route.params.icon) {
-                const url = await window.stdurl(`/api/iconset/${this.$route.params.iconset}/icon/${encodeURIComponent(this.$route.params.icon)}`);
+                const url = await stdurl(`/api/iconset/${this.$route.params.iconset}/icon/${encodeURIComponent(this.$route.params.icon)}`);
 
-                await window.std(url, {
+                await std(url, {
                     method: 'PATCH',
                     body: this.icon
                 });
             } else {
-                const url = await window.stdurl(`/api/iconset/${this.$route.params.iconset}/icon`);
+                const url = await stdurl(`/api/iconset/${this.$route.params.iconset}/icon`);
 
-                await window.std(url, {
+                await std(url, {
                     method: 'POST',
                     body: this.icon
                 });
@@ -102,10 +103,10 @@ export default {
             this.$router.push(`/iconset/${this.$route.params.iconset}`);
         },
         fetchSchema: async function() {
-            const url = await window.stdurl(`/api/schema`);
+            const url = await stdurl(`/api/schema`);
             url.searchParams.append('method', 'POST');
             url.searchParams.append('url', '/iconset/:iconset/icon');
-            this.schema = (await window.std(url)).body;
+            this.schema = (await std(url)).body;
         },
     },
     components: {

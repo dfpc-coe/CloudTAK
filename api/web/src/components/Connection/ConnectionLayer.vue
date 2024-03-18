@@ -39,6 +39,7 @@
 </template>
 
 <script>
+import { std, stdurl } from '/std.ts';
 import TableFooter from '../util/TableFooter.vue';
 import Alert from '../util/Alert.vue';
 import {
@@ -88,12 +89,12 @@ export default {
         listLayers: async function() {
             this.loading = true;
             try {
-                const url = window.stdurl('/api/layer');
+                const url = stdurl('/api/layer');
                 url.searchParams.append('connection', this.connection.id);
                 url.searchParams.append('limit', this.paging.limit);
                 url.searchParams.append('page', this.paging.page);
                 url.searchParams.append('filter', this.paging.filter);
-                this.list = await window.std(url);
+                this.list = await std(url);
             } catch (err) {
                 this.err = err;
             }

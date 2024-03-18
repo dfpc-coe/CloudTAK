@@ -87,6 +87,7 @@
 </template>
 
 <script>
+import { std, stdurl } from '/std.ts';
 import {
     TablerLoading
 } from '@tak-ps/vue-tabler';
@@ -152,7 +153,7 @@ export default {
         },
         invoke: async function() {
             this.loading.full = true;
-            await window.std(`/api/layer/${this.$route.params.layerid}/task/invoke`, {
+            await std(`/api/layer/${this.$route.params.layerid}/task/invoke`, {
                 method: 'POST'
             });
             this.loading.full = false;
@@ -167,7 +168,7 @@ export default {
             this.errors.cloudformation = false;
 
             try {
-                this.stack = await window.std(`/api/layer/${this.$route.params.layerid}/redeploy`, {
+                this.stack = await std(`/api/layer/${this.$route.params.layerid}/redeploy`, {
                     method: 'POST'
                 });
             } catch (err) {
@@ -187,7 +188,7 @@ export default {
             this.errors.cloudformation = false;
 
             try {
-                this.stack = await window.std(`/api/layer/${this.$route.params.layerid}/task`);
+                this.stack = await std(`/api/layer/${this.$route.params.layerid}/task`);
             } catch (err) {
                 this.errors.cloudformation = err;
             }
@@ -205,7 +206,7 @@ export default {
             this.errors.cloudwatch = false;
 
             try {
-                this.logs = (await window.std(`/api/layer/${this.$route.params.layerid}/task/logs`))
+                this.logs = (await std(`/api/layer/${this.$route.params.layerid}/task/logs`))
                     .logs
                     .map((log) => { return log.message })
                     .reverse()
@@ -219,7 +220,7 @@ export default {
         },
         postStack: async function() {
             this.loading.full = true;
-            this.stack = await window.std(`/api/layer/${this.$route.params.layerid}/task`, {
+            this.stack = await std(`/api/layer/${this.$route.params.layerid}/task`, {
                 method: 'POST'
             });
             this.loading.full = false;

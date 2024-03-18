@@ -42,6 +42,7 @@
 </template>
 
 <script>
+import { std, stdurl } from '/std.ts';
 import PageFooter from './PageFooter.vue';
 import CombinedIcons from './cards/Icons.vue'
 import {
@@ -70,18 +71,18 @@ export default {
     },
     methods: {
         download: async function() {
-            window.location.href = window.stdurl(`api/iconset/${this.iconset.uid}?format=zip&download=true&token=${localStorage.token}`);
+            window.location.href = stdurl(`api/iconset/${this.iconset.uid}?format=zip&download=true&token=${localStorage.token}`);
         },
         fetch: async function() {
             this.loading = true;
-            const url = window.stdurl(`/api/iconset/${this.$route.params.iconset}`);
-            this.iconset = await window.std(url);
+            const url = stdurl(`/api/iconset/${this.$route.params.iconset}`);
+            this.iconset = await std(url);
             this.loading = false;
         },
         deleteIconset: async function() {
             this.loading = true;
-            const url = window.stdurl(`/api/iconset/${this.$route.params.iconset}`);
-            this.iconset = await window.std(url, {
+            const url = stdurl(`/api/iconset/${this.$route.params.iconset}`);
+            this.iconset = await std(url, {
                 method: 'DELETE'
             });
             this.$router.push('/iconset');

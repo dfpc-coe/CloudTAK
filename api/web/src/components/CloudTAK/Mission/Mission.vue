@@ -217,6 +217,7 @@
 </template>
 
 <script>
+import { std, stdurl } from '/std.ts';
 import {
     IconPlus,
     IconVolcano,
@@ -332,14 +333,14 @@ export default {
             ]);
         },
         downloadFile: function(file) {
-            const url = window.stdurl(`/api/marti/api/files/${file.hash}`)
+            const url = stdurl(`/api/marti/api/files/${file.hash}`)
             url.searchParams.append('token', localStorage.token);
             url.searchParams.append('name', file.name);
             return url;
         },
         deleteLog: async function(log) {
             this.loading.logs = true;
-            await window.std(`/api/marti/missions/${this.mission.name}/log/${log.id}`, {
+            await std(`/api/marti/missions/${this.mission.name}/log/${log.id}`, {
                 method: 'DELETE',
             });
             this.loading.logs = false;
@@ -347,7 +348,7 @@ export default {
         },
         submitLog: async function(file) {
             this.loading.logs = true;
-            await window.std(`/api/marti/missions/${this.mission.name}/log`, {
+            await std(`/api/marti/missions/${this.mission.name}/log`, {
                 method: 'POST',
                 body: {
                     content: this.createLog
@@ -358,7 +359,7 @@ export default {
             this.fetchMission();
         },
         deleteFile: async function(file) {
-            await window.std(`/api/marti/missions/${this.mission.name}/upload/${file.hash}`, {
+            await std(`/api/marti/missions/${this.mission.name}/upload/${file.hash}`, {
                 method: 'DELETE'
             });
 
@@ -372,10 +373,10 @@ export default {
         },
         fetchImports: async function() {
             try {
-                const url = await window.stdurl(`/api/import`);
+                const url = await stdurl(`/api/import`);
                 url.searchParams.append('mode', 'Mission');
                 url.searchParams.append('mode_id', this.mission.guid);
-                this.imports = (await window.std(url)).items.filter((i) => {
+                this.imports = (await std(url)).items.filter((i) => {
                     return !['Success'].includes(i.status);
                 });
             } catch (err) {
@@ -386,8 +387,8 @@ export default {
         fetchChanges: async function() {
             this.loading.changes = true;
             try {
-                const url = await window.stdurl(`/api/marti/missions/${this.mission.name}/changes`);
-                this.changes = (await window.std(url)).data;
+                const url = await stdurl(`/api/marti/missions/${this.mission.name}/changes`);
+                this.changes = (await std(url)).data;
             } catch (err) {
                 this.err = err;
             }
@@ -395,8 +396,8 @@ export default {
         },
         fetchSubscriptions: async function() {
             try {
-                const url = await window.stdurl(`/api/marti/missions/${this.mission.name}/subscriptions/roles`);
-                this.subscriptions = (await window.std(url)).data;
+                const url = await stdurl(`/api/marti/missions/${this.mission.name}/subscriptions/roles`);
+                this.subscriptions = (await std(url)).data;
             } catch (err) {
                 this.err = err;
             }
@@ -405,8 +406,8 @@ export default {
         deleteMission: async function() {
             try {
                 this.loading.delete = true;
-                const url = window.stdurl(`/api/marti/missions/${this.mission.name}`);
-                const list = await window.std(url, {
+                const url = stdurl(`/api/marti/missions/${this.mission.name}`);
+                const list = await std(url, {
                     method: 'DELETE'
                 });
                 if (list.data.length !== 1) throw new Error('Mission Error');
@@ -419,10 +420,10 @@ export default {
         fetchMission: async function() {
             try {
                 this.loading.mission = true;
-                const url = window.stdurl(`/api/marti/missions/${this.mission.name}`);
+                const url = stdurl(`/api/marti/missions/${this.mission.name}`);
                 url.searchParams.append('changes', 'false');
                 url.searchParams.append('logs', 'true');
-                this.mission = await window.std(url);
+                this.mission = await std(url);
             } catch (err) {
                 this.err = err;
             }

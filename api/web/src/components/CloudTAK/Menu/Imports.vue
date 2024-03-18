@@ -29,6 +29,7 @@
 </template>
 
 <script>
+import { std, stdurl } from '/std.ts';
 import {
     TablerNone,
     TablerPager,
@@ -72,12 +73,12 @@ export default {
         },
         fetchList: async function() {
             this.loading = true;
-            const url = window.stdurl('/api/import');
+            const url = stdurl('/api/import');
             url.searchParams.append('order', 'desc');
             url.searchParams.append('page', this.paging.page);
             url.searchParams.append('limit', this.paging.limit);
             url.searchParams.append('sort', 'created');
-            this.list = await window.std(url);
+            this.list = await std(url);
             this.loading = false;
         },
     },

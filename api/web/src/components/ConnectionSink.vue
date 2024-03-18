@@ -73,6 +73,7 @@
 </template>
 
 <script>
+import { std, stdurl } from '/std.ts';
 import PageFooter from './PageFooter.vue';
 import timeDiff from '../timediff.js';
 import {
@@ -104,7 +105,7 @@ export default {
         },
         fetch: async function() {
             this.loading = true;
-            this.sink = await window.std(`/api/connection/${this.$route.params.connectionid}/sink/${this.$route.params.sinkid}`);
+            this.sink = await std(`/api/connection/${this.$route.params.connectionid}/sink/${this.$route.params.sinkid}`);
             this.loading = false;
         },
     },

@@ -21,6 +21,7 @@
 </template>
 
 <script>
+import { std, stdurl } from '/std.ts';
 import {
     TablerLoading,
     TablerNone,
@@ -51,7 +52,7 @@ export default {
     methods: {
         fetch: async function() {
             this.loading.job = true;
-            const job = await window.std(`/api/profile/job/${this.$route.params.jobid}`);
+            const job = await std(`/api/profile/job/${this.$route.params.jobid}`);
             if (job.status === 'SUBMITTED') job.status = 'Unknown';
             if (job.status === 'PENDING') job.status = 'Pending';
             if (job.status === 'RUNNABLE') job.status = 'Pending';
@@ -65,7 +66,7 @@ export default {
         },
         fetchLogs: async function() {
             this.loading.logs = true;
-            this.logs = (await window.std(`/api/profile/job/${this.$route.params.jobid}/logs`))
+            this.logs = (await std(`/api/profile/job/${this.$route.params.jobid}/logs`))
                 .logs
                 .map((log) => { return log.message })
                 .join('\n');

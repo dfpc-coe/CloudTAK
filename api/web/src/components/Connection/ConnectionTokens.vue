@@ -40,6 +40,7 @@
 </template>
 
 <script>
+import { std, stdurl } from '/std.ts';
 import TokenModal from './TokenModal.vue';
 import {
     IconPlus,
@@ -73,7 +74,7 @@ export default {
         fetch: async function() {
             this.token = false;
             this.loading = true;
-            this.tokens = await window.std(`/api/connection/${this.$route.params.connectionid}/token`);
+            this.tokens = await std(`/api/connection/${this.$route.params.connectionid}/token`);
             this.loading = false;
         },
     },

@@ -91,6 +91,7 @@
 </template>
 
 <script>
+import { std, stdurl } from '/std.ts';
 import {
     IconLocationOff,
     IconLocation,
@@ -264,7 +265,7 @@ export default {
             });
         },
         connectSocket: function() {
-            const url = window.stdurl('/api');
+            const url = stdurl('/api');
             url.searchParams.append('format', 'geojson');
             url.searchParams.append('connection', this.user.email);
             url.searchParams.append('token', localStorage.token);
@@ -394,22 +395,22 @@ export default {
         mountMap: async function() {
             let basemap, terrain;
 
-            const burl = window.stdurl('/api/basemap');
+            const burl = stdurl('/api/basemap');
             burl.searchParams.append('type', 'raster');
-            const basemaps = await window.std(burl);
+            const basemaps = await std(burl);
             if (basemaps.items.length > 0) {
                 basemap = basemaps.items[0];
-                basemap.url = String(window.stdurl(`/api/basemap/${basemap.id}/tiles/`)) + `{z}/{x}/{y}?token=${localStorage.token}`;
+                basemap.url = String(stdurl(`/api/basemap/${basemap.id}/tiles/`)) + `{z}/{x}/{y}?token=${localStorage.token}`;
             }
 
-            const turl = window.stdurl('/api/basemap');
+            const turl = stdurl('/api/basemap');
             turl.searchParams.append('type', 'raster-dem');
 
             /* Disabled for now
-            const terrains = await window.std(turl);
+            const terrains = await std(turl);
             if (terrains.items.length > 0) {
                 terrain = terrains.items[0];
-                terrain.url = String(window.stdurl(`/api/basemap/${terrain.id}/tiles/`)) + `{z}/{x}/{y}?token=${localStorage.token}`;
+                terrain.url = String(stdurl(`/api/basemap/${terrain.id}/tiles/`)) + `{z}/{x}/{y}?token=${localStorage.token}`;
             }
             */
 
@@ -418,9 +419,9 @@ export default {
             mapStore.map.once('idle', async () => {
                 await mapStore.initLayers(basemap);
 
-                const iconsets = await window.std('/api/iconset');
+                const iconsets = await std('/api/iconset');
                 for (const iconset of iconsets.items) {
-                    mapStore.map.addSprite(iconset.uid, String(window.stdurl(`/api/icon/sprite?token=${localStorage.token}&iconset=${iconset.uid}`)))
+                    mapStore.map.addSprite(iconset.uid, String(stdurl(`/api/icon/sprite?token=${localStorage.token}&iconset=${iconset.uid}`)))
                 }
 
                 await mapStore.initOverlays();

@@ -107,7 +107,7 @@ import {
     TablerLoading,
     TablerError
 } from '@tak-ps/vue-tabler';
-import { std, stdurl } from '../std.js';
+import { std, stdurl } from '../std.ts';
 
 export default {
     name: 'Tak-PS-ETL',

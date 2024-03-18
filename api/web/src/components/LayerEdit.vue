@@ -136,6 +136,7 @@
 </template>
 
 <script>
+import { std, stdurl } from '/std.ts';
 import PageFooter from './PageFooter.vue';
 import cronstrue from 'cronstrue';
 import ConnectionSelect from './util/ConnectionSelect.vue';
@@ -204,11 +205,11 @@ export default {
         },
         fetch: async function() {
             this.loading.layer = true;
-            this.layer = await window.std(`/api/layer/${this.$route.params.layerid}`);
+            this.layer = await std(`/api/layer/${this.$route.params.layerid}`);
             this.loading.layer = false;
         },
         deleteLayer: async function() {
-            await window.std(`/api/layer/${this.$route.params.layerid}`, {
+            await std(`/api/layer/${this.$route.params.layerid}`, {
                 method: 'DELETE'
             });
 
@@ -230,8 +231,8 @@ export default {
             try {
                 let url, method;
                 if (this.$route.params.layerid) {
-                    url = window.stdurl(`/api/layer/${this.$route.params.layerid}`);
-                    layer = await window.std(url, {
+                    url = stdurl(`/api/layer/${this.$route.params.layerid}`);
+                    layer = await std(url, {
                         method: 'PATCH',
                         body: {
                             name: this.layer.name,
@@ -241,14 +242,14 @@ export default {
                         }
                     });
                 } else {
-                    url = window.stdurl(`/api/layer`);
+                    url = stdurl(`/api/layer`);
 
                     layer = JSON.parse(JSON.stringify(this.layer));
 
                     if (this.layer.connection) delete layer.data;
                     if (this.layer.data) delete layer.connection;
 
-                    layer = await window.std(url, {
+                    layer = await std(url, {
                         method: 'POST',
                         body: layer
                     });

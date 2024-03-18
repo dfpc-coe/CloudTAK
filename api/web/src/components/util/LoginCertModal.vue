@@ -32,6 +32,7 @@
 </template>
 
 <script>
+import { std, stdurl } from '/std.ts';
 import {
     TablerModal,
     TablerInput,
@@ -55,7 +56,7 @@ export default {
         generate: async function() {
             this.loading.generate = true;
             try {
-                const res = await window.std('/api/marti/signClient', {
+                const res = await std('/api/marti/signClient', {
                     method: 'POST',
                     body: this.body
                 });

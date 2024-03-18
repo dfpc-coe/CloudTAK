@@ -28,6 +28,7 @@
 </template>
 
 <script>
+import { std, stdurl } from '/std.ts';
 import {
     TablerNone,
     TablerLoading
@@ -77,8 +78,8 @@ export default {
                 return ch;
             });
 
-            const url = window.stdurl('/api/marti/group');
-            await window.std(url, {
+            const url = stdurl('/api/marti/group');
+            await std(url, {
                 method: 'PUT',
                 body: this.rawChannels
             });
@@ -87,9 +88,9 @@ export default {
         },
         fetchList: async function() {
             this.loading = true;
-            const url = window.stdurl('/api/marti/group');
+            const url = stdurl('/api/marti/group');
             url.searchParams.append('useCache', 'true');
-            this.rawChannels = (await window.std(url)).data;
+            this.rawChannels = (await std(url)).data;
             this.loading = false;
         },
     },
