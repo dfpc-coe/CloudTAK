@@ -37,7 +37,7 @@ import {
     IconCircle,
     IconPlus,
 } from '@tabler/icons-vue';
-import { useMapStore } from '/src/stores/map.js';
+import { useMapStore } from '/src/stores/map.ts';
 import { mapState } from 'pinia'
 const mapStore = useMapStore();
 

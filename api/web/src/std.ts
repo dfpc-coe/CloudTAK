@@ -1,4 +1,4 @@
-export function stdurl(url) {
+export function stdurl(url: string | URL): URL {
     try {
         url = new URL(url);
     } catch (err) {
@@ -17,7 +17,7 @@ export function stdurl(url) {
  * @param {URL|String} url      - Full URL or API fragment to request
  * @param {Object} [opts={}]    - Options
  */
-export async function std(url, opts = {}) {
+export async function std(url: string | URL, opts: any = {}): Promise<any> {
     url = window.stdurl(url)
 
     try {
@@ -57,6 +57,8 @@ export async function std(url, opts = {}) {
 }
 
 export default function init() {
+    //@ts-expect-error
     window.stdurl = stdurl;
+    //@ts-expect-error
     window.std = std;
 }

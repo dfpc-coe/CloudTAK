@@ -7,7 +7,7 @@ import FloatingVue from 'floating-vue'
 
 import App from './App.vue'
 
-import std from './std.js';
+import std from './std.ts';
 std();
 
 const router = new VueRouter.createRouter({

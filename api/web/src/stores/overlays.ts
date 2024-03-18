@@ -4,10 +4,16 @@ import * as pmtiles from 'pmtiles';
 import pointOnFeature from '@turf/point-on-feature';
 import { useCOTStore } from './cots.js'
 const cotStore = useCOTStore();
-import
+import type { ProfileOverlayResponse } from '../../../lib/types.js';
+import type { OverlayContainer } from './map.js';
+import type { Static } from '@sinclair/typebox';
 
 export const useOverlayStore = defineStore('overlays', {
-    state: () => {
+    state: (): {
+        initialized: boolean;
+        overlays: Static<typeof ProfileOverlayResponse>[],
+        subscriptions: Map<string, Static<typeof ProfileOverlayResponse>>
+    } => {
         return {
             initialized: false,
             overlays: [],
@@ -15,27 +21,27 @@ export const useOverlayStore = defineStore('overlays', {
         }
     },
     actions: {
-        saveOverlay: async function(layer) {
+        saveOverlay: async function(container: Static<typeof OverlayContainer>): Promise<number> {
             const overlay = await std('/api/profile/overlay', {
                 method: 'POST',
-                body: layer
+                body: container
             });
 
             await this.list()
 
             return overlay.id;
         },
-        updateOverlay: async function(layer) {
-            const overlay = await std(`/api/profile/overlay/${layer.id}`, {
+        updateOverlay: async function(container: Static<typeof OverlayContainer>): Promise<number> {
+            const overlay = await std(`/api/profile/overlay/${container.id}`, {
                 method: 'PATCH',
-                body: layer
+                body: container
             });
 
             await this.list()
 
             return overlay.id;
         },
-        deleteOverlay: async function(overlay_id: number) {
+        deleteOverlay: async function(overlay_id: number): Promise<void> {
             await std(`/api/profile/overlay?id=${overlay_id}`, {
                 method: 'DELETE'
             });
@@ -43,14 +49,15 @@ export const useOverlayStore = defineStore('overlays', {
             await this.list()
         },
         list: async function() {
+            // @ts-ignore Eventually Type API reqs
             this.overlays = (await std(`/api/profile/overlay`)).items;
 
             this.subscriptions.clear();
             for (const overlay of this.overlays) {
                 if (overlay.mode === 'mission') {
                     // mode_id is GUID for mission type
-                    this.subscriptions.set(overlay.mode_id, overlay);
-                    await cotStore.loadMission(overlay.mode_id);
+                    this.subscriptions.set(String(overlay.mode_id), overlay);
+                    await cotStore.loadMission(String(overlay.mode_id));
                 }
             }
 

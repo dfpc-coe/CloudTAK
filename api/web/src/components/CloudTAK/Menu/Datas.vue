@@ -84,7 +84,7 @@
 </template>
 
 <script>
-import { useMapStore } from '/src/stores/map.js';
+import { useMapStore } from '/src/stores/map.ts';
 const mapStore = useMapStore();
 
 import {

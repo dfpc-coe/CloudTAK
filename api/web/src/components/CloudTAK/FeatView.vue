@@ -47,7 +47,7 @@
 </template>
 
 <script>
-import { useMapStore } from '/src/stores/map.js';
+import { useMapStore } from '/src/stores/map.ts';
 import pointOnFeature from '@turf/point-on-feature';
 import Coordinate from './util/Coordinate.vue';
 const mapStore = useMapStore();

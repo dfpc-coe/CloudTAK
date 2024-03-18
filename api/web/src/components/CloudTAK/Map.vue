@@ -117,10 +117,10 @@ import CloudTAKFeatView from './FeatView.vue';
 import RadialMenu from './RadialMenu/RadialMenu.vue';
 import moment from 'moment';
 import { mapState, mapActions } from 'pinia'
-import { useMapStore } from '/src/stores/map.js';
+import { useMapStore } from '/src/stores/map.ts';
 import { useOverlayStore } from '/src/stores/overlays.ts';
 import { useProfileStore } from '/src/stores/profile.js';
-import { useCOTStore } from '/src/stores/cots.js';
+import { useCOTStore } from '/src/stores/cots.ts';
 const cotStore = useCOTStore();
 const mapStore = useMapStore();
 const overlayStore = useOverlayStore();

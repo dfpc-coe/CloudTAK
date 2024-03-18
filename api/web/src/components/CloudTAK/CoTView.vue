@@ -53,7 +53,7 @@
 </template>
 
 <script>
-import { useMapStore } from '/src/stores/map.js';
+import { useMapStore } from '/src/stores/map.ts';
 const mapStore = useMapStore();
 import {
     TablerInput,
@@ -69,7 +69,7 @@ import {
     IconZoomPan,
     IconCode
 } from '@tabler/icons-vue';
-import { useCOTStore } from '/src/stores/cots.js';
+import { useCOTStore } from '/src/stores/cots.ts';
 const cotStore = useCOTStore();
 
 export default {

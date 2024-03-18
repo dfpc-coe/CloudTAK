@@ -1,10 +1,15 @@
 import { defineStore } from 'pinia'
 import pointOnFeature from '@turf/point-on-feature';
-import { std, stdurl } from '../std.js';
+import { std, stdurl } from '../std.ts';
 import moment from 'moment';
+import type { Feature } from 'geojson';
 
 export const useCOTStore = defineStore('cots', {
-    state: () => {
+    state: (): {
+        archive: Map<string, Feature>;
+        cots: Map<string, Feature>;
+        subscriptions: Map<string, Map<string, Feature>>;
+    } => {
         return {
             archive: new Map(),     // Store all archived CoT messages
             cots: new Map(),        // Store all on-screen CoT messages
@@ -15,7 +20,7 @@ export const useCOTStore = defineStore('cots', {
         /**
          * Load Archived CoTs from localStorage
          */
-        loadArchive: function() {
+        loadArchive: function(): void {
             const archive = JSON.parse(localStorage.getItem('archive') || '[]');
             for (const a of archive) {
                 this.archive.set(a.id, a);
@@ -26,7 +31,7 @@ export const useCOTStore = defineStore('cots', {
         /**
          * Load Latest CoTs from Mission Sync
          */
-        loadMission: async function(guid) {
+        loadMission: async function(guid: string): Promise<void> {
              try {
                  const fc = await window.std(`/api/marti/missions/${encodeURIComponent(guid)}/cot`);
                  for (const feat of fc.features) this.add(feat, guid);
@@ -39,7 +44,7 @@ export const useCOTStore = defineStore('cots', {
          * Save Archived CoTs from localStorage - called automatically every time an
          * archived CoT changes
          */
-        saveArchive: function() {
+        saveArchive: function(): void {
             localStorage.setItem('archive', JSON.stringify(Array.from(this.archive.values())))
         },
 
@@ -67,7 +72,7 @@ export const useCOTStore = defineStore('cots', {
         /**
          * Update a feature that exists in the store - bypasses feature standardization
          */
-        update: function(feat) {
+        update: function(feat: Feature): void {
             this.cots.set(feat.id, feat);
 
             if (feat.properties.archive) {
@@ -78,19 +83,19 @@ export const useCOTStore = defineStore('cots', {
         /**
          * Return a CoT by ID if it exists
          */
-        get: function(id) {
+        get: function(id: string): Feature {
             return this.cots.get(id);
         },
         /**
          * Returns if the CoT is present in the store given the ID
          */
-        has: function(id) {
+        has: function(id: string) {
             return this.cots.has(id);
         },
         /**
          * Remove a given CoT from the store
          */
-        delete: function(id) {
+        delete: function(id: string) {
             this.cots.delete(id);
             if (this.archive.has(id)) {
                 this.archive.delete(id);
@@ -100,7 +105,7 @@ export const useCOTStore = defineStore('cots', {
         /**
          * Empty the store
          */
-        clear: function() {
+        clear: function(): void {
             this.cots.clear();
             this.archive.clear();
             localStorage.removeItem('archive');
@@ -108,9 +113,11 @@ export const useCOTStore = defineStore('cots', {
         /**
          * Add a CoT GeoJSON to the store and modify props to meet MapLibre style requirements
          */
-        add: function(feat, mission_guid=null) {
+        add: function(feat: Feature, mission_guid=null) {
             //Vector Tiles only support integer IDs
             feat.properties.id = feat.id;
+
+            if (!feat.properties) feat.properties = {};
 
             if (!feat.properties.center) {
                 feat.properties.center = pointOnFeature(feat.geometry).geometry.coordinates;
