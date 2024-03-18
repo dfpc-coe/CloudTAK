@@ -45,7 +45,7 @@
 </template>
 
 <script>
-import { std, stdurl } from '/std.ts';
+import { std, stdurl } from '/src/std.ts';
 import TableFooter from '../util/TableFooter.vue';
 import Alert from '../util/Alert.vue';
 import {

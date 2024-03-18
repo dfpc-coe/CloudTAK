@@ -121,7 +121,7 @@
 </template>
 
 <script>
-import { std, stdurl } from '/std.ts';
+import { std, stdurl } from '/src/std.ts';
 import ConnectionSelect from '../util/ConnectionSelect.vue';
 import DataSelect from '../util/DataSelect.vue';
 import cronstrue from 'cronstrue';

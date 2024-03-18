@@ -42,7 +42,7 @@
 </template>
 
 <script>
-import { std, stdurl } from '/std.ts';
+import { std, stdurl } from '/src/std.ts';
 import PageFooter from './PageFooter.vue';
 import LayerQueryMap from './LayerQuery/Map.vue';
 import Alert from './util/Alert.vue';

@@ -7,7 +7,8 @@ import pointOnFeature from '@turf/point-on-feature';
 import { useOverlayStore } from './overlays.js'
 import type { Basemap } from '../types/types.js';
 import type { LayerSpecification } from 'maplibre-gl';
-import { Static, Type } from '@sinclair/typebox';
+import { Type } from '@sinclair/typebox';
+import type { Static } from '@sinclair/typebox';
 const overlayStore = useOverlayStore();
 
 export const OverlayContainer = Type.Object({
@@ -49,8 +50,6 @@ export const useMapStore = defineStore('cloudtak', {
             isLoaded: false,
             bearing: 0,
             radial: {
-                mode,
-                cot,
                 x: 0,
                 y: 0,
             },

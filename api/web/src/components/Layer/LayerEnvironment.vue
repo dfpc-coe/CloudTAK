@@ -41,7 +41,7 @@
 </template>
 
 <script>
-import { std, stdurl } from '/std.ts';
+import { std, stdurl } from '/src/std.ts';
 import {
     TablerInput,
     TablerLoading,

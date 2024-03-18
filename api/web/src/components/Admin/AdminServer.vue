@@ -111,7 +111,7 @@
 </template>
 
 <script>
-import { std, stdurl } from '/std.ts';
+import { std, stdurl } from '/src/std.ts';
 import Upload from '../util/UploadP12.vue';
 import {
     TablerBreadCrumb,

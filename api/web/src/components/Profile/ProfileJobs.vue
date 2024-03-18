@@ -45,7 +45,7 @@
 </template>
 
 <script>
-import { std, stdurl } from '/std.ts';
+import { std, stdurl } from '/src/std.ts';
 import Alert from '../util/Alert.vue';
 import Status from '../util/Status.vue';
 import {
