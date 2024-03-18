@@ -69,6 +69,7 @@
 </template>
 
 <script>
+import { std, stdurl } from '/src/std.ts';
 import {
     IconLock,
     IconLockOpen,
@@ -119,7 +120,7 @@ export default {
             try {
                 this.loading.mission = true;
 
-                const url = window.stdurl(`/api/marti/missions/${this.mission.name}`);
+                const url = stdurl(`/api/marti/missions/${this.mission.name}`);
 
                 if (this.mission.role === 'Subscriber') url.searchParams.append('defaultRole', 'MISSION_SUBSCRIBER');
                 if (this.mission.role === 'Read-Only') url.searchParams.append('defaultRole', 'MISSION_READONLY_SUBSCRIBER');
@@ -130,7 +131,7 @@ export default {
                 if (this.mission.passwordProtected) url.searchParams.append('password', this.mission.password);
                 if (this.connection) url.searchParams.append('connection', this.connection);
 
-                const res = await window.std(url, {
+                const res = await std(url, {
                     method: 'POST',
                 });
 

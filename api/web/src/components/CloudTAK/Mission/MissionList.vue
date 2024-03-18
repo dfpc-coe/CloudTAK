@@ -45,6 +45,7 @@
 </template>
 
 <script>
+import { std, stdurl } from '/src/std.ts';
 import {
     IconPlus,
     IconLock,
@@ -82,9 +83,9 @@ export default {
 
             try {
                 this.loading = true;
-                const url = window.stdurl('/api/marti/mission');
+                const url = stdurl('/api/marti/mission');
                 url.searchParams.append('passwordProtected', 'true');
-                this.list = await window.std(url);
+                this.list = await std(url);
             } catch (err) {
                 this.err = err;
             }

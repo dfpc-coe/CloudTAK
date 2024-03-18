@@ -8,9 +8,8 @@ import { Connection } from './schema.js';
 import { InferSelectModel } from 'drizzle-orm';
 import sleep from './sleep.js';
 import TAKAPI, { APIAuthCertificate, } from '../lib/tak-api.js';
-import ConnectionConfig, {
-    MachineConnConfig
-}from './connection-config.js';
+import type ConnectionConfig from './connection-config.js';
+import { MachineConnConfig } from './connection-config.js';
 
 export class ConnectionClient {
     config: ConnectionConfig;

@@ -48,6 +48,7 @@
 </template>
 
 <script>
+import { std, stdurl } from '/src/std.ts';
 import {
     TablerNone,
     TablerPager,
@@ -92,18 +93,18 @@ export default {
     },
     methods: {
         iconurl: function(icon) {
-            const url = window.stdurl(`/api/iconset/${icon.iconset}/icon/${encodeURIComponent(icon.name)}/raw`);
+            const url = stdurl(`/api/iconset/${icon.iconset}/icon/${encodeURIComponent(icon.name)}/raw`);
             url.searchParams.append('token', localStorage.token);
             return String(url);
         },
         fetchList: async function() {
             this.loading = true;
-            const url = window.stdurl('/api/icon');
+            const url = stdurl('/api/icon');
             url.searchParams.append('filter', this.paging.filter);
             url.searchParams.append('limit', this.paging.limit);
             url.searchParams.append('page', this.paging.page);
             if (this.iconset) url.searchParams.append('iconset', this.iconset);
-            this.list = await window.std(url);
+            this.list = await std(url);
             this.loading = false;
         }
     },

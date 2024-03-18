@@ -1,8 +1,11 @@
 import TAKAPI from '../tak-api.js';
+import TAK from '@tak-ps/node-tak';
+import { CoT } from '@tak-ps/node-tak';
 import { Type, Static } from '@sinclair/typebox';
 import Err from '@openaddresses/batch-error';
 import { Readable } from 'node:stream'
 import { TAKList } from './types.js';
+import { Feature } from 'geojson';
 
 export const Mission = Type.Object({
     name: Type.String(),
@@ -181,6 +184,26 @@ export default class {
             method: 'GET',
             headers: this.#headers(opts),
         });
+    }
+
+    async latestFeats(
+        name: string,
+        opts?: Static<typeof MissionOptions>
+    ): Promise<Feature[]> {
+        const feats: Feature[] = [];
+
+        let partial = {
+            event: '',
+            remainder: await this.latestCots(name, opts),
+            discard: ''
+        };
+
+        do {
+            partial = TAK.findCoT(partial.remainder)
+            if (partial && partial.event) feats.push((new CoT(partial.event)).to_geojson());
+        } while (partial && partial.remainder);
+
+        return feats;
     }
 
     async latestCots(

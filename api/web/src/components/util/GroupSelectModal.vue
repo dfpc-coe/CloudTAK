@@ -22,6 +22,7 @@
 </template>
 
 <script>
+import { std, stdurl } from '/src/std.ts';
 import {
     TablerModal,
     TablerInput,
@@ -73,11 +74,11 @@ export default {
 
             let list;
             if (this.connection) {
-                const url = window.stdurl(`/api/connection/${this.connection}/channel`);
-                list = await window.std(url);
+                const url = stdurl(`/api/connection/${this.connection}/channel`);
+                list = await std(url);
             } else {
-                const url = window.stdurl('/api/marti/group');
-                list = await window.std(url);
+                const url = stdurl('/api/marti/group');
+                list = await std(url);
             }
 
             const channels = {};

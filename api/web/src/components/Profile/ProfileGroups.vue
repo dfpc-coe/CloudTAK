@@ -29,6 +29,7 @@
 </template>
 
 <script>
+import { std, stdurl } from '/src/std.ts';
 import {
     IconRefresh
 } from '@tabler/icons-vue';
@@ -53,7 +54,7 @@ export default {
     methods: {
         fetch: async function() {
             this.loading = true;
-            this.list = await window.std('/api/marti/group');
+            this.list = await std('/api/marti/group');
             this.loading = false;
         },
     },

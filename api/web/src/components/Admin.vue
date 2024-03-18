@@ -34,6 +34,10 @@
                                             "active": $route.name === "admin-layer",
                                             "cursor-pointer": $route.name !== "admin-layer"
                                         }'><IconBuildingBroadcastTower size='32'/><span class='mx-3'>Layers</span></span>
+                                        <span @click='$router.push(`/admin/basemap`)' class="list-group-item list-group-item-action d-flex align-items-center" :class='{
+                                            "active": $route.name === "admin-basemap",
+                                            "cursor-pointer": $route.name !== "admin-basemap"
+                                        }'><IconMap size='32'/><span class='mx-3'>Basemaps</span></span>
                                     </div>
                                 </div>
                             </div>
@@ -63,6 +67,7 @@ import {
     TablerBreadCrumb,
 } from '@tak-ps/vue-tabler'
 import {
+    IconMap,
     IconServer,
     IconBrandDocker,
     IconBuildingBroadcastTower,
@@ -71,6 +76,7 @@ import {
 export default {
     name: 'Admin',
     components: {
+        IconMap,
         IconServer,
         IconBrandDocker,
         IconBuildingBroadcastTower,

@@ -62,6 +62,7 @@
 </template>
 
 <script>
+import { std, stdurl } from '/src/std.ts';
 import TableHeader from '../util/TableHeader.vue'
 import TableFooter from '../util/TableFooter.vue'
 import {
@@ -108,13 +109,13 @@ export default {
     methods: {
         redeploy: async function(showLoading=true) {
             this.loading = true;
-            this.stack = await window.std(`/api/layer/redeploy`, {
+            this.stack = await std(`/api/layer/redeploy`, {
                 method: 'POST'
             });
             this.loading = false;
         },
         listLayerSchema: async function() {
-            const schema = await window.std('/api/schema?method=GET&url=/layer');
+            const schema = await std('/api/schema?method=GET&url=/layer');
             this.header = ['name', 'cron', 'task'].map((h) => {
                 return { name: h, display: true };
             });
@@ -133,11 +134,11 @@ export default {
         },
         fetchList: async function() {
             this.loading = true;
-            const url = window.stdurl('/api/layer');
+            const url = stdurl('/api/layer');
             if (this.query && this.paging.filter) url.searchParams.append('filter', this.paging.filter);
             url.searchParams.append('limit', this.paging.limit);
             url.searchParams.append('page', this.paging.page);
-            this.list = await window.std(url);
+            this.list = await std(url);
             this.loading = false;
         }
     },

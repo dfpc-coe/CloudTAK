@@ -26,6 +26,7 @@
 </template>
 
 <script>
+import { std, stdurl } from '/src/std.ts';
 import {
     IconNetwork
 } from '@tabler/icons-vue';
@@ -53,7 +54,7 @@ export default {
     methods: {
         fetch: async function() {
             this.loading = true;
-            this.list = await window.std('/api/connection?limit=1');
+            this.list = await std('/api/connection?limit=1');
             this.loading = false;
         }
     },

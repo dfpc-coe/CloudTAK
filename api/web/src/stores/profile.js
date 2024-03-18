@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+import { std } from '../std.ts';
 
 export const useProfileStore = defineStore('profile', {
     state: () => {
@@ -37,10 +38,10 @@ export const useProfileStore = defineStore('profile', {
             }
         },
         load: async function() {
-            this.profile = await window.std('/api/profile');
+            this.profile = await std('/api/profile');
         },
         update: async function(body) {
-            this.profile = await window.std('/api/profile', {
+            this.profile = await std('/api/profile', {
                 method: 'PATCH',
                 body
             })

@@ -17,6 +17,7 @@
 </template>
 
 <script>
+import { std, stdurl } from '/src/std.ts';
 import * as pmtiles from 'pmtiles';
 import mapgl from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css';
@@ -54,7 +55,7 @@ export default {
     watch: {
         'geocode.url': async function() {
             this.geocode.loading = true;
-            this.geocode.result = await window.std(this.geocode.url);
+            this.geocode.result = await std(this.geocode.url);
             this.geocode.loading = false;
         },
         assets: function() {
@@ -76,9 +77,9 @@ export default {
     },
     methods: {
         basemap: async function() {
-            const list = await window.std('/api/basemap?limit=1&order=asc&sort=created');
+            const list = await std('/api/basemap?limit=1&order=asc&sort=created');
             if (list.basemaps.length) {
-                const url = String(window.stdurl(`/api/basemap/${list.basemaps[0].id}/tiles/`)) + `{z}/{x}/{y}?token=${localStorage.token}`;
+                const url = String(stdurl(`/api/basemap/${list.basemaps[0].id}/tiles/`)) + `{z}/{x}/{y}?token=${localStorage.token}`;
                 this.style.sources = {
                     basemap: {
                         type: 'raster',
@@ -138,7 +139,7 @@ export default {
         mountPMTiles: async function() {
             if (!this.asset || !map) return;
 
-            const url = window.stdurl(`/api/connection/${this.$route.params.connectionid}/data/${this.$route.params.dataid}/asset/${this.asset.name}/tile`);
+            const url = stdurl(`/api/connection/${this.$route.params.connectionid}/data/${this.$route.params.dataid}/asset/${this.asset.name}/tile`);
             url.searchParams.append('token', localStorage.token);
 
             map.addSource('vector', {

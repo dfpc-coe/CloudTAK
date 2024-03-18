@@ -50,6 +50,7 @@
 </template>
 
 <script>
+import { std, stdurl } from '/src/std.ts';
 import {
     IconSettings
 } from '@tabler/icons-vue';
@@ -94,10 +95,10 @@ export default {
     },
     methods: {
         fetch: async function() {
-            this.selected = await window.std(`/api/data/${this.modelValue}`);
+            this.selected = await std(`/api/data/${this.modelValue}`);
         },
         listData: async function() {
-            this.data = await window.std('/api/data');
+            this.data = await std('/api/data');
         },
     },
     components: {

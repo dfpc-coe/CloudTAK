@@ -103,6 +103,7 @@
 </template>
 
 <script>
+import { std, stdurl } from '/src/std.ts';
 import PageFooter from './PageFooter.vue';
 import LayerStatus from './Layer/utils/Status.vue';
 import cronstrue from 'cronstrue';
@@ -155,11 +156,11 @@ export default {
         },
         fetch: async function() {
             this.loading.layer = true;
-            this.layer = await window.std(`/api/layer/${this.$route.params.layerid}`);
+            this.layer = await std(`/api/layer/${this.$route.params.layerid}`);
             this.loading.layer = false;
         },
         fetchAlerts: async function() {
-            this.alerts = await window.std(`/api/layer/${this.$route.params.layerid}/alert`);
+            this.alerts = await std(`/api/layer/${this.$route.params.layerid}/alert`);
         }
     },
     components: {

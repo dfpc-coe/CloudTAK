@@ -1,35 +1,69 @@
 import { defineStore } from 'pinia'
+import { std, stdurl } from '../std.js';
 import * as pmtiles from 'pmtiles';
 import mapgl from 'maplibre-gl'
 import * as terraDraw from 'terra-draw';
 import pointOnFeature from '@turf/point-on-feature';
-import { useOverlayStore } from './overlays.ts'
+import { useOverlayStore } from './overlays.js'
+import type { Basemap } from '../types/types.js';
+import type { LayerSpecification } from 'maplibre-gl';
+import { Type } from '@sinclair/typebox';
+import type { Static } from '@sinclair/typebox';
 const overlayStore = useOverlayStore();
 
+export const OverlayContainer = Type.Object({
+    id: Type.String(),
+    url: Type.Optional(Type.String()),
+    name: Type.String(),
+    save: Type.Boolean(),
+    mode: Type.String(),
+    mode_id: Type.Optional(Type.String()),
+    overlay: Type.Optional(Type.Integer()),
+    source: Type.String(),
+    type: Type.String(),
+    before: Type.String(),
+    clickable: Type.Array(Type.Object({
+        id: Type.String(),
+        type: Type.String()
+    }))
+});
+
 export const useMapStore = defineStore('cloudtak', {
-    state: () => {
+    state: (): {
+        map?: mapgl.Map;
+        draw?: terraDraw.TerraDraw;
+        container?: HTMLElement;
+        isLoaded: boolean;
+        bearing: number;
+        radial: {
+            mode?: string;
+            cot?: object;
+            x: number;
+            y: number;
+        },
+        layers: Static<typeof OverlayContainer>
+    } => {
         const protocol = new pmtiles.Protocol();
         mapgl.addProtocol('pmtiles', protocol.tile);
 
         return {
-            map: false,
-            container: false,
             isLoaded: false,
             bearing: 0,
             radial: {
-                mode: null,
                 x: 0,
                 y: 0,
-                cot: null
             },
             layers: [],
-            draw: false
         }
     },
     actions: {
-        addLayer: async function(layer, layers, config = {
+        addLayer: async function(layer, layers, config: {
+            initial: boolean;
+        } = {
             initial: false
         }) {
+            if (!this.map) throw new Error('Cannot addLayer before map has loaded');
+
             if (!layer.name) throw new Error('Layer Name must be set');
             if (!layer.source) throw new Error('Layer Source must be set');
             if (!layer.clickable) layer.clickable = [];
@@ -66,7 +100,7 @@ export const useMapStore = defineStore('cloudtak', {
                 this.map.on('click', click.id, (e) => {
                     if (this.draw && this.draw.getMode() !== 'static') return;
 
-                    const flyTo = { speed: Infinity };
+                    const flyTo: mapgl.FlyToOptions = { speed: Infinity };
                     if (e.features[0].geometry.type === 'Point') {
                         flyTo.center = e.features[0].geometry.coordinates;
                     } else {
@@ -78,8 +112,8 @@ export const useMapStore = defineStore('cloudtak', {
                     if (this.map.getZoom() < 3) flyTo.zoom = 4;
                     this.map.flyTo(flyTo)
 
-                    this.radial.x = this.container.clientWidth / 2;
-                    this.radial.y = this.container.clientHeight / 2;
+                    this.radial.x = this.container ? this.container.clientWidth / 2 : 0;
+                    this.radial.y = this.container ? this.container.clientHeight / 2 : 0;
 
                     this.radial.cot = e.features[0];
                     this.radial.mode = click.type;
@@ -94,10 +128,12 @@ export const useMapStore = defineStore('cloudtak', {
                 });
             }
         },
-        updateLayer: function(newLayer) {
+        updateLayer: async function(newLayer: Static<typeof OverlayContainer>) {
             const pos = this.getLayerPos(newLayer.name);
             if (pos === false) return
             this.layers[pos] = newLayer;
+
+            console.error(newLayer);
 
             for (const l of newLayer.layers) {
                 if (newLayer.type === 'raster') {
@@ -110,15 +146,22 @@ export const useMapStore = defineStore('cloudtak', {
                     this.map.setLayoutProperty(l.id, 'visibility', 'visible');
                 }
             }
+
+            if (newLayer.save && newLayer.overlay) {
+                await overlayStore.updateOverlay({
+                    id: newLayer.overlay,
+                    visible: newLayer.visible === 'visible' ? true : false
+                });
+            }
         },
-        removeLayerBySource: async function(source) {
+        removeLayerBySource: async function(source: string) {
             const pos = this.getLayerPos(source, 'source');
             if (pos === false) return
             const layer = this.layers[pos];
 
             await this.removeLayer(layer.name);
         },
-        getLayerPos: function(name, key='name') {
+        getLayerPos: function(name: string, key='name') {
             for (let i = 0; i < this.layers.length; i++) {
                 if (this.layers[i][key] === name) {
                     return i;
@@ -127,7 +170,7 @@ export const useMapStore = defineStore('cloudtak', {
 
             return false
         },
-        removeLayer: async function(name) {
+        removeLayer: async function(name: string) {
             const pos = this.getLayerPos(name);
             if (pos === false) return;
             const layer = this.layers[pos];
@@ -144,10 +187,10 @@ export const useMapStore = defineStore('cloudtak', {
                 await overlayStore.deleteOverlay(layer.overlay);
             }
         },
-        init: function(container, basemap, terrain) {
+        init: function(container: HTMLElement, basemap: Static<typeof BasemapResponse>, terrain?: Static<typeof BasemapResponse>) {
             this.container = container;
 
-            const init = {
+            const init: mapgl.MapOptions = {
                 container: this.container,
                 fadeDuration: 0,
                 zoom: 8,
@@ -160,7 +203,7 @@ export const useMapStore = defineStore('cloudtak', {
                     glyphs: 'https://fonts.openmaptiles.org/{fontstack}/{range}.pbf',
                     sprite: [{
                         id: 'default',
-                        url: String(window.stdurl(`/api/icon/sprite?token=${localStorage.token}&iconset=default`))
+                        url: String(stdurl(`/api/icon/sprite?token=${localStorage.token}&iconset=default`))
                     }],
                     sources: {
                         cots: {
@@ -181,6 +224,8 @@ export const useMapStore = defineStore('cloudtak', {
                     }]
                 }
             };
+
+            if (typeof init.style === 'string') throw new Error('init.style must be an object');
 
             if (basemap) {
                 init.style.sources.basemap = {
@@ -204,7 +249,9 @@ export const useMapStore = defineStore('cloudtak', {
 
             this.map = new mapgl.Map(init);
         },
-        addDefaultLayer: async function(layer, initial=false) {
+        addDefaultLayer: async function(layer: Static<typeof OverlayContainer>, initial=false) {
+            if (!this.map) throw new Error('Cannot addDefaultLayer before map has loaded');
+
             if (this.map.getSource(layer.id)) {
                 this.map.removeSource(layer.id);
             }
@@ -261,7 +308,7 @@ export const useMapStore = defineStore('cloudtak', {
                     id: layer.id,
                     url: layer.url,
                     save: true,
-                    name: layer.name || id,
+                    name: layer.name,
                     mode: layer.id.split('-')[0],
                     mode_id:  Number(layer.id.split('-')[1]),
                     overlay: layer.overlay || null,
@@ -275,7 +322,9 @@ export const useMapStore = defineStore('cloudtak', {
                 }]);
             }
         },
-        initLayers: async function(basemap) {
+        initLayers: async function(basemap: Static<typeof BasemapResponse>) {
+            if (!this.map) throw new Error('Cannot initLayers before map has loaded');
+
             await this.addLayer({
                 name: basemap.name,
                 source: 'basemap',
@@ -321,10 +370,11 @@ export const useMapStore = defineStore('cloudtak', {
 
             this.map.on('rotate', () => { this.bearing = this.map.getBearing() })
             this.map.on('contextmenu', (e) => {
+                if (!this.map) throw new Error('Cannot initLayers before map has loaded');
                 this.radial.mode = 'context';
 
                 if (e.point.x < 150 || e.point.y < 150) {
-                    const flyTo = {
+                    const flyTo: mapgl.FlyToOptions = {
                         speed: Infinity,
                         center: [e.lngLat.lng, e.lngLat.lat]
                     };
@@ -332,8 +382,8 @@ export const useMapStore = defineStore('cloudtak', {
                     if (this.map.getZoom() < 3) flyTo.zoom = 4;
                     this.map.flyTo(flyTo)
 
-                    this.radial.x = this.container.clientWidth / 2;
-                    this.radial.y = this.container.clientHeight / 2;
+                    this.radial.x = this.container ? this.container.clientWidth / 2 : 0;
+                    this.radial.y = this.container ? this.container.clientHeight / 2 : 0;
                 } else {
                     this.radial.x = e.point.x;
                     this.radial.y = e.point.y;
@@ -358,18 +408,22 @@ export const useMapStore = defineStore('cloudtak', {
             await overlayStore.list();
             for (const overlay of overlayStore.overlays) {
                 if (overlay.mode == 'mission') {
-                    overlay.overlay = overlay.id;
-                    overlay.id = `${overlay.mode}-${overlay.mode_id}-${overlay.id}`;
-                    overlay.save = true;
-                    await this.addDefaultLayer(overlay, true)
+                    await this.addDefaultLayer({
+                        ...overlay,
+                        id: `${overlay.mode}-${overlay.mode_id}-${overlay.id}`,
+                        save: true,
+                        overlay: overlay.id,
+                    } as Static<typeof OverlayContainer>, true)
                 } else {
-                    const url = window.stdurl(overlay.url);
+                    const url = stdurl(overlay.url);
                     url.searchParams.append('token', localStorage.token);
-                    overlay.url = String(url);
-                    overlay.overlay = overlay.id;
-                    overlay.id = `${overlay.mode}-${overlay.mode_id}-${overlay.id}`;
-                    overlay.save = true;
-                    await this.addDefaultLayer(overlay, true)
+                    await this.addDefaultLayer({
+                        ...overlay,
+                        url: String(url),
+                        overlay: overlay.id,
+                        id: `${overlay.mode}-${overlay.mode_id}-${overlay.id}`,
+                        save: true,
+                    } as Static<typeof OverlayContainer>, true)
                 }
             }
         },
@@ -388,13 +442,18 @@ export const useMapStore = defineStore('cloudtak', {
     },
 })
 
-function cotStyles(id, opts = {
+function cotStyles(id: string, opts: {
+    sourceLayer?: string;
+    group?: boolean;
+    labels?: boolean;
+    icons?: boolean;
+} = {
     sourceLayer: undefined,
     group: false,
     labels: false,
     icons: false
 }) {
-    const styles = [{
+    const styles: LayerSpecification[] = [{
         id: `${id}-poly`,
         type: 'fill',
         source: id,
@@ -489,7 +548,7 @@ function cotStyles(id, opts = {
     }
 
     if (opts.group) {
-        const groupFilter = [
+        const groupFilter: mapgl.FilterSpecification = [
             'all',
             ['==', '$type', 'Point'],
             ['has', 'group']

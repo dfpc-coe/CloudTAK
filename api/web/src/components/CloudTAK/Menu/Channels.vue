@@ -2,7 +2,7 @@
 <div>
     <div class='col-12 border-bottom border-light'>
         <div class='modal-header px-0 mx-2'>
-            <IconCircleArrowLeft @click='$emit("close")' size='32' class='cursor-pointer'/>
+            <IconCircleArrowLeft @click='$router.back()' size='32' class='cursor-pointer'/>
             <div class='modal-title'>Channels</div>
             <div class='btn-list'>
                 <IconRefresh v-if='!loading' @click='fetchList' size='32' class='cursor-pointer' v-tooltip='"Refresh"'/>
@@ -28,6 +28,7 @@
 </template>
 
 <script>
+import { std, stdurl } from '/src/std.ts';
 import {
     TablerNone,
     TablerLoading
@@ -77,8 +78,8 @@ export default {
                 return ch;
             });
 
-            const url = window.stdurl('/api/marti/group');
-            await window.std(url, {
+            const url = stdurl('/api/marti/group');
+            await std(url, {
                 method: 'PUT',
                 body: this.rawChannels
             });
@@ -87,9 +88,9 @@ export default {
         },
         fetchList: async function() {
             this.loading = true;
-            const url = window.stdurl('/api/marti/group');
+            const url = stdurl('/api/marti/group');
             url.searchParams.append('useCache', 'true');
-            this.rawChannels = (await window.std(url)).data;
+            this.rawChannels = (await std(url)).data;
             this.loading = false;
         },
     },

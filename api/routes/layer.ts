@@ -136,6 +136,13 @@ export default async function router(schema: Schema, config: Config) {
                 req.body.data = null;
             } else if (req.body.data) {
                 req.body.connection = null;
+
+                const data = await config.models.Data.from(req.body.data);
+                if (data.mission_diff && await config.models.Layer.count({
+                    where: sql`data = ${req.body.data}`
+                }) > 1) {
+                    throw new Err(400, null, 'Only a single layer can be added to a DataSync with Mission Diff Enabled')
+                }
             }
 
             Schedule.is_valid(req.body.cron);
@@ -460,6 +467,23 @@ export default async function router(schema: Schema, config: Config) {
                 }
 
                 pooledClient = await config.conns.get(data.connection);
+
+                if (data.mission_diff) {
+                    const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(pooledClient.config.auth.cert, pooledClient.config.auth.key));
+                    // Once NodeJS supports Set.difference we can simplify this
+                    const inputFeats = new Map()
+                    const features = await api.Mission.latestFeats(data.name, { token: data.mission_token });
+                    for (const feat of req.body.features) inputFeats.set(String(feat.id), feat);
+                    for (const feat of features) {
+                        if (!inputFeats.has(String(feat.id))) {
+                            await api.Mission.detachContents(
+                                data.name,
+                                { uid: String(feat.id) },
+                                { token: data.mission_token }
+                            );
+                        }
+                    }
+                }
 
                 for (const feat of req.body.features) {
                     feat.properties.dest = [{ mission: data.name }];

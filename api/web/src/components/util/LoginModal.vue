@@ -33,6 +33,7 @@
 </template>
 
 <script>
+import { std, stdurl } from '/src/std.ts';
 import {
     TablerLoading,
     TablerModal
@@ -54,7 +55,7 @@ export default {
         createLogin: async function() {
             this.loading = true;
             try {
-                const login = await window.std('/api/login', {
+                const login = await std('/api/login', {
                     method: 'POST',
                     body: {
                         username: this.username,

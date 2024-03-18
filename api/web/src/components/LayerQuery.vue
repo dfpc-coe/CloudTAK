@@ -76,6 +76,7 @@
 </template>
 
 <script>
+import { std, stdurl } from '/src/std.ts';
 import PageFooter from './PageFooter.vue';
 import Alert from './util/Alert.vue';
 import {
@@ -112,9 +113,9 @@ export default {
             this.error = false;
             this.loading.query = true;
             try {
-                const url = window.stdurl(`/api/layer/${this.$route.params.layerid}/query`);
+                const url = stdurl(`/api/layer/${this.$route.params.layerid}/query`);
                 url.searchParams.append('filter', this.params.filter);
-                this.list = await window.std(url);
+                this.list = await std(url);
             } catch (err) {
                 this.error = err;
             }

@@ -63,6 +63,7 @@
 </template>
 
 <script>
+import { std, stdurl } from '/src/std.ts';
 import PageFooter from './PageFooter.vue';
 import CombinedIcons from './cards/Icons.vue'
 import {
@@ -91,20 +92,20 @@ export default {
     },
     methods: {
         iconurl: function() {
-            const url = window.stdurl(`/api/iconset/${this.icon.iconset}/icon/${encodeURIComponent(this.icon.name)}/raw`);
+            const url = stdurl(`/api/iconset/${this.icon.iconset}/icon/${encodeURIComponent(this.icon.name)}/raw`);
             url.searchParams.append('token', localStorage.token);
             return String(url);
         },
         fetch: async function() {
             this.loading = true;
-            const url = window.stdurl(`/api/iconset/${this.$route.params.iconset}/icon/${encodeURIComponent(this.$route.params.icon)}`);
-            this.icon = await window.std(url);
+            const url = stdurl(`/api/iconset/${this.$route.params.iconset}/icon/${encodeURIComponent(this.$route.params.icon)}`);
+            this.icon = await std(url);
             this.loading = false;
         },
         deleteIcon: async function() {
             this.loading = true;
-            const url = window.stdurl(`/api/iconset/${this.$route.params.iconset}/icon/${encodeURIComponent(this.$route.params.icon)}`);
-            this.iconset = await window.std(url, {
+            const url = stdurl(`/api/iconset/${this.$route.params.iconset}/icon/${encodeURIComponent(this.$route.params.icon)}`);
+            this.iconset = await std(url, {
                 method: 'DELETE'
             });
             this.$router.push(`/iconset/${this.$route.params.iconset}`);

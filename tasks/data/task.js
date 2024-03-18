@@ -100,11 +100,15 @@ export default class Task {
                 fs.createReadStream(asset),
                 path.resolve(os.tmpdir(), path.parse(this.etl.task.asset).name + '.pmtiles'), {
                     std: true,
-                    quiet: true,
+                    quiet: false,
                     name: asset,
                     description: 'Automatically Converted by @tak-ps/etl',
                     layer: 'out',
                     force: true,
+                    limit: {
+                        features: false,
+                        size: false
+                    },
                     zoom: {
                         min: 0,
                         max: 14
