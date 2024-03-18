@@ -473,9 +473,9 @@ export default async function router(schema: Schema, config: Config) {
 
                     const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(pooledClient.config.auth.cert, pooledClient.config.auth.key));
                     // Once NodeJS supports Set.difference we can simplify this
-                    const inputFeats = new Map()
+                    const inputFeats = new Set(req.body.uids);
                     const features = await api.Mission.latestFeats(data.name, { token: data.mission_token });
-                    for (const feat of req.body.features) inputFeats.set(String(feat.id), feat);
+
                     for (const feat of features) {
                         if (!inputFeats.has(String(feat.id))) {
                             await api.Mission.detachContents(
