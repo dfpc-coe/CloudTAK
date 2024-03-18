@@ -111,6 +111,7 @@
 </template>
 
 <script>
+import { std, stdurl } from '/std.ts';
 import Upload from '../util/UploadP12.vue';
 import {
     TablerBreadCrumb,
@@ -166,7 +167,7 @@ export default {
         },
         fetch: async function() {
             this.loading = true;
-            this.server = await window.std(`/api/server`);
+            this.server = await std(`/api/server`);
             if (!this.server.auth) this.regen = true;
             this.loading = false;
         },
@@ -212,11 +213,11 @@ export default {
             }
 
             if (this.server.status === 'unconfigured') {
-                this.server = await window.std(`/api/server`, {
+                this.server = await std(`/api/server`, {
                     method: 'POST', body
                 });
             } else {
-                this.server = await window.std(`/api/server`, {
+                this.server = await std(`/api/server`, {
                     method: 'PATCH', body
                 });
             }

@@ -40,6 +40,7 @@
 </template>
 
 <script>
+import { std, stdurl } from '/std.ts';
 import TokenModal from './TokenModal.vue';
 import {
     IconPlus,
@@ -73,7 +74,7 @@ export default {
         fetch: async function() {
             this.token = false;
             this.loading = true;
-            this.tokens = await window.std('/api/token');
+            this.tokens = await std('/api/token');
             this.loading = false;
         },
     },

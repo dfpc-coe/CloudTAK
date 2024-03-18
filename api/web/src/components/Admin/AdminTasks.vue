@@ -58,6 +58,7 @@
 </template>
 
 <script>
+import { std, stdurl } from '/std.ts';
 import {
     TablerLoading,
     TablerDelete,
@@ -85,12 +86,12 @@ export default {
     methods: {
         fetch: async function() {
             this.loading = true;
-            this.tasks = await window.std(`/api/task`);
+            this.tasks = await std(`/api/task`);
             this.loading = false;
         },
         deleteVersion: async function(task, version) {
             this.loading = true;
-            this.tasks = await window.std(`/api/task/${task}/version/${version}`, {
+            this.tasks = await std(`/api/task/${task}/version/${version}`, {
                 method: 'DELETE'
             });
 

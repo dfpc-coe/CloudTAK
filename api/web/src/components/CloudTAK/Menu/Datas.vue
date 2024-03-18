@@ -84,6 +84,7 @@
 </template>
 
 <script>
+import { std, stdurl } from '/std.ts';
 import { useMapStore } from '/src/stores/map.ts';
 const mapStore = useMapStore();
 
@@ -168,7 +169,7 @@ export default {
                     a.visible = false;
                 } else {
                     a.visible = true;
-                    const url = window.stdurl(`/api/profile/asset/${encodeURIComponent(a.visualized)}/tile`);
+                    const url = stdurl(`/api/profile/asset/${encodeURIComponent(a.visualized)}/tile`);
                     url.searchParams.append('token', localStorage.token);
 
                     await this.createOverlay(id, url, a);
@@ -181,7 +182,7 @@ export default {
                     a.visible = false;
                 } else {
                     a.visible = true;
-                    const url = window.stdurl(`/api/connection/${this.data.connection}/data/${this.data.id}/asset/${a.visualized}/tile`);
+                    const url = stdurl(`/api/connection/${this.data.connection}/data/${this.data.id}/asset/${a.visualized}/tile`);
                     url.searchParams.append('token', localStorage.token);
 
                     await this.createOverlay(id, url, a)
@@ -190,15 +191,15 @@ export default {
         },
         deleteProfileAsset: async function(a) {
             this.loading = true;
-            const url = window.stdurl(`/api/profile/asset/${a.name}`);
-            await window.std(url, {
+            const url = stdurl(`/api/profile/asset/${a.name}`);
+            await std(url, {
                 method: 'DELETE'
             });
             this.fetchUserAssetList();
         },
         createOverlay: async function(id, url, a) {
             this.loading = true;
-            const res = await window.std(url);
+            const res = await std(url);
 
             if (new URL(res.tiles[0]).pathname.endsWith('.mvt')) {
                 await mapStore.addDefaultLayer({
@@ -237,20 +238,20 @@ export default {
         },
         fetchDataList: async function() {
             this.loading = true;
-            const url = window.stdurl('/api/data');
+            const url = stdurl('/api/data');
             if (this.query && this.paging.filter) url.searchParams.append('filter', this.paging.filter);
             url.searchParams.append('limit', this.paging.limit);
             url.searchParams.append('page', this.paging.page);
-            this.list = await window.std(url);
+            this.list = await std(url);
             this.loading = false;
         },
         fetchUserAssetList: async function() {
             this.loading = true;
-            const url = window.stdurl(`/api/profile/asset`);
+            const url = stdurl(`/api/profile/asset`);
             if (this.query && this.paging.filter) url.searchParams.append('filter', this.paging.filter);
             url.searchParams.append('limit', this.paging.limit);
             url.searchParams.append('page', this.paging.page);
-            const assetList = await window.std(url);
+            const assetList = await std(url);
 
             const layers = mapStore.map.getLayersOrder();
             for (const asset of assetList.assets) {
@@ -264,11 +265,11 @@ export default {
         },
         fetchAssetList: async function() {
             this.loading = true;
-            const url = window.stdurl(`/api/connection/${this.data.connection}/data/${this.data.id}/asset`);
+            const url = stdurl(`/api/connection/${this.data.connection}/data/${this.data.id}/asset`);
             if (this.query && this.paging.filter) url.searchParams.append('filter', this.paging.filter);
             url.searchParams.append('limit', this.paging.limit);
             url.searchParams.append('page', this.paging.page);
-            const assetList = await window.std(url);
+            const assetList = await std(url);
 
             const layers = mapStore.map.getLayersOrder();
             for (const asset of assetList.assets) {

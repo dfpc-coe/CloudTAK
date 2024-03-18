@@ -88,6 +88,7 @@
 </template>
 
 <script>
+import { std, stdurl } from '/std.ts';
 import PageFooter from './PageFooter.vue';
 import LayerStatus from './Layer/utils/Status.vue';
 import timeDiff from '../timediff.js';
@@ -138,11 +139,11 @@ export default {
         },
         fetchList: async function() {
             this.loading = true;
-            const url = window.stdurl('/api/layer');
+            const url = stdurl('/api/layer');
             if (this.query && this.paging.filter) url.searchParams.append('filter', this.paging.filter);
             url.searchParams.append('limit', this.paging.limit);
             url.searchParams.append('page', this.paging.page);
-            this.list = await window.std(url);
+            this.list = await std(url);
             this.loading = false;
         }
     },

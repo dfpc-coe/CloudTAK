@@ -86,6 +86,7 @@
 </template>
 
 <script>
+import { std, stdurl } from '/std.ts';
 import {
     TablerLoading,
     TablerDelete,
@@ -200,13 +201,13 @@ export default {
 
             this.loading = true;
             try {
-                const url = window.stdurl('/api/esri/server/layer');
+                const url = stdurl('/api/esri/server/layer');
                 url.searchParams.append('token', this.token.token);
                 url.searchParams.append('expires', this.token.expires);
                 if (this.portal) url.searchParams.append('portal', this.portal);
                 url.searchParams.append('server', this.stdurl(false));
 
-                await window.std(url, { method: 'POST' });
+                await std(url, { method: 'POST' });
 
                 await this.getList();
             } catch (err) {
@@ -218,13 +219,13 @@ export default {
 
             this.loading = true;
             try {
-                const url = window.stdurl('/api/esri/server/layer');
+                const url = stdurl('/api/esri/server/layer');
                 if (this.token) url.searchParams.append('token', this.token.token);
                 if (this.token) url.searchParams.append('expires', this.token.expires);
                 if (this.portal) url.searchParams.append('portal', this.portal);
                 url.searchParams.append('server', this.stdurl(false) + '/' + layer.id);
 
-                await window.std(url, { method: 'DELETE' });
+                await std(url, { method: 'DELETE' });
 
                 this.layer = null;
 
@@ -237,7 +238,7 @@ export default {
         getList: async function() {
             this.loading = true;
             try {
-                const url = window.stdurl('/api/esri/server');
+                const url = stdurl('/api/esri/server');
 
                 if (this.token) {
                     url.searchParams.append('token', this.token.token);
@@ -246,7 +247,7 @@ export default {
 
                 url.searchParams.append('server', this.stdurl(false));
 
-                const res = await window.std(url);
+                const res = await std(url);
 
                 if (Array.isArray(res.layers)) {
                     this.container = res;

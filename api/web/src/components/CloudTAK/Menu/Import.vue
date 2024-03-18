@@ -46,6 +46,7 @@
 </template>
 
 <script>
+import { std, stdurl } from '/std.ts';
 import Status from '../../util/Status.vue';
 import timeDiff from '../../../timediff.js';
 import {
@@ -88,8 +89,8 @@ export default {
         },
         fetch: async function() {
             this.loading.main = true;
-            const url = window.stdurl(`/api/import/${this.$route.params.import}`);
-            this.imported = await window.std(url);
+            const url = stdurl(`/api/import/${this.$route.params.import}`);
+            this.imported = await std(url);
             if (this.imported.status === 'Failed' || this.imported.status === 'Success') {
                 if (this.interval) clearInterval(this.interval);
                 this.loading.run = false;

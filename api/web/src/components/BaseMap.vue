@@ -81,6 +81,7 @@
 </template>
 
 <script>
+import { std, stdurl } from '/std.ts';
 import PageFooter from './PageFooter.vue';
 import GroupSelectModal from './util/GroupSelectModal.vue';
 import BaseMapBadge from './BaseMap/Badge.vue';
@@ -113,11 +114,11 @@ export default {
             return timeDiff(update);
         },
         download: async function() {
-            window.location.href = window.stdurl(`api/basemap/${this.$route.params.basemapid}?format=xml&download=true&token=${localStorage.token}`);
+            window.location.href = stdurl(`api/basemap/${this.$route.params.basemapid}?format=xml&download=true&token=${localStorage.token}`);
         },
         fetch: async function() {
             this.loading = true;
-            this.basemap = await window.std(`api/basemap/${this.$route.params.basemapid}`);
+            this.basemap = await std(`api/basemap/${this.$route.params.basemapid}`);
             this.loading = false;
         }
     },

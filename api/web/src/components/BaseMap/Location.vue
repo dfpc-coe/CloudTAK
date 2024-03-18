@@ -5,6 +5,7 @@
 </template>
 
 <script>
+import { std, stdurl } from '/std.ts';
 import mapgl from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css';
 
@@ -31,7 +32,7 @@ export default {
     },
     methods: {
         mountMap: function() {
-            const url = String(window.stdurl(`/api/basemap/${this.basemap.id}/tiles/`)) + `{z}/{x}/{y}?token=${localStorage.token}`;
+            const url = String(stdurl(`/api/basemap/${this.basemap.id}/tiles/`)) + `{z}/{x}/{y}?token=${localStorage.token}`;
 
             const tmpmap = new mapgl.Map({
                 container: this.$refs.map,

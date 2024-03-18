@@ -27,6 +27,7 @@
 </template>
 
 <script>
+import { std, stdurl } from '/std.ts';
 import {
     TablerModal,
     TablerInput,
@@ -80,12 +81,12 @@ export default {
         fetch: async function() {
             this.loading.count = true;
 
-            const url = window.stdurl('/api/esri/server/layer');
+            const url = stdurl('/api/esri/server/layer');
             url.searchParams.append('query', this.filter.query);
             url.searchParams.append('layer', this.layer);
             if (this.token) url.searchParams.append('token', this.token);
 
-            this.list = await window.std(url, {
+            this.list = await std(url, {
                 method: 'GET',
                 body: this.body
             });

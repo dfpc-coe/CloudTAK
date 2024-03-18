@@ -62,6 +62,7 @@
 </template>
 
 <script>
+import { std, stdurl } from '/std.ts';
 import {
     IconUserCog,
     IconAdjustments,
@@ -102,7 +103,7 @@ export default {
     },
     methods: {
         fetchProfileSchema: async function() {
-            this.profileSchema = (await window.std('/api/schema?method=PATCH&url=/profile')).body
+            this.profileSchema = (await std('/api/schema?method=PATCH&url=/profile')).body
         },
         updateProfile: async function() {
             await profileStore.update(this.profile);

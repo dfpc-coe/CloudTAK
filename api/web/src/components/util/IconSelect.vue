@@ -58,6 +58,7 @@
 </template>
 
 <script>
+import { std, stdurl } from '/std.ts';
 import {
     IconInfoSquare,
     IconSearch,
@@ -140,25 +141,25 @@ export default {
     },
     methods: {
         iconurl: function(icon) {
-            const url = window.stdurl(`/api/iconset/${icon.iconset}/icon/${encodeURIComponent(icon.name)}/raw`);
+            const url = stdurl(`/api/iconset/${icon.iconset}/icon/${encodeURIComponent(icon.name)}/raw`);
             url.searchParams.append('token', localStorage.token);
             return String(url);
         },
         fetch: async function() {
             const iconset = this.modelValue.split('/')[0];
             const icon = this.modelValue.split('/').splice(1).join('/');
-            this.selected = await window.std(`/api/iconset/${iconset}/icon/${encodeURIComponent(icon)}`);
+            this.selected = await std(`/api/iconset/${iconset}/icon/${encodeURIComponent(icon)}`);
         },
         Iconlistsets: async function() {
             this.loading.iconsets = true;
-            const url = window.stdurl('/api/iconset');
-            this.sets = (await window.std(url)).items;
+            const url = stdurl('/api/iconset');
+            this.sets = (await std(url)).items;
             this.params.iconset = this.sets[0].name;
             this.loading.iconsets = false;
         },
         Iconlists: async function() {
             this.loading.icons = true;
-            let url = window.stdurl(`/api/icon`);
+            let url = stdurl(`/api/icon`);
             if (this.params.iconset) {
                 const id = this.sets.filter((set) => {
                     return set.name === this.params.iconset;
@@ -168,7 +169,7 @@ export default {
             }
 
             url.searchParams.append('filter', this.params.filter);
-            this.list = await window.std(url)
+            this.list = await std(url)
             this.loading.icons = false;
         },
     },

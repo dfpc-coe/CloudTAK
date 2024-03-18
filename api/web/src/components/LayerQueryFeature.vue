@@ -42,6 +42,7 @@
 </template>
 
 <script>
+import { std, stdurl } from '/std.ts';
 import PageFooter from './PageFooter.vue';
 import LayerQueryMap from './LayerQuery/Map.vue';
 import Alert from './util/Alert.vue';
@@ -69,8 +70,8 @@ export default {
             this.error = false;
             this.loading.feature = true;
             try {
-                const url = window.stdurl(`/api/layer/${this.$route.params.layerid}/query/${this.$route.params.featid}`);
-                this.feature = JSON.stringify(await window.std(url), null, 4);
+                const url = stdurl(`/api/layer/${this.$route.params.layerid}/query/${this.$route.params.featid}`);
+                this.feature = JSON.stringify(await std(url), null, 4);
             } catch (err) {
                 this.error = err;
             }

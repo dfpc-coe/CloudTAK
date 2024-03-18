@@ -15,6 +15,7 @@
 </template>
 
 <script>
+import { std, stdurl } from '/std.ts';
 import ApexCharts from 'apexcharts';
 import {
     IconRefresh
@@ -91,7 +92,7 @@ export default {
         },
         fetchData: async function() {
             this.loading = true;
-            const list = await window.std(`/api/connection/${this.$route.params.connectionid}/stats`);
+            const list = await std(`/api/connection/${this.$route.params.connectionid}/stats`);
 
             this.labels = list.stats.map(s => s.label);
             this.success = list.stats.map(s => s.success);

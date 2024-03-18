@@ -105,6 +105,7 @@
 </template>
 
 <script>
+import { std, stdurl } from '/std.ts';
 import PageFooter from './PageFooter.vue';
 import ConnectionStatus from './Connection/Status.vue';
 import timeDiff from '../timediff.js';
@@ -153,11 +154,11 @@ export default {
         },
         fetch: async function() {
             this.loading.connection = true;
-            this.connection = await window.std(`/api/connection/${this.$route.params.connectionid}`);
+            this.connection = await std(`/api/connection/${this.$route.params.connectionid}`);
             this.loading.connection = false;
         },
         refresh: async function() {
-            this.connection = await window.std(`/api/connection/${this.$route.params.connectionid}/refresh`, {
+            this.connection = await std(`/api/connection/${this.$route.params.connectionid}/refresh`, {
                 method: 'POST'
             });
         }

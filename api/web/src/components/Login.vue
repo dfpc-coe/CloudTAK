@@ -44,6 +44,7 @@
 </template>
 
 <script>
+import { std, stdurl } from '/std.ts';
 import {
     TablerLoading
 } from '@tak-ps/vue-tabler'
@@ -64,7 +65,7 @@ export default {
         createLogin: async function() {
             this.loading = true;
             try {
-                const login = await window.std('/api/login', {
+                const login = await std('/api/login', {
                     method: 'POST',
                     body: {
                         username: this.username,

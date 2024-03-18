@@ -45,6 +45,7 @@
 </template>
 
 <script>
+import { std, stdurl } from '/std.ts';
 import Alert from '../util/Alert.vue';
 import Status from '../util/Status.vue';
 import {
@@ -78,7 +79,7 @@ export default {
             try {
                 this.loading.list = true;
                 this.err = null;
-                const list = await window.std(`/api/profile/job`);
+                const list = await std(`/api/profile/job`);
                 list.items = list.items.map((l) => {
                     if (l.status === 'SUBMITTED') l.status = 'Unknown';
                     if (l.status === 'PENDING') l.status = 'Pending';

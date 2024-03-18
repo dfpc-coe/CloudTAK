@@ -42,6 +42,7 @@
 </template>
 
 <script>
+import { std, stdurl } from '/std.ts';
 import PageFooter from './PageFooter.vue';
 import {
     TablerBreadCrumb,
@@ -78,13 +79,13 @@ export default {
     methods: {
         fetch: async function() {
             this.loading.iconset = true;
-            this.iconset = await window.std(`/api/iconset/${this.$route.params.iconset}`);
+            this.iconset = await std(`/api/iconset/${this.$route.params.iconset}`);
             this.loading.iconset = false;
         },
         submit: async function() {
-            const url = await window.stdurl(`/api/iconset/${this.$route.params.iconset ||''}`);
+            const url = await stdurl(`/api/iconset/${this.$route.params.iconset ||''}`);
 
-            const iconset = await window.std(url, {
+            const iconset = await std(url, {
                 method: this.$route.params.iconset ? 'PATCH' : 'POST',
                 body: this.iconset
             });
@@ -92,13 +93,13 @@ export default {
             this.$router.push(`/iconset/${iconset.uid}`);
         },
         fetchSchema: async function() {
-            const url = await window.stdurl(`/api/schema`);
+            const url = await stdurl(`/api/schema`);
             url.searchParams.append('method', this.$route.params.iconset ? 'PATCH' : 'POST');
             url.searchParams.append('url', this.$route.params.iconset ? '/iconset/:iconset' : '/iconset');
-            this.schema = (await window.std(url)).body;
+            this.schema = (await std(url)).body;
         },
         Icondeleteset: async function() {
-            await window.std(`/api/iconset/${this.$route.params.iconset}`, {
+            await std(`/api/iconset/${this.$route.params.iconset}`, {
                 method: 'DELETE'
             });
 

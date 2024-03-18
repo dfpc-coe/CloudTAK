@@ -26,6 +26,7 @@
 </template>
 
 <script>
+import { std, stdurl } from '/std.ts';
 import {
     IconBuildingBroadcastTower
 } from '@tabler/icons-vue';
@@ -50,7 +51,7 @@ export default {
     methods: {
         fetch: async function() {
             this.loading = true;
-            this.list = await window.std('/api/layer?limit=1');
+            this.list = await std('/api/layer?limit=1');
             this.loading = false;
         }
     },

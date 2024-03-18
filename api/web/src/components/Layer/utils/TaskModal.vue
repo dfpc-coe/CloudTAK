@@ -43,6 +43,7 @@
 </template>
 
 <script>
+import { std, stdurl } from '/std.ts';
 import {
     IconArrowBack
 } from '@tabler/icons-vue'
@@ -82,7 +83,7 @@ export default {
         },
         fetch: async function() {
             this.loading = true;
-            this.list = await window.std('/api/task');
+            this.list = await std('/api/task');
             this.loading = false;
         }
     },

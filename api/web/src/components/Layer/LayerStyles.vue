@@ -117,6 +117,7 @@
 </template>
 
 <script>
+import { std, stdurl } from '/std.ts';
 import jsonata from 'jsonata';
 import {
     IconX,
@@ -211,7 +212,7 @@ export default {
             }
 
             try {
-                const layer = await window.std(`/api/layer/${this.$route.params.layerid}`, {
+                const layer = await std(`/api/layer/${this.$route.params.layerid}`, {
                     method: 'PATCH',
                     body: {
                         enabled_styles: this.enabled,
