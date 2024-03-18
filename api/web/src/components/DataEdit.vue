@@ -42,7 +42,8 @@
                                     <TablerInput
                                         label='Mission Sync Groups'
                                         description='Choose which TAK Channels this Data Sync should be availiable in'
-                                        :value='data.mission_groups.length === 0 ? "All Groups" : data.mission_groups.join(",")'
+                                        v-model='mission_groups'
+                                        :disabled='$route.params.dataid'
                                     >
                                         <IconSettings v-if='!$route.params.dataid' @click='modal = true' size='32' class='cursor-pointer'/>
                                     </TablerInput>
@@ -132,6 +133,7 @@ export default {
     data: function() {
         return {
             modal: false,
+            mission_groups: 'All Groups', // Updated by watcher
             loading: {
                 data: true,
             },
@@ -147,6 +149,14 @@ export default {
                 mission_role: 'MISSION_SUBSCRIBER',
                 mission_diff: false,
                 description: '',
+            }
+        }
+    },
+    watch: {
+        'data.mission_groups': {
+            deep: true,
+            handler: function() {
+                this.mission_groups = this.data.mission_groups.length === 0 ? "All Groups" : this.data.mission_groups.join(",");
             }
         }
     },
