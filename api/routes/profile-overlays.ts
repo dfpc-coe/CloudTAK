@@ -82,7 +82,7 @@ export default async function router(schema: Schema, config: Config) {
             name: Type.Optional(Type.String()),
             opacity: Type.Optional(Type.Number()),
             visible: Type.Optional(Type.Boolean()),
-            styles: Type.Any()
+            styles: Type.Optional(Type.Any())
         }),
         res: ProfileOverlayResponse
     }, async (req, res) => {

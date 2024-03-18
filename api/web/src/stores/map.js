@@ -94,10 +94,12 @@ export const useMapStore = defineStore('cloudtak', {
                 });
             }
         },
-        updateLayer: function(newLayer) {
+        updateLayer: async function(newLayer) {
             const pos = this.getLayerPos(newLayer.name);
             if (pos === false) return
             this.layers[pos] = newLayer;
+
+            console.error(newLayer);
 
             for (const l of newLayer.layers) {
                 if (newLayer.type === 'raster') {
@@ -109,6 +111,13 @@ export const useMapStore = defineStore('cloudtak', {
                 } else if (newLayer.visible === 'visible') {
                     this.map.setLayoutProperty(l.id, 'visibility', 'visible');
                 }
+            }
+
+            if (newLayer.save && newLayer.overlay) {
+                await overlayStore.updateOverlay({
+                    id: newLayer.overlay,
+                    visible: newLayer.visible === 'visible' ? true : false
+                });
             }
         },
         removeLayerBySource: async function(source) {

@@ -100,17 +100,17 @@ export default {
         flipVisible: async function(layer) {
             if (layer.visible === 'visible') {
                 layer.visible = 'none';
-                mapStore.updateLayer(layer)
+                await mapStore.updateLayer(layer)
             } else {
                 layer.visible = 'visible';
-                mapStore.updateLayer(layer)
+                await mapStore.updateLayer(layer)
             }
         },
         zoomTo: function(bounds) {
             mapStore.map.fitBounds(bounds);
         },
-        updateOpacity: function(layer) {
-            mapStore.updateLayer(layer)
+        updateOpacity: async function(layer) {
+            await mapStore.updateLayer(layer)
         },
     },
     components: {

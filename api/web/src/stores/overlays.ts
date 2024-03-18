@@ -24,6 +24,16 @@ export const useOverlayStore = defineStore('overlays', {
 
             return overlay.id;
         },
+        updateOverlay: async function(layer) {
+            const overlay = await std(`/api/profile/overlay/${layer.id}`, {
+                method: 'PATCH',
+                body: layer
+            });
+
+            await this.list()
+
+            return overlay.id;
+        },
         deleteOverlay: async function(overlay_id) {
             await std(`/api/profile/overlay?id=${overlay_id}`, {
                 method: 'DELETE'
