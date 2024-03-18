@@ -4,6 +4,7 @@ import * as pmtiles from 'pmtiles';
 import pointOnFeature from '@turf/point-on-feature';
 import { useCOTStore } from './cots.js'
 const cotStore = useCOTStore();
+import
 
 export const useOverlayStore = defineStore('overlays', {
     state: () => {
@@ -34,7 +35,7 @@ export const useOverlayStore = defineStore('overlays', {
 
             return overlay.id;
         },
-        deleteOverlay: async function(overlay_id) {
+        deleteOverlay: async function(overlay_id: number) {
             await std(`/api/profile/overlay?id=${overlay_id}`, {
                 method: 'DELETE'
             });
