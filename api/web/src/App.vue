@@ -107,6 +107,7 @@ import {
     TablerLoading,
     TablerError
 } from '@tak-ps/vue-tabler';
+import { std, stdurl } from '../std.js';
 
 export default {
     name: 'Tak-PS-ETL',
@@ -132,7 +133,7 @@ export default {
         }
     },
     mounted: async function() {
-        const url = window.stdurl('/api');
+        const url = stdurl('/api');
 
         if (localStorage.token) {
             await this.getLogin();
@@ -153,7 +154,7 @@ export default {
     },
     computed: {
         docsURL: function() {
-            return window.stdurl('/docs')
+            return stdurl('/docs')
         }
     },
     methods: {
@@ -165,7 +166,7 @@ export default {
         getLogin: async function() {
             this.loading = true;
             try {
-                this.user = await window.std('/api/login');
+                this.user = await std('/api/login');
             } catch (err) {
                 this.user = null;
                 delete localStorage.token;
@@ -178,7 +179,7 @@ export default {
             this.loading = false;
         },
         getServer: async function() {
-            this.server = await window.std('/api/server');
+            this.server = await std('/api/server');
 
             if (this.server.status === 'unconfigured') {
                 this.$router.push("/admin");
