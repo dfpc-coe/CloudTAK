@@ -105,7 +105,7 @@
 </template>
 
 <script>
-import { std, stdurl } from '/std.ts';
+import { std, stdurl } from '/src/std.ts';
 import PageFooter from './PageFooter.vue';
 import timeDiff from '../timediff.js';
 import {

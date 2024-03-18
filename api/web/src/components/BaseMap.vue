@@ -81,7 +81,7 @@
 </template>
 
 <script>
-import { std, stdurl } from '/std.ts';
+import { std, stdurl } from '/src/std.ts';
 import PageFooter from './PageFooter.vue';
 import GroupSelectModal from './util/GroupSelectModal.vue';
 import BaseMapBadge from './BaseMap/Badge.vue';

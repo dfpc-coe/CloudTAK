@@ -46,7 +46,7 @@
 </template>
 
 <script>
-import { std, stdurl } from '/std.ts';
+import { std, stdurl } from '/src/std.ts';
 import Status from '../../util/Status.vue';
 import timeDiff from '../../../timediff.js';
 import {

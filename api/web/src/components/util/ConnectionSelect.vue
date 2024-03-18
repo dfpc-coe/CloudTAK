@@ -54,7 +54,7 @@
 </template>
 
 <script>
-import { std, stdurl } from '/std.ts';
+import { std, stdurl } from '/src/std.ts';
 import {
     IconSettings
 } from '@tabler/icons-vue';

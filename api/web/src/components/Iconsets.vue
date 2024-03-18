@@ -76,7 +76,7 @@
 </template>
 
 <script>
-import { std, stdurl } from '/std.ts';
+import { std, stdurl } from '/src/std.ts';
 import PageFooter from './PageFooter.vue';
 import Upload from './util/Upload.vue';
 import IconCombineds from './cards/Icons.vue'

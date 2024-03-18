@@ -84,7 +84,7 @@
 </template>
 
 <script>
-import { std, stdurl } from '/std.ts';
+import { std, stdurl } from '/src/std.ts';
 import { useMapStore } from '/src/stores/map.ts';
 const mapStore = useMapStore();
 
