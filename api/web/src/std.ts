@@ -18,7 +18,7 @@ export function stdurl(url: string | URL): URL {
  * @param {Object} [opts={}]    - Options
  */
 export async function std(url: string | URL, opts: any = {}): Promise<any> {
-    url = window.stdurl(url)
+    url = stdurl(url)
 
     try {
         if (!opts.headers) opts.headers = {};
@@ -54,11 +54,4 @@ export async function std(url: string | URL, opts: any = {}): Promise<any> {
     } catch (err) {
         throw new Error(err.message);
     }
-}
-
-export default function init() {
-    //@ts-expect-error
-    window.stdurl = stdurl;
-    //@ts-expect-error
-    window.std = std;
 }

@@ -5,7 +5,7 @@ import mapgl from 'maplibre-gl'
 import * as terraDraw from 'terra-draw';
 import pointOnFeature from '@turf/point-on-feature';
 import { useOverlayStore } from './overlays.js'
-import type { BasemapResponse } from '../../../lib/types.js';
+import type { Basemap } from '../types/types.js';
 import type { LayerSpecification } from 'maplibre-gl';
 import { Static, Type } from '@sinclair/typebox';
 const overlayStore = useOverlayStore();
