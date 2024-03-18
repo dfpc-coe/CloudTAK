@@ -15,7 +15,7 @@
                 </div>
             </div>
         </div>
-        <div class="card-body">
+        <div class="card-body row">
             <div class='col-lg-12 py-2'>
                 <TablerInput
                     v-model='server.name'
@@ -42,6 +42,33 @@
                     label='TAK Server API'
                     placeholder='https://'
                     :error='errors.api'
+                />
+            </div>
+            <div class='col-lg-12 py-2'>
+                <TablerInput
+                    v-model='server.provider_url'
+                    :disabled='!edit'
+                    label='OAuth Authentication API'
+                    placeholder='https://'
+                    :error='errors.provider_url'
+                />
+            </div>
+            <div class='col-lg-6 py-2'>
+                <TablerInput
+                    v-model='server.provider_client'
+                    :disabled='!edit'
+                    label='OAuth Client ID'
+                    placeholder='https://'
+                    :error='errors.provider_client'
+                />
+            </div>
+            <div class='col-lg-6 py-2'>
+                <TablerInput
+                    v-model='server.provider_secret'
+                    :disabled='!edit'
+                    label='OAuth Client Secret'
+                    placeholder='https://'
+                    :error='errors.provider_secret'
                 />
             </div>
         </div>
@@ -76,17 +103,15 @@
                 </div>
             </template>
             <template v-else>
-                <div class='px-3 py-3'>
-                    <div class='d-flex justify-content-center'>
+                    <div class='col-auto'>
                         <IconLock size='50'/>
                     </div>
-                    <div class='d-flex justify-content-center my-3'>
+                    <div class='col-auto d-flex align-items-center'>
                         Once Certificates are uploaded they cannot be viewed
                     </div>
-                    <div v-if='edit' class='d-flex justify-content-center'>
+                    <div v-if='edit' class='col-auto ms-auto'>
                         <button @click='regen=true' class='btn btn-secondary'>Replace Certificate</button>
                     </div>
-                </div>
             </template>
 
             <div v-if='edit' class='col-lg-12 d-flex py-2'>
@@ -150,6 +175,10 @@ export default {
                 id: null,
                 created: null,
                 updated: null,
+                provider_url: '',
+                provider_id: '',
+                provider_url: '',
+                provider_secret: '',
                 name: '',
                 url: '',
                 api: '',
@@ -205,7 +234,10 @@ export default {
             const body = {
                 name: this.server.name,
                 url: this.server.url,
-                api: this.server.api
+                api: this.server.api,
+                provider_url: this.server.provider_url,
+                provider_client: this.server.provider_client,
+                provider_secret: this.server.provider_secret
             }
 
             if (this.auth.cert && this.auth.key) {
