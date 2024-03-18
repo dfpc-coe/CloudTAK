@@ -43,7 +43,7 @@
                                         label='Mission Sync Groups'
                                         description='Choose which TAK Channels this Data Sync should be availiable in'
                                         v-model='mission_groups'
-                                        :disabled='$route.params.dataid'
+                                        disabled
                                     >
                                         <IconSettings v-if='!$route.params.dataid' @click='modal = true' size='32' class='cursor-pointer'/>
                                     </TablerInput>
