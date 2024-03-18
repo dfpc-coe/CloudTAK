@@ -470,17 +470,24 @@ export default async function router(schema: Schema, config: Config) {
 
                 if (data.mission_diff) {
                     const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(pooledClient.config.auth.cert, pooledClient.config.auth.key));
-                    const existFeats = new Set()
-                    const inputFeats = new Set()
-
-                    const features = await api.Mission.latestFeats(data.name);
-
-                    console.error(features)
-                } else {
-                    for (const feat of req.body.features) {
-                        feat.properties.dest = [{ mission: data.name }];
-                        cots.push(CoT.from_geojson(feat))
+                    // Once NodeJS supports Set.difference we can simplify this
+                    const inputFeats = new Map()
+                    const features = await api.Mission.latestFeats(data.name, { token: data.mission_token });
+                    for (const feat of req.body.features) inputFeats.set(String(feat.id), feat);
+                    for (const feat of features) {
+                        if (!inputFeats.has(String(feat.id))) {
+                            await api.Mission.detachContents(
+                                data.name,
+                                { uid: String(feat.id) },
+                                { token: data.mission_token }
+                            );
+                        }
                     }
+                }
+
+                for (const feat of req.body.features) {
+                    feat.properties.dest = [{ mission: data.name }];
+                    cots.push(CoT.from_geojson(feat))
                 }
             } else {
                 throw new Err(400, null, 'Either connection or data must be set');
