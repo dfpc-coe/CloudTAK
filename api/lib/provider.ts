@@ -6,14 +6,16 @@ export enum AuthProviderAccess {
     USER = 'user'
 }
 
-class AuthProvider {
+export class AuthProvider {
     config: Config;
 
     constructor(config: Config) {
         this.config = config;
     }
 
+/*
     login(username: string, password: string) {
 
     }
+*/
 }
