@@ -36,7 +36,7 @@
                     <td>
                         <TablerBytes :bytes='asset.size'/>
                     </td>
-                    <td class='d-flex'>
+                    <td class='d-flex align-items-center'>
                         <TablerEpoch :date='asset.updated'/>
                         <div class='ms-auto btn-list'>
                             <TablerDelete displaytype='icon' @delete='deleteAsset(asset)' v-tooltip='"Delete Asset"'/>
