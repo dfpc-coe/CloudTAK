@@ -369,6 +369,7 @@ export default {
                 Cluster: cf.join(['coe-ecs-', cf.ref('Environment')]),
                 TaskDefinition: cf.ref('TaskDefinition'),
                 LaunchType: 'FARGATE',
+                PropagateTags: 'SERVICE',
                 HealthCheckGracePeriodSeconds: 300,
                 DesiredCount: 1,
                 NetworkConfiguration: {
