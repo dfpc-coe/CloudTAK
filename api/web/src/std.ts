@@ -55,3 +55,12 @@ export async function std(url: string | URL, opts: any = {}): Promise<any> {
         throw new Error(err.message);
     }
 }
+
+export function stdclick($router, $event, path) {
+    if (event.ctrlKey === true) {
+        let routeData = $router.resolve(path);
+        window.open(routeData.href, '_blank');
+    } else {
+        $router.push(path);
+    };
+}
