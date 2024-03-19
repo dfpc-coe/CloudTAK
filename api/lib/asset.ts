@@ -44,7 +44,7 @@ export default async function AssetList(config: Config, prefix: string): Promise
                 name: String(a.Key).replace(prefix, ''),
                 visualized: isViz ? path.parse(String(a.Key).replace(prefix, '')).name + '.pmtiles' : undefined,
                 vectorized: isGeo ? path.parse(String(a.Key).replace(prefix, '')).name + '.geojsonld' : undefined,
-                updated: a.LastModified ? new Date(a.LastModified).getTime() : new Date().getTime(),
+                updated: (a.LastModified ? new Date(a.LastModified).getTime() : new Date().getTime()) / 1000,
                 etag: String(JSON.parse(String(a.ETag))),
                 size: a.Size ? a.Size : 0
             };
@@ -56,7 +56,7 @@ export default async function AssetList(config: Config, prefix: string): Promise
                 name: String(a.Key).replace(prefix, ''),
                 visualized: isViz ? path.parse(String(a.Key).replace(prefix, '')).name + '.pmtiles' : undefined,
                 vectorized: String(a.Key).replace(prefix, ''),
-                updated: a.LastModified ? new Date(a.LastModified).getTime() : new Date().getTime(),
+                updated: (a.LastModified ? new Date(a.LastModified).getTime() : new Date().getTime()) / 1000,
                 etag: String(JSON.parse(String(a.ETag))),
                 size: a.Size ? a.Size : 0
             };
@@ -66,7 +66,7 @@ export default async function AssetList(config: Config, prefix: string): Promise
                 name: String(a.Key).replace(prefix, ''),
                 visualized: String(a.Key).replace(prefix, ''),
                 vectorized: undefined,
-                updated: a.LastModified ? new Date(a.LastModified).getTime() : new Date().getTime(),
+                updated: (a.LastModified ? new Date(a.LastModified).getTime() : new Date().getTime()) / 1000,
                 etag: String(JSON.parse(String(a.ETag))),
                 size: a.Size ? a.Size : 0
             };
