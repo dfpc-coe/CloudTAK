@@ -131,7 +131,7 @@ export const AssetResponse = Type.Object({
     name: Type.String({ "description": "The filename of the asset" }),
     visualized: Type.Optional(Type.String()),
     vectorized: Type.Optional(Type.String()),
-    updated: Type.String(),
+    updated: Type.Integer(),
     etag: Type.String({ "description": "AWS S3 generated ETag of the asset" }),
     size: Type.Integer({ "description": "Size in bytes of the asset" })
 })
