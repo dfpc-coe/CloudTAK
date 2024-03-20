@@ -36,17 +36,17 @@ export default async function router(schema: Schema, config: Config) {
             if (config.server.provider_url) {
                 try {
                     const response = await provider.external(req.body.username);
-                    await config.models.Profile.commit({
+                    await config.models.Profile.commit(req.body.username, {
                         ...response,
                         last_login: new Date().toISOString()
                     });
                 } catch (err) {
                     // If there are upstream errors the user is limited to WebTAK like functionality
-                    await config.models.Profile.commit({ server_admin: false, agency_admin: [], last_login: new Date().toISOString() });
+                    await config.models.Profile.commit(req.body.username, { server_admin: false, agency_admin: [], last_login: new Date().toISOString() });
                     console.error(err);
                 }
             } else {
-                await config.models.Profile.commit({ last_login: new Date().toISOString() });
+                await config.models.Profile.commit(req.body.username, { last_login: new Date().toISOString() });
             }
 
             return res.json(user)

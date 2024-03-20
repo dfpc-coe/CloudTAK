@@ -68,7 +68,7 @@ export default class AuthProvider {
             },
         });
 
-        if (!userres.ok) throw new Err(400, new Error(await authres.text()), 'Internal Provider Lookup Error');
+        if (!userres.ok) throw new Err(400, new Error(await userres.text()), 'Internal Provider Lookup Error');
 
         const user_body = await userres.typed(Type.Object({
             data: Type.Object({
@@ -96,8 +96,8 @@ export default class AuthProvider {
 
         return {
             phone: user_body.data.phone,
-            system_admin: user_body.data.roles.some((role) => role.name === 'System Administrator')
-            agency_admin: user_body.data.adminAgencies.filter((a) => a.id)
+            system_admin: user_body.data.roles.some((role) => role.name === 'System Administrator'),
+            agency_admin: user_body.data.adminAgencies.map((a) => a.id)
         };
     }
 
