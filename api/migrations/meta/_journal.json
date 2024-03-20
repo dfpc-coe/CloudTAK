@@ -162,6 +162,13 @@
       "when": 1710795634535,
       "tag": "0022_lowly_iron_monger",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "5",
+      "when": 1710955342805,
+      "tag": "0023_wise_alice",
+      "breakpoints": true
     }
   ]
 }
