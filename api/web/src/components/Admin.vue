@@ -38,6 +38,10 @@
                                             "active": $route.name === "admin-basemap",
                                             "cursor-pointer": $route.name !== "admin-basemap"
                                         }'><IconMap size='32'/><span class='mx-3'>Basemaps</span></span>
+                                        <span @click='$router.push(`/admin/user`)' class="list-group-item list-group-item-action d-flex align-items-center" :class='{
+                                            "active": $route.name === "admin-user",
+                                            "cursor-pointer": $route.name !== "admin-user"
+                                        }'><IconUsers size='32'/><span class='mx-3'>Users</span></span>
                                     </div>
                                 </div>
                             </div>
@@ -68,6 +72,7 @@ import {
 } from '@tak-ps/vue-tabler'
 import {
     IconMap,
+    IconUsers,
     IconServer,
     IconBrandDocker,
     IconBuildingBroadcastTower,
@@ -77,6 +82,7 @@ export default {
     name: 'Admin',
     components: {
         IconMap,
+        IconUsers,
         IconServer,
         IconBrandDocker,
         IconBuildingBroadcastTower,
