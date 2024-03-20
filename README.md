@@ -23,7 +23,7 @@ In the `./api`, perform the following
 
 ```sh
 npm install
-echo "CREATE DATABASE tak_ps_stats" | psql
+echo "CREATE DATABASE tak_ps_etl" | psql
 npx knex migrate:latest
 cd web/
 npm install
