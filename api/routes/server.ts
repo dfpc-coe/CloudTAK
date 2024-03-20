@@ -26,6 +26,9 @@ export default async function router(schema: Schema, config: Config) {
                     updated: new Date().toISOString(),
                     url: '',
                     api: '',
+                    provider_url: '',
+                    provider_client: '',
+                    provider_secret: '',
                     auth: false
                 });
             } else {
@@ -51,6 +54,9 @@ export default async function router(schema: Schema, config: Config) {
             url: Type.String(),
             api: Type.String(),
             name: Type.Optional(Type.String()),
+            provider_url: Type.Optional(Type.String()),
+            provider_secret: Type.Optional(Type.String()),
+            provider_client: Type.Optional(Type.String()),
             auth: Type.Optional(Type.Object({
                 cert: Type.String(),
                 key: Type.String(),

@@ -39,7 +39,7 @@
                         v-model:header='header'
                     />
                     <tbody>
-                        <tr @click='$router.push(`/layer/${layer.id}`)' :key='layer.id' v-for='(layer, layer_it) in list.items' class='cursor-pointer'>
+                        <tr @click='stdclick($router, $event, `/layer/${layer.id}`)' :key='layer.id' v-for='(layer, layer_it) in list.items' class='cursor-pointer'>
                             <template v-for='h in header'>
                                 <template v-if='h.display'>
                                     <td>
@@ -62,7 +62,7 @@
 </template>
 
 <script>
-import { std, stdurl } from '/src/std.ts';
+import { std, stdurl, stdclick } from '/src/std.ts';
 import TableHeader from '../util/TableHeader.vue'
 import TableFooter from '../util/TableFooter.vue'
 import {
@@ -107,6 +107,7 @@ export default {
         await this.fetchList();
     },
     methods: {
+        stdclick,
         redeploy: async function(showLoading=true) {
             this.loading = true;
             this.stack = await std(`/api/layer/redeploy`, {
