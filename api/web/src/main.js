@@ -252,6 +252,10 @@ const router = new VueRouter.createRouter({
                 name: 'admin-layer',
                 component: () => import('./components/Admin/AdminLayers.vue')
             },{
+                path: 'user',
+                name: 'admin-user',
+                component: () => import('./components/Admin/AdminUsers.vue')
+            },{
                 path: 'task',
                 name: 'admin-task',
                 component: () => import('./components/Admin/AdminTasks.vue')
