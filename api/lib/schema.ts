@@ -176,6 +176,9 @@ export const Server = pgTable('server', {
         key?: string;
     }>().notNull().default({}),
     api: text('api').notNull().default(''),
+    provider_url: text('provider_url').notNull().default(''),
+    provider_secret: text('provider_secret').notNull().default(''),
+    provider_client: text('provider_client').notNull().default(''),
 });
 
 export const Token = pgTable('tokens', {
