@@ -1,0 +1,1 @@
+ALTER TABLE "profile" ADD COLUMN "last_login" timestamp with time zone DEFAULT Now() NOT NULL;

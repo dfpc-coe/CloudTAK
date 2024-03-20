@@ -169,6 +169,13 @@
       "when": 1710955342805,
       "tag": "0023_wise_alice",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "5",
+      "when": 1710958464058,
+      "tag": "0024_naive_beast",
+      "breakpoints": true
     }
   ]
 }
