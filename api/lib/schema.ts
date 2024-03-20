@@ -34,6 +34,7 @@ export const Basemap = pgTable('basemaps', {
 
 export const Profile = pgTable('profile', {
     username: text('username').primaryKey(),
+    last_login: timestamp('last_login', { withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     auth: json('auth').$type<ConnectionAuth>().notNull(),
     created: timestamp('created', { withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp('updated', { withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
