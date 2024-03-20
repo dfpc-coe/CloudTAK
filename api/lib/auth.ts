@@ -2,6 +2,8 @@ import { Request } from 'express';
 import Err from '@openaddresses/batch-error';
 import jwt from 'jsonwebtoken';
 import Config from './config.js';
+import { InferSelectModel } from 'drizzle-orm';
+import { Profile } from './schema.js';
 
 export enum AuthUserAccess {
     ADMIN = 'admin',
@@ -146,13 +148,28 @@ export default class Auth {
 
     static async as_user(config: Config, req: Request<unknown, unknown, unknown, any>, opts: {
         token?: boolean;
+        admin?: boolean;
     } = {}): Promise<AuthUser> {
         if (!opts.token) opts.token = false;
-        const auth = await this.is_auth(config, req, opts);
+        const auth = await this.is_auth(config, req, { token: opts.token });
 
         if (this.#is_resource(auth)) throw new Err(401, null, 'Only an authenticated user can access this resource');
 
-        return auth as AuthUser;
+        const user = auth as AuthUser;
+
+        if (opts.admin && user.access !== AuthUserAccess.ADMIN) {
+            throw new Err(401, null, 'User must be a System Administrator to access this resource');
+        }
+
+        return user;
+    }
+
+    static async as_profile(config: Config, req: Request<unknown, unknown, unknown, any>, opts: {
+        token?: boolean;
+        admin?: boolean;
+    } = {}): Promise<InferSelectModel<typeof Profile>> {
+        const user = await this.as_user(config, req, opts);
+        return await config.models.Profile.from(user.email);
     }
 }
 

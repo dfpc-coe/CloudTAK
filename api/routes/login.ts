@@ -1,4 +1,5 @@
 import path from 'node:path';
+import jwt from 'jsonwebtoken';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import Cacher from '../lib/cacher.js';
@@ -31,25 +32,29 @@ export default async function router(schema: Schema, config: Config) {
         })
     }, async (req, res) => {
         try {
-            const user = await provider.login(req.body.username, req.body.password);
+            const email = await provider.login(req.body.username, req.body.password);
 
             if (config.server.provider_url) {
                 try {
-                    const response = await provider.external(req.body.username);
-                    await config.models.Profile.commit(req.body.username, {
+                    const response = await provider.external(email);
+                    await config.models.Profile.commit(email, {
                         ...response,
                         last_login: new Date().toISOString()
                     });
                 } catch (err) {
                     // If there are upstream errors the user is limited to WebTAK like functionality
-                    await config.models.Profile.commit(req.body.username, { server_admin: false, agency_admin: [], last_login: new Date().toISOString() });
+                    await config.models.Profile.commit(email, { system_admin: false, agency_admin: [], last_login: new Date().toISOString() });
                     console.error(err);
                 }
             } else {
-                await config.models.Profile.commit(req.body.username, { last_login: new Date().toISOString() });
+                await config.models.Profile.commit(email, { last_login: new Date().toISOString() });
             }
 
-            return res.json(user)
+            const profile = await config.models.Profile.from(email);
+
+            const access = profile.system_admin ? 'admin' : 'user';
+
+            return res.json({ access, email, token: jwt.sign({ access, email }, this.config.SigningSecret) })
         } catch (err) {
             Err.respond(err, res);
         }

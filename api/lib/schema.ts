@@ -43,7 +43,7 @@ export const Profile = pgTable('profile', {
     tak_group: text('tak_group').$type<TAKGroup>().notNull().default(TAKGroup.ORANGE),
     tak_role: text('tak_role').$type<TAKRole>().notNull().default(TAKRole.TEAM_MEMBER),
     tak_loc: geometry('tak_loc', { srid: 4326, type: GeometryType.Point }),
-    admin: boolean('system_admin').notNull().default(false),
+    system_admin: boolean('system_admin').notNull().default(false),
     agency_admins: json('agency_admin').$type<Array<number>>().default([])
 });
 
