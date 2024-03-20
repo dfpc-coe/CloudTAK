@@ -46,7 +46,7 @@ export default class AuthProvider {
                 })
             });
 
-            if (!authres.ok) throw new Err(400, new Error(await authres.text()), 'Internal Provider Token Generation Error');
+            if (!authres.ok) throw new Err(500, new Error(await authres.text()), 'Internal Provider Token Generation Error');
             const cache = await authres.typed(Type.Object({
                 token_type: Type.String(),
                 expires_in: Type.Integer(),
@@ -67,7 +67,7 @@ export default class AuthProvider {
             },
         });
 
-        if (!userres.ok) throw new Err(400, new Error(await userres.text()), 'Internal Provider Lookup Error');
+        if (!userres.ok) throw new Err(500, new Error(await userres.text()), 'Internal Provider Lookup Error');
 
         const user_body = await userres.typed(Type.Object({
             data: Type.Object({
