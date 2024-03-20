@@ -15,29 +15,39 @@ export enum AuthProviderAccess {
 
 export default class AuthProvider {
     config: Config;
+    external: {
+        token?: string;
+        expires?: Date;
+    }
 
     constructor(config: Config) {
         this.config = config;
+        this.external = {};
     }
 
+    async fetch(
+
     async external(username: string, password: string): Promise<void> {
+        if (!this.external.token) {
+            const authres = await fetch(new URL(`/oauth/token`, this.config.server.provider_url), {
+                method: 'POST',
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json",
+                },
+                body: JSON.stringify({
+                    "scope": "admin-system",
+                    "grant_type":  "client_credentials",
+                    "client_id": parseInt(this.config.server.provider_client),
+                    "client_secret": this.config.server.provider_secret,
+                })
+            });
 
-        const authres = await fetch(new URL(`/oauth/token`, this.config.server.provider_url), {
-            method: 'POST',
-            headers: {
-                "Content-Type": "application/json",
-                "Accept": "application/json",
-            },
-            body: JSON.stringify({
-                "scope": "admin-system",
-                "grant_type":  "client_credentials",
-                "client_id": parseInt(this.config.server.provider_client),
-                "client_secret": this.config.server.provider_secret,
-            })
-        });
+            if (!
 
-        const body: any = await authres.json();
-        console.error(body)
+            const body: any = await authres.json();
+            console.error(body)
+        }
 
         const userres = await fetch(new URL(`/api/v1/server/users/email/${encodeURIComponent(username)}`, this.config.server.provider_url), {
             method: 'GET',
