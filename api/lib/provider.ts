@@ -1,6 +1,9 @@
+import fs from 'node:fs';
 import Config from './config.js';
+import { Type } from '@sinclair/typebox'
 import Err from '@openaddresses/batch-error';
 import moment from 'moment';
+import fetch from './fetch.js';
 import jwt from 'jsonwebtoken';
 import { CookieJar } from 'tough-cookie';
 import { CookieAgent } from 'http-cookie-agent/undici';
@@ -15,20 +18,18 @@ export enum AuthProviderAccess {
 
 export default class AuthProvider {
     config: Config;
-    external: {
-        token?: string;
-        expires?: Date;
+    cache?: {
+        expires: Date;
+        token: string;
     }
 
     constructor(config: Config) {
         this.config = config;
-        this.external = {};
     }
 
-    async fetch(
-
     async external(username: string, password: string): Promise<void> {
-        if (!this.external.token) {
+        if (!this.cache || this.cache.expires < new Date()) {
+            const expires = new Date();
             const authres = await fetch(new URL(`/oauth/token`, this.config.server.provider_url), {
                 method: 'POST',
                 headers: {
@@ -43,34 +44,52 @@ export default class AuthProvider {
                 })
             });
 
-            if (!
+            if (!authres.ok) throw new Err(400, new Error(await authres.text()), 'Internal Provider Token Generation Error');
+            const cache = await authres.typed(Type.Object({
+                token_type: Type.String(),
+                expires_in: Type.Integer(),
+                access_token: Type.String()
+            }));
 
-            const body: any = await authres.json();
-            console.error(body)
+            const token = cache.access_token;
+            expires.setSeconds(expires.getSeconds() + cache.expires_in - 120);
+
+            this.cache = { token, expires };
         }
 
         const userres = await fetch(new URL(`/api/v1/server/users/email/${encodeURIComponent(username)}`, this.config.server.provider_url), {
             method: 'GET',
             headers: {
                 "Accept": "application/json",
-                "Authorization": `Bearer ${body.access_token}`
+                "Authorization": `Bearer ${this.cache.token}`
             },
         });
 
-        const user_body: any = await userres.json();
+        const user_body = await userres.typed(Type.Object({
+            data: Type.Object({
+                id: Type.Integer(),
+                name: Type.String(),
+                email: Type.String(),
+                phone: Type.String(),
+                active: Type.Boolean(),
+                agencies: Type.Array(Type.Object({
+                    id: Type.Integer(),
+                    name: Type.String(),
+                    active: Type.Boolean()
+                })),
+                adminAgencies: Type.Array(Type.Object({
+                    id: Type.Integer(),
+                    name: Type.String(),
+                    active: Type.Boolean()
+                })),
+                roles: Type.Array(Type.Object({
+                    id: Type.Integer(),
+                    name: Type.String()
+                }))
+            })
+        }));
 
-        const url = new URL(`/api/v1/proxy/users/${user_body.data.id}`, this.config.server.provider_url);
-        url.searchParams.append('proxy_user_id', user_body.data.id);
-        const selfres = await fetch(url, {
-            method: 'GET',
-            headers: {
-                "Accept": "application/json",
-                "Authorization": `Bearer ${body.access_token}`
-            },
-        });
-
-        const self_body: any = await selfres.json();
-        console.error(self_body);
+        console.error(user_body);
     }
 
     async login(username: string, password: string): Promise<{
@@ -89,7 +108,6 @@ export default class AuthProvider {
         const authres = await fetch(url, {
             method: 'POST',
             credentials: 'include',
-            // @ts-expect-error
             dispatcher: agent
         });
 
@@ -97,7 +115,7 @@ export default class AuthProvider {
             throw new Err(500, new Error(`Status: ${authres.status}: ${await authres.text()}`), 'Non-200 Response from Auth Server - Token');
         }
 
-        const body = await authres.json();
+        const body: any = await authres.json();
 
         if (body.error === 'invalid_grant' && body.error_description.startsWith('Bad credentials')) {
             throw new Err(400, null, 'Invalid Username or Password');
@@ -110,7 +128,6 @@ export default class AuthProvider {
 
             const groupres = await fetch(url, {
                 credentials: 'include',
-                // @ts-expect-error
                 dispatcher: agent
             });
 
@@ -122,7 +139,7 @@ export default class AuthProvider {
                 data: Array<{
                     name: string;
                 }>
-            }= await groupres.json();
+            } = await groupres.json() as any;
 
             const groups = gbody.data.map((d: {
                 name: string
