@@ -1,6 +1,8 @@
 import Err from '@openaddresses/batch-error';
 import { Static, TSchema, TUnknown } from "@sinclair/typebox";
-import { TypeCheck } from "@sinclair/typebox/compiler";
+import { TypeCompiler } from "@sinclair/typebox/compiler";
+import { fetch, Response } from 'undici';
+import type { RequestInfo, RequestInit } from 'undici';
 
 export class TypedResponse extends Response {
     constructor(response: Response) {
@@ -11,24 +13,23 @@ export class TypedResponse extends Response {
         });
     }
 
-    json(): Promise<unknown>;
-    json<T extends TSchema>(typeChecker: TypeCheck<T>): Promise<Static<T>>;
-    async json<T extends TSchema = TUnknown>(
-        typeChecker?: TypeCheck<T>
-    ): Promise<Static<T>> {
-        if (!typeChecker) return super.json();
-        const body = await super.json();
+    typed<T extends TSchema>(type: T): Promise<Static<T>>;
+
+    async typed<T extends TSchema = TUnknown>(type: T): Promise<Static<T>> {
+        const body = await this.json();
+        const typeChecker = TypeCompiler.Compile(type)
         const result = typeChecker.Check(body);
+
         if (result) return body;
 
         const errors = typeChecker.Errors(body);
         const firstError = errors.First();
 
-        throw new Err(400, null, `Internal Validation Error: ${firstError}`);
+        throw new Err(500, null, `Internal Validation Error: ${firstError}`);
     }
 }
 
-export default async function fetch(
+export default async function(
     input: RequestInfo,
     init?: RequestInit
 ): Promise<TypedResponse> {
