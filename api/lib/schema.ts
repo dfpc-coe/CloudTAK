@@ -44,7 +44,7 @@ export const Profile = pgTable('profile', {
     tak_role: text('tak_role').$type<TAKRole>().notNull().default(TAKRole.TEAM_MEMBER),
     tak_loc: geometry('tak_loc', { srid: 4326, type: GeometryType.Point }),
     system_admin: boolean('system_admin').notNull().default(false),
-    agency_admins: json('agency_admin').$type<Array<number>>().default([])
+    agency_admin: json('agency_admin').$type<Array<number>>().default([])
 });
 
 export const ProfileChat = pgTable('profile_chats', {
