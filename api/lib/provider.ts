@@ -3,7 +3,6 @@ import { Type } from '@sinclair/typebox'
 import Err from '@openaddresses/batch-error';
 import moment from 'moment';
 import fetch from './fetch.js';
-import jwt from 'jsonwebtoken';
 import { CookieJar } from 'tough-cookie';
 import { CookieAgent } from 'http-cookie-agent/undici';
 import { X509Certificate } from 'crypto';
@@ -101,11 +100,7 @@ export default class AuthProvider {
         };
     }
 
-    async login(username: string, password: string): Promise<{
-        access: string;
-        token: string;
-        email: string;
-    }> {
+    async login(username: string, password: string): Promise<string> {
         const url = new URL('/oauth/token', this.config.local ? 'http://localhost:5001' : this.config.MartiAPI);
         url.searchParams.append('grant_type', 'password');
         url.searchParams.append('username', username);
@@ -198,10 +193,6 @@ export default class AuthProvider {
             });
         }
 
-        return {
-            access: 'user',
-            token: jwt.sign({ access: 'user', email: contents.sub }, this.config.SigningSecret),
-            email: contents.sub
-        };
+        return contents.sub;
     }
 }
