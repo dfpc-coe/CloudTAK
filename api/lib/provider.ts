@@ -88,7 +88,13 @@ export default class AuthProvider {
             })
         }));
 
-        console.error(user_body);
+        const update = {
+            phone: user_body.data.phone,
+            system_admin: user_body.data.roles.some((role) => role.name === 'System Administrator')
+            agency_admin: user_body.data.adminAgencies.filter((a) => a.id)
+        };
+
+        await config.models.Profile.commit(username, update);
     }
 
     async login(username: string, password: string): Promise<{
