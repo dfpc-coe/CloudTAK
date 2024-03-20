@@ -37,6 +37,7 @@ export default async function router(schema: Schema, config: Config) {
             if (config.server.provider_url) {
                 try {
                     const response = await provider.external(email);
+
                     await config.models.Profile.commit(email, {
                         ...response,
                         last_login: new Date().toISOString()
@@ -54,7 +55,7 @@ export default async function router(schema: Schema, config: Config) {
 
             const access = profile.system_admin ? 'admin' : 'user';
 
-            return res.json({ access, email, token: jwt.sign({ access, email }, this.config.SigningSecret) })
+            return res.json({ access, email, token: jwt.sign({ access, email }, config.SigningSecret) })
         } catch (err) {
             Err.respond(err, res);
         }
