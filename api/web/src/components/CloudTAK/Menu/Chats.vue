@@ -5,7 +5,7 @@
             <IconCircleArrowLeft @click='$router.back()' size='32' class='cursor-pointer'/>
             <div class='modal-title'>Chats</div>
             <div class='btn-list'>
-                <IconPlus @click='$emit("mode", "contacts")' size='32' class='cursor-pointer' v-tooltip='"New Chat"'/>
+                <IconPlus @click='$router.push("/menu/contacts")' size='32' class='cursor-pointer' v-tooltip='"New Chat"'/>
                 <IconRefresh v-if='!loading' @click='fetchList' size='32' class='cursor-pointer' v-tooltip='"Refresh"'/>
             </div>
         </div>
