@@ -3,7 +3,6 @@ import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import Cacher from '../lib/cacher.js';
 import busboy from 'busboy';
-import moment from 'moment';
 import Config from '../lib/config.js';
 import xml2js from 'xml2js';
 import { Readable } from 'node:stream';
@@ -13,13 +12,11 @@ import { Param, GenericListOrder } from '@openaddresses/batch-generic'
 import { sql } from 'drizzle-orm';
 import Schema from '@openaddresses/batch-schema';
 import { Type } from '@sinclair/typebox'
-import jwt from 'jsonwebtoken';
-import { CookieJar, Cookie } from 'tough-cookie';
-import { CookieAgent } from 'http-cookie-agent/undici';
-import TAKAPI, { APIAuthPassword } from '../lib/tak-api.js';
-import { X509Certificate } from 'crypto';
+import Provider from '../lib/provider.js';
 
 export default async function router(schema: Schema, config: Config) {
+    const provider = new Provider(config);
+
     await schema.post('/login', {
         name: 'Create Login',
         group: 'Login',
@@ -34,105 +31,7 @@ export default async function router(schema: Schema, config: Config) {
         })
     }, async (req, res) => {
         try {
-            const url = new URL('/oauth/token', config.local ? 'http://localhost:5001' : config.MartiAPI);
-            url.searchParams.append('grant_type', 'password');
-            url.searchParams.append('username', req.body.username);
-            url.searchParams.append('password', req.body.password);
-
-            const jar = new CookieJar();
-            const agent = new CookieAgent({ cookies: { jar } });
-
-            const authres = await fetch(url, {
-                method: 'POST',
-                credentials: 'include',
-                // @ts-expect-error
-                dispatcher: agent
-            });
-
-            if (!authres.ok) {
-                throw new Err(500, new Error(`Status: ${authres.status}: ${await authres.text()}`), 'Non-200 Response from Auth Server - Token');
-            }
-
-            const body = await authres.json();
-
-            if (body.error === 'invalid_grant' && body.error_description.startsWith('Bad credentials')) {
-                throw new Err(400, null, 'Invalid Username or Password');
-            } else if (body.error || !body.access_token) {
-                throw new Err(500, new Error(body.error_description), 'Unknown Login Error');
-            }
-
-            if (config.AuthGroup) {
-                const url = new URL('/Marti/api/groups/all?useCache=true', config.local ? 'http://localhost:5001' : config.MartiAPI);
-
-                const groupres = await fetch(url, {
-                    credentials: 'include',
-                    // @ts-expect-error
-                    dispatcher: agent
-                });
-
-                if (!groupres.ok) {
-                    throw new Err(500, new Error(`Status: ${groupres.status}: ${await groupres.text()}`), 'Non-200 Response from Auth Server - Groups');
-                }
-
-                const gbody: {
-                    data: Array<{
-                        name: string;
-                    }>
-                }= await groupres.json();
-
-                const groups = gbody.data.map((d: {
-                    name: string
-                }) => {
-                    return d.name
-                });
-
-                if (!groups.includes(config.AuthGroup)) {
-                    throw new Err(403, null, 'Insufficient Group Privileges');
-                }
-            }
-
-            const split = Buffer.from(body.access_token, 'base64').toString().split('}').map((ext) => { return ext + '}'});
-            if (split.length < 2) throw new Err(500, null, 'Unexpected TAK JWT Format');
-            const contents: { sub: string; aud: string; nbf: number; exp: number; iat: number; } = JSON.parse(split[1]);
-
-            let profile;
-            const api = await TAKAPI.init(new URL(config.MartiAPI), new APIAuthPassword(req.body.username, req.body.password));
-
-            try {
-                profile = await config.models.Profile.from(req.body.username);
-            } catch (err) {
-                if (err instanceof Err && err.status === 404) {
-                    await config.models.Profile.generate({
-                        username: req.body.username,
-                        auth: await api.Credentials.generate()
-                    });
-                } else {
-                    return console.error(err);
-                }
-            }
-
-            let validTo;
-
-            try {
-                const cert = new X509Certificate(profile.auth.cert);
-
-                validTo = cert.validTo
-                // The validTo date looks like: 'Mar  6 20:38:58 2025 GMT'
-                if (moment(validTo, "MMM DD hh:mm:ss YYYY").isBefore(moment().add(7, 'days'))) {
-                    throw new Error('Expired Certificate has expired or is about to');
-                }
-            } catch (err) {
-                console.error(`Error: CertificateExpiration: ${validTo}: ${err}`);
-                await config.models.Profile.commit(req.body.username, {
-                    auth: await api.Credentials.generate()
-                });
-            }
-
-            return res.json({
-                access: 'user',
-                token: jwt.sign({ access: 'user', email: contents.sub }, config.SigningSecret),
-                email: contents.sub
-            });
+            return await provider.login(req.body.username, req.body.password);
         } catch (err) {
             Err.respond(err, res);
         }
