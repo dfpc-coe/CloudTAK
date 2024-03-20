@@ -26,7 +26,11 @@ export default class AuthProvider {
         this.config = config;
     }
 
-    async external(username: string): Promise<void> {
+    async external(username: string): Promise<{
+        phone: string;
+        system_admin: boolean;
+        agency_admin: Array<number>;
+    }> {
         if (!this.cache || this.cache.expires < new Date()) {
             const expires = new Date();
             const authres = await fetch(new URL(`/oauth/token`, this.config.server.provider_url), {
@@ -64,6 +68,8 @@ export default class AuthProvider {
             },
         });
 
+        if (!userres.ok) throw new Err(400, new Error(await authres.text()), 'Internal Provider Lookup Error');
+
         const user_body = await userres.typed(Type.Object({
             data: Type.Object({
                 id: Type.Integer(),
@@ -88,13 +94,11 @@ export default class AuthProvider {
             })
         }));
 
-        const update = {
+        return {
             phone: user_body.data.phone,
             system_admin: user_body.data.roles.some((role) => role.name === 'System Administrator')
             agency_admin: user_body.data.adminAgencies.filter((a) => a.id)
         };
-
-        await config.models.Profile.commit(username, update);
     }
 
     async login(username: string, password: string): Promise<{
