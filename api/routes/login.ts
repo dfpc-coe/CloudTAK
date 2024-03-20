@@ -34,7 +34,19 @@ export default async function router(schema: Schema, config: Config) {
             const user = await provider.login(req.body.username, req.body.password);
 
             if (config.server.provider_url) {
-                await provider.external(req.body.username);
+                try {
+                    const response = await provider.external(req.body.username);
+                    await config.models.Profile.commit({
+                        ...response,
+                        last_login: new Date().toISOString()
+                    });
+                } catch (err) {
+                    // If there are upstream errors the user is limited to WebTAK like functionality
+                    await config.models.Profile.commit({ server_admin: false, agency_admin: [], last_login: new Date().toISOString() });
+                    console.error(err);
+                }
+            } else {
+                await config.models.Profile.commit({ last_login: new Date().toISOString() });
             }
 
             return res.json(user)
