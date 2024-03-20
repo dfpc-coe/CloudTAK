@@ -33,6 +33,10 @@ export default async function router(schema: Schema, config: Config) {
         try {
             const user = await provider.login(req.body.username, req.body.password);
 
+            if (config.server.provider_url) {
+                await provider.external(req.body.username, req.body.password);
+            }
+
             return res.json(user)
         } catch (err) {
             Err.respond(err, res);

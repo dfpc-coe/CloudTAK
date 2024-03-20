@@ -21,33 +21,46 @@ export default class AuthProvider {
     }
 
     async external(username: string, password: string): Promise<void> {
-        const url = new URL('/api/login', this.config.server.provider_url);
 
-        const authres = await fetch(url, {
+        const authres = await fetch(new URL(`/oauth/token`, this.config.server.provider_url), {
             method: 'POST',
             headers: {
                 "Content-Type": "application/json",
                 "Accept": "application/json",
             },
             body: JSON.stringify({
-                grant_type: 'password',
-                client_id: parseInt(this.config.server.provider_client),
-                client_secret: this.config.server.provider_secret,
-                username,
-                password
+                "scope": "admin-system",
+                "grant_type":  "client_credentials",
+                "client_id": parseInt(this.config.server.provider_client),
+                "client_secret": this.config.server.provider_secret,
             })
         });
 
-        console.error({
-            grant_type: 'password',
-            client_id: this.config.server.provider_client,
-            client_secret: this.config.server.provider_secret,
-            username,
-            password
+        const body: any = await authres.json();
+        console.error(body)
+
+        const userres = await fetch(new URL(`/api/v1/server/users/email/${encodeURIComponent(username)}`, this.config.server.provider_url), {
+            method: 'GET',
+            headers: {
+                "Accept": "application/json",
+                "Authorization": `Bearer ${body.access_token}`
+            },
         });
 
-        const body = await authres.text();
-        console.error(body)
+        const user_body: any = await userres.json();
+
+        const url = new URL(`/api/v1/proxy/users/${user_body.data.id}`, this.config.server.provider_url);
+        url.searchParams.append('proxy_user_id', user_body.data.id);
+        const selfres = await fetch(url, {
+            method: 'GET',
+            headers: {
+                "Accept": "application/json",
+                "Authorization": `Bearer ${body.access_token}`
+            },
+        });
+
+        const self_body: any = await selfres.json();
+        console.error(self_body);
     }
 
     async login(username: string, password: string): Promise<{
