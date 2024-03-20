@@ -31,7 +31,9 @@ export default async function router(schema: Schema, config: Config) {
         })
     }, async (req, res) => {
         try {
-            return await provider.login(req.body.username, req.body.password);
+            const user = await provider.login(req.body.username, req.body.password);
+
+            return res.json(user)
         } catch (err) {
             Err.respond(err, res);
         }

@@ -2,7 +2,7 @@ import Config from './config.js';
 import Err from '@openaddresses/batch-error';
 import moment from 'moment';
 import jwt from 'jsonwebtoken';
-import { CookieJar, Cookie } from 'tough-cookie';
+import { CookieJar } from 'tough-cookie';
 import { CookieAgent } from 'http-cookie-agent/undici';
 import { X509Certificate } from 'crypto';
 import TAKAPI, { APIAuthPassword } from '../lib/tak-api.js';
@@ -18,6 +18,36 @@ export default class AuthProvider {
 
     constructor(config: Config) {
         this.config = config;
+    }
+
+    async external(username: string, password: string): Promise<void> {
+        const url = new URL('/api/login', this.config.server.provider_url);
+
+        const authres = await fetch(url, {
+            method: 'POST',
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+            },
+            body: JSON.stringify({
+                grant_type: 'password',
+                client_id: parseInt(this.config.server.provider_client),
+                client_secret: this.config.server.provider_secret,
+                username,
+                password
+            })
+        });
+
+        console.error({
+            grant_type: 'password',
+            client_id: this.config.server.provider_client,
+            client_secret: this.config.server.provider_secret,
+            username,
+            password
+        });
+
+        const body = await authres.text();
+        console.error(body)
     }
 
     async login(username: string, password: string): Promise<{
