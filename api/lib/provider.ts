@@ -1,4 +1,3 @@
-import fs from 'node:fs';
 import Config from './config.js';
 import { Type } from '@sinclair/typebox'
 import Err from '@openaddresses/batch-error';
@@ -27,7 +26,7 @@ export default class AuthProvider {
         this.config = config;
     }
 
-    async external(username: string, password: string): Promise<void> {
+    async external(username: string): Promise<void> {
         if (!this.cache || this.cache.expires < new Date()) {
             const expires = new Date();
             const authres = await fetch(new URL(`/oauth/token`, this.config.server.provider_url), {
