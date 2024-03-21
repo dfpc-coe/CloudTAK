@@ -1,5 +1,5 @@
 {
-    "name": "@tak-ps/etl.api",
+    "name": "@tak-ps/CloudTAK.api",
     "version": "1.0.0",
     "type": "module",
     "description": "Facilitate ETL operations to bring non-TAK sources into a TAK Server",
@@ -16,7 +16,7 @@
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/tak-ps/etl.git"
+        "url": "git+https://github.com/dfpc-coe/CloudTAK.git"
     },
     "author": "Nick Ingalls <nick@ingalls.ca>",
     "license": "ISC",
