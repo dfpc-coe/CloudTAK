@@ -1,5 +1,5 @@
 {
-    "name": "@tak-ps/etl",
+    "name": "@tak-ps/CloudTAK",
     "type": "module",
     "version": "1.0.0",
     "description": "Facilitate ETL operations to bring non-TAK sources into a TAK Server",
@@ -12,14 +12,14 @@
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/tak-ps/etl.git"
+        "url": "git+https://github.com/dfpc-coe/CloudTAK.git"
     },
     "author": "Nick Ingalls <nick@ingalls.ca>",
     "license": "ISC",
     "bugs": {
-        "url": "https://github.com/tak-ps/etl/issues"
+        "url": "https://github.com/dfpc-coe/CloudTAK/issues"
     },
-    "homepage": "https://github.com/tak-ps/etl#readme",
+    "homepage": "https://github.com/dfpc-coe/CloudTAK#readme",
     "dependencies": {
         "@openaddresses/batch-alarms": "^4.0.0",
         "@openaddresses/cloudfriend": "^7.0.0",

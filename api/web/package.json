@@ -1,5 +1,5 @@
 {
-    "name": "@tak-ps/etl.web",
+    "name": "@tak-ps/CloudTAK.web",
     "type": "module",
     "version": "0.1.0",
     "private": true,
