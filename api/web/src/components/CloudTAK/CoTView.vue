@@ -43,7 +43,7 @@
         </div>
         <div v-if='feat.properties.contact && feat.properties.contact.phone' class='col-12 px-3 pb-2'>
             <label class='subheader'>Phone</label>
-            <div v-text='feat.properties.contact.phone' class='bg-gray-500 rounded mx-2 py-2 px-2'/>
+            <div v-text='phone(feat.properties.contact.phone)' class='bg-gray-500 rounded mx-2 py-2 px-2'/>
         </div>
         <div v-if='!isNaN(feat.properties.course)' class='col-12 px-3 pb-2'>
             <label class='subheader'>Course</label>
@@ -100,6 +100,7 @@ import pointOnFeature from '@turf/point-on-feature';
 import CoTStyle from './util/CoTStyle.vue';
 import Coordinate from './util/Coordinate.vue';
 import Speed from './util/Speed.vue';
+import phone from 'phone';
 import {
     IconX,
     IconShare2,
@@ -185,6 +186,17 @@ export default {
         }
     },
     methods: {
+        phone: function(number) {
+            const p = phone(number);
+
+            if (!p.isValid) return number;
+
+            if (p.countryCode === '+1') {
+                return `${p.phoneNumber.slice(0, 2)} (${p.phoneNumber.slice(2, 5)}) ${p.phoneNumber.slice(5, 8)}-${p.phoneNumber.slice(8, 12)}`;
+            } else {
+                return p;
+            }
+        },
         updateStyle: function() {
             mapStore.map.setPaintProperty('cots-edit-fill', 'fill-color', this.feat.properties.fill);
             mapStore.map.setPaintProperty('cots-edit-fill', 'fill-opacity', Number(this.feat.properties['fill-opacity']));
