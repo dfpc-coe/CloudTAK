@@ -4,11 +4,26 @@
     style='z-index: 1; width: 400px; top: 56px;'
 >
     <div class='col-12 border-light border-bottom d-flex mb-2'>
-        <div class='col-auto card-header row mx-1 my-2'>
-            <div class='card-title mx-2' v-text='feat.properties.callsign'></div>
-            <div class='subheader mx-2'>
-                <span class='subheader' v-text='feat.properties.type'/>
-                <span class='subheader ms-auto' v-text='" (" + feat.properties.how || "Unknown" + ")"'/>
+        <div class='col-auto card-header row mx-1 my-2 d-flex'>
+            <div class='card-title mx-2 d-flex'>
+                <span
+                    v-if='feat.properties.status && feat.properties.status.battery'
+                    class='d-flex'
+                    style='margin-right: 10px;'
+                    v-tooltip='feat.properties.status.battery + "% Battery"'
+                >
+                    <IconBattery1 v-if='parseInt(feat.properties.status.battery) <= 25' size='32'/>
+                    <IconBattery2 v-else-if='parseInt(feat.properties.status.battery) <= 50' size='32'/>
+                    <IconBattery3 v-else-if='parseInt(feat.properties.status.battery) <= 75' size='32'/>
+                    <IconBattery4 v-else-if='parseInt(feat.properties.status.battery) <= 100' size='32'/>
+                </span>
+                <div class='col-12'>
+                    <div v-text='feat.properties.callsign'></div>
+                    <div>
+                        <span class='subheader' v-text='feat.properties.type'/>
+                        <span class='subheader ms-auto' v-text='" (" + feat.properties.how || "Unknown" + ")"'/>
+                    </div>
+                </div>
             </div>
         </div>
         <div class='col-auto btn-list my-2 mx-3 ms-auto d-flex align-items-center'>
@@ -89,7 +104,11 @@ import {
     IconX,
     IconShare2,
     IconZoomPan,
-    IconCode
+    IconCode,
+    IconBattery1,
+    IconBattery2,
+    IconBattery3,
+    IconBattery4
 } from '@tabler/icons-vue';
 import { useCOTStore } from '/src/stores/cots.ts';
 const cotStore = useCOTStore();
@@ -189,7 +208,11 @@ export default {
         Speed,
         Coordinate,
         TablerInput,
-        TablerEnum
+        TablerEnum,
+        IconBattery1,
+        IconBattery2,
+        IconBattery3,
+        IconBattery4
     }
 }
 </script>
