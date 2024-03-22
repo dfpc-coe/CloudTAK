@@ -43,6 +43,24 @@
             <CoTStyle v-model='feat'/>
         </template>
 
+        <div v-if='feat.properties.takv && feat.properties.takv && Object.keys(feat.properties.takv).length' class='col-12 px-3 pb-2'>
+            <label class='subheader'>Metadata</label>
+            <div class='table-responsive rounded mx-2 py-2 px-2'>
+                <table class="table card-table table-hover table-vcenter datatable">
+                    <thead>
+                        <th>Key</th>
+                        <th>Value</th>
+                    </thead>
+                    <tbody class='bg-gray-500'>
+                        <tr :key='prop' v-for='prop of Object.keys(feat.properties.takv)'>
+                            <td v-text='prop'/>
+                            <td v-text='feat.properties.takv[prop]'/>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
         <div v-if='false' class='col-12 d-flex align-items-center'>
             <div class='d-flex'>
                 <button class='btn bg-gray-500'><IconShare2 size='32'/></button>
