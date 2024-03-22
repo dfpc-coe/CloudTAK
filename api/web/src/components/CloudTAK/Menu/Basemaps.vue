@@ -87,6 +87,9 @@ export default {
         await this.fetchList();
     },
     watch: {
+        query: function() {
+            if (!this.query) this.paging.filter = '';
+        },
         paging: {
             deep: true,
             handler: async function() {
