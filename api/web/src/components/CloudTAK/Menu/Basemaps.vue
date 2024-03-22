@@ -6,10 +6,16 @@
             <div class='modal-title'>BaseMaps</div>
             <div class='btn-list'>
                 <IconPlus @click='$router.push("/basemap/new")' size='32' class='cursor-pointer' v-tooltip='"Create BaseMap"'/>
+                <IconSearch @click='query = !query' v-tooltip='"Search"' size='32' class='cursor-pointer'/>
                 <IconRefresh v-if='!loading' @click='fetchList' size='32' class='cursor-pointer' v-tooltip='"Refresh"'/>
             </div>
         </div>
     </div>
+
+    <div v-if='query' class='col-12 px-3'>
+        <TablerInput v-model='paging.filter' placeholder='Filter'/>
+    </div>
+
     <TablerLoading v-if='loading'/>
     <TablerNone
         v-else-if='!list.items.length'
@@ -39,6 +45,7 @@
 import { std, stdurl } from '/src/std.ts';
 import {
     TablerNone,
+    TablerInput,
     TablerPager,
     TablerLoading
 } from '@tak-ps/vue-tabler';
@@ -80,12 +87,12 @@ export default {
         await this.fetchList();
     },
     watch: {
-       'paging.page': async function() {
-           await this.fetchList();
-       },
-       'paging.filter': async function() {
-           await this.fetchList();
-       },
+        paging: {
+            deep: true,
+            handler: async function() {
+                await this.fetchList();
+            },
+        }
     },
     methods: {
         setBasemap: function(basemap) {
@@ -123,6 +130,7 @@ export default {
     components: {
         TablerNone,
         TablerPager,
+        TablerInput,
         IconCircleArrowLeft,
         IconShare2,
         IconSettings,
