@@ -4,50 +4,90 @@
     style='z-index: 1; width: 400px; top: 56px;'
 >
     <div class='col-12 border-light border-bottom d-flex mb-2'>
-        <div class='col-auto card-header row mx-1 my-2'>
-            <div class='card-title mx-2' v-text='cot.properties.callsign'></div>
-            <div class='subheader mx-2'>
-                <span class='subheader' v-text='cot.properties.type'/>
-                <span class='subheader ms-auto' v-text='" (" + cot.properties.how || "Unknown" + ")"'/>
-            </div>
-        </div>
-        <div class='col-auto btn-list my-2 mx-3 ms-auto d-flex align-items-center'>
-            <IconZoomPan @click='zoomTo' size='32' class='cursor-pointer' v-tooltip='"Zoom To"'/>
+        <div class='col-12 card-header row mx-1 my-2 d-flex'>
+            <div class='card-title d-flex'>
+                <span
+                    v-if='feat.properties.status && feat.properties.status.battery'
+                    class='d-flex'
+                    style='margin-right: 10px;'
+                    v-tooltip='feat.properties.status.battery + "% Battery"'
+                >
+                    <IconBattery1 v-if='parseInt(feat.properties.status.battery) <= 25' size='32'/>
+                    <IconBattery2 v-else-if='parseInt(feat.properties.status.battery) <= 50' size='32'/>
+                    <IconBattery3 v-else-if='parseInt(feat.properties.status.battery) <= 75' size='32'/>
+                    <IconBattery4 v-else-if='parseInt(feat.properties.status.battery) <= 100' size='32'/>
+                </span>
+                <div class='col-12'>
+                    <TablerInput v-if='isUserDrawn' v-model='feat.properties.callsign'/>
+                    <div v-else v-text='feat.properties.callsign'></div>
 
-            <IconCode v-if='mode === "default"' @click='mode = "raw"' size='32' class='cursor-pointer' v-tooltip='"Raw View"'/>
-            <IconX v-if='mode === "raw"' @click='mode = "default"' size='32' class='cursor-pointer' v-tooltip='"Default View"'/>
+                    <div>
+                        <span class='subheader' v-text='feat.properties.type'/>
+                        <span class='subheader ms-auto' v-text='" (" + (feat.properties.how || "Unknown") + ")"'/>
+                    </div>
+                </div>
+            </div>
+            <div class='col-12 d-flex my-2'>
+                <div class='btn-list'>
+                    <IconShare2 @click='mode === "share" ? mode = "default" : mode = "share"' size='32' class='cursor-pointer' v-tooltip='"Share"'/>
+                </div>
+                <div class='ms-auto btn-list'>
+                    <IconZoomPan @click='zoomTo' size='32' class='cursor-pointer' v-tooltip='"Zoom To"'/>
+
+                    <IconCode v-if='mode === "default"' @click='mode = "raw"' size='32' class='cursor-pointer' v-tooltip='"Raw View"'/>
+                    <IconX v-if='mode === "raw"' @click='mode = "default"' size='32' class='cursor-pointer' v-tooltip='"Default View"'/>
+                </div>
+            </div>
         </div>
     </div>
 
     <template v-if='mode === "default"'>
-        <div v-if='!isNaN(cot.properties.speed)' class='col-12 px-3 pb-2'>
+        <div v-if='!isNaN(feat.properties.speed)' class='col-12 px-3 pb-2'>
             <Coordinate :coordinates='center'/>
         </div>
-        <div v-if='!isNaN(cot.properties.speed)' class='col-12 px-3 pb-2'>
-            <Speed :speed='cot.properties.speed'/>
+        <div v-if='!isNaN(feat.properties.speed)' class='col-12 px-3 pb-2'>
+            <Speed :speed='feat.properties.speed'/>
         </div>
-        <div v-if='!isNaN(cot.properties.course)' class='col-12 px-3 pb-2'>
+        <div v-if='feat.properties.contact && feat.properties.contact.phone' class='col-12 px-3 pb-2'>
+            <label class='subheader'>Phone</label>
+            <div v-text='phone(feat.properties.contact.phone)' class='bg-gray-500 rounded mx-2 py-2 px-2'/>
+        </div>
+        <div v-if='!isNaN(feat.properties.course)' class='col-12 px-3 pb-2'>
             <label class='subheader'>Course</label>
-            <div v-text='cot.properties.course' class='bg-gray-500 rounded mx-2 py-2 px-2'/>
+            <div v-text='feat.properties.course' class='bg-gray-500 rounded mx-2 py-2 px-2'/>
         </div>
         <div class='col-12 px-3 pb-2'>
             <label class='subheader'>Remarks</label>
-            <div v-text='cot.properties.remarks || "None"' class='bg-gray-500 rounded mx-2 py-2 px-2'/>
+            <TablerInput rows='2' v-model='feat.properties.remarks'/>
         </div>
 
         <template v-if='isUserDrawn'>
             <CoTStyle v-model='feat'/>
         </template>
 
-        <div v-if='false' class='col-12 d-flex align-items-center'>
-            <div class='d-flex'>
-                <button class='btn bg-gray-500'><IconShare2 size='32'/></button>
-                <button class='btn bg-gray-500'><IconPencil size='32'/></button>
+        <div v-if='feat.properties.takv && feat.properties.takv && Object.keys(feat.properties.takv).length' class='col-12 px-3 pb-2'>
+            <label class='subheader'>Metadata</label>
+            <div class='table-responsive rounded mx-2 py-2 px-2'>
+                <table class="table card-table table-hover table-vcenter datatable">
+                    <thead>
+                        <th>Key</th>
+                        <th>Value</th>
+                    </thead>
+                    <tbody class='bg-gray-500'>
+                        <tr :key='prop' v-for='prop of Object.keys(feat.properties.takv)'>
+                            <td v-text='prop'/>
+                            <td v-text='feat.properties.takv[prop]'/>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
     </template>
+    <template v-else-if='mode === "share"'>
+        <Share @done='mode = "default"' :feat='feat'/>
+    </template>
     <template v-else-if='mode === "raw"'>
-        <pre v-text='cot'/>
+        <pre v-text='feat'/>
     </template>
 </div>
 </template>
@@ -60,14 +100,21 @@ import {
     TablerEnum
 } from '@tak-ps/vue-tabler';
 import pointOnFeature from '@turf/point-on-feature';
+import Share from './util/Share.vue';
 import CoTStyle from './util/CoTStyle.vue';
 import Coordinate from './util/Coordinate.vue';
 import Speed from './util/Speed.vue';
+import phone from 'phone';
 import {
     IconX,
     IconShare2,
     IconZoomPan,
-    IconCode
+    IconCode,
+    IconPencil,
+    IconBattery1,
+    IconBattery2,
+    IconBattery3,
+    IconBattery4
 } from '@tabler/icons-vue';
 import { useCOTStore } from '/src/stores/cots.ts';
 const cotStore = useCOTStore();
@@ -144,6 +191,17 @@ export default {
         }
     },
     methods: {
+        phone: function(number) {
+            const p = phone(number);
+
+            if (!p.isValid) return number;
+
+            if (p.countryCode === '+1') {
+                return `${p.phoneNumber.slice(0, 2)} (${p.phoneNumber.slice(2, 5)}) ${p.phoneNumber.slice(5, 8)}-${p.phoneNumber.slice(8, 12)}`;
+            } else {
+                return p;
+            }
+        },
         updateStyle: function() {
             mapStore.map.setPaintProperty('cots-edit-fill', 'fill-color', this.feat.properties.fill);
             mapStore.map.setPaintProperty('cots-edit-fill', 'fill-opacity', Number(this.feat.properties['fill-opacity']));
@@ -165,9 +223,15 @@ export default {
         CoTStyle,
         IconZoomPan,
         Speed,
+        Share,
         Coordinate,
         TablerInput,
-        TablerEnum
+        TablerEnum,
+        IconPencil,
+        IconBattery1,
+        IconBattery2,
+        IconBattery3,
+        IconBattery4
     }
 }
 </script>

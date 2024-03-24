@@ -5,12 +5,18 @@
             <IconCircleArrowLeft @click='$router.back()' size='32' class='cursor-pointer'/>
             <div class='modal-title'>Channels</div>
             <div class='btn-list'>
+                <IconSearch v-if='rawChannels.length' @click='search.shown = !search.shown' v-tooltip='"Search"' size='32' class='cursor-pointer'/>
                 <IconRefresh v-if='!loading' @click='fetchList' size='32' class='cursor-pointer' v-tooltip='"Refresh"'/>
             </div>
         </div>
     </div>
+
+    <div v-if='search.shown' class='col-12 px-3'>
+        <TablerInput v-model='search.filter' placeholder='Filter'/>
+    </div>
+
     <TablerLoading v-if='loading'/>
-    <TablerNone v-else-if='!rawChannels.length' :create='false'/>
+    <TablerNone v-else-if='!Object.keys(processChannels).length' :create='false'/>
     <template v-else>
         <div :key='ch.name' v-for='ch in processChannels' class="col-lg-12 hover-dark">
             <div class='hover-dark'>
@@ -31,12 +37,14 @@
 import { std, stdurl } from '/src/std.ts';
 import {
     TablerNone,
+    TablerInput,
     TablerLoading
 } from '@tak-ps/vue-tabler';
 
 import {
     IconCircleArrowLeft,
     IconRefresh,
+    IconSearch,
     IconEye,
     IconEyeOff,
 } from '@tabler/icons-vue';
@@ -47,26 +55,42 @@ export default {
         return {
             err: false,
             loading: true,
+            search: {
+                shown: false,
+                filter: ''
+            },
             rawChannels: []
         }
     },
     mounted: async function() {
         await this.fetchList();
     },
+    watch: {
+        'search.shown': function() {
+            if (!this.search.shown) this.search.filter = '';
+        }
+    },
     computed: {
         processChannels: function() {
             const channels = {};
 
-            JSON.parse(JSON.stringify(this.rawChannels)).sort((a, b) => {
-                return (a.name > b.name) ? 1 : ((b.name > a.name) ? -1 : 0);
-            }).forEach((channel) => {
-                if (channels[channel.name]) {
-                    channels[channel.name].direction.push(channel.direction);
-                } else {
-                    channel.direction = [channel.direction];
-                    channels[channel.name] = channel;
+            JSON.parse(JSON.stringify(this.rawChannels))
+                .sort((a, b) => {
+                    return (a.name > b.name) ? 1 : ((b.name > a.name) ? -1 : 0);
+                }).forEach((channel) => {
+                    if (channels[channel.name]) {
+                        channels[channel.name].direction.push(channel.direction);
+                    } else {
+                        channel.direction = [channel.direction];
+                        channels[channel.name] = channel;
+                    }
+                })
+
+            for (const key of Object.keys(channels)) {
+                if (this.search.shown && !key.includes(this.search.filter)) {
+                    delete channels[key];
                 }
-            });
+            }
 
             return channels;
         }
@@ -97,8 +121,10 @@ export default {
     components: {
         IconEye,
         IconEyeOff,
+        IconSearch,
         IconRefresh,
         TablerNone,
+        TablerInput,
         TablerLoading,
         IconCircleArrowLeft,
     }
