@@ -74,9 +74,17 @@ export default {
             if (!this.selected.size) {
                 throw new Error('No Users Selected to Share With');
             }
+
+            for (const contact of this.selected) {
+                const feat = JSON.parse(JSON.stringify(this.feat));
+                feat.properties.dest = [{ uid: contact.uid }];
+                connectionStore.sendCOT(feat);
+            }
+            this.$emit('done');
         },
         broadcast: async function() {
-
+            connectionStore.sendCOT(this.feat);
+            this.$emit('done');
         },
         fetchList: async function() {
             this.loading = true;
