@@ -29,7 +29,7 @@
             </div>
             <div class='col-12 d-flex my-2'>
                 <div class='btn-list'>
-                    <IconShare2 @click='mode = "share"' size='32' class='cursor-pointer' v-tooltip='"Share"'/>
+                    <IconShare2 @click='mode === "share" ? mode = "default" : mode = "share"' size='32' class='cursor-pointer' v-tooltip='"Share"'/>
                 </div>
                 <div class='ms-auto btn-list'>
                     <IconZoomPan @click='zoomTo' size='32' class='cursor-pointer' v-tooltip='"Zoom To"'/>
