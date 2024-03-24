@@ -33,10 +33,13 @@ import {
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import Contact from '../partial/Contact.vue';
+import { useConnectionStore } from '/src/stores/connection.ts';
 import {
     IconCircleFilled,
     IconCircleArrowLeft
 } from '@tabler/icons-vue';
+
+const connectionStore = useConnectionStore();
 
 export default {
     name: 'Share',
