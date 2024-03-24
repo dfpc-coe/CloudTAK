@@ -4,8 +4,8 @@
     style='z-index: 1; width: 400px; top: 56px;'
 >
     <div class='col-12 border-light border-bottom d-flex mb-2'>
-        <div class='col-auto card-header row mx-1 my-2 d-flex'>
-            <div class='card-title mx-2 d-flex'>
+        <div class='col-12 card-header row mx-1 my-2 d-flex'>
+            <div class='card-title d-flex'>
                 <span
                     v-if='feat.properties.status && feat.properties.status.battery'
                     class='d-flex'
@@ -18,19 +18,26 @@
                     <IconBattery4 v-else-if='parseInt(feat.properties.status.battery) <= 100' size='32'/>
                 </span>
                 <div class='col-12'>
-                    <div v-text='feat.properties.callsign'></div>
+                    <TablerInput v-if='isUserDrawn' v-model='feat.properties.callsign'/>
+                    <div v-else v-text='feat.properties.callsign'></div>
+
                     <div>
                         <span class='subheader' v-text='feat.properties.type'/>
-                        <span class='subheader ms-auto' v-text='" (" + feat.properties.how || "Unknown" + ")"'/>
+                        <span class='subheader ms-auto' v-text='" (" + (feat.properties.how || "Unknown") + ")"'/>
                     </div>
                 </div>
             </div>
-        </div>
-        <div class='col-auto btn-list my-2 mx-3 ms-auto d-flex align-items-center'>
-            <IconZoomPan @click='zoomTo' size='32' class='cursor-pointer' v-tooltip='"Zoom To"'/>
+            <div class='col-12 d-flex my-2'>
+                <div class='btn-list'>
+                    <IconShare2 @click='mode = "share"' size='32' class='cursor-pointer' v-tooltip='"Share"'/>
+                </div>
+                <div class='ms-auto btn-list'>
+                    <IconZoomPan @click='zoomTo' size='32' class='cursor-pointer' v-tooltip='"Zoom To"'/>
 
-            <IconCode v-if='mode === "default"' @click='mode = "raw"' size='32' class='cursor-pointer' v-tooltip='"Raw View"'/>
-            <IconX v-if='mode === "raw"' @click='mode = "default"' size='32' class='cursor-pointer' v-tooltip='"Default View"'/>
+                    <IconCode v-if='mode === "default"' @click='mode = "raw"' size='32' class='cursor-pointer' v-tooltip='"Raw View"'/>
+                    <IconX v-if='mode === "raw"' @click='mode = "default"' size='32' class='cursor-pointer' v-tooltip='"Default View"'/>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -51,7 +58,7 @@
         </div>
         <div class='col-12 px-3 pb-2'>
             <label class='subheader'>Remarks</label>
-            <div v-text='feat.properties.remarks || "None"' class='bg-gray-500 rounded mx-2 py-2 px-2'/>
+            <TablerInput rows='2' v-model='feat.properties.remarks'/>
         </div>
 
         <template v-if='isUserDrawn'>
@@ -75,13 +82,9 @@
                 </table>
             </div>
         </div>
-
-        <div v-if='false' class='col-12 d-flex align-items-center'>
-            <div class='d-flex'>
-                <button class='btn bg-gray-500'><IconShare2 size='32'/></button>
-                <button class='btn bg-gray-500'><IconPencil size='32'/></button>
-            </div>
-        </div>
+    </template>
+    <template v-else-if='mode === "share"'>
+        <Share @done='mode = "default"' :feat='feat'/>
     </template>
     <template v-else-if='mode === "raw"'>
         <pre v-text='feat'/>
@@ -97,6 +100,7 @@ import {
     TablerEnum
 } from '@tak-ps/vue-tabler';
 import pointOnFeature from '@turf/point-on-feature';
+import Share from './util/Share.vue';
 import CoTStyle from './util/CoTStyle.vue';
 import Coordinate from './util/Coordinate.vue';
 import Speed from './util/Speed.vue';
@@ -106,6 +110,7 @@ import {
     IconShare2,
     IconZoomPan,
     IconCode,
+    IconPencil,
     IconBattery1,
     IconBattery2,
     IconBattery3,
@@ -218,9 +223,11 @@ export default {
         CoTStyle,
         IconZoomPan,
         Speed,
+        Share,
         Coordinate,
         TablerInput,
         TablerEnum,
+        IconPencil,
         IconBattery1,
         IconBattery2,
         IconBattery3,
