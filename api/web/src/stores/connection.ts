@@ -35,7 +35,7 @@ export const useConnectionStore = defineStore('connection', {
 
             this.ws.addEventListener('close', () => {
                 // Otherwise the user is probably logged out
-                if (localStorage.token) this.connectSocket();
+                if (localStorage.token) this.connectSocket(connection);
             });
             this.ws.addEventListener('message', (msg) => {
                 msg = JSON.parse(msg.data);

@@ -453,7 +453,27 @@ function cotStyles(id: string, opts: {
     labels: false,
     icons: false
 }) {
-    const styles: LayerSpecification[] = [{
+    const styles: LayerSpecification[] = [];
+
+    if (opts.labels) {
+        styles.push({
+            id: `${id}-text`,
+            type: 'symbol',
+            source: id,
+            paint: {
+                'text-color': '#ffffff',
+                'text-halo-color': '#000000',
+                'text-halo-width': 2,
+            },
+            layout: {
+                'text-offset': [0, 2],
+                'text-font': ['Open Sans Bold'],
+                'text-field':  '{callsign}'
+            }
+        });
+    }
+
+    styles.push(...[{
         id: `${id}-poly`,
         type: 'fill',
         source: id,
@@ -502,7 +522,7 @@ function cotStyles(id: string, opts: {
             'circle-radius': ["number", ["get", "circle-radius"], 4],
             'circle-opacity': ["number", ["get", "circle-opacity"], 1]
         }
-    }]
+    }])
 
     if (opts.icons) {
         styles.push({
@@ -527,24 +547,6 @@ function cotStyles(id: string, opts: {
                 'icon-anchor': 'center',
             }
         })
-    }
-
-    if (opts.labels) {
-        styles.push({
-            id: `${id}-text`,
-            type: 'symbol',
-            source: id,
-            paint: {
-                'text-color': '#ffffff',
-                'text-halo-color': '#000000',
-                'text-halo-width': 2,
-            },
-            layout: {
-                'text-offset': [0, 2],
-                'text-font': ['Open Sans Bold'],
-                'text-field':  '{callsign}'
-            }
-        });
     }
 
     if (opts.group) {
