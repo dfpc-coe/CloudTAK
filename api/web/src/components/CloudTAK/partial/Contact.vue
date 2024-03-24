@@ -26,18 +26,19 @@
         <div class='col-auto ms-auto btn-list'>
             <IconMessage
                 @click='$emit("chat", contact.uid)'
-                v-if='isChatable(contact)'
+                v-if='buttonChat && isChatable(contact)'
                 v-tooltip='"Start Chat"'
                 size='32'
                 class='cursor-pointer'
             />
             <IconZoomPan
                 @click='flyTo(contact)'
-                v-if='isZoomable(contact)'
+                v-if='buttonZoom && isZoomable(contact)'
                 v-tooltip='"Zoom To"'
                 size='32'
                 class='cursor-pointer'
             />
+            <IconCheck v-if='selected' size='32' style='margin-left: 16px;'/>
         </div>
     </div>
 </div>
@@ -45,6 +46,7 @@
 
 <script>
 import {
+    IconCheck,
     IconMessage,
     IconZoomPan,
     IconCircleFilled,
@@ -60,6 +62,18 @@ export default {
         contact: {
             type: Object,
             required: true
+        },
+        selected: {
+            type: Boolean,
+            default: false
+        },
+        buttonZoom: {
+            type: Boolean,
+            default: true
+        },
+        buttonChat: {
+            type: Boolean,
+            default: true
         }
     },
     methods: {
@@ -83,6 +97,7 @@ export default {
         },
     },
     components: {
+        IconCheck,
         IconMessage,
         IconZoomPan,
         IconCircleFilled,

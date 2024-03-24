@@ -123,6 +123,10 @@ export const useCOTStore = defineStore('cots', {
                 feat.properties.center = pointOnFeature(feat.geometry).geometry.coordinates;
             }
 
+            if (!feat.properties.remarks) {
+                feat.properties.remarks = 'None';
+            }
+
             if (feat.geometry.type.includes('Point')) {
                 if (feat.properties.group) {
                     feat.properties['icon-opacity'] = 0;

@@ -122,10 +122,12 @@ import { useMapStore } from '/src/stores/map.ts';
 import { useOverlayStore } from '/src/stores/overlays.ts';
 import { useProfileStore } from '/src/stores/profile.js';
 import { useCOTStore } from '/src/stores/cots.ts';
+import { useConnectionStore } from '/src/stores/connection.ts';
 const cotStore = useCOTStore();
 const mapStore = useMapStore();
 const overlayStore = useOverlayStore();
 const profileStore = useProfileStore();
+const connectionStore = useConnectionStore();
 
 export default {
     name: 'CloudTAK',
@@ -176,7 +178,7 @@ export default {
             }
         });
 
-        this.connectSocket();
+        connectionStore.connectSocket(this.user.email);
 
         this.$nextTick(async () => {
             return await this.mountMap();
@@ -194,7 +196,6 @@ export default {
             edit: false,        // If a radial.cot is set and edit is true then load the cot into terra-draw
             cot: null,          // Show the CoT Viewer sidebar
             feat: null,         // Show the Feat Viewer sidebar
-            ws: null,           // WebSocket Connection for CoT events
             timer: null,        // Interval for pushing GeoJSON Map Updates (CoT)
             timerSelf: null,    // Interval for pushing your location to the server
             loading: {
@@ -207,7 +208,7 @@ export default {
     beforeUnmount: function() {
         if (this.timer) window.clearInterval(this.timer);
         if (this.timerSelf) window.clearInterval(this.timerSelf);
-        if (this.ws) this.ws.close();
+        if (connectionStore.ws) connectionStore.ws.close();
 
         if (mapStore.map) {
             mapStore.map.remove();
@@ -264,37 +265,6 @@ export default {
                 this.setYou();
             });
         },
-        connectSocket: function() {
-            const url = stdurl('/api');
-            url.searchParams.append('format', 'geojson');
-            url.searchParams.append('connection', this.user.email);
-            url.searchParams.append('token', localStorage.token);
-
-            if (window.location.hostname === 'localhost') {
-                url.protocol = 'ws:';
-            } else {
-                url.protocol = 'wss:';
-            }
-
-            this.ws = new WebSocket(url);
-            this.ws.addEventListener('error', (err) => { this.$emit('err') });
-            this.ws.addEventListener('close', () => {
-                // Otherwise the user is probably logged out
-                if (localStorage.token) this.connectSocket();
-            });
-            this.ws.addEventListener('message', (msg) => {
-                msg = JSON.parse(msg.data);
-                if (msg.type === 'Error') throw new Error(msg.properties.message);
-
-                if (msg.type === 'cot') {
-                    cotStore.add(msg.data);
-                } else if (msg.type === 'chat') {
-                    console.log(msg.data);
-                } else {
-                    console.log('UNKNOWN', msg.data);
-                }
-            });
-        },
         setBearing: function(bearing=0) {
             mapStore.map.setBearing(bearing);
         },
@@ -349,13 +319,6 @@ export default {
             }
             this.updateCOT();
         },
-        sendCOT: function(cot) {
-            if (!this.ws || this.ws.readyState !== WebSocket.OPEN) return;
-            this.ws.send(JSON.stringify({
-                type: 'cot',
-                data: cot
-            }));
-        },
         updateCOT: function() {
             try {
                 mapStore.map.getSource('cots').setData(cotStore.collection())
@@ -381,7 +344,7 @@ export default {
         },
         setYou: function() {
             if (profileStore.profile.tak_loc) {
-                this.sendCOT(profileStore.CoT());
+                connectionStore.sendCOT(profileStore.CoT());
                 mapStore.map.getSource('you').setData({
                     type: 'FeatureCollection',
                     features: [{
@@ -453,7 +416,7 @@ export default {
 
                 this.timerSelf = window.setInterval(() => {
                     if (profileStore.profile.tak_loc) {
-                        this.sendCOT(profileStore.CoT());
+                        connectionStore.sendCOT(profileStore.CoT());
                     }
                 }, 2000);
 
