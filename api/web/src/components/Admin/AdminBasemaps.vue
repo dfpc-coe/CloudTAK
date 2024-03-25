@@ -48,12 +48,12 @@
                             </template>
                         </tr>
                     </tbody>
-                    <TableFooter
-                        :limit='paging.limit'
-                        :total='list.total'
-                        @page='paging.page = $event'
-                    />
                 </table>
+                <TableFooter
+                    :limit='paging.limit'
+                    :total='list.total'
+                    @page='paging.page = $event'
+                />
             </div>
         </template>
     </template>
