@@ -18,20 +18,6 @@ export const SpatialRefSys = pgTable('spatial_ref_sys', {
 
 /** ==== END ==== */
 
-export const Basemap = pgTable('basemaps', {
-    id: serial('id').primaryKey(),
-    created: timestamp('created', { withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
-    updated: timestamp('updated', { withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
-    name: text('name').notNull(),
-    url: text('url').notNull(),
-    bounds: geometry('bounds', { type: GeometryType.Polygon, srid: 4326 }),
-    center: geometry('center', { type: GeometryType.Point, srid: 4326 }),
-    minzoom: integer('minzoom').notNull().default(0),
-    maxzoom: integer('maxzoom').notNull().default(16),
-    format: text('format').notNull().default('png'),
-    type: text('type').notNull().default('raster')
-});
-
 export const Profile = pgTable('profile', {
     username: text('username').primaryKey(),
     last_login: timestamp('last_login', { withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
@@ -56,6 +42,21 @@ export const ProfileChat = pgTable('profile_chats', {
     updated: timestamp('updated', { withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     message_id: text('message_id').notNull(),
     message: text('message').notNull()
+});
+
+export const Basemap = pgTable('basemaps', {
+    id: serial('id').primaryKey(),
+    created: timestamp('created', { withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    updated: timestamp('updated', { withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    name: text('name').notNull(),
+    url: text('url').notNull(),
+    username: text('username').references(() => Profile.username),
+    bounds: geometry('bounds', { type: GeometryType.Polygon, srid: 4326 }),
+    center: geometry('center', { type: GeometryType.Point, srid: 4326 }),
+    minzoom: integer('minzoom').notNull().default(0),
+    maxzoom: integer('maxzoom').notNull().default(16),
+    format: text('format').notNull().default('png'),
+    type: text('type').notNull().default('raster')
 });
 
 export const Import = pgTable('imports', {
