@@ -54,40 +54,40 @@
                     <div class="col-12 col-md-9 mt-3">
                         <TablerInput
                             label='BaseMap Name'
-                            v-model='basemap.name'
+                            v-model='editing.name'
                             :error='errors.name'
                         />
                     </div>
                     <div class="col-12 col-md-3 mt-3">
                         <TablerEnum
                             label='BaseMap Type'
-                            v-model='basemap.type'
+                            v-model='editing.type'
                             :options='["raster", "raster-dem", "vector"]'
                         />
                     </div>
                     <div class="col-md-12">
                         <TablerInput
                             label='BaseMap Url'
-                            v-model='basemap.url'
+                            v-model='editing.url'
                             :error='errors.url'
                         />
                     </div>
                     <div class="col-md-4">
                         <TablerInput
                             label='BaseMap MinZoom'
-                            v-model='basemap.minzoom'
+                            v-model='editing.minzoom'
                         />
                     </div>
                     <div class="col-md-4">
                         <TablerInput
                             label='BaseMap MaxZoom'
-                            v-model='basemap.maxzoom'
+                            v-model='editing.maxzoom'
                         />
                     </div>
                     <div class="col-md-4">
                         <TablerInput
                             label='BaseMap Format'
-                            v-model='basemap.format'
+                            v-model='editing.format'
                         />
                     </div>
                     <div class="col-md-12 mt-3">
@@ -146,7 +146,7 @@ export default {
             },
             bounds: '',
             center: '',
-            basemap: {
+            editing: {
                 name: '',
                 url: '',
                 minzoom: 0,
@@ -164,7 +164,7 @@ export default {
         fetchTileJSON: async function() {
             this.loading = true;
             try {
-                this.basemap = await std('/api/basemap', {
+                this.editing = await std('/api/basemap', {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'text/plain'
@@ -180,7 +180,7 @@ export default {
         },
         processUpload: function(body) {
             this.mode.upload = false;
-            this.basemap = JSON.parse(body);
+            this.editing = JSON.parse(body);
         },
         uploadHeaders: function() {
             return {
@@ -192,12 +192,12 @@ export default {
         },
         fetch: async function() {
             this.loading = true;
-            this.basemap = await std(`/api/basemap/${this.basemap.id}`);
+            this.editing = await std(`/api/basemap/${this.basemap.id}`);
             this.loading = false;
         },
         create: async function() {
             for (const field of ['name', 'url' ]) {
-                if (!this.basemap[field]) this.errors[field] = 'Cannot be empty';
+                if (!this.editing[field]) this.errors[field] = 'Cannot be empty';
                 else this.errors[field] = '';
             }
 
@@ -208,20 +208,20 @@ export default {
             this.loading = true;
             try {
                 if (this.basemap.id) {
-                    const basemap = JSON.parse(JSON.stringify(this.basemap));
+                    const editing = JSON.parse(JSON.stringify(this.editing));
 
-                    if (!basemap.bounds || !basemap.bounds.length) delete basemap.bounds;
-                    if (!basemap.center || !basemap.center.length) delete basemap.center;
+                    if (!editing.bounds || !editing.bounds.length) delete editing.bounds;
+                    if (!editing.center || !editing.center.length) delete editing.center;
 
                     const create = await std(`/api/basemap/${this.basemap.id}`, {
                         method: 'PATCH',
-                        body: basemap
+                        body: editing
                     });
                     this.$emit('close');
                 } else {
                     const create = await std('/api/basemap', {
                         method: 'POST',
-                        body: this.basemap
+                        body: this.editing
                     });
                     this.$emit('close');
                 }

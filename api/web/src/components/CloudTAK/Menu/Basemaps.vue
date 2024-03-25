@@ -98,6 +98,9 @@ export default {
         ...mapState(useProfileStore, ['profile']),
     },
     watch: {
+        editModal: async function() {
+            await this.fetchList();
+        },
         query: function() {
             if (!this.query) this.paging.filter = '';
         },
