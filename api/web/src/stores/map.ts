@@ -192,6 +192,7 @@ export const useMapStore = defineStore('cloudtak', {
 
             const init: mapgl.MapOptions = {
                 container: this.container,
+                attributionControl: false,
                 fadeDuration: 0,
                 zoom: 8,
                 pitch: 0,

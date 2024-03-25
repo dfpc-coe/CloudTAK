@@ -1,6 +1,6 @@
 <template>
 <div class='page'>
-    <header class='navbar navbar-expand-md d-print-none' data-bs-theme="dark">
+    <header v-if='!$route || !$route.name || !$route.name.startsWith("home")' class='navbar navbar-expand-md d-print-none' data-bs-theme="dark">
         <div class="container-xl">
             <div class="col-auto">
                 <img @click='$router.push("/")' class='cursor-pointer' height='50' width='50' src='/logo.png'>
@@ -32,10 +32,6 @@
                                         <IconBuildingBroadcastTower size='32'/>
                                         <span class="mx-2">Layers</span>
                                     </div>
-                                    <div @click='$router.push("/iconset")' class='d-flex dropdown-item cursor-pointer hover-dark'>
-                                        <IconPhoto size='32'/>
-                                        <span class="mx-2">Iconsets</span>
-                                    </div>
                                     <div @click='$router.push("/admin")' class='d-flex dropdown-item cursor-pointer hover-dark'>
                                         <IconSettings size='32'/>
                                         <span class='mx-2'>Server</span>
@@ -45,6 +41,7 @@
                                         <IconLogout size='32'/>
                                         <span class="mx-2">Logout</span>
                                     </div>
+
                                 </ul>
                             </div>
                         <div>

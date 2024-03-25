@@ -1,5 +1,5 @@
 <template>
-<div data-bs-theme="dark" class="d-flex position-relative" style='height: calc(100vh - 58px) !important;'>
+<div data-bs-theme="dark" class="d-flex position-relative" style='height: calc(100vh) !important;'>
     <TablerLoading v-if='loading.main'/>
     <template v-else>
         <div
