@@ -2,7 +2,7 @@
 <TablerModal>
     <div class="card">
         <div class='card-header'>
-            <h3 v-if='$route.params.basemapid' class='card-title'>BaseMap <span v-text='basemap.id'/></h3>
+            <h3 v-if='basemap.id' class='card-title'>BaseMap <span v-text='basemap.id'/></h3>
             <h3 v-else class='card-title'>New BaseMap</h3>
 
             <div v-if='!loading && !mode.upload && !mode.tilejson' class='ms-auto btn-list'>
@@ -92,7 +92,7 @@
                     </div>
                     <div class="col-md-12 mt-3">
                         <div class='d-flex'>
-                            <div v-if='$route.params.basemapid'>
+                            <div v-if='basemap.id'>
                                 <TablerDelete @delete='del' label='Delete Layer'/>
                             </div>
 
@@ -125,6 +125,11 @@ import {
 
 export default {
     name: 'BasemapEditModal',
+    props: {
+        basemap: {
+            type: Object
+        }
+    },
     data: function() {
         return {
             loading: false,
@@ -153,7 +158,7 @@ export default {
         }
     },
     mounted: async function() {
-        if (this.$route.params.basemapid) await this.fetch();
+        if (this.basemap.id) await this.fetch();
     },
     methods: {
         fetchTileJSON: async function() {
@@ -187,7 +192,7 @@ export default {
         },
         fetch: async function() {
             this.loading = true;
-            this.basemap = await std(`/api/basemap/${this.$route.params.basemapid}`);
+            this.basemap = await std(`/api/basemap/${this.basemap.id}`);
             this.loading = false;
         },
         create: async function() {
@@ -202,23 +207,23 @@ export default {
 
             this.loading = true;
             try {
-                if (this.$route.params.basemapid) {
+                if (this.basemap.id) {
                     const basemap = JSON.parse(JSON.stringify(this.basemap));
 
                     if (!basemap.bounds || !basemap.bounds.length) delete basemap.bounds;
                     if (!basemap.center || !basemap.center.length) delete basemap.center;
 
-                    const create = await std(`/api/basemap/${this.$route.params.basemapid}`, {
+                    const create = await std(`/api/basemap/${this.basemap.id}`, {
                         method: 'PATCH',
                         body: basemap
                     });
-                    this.$router.push(`/basemap/${create.id}`);
+                    this.$emit('close');
                 } else {
                     const create = await std('/api/basemap', {
                         method: 'POST',
                         body: this.basemap
                     });
-                    this.$router.push(`/basemap/${create.id}`);
+                    this.$emit('close');
                 }
                 this.loading = false;
             } catch (err) {
@@ -229,10 +234,10 @@ export default {
         del: async function() {
             this.loading = true;
             try {
-                await std(`/api/basemap/${this.$route.params.basemapid}`, {
+                await std(`/api/basemap/${this.basemap.id}`, {
                     method: 'DELETE'
                 });
-                this.$router.push('/basemap');
+                this.$emit('close');
             } catch (err) {
                 this.loading = false;
                 throw err;
