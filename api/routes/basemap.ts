@@ -261,6 +261,8 @@ export default async function router(schema: Schema, config: Config) {
 
             if (existing.username && existing.username !== user.email && user.access === AuthUserAccess.USER) {
                 throw new Err(400, null, 'You don\'t have permission to access this resource');
+            } else if (!existing.username && user.access !== AuthUserAccess.ADMIN) {
+                throw new Err(400, null, 'Only System Admin can edit Server Resource');
             }
 
             const basemap = await config.models.Basemap.commit(Number(req.params.basemapid), {
@@ -397,6 +399,8 @@ export default async function router(schema: Schema, config: Config) {
 
             if (basemap.username && basemap.username !== user.email && user.access === AuthUserAccess.USER) {
                 throw new Err(400, null, 'You don\'t have permission to access this resource');
+            } else if (!basemap.username && user.access !== AuthUserAccess.ADMIN) {
+                throw new Err(400, null, 'Only System Admin can edit Server Resource');
             }
 
             await config.models.Basemap.delete(Number(req.params.basemapid));
