@@ -16,6 +16,10 @@
                     <div/>
                 </div>
             </div>
+            <div @click='$router.push("/profile")' class='cursor-pointer col-12 py-2 px-3 d-flex align-items-center hover-dark'>
+                <IconUser size='32'/>
+                <span class='mx-2' style='font-size: 18px;'>Profile</span>
+            </div>
             <div @click='$router.push("/menu/settings")' class='cursor-pointer col-12 py-2 px-3 d-flex align-items-center hover-dark'>
                 <IconSettings size='32'/>
                 <span class='mx-2' style='font-size: 18px;'>Settings</span>
@@ -48,6 +52,25 @@
                 <IconFileImport size='32'/>
                 <span class='mx-2' style='font-size: 18px;'>Imports</span>
             </div>
+
+            <div v-if='profile.system_admin || profile.agency_admin' @click='$router.push("/connection")' class='cursor-pointer col-12 py-2 px-3 d-flex align-items-center hover-dark'>
+                <IconNetwork size='32'/>
+                <span class="mx-2">Connections</span>
+                <span class='ms-auto badge border border-red bg-red text-white'>Admin</span>
+            </div>
+            <div @click='$router.push("/iconset")' class='cursor-pointer col-12 py-2 px-3 d-flex align-items-center hover-dark'>
+                <IconPhoto size='32'/>
+                <span class="mx-2">Iconsets</span>
+            </div>
+            <div @click='$router.push("/admin")' class='cursor-pointer col-12 py-2 px-3 d-flex align-items-center hover-dark'>
+                <IconSettings size='32'/>
+                <span class='mx-2'>Server</span>
+                <span class='ms-auto badge border border-red bg-red text-white'>Admin</span>
+            </div>
+            <div @click='logout' class='cursor-pointer col-12 py-2 px-3 d-flex align-items-center hover-dark'>
+                <IconLogout size='32'/>
+                <span class="mx-2">Logout</span>
+            </div>
         </template>
     </div>
 </div>
@@ -56,8 +79,10 @@
 <script>
 import {
     IconMap,
+    IconUser,
     IconUsers,
     IconMessage,
+    IconNetwork,
     IconSettings,
     IconAmbulance,
     IconBoxMultiple,
@@ -74,13 +99,14 @@ import MenuContacts from './Menu/Contacts.vue';
 import MenuSettings from './Menu/Settings.vue';
 import MenuMissions from './Menu/Missions.vue';
 import MenuChannels from './Menu/Channels.vue';
+import { mapState } from 'pinia'
+import { useProfileStore } from '/src/stores/profile.js';
+const profileStore = useProfileStore();
 
 export default {
     name: 'CloudTAKMenu',
-    data: function() {
-        return {
-            mode: null
-        }
+    computed: {
+        ...mapState(useProfileStore, ['profile']),
     },
     components: {
         IconBoxMultiple,
@@ -95,10 +121,12 @@ export default {
         MenuChat,
         MenuDatas,
         IconMessage,
+        IconNetwork,
         IconAffiliate,
         IconAmbulance,
         IconSettings,
         IconFileImport,
+        IconUser,
         IconUsers,
         IconMap
     }

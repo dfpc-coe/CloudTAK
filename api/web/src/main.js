@@ -16,51 +16,51 @@ const router = new VueRouter.createRouter({
             component: () => import('./components/Home.vue'),
             children: [{
                 path: 'menu',
-                name: 'menu',
+                name: 'home-menu',
                 component: () => import('./components/CloudTAK/Menu.vue'),
                 children: [{
                     path: 'settings',
-                    name: 'menu-settings',
+                    name: 'home-menu-settings',
                     component: () => import('./components/CloudTAK/Menu/Settings.vue')
                 },{
                     path: 'imports',
-                    name: 'menu-imports',
+                    name: 'home-menu-imports',
                     component: () => import('./components/CloudTAK/Menu/Imports.vue')
                 },{
                     path: 'imports/:import',
-                    name: 'menu-import',
+                    name: 'home-menu-import',
                     component: () => import('./components/CloudTAK/Menu/Import.vue')
                 },{
                     path: 'basemaps',
-                    name: 'menu-basemaps',
+                    name: 'home-menu-basemaps',
                     component: () => import('./components/CloudTAK/Menu/Basemaps.vue')
                 },{
                     path: 'overlays',
-                    name: 'menu-overlays',
+                    name: 'home-menu-overlays',
                     component: () => import('./components/CloudTAK/Menu/Overlays.vue')
                 },{
                     path: 'datas',
-                    name: 'menu-datas',
+                    name: 'home-menu-datas',
                     component: () => import('./components/CloudTAK/Menu/Datas.vue')
                 },{
                     path: 'contacts',
-                    name: 'menu-contacts',
+                    name: 'home-menu-contacts',
                     component: () => import('./components/CloudTAK/Menu/Contacts.vue')
                 },{
                     path: 'missions',
-                    name: 'menu-missions',
+                    name: 'home-menu-missions',
                     component: () => import('./components/CloudTAK/Menu/Missions.vue')
                 },{
                     path: 'channels',
-                    name: 'menu-channels',
+                    name: 'home-menu-channels',
                     component: () => import('./components/CloudTAK/Menu/Channels.vue')
                 },{
                     path: 'chats',
-                    name: 'menu-chats',
+                    name: 'home-menu-chats',
                     component: () => import('./components/CloudTAK/Menu/Chats.vue')
                 },{
                     path: 'chats/:uid',
-                    name: 'menu-chat',
+                    name: 'home-menu-chat',
                     component: () => import('./components/CloudTAK/Menu/Chat.vue')
                 }]
             }]
