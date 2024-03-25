@@ -455,24 +455,6 @@ function cotStyles(id: string, opts: {
 }) {
     const styles: LayerSpecification[] = [];
 
-    if (opts.labels) {
-        styles.push({
-            id: `${id}-text`,
-            type: 'symbol',
-            source: id,
-            paint: {
-                'text-color': '#ffffff',
-                'text-halo-color': '#000000',
-                'text-halo-width': 2,
-            },
-            layout: {
-                'text-offset': [0, 2],
-                'text-font': ['Open Sans Bold'],
-                'text-field':  '{callsign}'
-            }
-        });
-    }
-
     styles.push(...[{
         id: `${id}-poly`,
         type: 'fill',
@@ -568,6 +550,25 @@ function cotStyles(id: string, opts: {
             },
         })
     }
+
+    if (opts.labels) {
+        styles.push({
+            id: `${id}-text`,
+            type: 'symbol',
+            source: id,
+            paint: {
+                'text-color': '#ffffff',
+                'text-halo-color': '#000000',
+                'text-halo-width': 2,
+            },
+            layout: {
+                'text-offset': [0, 2],
+                'text-font': ['Open Sans Bold'],
+                'text-field':  '{callsign}'
+            }
+        });
+    }
+
 
     return styles.map((s) => {
         if (opts.sourceLayer && typeof opts.sourceLayer === 'string') {
