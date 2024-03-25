@@ -33,7 +33,7 @@
                         v-tooltip='"Edit Basemap"'
                         size='32'
                         class='cursor-pointer'
-                        @click.stop.prevent='$router.push(`/basemap/${basemap.id}/edit`)'
+                        @click.stop.prevent='editModal = basemap'
                     />
                 </div>
             </div>
@@ -43,11 +43,14 @@
             <TablerPager v-if='list.total > paging.limit' @page='paging.page = $event' :page='paging.page'  :total='list.total' :limit='paging.limit'/>
         </div>
     </template>
+
+    <BasemapEditModal v-if='editModal' size='xl' :basemap='editModal' @close='editModal = false' />
 </div>
 </template>
 
 <script>
 import { std, stdurl } from '/src/std.ts';
+import BasemapEditModal from './Basemaps/EditModal.vue';
 import {
     TablerNone,
     TablerInput,
@@ -76,6 +79,7 @@ export default {
             err: false,
             loading: true,
             query: false,
+            editModal: false,
             paging: {
                 filter: '',
                 limit: 30,
@@ -145,6 +149,7 @@ export default {
         IconSearch,
         IconDownload,
         TablerLoading,
+        BasemapEditModal
     }
 }
 </script>
