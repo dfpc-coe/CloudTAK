@@ -71,7 +71,7 @@
                     <TablerEnum
                         label='Basemap Scope'
                         v-model='scope'
-                        :disabled='!profile.system_admin && basemap.id'
+                        :disabled='!profile.system_admin || basemap.id'
                         :options='["user", "server"]'
                     />
                 </div>
@@ -165,6 +165,7 @@ export default {
             editing: {
                 name: '',
                 url: '',
+                type: 'raster',
                 minzoom: 0,
                 maxzoom: 16,
                 format: 'png',
