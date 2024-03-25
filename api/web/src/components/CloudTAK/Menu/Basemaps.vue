@@ -28,8 +28,13 @@
                 <span class='mx-2' style='font-size: 18px;' v-text='basemap.name'/>
 
                 <div class='ms-auto btn-list'>
-                    <IconShare2 v-if='false' v-tooltip='"Share BaseMap"' size='32' class='cursor-pointer' @click='share(basemap)'/>
-                    <IconSettings v-tooltip='"Edit Basemap"' size='32' class='cursor-pointer' @click='$router.push(`/basemap/${basemap.id}/edit`)'/>
+                    <IconSettings
+                        v-if='(!basemap.username && profile.system_admin) || basemap.username'
+                        v-tooltip='"Edit Basemap"'
+                        size='32'
+                        class='cursor-pointer'
+                        @click.stop.prevent='$router.push(`/basemap/${basemap.id}/edit`)'
+                    />
                 </div>
             </div>
         </div>
@@ -58,7 +63,10 @@ import {
     IconDownload,
     IconSearch
 } from '@tabler/icons-vue'
+import { mapState } from 'pinia'
 import { useMapStore } from '/src/stores/map.ts';
+import { useProfileStore } from '/src/stores/profile.js';
+const profileStore = useProfileStore();
 const mapStore = useMapStore();
 
 export default {
@@ -68,10 +76,6 @@ export default {
             err: false,
             loading: true,
             query: false,
-            shareModal: {
-                shown: false,
-                basemap: null
-            },
             paging: {
                 filter: '',
                 limit: 30,
@@ -85,6 +89,9 @@ export default {
     },
     mounted: async function() {
         await this.fetchList();
+    },
+    computed: {
+        ...mapState(useProfileStore, ['profile']),
     },
     watch: {
         query: function() {
@@ -115,10 +122,6 @@ export default {
                 minzoom: basemap.minzoom,
                 maxzoom: basemap.maxzoom
             }]);
-        },
-        share: function(basemap) {
-            this.shareModal.basemap = basemap;
-            this.shareModal.shown = true;
         },
         fetchList: async function() {
             this.loading = true;
