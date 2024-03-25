@@ -35,6 +35,7 @@ export default async function router(schema: Schema, config: Config) {
         `,
         res: Type.Object({
             name: Type.Optional(Type.String()),
+            type: Type.Optional(Type.String()),
             url: Type.Optional(Type.String()),
             bounds: Type.Optional(Type.Any()),
             center: Type.Optional(Type.Any()),
@@ -48,13 +49,16 @@ export default async function router(schema: Schema, config: Config) {
 
             const imported: {
                 name?: string;
+                type: string;
                 url?: string;
                 bounds?: object;
                 center?: object;
                 minzoom?: number;
                 maxzoom?: number;
                 format?: string;
-            } = {};
+            } = {
+                type: 'raster'
+            };
 
             if (req.headers['content-type'] && req.headers['content-type'].startsWith('multipart/form-data')) {
                 const bb = busboy({
