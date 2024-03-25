@@ -1,6 +1,6 @@
 import path from 'node:path';
 import Err from '@openaddresses/batch-error';
-import Auth from '../lib/auth.js';
+import Auth, { AuthUserAccess, ResourceCreationScope } from '../lib/auth.js';
 import Cacher from '../lib/cacher.js';
 import busboy from 'busboy';
 import Config from '../lib/config.js';
@@ -35,6 +35,7 @@ export default async function router(schema: Schema, config: Config) {
         `,
         res: Type.Object({
             name: Type.Optional(Type.String()),
+            type: Type.Optional(Type.String()),
             url: Type.Optional(Type.String()),
             bounds: Type.Optional(Type.Any()),
             center: Type.Optional(Type.Any()),
@@ -48,13 +49,16 @@ export default async function router(schema: Schema, config: Config) {
 
             const imported: {
                 name?: string;
+                type: string;
                 url?: string;
                 bounds?: object;
                 center?: object;
                 minzoom?: number;
                 maxzoom?: number;
                 format?: string;
-            } = {};
+            } = {
+                type: 'raster'
+            };
 
             if (req.headers['content-type'] && req.headers['content-type'].startsWith('multipart/form-data')) {
                 const bb = busboy({
@@ -134,6 +138,7 @@ export default async function router(schema: Schema, config: Config) {
         group: 'BaseMap',
         description: 'List BaseMaps',
         query: Type.Object({
+            scope: Type.Optional(Type.Enum(ResourceCreationScope)),
             limit: Type.Optional(Type.Integer()),
             page: Type.Optional(Type.Integer()),
             order: Type.Optional(Type.Enum(GenericListOrder)),
@@ -147,7 +152,11 @@ export default async function router(schema: Schema, config: Config) {
         })
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req);
+            const user = await Auth.as_user(config, req);
+
+            let scope = sql`True`;
+            if (req.query.scope === ResourceCreationScope.SERVER) scope = sql`username IS NULL`;
+            else if (req.query.scope === ResourceCreationScope.USER) scope = sql`username IS NOT NULL`;
 
             const list = await config.models.Basemap.list({
                 limit: req.query.limit,
@@ -157,6 +166,8 @@ export default async function router(schema: Schema, config: Config) {
                 where: sql`
                     name ~* ${Param(req.query.filter)}
                     AND (${Param(req.query.type)}::TEXT IS NULL or ${Param(req.query.type)}::TEXT = type)
+                    AND (username IS NULL OR username = ${user.email})
+                    AND ${scope}
                 `
             });
 
@@ -172,6 +183,7 @@ export default async function router(schema: Schema, config: Config) {
         description: 'Register a new basemap',
         body: Type.Object({
             name: Type.String(),
+            scope: Type.Enum(ResourceCreationScope, { default: ResourceCreationScope.USER }),
             url: Type.String(),
             minzoom: Type.Optional(Type.Integer()),
             maxzoom: Type.Optional(Type.Integer()),
@@ -183,7 +195,7 @@ export default async function router(schema: Schema, config: Config) {
         res: BasemapResponse
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req);
+            const user = await Auth.as_user(config, req);
 
             let bounds: Geometry;
             if (req.body.bounds) {
@@ -196,10 +208,18 @@ export default async function router(schema: Schema, config: Config) {
                 delete req.body.center;
             }
 
+            let username: string | null = null;
+            if (user.access !== AuthUserAccess.ADMIN && req.body.scope === ResourceCreationScope.SERVER) {
+                throw new Err(400, null, 'Only Server Admins can create Server scoped basemaps');
+            } else if (user.access === AuthUserAccess.USER || req.body.scope === ResourceCreationScope.USER) {
+                username = user.email;
+            }
+
             const basemap = await config.models.Basemap.generate({
                 ...req.body,
                 bounds,
                 center,
+                username
             });
 
             return res.json(basemap);
@@ -228,12 +248,22 @@ export default async function router(schema: Schema, config: Config) {
         res: BasemapResponse
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req);
+            const user = await Auth.as_user(config, req);
 
             let bounds: Geometry;
             let center: Geometry;
             if (req.body.bounds) bounds = bboxPolygon(req.body.bounds as BBox).geometry;
             if (req.body.center) center = { type: 'Point', coordinates: req.body.center };
+
+            const existing = await config.cacher.get(Cacher.Miss(req.query, `basemap-${req.params.basemapid}`), async () => {
+                return await config.models.Basemap.from(Number(req.params.basemapid))
+            });
+
+            if (existing.username && existing.username !== user.email && user.access === AuthUserAccess.USER) {
+                throw new Err(400, null, 'You don\'t have permission to access this resource');
+            } else if (!existing.username && user.access !== AuthUserAccess.ADMIN) {
+                throw new Err(400, null, 'Only System Admin can edit Server Resource');
+            }
 
             const basemap = await config.models.Basemap.commit(Number(req.params.basemapid), {
                 updated: sql`Now()`,
@@ -264,11 +294,15 @@ export default async function router(schema: Schema, config: Config) {
         res: Type.Union([BasemapResponse, Type.String()])
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req, { token: true });
+            const user = await Auth.as_user(config, req, { token: true });
 
             const basemap = await config.cacher.get(Cacher.Miss(req.query, `basemap-${req.params.basemapid}`), async () => {
                 return await config.models.Basemap.from(Number(req.params.basemapid))
             });
+
+            if (basemap.username && basemap.username !== user.email && user.access === AuthUserAccess.USER) {
+                throw new Err(400, null, 'You don\'t have permission to access this resource');
+            }
 
             if (req.query.download) {
                 res.setHeader('Content-Disposition', `attachment; filename="${basemap.name}.${req.query.format}"`);
@@ -315,11 +349,15 @@ export default async function router(schema: Schema, config: Config) {
         })
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req, { token: true });
+            const user = await Auth.as_user(config, req, { token: true });
 
             const basemap = await config.cacher.get(Cacher.Miss(req.query, `basemap-${req.params.basemapid}`), async () => {
                 return await config.models.Basemap.from(Number(req.params.basemapid));
             });
+
+            if (basemap.username && basemap.username !== user.email && user.access === AuthUserAccess.USER) {
+                throw new Err(400, null, 'You don\'t have permission to access this resource');
+            }
 
             const url = new URL(basemap.url
                 .replace('{$z}', req.params.z)
@@ -353,7 +391,17 @@ export default async function router(schema: Schema, config: Config) {
         res: StandardResponse
     }, async (req, res: Response) => {
         try {
-            await Auth.is_auth(config, req);
+            const user = await Auth.as_user(config, req);
+
+            const basemap = await config.cacher.get(Cacher.Miss(req.query, `basemap-${req.params.basemapid}`), async () => {
+                return await config.models.Basemap.from(Number(req.params.basemapid));
+            });
+
+            if (basemap.username && basemap.username !== user.email && user.access === AuthUserAccess.USER) {
+                throw new Err(400, null, 'You don\'t have permission to access this resource');
+            } else if (!basemap.username && user.access !== AuthUserAccess.ADMIN) {
+                throw new Err(400, null, 'Only System Admin can edit Server Resource');
+            }
 
             await config.models.Basemap.delete(Number(req.params.basemapid));
 

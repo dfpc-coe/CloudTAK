@@ -40,6 +40,11 @@
                     </tr>
                 </tbody>
             </table>
+            <TableFooter
+                :limit='tasks.items[task].length'
+                :total='tasks.items[task].length'
+                @page='0'
+            />
         </div>
     </template>
     <template v-else>
@@ -52,6 +57,11 @@
                     </tr>
                 </tbody>
             </table>
+            <TableFooter
+                :limit='Object.keys(tasks.items).length'
+                :total='Object.keys(tasks.items).length'
+                @page='0'
+            />
         </div>
     </template>
 </div>
@@ -64,6 +74,7 @@ import {
     TablerDelete,
     TablerNone,
 } from '@tak-ps/vue-tabler';
+import TableFooter from '../util/TableFooter.vue'
 import {
     IconCircleArrowLeft
 } from '@tabler/icons-vue';
@@ -76,7 +87,7 @@ export default {
             task: null,
             tasks: {
                 total: 0,
-                items: []
+                items: {}
             }
         }
     },
@@ -102,6 +113,7 @@ export default {
         TablerLoading,
         TablerDelete,
         TablerNone,
+        TableFooter,
         IconCircleArrowLeft,
     }
 }

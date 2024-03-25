@@ -5,7 +5,7 @@
 >
     <div class='position-relative h-100'>
         <router-view
-            v-if='$route.name !== "menu"'
+            v-if='$route.name !== "home-menu"'
             @reset='$emit("reset")'
         />
         <template v-else>
@@ -48,7 +48,39 @@
                 <IconFileImport size='32'/>
                 <span class='mx-2' style='font-size: 18px;'>Imports</span>
             </div>
+            <div @click='$router.push("/iconset")' class='cursor-pointer col-12 py-2 px-3 d-flex align-items-center hover-dark'>
+                <IconPhoto size='32'/>
+                <span class="mx-2" style='font-size: 18px;'>Iconsets</span>
+            </div>
+
+            <div v-if='profile.system_admin || profile.agency_admin.length' @click='$router.push("/connection")' class='cursor-pointer col-12 py-2 px-3 d-flex align-items-center hover-dark'>
+                <IconNetwork size='32'/>
+                <span class="mx-2" style='font-size: 18px;'>Connections</span>
+                <span class='ms-auto badge border border-red bg-red text-white'>Admin</span>
+            </div>
+            <div v-if='profile.system_admin' @click='$router.push("/admin")' class='cursor-pointer col-12 py-2 px-3 d-flex align-items-center hover-dark'>
+                <IconSettings size='32'/>
+                <span class='mx-2' style='font-size: 18px;'>Server</span>
+                <span class='ms-auto badge border border-red bg-red text-white'>Admin</span>
+            </div>
         </template>
+
+        <div v-if='$route.name === "home-menu"' class='border-top border-white position-absolute start-0 bottom-0 end-0'>
+            <div class='row g-0 align-items-center'>
+                <div class='py-2 d-flex align-items-center col-8'>
+                    <div class='d-flex align-items-center'>
+                        <IconUser size='32' class='mx-2'/>
+                        <span @click='$router.push("/profile")' style='font-size: 18px;' v-text='profile.username' class='cursor-pointer'></span>
+                    </div>
+                </div>
+
+                <div class='col-4 d-flex'>
+                    <div class='ms-auto'>
+                        <IconLogout @click.stop.prevent='logout' v-tooltip='"Logout"' size='32' class='cursor-pointer'/>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 </template>
@@ -56,8 +88,12 @@
 <script>
 import {
     IconMap,
+    IconUser,
     IconUsers,
+    IconPhoto,
+    IconLogout,
     IconMessage,
+    IconNetwork,
     IconSettings,
     IconAmbulance,
     IconBoxMultiple,
@@ -74,13 +110,21 @@ import MenuContacts from './Menu/Contacts.vue';
 import MenuSettings from './Menu/Settings.vue';
 import MenuMissions from './Menu/Missions.vue';
 import MenuChannels from './Menu/Channels.vue';
+import { mapState } from 'pinia'
+import { useProfileStore } from '/src/stores/profile.js';
+const profileStore = useProfileStore();
 
 export default {
     name: 'CloudTAKMenu',
-    data: function() {
-        return {
-            mode: null
-        }
+    computed: {
+        ...mapState(useProfileStore, ['profile']),
+    },
+    methods: {
+        logout: function() {
+            this.user = null;
+            delete localStorage.token;
+            this.$router.push("/login");
+        },
     },
     components: {
         IconBoxMultiple,
@@ -94,11 +138,15 @@ export default {
         MenuChats,
         MenuChat,
         MenuDatas,
+        IconPhoto,
         IconMessage,
+        IconNetwork,
         IconAffiliate,
         IconAmbulance,
         IconSettings,
         IconFileImport,
+        IconLogout,
+        IconUser,
         IconUsers,
         IconMap
     }

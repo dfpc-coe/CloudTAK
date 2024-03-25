@@ -16,7 +16,9 @@
         <div class='container-xl'>
             <div class='row row-deck row-cards'>
                 <div class="col-lg-12">
-                    <div class='card'>
+                    <TablerLoading v-if='!profile' desc='Loading Profile'/>
+                    <Alert v-else-if='!profile.system_admin' :err='new Error("Insufficient Access")'/>
+                    <div v-else class='card'>
                         <div class='row g-0'>
                             <div class="col-12 col-md-3 border-end">
                                 <div class="card-body">
@@ -34,10 +36,6 @@
                                             "active": $route.name === "admin-layer",
                                             "cursor-pointer": $route.name !== "admin-layer"
                                         }'><IconBuildingBroadcastTower size='32'/><span class='mx-3'>Layers</span></span>
-                                        <span @click='$router.push(`/admin/basemap`)' class="list-group-item list-group-item-action d-flex align-items-center" :class='{
-                                            "active": $route.name === "admin-basemap",
-                                            "cursor-pointer": $route.name !== "admin-basemap"
-                                        }'><IconMap size='32'/><span class='mx-3'>Basemaps</span></span>
                                         <span @click='$router.push(`/admin/user`)' class="list-group-item list-group-item-action d-flex align-items-center" :class='{
                                             "active": $route.name === "admin-user",
                                             "cursor-pointer": $route.name !== "admin-user"
@@ -62,8 +60,10 @@
 </template>
 
 <script>
+import { useProfileStore } from '/src/stores/profile.js';
 import PageFooter from './PageFooter.vue';
 import timeDiff from '../timediff.js';
+import Alert from './util/Alert.vue';
 import {
     TablerModal,
     TablerLoading,
@@ -71,17 +71,24 @@ import {
     TablerBreadCrumb,
 } from '@tak-ps/vue-tabler'
 import {
-    IconMap,
     IconUsers,
     IconServer,
     IconBrandDocker,
     IconBuildingBroadcastTower,
 } from '@tabler/icons-vue'
+import { mapState } from 'pinia'
+const profileStore = useProfileStore();
 
 export default {
     name: 'Admin',
+    computed: {
+        ...mapState(useProfileStore, ['profile']),
+    },
+    mounted: async function() {
+        await profileStore.load();
+    },
     components: {
-        IconMap,
+        Alert,
         IconUsers,
         IconServer,
         IconBrandDocker,

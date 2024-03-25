@@ -30,7 +30,6 @@ export const useConnectionStore = defineStore('connection', {
             this.ws = new WebSocket(url);
             this.ws.addEventListener('error', (err) => {
                 console.error(err);
-                this.$emit('err')
             });
 
             this.ws.addEventListener('close', () => {

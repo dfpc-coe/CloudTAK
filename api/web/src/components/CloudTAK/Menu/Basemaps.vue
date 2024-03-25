@@ -5,7 +5,7 @@
             <IconCircleArrowLeft @click='$router.back()' size='32' class='cursor-pointer'/>
             <div class='modal-title'>BaseMaps</div>
             <div class='btn-list'>
-                <IconPlus @click='$router.push("/basemap/new")' size='32' class='cursor-pointer' v-tooltip='"Create BaseMap"'/>
+                <IconPlus @click='editModal = {}' size='32' class='cursor-pointer' v-tooltip='"Create BaseMap"'/>
                 <IconSearch @click='query = !query' v-tooltip='"Search"' size='32' class='cursor-pointer'/>
                 <IconRefresh v-if='!loading' @click='fetchList' size='32' class='cursor-pointer' v-tooltip='"Refresh"'/>
             </div>
@@ -28,8 +28,13 @@
                 <span class='mx-2' style='font-size: 18px;' v-text='basemap.name'/>
 
                 <div class='ms-auto btn-list'>
-                    <IconShare2 v-if='false' v-tooltip='"Share BaseMap"' size='32' class='cursor-pointer' @click='share(basemap)'/>
-                    <IconSettings v-tooltip='"Edit Basemap"' size='32' class='cursor-pointer' @click='$router.push(`/basemap/${basemap.id}/edit`)'/>
+                    <IconSettings
+                        v-if='(!basemap.username && profile.system_admin) || basemap.username'
+                        v-tooltip='"Edit Basemap"'
+                        size='32'
+                        class='cursor-pointer'
+                        @click.stop.prevent='editModal = basemap'
+                    />
                 </div>
             </div>
         </div>
@@ -38,11 +43,14 @@
             <TablerPager v-if='list.total > paging.limit' @page='paging.page = $event' :page='paging.page'  :total='list.total' :limit='paging.limit'/>
         </div>
     </template>
+
+    <BasemapEditModal v-if='editModal' size='xl' :basemap='editModal' @close='editModal = false' />
 </div>
 </template>
 
 <script>
 import { std, stdurl } from '/src/std.ts';
+import BasemapEditModal from './Basemaps/EditModal.vue';
 import {
     TablerNone,
     TablerInput,
@@ -58,7 +66,10 @@ import {
     IconDownload,
     IconSearch
 } from '@tabler/icons-vue'
+import { mapState } from 'pinia'
 import { useMapStore } from '/src/stores/map.ts';
+import { useProfileStore } from '/src/stores/profile.js';
+const profileStore = useProfileStore();
 const mapStore = useMapStore();
 
 export default {
@@ -68,10 +79,7 @@ export default {
             err: false,
             loading: true,
             query: false,
-            shareModal: {
-                shown: false,
-                basemap: null
-            },
+            editModal: false,
             paging: {
                 filter: '',
                 limit: 30,
@@ -86,7 +94,13 @@ export default {
     mounted: async function() {
         await this.fetchList();
     },
+    computed: {
+        ...mapState(useProfileStore, ['profile']),
+    },
     watch: {
+        editModal: async function() {
+            await this.fetchList();
+        },
         query: function() {
             if (!this.query) this.paging.filter = '';
         },
@@ -116,10 +130,6 @@ export default {
                 maxzoom: basemap.maxzoom
             }]);
         },
-        share: function(basemap) {
-            this.shareModal.basemap = basemap;
-            this.shareModal.shown = true;
-        },
         fetchList: async function() {
             this.loading = true;
             const url = stdurl('/api/basemap');
@@ -142,6 +152,7 @@ export default {
         IconSearch,
         IconDownload,
         TablerLoading,
+        BasemapEditModal
     }
 }
 </script>
