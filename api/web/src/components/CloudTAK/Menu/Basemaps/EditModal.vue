@@ -1,109 +1,118 @@
 <template>
 <TablerModal>
-    <div class="card">
-        <div class='card-header'>
-            <h3 v-if='basemap.id' class='card-title'>BaseMap <span v-text='basemap.id'/></h3>
-            <h3 v-else class='card-title'>New BaseMap</h3>
+    <div class="modal-status bg-red"></div>
+    <button type="button" class="btn-close" @click='$emit("close")' aria-label="Close"></button>
 
-            <div v-if='!loading && !mode.upload && !mode.tilejson' class='ms-auto btn-list'>
-                <IconFileUpload
-                    @click='mode.upload = true'
-                    v-tooltip='"XML Upload"'
-                    size='32'
-                    class='cursor-pointer'
-                />
-                <IconFileImport
-                    @click='mode.tilejson = true'
-                    v-tooltip='"TileJSON Import"'
-                    size='32'
-                    class='cursor-pointer'
-                />
+    <div class='modal-header'>
+        <h3 v-if='basemap.id' class='card-title'>Basemap <span v-text='basemap.id'/></h3>
+        <h3 v-else class='card-title'>New Basemap</h3>
+
+        <div v-if='!loading && !mode.upload && !mode.tilejson && !basemap.id' class='ms-auto btn-list'>
+            <IconFileUpload
+                @click='mode.upload = true'
+                v-tooltip='"XML Upload"'
+                size='32'
+                class='cursor-pointer'
+            />
+            <IconFileImport
+                @click='mode.tilejson = true'
+                v-tooltip='"TileJSON Import"'
+                size='32'
+                class='cursor-pointer'
+            />
+        </div>
+    </div>
+    <div class="modal-body">
+        <TablerLoading v-if='loading'/>
+        <template v-else-if='mode.upload'>
+            <Upload
+                method='PUT'
+                :url='uploadURL()'
+                :headers='uploadHeaders()'
+                @done='processUpload($event)'
+                @cancel='mode.upload = false'
+                @err='err = $event'
+            />
+        </template>
+        <template v-else-if='mode.tilejson'>
+            <div class='row row-cards'>
+                <div class="col-md-12 mt-3">
+                    <TablerInput
+                        label='TileJSON URL'
+                        v-model='tilejson.url'
+                    />
+                </div>
+                <div class="col-md-12 mt-3">
+                    <div class='d-flex'>
+                        <div class='ms-auto'>
+                            <a @click='fetchTileJSON' class="cursor-pointer btn btn-primary">Fetch TileJSON</a>
+                        </div>
+                    </div>
+                </div>
             </div>
-        </div>
-        <div class="card-body">
-            <TablerLoading v-if='loading'/>
-            <template v-else-if='mode.upload'>
-                <Upload
-                    method='PUT'
-                    :url='uploadURL()'
-                    :headers='uploadHeaders()'
-                    @done='processUpload($event)'
-                    @cancel='mode.upload = false'
-                    @err='err = $event'
-                />
-            </template>
-            <template v-else-if='mode.tilejson'>
-                <div class='row row-cards'>
-                    <div class="col-md-12 mt-3">
-                        <TablerInput
-                            label='TileJSON URL'
-                            v-model='tilejson.url'
-                        />
-                    </div>
-                    <div class="col-md-12 mt-3">
-                        <div class='d-flex'>
-                            <div class='ms-auto'>
-                                <a @click='fetchTileJSON' class="cursor-pointer btn btn-primary">Fetch TileJSON</a>
-                            </div>
-                        </div>
-                    </div>
+        </template>
+        <template v-else>
+            <div class='row row-cards'>
+                <div class="col-12 col-md-6 mt-3">
+                    <TablerInput
+                        label='Basemap Name'
+                        v-model='editing.name'
+                        :error='errors.name'
+                    />
                 </div>
-            </template>
-            <template v-else>
-                <div class='row row-cards'>
-                    <div class="col-12 col-md-9 mt-3">
-                        <TablerInput
-                            label='BaseMap Name'
-                            v-model='editing.name'
-                            :error='errors.name'
-                        />
-                    </div>
-                    <div class="col-12 col-md-3 mt-3">
-                        <TablerEnum
-                            label='BaseMap Type'
-                            v-model='editing.type'
-                            :options='["raster", "raster-dem", "vector"]'
-                        />
-                    </div>
-                    <div class="col-md-12">
-                        <TablerInput
-                            label='BaseMap Url'
-                            v-model='editing.url'
-                            :error='errors.url'
-                        />
-                    </div>
-                    <div class="col-md-4">
-                        <TablerInput
-                            label='BaseMap MinZoom'
-                            v-model='editing.minzoom'
-                        />
-                    </div>
-                    <div class="col-md-4">
-                        <TablerInput
-                            label='BaseMap MaxZoom'
-                            v-model='editing.maxzoom'
-                        />
-                    </div>
-                    <div class="col-md-4">
-                        <TablerInput
-                            label='BaseMap Format'
-                            v-model='editing.format'
-                        />
-                    </div>
-                    <div class="col-md-12 mt-3">
-                        <div class='d-flex'>
-                            <div v-if='basemap.id'>
-                                <TablerDelete @delete='del' label='Delete Layer'/>
-                            </div>
+                <div class="col-12 col-md-3 mt-3">
+                    <TablerEnum
+                        label='Basemap Type'
+                        v-model='editing.type'
+                        :options='["raster", "raster-dem", "vector"]'
+                    />
+                </div>
+                <div class="col-12 col-md-3 mt-3">
+                    <TablerEnum
+                        label='Basemap Scope'
+                        v-model='scope'
+                        :disabled='!profile.system_admin && basemap.id'
+                        :options='["user", "server"]'
+                    />
+                </div>
+                <div class="col-md-12">
+                    <TablerInput
+                        label='Basemap Url'
+                        v-model='editing.url'
+                        :error='errors.url'
+                    />
+                </div>
+                <div class="col-md-4">
+                    <TablerInput
+                        label='Basemap MinZoom'
+                        v-model='editing.minzoom'
+                    />
+                </div>
+                <div class="col-md-4">
+                    <TablerInput
+                        label='Basemap MaxZoom'
+                        v-model='editing.maxzoom'
+                    />
+                </div>
+                <div class="col-md-4">
+                    <TablerInput
+                        label='Basemap Format'
+                        v-model='editing.format'
+                    />
+                </div>
+                <div class="col-md-12 mt-3">
+                    <div class='d-flex'>
+                        <div v-if='basemap.id'>
+                            <TablerDelete @delete='del' label='Delete Layer'/>
+                        </div>
 
-                            <div class='ms-auto'>
-                                <a @click='create' class="cursor-pointer btn btn-primary">Save BaseMap</a>
-                            </div>
+                        <div class='ms-auto'>
+                            <a @click='create' class="cursor-pointer btn btn-primary">Save Basemap</a>
                         </div>
                     </div>
                 </div>
-            </template>
-        </div>
+            </div>
+        </template>
     </div>
 </TablerModal>
 </template>
@@ -122,6 +131,9 @@ import {
     TablerEnum,
     TablerInput
 } from '@tak-ps/vue-tabler';
+import { mapState } from 'pinia'
+import { useProfileStore } from '/src/stores/profile.js';
+const profileStore = useProfileStore();
 
 export default {
     name: 'BasemapEditModal',
@@ -129,6 +141,9 @@ export default {
         basemap: {
             type: Object
         }
+    },
+    computed: {
+        ...mapState(useProfileStore, ['profile']),
     },
     data: function() {
         return {
@@ -146,6 +161,7 @@ export default {
             },
             bounds: '',
             center: '',
+            scope: this.basemap.username ? 'user' : 'server',
             editing: {
                 name: '',
                 url: '',
@@ -221,7 +237,10 @@ export default {
                 } else {
                     const create = await std('/api/basemap', {
                         method: 'POST',
-                        body: this.editing
+                        body: {
+                            scope: this.scope,
+                            ...this.editing
+                        }
                     });
                     this.$emit('close');
                 }
