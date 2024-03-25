@@ -83,6 +83,7 @@ export default {
             header: [],
             paging: {
                 filter: '',
+                scope: 'server',
                 sort: 'name',
                 order: 'asc',
                 limit: 100,
@@ -130,6 +131,7 @@ export default {
             const url = stdurl('/api/basemap');
             if (this.query && this.paging.filter) url.searchParams.append('filter', this.paging.filter);
             url.searchParams.append('limit', this.paging.limit);
+            url.searchParams.append('scope', this.paging.scope);
             url.searchParams.append('page', this.paging.page);
             this.list = await std(url);
             this.loading = false;
