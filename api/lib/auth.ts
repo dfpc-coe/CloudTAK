@@ -5,6 +5,11 @@ import Config from './config.js';
 import { InferSelectModel } from 'drizzle-orm';
 import { Profile } from './schema.js';
 
+export enum ResourceCreationScope {
+    SERVER = 'server',
+    USER = 'user'
+}
+
 export enum AuthUserAccess {
     ADMIN = 'admin',
     USER = 'user'
