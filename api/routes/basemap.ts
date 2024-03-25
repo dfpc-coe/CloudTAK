@@ -134,6 +134,7 @@ export default async function router(schema: Schema, config: Config) {
         group: 'BaseMap',
         description: 'List BaseMaps',
         query: Type.Object({
+            scope: Type.Optional(Type.Enum(ResourceCreationScope)),
             limit: Type.Optional(Type.Integer()),
             page: Type.Optional(Type.Integer()),
             order: Type.Optional(Type.Enum(GenericListOrder)),
@@ -149,6 +150,10 @@ export default async function router(schema: Schema, config: Config) {
         try {
             const user = await Auth.as_user(config, req);
 
+            let scope = sql`True`;
+            if (req.query.scope === ResourceCreationScope.SERVER) scope = sql`username IS NULL`;
+            else if (req.query.scope === ResourceCreationScope.USER) scope = sql`username IS NOT NULL`;
+
             const list = await config.models.Basemap.list({
                 limit: req.query.limit,
                 page: req.query.page,
@@ -158,6 +163,7 @@ export default async function router(schema: Schema, config: Config) {
                     name ~* ${Param(req.query.filter)}
                     AND (${Param(req.query.type)}::TEXT IS NULL or ${Param(req.query.type)}::TEXT = type)
                     AND (username IS NULL OR username = ${user.email})
+                    AND ${scope}
                 `
             });
 
