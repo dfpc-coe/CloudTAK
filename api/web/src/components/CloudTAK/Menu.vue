@@ -5,7 +5,7 @@
 >
     <div class='position-relative h-100'>
         <router-view
-            v-if='$route.name !== "menu"'
+            v-if='$route.name !== "home-menu"'
             @reset='$emit("reset")'
         />
         <template v-else>
@@ -15,10 +15,6 @@
                     <div class='modal-title'>Sidebar</div>
                     <div/>
                 </div>
-            </div>
-            <div @click='$router.push("/profile")' class='cursor-pointer col-12 py-2 px-3 d-flex align-items-center hover-dark'>
-                <IconUser size='32'/>
-                <span class='mx-2' style='font-size: 18px;'>Profile</span>
             </div>
             <div @click='$router.push("/menu/settings")' class='cursor-pointer col-12 py-2 px-3 d-flex align-items-center hover-dark'>
                 <IconSettings size='32'/>
@@ -52,26 +48,39 @@
                 <IconFileImport size='32'/>
                 <span class='mx-2' style='font-size: 18px;'>Imports</span>
             </div>
+            <div @click='$router.push("/iconset")' class='cursor-pointer col-12 py-2 px-3 d-flex align-items-center hover-dark'>
+                <IconPhoto size='32'/>
+                <span class="mx-2" style='font-size: 18px;'>Iconsets</span>
+            </div>
 
             <div v-if='profile.system_admin || profile.agency_admin' @click='$router.push("/connection")' class='cursor-pointer col-12 py-2 px-3 d-flex align-items-center hover-dark'>
                 <IconNetwork size='32'/>
-                <span class="mx-2">Connections</span>
+                <span class="mx-2" style='font-size: 18px;'>Connections</span>
                 <span class='ms-auto badge border border-red bg-red text-white'>Admin</span>
             </div>
-            <div @click='$router.push("/iconset")' class='cursor-pointer col-12 py-2 px-3 d-flex align-items-center hover-dark'>
-                <IconPhoto size='32'/>
-                <span class="mx-2">Iconsets</span>
-            </div>
-            <div @click='$router.push("/admin")' class='cursor-pointer col-12 py-2 px-3 d-flex align-items-center hover-dark'>
+            <div v-if='profile.system_admin' @click='$router.push("/admin")' class='cursor-pointer col-12 py-2 px-3 d-flex align-items-center hover-dark'>
                 <IconSettings size='32'/>
-                <span class='mx-2'>Server</span>
+                <span class='mx-2' style='font-size: 18px;'>Server</span>
                 <span class='ms-auto badge border border-red bg-red text-white'>Admin</span>
-            </div>
-            <div @click='logout' class='cursor-pointer col-12 py-2 px-3 d-flex align-items-center hover-dark'>
-                <IconLogout size='32'/>
-                <span class="mx-2">Logout</span>
             </div>
         </template>
+
+        <div class='border-top border-white position-absolute start-0 bottom-0 end-0'>
+            <div class='row g-0 align-items-center'>
+                <div class='py-2 d-flex align-items-center col-8'>
+                    <div class='d-flex align-items-center'>
+                        <IconUser size='32' class='mx-2'/>
+                        <span @click='$router.push("/profile")' style='font-size: 18px;' v-text='profile.username' class='cursor-pointer'></span>
+                    </div>
+                </div>
+
+                <div class='col-4 d-flex'>
+                    <div class='ms-auto'>
+                        <IconLogout @click.stop.prevent='logout' v-tooltip='"Logout"' size='32' class='cursor-pointer'/>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 </template>
@@ -81,6 +90,8 @@ import {
     IconMap,
     IconUser,
     IconUsers,
+    IconPhoto,
+    IconLogout,
     IconMessage,
     IconNetwork,
     IconSettings,
@@ -108,6 +119,13 @@ export default {
     computed: {
         ...mapState(useProfileStore, ['profile']),
     },
+    methods: {
+        logout: function() {
+            this.user = null;
+            delete localStorage.token;
+            this.$router.push("/login");
+        },
+    },
     components: {
         IconBoxMultiple,
         MenuBasemaps,
@@ -120,12 +138,14 @@ export default {
         MenuChats,
         MenuChat,
         MenuDatas,
+        IconPhoto,
         IconMessage,
         IconNetwork,
         IconAffiliate,
         IconAmbulance,
         IconSettings,
         IconFileImport,
+        IconLogout,
         IconUser,
         IconUsers,
         IconMap
