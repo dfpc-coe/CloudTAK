@@ -207,7 +207,7 @@ export default async function router(schema: Schema, config: Config) {
             let username: string | null = null;
             if (user.access !== AuthUserAccess.ADMIN && req.body.scope === ResourceCreationScope.SERVER) {
                 throw new Err(400, null, 'Only Server Admins can create Server scoped basemaps');
-            } else if (user.access === AuthUserAccess.USER) {
+            } else if (user.access === AuthUserAccess.USER || req.body.scope === ResourceCreationScope.USER) {
                 username = user.email;
             }
 

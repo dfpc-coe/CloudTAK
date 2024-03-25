@@ -5,7 +5,7 @@
             <IconCircleArrowLeft @click='$router.back()' size='32' class='cursor-pointer'/>
             <div class='modal-title'>BaseMaps</div>
             <div class='btn-list'>
-                <IconPlus @click='$router.push("/basemap/new")' size='32' class='cursor-pointer' v-tooltip='"Create BaseMap"'/>
+                <IconPlus @click='editModal = {}' size='32' class='cursor-pointer' v-tooltip='"Create BaseMap"'/>
                 <IconSearch @click='query = !query' v-tooltip='"Search"' size='32' class='cursor-pointer'/>
                 <IconRefresh v-if='!loading' @click='fetchList' size='32' class='cursor-pointer' v-tooltip='"Refresh"'/>
             </div>
