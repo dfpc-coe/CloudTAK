@@ -21,6 +21,9 @@
                 class='cursor-pointer'
             />
         </div>
+        <div v-else-if='basemap.id' class='ms-auto btn-list'>
+            <IconDownload v-tooltip='"Download TAK XML"' size='32' class='cursor-pointer' @click='download'/>
+        </div>
     </div>
     <div class="modal-body">
         <TablerLoading v-if='loading'/>
@@ -44,6 +47,7 @@
                 </div>
                 <div class="col-md-12 mt-3">
                     <div class='d-flex'>
+                        <button @click='mode.tilejson = false' class="cursor-pointer btn btn-secondary">Cancel</button>
                         <div class='ms-auto'>
                             <a @click='fetchTileJSON' class="cursor-pointer btn btn-primary">Fetch TileJSON</a>
                         </div>
@@ -121,6 +125,7 @@
 import { std, stdurl } from '/src/std.ts';
 import Upload from '../../../util/Upload.vue';
 import {
+    IconDownload,
     IconFileImport,
     IconFileUpload
 } from '@tabler/icons-vue';
@@ -178,6 +183,9 @@ export default {
         if (this.basemap.id) await this.fetch();
     },
     methods: {
+        download: async function() {
+            window.location.href = stdurl(`api/basemap/${this.basemap.id}?format=xml&download=true&token=${localStorage.token}`);
+        },
         fetchTileJSON: async function() {
             this.loading = true;
             try {
@@ -266,6 +274,7 @@ export default {
     },
     components: {
         Upload,
+        IconDownload,
         IconFileUpload,
         IconFileImport,
         TablerLoading,
