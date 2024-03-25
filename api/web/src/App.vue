@@ -1,6 +1,6 @@
 <template>
 <div class='page'>
-    <header v-if='!$route.name.startsWith("home")' class='navbar navbar-expand-md d-print-none' data-bs-theme="dark">
+    <header v-if='!$route || !$route.name || !$route.name.startsWith("home")' class='navbar navbar-expand-md d-print-none' data-bs-theme="dark">
         <div class="container-xl">
             <div class="col-auto">
                 <img @click='$router.push("/")' class='cursor-pointer' height='50' width='50' src='/logo.png'>
