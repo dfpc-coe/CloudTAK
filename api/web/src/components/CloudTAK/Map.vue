@@ -158,12 +158,10 @@ export default {
         profileStore.$reset();
     },
     mounted: async function() {
-        const emit = this.$emit;
-
         // ensure uncaught errors in the stack are captured into vue context
         window.addEventListener('error', (evt) => {
             evt.preventDefault();
-            emit('err', new Error(evt.message));
+            this.$emit('err', new Error(evt.message));
         });
 
         await profileStore.load();

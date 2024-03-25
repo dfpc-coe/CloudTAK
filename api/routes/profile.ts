@@ -17,6 +17,8 @@ export default async function router(schema: Schema, config: Config) {
             const user = await Auth.as_user(config, req);
             const profile = await config.models.Profile.from(user.email);
 
+            profile.system_admin = false;
+
             return res.json(profile);
         } catch (err) {
             return Err.respond(err, res);

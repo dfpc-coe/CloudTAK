@@ -53,7 +53,7 @@
                 <span class="mx-2" style='font-size: 18px;'>Iconsets</span>
             </div>
 
-            <div v-if='profile.system_admin || profile.agency_admin' @click='$router.push("/connection")' class='cursor-pointer col-12 py-2 px-3 d-flex align-items-center hover-dark'>
+            <div v-if='profile.system_admin || profile.agency_admin.length' @click='$router.push("/connection")' class='cursor-pointer col-12 py-2 px-3 d-flex align-items-center hover-dark'>
                 <IconNetwork size='32'/>
                 <span class="mx-2" style='font-size: 18px;'>Connections</span>
                 <span class='ms-auto badge border border-red bg-red text-white'>Admin</span>
