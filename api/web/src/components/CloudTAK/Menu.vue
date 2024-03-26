@@ -48,7 +48,7 @@
                 <IconFileImport size='32'/>
                 <span class='mx-2' style='font-size: 18px;'>Imports</span>
             </div>
-            <div @click='$router.push("/iconset")' class='cursor-pointer col-12 py-2 px-3 d-flex align-items-center hover-dark'>
+            <div @click='$router.push("/menu/iconsets")' class='cursor-pointer col-12 py-2 px-3 d-flex align-items-center hover-dark'>
                 <IconPhoto size='32'/>
                 <span class="mx-2" style='font-size: 18px;'>Iconsets</span>
             </div>
