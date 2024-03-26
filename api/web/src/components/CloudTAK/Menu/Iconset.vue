@@ -5,7 +5,7 @@
             <IconCircleArrowLeft @click='$router.back()' size='32' class='cursor-pointer'/>
             <div class='modal-title'>Iconsets</div>
             <div class='btn-list'>
-                <IconPlus v-if='iconset.username || profile.system_admin' v-tooltip='"Create Icon"' @click='$router.push(`/menu/iconset/${$route.params.iconset}/icon`)' size='32' class='cursor-pointer'/>
+                <IconPlus v-if='iconset.username || profile.system_admin' v-tooltip='"Create Icon"' @click='editModal = {}' size='32' class='cursor-pointer'/>
                 <IconDownload v-tooltip='"Download TAK Zip"' size='32' class='cursor-pointer' @click.stop='download'/>
                 <TablerDelete v-if='iconset.username || profile.system_admin' displaytype='icon' @delete='deleteIconset'/>
             </div>
@@ -16,6 +16,8 @@
     <div v-else class="col-lg-12">
         <CombinedIcons v-if='!loading' :iconset='iconset.uid' :labels='false'/>
     </div>
+
+    <IconEditModal v-if='editModal' @close='editModal = false'/>
 </div>
 </template>
 
@@ -31,6 +33,7 @@ import {
     IconDownload,
     IconCircleArrowLeft
 } from '@tabler/icons-vue';
+import IconEditModal from './Icon/EditModal.vue';
 import { mapState } from 'pinia';
 import { useProfileStore } from '/src/stores/profile.js';
 
@@ -39,6 +42,7 @@ export default {
     data: function() {
         return {
             loading: true,
+            editModal: false,
             iconset: {
                 uid: ''
             }
@@ -73,6 +77,7 @@ export default {
         IconPlus,
         IconDownload,
         IconCircleArrowLeft,
+        IconEditModal,
         CombinedIcons,
         TablerDelete,
         TablerLoading
