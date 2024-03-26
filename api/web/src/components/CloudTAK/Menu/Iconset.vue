@@ -33,7 +33,6 @@ import {
 } from '@tabler/icons-vue';
 import { useMapStore } from '/src/stores/map.ts';
 import { useProfileStore } from '/src/stores/profile.js';
-const profileStore = useProfileStore();
 
 export default {
     name: 'Iconset',
