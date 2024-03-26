@@ -44,9 +44,17 @@
         </div>
 
         <div v-if='isLoaded && mode === "Default"'
-            class='position-absolute top-0 text-white py-2'
-            style='z-index: 1; width: 60px; right: 60px; background-color: rgba(0, 0, 0, 0.5)'
+            class='d-flex position-absolute top-0 text-white py-2'
+            style='z-index: 1; width: 120px; right: 60px; background-color: rgba(0, 0, 0, 0.5)'
         >
+            <TablerDropdown>
+                <template #default>
+                    <IconBell size='40' class='mx-2 cursor-pointer'/>
+                </template>
+                <template #dropdown>
+                    <TablerNone label='Notifications' :create='false'/>
+                </template>
+            </TablerDropdown>
             <TablerDropdown>
                 <template #default>
                     <IconPencil @click='menu.draw = true' size='40' class='mx-2 cursor-pointer'/>
@@ -106,9 +114,11 @@ import {
     IconLine,
     IconPolygon,
     IconVector,
+    IconBell
 } from '@tabler/icons-vue';
 import {
     TablerDropdown,
+    TablerNone,
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import 'maplibre-gl/dist/maplibre-gl.css';
@@ -428,25 +438,27 @@ export default {
         }
     },
     components: {
-        IconLocationOff,
-        IconLocation,
-        IconMinus,
-        IconPlus,
-        IconFocus2,
-        IconLockAccess,
         RadialMenu,
-        IconPoint,
-        IconLine,
-        IconPolygon,
-        IconVector,
+        TablerNone,
         TablerDropdown,
-        IconMenu2,
-        IconPencil,
-        IconX,
         TablerLoading,
         CloudTAKMenu,
         CloudTAKCoTView,
         CloudTAKFeatView,
+        IconLocationOff,
+        IconLocation,
+        IconMinus,
+        IconBell,
+        IconPlus,
+        IconFocus2,
+        IconLockAccess,
+        IconPoint,
+        IconLine,
+        IconPolygon,
+        IconVector,
+        IconMenu2,
+        IconPencil,
+        IconX,
     }
 }
 </script>
