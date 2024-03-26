@@ -6,7 +6,7 @@
             <div class='modal-title' v-text='icon.name'></div>
             <div class='btn-list'>
                 <TablerDelete v-if='iconset.username || profile.system_admin' displaytype='icon' @delete='deleteIcon'/>
-                <IconSettings v-if='iconset.username || profile.system_admin' @click='$router.push(`/iconset/${$route.params.iconset}/icon/${encodeURIComponent($route.params.icon)}/edit`)' size='32' class='cursor-pointer'/>
+                <IconSettings v-if='iconset.username || profile.system_admin' @click='editModal = icon' size='32' class='cursor-pointer'/>
             </div>
         </div>
     </div>
@@ -34,6 +34,8 @@
             </div>
         </template>
     </div>
+
+    <IconEditModal v-if='editModal' @close='editModal = false'/>
 </div>
 </template>
 
@@ -49,6 +51,7 @@ import {
     IconSettings,
     IconDownload
 } from '@tabler/icons-vue';
+import IconEditModal from './Icon/EditModal.vue';
 import { mapState } from 'pinia';
 import { useProfileStore } from '/src/stores/profile.js';
 
@@ -57,6 +60,7 @@ export default {
     data: function() {
         return {
             loading: true,
+            editModal: false,
             iconset: {},
             icon: {
                 id: false
@@ -97,6 +101,7 @@ export default {
     },
     components: {
         IconCircleArrowLeft,
+        IconEditModal,
         IconSettings,
         IconDownload,
         TablerDelete,
