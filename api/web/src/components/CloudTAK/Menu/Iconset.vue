@@ -5,7 +5,7 @@
             <IconCircleArrowLeft @click='$router.back()' size='32' class='cursor-pointer'/>
             <div class='modal-title'>Iconsets</div>
             <div class='btn-list'>
-                <IconPlus v-if='iconset.username || profile.system_admin' v-tooltip='"Create Icon"' @click='$router.push(`/iconset/${$route.params.iconset}/icon`)' size='32' class='cursor-pointer'/>
+                <IconPlus v-if='iconset.username || profile.system_admin' v-tooltip='"Create Icon"' @click='$router.push(`/menu/iconset/${$route.params.iconset}/icon`)' size='32' class='cursor-pointer'/>
                 <IconDownload v-tooltip='"Download TAK Zip"' size='32' class='cursor-pointer' @click.stop='download'/>
                 <TablerDelete v-if='iconset.username || profile.system_admin' displaytype='icon' @delete='deleteIconset'/>
             </div>
@@ -66,7 +66,7 @@ export default {
             this.iconset = await std(url, {
                 method: 'DELETE'
             });
-            this.$router.push('/iconset');
+            this.$router.push('/menu/iconset');
         }
     },
     components: {
