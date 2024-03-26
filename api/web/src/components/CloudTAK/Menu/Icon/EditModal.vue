@@ -25,7 +25,6 @@ import { std, stdurl } from '/src/std.ts';
 import {
     TablerModal,
     TablerLoading,
-    TablerDelete,
     TablerSchema
 } from '@tak-ps/vue-tabler';
 import {
@@ -61,36 +60,28 @@ export default {
     methods: {
         fetch: async function() {
             this.loading.icon = true;
-            this.editing = await std(`/api/iconset/${this.$route.params.iconset}/icon/${this.icon.id}`);
-            this.loading.iconset = false;
+            this.editing = await std(`/api/iconset/${this.$route.params.iconset}/icon/${encodeURIComponent(this.icon.name)}`);
+            this.loading.icon = false;
         },
         submit: async function() {
-            const url = await stdurl(`/api/iconset/${this.$route.params.iconset}/icon/${this.$route.params.icon ||''}`);
+            const url = await stdurl(`/api/iconset/${this.$route.params.iconset}/icon/${this.icon.id ? encodeURIComponent(this.icon.name) : ''}`);
 
             const iconset = await std(url, {
-                method: this.$route.params.iconset ? 'PATCH' : 'POST',
+                method: this.icon.id ? 'PATCH' : 'POST',
                 body: this.editing
             });
 
-            this.$router.push(`/menu/iconset/${iconset.uid}`);
+            this.$emit('close')
         },
         fetchSchema: async function() {
             const url = await stdurl(`/api/schema`);
-            url.searchParams.append('method', this.$route.params.iconset ? 'PATCH' : 'POST');
-            url.searchParams.append('url', this.$route.params.iconset ? '/iconset/:iconset/icon/:icon' : '/iconset/:iconset/icon');
+            url.searchParams.append('method', this.icon.id ? 'PATCH' : 'POST');
+            url.searchParams.append('url', this.icon.id ? '/iconset/:iconset/icon/:icon' : '/iconset/:iconset/icon');
             this.schema = (await std(url)).body;
-        },
-        Icondeleteset: async function() {
-            await std(`/api/iconset/${this.$route.params.iconset}/icon/${this.$route.params.icon}`, {
-                method: 'DELETE'
-            });
-
-            this.$router.push('/menu/iconsets');
         },
     },
     components: {
         TablerModal,
-        TablerDelete,
         TablerLoading,
         TablerSchema,
         IconSettings,

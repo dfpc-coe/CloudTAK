@@ -35,7 +35,7 @@
         </template>
     </div>
 
-    <IconEditModal v-if='editModal' :icon='editModal' @close='editModal = false'/>
+    <IconEditModal v-if='editModal' :icon='editModal' @close='refresh'/>
 </div>
 </template>
 
@@ -68,15 +68,19 @@ export default {
         }
     },
     mounted: async function() {
-        this.loading = true;
-        await this.fetchIconset();
-        await this.fetch();
-        this.loading = false;
+        await this.refresh();
     },
     computed: {
         ...mapState(useProfileStore, ['profile'])
     },
     methods: {
+        refresh: async function() {
+            this.editModal = false;
+            this.loading = true;
+            await this.fetchIconset();
+            await this.fetch();
+            this.loading = false;
+        },
         iconurl: function() {
             const url = stdurl(`/api/iconset/${this.icon.iconset}/icon/${encodeURIComponent(this.icon.name)}/raw`);
             url.searchParams.append('token', localStorage.token);
