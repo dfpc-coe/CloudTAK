@@ -1,51 +1,30 @@
 <template>
-<div>
-    <div class='page-wrapper'>
-        <div class="page-header d-print-none">
-            <div class="container-xl">
-                <div class="row g-2 align-items-center">
-                    <div class="col d-flex">
-                        <TablerBreadCrumb/>
-                    </div>
-                </div>
-            </div>
-        </div>
+<TablerModal size='xl'>
+    <div class="modal-status bg-red"></div>
+    <button type="button" class="btn-close" @click='$emit("close")' aria-label="Close"></button>
+
+    <div class='modal-header'>
+        <div v-if='iconset.uid' class='strong d-flex align-items-center'>Iconset <span v-text='iconset.name'/></div>
+        <div v-else class='strong align-items-center'>New Iconset</div>
     </div>
 
     <TablerLoading v-if='loading.iconset' desc='Loading Iconset'/>
-    <div v-else class='page-body'>
-        <div class='container-xl'>
-            <div class='row row-deck row-cards'>
-                <div class="col-lg-12">
-                    <div class="card">
-                        <div class='card-header'>
-                            <h3 class='card-title'>Iconset <span v-text='iconset.uid'/></h3>
-                        </div>
-                        <div class="card-body">
-                            <TablerLoading v-if='loading.iconset' desc='Loading Iconset'/>
-                            <TablerSchema v-else :schema='schema' v-model='iconset'/>
+    <div v-else class='mx-4 my-4'>
+        <TablerSchema :schema='schema' v-model='iconset'/>
 
-                            <div class='d-flex'>
-                                <div class='ms-auto'>
-                                    <div @click='submit' class='btn btn-primary'>Submit</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+        <div class='d-flex'>
+            <div class='ms-auto'>
+                <div @click='submit' class='btn btn-primary'>Submit</div>
             </div>
         </div>
     </div>
-
-    <PageFooter/>
-</div>
+</TablerModal>
 </template>
 
 <script>
 import { std, stdurl } from '/src/std.ts';
-import PageFooter from './PageFooter.vue';
 import {
-    TablerBreadCrumb,
+    TablerModal,
     TablerLoading,
     TablerDelete,
     TablerSchema
@@ -107,8 +86,7 @@ export default {
         },
     },
     components: {
-        PageFooter,
-        TablerBreadCrumb,
+        TablerModal,
         TablerDelete,
         TablerLoading,
         TablerSchema,

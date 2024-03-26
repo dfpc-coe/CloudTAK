@@ -4,8 +4,8 @@
     <button type="button" class="btn-close" @click='$emit("close")' aria-label="Close"></button>
 
     <div class='modal-header'>
-        <h3 v-if='basemap.id' class='card-title'>Basemap <span v-text='basemap.id'/></h3>
-        <h3 v-else class='card-title'>New Basemap</h3>
+        <div v-if='basemap.id' class='strong d-flex align-items-center'>Basemap <span v-text='basemap.name'/></div>
+        <div v-else class='strong align-items-center'>New Basemap</div>
 
         <div v-if='!loading && !mode.upload && !mode.tilejson && !basemap.id' class='ms-auto btn-list'>
             <IconFileUpload
@@ -166,7 +166,7 @@ export default {
             },
             bounds: '',
             center: '',
-            scope: this.basemap.username ? 'user' : 'server',
+            scope: this.basemap.id ? (this.basemap.username ? 'user' : 'server') : 'user',
             editing: {
                 name: '',
                 url: '',

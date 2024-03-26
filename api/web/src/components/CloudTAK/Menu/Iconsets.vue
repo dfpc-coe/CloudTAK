@@ -51,6 +51,8 @@
             <IconCombineds v-if='list.items.length' :labels='false'/>
         </div>
     </template>
+
+    <IconsetEditModal v-if='editModal' @close='editModal = false'/>
 </div>
 </template>
 
@@ -58,6 +60,7 @@
 import { std, stdurl } from '/src/std.ts';
 import Upload from '../../util/Upload.vue';
 import IconCombineds from '../util/Icons.vue'
+import IconsetEditModal from './Iconset/EditModal.vue';
 import {
     TablerNone,
     TablerLoading
@@ -78,6 +81,7 @@ export default {
             err: false,
             loading: true,
             upload: false,
+            editModal: false,
             list: {
                 total: 0,
                 items: []
@@ -117,6 +121,7 @@ export default {
         Upload,
         IconPlus,
         IconDownload,
+        IconsetEditModal,
         IconCircleArrowLeft,
         IconFileUpload,
         IconCombineds,
