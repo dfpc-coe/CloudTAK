@@ -3,14 +3,12 @@
     <div class="card-header">
         <h3 class='card-title'>Icon Search</h3>
 
-        <div class='ms-auto'>
-            <div class="input-icon">
-                <input v-model='paging.filter' type="text" class="form-control" placeholder="Search…">
-                <span class="input-icon-addon">
-                    <IconSearch/>
-                </span>
-            </div>
+        <div class='ms-auto btn-list'>
+            <IconSearch size='32' class='cursor-pointer'/>
         </div>
+    </div>
+    <div class="card-header">
+        <TablerInput v-model='paging.filter'/>
     </div>
     <div class="card-body">
         <TablerLoading v-if='loading' desc='Loading Icons'/>
@@ -52,6 +50,7 @@ import { std, stdurl } from '/src/std.ts';
 import {
     TablerNone,
     TablerPager,
+    TablerInput,
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import {
@@ -111,6 +110,7 @@ export default {
     components: {
         TablerNone,
         TablerPager,
+        TablerInput,
         IconSearch,
         TablerLoading
     }

@@ -340,7 +340,7 @@ export default async function router(schema: Schema, config: Config) {
                 order: req.query.order,
                 sort: req.query.sort,
                 where: sql`
-                    name ~* ${req.query.filter}
+                    icon.name ~* ${req.query.filter}
                     AND (${Param(req.query.iconset)}::TEXT IS NULL OR ${Param(req.query.iconset)}::TEXT = iconset)
                     AND (username IS NULL OR username = ${user.email})
                     AND ${scope}

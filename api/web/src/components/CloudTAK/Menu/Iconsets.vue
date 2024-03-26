@@ -35,13 +35,11 @@
         <table class="table table-hover card-table table-vcenter cursor-pointer">
             <thead><tr>
                 <th>Name</th>
-                <th>UID</th>
             </tr></thead>
             <tbody><tr @click='$router.push(`/iconset/${iconset.uid}`)' :key='iconset.uid' v-for='iconset in list.items'>
-                <td v-text='iconset.name'></td>
                 <td>
-                    <div class='d-flex'>
-                        <span v-text='iconset.uid'/>
+                    <div class='d-flex align-items-center'>
+                        <span v-text='iconset.name'/>
                         <div class='ms-auto'>
                             <IconDownload v-tooltip='"Download TAK Zip"' size='32' class='cursor-pointer' @click.stop='download(iconset)'/>
                         </div>
@@ -60,7 +58,7 @@
 <script>
 import { std, stdurl } from '/src/std.ts';
 import Upload from '../../util/Upload.vue';
-import IconCombineds from '../../cards/Icons.vue'
+import IconCombineds from '../util/Icons.vue'
 import {
     TablerNone,
     TablerLoading
