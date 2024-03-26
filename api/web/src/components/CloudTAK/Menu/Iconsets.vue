@@ -17,41 +17,45 @@
         <TablerInput v-model='paging.filter' placeholder='Filter'/>
     </div>
     <template v-else-if='upload'>
-        <Upload
-            method='PUT'
-            :url='uploadURL()'
-            :headers='uploadHeaders()'
-            @done='processUpload($event)'
-            @cancel='upload = false'
-            @err='throws($event)'
-        />
+        <div class='mx-4 my-4'>
+            <Upload
+                method='PUT'
+                :url='uploadURL()'
+                :headers='uploadHeaders()'
+                @done='processUpload($event)'
+                @cancel='upload = false'
+                @err='throws($event)'
+            />
+        </div>
     </template>
-    <TablerNone
-        v-else-if='!list.items.length'
-        label='Iconsets'
-        :create='false'
-    />
-    <div v-else class='table-responsive'>
-        <table class="table table-hover card-table table-vcenter cursor-pointer">
-            <thead><tr>
-                <th>Name</th>
-            </tr></thead>
-            <tbody><tr @click='$router.push(`/menu/iconset/${iconset.uid}`)' :key='iconset.uid' v-for='iconset in list.items'>
-                <td>
-                    <div class='d-flex align-items-center'>
-                        <span v-text='iconset.name'/>
-                        <div class='ms-auto'>
-                            <IconDownload v-tooltip='"Download TAK Zip"' size='32' class='cursor-pointer' @click.stop='download(iconset)'/>
+    <template v-else>
+        <TablerNone
+            v-if='!list.items.length'
+            label='Iconsets'
+            :create='false'
+        />
+        <div v-else class='table-responsive'>
+            <table class="table table-hover card-table table-vcenter cursor-pointer">
+                <thead><tr>
+                    <th>Name</th>
+                </tr></thead>
+                <tbody><tr @click='$router.push(`/menu/iconset/${iconset.uid}`)' :key='iconset.uid' v-for='iconset in list.items'>
+                    <td>
+                        <div class='d-flex align-items-center'>
+                            <span v-text='iconset.name'/>
+                            <div class='ms-auto'>
+                                <IconDownload v-tooltip='"Download TAK Zip"' size='32' class='cursor-pointer' @click.stop='download(iconset)'/>
+                            </div>
                         </div>
-                    </div>
-                </td>
-            </tr></tbody>
-        </table>
-    </div>
+                    </td>
+                </tr></tbody>
+            </table>
+        </div>
 
-    <div class="col-lg-12">
-        <IconCombineds v-if='list.items.length' :labels='false'/>
-    </div>
+        <div class="col-lg-12">
+            <IconCombineds v-if='list.items.length' :labels='false'/>
+        </div>
+    </template>
 </div>
 </template>
 
