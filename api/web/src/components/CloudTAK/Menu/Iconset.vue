@@ -14,7 +14,7 @@
 
     <TablerLoading v-if='loading'/>
     <div v-else class="col-lg-12">
-        <CombinedIcons v-if='!loading' :iconset='iconset.uid'/>
+        <CombinedIcons v-if='!loading' :iconset='iconset.uid' :labels='false'/>
     </div>
 </div>
 </template>
