@@ -22,7 +22,10 @@
                 <div @click='$router.push(`/menu/iconset/${icon.iconset}/${encodeURIComponent(icon.name)}`)' :key='icon.name' v-for='icon in list.items' class="col-sm-2">
                     <div class="card card-sm hover-dark cursor-pointer">
                         <div class='col-12'>
-                            <div class='d-flex justify-content-center mt-3'>
+                            <div class='d-flex justify-content-center mt-3' :class='{
+                                "mt-3": labels,
+                                "my-3": !labels
+                            }'>
                                 <img :src='iconurl(icon)' height='32' width='32'>
                             </div>
                         </div>
