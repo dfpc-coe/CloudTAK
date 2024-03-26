@@ -9,7 +9,7 @@
 
     <TablerLoading v-if='loading.icon' desc='Loading Icon'/>
     <div v-else class='mx-4 my-4'>
-        <TablerSchema :schema='schema' v-model='icon'/>
+        <TablerSchema :schema='schema' v-model='editing'/>
 
         <div class='d-flex'>
             <div class='ms-auto'>
@@ -34,14 +34,18 @@ import {
 
 export default {
     name: 'IconEdit',
+    props: {
+        icon: {
+            type: Object
+        }
+    },
     data: function() {
         return {
             loading: {
                 icon: true
             },
             schema: {},
-            icon: {
-            }
+            editing: {}
         }
     },
     mounted: async function() {
@@ -56,7 +60,7 @@ export default {
     methods: {
         fetch: async function() {
             this.loading.icon = true;
-            this.icon = await std(`/api/iconset/${this.$route.params.iconset}/icon/${icon.id}`);
+            this.editing = await std(`/api/iconset/${this.$route.params.iconset}/icon/${icon.id}`);
             this.loading.iconset = false;
         },
         submit: async function() {
@@ -64,7 +68,7 @@ export default {
 
             const iconset = await std(url, {
                 method: this.$route.params.iconset ? 'PATCH' : 'POST',
-                body: this.iconset
+                body: this.editing
             });
 
             this.$router.push(`/menu/iconset/${iconset.uid}`);
