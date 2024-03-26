@@ -4,8 +4,7 @@
     <button type="button" class="btn-close" @click='$emit("close")' aria-label="Close"></button>
 
     <div class='modal-header'>
-        <div v-if='iconset.uid' class='strong d-flex align-items-center'>Iconset <span v-text='iconset.name'/></div>
-        <div v-else class='strong align-items-center'>New Iconset</div>
+        <div class='strong d-flex align-items-center' v-text='iconset.name || "Unnamed"'></div>
     </div>
 
     <TablerLoading v-if='loading.iconset' desc='Loading Iconset'/>
@@ -42,7 +41,7 @@ export default {
             },
             schema: {},
             iconset: {
-
+                scope: 'user'
             }
         }
     },
@@ -69,7 +68,7 @@ export default {
                 body: this.iconset
             });
 
-            this.$router.push(`/iconset/${iconset.uid}`);
+            this.$router.push(`/menu/iconset/${iconset.uid}`);
         },
         fetchSchema: async function() {
             const url = await stdurl(`/api/schema`);
@@ -82,7 +81,7 @@ export default {
                 method: 'DELETE'
             });
 
-            this.$router.push('/iconset');
+            this.$router.push('/menu/iconsets');
         },
     },
     components: {
