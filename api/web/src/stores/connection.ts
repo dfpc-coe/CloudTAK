@@ -4,7 +4,9 @@ import { std, stdurl } from '../std.ts';
 import moment from 'moment';
 import type { Feature } from 'geojson';
 import { useCOTStore } from './cots.ts';
+import { useProfileStore } from './profile.js';
 const cotStore = useCOTStore();
+const profileStore = useProfileStore();
 
 export const useConnectionStore = defineStore('connection', {
     state: (): {
@@ -43,7 +45,11 @@ export const useConnectionStore = defineStore('connection', {
                 if (msg.type === 'cot') {
                     cotStore.add(msg.data);
                 } else if (msg.type === 'chat') {
-                    console.log(msg.data);
+                    profileStore.notifications.push({
+                        type: 'Chat',
+                        name: 'New Chat',
+                        url: `/menu/chats`
+                    });
                 } else {
                     console.log('UNKNOWN', msg.data);
                 }
