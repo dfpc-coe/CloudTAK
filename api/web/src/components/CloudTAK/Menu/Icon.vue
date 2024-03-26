@@ -10,12 +10,12 @@
             </div>
         </div>
     </div>
-    <div class='card-body'>
+    <div class='mx-4'>
         <TablerLoading v-if='loading'/>
         <template v-else>
             <div class='pb-4'>
                 <div class='d-flex justify-content-center mt-3'>
-                    <img :src='iconurl(icon)'>
+                    <img :src='iconurl(icon)' width='64'>
                 </div>
             </div>
             <div class="datagrid">
@@ -45,6 +45,7 @@ import {
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import {
+    IconCircleArrowLeft,
     IconSettings,
     IconDownload
 } from '@tabler/icons-vue';
@@ -84,6 +85,7 @@ export default {
         }
     },
     components: {
+        IconCircleArrowLeft,
         IconSettings,
         IconDownload,
         TablerDelete,
