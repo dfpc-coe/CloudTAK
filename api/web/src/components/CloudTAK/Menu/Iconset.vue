@@ -31,7 +31,7 @@ import {
     IconDownload,
     IconCircleArrowLeft
 } from '@tabler/icons-vue';
-import { useMapStore } from '/src/stores/map.ts';
+import { mapState } from 'pinia';
 import { useProfileStore } from '/src/stores/profile.js';
 
 export default {
@@ -48,7 +48,7 @@ export default {
         await this.fetch();
     },
     computed: {
-        ...mapState(useMapStore, ['profile'])
+        ...mapState(useProfileStore, ['profile'])
     },
     methods: {
         download: async function() {
