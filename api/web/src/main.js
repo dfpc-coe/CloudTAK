@@ -35,6 +35,10 @@ const router = new VueRouter.createRouter({
                     name: 'home-menu-basemaps',
                     component: () => import('./components/CloudTAK/Menu/Basemaps.vue')
                 },{
+                    path: 'iconsets',
+                    name: 'home-menu-iconsets',
+                    component: () => import('./components/CloudTAK/Menu/Iconsets.vue')
+                },{
                     path: 'overlays',
                     name: 'home-menu-overlays',
                     component: () => import('./components/CloudTAK/Menu/Overlays.vue')
@@ -218,14 +222,6 @@ const router = new VueRouter.createRouter({
                 component: () => import('./components/Profile/ProfileTokens.vue')
             }]
         },
-
-        { path: '/iconset', name: 'icons', component: () => import('./components/Iconsets.vue') },
-        { path: '/iconset/new', name: 'iconset-new', component: () => import('./components/IconsetEdit.vue') },
-        { path: '/iconset/:iconset', name: 'iconset', component: () => import('./components/Iconset.vue') },
-        { path: '/iconset/:iconset/edit', name: 'iconset-edit', component: () => import('./components/IconsetEdit.vue') },
-        { path: '/iconset/:iconset/icon', name: 'icon-new', component: () => import('./components/IconEdit.vue') },
-        { path: '/iconset/:iconset/icon/:icon', name: 'icon', component: () => import('./components/Icon.vue') },
-        { path: '/iconset/:iconset/icon/:icon/edit', name: 'icon-edit', component: () => import('./components/IconEdit.vue') },
 
         { path: '/login', name: 'login', component: () => import('./components/Login.vue') },
 
