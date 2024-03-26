@@ -1,5 +1,19 @@
 import TAKAPI from '../tak-api.js';
 import { Readable } from 'node:stream'
+import { Type, Static } from '@sinclair/typebox';
+
+export const MissionLog = Type.Object({
+    id: Type.String(),
+    content: Type.String(),
+    creatorUid: Type.String(),
+    missionNames: Type.Array(Type.String()),
+    servertime: Type.String(),
+    dtg: Type.String(),
+    created: Type.String(),
+    contentHashes: Type.Array(Type.Unknown()),
+    keywords: Type.Array(Type.Unknown())
+});
+
 
 export default class {
     api: TAKAPI;
