@@ -4,7 +4,7 @@
     <button type="button" class="btn-close" @click='$emit("close")' aria-label="Close"></button>
 
     <div class='modal-header'>
-        <div class='strong d-flex align-items-center' v-text='icon.name || "Unnamed"'></div>
+        <div class='strong d-flex align-items-center' v-text='editing.name || "Unnamed"'></div>
     </div>
 
     <TablerLoading v-if='loading.icon' desc='Loading Icon'/>
@@ -36,7 +36,8 @@ export default {
     name: 'IconEdit',
     props: {
         icon: {
-            type: Object
+            type: Object,
+            required: true
         }
     },
     data: function() {
@@ -60,7 +61,7 @@ export default {
     methods: {
         fetch: async function() {
             this.loading.icon = true;
-            this.editing = await std(`/api/iconset/${this.$route.params.iconset}/icon/${icon.id}`);
+            this.editing = await std(`/api/iconset/${this.$route.params.iconset}/icon/${this.icon.id}`);
             this.loading.iconset = false;
         },
         submit: async function() {
