@@ -49,10 +49,14 @@
         >
             <TablerDropdown>
                 <template #default>
-                    <IconBell size='40' class='mx-2 cursor-pointer'/>
+                    <div class='mx-2 cursor-pointer'>
+                        <IconBell size='40'/>
+                        <span v-if='notifications.length' class="badge bg-red mb-2"></span>
+                        <span v-else style='width: 10px;'/>
+                    </div>
                 </template>
                 <template #dropdown>
-                    <TablerNone label='Notifications' :create='false'/>
+                    <TablerNone label='New Notifications' :create='false'/>
                 </template>
             </TablerDropdown>
             <TablerDropdown>
@@ -149,7 +153,7 @@ export default {
     },
     computed: {
         ...mapState(useMapStore, ['bearing', 'radial', 'isLoaded']),
-        ...mapState(useProfileStore, ['profile']),
+        ...mapState(useProfileStore, ['profile', 'notifications']),
         humanBearing: function() {
             if (this.bearing < 0) {
                 return Math.round(this.bearing * -1) + '°'
