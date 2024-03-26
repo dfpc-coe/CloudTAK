@@ -17,7 +17,7 @@
         <CombinedIcons v-if='!loading' :iconset='iconset.uid' :labels='false'/>
     </div>
 
-    <IconEditModal v-if='editModal' @close='editModal = false'/>
+    <IconEditModal v-if='editModal' :icon='editModal' @close='editModal = false'/>
 </div>
 </template>
 
