@@ -4,12 +4,14 @@
         <h3 class='card-title'>Icon Search</h3>
 
         <div class='ms-auto btn-list'>
-            <IconSearch size='32' class='cursor-pointer'/>
+            <IconSearch @click='search = !search' size='32' class='cursor-pointer'/>
         </div>
     </div>
-    <div class="card-header">
-        <TablerInput v-model='paging.filter'/>
+
+    <div v-if='search'class="col-12 px-2">
+        <TablerInput v-model='paging.filter' placeholder='Filter'/>
     </div>
+
     <div class="card-body">
         <TablerLoading v-if='loading' desc='Loading Icons'/>
         <TablerNone
@@ -75,9 +77,10 @@ export default {
         return {
             err: false,
             loading: true,
+            search: false,
             paging: {
                 filter: '',
-                limit: 100,
+                limit: 100 - 4, // keeps the icon in an even grid
                 page: 0
             },
             list: {
@@ -87,6 +90,9 @@ export default {
         }
     },
     watch: {
+        search: function() {
+            if (!this.search) this.paging.filter = '';
+        },
         paging: {
             deep: true,
             handler: async function() {
