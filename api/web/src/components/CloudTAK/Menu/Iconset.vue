@@ -5,9 +5,9 @@
             <IconCircleArrowLeft @click='$router.back()' size='32' class='cursor-pointer'/>
             <div class='modal-title'>Iconsets</div>
             <div class='btn-list'>
-                <IconPlus v-tooltip='"Create Icon"' @click='$router.push(`/iconset/${$route.params.iconset}/icon`)' size='32' class='cursor-pointer'/>
+                <IconPlus v-if='iconset.username || profile.system_admin' v-tooltip='"Create Icon"' @click='$router.push(`/iconset/${$route.params.iconset}/icon`)' size='32' class='cursor-pointer'/>
                 <IconDownload v-tooltip='"Download TAK Zip"' size='32' class='cursor-pointer' @click.stop='download'/>
-                <TablerDelete displaytype='icon' @delete='deleteIconset'/>
+                <TablerDelete v-if='iconset.username || profile.system_admin' displaytype='icon' @delete='deleteIconset'/>
             </div>
         </div>
     </div>
@@ -31,6 +31,9 @@ import {
     IconDownload,
     IconCircleArrowLeft
 } from '@tabler/icons-vue';
+import { useMapStore } from '/src/stores/map.ts';
+import { useProfileStore } from '/src/stores/profile.js';
+const profileStore = useProfileStore();
 
 export default {
     name: 'Iconset',
@@ -44,6 +47,9 @@ export default {
     },
     mounted: async function() {
         await this.fetch();
+    },
+    computed: {
+        ...mapState(useMapStore, ['profile'])
     },
     methods: {
         download: async function() {
