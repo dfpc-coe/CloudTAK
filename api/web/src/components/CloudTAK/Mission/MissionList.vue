@@ -20,12 +20,12 @@
             v-for='(mission, mission_it) in list.data'
             class='cursor-pointer col-12 py-2 hover-dark'
         >
-            <div class='row px-3'>
-                <div class='col-auto d-flex justify-content-center align-items-center'>
+            <div class='px-3 d-flex'>
+                <div class='d-flex justify-content-center align-items-center'>
                     <IconLock v-if='mission.passwordProtected' size='32'/>
                     <IconLockOpen v-else size='32'/>
                 </div>
-                <div class='col-auto row'>
+                <div class='mx-2'>
                     <div class='col-12'>
                         <span v-text='mission.name'/>
                     </div>
