@@ -3,9 +3,9 @@
     <div class='col-12 border-bottom border-light'>
         <div class='modal-header px-0 mx-2'>
             <IconCircleArrowLeft @click='$router.back()' size='32' class='cursor-pointer'/>
-            <div class='modal-title'>BaseMaps</div>
+            <div class='modal-title'>Basemaps</div>
             <div class='btn-list'>
-                <IconPlus @click='editModal = {}' size='32' class='cursor-pointer' v-tooltip='"Create BaseMap"'/>
+                <IconPlus @click='editModal = {}' size='32' class='cursor-pointer' v-tooltip='"Create Basemap"'/>
                 <IconSearch @click='query = !query' v-tooltip='"Search"' size='32' class='cursor-pointer'/>
                 <IconRefresh v-if='!loading' @click='fetchList' size='32' class='cursor-pointer' v-tooltip='"Refresh"'/>
             </div>
@@ -19,7 +19,7 @@
     <TablerLoading v-if='loading'/>
     <TablerNone
         v-else-if='!list.items.length'
-        label='BaseMaps'
+        label='Basemaps'
         @create='$router.push("/basemap/new")'
     />
     <template v-else>

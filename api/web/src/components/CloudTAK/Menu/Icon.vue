@@ -5,8 +5,8 @@
             <IconCircleArrowLeft @click='$router.back()' size='32' class='cursor-pointer'/>
             <div class='modal-title' v-text='icon.name'></div>
             <div class='btn-list'>
-                <TablerDelete displaytype='icon' @delete='deleteIcon'/>
-                <IconSettings @click='$router.push(`/iconset/${$route.params.iconset}/icon/${encodeURIComponent($route.params.icon)}/edit`)' size='32' class='cursor-pointer'/>
+                <TablerDelete v-if='iconset.username || profile.system_admin' displaytype='icon' @delete='deleteIcon'/>
+                <IconSettings v-if='iconset.username || profile.system_admin' @click='$router.push(`/iconset/${$route.params.iconset}/icon/${encodeURIComponent($route.params.icon)}/edit`)' size='32' class='cursor-pointer'/>
             </div>
         </div>
     </div>
@@ -49,19 +49,29 @@ import {
     IconSettings,
     IconDownload
 } from '@tabler/icons-vue';
+import { useMapStore } from '/src/stores/map.ts';
+import { useProfileStore } from '/src/stores/profile.js';
+const profileStore = useProfileStore();
 
 export default {
     name: 'Icon',
     data: function() {
         return {
             loading: true,
+            iconset: {},
             icon: {
                 id: false
             }
         }
     },
     mounted: async function() {
+        this.loading = true;
+        await this.fetchIconset();
         await this.fetch();
+        this.loading = false;
+    },
+    computed: {
+        ...mapState(useMapStore, ['profile'])
     },
     methods: {
         iconurl: function() {
@@ -70,10 +80,12 @@ export default {
             return String(url);
         },
         fetch: async function() {
-            this.loading = true;
             const url = stdurl(`/api/iconset/${this.$route.params.iconset}/icon/${encodeURIComponent(this.$route.params.icon)}`);
             this.icon = await std(url);
-            this.loading = false;
+        },
+        fetchIconset: async function() {
+            const url = stdurl(`/api/iconset/${this.$route.params.iconset}`);
+            this.iconset = await std(url);
         },
         deleteIcon: async function() {
             this.loading = true;
