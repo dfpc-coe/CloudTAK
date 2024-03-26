@@ -28,7 +28,8 @@ import {
 } from '@tak-ps/vue-tabler';
 import {
     IconPlus,
-    IconDownload
+    IconDownload,
+    IconCircleArrowLeft
 } from '@tabler/icons-vue';
 
 export default {
@@ -66,6 +67,7 @@ export default {
     components: {
         IconPlus,
         IconDownload,
+        IconCircleArrowLeft,
         CombinedIcons,
         TablerDelete,
         TablerLoading
