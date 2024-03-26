@@ -47,6 +47,10 @@ const router = new VueRouter.createRouter({
                     name: 'home-menu-iconset-icon',
                     component: () => import('./components/CloudTAK/Menu/Icon.vue')
                 },{
+                    path: 'iconset/:iconset/:icon/edit',
+                    name: 'home-menu-iconset-icon-edit',
+                    component: () => import('./components/CloudTAK/Menu/IconEdit.vue')
+                },{
                     path: 'overlays',
                     name: 'home-menu-overlays',
                     component: () => import('./components/CloudTAK/Menu/Overlays.vue')

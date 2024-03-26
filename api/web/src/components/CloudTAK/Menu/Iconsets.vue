@@ -7,16 +7,11 @@
             <div class='btn-list'>
                 <IconPlus @click='editModal = {}' size='32' class='cursor-pointer' v-tooltip='"Create Iconset"'/>
                 <IconFileUpload v-if='!upload' @click='upload = true' v-tooltip='"Zip Upload"' size='32' class='cursor-pointer'/>
-                <IconSearch @click='query = !query' v-tooltip='"Search"' size='32' class='cursor-pointer'/>
                 <IconRefresh v-if='!loading' @click='fetchList' size='32' class='cursor-pointer' v-tooltip='"Refresh"'/>
             </div>
         </div>
     </div>
-
-    <div v-if='query' class='col-12 px-3'>
-        <TablerInput v-model='paging.filter' placeholder='Filter'/>
-    </div>
-    <template v-else-if='upload'>
+    <template v-if='upload'>
         <div class='mx-4 my-4'>
             <Upload
                 method='PUT'

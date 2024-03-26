@@ -49,9 +49,8 @@ import {
     IconSettings,
     IconDownload
 } from '@tabler/icons-vue';
-import { useMapStore } from '/src/stores/map.ts';
+import { mapState } from 'pinia';
 import { useProfileStore } from '/src/stores/profile.js';
-const profileStore = useProfileStore();
 
 export default {
     name: 'Icon',
@@ -71,7 +70,7 @@ export default {
         this.loading = false;
     },
     computed: {
-        ...mapState(useMapStore, ['profile'])
+        ...mapState(useProfileStore, ['profile'])
     },
     methods: {
         iconurl: function() {
