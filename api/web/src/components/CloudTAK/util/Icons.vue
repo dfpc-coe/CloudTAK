@@ -19,7 +19,7 @@
         />
         <template v-else>
             <div class='row g-1'>
-                <div @click='$router.push(`/iconset/${icon.iconset}/icon/${encodeURIComponent(icon.name)}`)' :key='icon.name' v-for='icon in list.items' class="col-sm-2">
+                <div @click='$router.push(`/menu/iconset/${icon.iconset}/${encodeURIComponent(icon.name)}`)' :key='icon.name' v-for='icon in list.items' class="col-sm-2">
                     <div class="card card-sm hover-dark cursor-pointer">
                         <div class='col-12'>
                             <div class='d-flex justify-content-center mt-3'>
