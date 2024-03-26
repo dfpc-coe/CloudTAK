@@ -36,7 +36,7 @@
             <thead><tr>
                 <th>Name</th>
             </tr></thead>
-            <tbody><tr @click='$router.push(`/iconset/${iconset.uid}`)' :key='iconset.uid' v-for='iconset in list.items'>
+            <tbody><tr @click='$router.push(`/menu/iconset/${iconset.uid}`)' :key='iconset.uid' v-for='iconset in list.items'>
                 <td>
                     <div class='d-flex align-items-center'>
                         <span v-text='iconset.name'/>
@@ -50,7 +50,7 @@
     </div>
 
     <div class="col-lg-12">
-        <IconCombineds v-if='list.items.length'/>
+        <IconCombineds v-if='list.items.length' :labels='false'/>
     </div>
 </div>
 </template>
@@ -94,7 +94,7 @@ export default {
         },
         processUpload: function(body) {
             body = JSON.parse(body);
-            this.$router.push(`/import/${body.imports[0].uid}`);
+            this.$router.push(`/menu/import/${body.imports[0].uid}`);
         },
         uploadHeaders: function() {
             return {
