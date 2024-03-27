@@ -4,7 +4,6 @@
         <div class='modal-header px-0 mx-2'>
             <IconCircleArrowLeft @click='$router.back()' size='32' class='cursor-pointer'/>
             <div class='modal-title' v-text='contact.properties.callsign'></div>
-            <div/>
         </div>
     </div>
     <div class='px-2 py-2'>
