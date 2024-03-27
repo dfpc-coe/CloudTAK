@@ -136,10 +136,9 @@
 </template>
 
 <script>
-import { std, stdurl } from '/src/std.ts';
+import { std } from '/src/std.ts';
 import Upload from '../util/UploadP12.vue';
 import {
-    TablerBreadCrumb,
     TablerLoading,
     TablerInput
 } from '@tak-ps/vue-tabler';
@@ -151,7 +150,7 @@ import {
 import timeDiff from '../../timediff.js';
 
 export default {
-    name: 'Admin',
+    name: 'AdminServer',
     data: function() {
         return {
             edit: false,
@@ -177,7 +176,6 @@ export default {
                 updated: null,
                 provider_url: '',
                 provider_id: '',
-                provider_url: '',
                 provider_secret: '',
                 name: '',
                 url: '',
@@ -263,7 +261,6 @@ export default {
     },
     components: {
         IconSettings,
-        TablerBreadCrumb,
         TablerLoading,
         TablerInput,
         IconLock,

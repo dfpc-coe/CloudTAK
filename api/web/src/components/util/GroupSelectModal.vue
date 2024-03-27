@@ -25,7 +25,6 @@
 import { std, stdurl } from '/src/std.ts';
 import {
     TablerModal,
-    TablerInput,
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import {
@@ -48,7 +47,9 @@ export default {
         },
         modelValue: {
             type: Array,
-            default: []
+            default: function() {
+                return []
+            }
         }
     },
     data: function() {
@@ -106,7 +107,6 @@ export default {
         IconCircle,
         IconCircleFilled,
         TablerModal,
-        TablerInput,
         TablerLoading
     }
 }

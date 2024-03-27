@@ -77,7 +77,7 @@ import { mapState } from 'pinia'
 const profileStore = useProfileStore();
 
 export default {
-    name: 'Admin',
+    name: 'ServerAdmin',
     computed: {
         ...mapState(useProfileStore, ['profile']),
     },

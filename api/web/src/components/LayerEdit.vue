@@ -229,7 +229,7 @@ export default {
             let layer;
 
             try {
-                let url, method;
+                let url;
                 if (this.$route.params.layerid) {
                     url = stdurl(`/api/layer/${this.$route.params.layerid}`);
                     layer = await std(url, {

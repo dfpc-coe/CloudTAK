@@ -22,7 +22,7 @@ import {
 } from '@tabler/icons-vue'
 
 export default {
-    name: 'Alert',
+    name: 'TablerAlert',
     props: {
         title: {
             type: String,
