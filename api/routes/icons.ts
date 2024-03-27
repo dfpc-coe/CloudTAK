@@ -170,7 +170,7 @@ export default async function router(schema: Schema, config: Config) {
         try {
             const user = await Auth.as_user(config, req, { token: true });
 
-            const iconset = await config.models.Iconset.from(String(req.params.iconset));
+            const iconset = await config.models.Iconset.from(req.params.iconset);
 
             if (iconset.username && iconset.username !== user.email && user.access === AuthUserAccess.USER) {
                 throw new Err(400, null, 'You don\'t have permission to access this resource');
@@ -247,7 +247,7 @@ export default async function router(schema: Schema, config: Config) {
         try {
             const user = await Auth.as_user(config, req);
 
-            const iconset = await config.models.Iconset.from(String(req.params.iconset));
+            const iconset = await config.models.Iconset.from(req.params.iconset);
 
             if (iconset.username && iconset.username !== user.email && user.access === AuthUserAccess.USER) {
                 throw new Err(400, null, 'You don\'t have permission to access this resource');
@@ -285,7 +285,7 @@ export default async function router(schema: Schema, config: Config) {
         try {
             const user = await Auth.as_user(config, req);
 
-            const iconset = await config.models.Iconset.from(String(req.params.iconset));
+            const iconset = await config.models.Iconset.from(req.params.iconset);
 
             if (iconset.username && iconset.username !== user.email && user.access === AuthUserAccess.USER) {
                 throw new Err(400, null, 'You don\'t have permission to access this resource');
@@ -367,7 +367,7 @@ export default async function router(schema: Schema, config: Config) {
         try {
             const user = await Auth.as_user(config, req);
 
-            const iconset = await config.models.Iconset.from(String(req.params.iconset));
+            const iconset = await config.models.Iconset.from(req.params.iconset);
             if (iconset.username && iconset.username !== user.email && user.access === AuthUserAccess.USER) {
                 throw new Err(400, null, 'You don\'t have permission to access this resource');
             }
@@ -397,7 +397,7 @@ export default async function router(schema: Schema, config: Config) {
         try {
             const user = await Auth.as_user(config, req);
 
-            const iconset = await config.models.Iconset.from(String(req.params.iconset));
+            const iconset = await config.models.Iconset.from(req.params.iconset);
 
             if (iconset.username && iconset.username !== user.email && user.access === AuthUserAccess.USER) {
                 throw new Err(400, null, 'You don\'t have permission to access this resource');
@@ -434,7 +434,7 @@ export default async function router(schema: Schema, config: Config) {
         try {
             const user = await Auth.as_user(config, req);
 
-            const iconset = await config.models.Iconset.from(String(req.params.iconset));
+            const iconset = await config.models.Iconset.from(req.params.iconset);
 
             if (iconset.username && iconset.username !== user.email && user.access === AuthUserAccess.USER) {
                 throw new Err(400, null, 'You don\'t have permission to access this resource');
@@ -467,7 +467,7 @@ export default async function router(schema: Schema, config: Config) {
         try {
             const user = await Auth.as_user(config, req, { token: true });
 
-            const iconset = await config.models.Iconset.from(String(req.params.iconset));
+            const iconset = await config.models.Iconset.from(req.params.iconset);
             if (iconset.username && iconset.username !== user.email && user.access === AuthUserAccess.USER) {
                 throw new Err(400, null, 'You don\'t have permission to access this resource');
             }
@@ -494,8 +494,8 @@ export default async function router(schema: Schema, config: Config) {
         try {
             const user = await Auth.as_user(config, req, { token: true });
 
-            if (req.query.iconset) {
-                const iconset = await config.models.Iconset.from(String(req.query.iconset));
+            if (req.query.iconset && req.query.iconset !== 'default') {
+                const iconset = await config.models.Iconset.from(req.query.iconset);
                 if (iconset.username && iconset.username !== user.email && user.access === AuthUserAccess.USER) {
                     throw new Err(400, null, 'You don\'t have permission to access this resource');
                 }
@@ -541,8 +541,8 @@ export default async function router(schema: Schema, config: Config) {
         try {
             const user = await Auth.as_user(config, req, { token: true });
 
-            if (req.query.iconset) {
-                const iconset = await config.models.Iconset.from(String(req.query.iconset));
+            if (req.query.iconset && req.query.iconset !== 'default') {
+                const iconset = await config.models.Iconset.from(req.query.iconset);
                 if (iconset.username && iconset.username !== user.email && user.access === AuthUserAccess.USER) {
                     throw new Err(400, null, 'You don\'t have permission to access this resource');
                 }
