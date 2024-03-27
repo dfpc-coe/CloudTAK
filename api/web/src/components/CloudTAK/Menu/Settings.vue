@@ -32,7 +32,6 @@
             <div class='modal-header px-0 mx-2'>
                 <IconCircleArrowLeft @click='mode = "settings"' size='32' class='cursor-pointer'/>
                 <div class='modal-title'>Display Preferences</div>
-                </div>
             </div>
         </div>
         <div class='col-12 px-2 py-2'>
