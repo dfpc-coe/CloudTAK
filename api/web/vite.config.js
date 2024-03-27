@@ -1,9 +1,9 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 
-export default defineConfig({
+export default defineConfig((configEnv) => ({
     plugins: [
-        vue()
+        vue(),
     ],
     optimizeDeps: {
         include: ["showdown", "@tak-ps/vue-tabler"],
@@ -11,5 +11,5 @@ export default defineConfig({
     server: {
         port: 8080,
     }
-})
+}))
 
