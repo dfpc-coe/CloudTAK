@@ -289,7 +289,7 @@ export default async function router(schema: Schema, config: Config) {
 
             if (iconset.username && iconset.username !== user.email && user.access === AuthUserAccess.USER) {
                 throw new Err(400, null, 'You don\'t have permission to access this resource');
-            } else if(!iconset.username && user.access === AuthUserAccess.ADMIN) {
+            } else if(!iconset.username && user.access !== AuthUserAccess.ADMIN) {
                 throw new Err(400, null, 'Only Server Admins can create Server scoped icons');
             }
 
