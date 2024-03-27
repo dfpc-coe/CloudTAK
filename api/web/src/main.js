@@ -92,7 +92,7 @@ const router = new VueRouter.createRouter({
             children: [{
                 path: '',
                 name: 'layer-default',
-                redirect: to => {
+                redirect: () => {
                     return { name: 'layer-deployment' };
                 }
             },{
@@ -132,7 +132,7 @@ const router = new VueRouter.createRouter({
             children: [{
                 path: '',
                 name: 'data-default',
-                redirect: to => {
+                redirect: () => {
                     return { name: 'data-files' };
                 }
             },{
@@ -170,7 +170,7 @@ const router = new VueRouter.createRouter({
             children: [{
                 path: '',
                 name: 'connection-default',
-                redirect: to => {
+                redirect: () => {
                     return { name: 'connection-layer' };
                 }
             },{
@@ -209,7 +209,7 @@ const router = new VueRouter.createRouter({
             children: [{
                 path: '',
                 name: 'profile-default',
-                redirect: to => {
+                redirect: () => {
                     return { name: 'profile-groups' };
                 }
             },{
@@ -244,7 +244,7 @@ const router = new VueRouter.createRouter({
             children: [{
                 path: '',
                 name: 'admin-default',
-                redirect: to => {
+                redirect: () => {
                     return { name: 'admin-server' };
                 }
             },{

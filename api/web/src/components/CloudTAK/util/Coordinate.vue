@@ -206,7 +206,7 @@ export default {
             const af = ['ABCDEFGH','JKLMNPQR','STUVWXYZ'][(c-1)%3].charAt (ae-1);
             const ag = Math.floor (ab/100000)%20;
             const ah = ['ABCDEFGHJKLMNPQRSTUV','FGHJKLMNPQRSTUVABCDE'][(c-1)%2].charAt (ag);
-            function pad (val) {if (val < 10) {val = '0000' + val} else if (val < 100) {val = '000' + val} else if (val < 1000) {val = '00' + val} else if (val < 10000) {val = '0' + val};return val};
+            function pad (val) {if (val < 10) {val = '0000' + val} else if (val < 100) {val = '000' + val} else if (val < 1000) {val = '00' + val} else if (val < 10000) {val = '0' + val}return val}
             aa = Math.floor (aa%100000); aa = pad (aa);
             ab = Math.floor (ab%100000); ab = pad (ab);
             return c + ad + ' ' + af + ah + ' ' + aa + ' ' + ab;
