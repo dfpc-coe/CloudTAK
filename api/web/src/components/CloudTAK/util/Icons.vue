@@ -8,7 +8,7 @@
         </div>
     </div>
 
-    <div v-if='search'class="col-12 px-2">
+    <div v-if='search' class="col-12 px-2">
         <TablerInput v-model='paging.filter' placeholder='Filter'/>
     </div>
 

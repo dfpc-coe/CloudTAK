@@ -63,19 +63,17 @@ import IconCombineds from '../util/Icons.vue'
 import IconsetEditModal from './Iconset/EditModal.vue';
 import {
     TablerNone,
-    TablerLoading
 } from '@tak-ps/vue-tabler';
 import {
     IconCircleArrowLeft,
     IconRefresh,
-    IconSearch,
     IconDownload,
     IconFileUpload,
     IconPlus
 } from '@tabler/icons-vue'
 
 export default {
-    name: 'Iconsets',
+    name: 'CloudTAKIconsets',
     data: function() {
         return {
             err: false,
@@ -126,8 +124,6 @@ export default {
         IconFileUpload,
         IconCombineds,
         TablerNone,
-        IconSearch,
-        TablerLoading,
         IconRefresh,
     }
 }

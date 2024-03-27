@@ -40,7 +40,7 @@ import { mapState } from 'pinia';
 import { useProfileStore } from '/src/stores/profile.js';
 
 export default {
-    name: 'Iconset',
+    name: 'CloudTAKIconset',
     data: function() {
         return {
             loading: true,

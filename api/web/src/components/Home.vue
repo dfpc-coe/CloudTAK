@@ -6,7 +6,7 @@
 import CloudTAK from './CloudTAK/Map.vue';
 
 export default {
-    name: 'Home',
+    name: 'CloudTAKHome',
     props: {
         user: {
             type: Object,

@@ -49,11 +49,12 @@ RadialMenu.prototype.open = function () {
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-RadialMenu.prototype.close = function (closeEvent = true) {
+RadialMenu.prototype.close = function () {
     var self = this;
 
     if (self.currentMenu) {
         var parentMenu;
+        // eslint-disable-next-line no-cond-assign
         while (parentMenu = self.parentMenu.pop()) {
             parentMenu.remove();
         }
@@ -169,7 +170,7 @@ RadialMenu.prototype.getIndexOffset = function () {
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-RadialMenu.prototype.createMenu = function (classValue, levelItems, nested) {
+RadialMenu.prototype.createMenu = function (classValue, levelItems) {
     var self = this;
 
     self.levelItems = levelItems;
@@ -416,7 +417,6 @@ RadialMenu.prototype.createSectorCmds = function (startAngleDeg, endAngleDeg) {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 RadialMenu.prototype.createText = function (x, y, title) {
-    var self = this;
     var text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
     text.setAttribute('text-anchor', 'middle');
     text.setAttribute('x', RadialMenu.numberToString(x));

@@ -62,7 +62,7 @@
 </template>
 
 <script>
-import { std, stdurl } from '/src/std.ts';
+import { std } from '/src/std.ts';
 import {
     IconUserCog,
     IconAdjustments,
@@ -77,7 +77,7 @@ import { useProfileStore } from '/src/stores/profile.js';
 const profileStore = useProfileStore();
 
 export default {
-    name: 'Settings',
+    name: 'CloudTAKSettings',
     data: function() {
         return {
             loading: false,

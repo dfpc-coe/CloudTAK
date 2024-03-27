@@ -136,12 +136,9 @@
 </template>
 
 <script>
-import { std, stdurl } from '/src/std.ts';
+import { std } from '/src/std.ts';
 import PageFooter from './PageFooter.vue';
 import EsriPortal from './util/EsriPortal.vue';
-import {
-    IconPlus,
-} from '@tabler/icons-vue';
 import {
     TablerBreadCrumb,
     TablerEnum,
@@ -199,7 +196,7 @@ export default {
             }
 
             if (this.$route.params.sinkid) {
-                const create = await std(`/api/connection/${this.$route.params.connectionid}/sink/${this.$route.params.sinkid}`, {
+                await std(`/api/connection/${this.$route.params.connectionid}/sink/${this.$route.params.sinkid}`, {
                     method: 'PATCH',
                     body: this.sink
                 });
@@ -220,7 +217,6 @@ export default {
         }
     },
     components: {
-        IconPlus,
         TablerDelete,
         TablerBreadCrumb,
         TablerEnum,

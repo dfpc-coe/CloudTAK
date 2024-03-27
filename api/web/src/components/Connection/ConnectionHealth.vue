@@ -1,6 +1,8 @@
 <template>
-<Chart :connection='connection'/>
-<Events/>
+<div>
+    <Chart :connection='connection'/>
+    <Events/>
+</div>
 </template>
 
 <script>

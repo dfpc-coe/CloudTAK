@@ -59,7 +59,7 @@ import {
 } from '@tabler/icons-vue';
 
 export default {
-    name: 'Import',
+    name: 'CloudTAKImport',
     data: function() {
         return {
             loading: {

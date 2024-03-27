@@ -36,7 +36,7 @@ import { useCOTStore } from '/src/stores/cots.ts';
 const cotStore = useCOTStore();
 
 export default {
-    name: 'Chat',
+    name: 'CloudTAKChat',
     data: function() {
         if (!cotStore.cots.get(this.$route.params.uid)) this.$router.push("/menu/chats");
 
@@ -51,8 +51,6 @@ export default {
     },
     methods: {
         sendMessage: async function() {
-            const message = this.message;
-            this.message = '';
         },
         fetchChats: async function() {
             this.loading = true;

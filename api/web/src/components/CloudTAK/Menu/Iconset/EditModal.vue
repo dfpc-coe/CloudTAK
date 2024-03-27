@@ -25,12 +25,8 @@ import { std, stdurl } from '/src/std.ts';
 import {
     TablerModal,
     TablerLoading,
-    TablerDelete,
     TablerSchema
 } from '@tak-ps/vue-tabler';
-import {
-    IconSettings,
-} from '@tabler/icons-vue';
 
 export default {
     name: 'IconsetEdit',
@@ -86,10 +82,8 @@ export default {
     },
     components: {
         TablerModal,
-        TablerDelete,
         TablerLoading,
         TablerSchema,
-        IconSettings,
     }
 }
 </script>

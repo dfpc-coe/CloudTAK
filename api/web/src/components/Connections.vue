@@ -97,7 +97,7 @@ import {
 } from '@tabler/icons-vue'
 
 export default {
-    name: 'Connections',
+    name: 'TAKConnections',
     data: function() {
         return {
             err: false,

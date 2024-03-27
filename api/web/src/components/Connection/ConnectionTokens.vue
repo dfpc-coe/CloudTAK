@@ -21,7 +21,7 @@
                 </tr>
             </thead>
             <tbody>
-                <tr @click='token = t' :key='t.id' v-for='(t, tokenit) in tokens.items'>
+                <tr @click='token = t' :key='t.id' v-for='t in tokens.items'>
                     <td v-text='t.name'/>
                     <td><TablerEpoch :date='t.created'/></td>
                     <td><TablerEpoch :date='t.updated'/></td>
@@ -40,18 +40,15 @@
 </template>
 
 <script>
-import { std, stdurl } from '/src/std.ts';
+import { std } from '/src/std.ts';
 import TokenModal from './TokenModal.vue';
 import {
     IconPlus,
     IconRefresh,
-    IconCheck,
-    IconTrash
 } from '@tabler/icons-vue';
 import {
     TablerEpoch,
     TablerLoading,
-    TablerInput,
     TablerNone,
 } from '@tak-ps/vue-tabler';
 
@@ -83,11 +80,8 @@ export default {
         TablerNone,
         IconPlus,
         IconRefresh,
-        IconCheck,
-        IconTrash,
         TablerEpoch,
         TablerLoading,
-        TablerInput
     }
 }
 </script>

@@ -68,7 +68,7 @@
 </template>
 
 <script>
-import { std, stdurl } from '/src/std.ts';
+import { std } from '/src/std.ts';
 import {
     TablerLoading,
     TablerDelete,
