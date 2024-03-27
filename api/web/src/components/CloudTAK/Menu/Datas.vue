@@ -4,7 +4,6 @@
         <div class='modal-header px-0 mx-2'>
             <IconCircleArrowLeft @click='$router.back()' size='32' class='cursor-pointer'/>
             <div class='modal-title'>Data Explorer</div>
-            <div/>
         </div>
     </div>
 

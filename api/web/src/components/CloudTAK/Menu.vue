@@ -11,9 +11,7 @@
         <template v-else>
             <div class='col-12 border-bottom border-light'>
                 <div class='modal-header px-0 mx-2 align-center'>
-                    <div/>
                     <div class='modal-title'>Sidebar</div>
-                    <div/>
                 </div>
             </div>
             <div @click='$router.push("/menu/settings")' class='cursor-pointer col-12 py-2 px-3 d-flex align-items-center hover-dark'>
