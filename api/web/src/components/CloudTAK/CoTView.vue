@@ -7,7 +7,7 @@
         <div class='col-12 card-header row mx-1 my-2 d-flex'>
             <div class='card-title d-flex'>
                 <span
-                    v-if='feat.properties.status && feat.properties.status.battery'
+                    v-if='feat.properties.status && !isNaN(parseInt(feat.properties.status.battery))'
                     class='d-flex'
                     style='margin-right: 10px;'
                     v-tooltip='feat.properties.status.battery + "% Battery"'
