@@ -64,20 +64,13 @@ export default {
                 body: this.iconset
             });
 
-            this.$router.push(`/menu/iconset/${iconset.uid}`);
+            this.$emit('close');
         },
         fetchSchema: async function() {
             const url = await stdurl(`/api/schema`);
             url.searchParams.append('method', this.$route.params.iconset ? 'PATCH' : 'POST');
             url.searchParams.append('url', this.$route.params.iconset ? '/iconset/:iconset' : '/iconset');
             this.schema = (await std(url)).body;
-        },
-        Icondeleteset: async function() {
-            await std(`/api/iconset/${this.$route.params.iconset}`, {
-                method: 'DELETE'
-            });
-
-            this.$router.push('/menu/iconsets');
         },
     },
     components: {

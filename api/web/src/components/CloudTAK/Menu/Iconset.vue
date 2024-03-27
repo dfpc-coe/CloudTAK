@@ -5,8 +5,8 @@
             <IconCircleArrowLeft @click='$router.back()' size='32' class='cursor-pointer'/>
             <div class='modal-title'>Iconsets</div>
             <div class='btn-list'>
-                <IconPlus v-if='iconset.username || profile.system_admin' v-tooltip='"Create Icon"' @click='editModal = {}' size='32' class='cursor-pointer'/>
-                <IconSettings v-if='iconset.username || profile.system_admin' class='cursor-pointer' size='32'/>
+                <IconPlus v-if='iconset.username || profile.system_admin' v-tooltip='"Create Icon"' @click='editIconModal = {}' size='32' class='cursor-pointer'/>
+                <IconSettings v-if='iconset.username || profile.system_admin' @click='editIconsetModal = iconset' class='cursor-pointer' size='32'/>
                 <IconDownload v-tooltip='"Download TAK Zip"' size='32' class='cursor-pointer' @click.stop='download'/>
                 <TablerDelete v-if='iconset.username || profile.system_admin' displaytype='icon' @delete='deleteIconset'/>
             </div>
@@ -18,7 +18,8 @@
         <CombinedIcons v-if='!loading' :iconset='iconset.uid' :labels='false'/>
     </div>
 
-    <IconEditModal v-if='editModal' :icon='editModal' @close='refresh'/>
+    <IconsetEditModal v-if='editIconsetModal' :icon='editIconsetModal' @close='refresh'/>
+    <IconEditModal v-if='editIconModal' :icon='editIconModal' @close='refresh'/>
 </div>
 </template>
 
@@ -36,6 +37,7 @@ import {
     IconCircleArrowLeft
 } from '@tabler/icons-vue';
 import IconEditModal from './Icon/EditModal.vue';
+import IconsetEditModal from './Iconset/EditModal.vue';
 import { mapState } from 'pinia';
 import { useProfileStore } from '/src/stores/profile.js';
 
@@ -44,7 +46,8 @@ export default {
     data: function() {
         return {
             loading: true,
-            editModal: false,
+            editIconsetModal: false,
+            editIconModal: false,
             iconset: {
                 uid: ''
             }
@@ -59,7 +62,8 @@ export default {
     methods: {
         refresh: async function() {
             this.loading = true;
-            this.editModal = false;
+            this.editIconModal = false;
+            this.editIconsetModal = false;
             await this.fetch();
             this.loading = false;
         },
@@ -87,6 +91,7 @@ export default {
         IconDownload,
         IconCircleArrowLeft,
         IconEditModal,
+        IconsetEditModal,
         CombinedIcons,
         TablerDelete,
         TablerLoading
