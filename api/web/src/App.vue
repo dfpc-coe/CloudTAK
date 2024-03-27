@@ -89,15 +89,11 @@ import UploadImport from './components/util/UploadImport.vue'
 import LoginModal from './components/util/LoginModal.vue'
 import {
     IconCode,
-    IconHome,
     IconLogout,
     IconUser,
-    IconFileImport,
-    IconPhoto,
     IconNetwork,
     IconSettings,
     IconBuildingBroadcastTower,
-    IconAdjustments,
 } from '@tabler/icons-vue';
 import {
     TablerModal,
@@ -130,8 +126,6 @@ export default {
         }
     },
     mounted: async function() {
-        const url = stdurl('/api');
-
         if (localStorage.token) {
             await this.getLogin();
             await this.getServer();
@@ -186,19 +180,15 @@ export default {
     components: {
         LoginModal,
         UploadImport,
-        IconHome,
         IconCode,
         IconSettings,
         IconLogout,
         IconUser,
         IconNetwork,
-        IconFileImport,
         TablerError,
         TablerModal,
         TablerLoading,
         IconBuildingBroadcastTower,
-        IconAdjustments,
-        IconPhoto,
     }
 }
 </script>
