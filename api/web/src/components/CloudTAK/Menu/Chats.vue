@@ -34,7 +34,7 @@ import {
 } from '@tabler/icons-vue';
 
 export default {
-    name: 'Chats',
+    name: 'CloudTAKChats',
     data: function() {
         return {
             err: false,

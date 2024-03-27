@@ -35,6 +35,22 @@ const router = new VueRouter.createRouter({
                     name: 'home-menu-basemaps',
                     component: () => import('./components/CloudTAK/Menu/Basemaps.vue')
                 },{
+                    path: 'iconsets',
+                    name: 'home-menu-iconsets',
+                    component: () => import('./components/CloudTAK/Menu/Iconsets.vue')
+                },{
+                    path: 'iconset/:iconset',
+                    name: 'home-menu-iconset',
+                    component: () => import('./components/CloudTAK/Menu/Iconset.vue')
+                },{
+                    path: 'iconset/:iconset/:icon',
+                    name: 'home-menu-iconset-icon',
+                    component: () => import('./components/CloudTAK/Menu/Icon.vue')
+                },{
+                    path: 'iconset/:iconset/:icon/edit',
+                    name: 'home-menu-iconset-icon-edit',
+                    component: () => import('./components/CloudTAK/Menu/IconEdit.vue')
+                },{
                     path: 'overlays',
                     name: 'home-menu-overlays',
                     component: () => import('./components/CloudTAK/Menu/Overlays.vue')
@@ -76,7 +92,7 @@ const router = new VueRouter.createRouter({
             children: [{
                 path: '',
                 name: 'layer-default',
-                redirect: to => {
+                redirect: () => {
                     return { name: 'layer-deployment' };
                 }
             },{
@@ -116,7 +132,7 @@ const router = new VueRouter.createRouter({
             children: [{
                 path: '',
                 name: 'data-default',
-                redirect: to => {
+                redirect: () => {
                     return { name: 'data-files' };
                 }
             },{
@@ -154,7 +170,7 @@ const router = new VueRouter.createRouter({
             children: [{
                 path: '',
                 name: 'connection-default',
-                redirect: to => {
+                redirect: () => {
                     return { name: 'connection-layer' };
                 }
             },{
@@ -193,7 +209,7 @@ const router = new VueRouter.createRouter({
             children: [{
                 path: '',
                 name: 'profile-default',
-                redirect: to => {
+                redirect: () => {
                     return { name: 'profile-groups' };
                 }
             },{
@@ -219,14 +235,6 @@ const router = new VueRouter.createRouter({
             }]
         },
 
-        { path: '/iconset', name: 'icons', component: () => import('./components/Iconsets.vue') },
-        { path: '/iconset/new', name: 'iconset-new', component: () => import('./components/IconsetEdit.vue') },
-        { path: '/iconset/:iconset', name: 'iconset', component: () => import('./components/Iconset.vue') },
-        { path: '/iconset/:iconset/edit', name: 'iconset-edit', component: () => import('./components/IconsetEdit.vue') },
-        { path: '/iconset/:iconset/icon', name: 'icon-new', component: () => import('./components/IconEdit.vue') },
-        { path: '/iconset/:iconset/icon/:icon', name: 'icon', component: () => import('./components/Icon.vue') },
-        { path: '/iconset/:iconset/icon/:icon/edit', name: 'icon-edit', component: () => import('./components/IconEdit.vue') },
-
         { path: '/login', name: 'login', component: () => import('./components/Login.vue') },
 
         {
@@ -236,7 +244,7 @@ const router = new VueRouter.createRouter({
             children: [{
                 path: '',
                 name: 'admin-default',
-                redirect: to => {
+                redirect: () => {
                     return { name: 'admin-server' };
                 }
             },{

@@ -11,9 +11,9 @@
         <template v-else>
             <div class='col-12 border-bottom border-light'>
                 <div class='modal-header px-0 mx-2 align-center'>
-                    <div/>
+                    <div class='modal-title'></div>
                     <div class='modal-title'>Sidebar</div>
-                    <div/>
+                    <div class='modal-title'></div>
                 </div>
             </div>
             <div @click='$router.push("/menu/settings")' class='cursor-pointer col-12 py-2 px-3 d-flex align-items-center hover-dark'>
@@ -48,7 +48,7 @@
                 <IconFileImport size='32'/>
                 <span class='mx-2' style='font-size: 18px;'>Imports</span>
             </div>
-            <div @click='$router.push("/iconset")' class='cursor-pointer col-12 py-2 px-3 d-flex align-items-center hover-dark'>
+            <div @click='$router.push("/menu/iconsets")' class='cursor-pointer col-12 py-2 px-3 d-flex align-items-center hover-dark'>
                 <IconPhoto size='32'/>
                 <span class="mx-2" style='font-size: 18px;'>Iconsets</span>
             </div>
@@ -100,19 +100,8 @@ import {
     IconFileImport,
     IconAffiliate,
 } from '@tabler/icons-vue';
-import MenuImports from './Menu/Imports.vue';
-import MenuBasemaps from './Menu/Basemaps.vue';
-import MenuOverlays from './Menu/Overlays.vue';
-import MenuDatas from './Menu/Datas.vue';
-import MenuChats from './Menu/Chats.vue';
-import MenuChat from './Menu/Chat.vue';
-import MenuContacts from './Menu/Contacts.vue';
-import MenuSettings from './Menu/Settings.vue';
-import MenuMissions from './Menu/Missions.vue';
-import MenuChannels from './Menu/Channels.vue';
 import { mapState } from 'pinia'
 import { useProfileStore } from '/src/stores/profile.js';
-const profileStore = useProfileStore();
 
 export default {
     name: 'CloudTAKMenu',
@@ -128,16 +117,6 @@ export default {
     },
     components: {
         IconBoxMultiple,
-        MenuBasemaps,
-        MenuSettings,
-        MenuOverlays,
-        MenuContacts,
-        MenuChannels,
-        MenuMissions,
-        MenuImports,
-        MenuChats,
-        MenuChat,
-        MenuDatas,
         IconPhoto,
         IconMessage,
         IconNetwork,

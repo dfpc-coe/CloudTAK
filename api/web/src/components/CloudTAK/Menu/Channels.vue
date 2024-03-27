@@ -50,7 +50,7 @@ import {
 } from '@tabler/icons-vue';
 
 export default {
-    name: 'Channels',
+    name: 'CloudTAKChannels',
     data: function() {
         return {
             err: false,

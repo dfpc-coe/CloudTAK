@@ -105,7 +105,7 @@
 </template>
 
 <script>
-import { std, stdurl } from '/src/std.ts';
+import { std } from '/src/std.ts';
 import PageFooter from './PageFooter.vue';
 import ConnectionStatus from './Connection/Status.vue';
 import timeDiff from '../timediff.js';
@@ -126,7 +126,7 @@ import {
 } from '@tak-ps/vue-tabler';
 
 export default {
-    name: 'Connection',
+    name: 'TAKConnection',
     data: function() {
         return {
             loading: {

@@ -20,7 +20,7 @@ import {
 } from '@tabler/icons-vue'
 
 export default {
-    name: 'Asset',
+    name: 'GenericAsset',
     props: {
         asset_id: {
             type: Number,

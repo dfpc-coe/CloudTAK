@@ -117,8 +117,7 @@
 </template>
 
 <script>
-import { std, stdurl } from '/src/std.ts';
-import jsonata from 'jsonata';
+import { std } from '/src/std.ts';
 import {
     IconX,
     IconAbc,
@@ -132,7 +131,6 @@ import {
 import {
     TablerInput,
     TablerNone,
-    TablerToggle,
     TablerLoading,
 } from '@tak-ps/vue-tabler';
 import StyleSingle from './utils/StyleSingle.vue';
@@ -245,7 +243,6 @@ export default {
         IconHelp,
         StyleSingle,
         TablerInput,
-        TablerToggle,
         IconTrash,
         TablerLoading,
         TablerNone,

@@ -1,7 +1,7 @@
 import sharp from 'sharp';
 import { Type } from '@sinclair/typebox'
 import Schema from '@openaddresses/batch-schema';
-import Auth from '../lib/auth.js';
+import Auth, { AuthUserAccess, ResourceCreationScope } from '../lib/auth.js';
 import path from 'node:path';
 import fs from 'node:fs/promises';
 import Err from '@openaddresses/batch-error';
@@ -40,6 +40,7 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Icons',
         description: 'List Iconsets',
         query: Type.Object({
+            scope: Type.Optional(Type.Enum(ResourceCreationScope)),
             limit: Type.Optional(Type.Integer({ default: 25 })),
             page: Type.Optional(Type.Integer()),
             order: Type.Optional(Type.Enum(GenericListOrder)),
@@ -52,7 +53,11 @@ export default async function router(schema: Schema, config: Config) {
         })
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req);
+            const user = await Auth.as_user(config, req);
+
+            let scope = sql`True`;
+            if (req.query.scope === ResourceCreationScope.SERVER) scope = sql`username IS NULL`;
+            else if (req.query.scope === ResourceCreationScope.USER) scope = sql`username IS NOT NULL`;
 
             const list = await config.models.Iconset.list({
                 limit: req.query.limit,
@@ -61,6 +66,8 @@ export default async function router(schema: Schema, config: Config) {
                 sort: req.query.sort,
                 where: sql`
                     name ~* ${req.query.filter}
+                    AND (username IS NULL OR username = ${user.email})
+                    AND ${scope}
                 `
             });
 
@@ -78,6 +85,7 @@ export default async function router(schema: Schema, config: Config) {
             uid: Type.String(),
             version: Type.Integer(),
             name: Type.String(),
+            scope: Type.Optional(Type.Enum(ResourceCreationScope)),
             default_group: Type.Optional(Type.String()),
             default_friendly: Type.Optional(Type.String()),
             default_hostile: Type.Optional(Type.String()),
@@ -88,9 +96,19 @@ export default async function router(schema: Schema, config: Config) {
         res: IconsetResponse
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req);
+            const user = await Auth.as_user(config, req);
 
-            const iconset = await config.models.Iconset.generate(req.body);
+            let username: string | null = null;
+            if (user.access !== AuthUserAccess.ADMIN && req.body.scope === ResourceCreationScope.SERVER) {
+                throw new Err(400, null, 'Only Server Admins can create Server scoped iconsets');
+            } else if (user.access === AuthUserAccess.USER || req.body.scope === ResourceCreationScope.USER) {
+                username = user.email;
+            }
+
+            const iconset = await config.models.Iconset.generate({
+                ...req.body,
+                username
+            });
 
             return res.json(iconset);
         } catch (err) {
@@ -116,9 +134,17 @@ export default async function router(schema: Schema, config: Config) {
         res: IconsetResponse
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req);
+            const user = await Auth.as_user(config, req);
 
-            const iconset = await config.models.Iconset.commit(String(req.params.iconset), req.body);
+            const existing = await config.models.Iconset.from(req.params.iconset);
+
+            if (existing.username && existing.username !== user.email && user.access === AuthUserAccess.USER) {
+                throw new Err(400, null, 'You don\'t have permission to access this resource');
+            } else if (!existing.username && user.access !== AuthUserAccess.ADMIN) {
+                throw new Err(400, null, 'Only System Admin can edit Server Resource');
+            }
+
+            const iconset = await config.models.Iconset.commit(req.params.iconset, req.body);
 
             return res.json(iconset);
         } catch (err) {
@@ -142,9 +168,13 @@ export default async function router(schema: Schema, config: Config) {
         res: IconsetResponse
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req, { token: true });
+            const user = await Auth.as_user(config, req, { token: true });
 
-            const iconset = await config.models.Iconset.from(String(req.params.iconset));
+            const iconset = await config.models.Iconset.from(req.params.iconset);
+
+            if (iconset.username && iconset.username !== user.email && user.access === AuthUserAccess.USER) {
+                throw new Err(400, null, 'You don\'t have permission to access this resource');
+            }
 
             if (req.query.download) {
                 res.setHeader('Content-Disposition', `attachment; filename="${iconset.name}.${req.query.format}"`);
@@ -205,6 +235,39 @@ export default async function router(schema: Schema, config: Config) {
         }
     });
 
+    await schema.delete('/iconset/:iconset', {
+        name: 'Delete Iconset',
+        group: 'Icons',
+        description: 'Delete Iconset',
+        params: Type.Object({
+            iconset: Type.String()
+        }),
+        res: StandardResponse
+    }, async (req, res) => {
+        try {
+            const user = await Auth.as_user(config, req);
+
+            const iconset = await config.models.Iconset.from(req.params.iconset);
+
+            if (iconset.username && iconset.username !== user.email && user.access === AuthUserAccess.USER) {
+                throw new Err(400, null, 'You don\'t have permission to access this resource');
+            } else if (!iconset.username && user.access !== AuthUserAccess.ADMIN) {
+                throw new Err(400, null, 'Only System Admin can edit Server Resource');
+            }
+
+            await config.models.Icon.delete(sql`iconset = ${req.params.iconset}`);
+            await config.models.Iconset.delete(String(req.params.iconset));
+
+            return res.json({
+                status: 200,
+                message: 'Iconset Deleted'
+            });
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
+
+
     await schema.post('/iconset/:iconset/icon', {
         name: 'Create Icon',
         group: 'Icons',
@@ -220,9 +283,15 @@ export default async function router(schema: Schema, config: Config) {
         res: IconResponse
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req);
+            const user = await Auth.as_user(config, req);
 
-            const iconset = await config.models.Iconset.from(String(req.params.iconset));
+            const iconset = await config.models.Iconset.from(req.params.iconset);
+
+            if (iconset.username && iconset.username !== user.email && user.access === AuthUserAccess.USER) {
+                throw new Err(400, null, 'You don\'t have permission to access this resource');
+            } else if(!iconset.username && user.access !== AuthUserAccess.ADMIN) {
+                throw new Err(400, null, 'Only Server Admins can create Server scoped icons');
+            }
 
             if (path.parse(req.body.name).ext !== '.png') throw new Err(400, null, 'Name must have .png extension');
 
@@ -238,35 +307,12 @@ export default async function router(schema: Schema, config: Config) {
         }
     });
 
-    await schema.delete('/iconset/:iconset', {
-        name: 'Delete Iconset',
-        group: 'Icons',
-        description: 'Delete Iconset',
-        params: Type.Object({
-            iconset: Type.String()
-        }),
-        res: StandardResponse
-    }, async (req, res) => {
-        try {
-            await Auth.is_auth(config, req);
-
-            await config.models.Icon.delete(sql`iconset = ${req.params.iconset}`);
-            await config.models.Iconset.delete(String(req.params.iconset));
-
-            return res.json({
-                status: 200,
-                message: 'Iconset Deleted'
-            });
-        } catch (err) {
-            return Err.respond(err, res);
-        }
-    });
-
     await schema.get('/icon', {
         name: 'List Icons',
         group: 'Icons',
         description: 'List Icons',
         query: Type.Object({
+            scope: Type.Optional(Type.Enum(ResourceCreationScope)),
             limit: Type.Optional(Type.Integer({ default: 100 })),
             page: Type.Optional(Type.Integer()),
             order: Type.Optional(Type.Enum(GenericListOrder)),
@@ -280,9 +326,13 @@ export default async function router(schema: Schema, config: Config) {
         })
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req);
+            const user = await Auth.as_user(config, req);
 
             req.query.filter = req.query.filter.toLowerCase();
+
+            let scope = sql`True`;
+            if (req.query.scope === ResourceCreationScope.SERVER) scope = sql`username IS NULL`;
+            else if (req.query.scope === ResourceCreationScope.USER) scope = sql`username IS NOT NULL`;
 
             const list = await config.models.Icon.list({
                 limit: req.query.limit,
@@ -290,8 +340,10 @@ export default async function router(schema: Schema, config: Config) {
                 order: req.query.order,
                 sort: req.query.sort,
                 where: sql`
-                    name ~* ${req.query.filter}
+                    icons.name ~* ${req.query.filter}
                     AND (${Param(req.query.iconset)}::TEXT IS NULL OR ${Param(req.query.iconset)}::TEXT = iconset)
+                    AND (username IS NULL OR username = ${user.email})
+                    AND ${scope}
                 `
             });
 
@@ -313,7 +365,13 @@ export default async function router(schema: Schema, config: Config) {
         res: IconResponse
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req);
+            const user = await Auth.as_user(config, req);
+
+            const iconset = await config.models.Iconset.from(req.params.iconset);
+            if (iconset.username && iconset.username !== user.email && user.access === AuthUserAccess.USER) {
+                throw new Err(400, null, 'You don\'t have permission to access this resource');
+            }
+
             const icon = await config.models.Icon.from(sql`${req.params.iconset} = iconset AND ${req.params.icon} = name`);
             return res.json(icon);
         } catch (err) {
@@ -337,7 +395,16 @@ export default async function router(schema: Schema, config: Config) {
         res: IconResponse
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req);
+            const user = await Auth.as_user(config, req);
+
+            const iconset = await config.models.Iconset.from(req.params.iconset);
+
+            if (iconset.username && iconset.username !== user.email && user.access === AuthUserAccess.USER) {
+                throw new Err(400, null, 'You don\'t have permission to access this resource');
+            } else if (!iconset.username && user.access !== AuthUserAccess.ADMIN) {
+                throw new Err(400, null, 'Only System Admin can edit Server Resource');
+            }
+
             let icon = await config.models.Icon.from(sql`${req.params.iconset} = iconset AND ${req.params.icon} = name`);
 
             if (req.body.name && path.parse(req.body.name).ext !== '.png') throw new Err(400, null, 'Name must have .png extension');
@@ -365,7 +432,16 @@ export default async function router(schema: Schema, config: Config) {
         res: StandardResponse
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req);
+            const user = await Auth.as_user(config, req);
+
+            const iconset = await config.models.Iconset.from(req.params.iconset);
+
+            if (iconset.username && iconset.username !== user.email && user.access === AuthUserAccess.USER) {
+                throw new Err(400, null, 'You don\'t have permission to access this resource');
+            } else if (!iconset.username && user.access !== AuthUserAccess.ADMIN) {
+                throw new Err(400, null, 'Only System Admin can edit Server Resource');
+            }
+
             const icon = await config.models.Icon.delete(sql`${req.params.iconset} = iconset AND ${req.params.icon} = name`);
             return res.json({
                 status: 200,
@@ -389,7 +465,12 @@ export default async function router(schema: Schema, config: Config) {
         description: 'Icon Data',
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req, { token: true });
+            const user = await Auth.as_user(config, req, { token: true });
+
+            const iconset = await config.models.Iconset.from(req.params.iconset);
+            if (iconset.username && iconset.username !== user.email && user.access === AuthUserAccess.USER) {
+                throw new Err(400, null, 'You don\'t have permission to access this resource');
+            }
 
             const icon = await config.models.Icon.from(sql`
                 (${req.params.iconset} = iconset AND ${req.params.icon} = name)
@@ -406,11 +487,23 @@ export default async function router(schema: Schema, config: Config) {
         description: 'Get Spriteset JSON for CoT types',
         query: Type.Object({
             iconset: Type.Optional(Type.String()),
+            scope: Type.Optional(Type.Enum(ResourceCreationScope)),
             token: Type.Optional(Type.String()),
         })
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req, { token: true });
+            const user = await Auth.as_user(config, req, { token: true });
+
+            if (req.query.iconset && req.query.iconset !== 'default') {
+                const iconset = await config.models.Iconset.from(req.query.iconset);
+                if (iconset.username && iconset.username !== user.email && user.access === AuthUserAccess.USER) {
+                    throw new Err(400, null, 'You don\'t have permission to access this resource');
+                }
+            }
+
+            let scope = sql`True`;
+            if (req.query.scope === ResourceCreationScope.SERVER) scope = sql`username IS NULL`;
+            else if (req.query.scope === ResourceCreationScope.USER) scope = sql`username IS NOT NULL`;
 
             if (SpriteMap[req.query.iconset]) {
                 return res.json(SpriteMap[req.query.iconset].json);
@@ -419,6 +512,8 @@ export default async function router(schema: Schema, config: Config) {
                     limit: 1000,
                     where: sql`
                         (${Param(req.query.iconset)}::TEXT IS NULL OR ${Param(req.query.iconset)}::TEXT = iconset)
+                        AND (username IS NULL OR username = ${user.email})
+                        AND ${scope}
                     `
                 })
 
@@ -439,11 +534,23 @@ export default async function router(schema: Schema, config: Config) {
         description: 'Return a sprite sheet for CoT Types',
         query: Type.Object({
             iconset: Type.Optional(Type.String()),
+            scope: Type.Optional(Type.Enum(ResourceCreationScope)),
             token: Type.Optional(Type.String()),
         })
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req, { token: true });
+            const user = await Auth.as_user(config, req, { token: true });
+
+            if (req.query.iconset && req.query.iconset !== 'default') {
+                const iconset = await config.models.Iconset.from(req.query.iconset);
+                if (iconset.username && iconset.username !== user.email && user.access === AuthUserAccess.USER) {
+                    throw new Err(400, null, 'You don\'t have permission to access this resource');
+                }
+            }
+
+            let scope = sql`True`;
+            if (req.query.scope === ResourceCreationScope.SERVER) scope = sql`username IS NULL`;
+            else if (req.query.scope === ResourceCreationScope.USER) scope = sql`username IS NOT NULL`;
 
             res.type('png');
             if (SpriteMap[req.query.iconset]) {
@@ -453,6 +560,8 @@ export default async function router(schema: Schema, config: Config) {
                     limit: 1000,
                     where: sql`
                         (${Param(req.query.iconset)}::TEXT IS NULL OR ${Param(req.query.iconset)}::TEXT = iconset)
+                        AND (username IS NULL OR username = ${user.email})
+                        AND ${scope}
                     `
                 })
                 const sprites = await Sprites(icons.items);

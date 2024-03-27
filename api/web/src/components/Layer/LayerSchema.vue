@@ -80,16 +80,12 @@ import { std, stdurl } from '/src/std.ts';
 import LayerSchemaModal from './utils/LayerSchemaModal.vue';
 import {
     TablerNone,
-    TablerInput,
     TablerLoading,
-    TablerToggle,
-    TablerEnum,
 } from '@tak-ps/vue-tabler';
 import {
     IconAlphabetLatin,
     IconSort09,
     IconPlus,
-    IconRefresh,
     IconSettings,
     IconDecimal,
     IconBinary,
@@ -203,12 +199,8 @@ export default {
         IconAlphabetLatin,
         IconSort09,
         IconDecimal,
-        TablerInput,
-        TablerToggle,
-        TablerEnum,
         TablerLoading,
         IconPlus,
-        IconRefresh,
         IconSettings,
         IconBinary,
         LayerSchemaModal,

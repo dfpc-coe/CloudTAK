@@ -4,7 +4,6 @@
         <div class='modal-header px-0 mx-2'>
             <IconCircleArrowLeft @click='$router.back()' size='32' class='cursor-pointer'/>
             <div class='modal-title'>Data Explorer</div>
-            <div/>
         </div>
     </div>
 
@@ -101,13 +100,11 @@ import {
     IconEye,
     IconEyeX,
     IconEyeOff,
-    IconSettings,
-    IconSearch,
     IconCircleArrowLeft
 } from '@tabler/icons-vue'
 
 export default {
-    name: 'Datas',
+    name: 'CloudTAKDatas',
     data: function() {
         return {
             mode: 'data',
@@ -197,7 +194,7 @@ export default {
             });
             this.fetchUserAssetList();
         },
-        createOverlay: async function(id, url, a) {
+        createOverlay: async function(id, url) {
             this.loading = true;
             const res = await std(url);
 
@@ -291,8 +288,6 @@ export default {
         IconEyeOff,
         TablerNone,
         TablerPager,
-        IconSettings,
-        IconSearch,
         TablerLoading,
         TablerDelete,
         IconCircleArrowLeft

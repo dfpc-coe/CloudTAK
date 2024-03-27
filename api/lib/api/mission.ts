@@ -5,6 +5,7 @@ import { Type, Static } from '@sinclair/typebox';
 import Err from '@openaddresses/batch-error';
 import { Readable } from 'node:stream'
 import { TAKList } from './types.js';
+import { MissionLog } from './mission-log.js';
 import { Feature } from 'geojson';
 
 export const Mission = Type.Object({
@@ -27,6 +28,7 @@ export const Mission = Type.Object({
     expiration: Type.Number(),
     guid: Type.String(),
     uids: Type.Array(Type.Unknown()),
+    logs: Type.Optional(Type.Array(MissionLog)),                // Only present if ?logs=true
     contents: Type.Array(Type.Object({
         data: Type.Object({
             name: Type.String(),

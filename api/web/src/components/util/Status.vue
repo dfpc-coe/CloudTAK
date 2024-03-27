@@ -14,7 +14,7 @@
 
 <script>
 export default {
-    name: 'Status',
+    name: 'StatusCircle',
     props: {
         status: {
             type: String,

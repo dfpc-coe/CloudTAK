@@ -3,10 +3,10 @@
     <tr>
         <th :key='h' v-for='h in shown'>
             <div class='d-flex'>
-                <span @click='sort = h.name' v-text='h.name' class='cursor-pointer'/>
+                <span @click='updateSort(h.name)' v-text='h.name' class='cursor-pointer'/>
                 <span v-if='h.name === sort' class='ms-auto'>
-                    <IconChevronDown size='16' @click='order = "desc"' v-if='order === "asc"' class='cursor-pointer'/>
-                    <IconChevronUp size='16' @click='order = "asc"' v-else class='cursor-pointer'/>
+                    <IconChevronDown size='16' @click='updateOrder("desc")' v-if='order === "asc"' class='cursor-pointer'/>
+                    <IconChevronUp size='16' @click='updateOrder("asc")' v-else class='cursor-pointer'/>
                 </span>
 
                 <template v-if='shown[shown.length - 1] === h'>
@@ -65,14 +65,17 @@ export default {
         }
     },
     watch: {
-        sort: function() {
-            this.$emit('update:sort', this.sort);
-        },
         order: function() {
             this.$emit('update:order', this.order);
         }
     },
     methods: {
+        updateSort(sort) {
+            this.$emit('update:sort', sort);
+        },
+        updateOrder: function(order) {
+            this.$emit('update:order', order);
+        },
         displayHeader: function(h_it, $event) {
             const header = JSON.parse(JSON.stringify(this.header));
             header[h_it].display = $event.target.checked;

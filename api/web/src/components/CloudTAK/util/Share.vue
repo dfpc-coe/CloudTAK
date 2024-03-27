@@ -20,7 +20,7 @@
     <div class='col-6' style='padding-right: 20px;'>
         <button @click='broadcast' class='w-100 btn btn-secondary'>Broadcast to All</button>
     </div>
-    <div @click='$emit("done")'class='col-12 py-2' style='padding-right: 20px; padding-left: 20px;'>
+    <div @click='$emit("done")' class='col-12 py-2' style='padding-right: 20px; padding-left: 20px;'>
         <button class='w-100 btn btn-secondary'>Cancel</button>
     </div>
 </div>
@@ -34,15 +34,11 @@ import {
 } from '@tak-ps/vue-tabler';
 import Contact from '../partial/Contact.vue';
 import { useConnectionStore } from '/src/stores/connection.ts';
-import {
-    IconCircleFilled,
-    IconCircleArrowLeft
-} from '@tabler/icons-vue';
 
 const connectionStore = useConnectionStore();
 
 export default {
-    name: 'Share',
+    name: 'COTShare',
     props: {
         feat: {
             type: Object,
@@ -64,8 +60,6 @@ export default {
         visibleContacts: function() {
             return this.contacts.filter((contact) => {
                 return contact.callsign;
-            }).filter((contact) => {
-                return true;
             })
         }
     },
@@ -97,8 +91,6 @@ export default {
         Contact,
         TablerNone,
         TablerLoading,
-        IconCircleFilled,
-        IconCircleArrowLeft,
     }
 }
 </script>

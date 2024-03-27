@@ -31,7 +31,7 @@ import {
 } from '@tak-ps/vue-tabler';
 
 export default {
-    name: 'Missions',
+    name: 'CloudTAKMissions',
     data: function() {
         return {
             mode: 'list',

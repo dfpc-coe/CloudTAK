@@ -131,7 +131,7 @@ import {
 } from '@tabler/icons-vue'
 
 export default {
-    name: 'Schema',
+    name: 'LayerSchema',
     props: {
         modelValue: {
             type: Object,

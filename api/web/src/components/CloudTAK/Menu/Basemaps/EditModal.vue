@@ -4,8 +4,8 @@
     <button type="button" class="btn-close" @click='$emit("close")' aria-label="Close"></button>
 
     <div class='modal-header'>
-        <h3 v-if='basemap.id' class='card-title'>Basemap <span v-text='basemap.id'/></h3>
-        <h3 v-else class='card-title'>New Basemap</h3>
+        <div v-if='basemap.id' class='strong d-flex align-items-center'>Basemap <span v-text='basemap.name'/></div>
+        <div v-else class='strong align-items-center'>New Basemap</div>
 
         <div v-if='!loading && !mode.upload && !mode.tilejson && !basemap.id' class='ms-auto btn-list'>
             <IconFileUpload
@@ -138,7 +138,6 @@ import {
 } from '@tak-ps/vue-tabler';
 import { mapState } from 'pinia'
 import { useProfileStore } from '/src/stores/profile.js';
-const profileStore = useProfileStore();
 
 export default {
     name: 'BasemapEditModal',
@@ -166,7 +165,7 @@ export default {
             },
             bounds: '',
             center: '',
-            scope: this.basemap.username ? 'user' : 'server',
+            scope: this.basemap.id ? (this.basemap.username ? 'user' : 'server') : 'user',
             editing: {
                 name: '',
                 url: '',
@@ -238,13 +237,13 @@ export default {
                     if (!editing.bounds || !editing.bounds.length) delete editing.bounds;
                     if (!editing.center || !editing.center.length) delete editing.center;
 
-                    const create = await std(`/api/basemap/${this.basemap.id}`, {
+                    await std(`/api/basemap/${this.basemap.id}`, {
                         method: 'PATCH',
                         body: editing
                     });
                     this.$emit('close');
                 } else {
-                    const create = await std('/api/basemap', {
+                    await std('/api/basemap', {
                         method: 'POST',
                         body: {
                             scope: this.scope,

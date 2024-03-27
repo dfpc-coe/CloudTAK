@@ -48,7 +48,7 @@
 
 <script>
 export default {
-    name: 'Coordinate',
+    name: 'COTCoordinate',
     props: {
         coordinates: {
             type: Array,
@@ -61,6 +61,7 @@ export default {
             else if (this.mode === 'dms') return `${this.asDMS(this.coordinates[1])}, ${this.asDMS(this.coordinates[0])}`;
             else if (this.mode === 'mgrs') return this.asMGRS();
             else if (this.mode === 'utm') return this.asUTM(this.coordinates[1], this.coordinates[0]);
+            return 'UNKNOWN'
         }
     },
     data: function() {
@@ -91,22 +92,10 @@ export default {
             var E3 = Math.pow(E, 3);
             var E_P2 = E / (1 - E);
 
-            var SQRT_E = Math.sqrt(1 - E);
-            var _E = (1 - SQRT_E) / (1 + SQRT_E);
-            var _E2 = Math.pow(_E, 2);
-            var _E3 = Math.pow(_E, 3);
-            var _E4 = Math.pow(_E, 4);
-            var _E5 = Math.pow(_E, 5);
-
             var M1 = 1 - E / 4 - 3 * E2 / 64 - 5 * E3 / 256;
             var M2 = 3 * E / 8 + 3 * E2 / 32 + 45 * E3 / 1024;
             var M3 = 15 * E2 / 256 + 45 * E3 / 1024;
             var M4 = 35 * E3 / 3072;
-
-            var P2 = 3 / 2 * _E - 27 / 32 * _E3 + 269 / 512 * _E5;
-            var P3 = 21 / 16 * _E2 - 55 / 32 * _E4;
-            var P4 = 151 / 96 * _E3 - 417 / 128 * _E5;
-            var P5 = 1097 / 512 * _E4;
 
             var R = 6378137;
 
@@ -189,7 +178,6 @@ export default {
             const p = 40680631590769/(6356752.314*Math.sqrt(1 + o));
             const q = Math.tan (k);
             const r = q*q;
-            const s = (r*r*r) - Math.pow (q,6);
             const t = l - m;
             const u = 1.0 - r + o;
             const v = 5.0 - r + 9*o + 4.0*(o*o);
@@ -206,7 +194,7 @@ export default {
             const af = ['ABCDEFGH','JKLMNPQR','STUVWXYZ'][(c-1)%3].charAt (ae-1);
             const ag = Math.floor (ab/100000)%20;
             const ah = ['ABCDEFGHJKLMNPQRSTUV','FGHJKLMNPQRSTUVABCDE'][(c-1)%2].charAt (ag);
-            function pad (val) {if (val < 10) {val = '0000' + val} else if (val < 100) {val = '000' + val} else if (val < 1000) {val = '00' + val} else if (val < 10000) {val = '0' + val};return val};
+            function pad (val) {if (val < 10) {val = '0000' + val} else if (val < 100) {val = '000' + val} else if (val < 1000) {val = '00' + val} else if (val < 10000) {val = '0' + val}return val}
             aa = Math.floor (aa%100000); aa = pad (aa);
             ab = Math.floor (ab%100000); ab = pad (ab);
             return c + ad + ' ' + af + ah + ' ' + aa + ' ' + ab;

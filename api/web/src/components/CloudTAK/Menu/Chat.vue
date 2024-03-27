@@ -4,7 +4,6 @@
         <div class='modal-header px-0 mx-2'>
             <IconCircleArrowLeft @click='$router.back()' size='32' class='cursor-pointer'/>
             <div class='modal-title' v-text='contact.properties.callsign'></div>
-            <div/>
         </div>
     </div>
     <div class='px-2 py-2'>
@@ -36,7 +35,7 @@ import { useCOTStore } from '/src/stores/cots.ts';
 const cotStore = useCOTStore();
 
 export default {
-    name: 'Chat',
+    name: 'CloudTAKChat',
     data: function() {
         if (!cotStore.cots.get(this.$route.params.uid)) this.$router.push("/menu/chats");
 
@@ -51,8 +50,6 @@ export default {
     },
     methods: {
         sendMessage: async function() {
-            const message = this.message;
-            this.message = '';
         },
         fetchChats: async function() {
             this.loading = true;

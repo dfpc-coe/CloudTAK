@@ -103,7 +103,7 @@
 </template>
 
 <script>
-import { std, stdurl } from '/src/std.ts';
+import { std } from '/src/std.ts';
 import PageFooter from './PageFooter.vue';
 import LayerStatus from './Layer/utils/Status.vue';
 import cronstrue from 'cronstrue';
@@ -125,7 +125,7 @@ import {
 } from '@tabler/icons-vue'
 
 export default {
-    name: 'Layer',
+    name: 'ConnectionLayer',
     data: function() {
         return {
             err: false,

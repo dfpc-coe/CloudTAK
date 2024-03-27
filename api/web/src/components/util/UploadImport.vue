@@ -45,7 +45,9 @@ export default {
         },
         config: {
             type: Object,
-            default: {}
+            default: function() {
+                return {};
+            }
         }
     },
     data: function() {

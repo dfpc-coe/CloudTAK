@@ -67,7 +67,7 @@ import {
 } from '@tabler/icons-vue';
 
 export default {
-    name: 'Profile',
+    name: 'UserProfile',
     components: {
         IconRobot,
         PageFooter,

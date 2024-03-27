@@ -5,6 +5,7 @@ export const useProfileStore = defineStore('profile', {
     state: () => {
         return {
             id: `ANDROID-${(Math.random() + 1).toString(36).substring(2)}`,
+            notifications: [],
             profile: null,
         }
     },

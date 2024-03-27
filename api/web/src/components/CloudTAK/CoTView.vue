@@ -7,7 +7,7 @@
         <div class='col-12 card-header row mx-1 my-2 d-flex'>
             <div class='card-title d-flex'>
                 <span
-                    v-if='feat.properties.status && feat.properties.status.battery'
+                    v-if='feat.properties.status && !isNaN(parseInt(feat.properties.status.battery))'
                     class='d-flex'
                     style='margin-right: 10px;'
                     v-tooltip='feat.properties.status.battery + "% Battery"'
@@ -97,9 +97,7 @@ import { useMapStore } from '/src/stores/map.ts';
 const mapStore = useMapStore();
 import {
     TablerInput,
-    TablerEnum
 } from '@tak-ps/vue-tabler';
-import pointOnFeature from '@turf/point-on-feature';
 import Share from './util/Share.vue';
 import CoTStyle from './util/CoTStyle.vue';
 import Coordinate from './util/Coordinate.vue';
@@ -110,7 +108,6 @@ import {
     IconShare2,
     IconZoomPan,
     IconCode,
-    IconPencil,
     IconBattery1,
     IconBattery2,
     IconBattery3,
@@ -226,8 +223,6 @@ export default {
         Share,
         Coordinate,
         TablerInput,
-        TablerEnum,
-        IconPencil,
         IconBattery1,
         IconBattery2,
         IconBattery3,

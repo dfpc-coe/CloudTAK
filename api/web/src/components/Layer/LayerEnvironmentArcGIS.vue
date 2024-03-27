@@ -100,11 +100,9 @@ import {
     TablerInput,
     TablerTimeZone,
 } from '@tak-ps/vue-tabler';
-import Schema from './utils/Schema.vue';
 import EsriPortal from './../util/EsriPortal.vue';
 import EsriFilter from './../util/EsriFilter.vue';
 import {
-    IconPlus,
     IconSquareChevronRight,
     IconChevronDown,
     IconFilter,
@@ -147,7 +145,6 @@ export default {
         }
     },
     components: {
-        IconPlus,
         EsriPortal,
         IconSquareChevronRight,
         IconChevronDown,
