@@ -7,7 +7,7 @@
             <div class='btn-list'></div>
         </div>
     </div>
-    <div class='mx-4'>
+    <div class='mx-4'></div>
 
     <TablerLoading v-if='loading.icon' desc='Loading Icon'/>
     <div v-else class="card-body">
