@@ -6,6 +6,7 @@
             <div class='modal-title'>Iconsets</div>
             <div class='btn-list'>
                 <IconPlus v-if='iconset.username || profile.system_admin' v-tooltip='"Create Icon"' @click='editModal = {}' size='32' class='cursor-pointer'/>
+                <IconSettings v-if='iconset.username || profile.system_admin' class='cursor-pointer' size='32'/>
                 <IconDownload v-tooltip='"Download TAK Zip"' size='32' class='cursor-pointer' @click.stop='download'/>
                 <TablerDelete v-if='iconset.username || profile.system_admin' displaytype='icon' @delete='deleteIconset'/>
             </div>
@@ -17,7 +18,7 @@
         <CombinedIcons v-if='!loading' :iconset='iconset.uid' :labels='false'/>
     </div>
 
-    <IconEditModal v-if='editModal' :icon='editModal' @close='editModal = false'/>
+    <IconEditModal v-if='editModal' :icon='editModal' @close='refresh'/>
 </div>
 </template>
 
@@ -49,12 +50,18 @@ export default {
         }
     },
     mounted: async function() {
-        await this.fetch();
+        await this.refresh();
     },
     computed: {
         ...mapState(useProfileStore, ['profile'])
     },
     methods: {
+        refresh: async function() {
+            this.loading = true;
+            this.editModal = false;
+            await this.fetch();
+            this.loading = false;
+        },
         download: async function() {
             window.location.href = stdurl(`api/iconset/${this.iconset.uid}?format=zip&download=true&token=${localStorage.token}`);
         },
