@@ -59,7 +59,7 @@ export default {
         submit: async function() {
             const url = await stdurl(`/api/iconset/${this.$route.params.iconset ||''}`);
 
-            const iconset = await std(url, {
+            await std(url, {
                 method: this.$route.params.iconset ? 'PATCH' : 'POST',
                 body: this.iconset
             });
