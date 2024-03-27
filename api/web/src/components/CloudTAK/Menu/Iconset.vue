@@ -31,6 +31,7 @@ import {
 } from '@tak-ps/vue-tabler';
 import {
     IconPlus,
+    IconSettings,
     IconDownload,
     IconCircleArrowLeft
 } from '@tabler/icons-vue';
@@ -82,6 +83,7 @@ export default {
     },
     components: {
         IconPlus,
+        IconSettings,
         IconDownload,
         IconCircleArrowLeft,
         IconEditModal,
