@@ -130,7 +130,6 @@ import { std, stdurl } from '/src/std.ts';
 import {
     TablerLoading,
     TablerInput,
-    TablerDelete,
     TablerNone,
 } from '@tak-ps/vue-tabler';
 import {
@@ -138,9 +137,6 @@ import {
     IconRefresh,
     IconX,
     IconPlus,
-    IconFolder,
-    IconArrowBack,
-    IconCheck
 } from '@tabler/icons-vue';
 import EsriServer from './EsriServer.vue';
 import EsriPortalCreate from './EsriPortalCreate.vue';
@@ -342,12 +338,8 @@ export default {
         IconPlus,
         TablerNone,
         IconMap,
-        IconFolder,
         IconRefresh,
-        IconCheck,
-        IconArrowBack,
         TablerLoading,
-        TablerDelete,
         TablerInput,
         EsriServer,
         EsriPortalCreate

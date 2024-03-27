@@ -19,6 +19,6 @@
 
 <script>
 export default {
-    name: 'Lost'
+    name: 'UserLost'
 }
 </script>

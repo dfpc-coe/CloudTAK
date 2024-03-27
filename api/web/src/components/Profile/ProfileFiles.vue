@@ -67,8 +67,6 @@
 <script>
 import { std, stdurl } from '/src/std.ts';
 import {
-    IconRefreshDot,
-    IconRefreshOff,
     IconPlus,
     IconMap,
     IconMapOff,
@@ -163,8 +161,6 @@ export default {
         IconMapOff,
         IconRefresh,
         IconTransform,
-        IconRefreshDot,
-        IconRefreshOff,
         IconDownload,
         TablerDelete,
         TablerLoading,

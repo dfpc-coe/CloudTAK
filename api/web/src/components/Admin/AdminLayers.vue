@@ -39,7 +39,7 @@
                         v-model:header='header'
                     />
                     <tbody>
-                        <tr @click='stdclick($router, $event, `/layer/${layer.id}`)' :key='layer.id' v-for='(layer, layer_it) in list.items' class='cursor-pointer'>
+                        <tr @click='stdclick($router, $event, `/layer/${layer.id}`)' :key='layer.id' v-for='layer in list.items' class='cursor-pointer'>
                             <template v-for='h in header'>
                                 <template v-if='h.display'>
                                     <td>
@@ -108,7 +108,7 @@ export default {
     },
     methods: {
         stdclick,
-        redeploy: async function(showLoading=true) {
+        redeploy: async function() {
             this.loading = true;
             this.stack = await std(`/api/layer/redeploy`, {
                 method: 'POST'
