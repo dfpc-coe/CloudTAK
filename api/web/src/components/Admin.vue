@@ -62,12 +62,9 @@
 <script>
 import { useProfileStore } from '/src/stores/profile.js';
 import PageFooter from './PageFooter.vue';
-import timeDiff from '../timediff.js';
 import Alert from './util/Alert.vue';
 import {
-    TablerModal,
     TablerLoading,
-    TablerMarkdown,
     TablerBreadCrumb,
 } from '@tak-ps/vue-tabler'
 import {
@@ -80,7 +77,7 @@ import { mapState } from 'pinia'
 const profileStore = useProfileStore();
 
 export default {
-    name: 'Admin',
+    name: 'ServerAdmin',
     computed: {
         ...mapState(useProfileStore, ['profile']),
     },

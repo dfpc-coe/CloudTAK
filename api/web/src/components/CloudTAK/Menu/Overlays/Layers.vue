@@ -27,19 +27,13 @@
 <script>
 import OverlayLayer from './Layer.vue';
 import {
-    TablerDelete,
-    TablerLoading,
-} from '@tak-ps/vue-tabler';
-import {
     IconCircleArrowLeft,
     IconPaint,
     IconLine,
     IconCircle,
-    IconPlus,
 } from '@tabler/icons-vue';
 import { useMapStore } from '/src/stores/map.ts';
 import { mapState } from 'pinia'
-const mapStore = useMapStore();
 
 export default {
     name: 'OverlayLayers',
@@ -64,10 +58,7 @@ export default {
         IconPaint,
         IconLine,
         IconCircle,
-        TablerLoading,
-        TablerDelete,
         IconCircleArrowLeft,
-        IconPlus,
     }
 }
 </script>

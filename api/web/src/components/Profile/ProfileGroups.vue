@@ -29,7 +29,7 @@
 </template>
 
 <script>
-import { std, stdurl } from '/src/std.ts';
+import { std } from '/src/std.ts';
 import {
     IconRefresh
 } from '@tabler/icons-vue';

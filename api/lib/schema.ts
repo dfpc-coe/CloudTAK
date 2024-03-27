@@ -79,6 +79,7 @@ export const Iconset = pgTable('iconsets', {
     updated: timestamp('updated', { withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     version: integer('version').notNull(),
     name: text('name').notNull(),
+    username: text('username').references(() => Profile.username),
     default_group: text('default_group'),
     default_friendly: text('default_friendly'),
     default_hostile: text('default_hostile'),

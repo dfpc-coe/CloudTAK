@@ -41,16 +41,14 @@
 </template>
 
 <script>
-import { std, stdurl } from '/src/std.ts';
+import { std } from '/src/std.ts';
 import {
-    TablerInput,
     TablerLoading,
 } from '@tak-ps/vue-tabler';
 import LayerEnvironmentArcGIS from './LayerEnvironmentArcGIS.vue';
 import Schema from './utils/Schema.vue';
 import {
     IconX,
-    IconPlus,
     IconCode,
     IconSettings,
 } from '@tabler/icons-vue'
@@ -117,11 +115,9 @@ export default {
     },
     components: {
         Schema,
-        IconPlus,
         IconCode,
         IconX,
         IconSettings,
-        TablerInput,
         TablerLoading,
         LayerEnvironmentArcGIS
     }

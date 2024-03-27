@@ -51,7 +51,6 @@ import IconSelect from '../../util/IconSelect.vue';
 import {
     TablerRange,
     TablerInput,
-    TablerToggle,
     TablerEnum
 } from '@tak-ps/vue-tabler';
 
@@ -68,13 +67,7 @@ export default {
             feat: this.modelValue,
         };
     },
-    methods: {
-        format: function() {
-            this.$emit('update:modelValue', res);
-        }
-    },
     components: {
-        TablerToggle,
         TablerRange,
         TablerEnum,
         TablerInput,

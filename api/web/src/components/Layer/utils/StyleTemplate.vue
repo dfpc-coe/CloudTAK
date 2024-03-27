@@ -24,7 +24,6 @@
 import { Mentionable } from 'vue-mention'
 import {
     TablerInput,
-    TablerToggle
 } from '@tak-ps/vue-tabler';
 
 export default {
@@ -71,7 +70,6 @@ export default {
         }
     },
     components: {
-        TablerToggle,
         TablerInput,
         Mentionable
     }

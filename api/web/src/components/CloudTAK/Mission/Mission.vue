@@ -25,7 +25,6 @@
                 </div>
                 <template v-if='mode === "info"'>
                     <TablerDelete @delete='deleteMission' displaytype='icon' v-tooltip='"Delete"'/>
-                    <!--<IconPencil class='cursor-pointer' v-tooltip='"Edit"'/>-->
                 </template>
                 <template v-else-if='mode === "contents"'>
                     <IconPlus v-if='!upload' @click='upload = true' v-tooltip='"Upload File"' size='32' class='cursor-pointer'/>
@@ -230,10 +229,8 @@ import {
     IconPolygon,
     IconLock,
     IconInfoSquare,
-    IconUser,
     IconUsers,
     IconLockOpen,
-    IconPencil,
     IconRefresh,
     IconTrash,
 } from '@tabler/icons-vue';
@@ -253,7 +250,7 @@ const overlayStore = useOverlayStore();
 const mapStore = useMapStore();
 
 export default {
-    name: 'Mission',
+    name: 'MissionSync',
     props: {
         initial: {
             type: Object
@@ -346,7 +343,7 @@ export default {
             this.loading.logs = false;
             this.fetchMission();
         },
-        submitLog: async function(file) {
+        submitLog: async function() {
             this.loading.logs = true;
             await std(`/api/marti/missions/${this.mission.name}/log`, {
                 method: 'POST',
@@ -448,9 +445,7 @@ export default {
         IconFile,
         IconPolygon,
         IconInfoSquare,
-        IconUser,
         IconUsers,
-        IconPencil,
         IconTrash,
         IconRefresh,
         IconLock,

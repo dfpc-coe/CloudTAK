@@ -44,13 +44,13 @@
 </template>
 
 <script>
-import { std, stdurl } from '/src/std.ts';
+import { std } from '/src/std.ts';
 import {
     TablerLoading
 } from '@tak-ps/vue-tabler'
 
 export default {
-    name: 'Login',
+    name: 'UserLogin',
     data: function() {
         return {
             loading: false,

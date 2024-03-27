@@ -57,7 +57,7 @@ import { useMapStore } from '/src/stores/map.ts';
 const mapStore = useMapStore();
 
 export default {
-    name: 'Contact',
+    name: 'TAKContact',
     props: {
         contact: {
             type: Object,

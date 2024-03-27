@@ -35,12 +35,11 @@ import Contact from '../partial/Contact.vue';
 import {
     IconRefresh,
     IconSearch,
-    IconCircleFilled,
     IconCircleArrowLeft
 } from '@tabler/icons-vue';
 
 export default {
-    name: 'Contacts',
+    name: 'CloudTAKContacts',
     data: function() {
         return {
             err: false,
@@ -85,7 +84,6 @@ export default {
         TablerLoading,
         IconRefresh,
         IconSearch,
-        IconCircleFilled,
         IconCircleArrowLeft,
     }
 }

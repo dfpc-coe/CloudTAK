@@ -55,7 +55,6 @@ import OverlayLayers from './Overlays/Layers.vue';
 import {
     TablerDelete,
     TablerLoading,
-    TablerInput,
     TablerRange
 } from '@tak-ps/vue-tabler';
 import {
@@ -72,7 +71,7 @@ import { mapState } from 'pinia'
 const mapStore = useMapStore();
 
 export default {
-    name: 'Overlays',
+    name: 'CloudTAKOverlays',
     data: function() {
         return {
             err: false,
@@ -116,7 +115,6 @@ export default {
     components: {
         OverlayLayers,
         TablerRange,
-        TablerInput,
         TablerLoading,
         TablerDelete,
         IconMaximize,

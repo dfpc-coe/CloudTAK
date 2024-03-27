@@ -44,9 +44,21 @@
         </div>
 
         <div v-if='isLoaded && mode === "Default"'
-            class='position-absolute top-0 text-white py-2'
-            style='z-index: 1; width: 60px; right: 60px; background-color: rgba(0, 0, 0, 0.5)'
+            class='d-flex position-absolute top-0 text-white py-2'
+            style='z-index: 1; width: 120px; right: 60px; background-color: rgba(0, 0, 0, 0.5)'
         >
+            <TablerDropdown>
+                <template #default>
+                    <div class='mx-2 cursor-pointer'>
+                        <IconBell size='40'/>
+                        <span v-if='notifications.length' class="badge bg-red mb-2"></span>
+                        <span v-else style='width: 10px;'/>
+                    </div>
+                </template>
+                <template #dropdown>
+                    <TablerNone label='New Notifications' :create='false'/>
+                </template>
+            </TablerDropdown>
             <TablerDropdown>
                 <template #default>
                     <IconPencil @click='menu.draw = true' size='40' class='mx-2 cursor-pointer'/>
@@ -106,18 +118,18 @@ import {
     IconLine,
     IconPolygon,
     IconVector,
+    IconBell
 } from '@tabler/icons-vue';
 import {
     TablerDropdown,
+    TablerNone,
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import 'maplibre-gl/dist/maplibre-gl.css';
-import CloudTAKMenu from './Menu.vue';
 import CloudTAKCoTView from './CoTView.vue';
 import CloudTAKFeatView from './FeatView.vue';
 import RadialMenu from './RadialMenu/RadialMenu.vue';
-import moment from 'moment';
-import { mapState, mapActions } from 'pinia'
+import { mapState } from 'pinia'
 import { useMapStore } from '/src/stores/map.ts';
 import { useOverlayStore } from '/src/stores/overlays.ts';
 import { useProfileStore } from '/src/stores/profile.js';
@@ -139,7 +151,7 @@ export default {
     },
     computed: {
         ...mapState(useMapStore, ['bearing', 'radial', 'isLoaded']),
-        ...mapState(useProfileStore, ['profile']),
+        ...mapState(useProfileStore, ['profile', 'notifications']),
         humanBearing: function() {
             if (this.bearing < 0) {
                 return Math.round(this.bearing * -1) + '°'
@@ -356,7 +368,7 @@ export default {
             }
         },
         mountMap: async function() {
-            let basemap, terrain;
+            let basemap;
 
             const burl = stdurl('/api/basemap');
             burl.searchParams.append('type', 'raster');
@@ -428,25 +440,26 @@ export default {
         }
     },
     components: {
+        RadialMenu,
+        TablerNone,
+        TablerDropdown,
+        TablerLoading,
+        CloudTAKCoTView,
+        CloudTAKFeatView,
         IconLocationOff,
         IconLocation,
         IconMinus,
+        IconBell,
         IconPlus,
         IconFocus2,
         IconLockAccess,
-        RadialMenu,
         IconPoint,
         IconLine,
         IconPolygon,
         IconVector,
-        TablerDropdown,
         IconMenu2,
         IconPencil,
         IconX,
-        TablerLoading,
-        CloudTAKMenu,
-        CloudTAKCoTView,
-        CloudTAKFeatView,
     }
 }
 </script>

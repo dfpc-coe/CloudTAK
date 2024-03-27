@@ -105,7 +105,7 @@ import {
 } from '@tabler/icons-vue'
 
 export default {
-    name: 'Layers',
+    name: 'ConnectionLayers',
     data: function() {
         return {
             err: false,

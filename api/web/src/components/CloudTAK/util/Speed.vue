@@ -39,7 +39,7 @@
 
 <script>
 export default {
-    name: 'Speed',
+    name: 'COTSpeed',
     props: {
         speed: {
             type: Number,
@@ -51,6 +51,7 @@ export default {
             if (this.mode === 'ms') return Math.round(this.speed * 1000) / 1000;
             else if (this.mode === 'mph') return Math.round(this.speed * 2.23694 * 100) / 100;
             else if (this.mode === 'kph') return Math.round(this.speed * 3.6 * 100) / 100;
+            return 'UNKNOWN';
         }
     },
     data: function() {

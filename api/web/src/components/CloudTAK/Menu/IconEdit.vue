@@ -1,61 +1,37 @@
 <template>
 <div>
-    <div class='page-wrapper'>
-        <div class="page-header d-print-none">
-            <div class="container-xl">
-                <div class="row g-2 align-items-center">
-                    <div class="col d-flex">
-                        <TablerBreadCrumb/>
-                    </div>
-                </div>
-            </div>
+    <div class='col-12 border-bottom border-light'>
+        <div class='modal-header px-0 mx-2'>
+            <IconCircleArrowLeft @click='$router.back()' size='32' class='cursor-pointer'/>
+            <div class='modal-title' v-text='"Edit: " + icon.name'></div>
+            <div class='btn-list'></div>
         </div>
     </div>
+    <div class='mx-4'></div>
 
     <TablerLoading v-if='loading.icon' desc='Loading Icon'/>
-    <div v-else class='page-body'>
-        <div class='container-xl'>
-            <div class='row row-deck row-cards'>
-                <div class="col-lg-12">
-                    <div class="card">
-                        <div class='card-header'>
-                            <h3 class='card-title'>Icon <span v-text='$route.params.icon || "New Icon"'/></h3>
-                        </div>
-                        <div class="card-body">
-                            <TablerLoading v-if='loading.icon' desc='Loading Icon'/>
-                            <TablerSchema v-else :schema='schema' v-model='icon'/>
+    <div v-else class="card-body">
+        <TablerLoading v-if='loading.icon' desc='Loading Icon'/>
+        <TablerSchema v-else :schema='schema' v-model='icon'/>
 
-                            <div class='d-flex'>
-                                <div class='ms-auto'>
-                                    <div @click='submit' class='btn btn-primary'>Submit</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+        <div class='d-flex'>
+            <div class='ms-auto'>
+                <div @click='submit' class='btn btn-primary'>Submit</div>
             </div>
         </div>
     </div>
-
-    <PageFooter/>
 </div>
 </template>
 
 <script>
 import { std, stdurl } from '/src/std.ts';
-import PageFooter from './PageFooter.vue';
 import {
-    TablerBreadCrumb,
     TablerLoading,
-    TablerDelete,
     TablerSchema
 } from '@tak-ps/vue-tabler';
-import {
-    IconSettings,
-} from '@tabler/icons-vue';
 
 export default {
-    name: 'IconEdit',
+    name: 'CloudTAKIconEdit',
     data: function() {
         return {
             loading: {
@@ -110,12 +86,8 @@ export default {
         },
     },
     components: {
-        PageFooter,
-        TablerBreadCrumb,
-        TablerDelete,
         TablerLoading,
         TablerSchema,
-        IconSettings,
     }
 }
 </script>

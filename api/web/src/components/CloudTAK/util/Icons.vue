@@ -3,15 +3,15 @@
     <div class="card-header">
         <h3 class='card-title'>Icon Search</h3>
 
-        <div class='ms-auto'>
-            <div class="input-icon">
-                <input v-model='paging.filter' type="text" class="form-control" placeholder="Search…">
-                <span class="input-icon-addon">
-                    <IconSearch/>
-                </span>
-            </div>
+        <div class='ms-auto btn-list'>
+            <IconSearch @click='search = !search' size='32' class='cursor-pointer'/>
         </div>
     </div>
+
+    <div v-if='search' class="col-12 px-2">
+        <TablerInput v-model='paging.filter' placeholder='Filter'/>
+    </div>
+
     <div class="card-body">
         <TablerLoading v-if='loading' desc='Loading Icons'/>
         <TablerNone
@@ -21,14 +21,17 @@
         />
         <template v-else>
             <div class='row g-1'>
-                <div @click='$router.push(`/iconset/${icon.iconset}/icon/${encodeURIComponent(icon.name)}`)' :key='icon.name' v-for='icon in list.items' class="col-sm-2">
-                    <div class="card card-sm hover-light cursor-pointer">
+                <div @click='$router.push(`/menu/iconset/${icon.iconset}/${encodeURIComponent(icon.name)}`)' :key='icon.name' v-for='icon in list.items' class="col-sm-2">
+                    <div class="card card-sm hover-dark cursor-pointer">
                         <div class='col-12'>
-                            <div class='d-flex justify-content-center mt-3'>
+                            <div class='d-flex justify-content-center mt-3' :class='{
+                                "mt-3": labels,
+                                "my-3": !labels
+                            }'>
                                 <img :src='iconurl(icon)' height='32' width='32'>
                             </div>
                         </div>
-                        <div class="card-body">
+                        <div v-if='labels' class="card-body">
                             <div class='row'>
                                 <div class='d-inline-block text-truncate' v-text='icon.name'></div>
                                 <div class="d-inline-block text-truncate text-muted" v-text='icon.type2525b || "None"'></div>
@@ -52,6 +55,7 @@ import { std, stdurl } from '/src/std.ts';
 import {
     TablerNone,
     TablerPager,
+    TablerInput,
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import {
@@ -63,15 +67,20 @@ export default {
     props: {
         iconset: {
             type: String
+        },
+        labels: {
+            type: Boolean,
+            default: true
         }
     },
     data: function() {
         return {
             err: false,
             loading: true,
+            search: false,
             paging: {
                 filter: '',
-                limit: 100,
+                limit: 100 - 4, // keeps the icon in an even grid
                 page: 0
             },
             list: {
@@ -81,6 +90,9 @@ export default {
         }
     },
     watch: {
+        search: function() {
+            if (!this.search) this.paging.filter = '';
+        },
         paging: {
             deep: true,
             handler: async function() {
@@ -111,6 +123,7 @@ export default {
     components: {
         TablerNone,
         TablerPager,
+        TablerInput,
         IconSearch,
         TablerLoading
     }

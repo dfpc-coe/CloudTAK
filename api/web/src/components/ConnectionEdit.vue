@@ -136,7 +136,7 @@
 </template>
 
 <script>
-import { std, stdurl } from '/src/std.ts';
+import { std } from '/src/std.ts';
 import PageFooter from './PageFooter.vue';
 import Upload from './util/UploadP12.vue';
 import LoginCertModal from './util/LoginCertModal.vue';
