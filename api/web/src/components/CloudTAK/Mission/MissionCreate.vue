@@ -80,7 +80,6 @@ import {
 import GroupSelect from '../../util/GroupSelectModal.vue';
 import Alert from '../../util/Alert.vue';
 import {
-    TablerNone,
     TablerInput,
     TablerEnum,
     TablerToggle,
@@ -146,7 +145,6 @@ export default {
         IconSquareChevronRight,
         IconChevronDown,
         GroupSelect,
-        TablerNone,
         Alert,
         TablerLoading,
         TablerInput,

@@ -58,22 +58,19 @@ import {
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import {
-    IconShare2,
     IconCircleArrowLeft,
     IconPlus,
     IconRefresh,
     IconSettings,
-    IconDownload,
     IconSearch
 } from '@tabler/icons-vue'
 import { mapState } from 'pinia'
 import { useMapStore } from '/src/stores/map.ts';
 import { useProfileStore } from '/src/stores/profile.js';
-const profileStore = useProfileStore();
 const mapStore = useMapStore();
 
 export default {
-    name: 'BaseMaps',
+    name: 'CloudTAKBaseMaps',
     data: function() {
         return {
             err: false,
@@ -145,12 +142,10 @@ export default {
         TablerPager,
         TablerInput,
         IconCircleArrowLeft,
-        IconShare2,
         IconSettings,
         IconPlus,
         IconRefresh,
         IconSearch,
-        IconDownload,
         TablerLoading,
         BasemapEditModal
     }

@@ -32,7 +32,7 @@
                         v-model:header='header'
                     />
                     <tbody>
-                        <tr  :key='user.id' v-for='(user, user_it) in list.items' class='cursor-pointer'>
+                        <tr  :key='user.id' v-for='user in list.items' class='cursor-pointer'>
                             <template v-for='h in header'>
                                 <template v-if='h.display'>
                                     <td>

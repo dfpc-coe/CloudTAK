@@ -126,12 +126,10 @@ import {
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import 'maplibre-gl/dist/maplibre-gl.css';
-import CloudTAKMenu from './Menu.vue';
 import CloudTAKCoTView from './CoTView.vue';
 import CloudTAKFeatView from './FeatView.vue';
 import RadialMenu from './RadialMenu/RadialMenu.vue';
-import moment from 'moment';
-import { mapState, mapActions } from 'pinia'
+import { mapState } from 'pinia'
 import { useMapStore } from '/src/stores/map.ts';
 import { useOverlayStore } from '/src/stores/overlays.ts';
 import { useProfileStore } from '/src/stores/profile.js';
@@ -370,7 +368,7 @@ export default {
             }
         },
         mountMap: async function() {
-            let basemap, terrain;
+            let basemap;
 
             const burl = stdurl('/api/basemap');
             burl.searchParams.append('type', 'raster');
@@ -446,7 +444,6 @@ export default {
         TablerNone,
         TablerDropdown,
         TablerLoading,
-        CloudTAKMenu,
         CloudTAKCoTView,
         CloudTAKFeatView,
         IconLocationOff,

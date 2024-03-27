@@ -100,19 +100,8 @@ import {
     IconFileImport,
     IconAffiliate,
 } from '@tabler/icons-vue';
-import MenuImports from './Menu/Imports.vue';
-import MenuBasemaps from './Menu/Basemaps.vue';
-import MenuOverlays from './Menu/Overlays.vue';
-import MenuDatas from './Menu/Datas.vue';
-import MenuChats from './Menu/Chats.vue';
-import MenuChat from './Menu/Chat.vue';
-import MenuContacts from './Menu/Contacts.vue';
-import MenuSettings from './Menu/Settings.vue';
-import MenuMissions from './Menu/Missions.vue';
-import MenuChannels from './Menu/Channels.vue';
 import { mapState } from 'pinia'
 import { useProfileStore } from '/src/stores/profile.js';
-const profileStore = useProfileStore();
 
 export default {
     name: 'CloudTAKMenu',
@@ -128,16 +117,6 @@ export default {
     },
     components: {
         IconBoxMultiple,
-        MenuBasemaps,
-        MenuSettings,
-        MenuOverlays,
-        MenuContacts,
-        MenuChannels,
-        MenuMissions,
-        MenuImports,
-        MenuChats,
-        MenuChat,
-        MenuDatas,
         IconPhoto,
         IconMessage,
         IconNetwork,

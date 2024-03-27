@@ -17,7 +17,7 @@
 </template>
 
 <script>
-import { std, stdurl } from '/src/std.ts';
+import { stdurl } from '/src/std.ts';
 import {
     IconTrash,
     IconPlayerPlay,
@@ -52,7 +52,7 @@ export default {
         }
 
         this.ws = new WebSocket(url);
-        this.ws.addEventListener('error', (err) => { this.$emit('err') });
+        this.ws.addEventListener('error', (err) => { this.$emit('err', err) });
 
         this.ws.addEventListener('message', (msg) => {
             msg = JSON.parse(msg.data);

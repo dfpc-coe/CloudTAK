@@ -138,7 +138,6 @@ import {
 } from '@tak-ps/vue-tabler';
 import { mapState } from 'pinia'
 import { useProfileStore } from '/src/stores/profile.js';
-const profileStore = useProfileStore();
 
 export default {
     name: 'BasemapEditModal',
@@ -238,13 +237,13 @@ export default {
                     if (!editing.bounds || !editing.bounds.length) delete editing.bounds;
                     if (!editing.center || !editing.center.length) delete editing.center;
 
-                    const create = await std(`/api/basemap/${this.basemap.id}`, {
+                    await std(`/api/basemap/${this.basemap.id}`, {
                         method: 'PATCH',
                         body: editing
                     });
                     this.$emit('close');
                 } else {
-                    const create = await std('/api/basemap', {
+                    await std('/api/basemap', {
                         method: 'POST',
                         body: {
                             scope: this.scope,

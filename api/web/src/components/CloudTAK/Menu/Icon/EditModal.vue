@@ -27,9 +27,6 @@ import {
     TablerLoading,
     TablerSchema
 } from '@tak-ps/vue-tabler';
-import {
-    IconSettings,
-} from '@tabler/icons-vue';
 
 export default {
     name: 'IconEdit',
@@ -66,7 +63,7 @@ export default {
         submit: async function() {
             const url = await stdurl(`/api/iconset/${this.$route.params.iconset}/icon/${this.icon.id ? encodeURIComponent(this.icon.name) : ''}`);
 
-            const iconset = await std(url, {
+            await std(url, {
                 method: this.icon.id ? 'PATCH' : 'POST',
                 body: this.editing
             });
@@ -84,7 +81,6 @@ export default {
         TablerModal,
         TablerLoading,
         TablerSchema,
-        IconSettings,
     }
 }
 </script>

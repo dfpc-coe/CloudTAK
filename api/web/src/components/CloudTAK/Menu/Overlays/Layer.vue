@@ -95,19 +95,11 @@
 
 <script>
 import {
-    TablerDelete,
-    TablerLoading,
     TablerInput,
     TablerRange
 } from '@tak-ps/vue-tabler';
 import {
     IconCircleArrowLeft,
-    IconMaximize,
-    IconVector,
-    IconEyeOff,
-    IconPlus,
-    IconEye,
-    IconMap
 } from '@tabler/icons-vue';
 import { useMapStore } from '/src/stores/map.ts';
 import { mapState } from 'pinia'
@@ -146,15 +138,7 @@ export default {
     components: {
         TablerRange,
         TablerInput,
-        TablerLoading,
-        TablerDelete,
-        IconMaximize,
         IconCircleArrowLeft,
-        IconEye,
-        IconEyeOff,
-        IconPlus,
-        IconVector,
-        IconMap
     }
 }
 </script>

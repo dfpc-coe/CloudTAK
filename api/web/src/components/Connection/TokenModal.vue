@@ -26,7 +26,7 @@
 </template>
 
 <script>
-import { std, stdurl } from '/src/std.ts';
+import { std } from '/src/std.ts';
 import {
     TablerModal,
     TablerInput,
@@ -67,7 +67,7 @@ export default {
         },
         saveToken: async function() {
             if (this.token.id) {
-                const newtoken = await std(`/api/connection/${this.$route.params.connectionid}/token/${this.token.id}`, {
+                await std(`/api/connection/${this.$route.params.connectionid}/token/${this.token.id}`, {
                     method: 'PATCH',
                     body: this.editToken
                 });

@@ -37,14 +37,13 @@ import {
 } from '@tak-ps/vue-tabler';
 import {
     IconRefresh,
-    IconCircleFilled,
     IconCircleArrowLeft
 } from '@tabler/icons-vue';
 import Status from '../../util/Status.vue';
 import timeDiff from '../../../timediff.js';
 
 export default {
-    name: 'Imports',
+    name: 'CloudTAKImports',
     data: function() {
         return {
             err: false,
@@ -88,7 +87,6 @@ export default {
         TablerPager,
         TablerLoading,
         IconRefresh,
-        IconCircleFilled,
         IconCircleArrowLeft,
     }
 }

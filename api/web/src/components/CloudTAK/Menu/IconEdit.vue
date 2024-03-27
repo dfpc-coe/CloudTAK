@@ -27,15 +27,11 @@
 import { std, stdurl } from '/src/std.ts';
 import {
     TablerLoading,
-    TablerDelete,
     TablerSchema
 } from '@tak-ps/vue-tabler';
-import {
-    IconSettings,
-} from '@tabler/icons-vue';
 
 export default {
-    name: 'IconEdit',
+    name: 'CloudTAKIconEdit',
     data: function() {
         return {
             loading: {
@@ -90,10 +86,8 @@ export default {
         },
     },
     components: {
-        TablerDelete,
         TablerLoading,
         TablerSchema,
-        IconSettings,
     }
 }
 </script>

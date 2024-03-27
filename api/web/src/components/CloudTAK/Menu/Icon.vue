@@ -42,21 +42,19 @@
 <script>
 import { std, stdurl } from '/src/std.ts';
 import {
-    TablerNone,
     TablerDelete,
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import {
     IconCircleArrowLeft,
     IconSettings,
-    IconDownload
 } from '@tabler/icons-vue';
 import IconEditModal from './Icon/EditModal.vue';
 import { mapState } from 'pinia';
 import { useProfileStore } from '/src/stores/profile.js';
 
 export default {
-    name: 'Icon',
+    name: 'CloudTAKIcon',
     data: function() {
         return {
             loading: true,
@@ -107,9 +105,7 @@ export default {
         IconCircleArrowLeft,
         IconEditModal,
         IconSettings,
-        IconDownload,
         TablerDelete,
-        TablerNone,
         TablerLoading
     }
 }

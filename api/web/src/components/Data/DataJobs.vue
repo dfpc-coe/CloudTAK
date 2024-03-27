@@ -43,7 +43,7 @@
 </template>
 
 <script>
-import { std, stdurl } from '/src/std.ts';
+import { std } from '/src/std.ts';
 import Alert from '../util/Alert.vue';
 import {
     IconRefresh
