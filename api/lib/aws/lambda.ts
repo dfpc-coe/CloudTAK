@@ -43,7 +43,7 @@ export default class Lambda {
         const StackName = `${config.StackName}-layer-${layer.id}`;
 
         const stack: any = {
-            Description: `${layer.name} @ v1.0.0`,
+            Description: `${layer.name}`,
             Parameters: {
                 Task: {
                     Type: 'String',
@@ -85,7 +85,7 @@ export default class Lambda {
                         FunctionName: StackName,
                         MemorySize: layer.memory,
                         Timeout: layer.timeout,
-                        Description: StackName,
+                        Description: `${StackName}: ${layer.name}`,
                         PackageType: 'Image',
                         Environment: {
                             Variables: {
