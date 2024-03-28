@@ -13,6 +13,22 @@ export default {
                 }]
             }
         },
+        StackHookQueuePolicy: {
+            Type: 'AWS::SQS::QueuePolicy',
+            Properties: {
+                Queues: [cf.ref('StackHookQueue')],
+                PolicyDocument: {
+                    "Statement":[{
+                        Action: ["SQS:SendMessage"],
+                        Effect: "Allow",
+                        Resource: cf.getAtt('StackHookQueue', 'Arn'),
+                        Principal: {
+                            Service: 'sns.amazonaws.com'
+                        }
+                    }]
+                }
+            }
+        },
         StackHookQueue: {
             Type: 'AWS::SQS::Queue',
             Properties: {
