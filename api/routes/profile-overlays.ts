@@ -26,7 +26,9 @@ export default async function router(schema: Schema, config: Config) {
             before being returned.
         `,
         query: Type.Object({
-            limit: Type.Optional(Type.Integer())
+            limit: Type.Integer({ default: 10 }),
+            page: Type.Integer({ default: 0 }),
+            order: Type.Enum(GenericListOrder, { default: GenericListOrder.ASC }),
         }),
         res: Type.Object({
             total: Type.Integer(),
@@ -40,6 +42,8 @@ export default async function router(schema: Schema, config: Config) {
 
             const overlays = await config.models.ProfileOverlay.list({
                 limit: req.query.limit,
+                page: req.query.page,
+                order: req.query.order,
                 where: sql`
                     username = ${user.email}
                 `
