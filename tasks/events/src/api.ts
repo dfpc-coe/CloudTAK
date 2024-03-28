@@ -7,6 +7,49 @@ import path from 'node:path';
 import { Event } from './index.js'
 
 export default class API {
+    static async fetchSchema(event: {
+        layer: string;
+        token: string;
+    }) {
+        const res = await fetch(new URL(`/api/layer/${event.layer}`, process.env.TAK_ETL_API), {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${event.token}`
+            },
+            body: JSON.stringify(body)
+        });
+
+        const json = await res.json();
+
+        if (!res.ok) {
+            const err = json as { message: string };
+            throw new Error(err.message);
+        }
+
+        return json as any;
+    }
+
+    static async updateLayer(event: {
+        layer: string;
+        body: unknown;
+    }) {
+        const res = await fetch(new URL(`/api/layer/${event.layer}`, process.env.TAK_ETL_API), {
+            method: 'PATCH',
+            headers: {
+                'Authorization': `Bearer ${event.token}`
+            },
+        });
+
+        const json = await res.json();
+
+        if (!res.ok) {
+            const err = json as { message: string };
+            throw new Error(err.message);
+        }
+
+        return json as any;
+    }
+
     static async uploadMission(event: Event, mission: {
         name: string;
         filename: string;
