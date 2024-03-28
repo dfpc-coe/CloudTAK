@@ -11,7 +11,9 @@ export default class API {
         layer: string;
         token: string;
     }) {
-        const res = await fetch(new URL(`/api/layer/${event.layer}`, process.env.TAK_ETL_API), {
+        const url = new URL(`/api/layer/${event.layer}`, process.env.TAK_ETL_API);
+        url.searchParams.append('type', 'schema:output');
+        const res = await fetch(url, {
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${event.token}`
