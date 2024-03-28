@@ -18,9 +18,9 @@ export default {
             Properties: {
                 Queues: [cf.ref('StackHookQueue')],
                 PolicyDocument: {
-                    "Statement":[{
-                        Action: ["SQS:SendMessage"],
-                        Effect: "Allow",
+                    'Statement':[{
+                        Action: ['SQS:SendMessage'],
+                        Effect: 'Allow',
                         Resource: cf.getAtt('StackHookQueue', 'Arn'),
                         Principal: {
                             Service: 'sns.amazonaws.com'
