@@ -158,6 +158,33 @@ export default async function router(schema: Schema, config: Config) {
         }
     });
 
+    await schema.delete('/layer/:layerid/task', {
+        name: 'Cancel Update',
+        group: 'Task',
+        params: Type.Object({
+            layerid: Type.Integer(),
+        }),
+        description: 'If a stack is currently updating, cancel the stack update',
+        res: StandardResponse
+    }, async (req, res) => {
+        try {
+            await Auth.is_auth(config, req);
+
+            const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
+                return await config.models.Layer.from(parseInt(String(req.params.layerid)));
+            });
+
+            await CF.delete(config, layer.id);
+
+            return res.json({
+                status: 200,
+                message: 'Stack Update Cancelled'
+            });
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
+
     await schema.post('/layer/:layerid/task/invoke', {
         name: 'Run Task',
         group: 'Task',

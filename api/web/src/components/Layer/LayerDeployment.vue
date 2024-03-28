@@ -37,15 +37,11 @@
                 />
 
                 <IconRefresh
-                    v-if='!loading.small'
-                    @click='refresh'
+                    @click='$emit("stack")'
                     v-tooltip='"Refresh"'
                     size='24'
                     class='cursor-pointer'
                 />
-                <div v-else class='d-flex justify-content-center'>
-                    <div class="spinner-border" role="status"></div>
-                </div>
             </div>
         </div>
     </div>
@@ -102,19 +98,23 @@ import {
 
 export default {
     name: 'LayerDeployment',
+    props: {
+        stack: {
+            type: Object,
+            required: true
+        }
+    },
     data: function() {
         return {
             mode: 'status',
             looping: false,
             errors: {
-                cloudformation: false,
                 cloudwatch: false
             },
             loading: {
                 full: true,
                 small: true
             },
-            stack: {},
             logs: {}
         };
     },
@@ -132,16 +132,13 @@ export default {
     },
     methods: {
         init: async function() {
-            if (this.mode === 'status') {
-                await this.fetchStatus();
-                this.looping = setInterval(() => {
-                    this.fetchStatus(false);
-                }, 10 * 1000);
-            } else if (this.mode === 'logs') {
+            if (this.mode === 'logs') {
                 await this.fetchLogs();
                 this.looping = setInterval(() => {
                     this.fetchLogs(false);
                 }, 10 * 1000);
+            } else {
+                this.loading.full = false;
             }
         },
         clear: function() {
@@ -149,7 +146,6 @@ export default {
         },
         refresh: async function() {
             if (this.mode === 'logs') await this.fetchLogs();
-            if (this.mode === 'status') await this.fetchStatus();
         },
         invoke: async function() {
             this.loading.full = true;
@@ -168,27 +164,11 @@ export default {
             this.errors.cloudformation = false;
 
             try {
-                this.stack = await std(`/api/layer/${this.$route.params.layerid}/redeploy`, {
+                await std(`/api/layer/${this.$route.params.layerid}/redeploy`, {
                     method: 'POST'
                 });
-            } catch (err) {
-                this.errors.cloudformation = err;
-            }
 
-            this.loading.full = false;
-            this.loading.small = false;
-        },
-        fetchStatus: async function(showLoading=true) {
-            if (showLoading) {
-                this.loading.full = true;
-            } else {
-                this.loading.small = true;
-            }
-
-            this.errors.cloudformation = false;
-
-            try {
-                this.stack = await std(`/api/layer/${this.$route.params.layerid}/task`);
+                this.$emit('stack');
             } catch (err) {
                 this.errors.cloudformation = err;
             }
@@ -220,9 +200,12 @@ export default {
         },
         postStack: async function() {
             this.loading.full = true;
-            this.stack = await std(`/api/layer/${this.$route.params.layerid}/task`, {
+            await std(`/api/layer/${this.$route.params.layerid}/task`, {
                 method: 'POST'
             });
+
+            this.$emit('stack');
+
             this.loading.full = false;
         }
     },

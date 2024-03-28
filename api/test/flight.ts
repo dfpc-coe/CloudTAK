@@ -66,7 +66,7 @@ export default class Flight {
         test('start: database', async (t) => {
             try {
                 if (dropdb) {
-                    const connstr = process.env.POSTGRES || 'postgres://postgres@localhost:5432/tak_ps_etl';
+                    const connstr = process.env.POSTGRES || 'postgres://postgres@localhost:5432/tak_ps_etl_test';
                     await drop(connstr);
                     const pool = await Pool.connect(connstr, {
                         migrationsFolder: (new URL('../migrations', import.meta.url)).pathname,
@@ -221,7 +221,7 @@ export default class Flight {
     takeoff(custom = {}) {
         test('test server takeoff', async (t) => {
             this.config = await Config.env({
-                postgres: process.env.POSTGRES || 'postgres://postgres@localhost:5432/tak_ps_etl',
+                postgres: process.env.POSTGRES || 'postgres://postgres@localhost:5432/tak_ps_etl_test',
                 silent: true,
                 unsafe: true,
                 noevents: true,

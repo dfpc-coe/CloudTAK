@@ -56,7 +56,13 @@
                 </div>
 
                 <div class='col-lg-12'>
-                    <div v-if='stack' class='card'>
+                    <div v-if='loading.layer' class='card'>
+                        <div class='card-body'><TablerLoading desc='Loading Layer'/></div>
+                    </div>
+                    <div v-else-if='loading.stack' class='card'>
+                        <div class='card-body'><TablerLoading desc='Loading Stack Status'/></div>
+                    </div>
+                    <div v-else-if='stack && !stack.status.includes("_COMPLETE")' class='card'>
                         <div class='card-header d-flex align-items-center'>
                             <TablerLoading inline='true' desc='Layer is updating'/>
                             <div class='ms-auto btn-list'>
@@ -99,7 +105,9 @@
                             <div class="col-12 col-md-9">
                                 <router-view
                                     :layer='layer'
+                                    :stack='stack'
                                     @layer='layer = $event'
+                                    @stack='fetchStatus(true)'
                                 />
                             </div>
                         </div>
@@ -142,25 +150,36 @@ export default {
         return {
             err: false,
             loading: {
-                layer: true
+                layer: true,
+                stack: true
             },
             stack: {},
             layer: {},
-            alerts: {}
+            alerts: {},
+            looping: false
         }
     },
     mounted: async function() {
         await this.fetch();
-        await this.fetchAlerts();
 
         await this.fetchStatus();
         this.looping = setInterval(() => {
-            this.fetchStatus(false);
+            this.fetchStatus();
         }, 10 * 1000);
+
+        await this.fetchAlerts();
+
+        this.loading.layer = false;
+    },
+    unmounted: function() {
+        this.clear()
     },
     methods: {
         timeDiff(update) {
             return timeDiff(update);
+        },
+        clear: function() {
+            if (this.looping) clearInterval(this.looping);
         },
         cronstr: function(cron) {
             if (!cron) return;
@@ -173,12 +192,12 @@ export default {
             }
         },
         fetch: async function() {
-            this.loading.layer = true;
             this.layer = await std(`/api/layer/${this.$route.params.layerid}`);
-            this.loading.layer = false;
         },
-        fetchStatus: async function(showLoading=true) {
+        fetchStatus: async function(loading = false) {
+            this.loading.stack = loading;
             this.stack = await std(`/api/layer/${this.$route.params.layerid}/task`);
+            this.loading.stack = false;
         },
         fetchAlerts: async function() {
             this.alerts = await std(`/api/layer/${this.$route.params.layerid}/alert`);
