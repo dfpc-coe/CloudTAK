@@ -36,8 +36,7 @@ export default class CloudFormation {
             // Resource not found
         }
 
-        let arn = await config.fetchArnPrefix('sns');
-
+        const arn = await config.fetchArnPrefix('sns');
         await cf.send(new AWSCloudFormation.CreateStackCommand({
             StackName: this.stdname(config, layerid),
             TemplateBody: JSON.stringify(stack),
@@ -49,6 +48,7 @@ export default class CloudFormation {
     static async update(config: Config, layerid: number, stack: object): Promise<void> {
         const cf = new AWSCloudFormation.CloudFormationClient({ region: process.env.AWS_DEFAULT_REGION });
 
+        const arn = await config.fetchArnPrefix('sns');
         await cf.send(new AWSCloudFormation.UpdateStackCommand({
             StackName: this.stdname(config, layerid),
             TemplateBody: JSON.stringify(stack),
