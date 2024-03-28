@@ -66,7 +66,7 @@
                         <div class='card-header d-flex align-items-center'>
                             <TablerLoading inline='true' desc='Layer is updating'/>
                             <div class='ms-auto btn-list'>
-                                <IconX class='cursor-pointer' size='32' v-tooltip='"Cancel Stack Update"'/>
+                                <IconX @click='cancelUpdate' class='cursor-pointer' size='32' v-tooltip='"Cancel Stack Update"'/>
                             </div>
                         </div>
                         <div class='card-body'>
@@ -193,6 +193,11 @@ export default {
         },
         fetch: async function() {
             this.layer = await std(`/api/layer/${this.$route.params.layerid}`);
+        },
+        cancelUpdate: async function() {
+            await std(`/api/layer/${this.$route.params.layerid}/task`, {
+                method: 'DELETE'
+            });
         },
         fetchStatus: async function(loading = false) {
             this.loading.stack = loading;
