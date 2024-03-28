@@ -1,4 +1,5 @@
 import { Type } from '@sinclair/typebox'
+import { GenericListOrder } from '@openaddresses/batch-generic';
 import { validate } from '@maplibre/maplibre-gl-style-spec';
 import path from 'node:path';
 import Config from '../lib/config.js';
