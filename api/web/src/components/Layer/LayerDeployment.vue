@@ -64,7 +64,7 @@
                 <div @click='refresh' class='btn btn-secondary'>Refresh</div>
             </div>
         </template>
-        <template v-else-if='stack.status === "destroyed"'>
+        <template v-else-if='stack.status === "DOES_NOT_EXIST_COMPLETE"'>
             <div class="d-flex justify-content-center mb-4">
                 Stack Hasn't Deployed
             </div>

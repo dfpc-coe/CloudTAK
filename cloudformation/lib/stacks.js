@@ -20,6 +20,16 @@ export default {
                 VisibilityTimeout: 900
             }
         },
+        StackHookQueueLambdaPermission: {
+            Type: 'AWS::Lambda::Permission',
+            Properties: {
+                Action: 'lambda:InvokeFunction',
+                FunctionName: cf.getAtt('EventLambda', 'Arn'),
+                Principal: 'sqs.amazonaws.com',
+                SourceArn: cf.getAtt('StackHookQueue', 'Arn'),
+                SourceAccount: cf.accountId
+            }
+        },
         StackHookLambdaSource: {
             Type: 'AWS::Lambda::EventSourceMapping',
             Properties: {
