@@ -41,9 +41,9 @@ export default async function router(schema: Schema, config: Config) {
         description: 'List Iconsets',
         query: Type.Object({
             scope: Type.Optional(Type.Enum(ResourceCreationScope)),
-            limit: Type.Optional(Type.Integer({ default: 25 })),
-            page: Type.Optional(Type.Integer()),
-            order: Type.Optional(Type.Enum(GenericListOrder)),
+            limit: Type.Integer({ default: 10 }),
+            page: Type.Integer({ default: 0 }),
+            order: Type.Enum(GenericListOrder, { default: GenericListOrder.ASC }),
             sort: Type.Optional(Type.String({default: 'created', enum: Object.keys(Iconset) })),
             filter: Type.Optional(Type.String({default: ''}))
         }),

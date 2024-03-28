@@ -17,9 +17,9 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Token',
         description: 'List all tokens associated with the requester\'s account',
         query: Type.Object({
-            limit: Type.Optional(Type.Integer()),
-            page: Type.Optional(Type.Integer()),
-            order: Type.Optional(Type.Enum(GenericListOrder)),
+            limit: Type.Integer({ default: 10 }),
+            page: Type.Integer({ default: 0 }),
+            order: Type.Enum(GenericListOrder, { default: GenericListOrder.ASC }),
             sort: Type.Optional(Type.String({default: 'created', enum: Object.keys(Token) })),
             filter: Type.Optional(Type.String({default: ''}))
         }),

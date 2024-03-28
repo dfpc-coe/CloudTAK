@@ -139,12 +139,12 @@ export default async function router(schema: Schema, config: Config) {
         description: 'List BaseMaps',
         query: Type.Object({
             scope: Type.Optional(Type.Enum(ResourceCreationScope)),
-            limit: Type.Optional(Type.Integer()),
-            page: Type.Optional(Type.Integer()),
-            order: Type.Optional(Type.Enum(GenericListOrder)),
+            limit: Type.Integer({ default: 10 }),
+            page: Type.Integer({ default: 0 }),
+            order: Type.Enum(GenericListOrder, { default: GenericListOrder.ASC }),
             type: Type.Optional(Type.Enum(BasemapType)),
-            sort: Type.Optional(Type.String({default: 'created', enum: Object.keys(Basemap) })),
-            filter: Type.Optional(Type.String({default: ''}))
+            sort: Type.Optional(Type.String({ default: 'created', enum: Object.keys(Basemap) })),
+            filter: Type.Optional(Type.String({ default: '' }))
         }),
         res: Type.Object({
             total: Type.Integer(),
