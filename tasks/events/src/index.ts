@@ -27,11 +27,19 @@ export const handler = async (
         Records: Lambda.SQSRecord[] | Lambda.S3EventRecord[]
     }
 ): Promise<void> => {
+    if (!event.Records) {
+        console.error('No Records: ', JSON.stringify(event));
+        throw new Error('No Records');
+    }
+
     for (const record of event.Records) {
         if (Object.keys(record).includes('s3')) {
             await s3Event(record as Lambda.S3EventRecord)
         } else if (Object.keys(record).includes('body')) {
             await sqsEvent(record as Lambda.SQSRecord);
+        } else {
+            console.log('Unknown Source', JSON.stringify(record));
+            throw new Error('Unknown Source');
         }
     }
 };
