@@ -45,7 +45,24 @@ export const handler = async (
 };
 
 async function sqsEvent(record: Lambda.SQSRecord) {
-    console.error(record);
+    const event = JSON.stringify(record.body).Message.split('\\n');
+    const res = {};
+    for (const e of event) {
+        if (!e) continue;
+        res[e.split('=')[0]] = e.split('=')[1].replace(/'/g, '')
+    }
+
+    if (!res.ResourceStatus.endsWith('COMPLETE')) {
+        console.error(`No Action: ${res.LogicalResourceId}:${res.ResourceStatus}`);
+        return;
+    }
+
+    const layer = res.LogicalResourceId.replace(/.*-layer-/, '');
+    const token = `etl.${jwt.sign({ access: 'layer' , id: layer, internal: true }, String(process.env.SigningSecret))}`;
+
+    const schema = await API.fetchSchema({ layer, token });
+
+    const schema = await API.updateLayer({ layer, token, body: { schema } });
 }
 
 async function s3Event(record: Lambda.S3EventRecord) {
