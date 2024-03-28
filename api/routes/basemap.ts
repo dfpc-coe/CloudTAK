@@ -41,6 +41,7 @@ export default async function router(schema: Schema, config: Config) {
             center: Type.Optional(Type.Any()),
             minzoom: Type.Optional(Type.Integer()),
             maxzoom: Type.Optional(Type.Integer()),
+            style: Type.Optional(Type.String()),
             format: Type.Optional(Type.String())
         })
     }, async (req, res) => {
@@ -188,6 +189,7 @@ export default async function router(schema: Schema, config: Config) {
             minzoom: Type.Optional(Type.Integer()),
             maxzoom: Type.Optional(Type.Integer()),
             format: Type.Optional(Type.String()),
+            style: Type.Optional(Type.String()),
             type: Type.Optional(Type.String()),
             bounds: Type.Array(Type.Number({minItems: 4, maxItems: 4})),
             center: Type.Array(Type.Number())
@@ -241,6 +243,7 @@ export default async function router(schema: Schema, config: Config) {
             minzoom: Type.Optional(Type.Integer()),
             maxzoom: Type.Optional(Type.Integer()),
             format: Type.Optional(Type.String()),
+            style: Type.Optional(Type.String()),
             type: Type.Optional(Type.String()),
             bounds: Type.Optional(Type.Array(Type.Number({minItems: 4, maxItems: 4}))),
             center: Type.Optional(Type.Array(Type.Number()))
