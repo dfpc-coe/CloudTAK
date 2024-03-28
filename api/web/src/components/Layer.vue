@@ -56,7 +56,18 @@
                 </div>
 
                 <div class='col-lg-12'>
-                    <div class='card'>
+                    <div v-if='stack' class='card'>
+                        <div class='card-header d-flex align-items-center'>
+                            <TablerLoading inline='true' desc='Layer is updating'/>
+                            <div class='ms-auto btn-list'>
+                                <IconX class='cursor-pointer' size='32' v-tooltip='"Cancel Stack Update"'/>
+                            </div>
+                        </div>
+                        <div class='card-body'>
+                            <pre v-text='stack.status'/>
+                        </div>
+                    </div>
+                    <div v-else class='card'>
                         <div class='row g-0'>
                             <div class="col-12 col-md-3 border-end">
                                 <div class="card-body">
@@ -114,6 +125,7 @@ import {
     TablerLoading
 } from '@tak-ps/vue-tabler'
 import {
+    IconX,
     IconSettings,
     IconDatabase,
     IconAlertTriangle,
@@ -132,6 +144,7 @@ export default {
             loading: {
                 layer: true
             },
+            stack: {},
             layer: {},
             alerts: {}
         }
@@ -139,6 +152,11 @@ export default {
     mounted: async function() {
         await this.fetch();
         await this.fetchAlerts();
+
+        await this.fetchStatus();
+        this.looping = setInterval(() => {
+            this.fetchStatus(false);
+        }, 10 * 1000);
     },
     methods: {
         timeDiff(update) {
@@ -159,17 +177,21 @@ export default {
             this.layer = await std(`/api/layer/${this.$route.params.layerid}`);
             this.loading.layer = false;
         },
+        fetchStatus: async function(showLoading=true) {
+            this.stack = await std(`/api/layer/${this.$route.params.layerid}/task`);
+        },
         fetchAlerts: async function() {
             this.alerts = await std(`/api/layer/${this.$route.params.layerid}/alert`);
         }
     },
     components: {
         LayerStatus,
-        IconSettings,
         PageFooter,
         TablerBreadCrumb,
         TablerMarkdown,
         TablerLoading,
+        IconX,
+        IconSettings,
         IconDatabase,
         IconAlertTriangle,
         IconPlaneDeparture,

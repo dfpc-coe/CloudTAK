@@ -99,6 +99,14 @@ export default class CloudFormation {
         }
     }
 
+    static async cancel(config: Config, layerid: number): Promise<void> {
+        const cf = new AWSCloudFormation.CloudFormationClient({ region: process.env.AWS_DEFAULT_REGION });
+
+        await cf.send(new AWSCloudFormation.CancelUpdateStackCommand({
+            StackName: this.stdname(config, layerid)
+        }));
+    }
+
     static async delete(config: Config, layerid: number): Promise<void> {
         const cf = new AWSCloudFormation.CloudFormationClient({ region: process.env.AWS_DEFAULT_REGION });
 
