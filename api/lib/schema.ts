@@ -56,6 +56,7 @@ export const Basemap = pgTable('basemaps', {
     minzoom: integer('minzoom').notNull().default(0),
     maxzoom: integer('maxzoom').notNull().default(16),
     format: text('format').notNull().default('png'),
+    style: text('style').notNull().default('zxy'),
     type: text('type').notNull().default('raster')
 });
 
