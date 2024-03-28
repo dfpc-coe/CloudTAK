@@ -15,6 +15,7 @@ import Schema from '@openaddresses/batch-schema';
 import { Geometry, BBox } from 'geojson';
 import { Type } from '@sinclair/typebox'
 import { StandardResponse, BasemapResponse } from '../lib/types.js';
+import BasemapManager from '../lib/basemap.js';
 import { Basemap } from '../lib/schema.js';
 
 enum BasemapType {
