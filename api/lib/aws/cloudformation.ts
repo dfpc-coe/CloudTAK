@@ -74,7 +74,7 @@ export default class CloudFormation {
             };
         } catch (err) {
             if (err instanceof Error && err.message.match(/Stack with id .* does not exist/)) {
-                return { status: 'destroyed' };
+                return { status: 'DOES_NOT_EXIST_COMPLETE' };
             } else {
                 throw err;
             }
