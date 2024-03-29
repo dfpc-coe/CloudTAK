@@ -25,7 +25,7 @@ export class ConnectionWebSocket {
                         const feat = chat.to_geojson();
                         await client.config.config.models.ProfileChat.generate({
                             username: String(client.config.id),
-                            chatroom: msg.data.to.callsign,
+                            chatroom: msg.data.chatroom,
                             sender_callsign: msg.data.from.callsign,
                             sender_uid: msg.data.from.uid,
                             message_id: feat.properties.chat.messageId,
