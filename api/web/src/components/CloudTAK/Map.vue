@@ -56,7 +56,13 @@
                     </div>
                 </template>
                 <template #dropdown>
-                    <TablerNone label='New Notifications' :create='false'/>
+                    <TablerNone v-if='!notifications.length' label='New Notifications' :create='false'/>
+                    <div class='col-12' v-for='n of notifications'>
+                        <div @click='$router.push(n.url)' v-if='n.type === "Chat"' class='col-12 cursor-pointer hover-dark'>
+                            <IconMessage size='32'/>
+                            <span v-text='n.name'/>
+                        </div>
+                    </div>
                 </template>
             </TablerDropdown>
             <TablerDropdown>
@@ -105,6 +111,7 @@
 <script>
 import { std, stdurl } from '/src/std.ts';
 import {
+    IconMessage,
     IconLocationOff,
     IconLocation,
     IconMenu2,
@@ -446,6 +453,7 @@ export default {
         TablerLoading,
         CloudTAKCoTView,
         CloudTAKFeatView,
+        IconMessage,
         IconLocationOff,
         IconLocation,
         IconMinus,
