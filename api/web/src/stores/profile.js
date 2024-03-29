@@ -9,6 +9,9 @@ export const useProfileStore = defineStore('profile', {
         }
     },
     actions: {
+        clearNotifications: function() {
+            this.notifications = [];
+        },
         CoT: function() {
             return {
                 // Need to differentiate between servers eventually
