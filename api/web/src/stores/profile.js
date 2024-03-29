@@ -12,7 +12,7 @@ export const useProfileStore = defineStore('profile', {
         CoT: function() {
             return {
                 // Need to differentiate between servers eventually
-                id: `ANDROID-CloudTAK-${this.profile.id}`,
+                id: `ANDROID-CloudTAK-${this.profile.username}`,
                 type: 'Feature',
                 properties: {
                     type: 'a-f-G-E-V-C',
