@@ -64,7 +64,7 @@ async function sqsEvent(record: Lambda.SQSRecord) {
     const token = `etl.${jwt.sign({ access: 'layer' , id: layer, internal: true }, String(process.env.SigningSecret))}`;
 
     const body = await API.fetchSchema({ layer, token });
-    await API.updateLayer({ layer, token, body: schema });
+    await API.updateLayer({ layer, token, body });
 }
 
 async function s3Event(record: Lambda.S3EventRecord) {

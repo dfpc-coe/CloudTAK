@@ -13,7 +13,7 @@
         <TablerLoading v-if='loading'/>
         <template v-else>
             <div v-for='chat in chats.items' class='col-12 d-flex my-2'>
-                <div v-if='!chat.mine' class='bg-blue px-2 py-2 rounded'>
+                <div v-if='chat.sender_uid !== id' class='bg-blue px-2 py-2 rounded'>
                     <span v-text='chat.message'/>
                 </div>
                 <div v-else class='ms-auto bg-gray-400 px-2 py-2 rounded'>
@@ -55,6 +55,7 @@ export default {
     name: 'CloudTAKChat',
     data: function() {
         return {
+            id: `ANDROID-CloudTAK-${profileStore.profile.username}`,
             loading: false,
             chats: {
                 total: 0,
@@ -68,15 +69,16 @@ export default {
     },
     methods: {
         sendMessage: async function() {
+            if (!this.message.trim().length) return;
             const chat = {
-                mine: true,
+                sender_uid: this.id,
                 message: this.message
             };
             this.chats.items.push(chat)
             this.message = ''
 
             const single = this.chats.items.filter((chat) => {
-                return !chat.mine;
+                return chat.sender_uid !== this.id
             })[0];
 
             connectionStore.sendCOT({
@@ -85,7 +87,7 @@ export default {
                     callsign: single.sender_callsign
                 },
                 from: {
-                    uid: `ANDROID-CloudTAK-${profileStore.profile.id}`,
+                    uid: this.id,
                     callsign: profileStore.profile.tak_callsign
                 },
                 message: chat.message
