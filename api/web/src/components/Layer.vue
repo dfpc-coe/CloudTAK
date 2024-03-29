@@ -174,6 +174,15 @@ export default {
     unmounted: function() {
         this.clear()
     },
+    watch: {
+        'stack.status': async function() {
+            if (this.stack.status.includes("_COMPLETE")) {
+                this.loading.layer = true;
+                await this.fetch()
+                this.loading.layer = false;
+            }
+        }
+    },
     methods: {
         timeDiff(update) {
             return timeDiff(update);
