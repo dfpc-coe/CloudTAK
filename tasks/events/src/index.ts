@@ -60,7 +60,7 @@ async function sqsEvent(record: Lambda.SQSRecord) {
         return;
     }
 
-    const layer = res.LogicalResourceId.replace(/.*-layer-/, '');
+    const layer = parseInt(res.LogicalResourceId.replace(/.*-layer-/, ''));
     const token = `etl.${jwt.sign({ access: 'layer' , id: layer, internal: true }, String(process.env.SigningSecret))}`;
 
     const schema = await API.fetchSchema({ layer, token });

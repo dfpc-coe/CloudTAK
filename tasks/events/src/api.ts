@@ -31,6 +31,7 @@ export default class API {
 
     static async updateLayer(event: {
         layer: string;
+        token: string;
         body: object;
     }) {
         const res = await fetch(new URL(`/api/layer/${event.layer}`, process.env.TAK_ETL_API), {
