@@ -36,6 +36,7 @@ export const Profile = pgTable('profile', {
 export const ProfileChat = pgTable('profile_chats', {
     id: serial('id').primaryKey(),
     username: text('username').notNull().references(() => Profile.username),
+    chatroom: text('chatroom').notNull(),
     sender_callsign: text('sender_callsign').notNull(),
     sender_uid: text('sender_uid').notNull(),
     created: timestamp('created', { withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
