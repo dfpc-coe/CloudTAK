@@ -1,3 +1,4 @@
+import STS from '@aws-sdk/client-sts';
 import SecretsManager from '@aws-sdk/client-secrets-manager';
 import type EventsPool from './events-pool.js';
 import { Pool } from '@openaddresses/batch-generic';
@@ -172,6 +173,20 @@ export default class Config {
         }
 
         return config;
+    }
+
+    /**
+     * Return a prefix to an ARN
+     */
+    async fetchArnPrefix(service = ''): Promise<string> {
+        const sts = new STS.STSClient({ region: process.env.AWS_DEFAULT_REGION });
+        const account = await sts.send(new STS.GetCallerIdentityCommand({}));
+        const res = [];
+        res.push(...account.Arn.split(':').splice(0, 2));
+        res.push(service);
+        res.push(process.env.AWS_DEFAULT_REGION);
+        res.push(...account.Arn.split(':').splice(4, 1))
+        return res.join(':');
     }
 
     static async fetchSigningSecret(StackName: string): Promise<string> {

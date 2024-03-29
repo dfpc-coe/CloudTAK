@@ -38,10 +38,27 @@ export default {
                 Statistic: 'Maximum',
                 Period: 60,
                 AlarmActions: [cf.ref('HighUrgencyAlarmTopic')],
-                InsufficientDataActions: [cf.ref('HighUrgencyAlarmTopic')],
                 Dimensions: [{
                     Name: 'QueueName',
                     Value: cf.getAtt('HookDeadQueue', 'QueueName')
+                }]
+            }
+        },
+        EventAlarm: {
+            Type: 'AWS::CloudWatch::Alarm',
+            Properties: {
+                AlarmName: cf.join('-', [cf.stackName, 'EventLambda']),
+                Namespace: 'AWS/Lambda',
+                MetricName: 'Errors',
+                ComparisonOperator: 'GreaterThanThreshold',
+                Threshold: 0,
+                EvaluationPeriods: 1,
+                Statistic: 'Maximum',
+                Period: 60,
+                AlarmActions: [cf.ref('HighUrgencyAlarmTopic')],
+                Dimensions: [{
+                    Name: 'FunctionName',
+                    Value: cf.join([cf.stackName, '-events'])
                 }]
             }
         }

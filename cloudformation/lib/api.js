@@ -167,6 +167,14 @@ export default {
                         },{ // ------------ Permissions Required to stand up lambda tasks ------------
                             Effect: 'Allow',
                             Action: [
+                                'sns:publish'
+                            ],
+                            Resource: [
+                                cf.join(['arn:', cf.partition, ':sns:', cf.region, ':', cf.accountId, ':coe-etl-prod-stack-events'])
+                            ]
+                        },{
+                            Effect: 'Allow',
+                            Action: [
                                 'cloudformation:DescribeStacks'
                             ],
                             Resource: [

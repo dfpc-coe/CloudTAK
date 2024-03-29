@@ -384,13 +384,13 @@
         "query": true,
         "res": true
     },
-    "POST /iconset/:iconset/icon": {
-        "body": true,
+    "DELETE /iconset/:iconset": {
+        "body": false,
         "query": false,
         "res": true
     },
-    "DELETE /iconset/:iconset": {
-        "body": false,
+    "POST /iconset/:iconset/icon": {
+        "body": true,
         "query": false,
         "res": true
     },
@@ -574,6 +574,11 @@
         "query": false,
         "res": true
     },
+    "GET /profile/chat/:chatroom": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
     "GET /profile/job": {
         "body": false,
         "query": false,
@@ -645,6 +650,11 @@
         "res": true
     },
     "GET /layer/:layerid/task": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "DELETE /layer/:layerid/task": {
         "body": false,
         "query": false,
         "res": true

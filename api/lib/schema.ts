@@ -34,7 +34,8 @@ export const Profile = pgTable('profile', {
 });
 
 export const ProfileChat = pgTable('profile_chats', {
-    username: text('username').primaryKey(),
+    id: serial('id').primaryKey(),
+    username: text('username').notNull().references(() => Profile.username),
     chatroom: text('chatroom').notNull(),
     sender_callsign: text('sender_callsign').notNull(),
     sender_uid: text('sender_uid').notNull(),
@@ -56,6 +57,7 @@ export const Basemap = pgTable('basemaps', {
     minzoom: integer('minzoom').notNull().default(0),
     maxzoom: integer('maxzoom').notNull().default(16),
     format: text('format').notNull().default('png'),
+    style: text('style').notNull().default('zxy'),
     type: text('type').notNull().default('raster')
 });
 

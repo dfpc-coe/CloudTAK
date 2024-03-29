@@ -12,7 +12,7 @@
 
     <TablerLoading v-if='loading.schema' desc='Retrieving Schema'/>
     <TablerLoading v-else-if='loading.save' desc='Saving Schema'/>
-    <TablerNone v-else-if='!schema.length' label='Schema' :create='false'/>
+    <TablerNone v-else-if='!schema.length && disabled' label='Schema' :create='false'/>
     <div v-else class='table-responsive'>
         <table class="table table-hover card-table table-vcenter" :class='{
             "cursor-pointer": !disabled
@@ -21,34 +21,36 @@
                 <tr>
                     <th>Property Name</th>
                     <th>Type</th>
+                    <th>Format</th>
                     <th>Attributes</th>
                 </tr>
             </thead>
             <tbody>
                 <tr @click='edit(field)' :key='field.name' v-for='(field, field_it) in schema'>
                     <td>
-                        <span class='mx-3'>
-                            <template v-if='field.type === "string"'>
-                                <IconAlphabetLatin size='32'/>
-                            </template>
-                            <template v-else-if='field.type === "number"'>
-                                <IconDecimal size='32'/>
-                            </template>
-                            <template v-else-if='field.type === "integer"'>
-                                <IconSort09 size='32'/>
-                            </template>
-                            <template v-else>
-                                <IconBinary size='32'/>
-                            </template>
-                        </span>
-                        <span v-text='field.name'/>
+                        <div class='d-flex align-items-center'>
+                            <span class='mx-3'>
+                                <template v-if='field.type === "string"'>
+                                    <IconAlphabetLatin size='32'/>
+                                </template>
+                                <template v-else-if='field.type === "number"'>
+                                    <IconDecimal size='32'/>
+                                </template>
+                                <template v-else-if='field.type === "integer"'>
+                                    <IconSort09 size='32'/>
+                                </template>
+                                <template v-else>
+                                    <IconBinary size='32'/>
+                                </template>
+                            </span>
+                            <span v-text='field.name'/>
+                        </div>
                     </td>
+                    <td v-text='field.type'></td>
+                    <td v-text='field.format'></td>
                     <td>
-                        <span v-text='field.type'/>
-                    </td>
-                    <td>
-                        <div class='d-flex'>
-                            <span v-if='field.required' class='badge mx-1 mb-1 bg-red text-white'>Required</span>
+                        <div class='d-flex align-items-center'>
+                            <span v-if='field.required' style='height: 20px;' class='badge mx-1 mb-1 bg-red text-white'>Required</span>
                             <div class='ms-auto'>
                                 <IconTrash v-if='!disabled' @click.stop='schema.splice(field_it, 1)' size='32' class='cursor-pointer'/>
                             </div>
@@ -166,6 +168,7 @@ export default {
             });
 
             this.loading.save = false;
+            this.disabled = true;
 
             this.$emit('layer', layer);
         },

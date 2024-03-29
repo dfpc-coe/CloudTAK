@@ -4,15 +4,18 @@ import { std } from '../std.ts';
 export const useProfileStore = defineStore('profile', {
     state: () => {
         return {
-            id: `ANDROID-${(Math.random() + 1).toString(36).substring(2)}`,
             notifications: [],
             profile: null,
         }
     },
     actions: {
+        clearNotifications: function() {
+            this.notifications = [];
+        },
         CoT: function() {
             return {
-                id: this.id,
+                // Need to differentiate between servers eventually
+                id: `ANDROID-CloudTAK-${this.profile.username}`,
                 type: 'Feature',
                 properties: {
                     type: 'a-f-G-E-V-C',

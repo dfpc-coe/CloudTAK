@@ -13,11 +13,37 @@ export default {
                 }]
             }
         },
+        StackHookQueuePolicy: {
+            Type: 'AWS::SQS::QueuePolicy',
+            Properties: {
+                Queues: [cf.ref('StackHookQueue')],
+                PolicyDocument: {
+                    'Statement':[{
+                        Action: ['SQS:SendMessage'],
+                        Effect: 'Allow',
+                        Resource: cf.getAtt('StackHookQueue', 'Arn'),
+                        Principal: {
+                            Service: 'sns.amazonaws.com'
+                        }
+                    }]
+                }
+            }
+        },
         StackHookQueue: {
             Type: 'AWS::SQS::Queue',
             Properties: {
                 QueueName: cf.join([cf.stackName, '-stack-events']),
                 VisibilityTimeout: 900
+            }
+        },
+        StackHookQueueLambdaPermission: {
+            Type: 'AWS::Lambda::Permission',
+            Properties: {
+                Action: 'lambda:InvokeFunction',
+                FunctionName: cf.getAtt('EventLambda', 'Arn'),
+                Principal: 'sqs.amazonaws.com',
+                SourceArn: cf.getAtt('StackHookQueue', 'Arn'),
+                SourceAccount: cf.accountId
             }
         },
         StackHookLambdaSource: {

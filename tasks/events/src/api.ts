@@ -7,6 +7,54 @@ import path from 'node:path';
 import { Event } from './index.js'
 
 export default class API {
+    static async fetchSchema(event: {
+        layer: string;
+        token: string;
+    }) {
+        const url = new URL(`/api/layer/${event.layer}/task/schema`, process.env.TAK_ETL_API);
+        url.searchParams.append('type', 'schema:output');
+        const res = await fetch(url, {
+            headers: {
+                'Authorization': `Bearer ${event.token}`
+            },
+        });
+
+        const json = await res.json();
+
+        if (!res.ok) {
+            console.error(JSON.stringify(json))
+            const err = json as { message: string };
+            throw new Error(err.message);
+        }
+
+        return json as any;
+    }
+
+    static async updateLayer(event: {
+        layer: string;
+        token: string;
+        body: object;
+    }) {
+        const res = await fetch(new URL(`/api/layer/${event.layer}`, process.env.TAK_ETL_API), {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${event.token}`
+            },
+            body: JSON.stringify(event.body)
+        });
+
+        const json = await res.json();
+
+        if (!res.ok) {
+            console.error(JSON.stringify(json))
+            const err = json as { message: string };
+            throw new Error(err.message);
+        }
+
+        return json as any;
+    }
+
     static async uploadMission(event: Event, mission: {
         name: string;
         filename: string;
@@ -123,6 +171,7 @@ export default class API {
         const json = await res.json();
 
         if (!res.ok) {
+            console.error(JSON.stringify(json))
             const err = json as { message: string };
             throw new Error(err.message);
         }
@@ -143,6 +192,7 @@ export default class API {
         const json = await res.json();
 
         if (!res.ok) {
+            console.error(JSON.stringify(json))
             const err = json as { message: string };
             throw new Error(err.message);
         }

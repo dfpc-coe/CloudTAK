@@ -35,9 +35,9 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Layer',
         description: 'List layers',
         query: Type.Object({
-            limit: Type.Optional(Type.Integer()),
-            page: Type.Optional(Type.Integer()),
-            order: Type.Optional(Type.Enum(GenericListOrder)),
+            limit: Type.Integer({ default: 10 }),
+            page: Type.Integer({ default: 0 }),
+            order: Type.Enum(GenericListOrder, { default: GenericListOrder.ASC }),
             sort: Type.Optional(Type.String({default: 'created', enum: Object.keys(Layer)})),
             filter: Type.Optional(Type.String({default: ''})),
             data: Type.Optional(Type.Integer()),
