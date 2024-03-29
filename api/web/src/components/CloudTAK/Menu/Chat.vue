@@ -43,8 +43,6 @@ import {
     IconRefresh,
     IconCircleArrowLeft
 } from '@tabler/icons-vue'
-import { useCOTStore } from '/src/stores/cots.ts';
-const cotStore = useCOTStore();
 
 export default {
     name: 'CloudTAKChat',
