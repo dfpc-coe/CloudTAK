@@ -12,6 +12,7 @@ export default async function router(schema: Schema, config: Config) {
         group: 'ProfileChats',
         description: 'Get User\'s Profile Chats',
         res: Type.Object({
+            total: Type.Integer(),
             items: Type.Array(Type.Any())
         })
     }, async (req, res) => {

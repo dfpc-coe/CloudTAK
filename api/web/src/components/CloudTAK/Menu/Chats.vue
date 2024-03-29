@@ -14,7 +14,12 @@
         <TablerLoading v-if='loading'/>
         <TablerNone v-else-if='!chats.items.length' :create='false'/>
         <template v-else>
-            <pre v-text='chats.items'/>
+            <div class='col-12'>
+                <div @click='$router.push(`/menu/chat/${"here"}`)' v-for='chat in chats.items' class='cursor-pointer col-12 py-2 px-3 d-flex align-items-center hover-dark'>
+                    <IconUser size='32'/>
+                    <span class='mx-2' style='font-size: 18px;' v-text='chat.chatroom'/>
+                </div>
+            </div>
         </template>
     </div>
 </div>
@@ -29,6 +34,7 @@ import {
 
 import {
     IconCircleArrowLeft,
+    IconUser,
     IconPlus,
     IconRefresh,
 } from '@tabler/icons-vue';
@@ -39,7 +45,10 @@ export default {
         return {
             err: false,
             loading: true,
-            chats: []
+            chats: {
+                total: 0,
+                items: []
+            }
         }
     },
     mounted: async function() {
@@ -56,6 +65,7 @@ export default {
     components: {
         IconPlus,
         IconRefresh,
+        IconUser,
         TablerNone,
         TablerLoading,
         IconCircleArrowLeft,

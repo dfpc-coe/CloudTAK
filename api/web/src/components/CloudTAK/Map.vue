@@ -57,7 +57,7 @@
                 </template>
                 <template #dropdown>
                     <TablerNone v-if='!notifications.length' label='New Notifications' :create='false'/>
-                    <div class='col-12' v-for='n of notifications'>
+                    <div class='col-12 px-2 py-2' v-for='n of notifications'>
                         <div @click='$router.push(n.url)' v-if='n.type === "Chat"' class='col-12 cursor-pointer hover-dark'>
                             <IconMessage size='32'/>
                             <span v-text='n.name'/>
