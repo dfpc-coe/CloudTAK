@@ -46,6 +46,10 @@ import {
     IconRefresh,
     IconCircleArrowLeft
 } from '@tabler/icons-vue'
+import { useConnectionStore } from '/src/stores/connection.ts';
+const connectionStore = useConnectionStore();
+import { useProfileStore } from '/src/stores/profile.js';
+const profileStore = useProfileStore();
 
 export default {
     name: 'CloudTAKChat',
@@ -70,6 +74,22 @@ export default {
             };
             this.chats.items.push(chat)
             this.message = ''
+
+            const single = this.chats.items.filter((chat) => {
+                return !chat.mine;
+            })[0];
+
+            connectionStore.sendCOT({
+                to: {
+                    uid: single.sender_uid,
+                    callsign: single.sender_callsign
+                },
+                from: {
+                    uid: `ANDROID-CloudTAK-${profileStore.profile.id}`,
+                    callsign: profileStore.profile.tak_callsign
+                },
+                message: chat.message
+            }, 'chat');
         },
         fetchChats: async function() {
             this.loading = true;
