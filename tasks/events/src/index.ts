@@ -47,7 +47,7 @@ export const handler = async (
 async function sqsEvent(record: Lambda.SQSRecord) {
     const event = JSON.parse(record.body)
     console.log(event);
-    const msg = event.Message.split('\\n');
+    const msg = event.Message.split('\n');
     const res = {};
     for (const e of msg) {
         if (!e) continue;
