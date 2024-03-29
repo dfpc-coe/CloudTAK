@@ -40,6 +40,7 @@ import {
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import {
+    IconRefresh,
     IconCircleArrowLeft
 } from '@tabler/icons-vue'
 import { useCOTStore } from '/src/stores/cots.ts';
@@ -72,6 +73,7 @@ export default {
     components: {
         TablerInput,
         TablerLoading,
+        IconRefresh,
         IconCircleArrowLeft
     }
 }
