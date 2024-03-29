@@ -63,8 +63,8 @@ async function sqsEvent(record: Lambda.SQSRecord) {
     const layer = parseInt(res.PhysicalResourceId.replace(/.*-layer-/, ''));
     const token = `etl.${jwt.sign({ access: 'layer' , id: layer, internal: true }, String(process.env.SigningSecret))}`;
 
-    const schema = await API.fetchSchema({ layer, token });
-    await API.updateLayer({ layer, token, body: { schema } });
+    const body = await API.fetchSchema({ layer, token });
+    await API.updateLayer({ layer, token, body: schema });
 }
 
 async function s3Event(record: Lambda.S3EventRecord) {
