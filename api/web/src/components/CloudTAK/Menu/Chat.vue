@@ -13,7 +13,10 @@
         <TablerLoading v-if='loading'/>
         <template v-else>
             <div v-for='chat in chats.items' class='col-12 d-flex my-2'>
-                <div class='bg-blue px-2 py-2 rounded'>
+                <div v-if='!chat.mine' class='bg-blue px-2 py-2 rounded'>
+                    <span v-text='chat.message'/>
+                </div>
+                <div v-else class='ms-auto bg-gray-400 px-2 py-2 rounded'>
                     <span v-text='chat.message'/>
                 </div>
             </div>
@@ -61,6 +64,12 @@ export default {
     },
     methods: {
         sendMessage: async function() {
+            const chat = {
+                mine: true,
+                message: this.message
+            };
+            this.chats.items.push(chat)
+            this.message = ''
         },
         fetchChats: async function() {
             this.loading = true;
