@@ -574,6 +574,11 @@
         "query": false,
         "res": true
     },
+    "GET /profile/chat/:chatroom": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
     "GET /profile/job": {
         "body": false,
         "query": false,
