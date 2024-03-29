@@ -15,6 +15,7 @@ import Schema from '@openaddresses/batch-schema';
 import { Geometry, BBox } from 'geojson';
 import { Type } from '@sinclair/typebox'
 import { StandardResponse, BasemapResponse } from '../lib/types.js';
+import BasemapManager from '../lib/basemap.js';
 import { Basemap } from '../lib/schema.js';
 
 enum BasemapType {
@@ -41,6 +42,7 @@ export default async function router(schema: Schema, config: Config) {
             center: Type.Optional(Type.Any()),
             minzoom: Type.Optional(Type.Integer()),
             maxzoom: Type.Optional(Type.Integer()),
+            style: Type.Optional(Type.String()),
             format: Type.Optional(Type.String())
         })
     }, async (req, res) => {
@@ -139,12 +141,12 @@ export default async function router(schema: Schema, config: Config) {
         description: 'List BaseMaps',
         query: Type.Object({
             scope: Type.Optional(Type.Enum(ResourceCreationScope)),
-            limit: Type.Optional(Type.Integer()),
-            page: Type.Optional(Type.Integer()),
-            order: Type.Optional(Type.Enum(GenericListOrder)),
+            limit: Type.Integer({ default: 10 }),
+            page: Type.Integer({ default: 0 }),
+            order: Type.Enum(GenericListOrder, { default: GenericListOrder.ASC }),
             type: Type.Optional(Type.Enum(BasemapType)),
-            sort: Type.Optional(Type.String({default: 'created', enum: Object.keys(Basemap) })),
-            filter: Type.Optional(Type.String({default: ''}))
+            sort: Type.Optional(Type.String({ default: 'created', enum: Object.keys(Basemap) })),
+            filter: Type.Optional(Type.String({ default: '' }))
         }),
         res: Type.Object({
             total: Type.Integer(),
@@ -188,6 +190,7 @@ export default async function router(schema: Schema, config: Config) {
             minzoom: Type.Optional(Type.Integer()),
             maxzoom: Type.Optional(Type.Integer()),
             format: Type.Optional(Type.String()),
+            style: Type.Optional(Type.String()),
             type: Type.Optional(Type.String()),
             bounds: Type.Array(Type.Number({minItems: 4, maxItems: 4})),
             center: Type.Array(Type.Number())
@@ -241,6 +244,7 @@ export default async function router(schema: Schema, config: Config) {
             minzoom: Type.Optional(Type.Integer()),
             maxzoom: Type.Optional(Type.Integer()),
             format: Type.Optional(Type.String()),
+            style: Type.Optional(Type.String()),
             type: Type.Optional(Type.String()),
             bounds: Type.Optional(Type.Array(Type.Number({minItems: 4, maxItems: 4}))),
             center: Type.Optional(Type.Array(Type.Number()))

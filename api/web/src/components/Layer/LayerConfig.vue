@@ -219,6 +219,7 @@ export default {
             this.loading.save = false;
 
             this.$emit('layer', layer);
+            this.$emit('stack');
         },
         updateTask: function() {
             this.config.task = this.config.task.replace(/-v[0-9]+\.[0-9]+\.[0-9]+$/, `-v${this.newTaskVersion}`);

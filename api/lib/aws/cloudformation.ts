@@ -36,20 +36,24 @@ export default class CloudFormation {
             // Resource not found
         }
 
+        const arn = await config.fetchArnPrefix('sns');
         await cf.send(new AWSCloudFormation.CreateStackCommand({
             StackName: this.stdname(config, layerid),
             TemplateBody: JSON.stringify(stack),
-            Tags: (await this.self(config)).Tags
+            Tags: (await this.self(config)).Tags,
+            NotificationARNs: [ `${arn}:${config.StackName}-stack-events` ]
         }));
     }
 
     static async update(config: Config, layerid: number, stack: object): Promise<void> {
         const cf = new AWSCloudFormation.CloudFormationClient({ region: process.env.AWS_DEFAULT_REGION });
 
+        const arn = await config.fetchArnPrefix('sns');
         await cf.send(new AWSCloudFormation.UpdateStackCommand({
             StackName: this.stdname(config, layerid),
             TemplateBody: JSON.stringify(stack),
-            Tags: (await this.self(config)).Tags
+            Tags: (await this.self(config)).Tags,
+            NotificationARNs: [ `${arn}:${config.StackName}-stack-events` ]
         }));
     }
 
@@ -70,7 +74,7 @@ export default class CloudFormation {
             };
         } catch (err) {
             if (err instanceof Error && err.message.match(/Stack with id .* does not exist/)) {
-                return { status: 'destroyed' };
+                return { status: 'DOES_NOT_EXIST_COMPLETE' };
             } else {
                 throw err;
             }
@@ -93,6 +97,14 @@ export default class CloudFormation {
                 throw err;
             }
         }
+    }
+
+    static async cancel(config: Config, layerid: number): Promise<void> {
+        const cf = new AWSCloudFormation.CloudFormationClient({ region: process.env.AWS_DEFAULT_REGION });
+
+        await cf.send(new AWSCloudFormation.CancelUpdateStackCommand({
+            StackName: this.stdname(config, layerid)
+        }));
     }
 
     static async delete(config: Config, layerid: number): Promise<void> {

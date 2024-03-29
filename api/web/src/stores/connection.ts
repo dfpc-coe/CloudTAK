@@ -55,12 +55,9 @@ export const useConnectionStore = defineStore('connection', {
                 }
             });
         },
-        sendCOT: function(cot) {
+        sendCOT: function(data, type='cot') {
             if (!this.ws || this.ws.readyState !== WebSocket.OPEN) return;
-            this.ws.send(JSON.stringify({
-                type: 'cot',
-                data: cot
-            }));
+            this.ws.send(JSON.stringify({ type, data }));
         },
     }
 })

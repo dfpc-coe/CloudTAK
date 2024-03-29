@@ -22,6 +22,7 @@ export default class ProfileChatModel extends Modeler<typeof ProfileChat> {
             chatroom: this.generic.chatroom
         }).from(this.generic)
             .where(eq(this.generic.username, username))
+            .groupBy(sql`username, chatroom`)
 
         return {
             total: pgres.length,
