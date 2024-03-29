@@ -15,10 +15,8 @@ export default class API {
         url.searchParams.append('type', 'schema:output');
         const res = await fetch(url, {
             headers: {
-                'Content-Type': 'application/json',
                 'Authorization': `Bearer ${event.token}`
             },
-            body: JSON.stringify(body)
         });
 
         const json = await res.json();
@@ -33,13 +31,15 @@ export default class API {
 
     static async updateLayer(event: {
         layer: string;
-        body: unknown;
+        body: object;
     }) {
         const res = await fetch(new URL(`/api/layer/${event.layer}`, process.env.TAK_ETL_API), {
             method: 'PATCH',
             headers: {
+                'Content-Type': 'application/json',
                 'Authorization': `Bearer ${event.token}`
             },
+            body: JSON.stringify(event.body)
         });
 
         const json = await res.json();
