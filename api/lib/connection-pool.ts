@@ -106,15 +106,19 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
         if (this.config.wsClients.has(String(conn.id))) {
             const feat = cot.to_geojson();
 
-            if (ephemeral && feat.properties && feat.properties.chat) {
-                await this.config.models.ProfileChat.generate({
-                    username: String(conn.id),
-                    chatroom: feat.properties.chat.chatroom,
-                    sender_callsign: feat.properties.chat.senderCallsign,
-                    sender_uid: feat.properties.chat.id,
-                    message_id: feat.properties.chat.messageId,
-                    message: feat.properties.remarks
-                });
+            try {
+                if (ephemeral && feat.properties && feat.properties.chat) {
+                    await this.config.models.ProfileChat.generate({
+                        username: String(conn.id),
+                        chatroom: feat.properties.chat.chatroom,
+                        sender_callsign: feat.properties.chat.senderCallsign,
+                        sender_uid: feat.properties.chat.id,
+                        message_id: feat.properties.chat.messageId,
+                        message: feat.properties.remarks
+                    });
+                }
+            } catch (err) {
+                console.error('Failed to save COT: ', err);
             }
 
             for (const client of (this.config.wsClients.get(String(conn.id)) || [])) {
