@@ -57,12 +57,17 @@
                 </template>
                 <template #dropdown>
                     <TablerNone v-if='!notifications.length' label='New Notifications' :create='false'/>
-                    <div class='col-12 px-2 py-2' v-for='n of notifications'>
-                        <div @click='$router.push(n.url)' v-if='n.type === "Chat"' class='col-12 cursor-pointer hover-dark'>
-                            <IconMessage size='32'/>
-                            <span v-text='n.name'/>
+                    <template v-else>
+                        <div class='col-12 d-flex py-2 px-2'>
+                            <div @click='clearNotifications' class='ms-auto cursor-pointer'>Clear All</div>
                         </div>
-                    </div>
+                        <div class='col-12 px-2 py-2' v-for='n of notifications'>
+                            <div @click='$router.push(n.url)' v-if='n.type === "Chat"' class='col-12 cursor-pointer hover-dark'>
+                                <IconMessage size='32'/>
+                                <span v-text='n.name'/>
+                            </div>
+                        </div>
+                    </template>
                 </template>
             </TablerDropdown>
             <TablerDropdown>
@@ -136,7 +141,7 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import CloudTAKCoTView from './CoTView.vue';
 import CloudTAKFeatView from './FeatView.vue';
 import RadialMenu from './RadialMenu/RadialMenu.vue';
-import { mapState } from 'pinia'
+import { mapState, mapActions } from 'pinia'
 import { useMapStore } from '/src/stores/map.ts';
 import { useOverlayStore } from '/src/stores/overlays.ts';
 import { useProfileStore } from '/src/stores/profile.js';
@@ -261,6 +266,7 @@ export default {
         }
     },
     methods: {
+        ...mapActions(useProfileStore, ['clearNotifications']),
         closeRadial: function() {
             mapStore.radial.mode = null;
             mapStore.radial.cot = null;
