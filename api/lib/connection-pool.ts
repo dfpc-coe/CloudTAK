@@ -110,7 +110,7 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
                 if (ephemeral && feat.properties && feat.properties.chat) {
                     await this.config.models.ProfileChat.generate({
                         username: String(conn.id),
-                        chatroom: feat.properties.chat.chatroom,
+                        chatroom: feat.properties.chat.senderCallsign,
                         sender_callsign: feat.properties.chat.senderCallsign,
                         sender_uid: feat.properties.chat.id,
                         message_id: feat.properties.chat.messageId,
