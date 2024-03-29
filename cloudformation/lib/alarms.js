@@ -38,7 +38,6 @@ export default {
                 Statistic: 'Maximum',
                 Period: 60,
                 AlarmActions: [cf.ref('HighUrgencyAlarmTopic')],
-                InsufficientDataActions: [cf.ref('HighUrgencyAlarmTopic')],
                 Dimensions: [{
                     Name: 'QueueName',
                     Value: cf.getAtt('HookDeadQueue', 'QueueName')
@@ -57,7 +56,6 @@ export default {
                 Statistic: 'Maximum',
                 Period: 60,
                 AlarmActions: [cf.ref('HighUrgencyAlarmTopic')],
-                InsufficientDataActions: [cf.ref('HighUrgencyAlarmTopic')],
                 Dimensions: [{
                     Name: 'FunctionName',
                     Value: cf.join([cf.stackName, '-events'])
