@@ -112,7 +112,7 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
                         username: String(conn.id),
                         chatroom: feat.properties.chat.senderCallsign,
                         sender_callsign: feat.properties.chat.senderCallsign,
-                        sender_uid: feat.properties.chat.id,
+                        sender_uid: feat.properties.chat.chatgrp._attributes.uid0,
                         message_id: feat.properties.chat.messageId,
                         message: feat.properties.remarks
                     });

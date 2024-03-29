@@ -81,7 +81,10 @@ export default {
                 return chat.sender_uid !== this.id
             })[0];
 
+            if (!single) throw new Error('Contact is not defined');
+
             connectionStore.sendCOT({
+                chatroom: single.sender_callsign,
                 to: {
                     uid: single.sender_uid,
                     callsign: single.sender_callsign
