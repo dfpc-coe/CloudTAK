@@ -253,7 +253,9 @@ export default async function router(schema: Schema, config: Config) {
         })
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req);
+            await Auth.is_auth(config, req, {
+                resources: [{ access: AuthResourceAccess.LAYER, id: req.params.layerid }]
+            });
 
             const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
                 return await config.models.Layer.from(parseInt(String(req.params.layerid)));
