@@ -46,7 +46,7 @@ export const handler = async (
 
 async function sqsEvent(record: Lambda.SQSRecord) {
     const event = JSON.parse(record.body)
-    console.error(event);
+    console.log(event);
     const msg = event.Message.split('\\n');
     const res = {};
     for (const e of msg) {
@@ -54,8 +54,9 @@ async function sqsEvent(record: Lambda.SQSRecord) {
         res[e.split('=')[0]] = e.split('=')[1].replace(/'/g, '')
     }
 
-    if (!res.ResourceStatus.endsWith('COMPLETE')) {
-        console.error(`No Action: ${res.LogicalResourceId}:${res.ResourceStatus}`);
+    console.log(res);
+    if (!res.ResourceStatus && !res.ResourceStatus.endsWith('COMPLETE')) {
+        console.warn(`No Action: ${res.LogicalResourceId}:${res.ResourceStatus}`);
         return;
     }
 
