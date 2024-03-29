@@ -3,7 +3,10 @@
     <div class='col-12 border-bottom border-light'>
         <div class='modal-header px-0 mx-2'>
             <IconCircleArrowLeft @click='$router.back()' size='32' class='cursor-pointer'/>
-            <div class='modal-title' v-text='contact.properties.callsign'></div>
+            <div class='modal-title' v-text='$route.params.chatroom'></div>
+            <div class='btn-list'>
+                <IconRefresh @click='fetchChats' size='32' class='cursor-pointer'/>
+            </div>
         </div>
     </div>
     <div class='px-2 py-2'>
@@ -37,12 +40,13 @@ const cotStore = useCOTStore();
 export default {
     name: 'CloudTAKChat',
     data: function() {
-        if (!cotStore.cots.get(this.$route.params.uid)) this.$router.push("/menu/chats");
-
         return {
             loading: false,
+            chats: {
+                total: 0,
+                items: []
+            },
             message: '',
-            contact: cotStore.cots.get(this.$route.params.uid)
         }
     },
     mounted: async function() {
@@ -53,7 +57,7 @@ export default {
         },
         fetchChats: async function() {
             this.loading = true;
-            //TODO LOAD CHATS
+            this.chats = await window.std(`/api/chat/${encodeURIComponent(this.$route.params.chatroom)}`
             this.loading = false;
         }
     },

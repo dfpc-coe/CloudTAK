@@ -75,7 +75,7 @@ const router = new VueRouter.createRouter({
                     name: 'home-menu-chats',
                     component: () => import('./components/CloudTAK/Menu/Chats.vue')
                 },{
-                    path: 'chats/:uid',
+                    path: 'chats/:chatroom',
                     name: 'home-menu-chat',
                     component: () => import('./components/CloudTAK/Menu/Chat.vue')
                 }]
