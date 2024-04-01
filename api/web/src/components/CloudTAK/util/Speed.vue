@@ -7,29 +7,29 @@
             class='bg-gray-500 rounded-top py-2 px-2'
         />
         <span
-            @click='mode = "ms"'
+            @click='mode = "m/s"'
             class='my-1 px-2'
             :class='{
-                "bg-gray-500 rounded-bottom": mode === "ms",
-                "cursor-pointer": mode !== "ms",
+                "bg-gray-500 rounded-bottom": mode === "m/s",
+                "cursor-pointer": mode !== "m/s",
             }'
             v-tooltip='"Meters Per Second"'
         >M/S</span>
         <span
-            @click='mode = "mph"'
+            @click='mode = "mi/h"'
             class='my-1 px-2'
             :class='{
-                "bg-gray-500 rounded-bottom": mode === "mph",
-                "cursor-pointer": mode !== "mph",
+                "bg-gray-500 rounded-bottom": mode === "mi/h",
+                "cursor-pointer": mode !== "mi/h",
             }'
             v-tooltip='"Miles Per Hour"'
         >MPH</span>
         <span
-            @click='mode = "kph"'
+            @click='mode = "km/h"'
             class='my-1 px-2'
             :class='{
-                "bg-gray-500 rounded-bottom": mode === "kph",
-                "cursor-pointer": mode !== "kph",
+                "bg-gray-500 rounded-bottom": mode === "km/h",
+                "cursor-pointer": mode !== "km/h",
             }'
             v-tooltip='"Kilometers Per Hour"'
         >KM/H</span>
@@ -44,19 +44,23 @@ export default {
         speed: {
             type: Number,
             required: true
+        },
+        unit: {
+            type: String,
+            default: 'mi/h'
         }
     },
     computed: {
         inMode: function() {
-            if (this.mode === 'ms') return Math.round(this.speed * 1000) / 1000;
-            else if (this.mode === 'mph') return Math.round(this.speed * 2.23694 * 100) / 100;
-            else if (this.mode === 'kph') return Math.round(this.speed * 3.6 * 100) / 100;
+            if (this.mode === 'm/s') return Math.round(this.speed * 1000) / 1000;
+            else if (this.mode === 'mi/h') return Math.round(this.speed * 2.23694 * 100) / 100;
+            else if (this.mode === 'km/h') return Math.round(this.speed * 3.6 * 100) / 100;
             return 'UNKNOWN';
         }
     },
     data: function() {
         return {
-            mode: 'ms',
+            mode: this.unit,
         }
     }
 }

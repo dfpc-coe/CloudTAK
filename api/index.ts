@@ -11,7 +11,8 @@ import minimist from 'minimist';
 import { ConnectionWebSocket } from './lib/connection-web.js';
 import sleep from './lib/sleep.js';
 import EventsPool from './lib/events-pool.js';
-import { WebSocket, WebSocketServer } from 'ws';
+import type WebSocket from 'ws';
+import * as ws from 'ws';
 import Config from './lib/config.js';
 import { tokenParser, AuthUser } from './lib/auth.js'
 import process from 'node:process';
@@ -162,6 +163,8 @@ export default async function server(config: Config) {
     }));
 
     app.use(express.static('web/dist'));
+
+    const WebSocketServer = ws.WebSocketServer ? ws.WebSocketServer : ws.default.WebSocketServer;
 
     const wss = new WebSocketServer({
         noServer: true

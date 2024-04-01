@@ -5,6 +5,7 @@ import Auth, { AuthResource } from '../lib/auth.js';
 import { ProfileResponse } from '../lib/types.js'
 import Config from '../lib/config.js';
 import { TAKRole, TAKGroup } from '../lib/api/types.js'
+import { Profile_Stale, Profile_Speed, Profile_Elevation, Profile_Distance } from  '../lib/enums.js';
 
 export default async function router(schema: Schema, config: Config) {
     await schema.get('/profile', {
@@ -28,6 +29,10 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Profile',
         description: 'Update User\'s Profile',
         body: Type.Object({
+            display_stale: Type.Optional(Type.Enum(Profile_Stale)),
+            display_distance: Type.Optional(Type.Enum(Profile_Distance)),
+            display_elevation: Type.Optional(Type.Enum(Profile_Elevation)),
+            display_speed: Type.Optional(Type.Enum(Profile_Speed)),
             tak_callsign: Type.Optional(Type.String()),
             tak_group: Type.Optional(Type.Enum(TAKGroup)),
             tak_role: Type.Optional(Type.Enum(TAKRole)),
