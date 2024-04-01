@@ -3,6 +3,8 @@ import pointOnFeature from '@turf/point-on-feature';
 import { std, stdurl } from '../std.ts';
 import moment from 'moment';
 import type { Feature } from 'geojson';
+import { useProfileStore } from './profile.js';
+const profileStore = useProfileStore();
 
 export const useCOTStore = defineStore('cots', {
     state: (): {
@@ -53,12 +55,21 @@ export const useCOTStore = defineStore('cots', {
          */
         collection: function(store) {
             if (!store) {
+                const now = moment();
                 return {
                     type: 'FeatureCollection',
-                    features:  Array.from(this.cots.values()).map((cot) => {
+                    features:  Array.from(this.cots.values()).filter((cot) => {
+                        if (profileStore.display_stale === 'Never') {
+                            return true;
+                        } else if (profileStore.display_stale === 'Immediate' && now.isBefore(moment(cot.properties.stale))) {
+                            return false;
+                        } else {
+                            return now.isBefore(moment(cot.properties.stale).add(...profileStore.display_stale.split(' ')))
+                        }
+                    }).map((cot) => {
                         // TODO if not archived set color opacity
-                        cot.properties['icon-opacity'] = moment().isBefore(moment(cot.properties.stale)) ? 1 : 0.5;
-                        cot.properties['circle-opacity'] = moment().isBefore(moment(cot.properties.stale)) ? 1 : 0.5;
+                        cot.properties['icon-opacity'] = now.isBefore(moment(cot.properties.stale)) ? 1 : 0.5;
+                        cot.properties['circle-opacity'] = now.isBefore(moment(cot.properties.stale)) ? 1 : 0.5;
                         return cot;
                     })
                 }

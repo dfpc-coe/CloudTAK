@@ -5,8 +5,8 @@ import moment from 'moment';
 import type { Feature } from 'geojson';
 import { useCOTStore } from './cots.ts';
 import { useProfileStore } from './profile.js';
-const cotStore = useCOTStore();
 const profileStore = useProfileStore();
+const cotStore = useCOTStore();
 
 export const useConnectionStore = defineStore('connection', {
     state: (): {
