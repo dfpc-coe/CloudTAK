@@ -3,7 +3,7 @@ import { Type } from '@sinclair/typebox'
 import { StyleContainer } from './style.js';
 import * as schemas from './schema.js';
 import { TAKGroup, TAKRole } from './api/types.js';
-import { Layer_Priority } from './enums.js';
+import { Layer_Priority, Profile_Stale, Profile_Distance, Profile_Elevation, Profile_Speed } from './enums.js';
 
 export const StandardResponse = Type.Object({
     status: Type.Integer(),
@@ -35,7 +35,11 @@ export const ProfileResponse = Type.Object({
     tak_callsign: Type.String(),
     tak_group: Type.Enum(TAKGroup),
     tak_role: Type.Enum(TAKRole),
-    tak_loc: Type.Any()
+    tak_loc: Type.Any(),
+    display_stale: Type.Enum(Profile_Stale),
+    display_distance: Type.Enum(Profile_Distance),
+    display_elevation: Type.Enum(Profile_Elevation),
+    display_speed: Type.Enum(Profile_Speed)
 });
 
 export const ProfileOverlayResponse = createSelectSchema(schemas.ProfileOverlay, {
