@@ -57,7 +57,8 @@ export const useCOTStore = defineStore('cots', {
                     type: 'FeatureCollection',
                     features:  Array.from(this.cots.values()).map((cot) => {
                         // TODO if not archived set color opacity
-                        cot.properties['icon-opacity'] = moment().subtract(5, 'minutes').isBefore(moment(cot.properties.stale)) ? 1 : 0.5;
+                        cot.properties['icon-opacity'] = moment().isBefore(moment(cot.properties.stale)) ? 1 : 0.5;
+                        cot.properties['circle-opacity'] = moment().isBefore(moment(cot.properties.stale)) ? 1 : 0.5;
                         return cot;
                     })
                 }
