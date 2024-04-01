@@ -12,7 +12,7 @@
         "lint": "eslint index.ts lib/**.ts test/**.ts",
         "loaddb": "echo 'DROP DATABASE tak_ps_etl' | psql && echo 'CREATE DATABASE tak_ps_etl' | psql && psql tak_ps_etl < coe-etl-latest.dump",
         "migratedb": "npm run lint && git stash && npm run build && drizzle-kit generate:pg && git add migrations/* && git commit -m \"DB Migration\" && git clean -f && git stash",
-        "dev": "nodemon -i schema/ -i web/ --esm index.ts --noevents --nosinks --nometrics --unsafe"
+        "dev": "tsx watch --ignore web/ index.ts --noevents --nosinks --nometrics --unsafe"
     },
     "repository": {
         "type": "git",
@@ -79,6 +79,7 @@
         "spritesmith": "^3.4.1",
         "swagger-ui-express": "^5.0.0",
         "tough-cookie": "^4.1.2",
+        "tsx": "^4.7.1",
         "undici": "^6.0.0",
         "vinyl": "^3.0.0",
         "ws": "^8.11.0",
@@ -112,7 +113,6 @@
         "nodemon": "^3.0.0",
         "path-to-regexp": "^6.2.1",
         "tape": "^5.6.1",
-        "ts-node": "^10.9.1",
         "typescript": "^5.0.0"
     }
 }

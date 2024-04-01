@@ -3,5 +3,5 @@ set -euo pipefail
 
 for TEST in $(ls $(basename $0)/*.test.ts)
 do
-   npx ts-node $TEST
+   npx tsx $TEST
 done
