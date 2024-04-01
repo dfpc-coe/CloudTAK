@@ -11,10 +11,13 @@ import minimist from 'minimist';
 import { ConnectionWebSocket } from './lib/connection-web.js';
 import sleep from './lib/sleep.js';
 import EventsPool from './lib/events-pool.js';
-import { WebSocket, WebSocketServer } from 'ws';
+import ws, { WebSocket } from 'ws';
 import Config from './lib/config.js';
 import { tokenParser, AuthUser } from './lib/auth.js'
 import process from 'node:process';
+
+// Typescript complains if we load directly
+const WebSocketServer = ws.WebSocketServer ?? ws.default.WebSocketServer;
 
 const args = minimist(process.argv, {
     boolean: [
