@@ -164,7 +164,7 @@ export default async function server(config: Config) {
 
     app.use(express.static('web/dist'));
 
-    const WebSocketServer = ws.default ? ws.default.WebSocketServer : ws.WebSocketServer;
+    const WebSocketServer = ws.WebSocketServer ? ws.WebSocketServer : ws.default.WebSocketServer;
 
     const wss = new WebSocketServer({
         noServer: true
