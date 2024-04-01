@@ -545,6 +545,7 @@ function cotStyles(id: string, opts: {
             filter: groupFilter,
             paint: {
                 'circle-color': ['get', 'color'],
+                'circle-opacity': ["number", ["get", "circle-opacity"], 1],
                 'circle-stroke-color': '#ffffff',
                 'circle-stroke-width': 2,
                 'circle-radius': 10

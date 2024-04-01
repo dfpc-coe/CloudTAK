@@ -65,7 +65,7 @@
             </div>
         </template>
 
-        <div v-if='$route.name === "home-menu"' class='border-top border-white position-absolute start-0 bottom-0 end-0'>
+        <div v-if='$route.name === "home-menu"' class='border-top border-white position-absolute start-0 bottom-0 end-0 bg-dark'>
             <div class='row g-0 align-items-center'>
                 <div class='py-2 d-flex align-items-center col-8'>
                     <div class='d-flex align-items-center'>

@@ -35,7 +35,11 @@ export const ProfileResponse = Type.Object({
     tak_callsign: Type.String(),
     tak_group: Type.Enum(TAKGroup),
     tak_role: Type.Enum(TAKRole),
-    tak_loc: Type.Any()
+    tak_loc: Type.Any(),
+    display_stale: Type.String(),
+    display_distance: Type.String(),
+    display_elevation: Type.String(),
+    display_speed: Type.String()
 });
 
 export const ProfileOverlayResponse = createSelectSchema(schemas.ProfileOverlay, {

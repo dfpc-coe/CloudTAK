@@ -46,7 +46,7 @@
             <Coordinate :coordinates='center'/>
         </div>
         <div v-if='!isNaN(feat.properties.speed)' class='col-12 px-3 pb-2'>
-            <Speed :speed='feat.properties.speed'/>
+            <Speed :unit='profile.display_speed' :speed='feat.properties.speed'/>
         </div>
         <div v-if='feat.properties.contact && feat.properties.contact.phone' class='col-12 px-3 pb-2'>
             <label class='subheader'>Phone</label>
@@ -93,6 +93,7 @@
 </template>
 
 <script>
+import { mapState } from 'pinia'
 import { useMapStore } from '/src/stores/map.ts';
 const mapStore = useMapStore();
 import {
@@ -115,6 +116,7 @@ import {
 } from '@tabler/icons-vue';
 import { useCOTStore } from '/src/stores/cots.ts';
 const cotStore = useCOTStore();
+import { useProfileStore } from '/src/stores/profile.js';
 
 export default {
     name: 'CloudTAKCoTView',
@@ -180,6 +182,7 @@ export default {
         cotStore.update(this.feat);
     },
     computed: {
+        ...mapState(useProfileStore, ['profile']),
         isUserDrawn: function() {
             return this.cot.properties.type.toLowerCase().startsWith("u-d");
         },

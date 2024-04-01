@@ -37,6 +37,56 @@
             </div>
         </div>
         <div class='col-12 px-2 py-2'>
+            <div class='col-12'>
+                <TablerEnum
+                    label='Remove Stale Elements'
+                    v-model='profile.display_stale'
+                    :options='[
+                        "Immediate",
+                        "10 Minutes",
+                        "30 Minutes",
+                        "1 Hour",
+                        "Never"
+                    ]'
+                />
+            </div>
+            <div class='col-12'>
+                <TablerEnum
+                    label='Distance Unit'
+                    v-model='profile.display_distance'
+                    :options='[
+                        "meter",
+                        "kilometer",
+                        "mile"
+                    ]'
+                />
+            </div>
+            <div class='col-12'>
+                <TablerEnum
+                    label='Elevation Unit'
+                    v-model='profile.display_elevation'
+                    :options='[
+                        "meter",
+                        "feet"
+                    ]'
+                />
+            </div>
+            <div class='col-12'>
+                <TablerEnum
+                    label='Speed Unit'
+                    v-model='profile.display_speed'
+                    :options='[
+                        "m/s",
+                        "km/h",
+                        "mi/h"
+                    ]'
+                />
+            </div>
+            <div class='col-12 d-flex py-3'>
+                <div class='ms-auto'>
+                    <button @click='updateProfile' class='btn btn-primary'>Update</button>
+                </div>
+            </div>
         </div>
     </template>
     <template v-else-if='mode === "settings"'>

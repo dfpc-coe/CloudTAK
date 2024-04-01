@@ -4,7 +4,7 @@ import { StyleContainer } from './style.js';
 import { geometry, GeometryType } from '@openaddresses/batch-generic';
 import { ConnectionAuth } from './connection-config.js';
 import { TAKGroup, TAKRole } from  './api/types.js';
-import { Layer_Priority } from  './enums.js';
+import { Layer_Priority, Profile_Stale, Profile_Speed, Profile_Elevation, Profile_Distance } from  './enums.js';
 import { json, boolean, integer, timestamp, pgTable, serial, varchar, text, unique } from 'drizzle-orm/pg-core';
 
 /** Internal Tables for Postgis for use with drizzle-kit push:pg */
@@ -29,6 +29,10 @@ export const Profile = pgTable('profile', {
     tak_group: text('tak_group').$type<TAKGroup>().notNull().default(TAKGroup.ORANGE),
     tak_role: text('tak_role').$type<TAKRole>().notNull().default(TAKRole.TEAM_MEMBER),
     tak_loc: geometry('tak_loc', { srid: 4326, type: GeometryType.Point }),
+    display_stale: text('display_stale').$type<Profile_Stale>().notNull().default(Profile_Stale.TenMinutes),
+    display_distance: text('display_distance').$type<Profile_Distance>().notNull().default(Profile_Distance.MILE),
+    display_elevation: text('display_elevation').$type<Profile_Elevation>().notNull().default(Profile_Elevation.FEET),
+    display_speed: text('display_speed').$type<Profile_Speed>().notNull().default(Profile_Speed.MPH),
     system_admin: boolean('system_admin').notNull().default(false),
     agency_admin: json('agency_admin').$type<Array<number>>().default([])
 });
