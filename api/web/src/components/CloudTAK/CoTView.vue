@@ -46,7 +46,7 @@
             <Coordinate :coordinates='center'/>
         </div>
         <div v-if='!isNaN(feat.properties.speed)' class='col-12 px-3 pb-2'>
-            <Speed :unit='profile.default_speed' :speed='feat.properties.speed'/>
+            <Speed :unit='profile.display_speed' :speed='feat.properties.speed'/>
         </div>
         <div v-if='feat.properties.contact && feat.properties.contact.phone' class='col-12 px-3 pb-2'>
             <label class='subheader'>Phone</label>

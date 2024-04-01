@@ -59,12 +59,12 @@ export const useCOTStore = defineStore('cots', {
                 return {
                     type: 'FeatureCollection',
                     features:  Array.from(this.cots.values()).filter((cot) => {
-                        if (profileStore.display_stale === 'Never') {
+                        if (profileStore.profile.display_stale === 'Never') {
                             return true;
-                        } else if (profileStore.display_stale === 'Immediate' && now.isBefore(moment(cot.properties.stale))) {
+                        } else if (profileStore.profile.display_stale === 'Immediate' && now.isBefore(moment(cot.properties.stale))) {
                             return false;
                         } else {
-                            return now.isBefore(moment(cot.properties.stale).add(...profileStore.display_stale.split(' ')))
+                            return now.isBefore(moment(cot.properties.stale).add(...profileStore.profile.display_stale.split(' ')))
                         }
                     }).map((cot) => {
                         // TODO if not archived set color opacity

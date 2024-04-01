@@ -147,10 +147,10 @@ import { useOverlayStore } from '/src/stores/overlays.ts';
 import { useProfileStore } from '/src/stores/profile.js';
 import { useCOTStore } from '/src/stores/cots.ts';
 import { useConnectionStore } from '/src/stores/connection.ts';
+const profileStore = useProfileStore();
 const cotStore = useCOTStore();
 const mapStore = useMapStore();
 const overlayStore = useOverlayStore();
-const profileStore = useProfileStore();
 const connectionStore = useConnectionStore();
 
 export default {
