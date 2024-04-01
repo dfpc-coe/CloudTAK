@@ -15,7 +15,7 @@ export enum Profile_Stale {
 export enum Profile_Speed {
     MS = 'm/s',
     KMH = 'km/h',
-    MPH = 'mp/h'
+    MPH = 'mi/h'
 }
 
 export enum Profile_Distance {
