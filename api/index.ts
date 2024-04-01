@@ -16,7 +16,7 @@ import Config from './lib/config.js';
 import { tokenParser, AuthUser } from './lib/auth.js'
 import process from 'node:process';
 
-// Typescript complains if we load directly
+// @ts-expect-error Typescript complains if we load directly
 const WebSocketServer = ws.WebSocketServer ?? ws.default.WebSocketServer;
 
 const args = minimist(process.argv, {
