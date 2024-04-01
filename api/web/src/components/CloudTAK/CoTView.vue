@@ -117,7 +117,6 @@ import {
 import { useCOTStore } from '/src/stores/cots.ts';
 const cotStore = useCOTStore();
 import { useProfileStore } from '/src/stores/profile.js';
-const profileStore = useProfileStore();
 
 export default {
     name: 'CloudTAKCoTView',
