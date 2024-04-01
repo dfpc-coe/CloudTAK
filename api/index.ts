@@ -12,7 +12,7 @@ import { ConnectionWebSocket } from './lib/connection-web.js';
 import sleep from './lib/sleep.js';
 import EventsPool from './lib/events-pool.js';
 import type WebSocket from 'ws';
-import ws from 'ws';
+import * as ws from 'ws';
 import Config from './lib/config.js';
 import { tokenParser, AuthUser } from './lib/auth.js'
 import process from 'node:process';
@@ -164,7 +164,9 @@ export default async function server(config: Config) {
 
     app.use(express.static('web/dist'));
 
-    const wss = new ws.WebSocketServer({
+    const WebSocketServer = ws.default ? ws.default.WebSocketServer : ws.WebSocketServer;
+
+    const wss = new WebSocketServer({
         noServer: true
     }).on('connection', async (ws: WebSocket, request) => {
         try {
