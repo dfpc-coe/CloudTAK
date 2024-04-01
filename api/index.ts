@@ -11,13 +11,10 @@ import minimist from 'minimist';
 import { ConnectionWebSocket } from './lib/connection-web.js';
 import sleep from './lib/sleep.js';
 import EventsPool from './lib/events-pool.js';
-import ws, { WebSocket } from 'ws';
+import WebSocket from 'ws';
 import Config from './lib/config.js';
 import { tokenParser, AuthUser } from './lib/auth.js'
 import process from 'node:process';
-
-// @ts-expect-error Typescript complains if we load directly
-const WebSocketServer = ws.WebSocketServer ?? ws.default.WebSocketServer;
 
 const args = minimist(process.argv, {
     boolean: [
@@ -166,7 +163,7 @@ export default async function server(config: Config) {
 
     app.use(express.static('web/dist'));
 
-    const wss = new WebSocketServer({
+    const wss = new WebSocket.Server({
         noServer: true
     }).on('connection', async (ws: WebSocket, request) => {
         try {
