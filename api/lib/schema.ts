@@ -32,7 +32,7 @@ export const Profile = pgTable('profile', {
     display_stale: text('display_stale').$type<Profile_Stale>().notNull().default(Profile_Stale.TenMinutes),
     display_distance: text('display_distance').$type<Profile_Distance>().notNull().default(Profile_Distance.MILE),
     display_elevation: text('display_elevation').$type<Profile_Elevation>().notNull().default(Profile_Elevation.FEET),
-    display_speed: text('display_elevation').$type<Profile_Speed>().notNull().default(Profile_Speed.MPH),
+    display_speed: text('display_speed').$type<Profile_Speed>().notNull().default(Profile_Speed.MPH),
     system_admin: boolean('system_admin').notNull().default(false),
     agency_admin: json('agency_admin').$type<Array<number>>().default([])
 });
