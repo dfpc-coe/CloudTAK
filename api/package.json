@@ -74,7 +74,7 @@
         "pem": "^1.14.7",
         "pg": "^8.8.0",
         "semver-sort": "^1.0.0",
-        "sharp": "^0.32.0",
+        "sharp": "^0.33.0",
         "sinon": "^17.0.0",
         "spritesmith": "^3.4.1",
         "swagger-ui-express": "^5.0.0",
