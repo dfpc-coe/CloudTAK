@@ -108,7 +108,7 @@ export default class Auth {
                 try {
                     await config.models.ConnectionToken.from(auth_resource.token);
                 } catch (err) {
-                    throw new Err(403, err instanceof Error ? err : new Error(String(err)), 'Token does not exist');
+                    throw new Err(403, err.name === 'PublicError' ? err : new Error(String(err)), 'Token does not exist');
                 }
             }
 
@@ -220,7 +220,7 @@ function auth_request(config: Config, req: Request<unknown, unknown, unknown, an
             }
         }
     } catch (err) {
-        if (err instanceof Err) throw err;
+        if (err.name === 'PublicError') throw err;
         throw new Err(401, err instanceof Error ? err : new Error(String(err)), 'Invalid Token')
     }
 }
