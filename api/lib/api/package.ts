@@ -33,7 +33,7 @@ export default class {
 
     async list(): Promise<{
         resultCount: number;
-        results: Array<typeof Package>
+        results: Array<Static<typeof Package>>
     }> {
         const url = new URL(`/Marti/sync/search?tool=public`, this.api.url);
 
@@ -43,7 +43,7 @@ export default class {
 
         return JSON.parse(res) as {
             resultCount: number;
-            results: Array<typeof Package>
+            results: Array<Static<typeof Package>>
         };
     }
 }
