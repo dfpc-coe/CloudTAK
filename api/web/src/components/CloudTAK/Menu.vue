@@ -36,6 +36,10 @@
                 <IconAmbulance size='32'/>
                 <span class='mx-2' style='font-size: 18px;'>Mission Sync</span>
             </div>
+            <div @click='$router.push("/menu/packages")' class='cursor-pointer col-12 py-2 px-3 d-flex align-items-center hover-dark'>
+                <IconPackages size='32'/>
+                <span class='mx-2' style='font-size: 18px;'>Data Package</span>
+            </div>
             <div @click='$router.push("/menu/channels")' class='cursor-pointer col-12 py-2 px-3 d-flex align-items-center hover-dark'>
                 <IconAffiliate size='32'/>
                 <span class='mx-2' style='font-size: 18px;'>Channels</span>
@@ -94,6 +98,7 @@ import {
     IconLogout,
     IconMessage,
     IconNetwork,
+    IconPackages,
     IconSettings,
     IconAmbulance,
     IconBoxMultiple,
@@ -117,6 +122,7 @@ export default {
     },
     components: {
         IconBoxMultiple,
+        IconPackages,
         IconPhoto,
         IconMessage,
         IconNetwork,

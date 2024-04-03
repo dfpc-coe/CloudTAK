@@ -1,3 +1,4 @@
+import Package from './api/package.js';
 import Mission from './api/mission.js';
 import MissionLog from './api/mission-log.js';
 import Credentials from './api/credentials.js';
@@ -15,6 +16,7 @@ export * from './tak-auth.js';
 export default class TAKAPI {
     auth: auth.APIAuth;
     url: URL;
+    Package: Package;
     Mission: Mission;
     MissionLog: MissionLog;
     Credentials: Credentials;
@@ -26,6 +28,7 @@ export default class TAKAPI {
         this.url = url;
         this.auth = auth;
 
+        this.Package = new Package(this);
         this.Mission = new Mission(this);
         this.MissionLog = new MissionLog(this);
         this.Credentials = new Credentials(this);
