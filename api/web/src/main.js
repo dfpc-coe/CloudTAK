@@ -83,7 +83,9 @@ const router = new VueRouter.createRouter({
         },
 
         { path: '/layer', name: 'layers', component: () => import('./components/Layers.vue') },
-        { path: '/layer/new', name: 'layer-new', component: () => import('./components/LayerEdit.vue') },
+
+        { path: '/connection/:connectionid/layer/new', name: 'connection-layer-new', component: () => import('./components/LayerEdit.vue') },
+        { path: '/connection/:connectionid/data/:dataid/layer/new', name: 'connection-data-layer-new', component: () => import('./components/LayerEdit.vue') },
 
         {
             path: '/layer/:layerid',
