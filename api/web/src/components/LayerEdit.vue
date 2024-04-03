@@ -121,8 +121,6 @@
 import { std, stdurl } from '/src/std.ts';
 import PageFooter from './PageFooter.vue';
 import cronstrue from 'cronstrue';
-import ConnectionSelect from './util/ConnectionSelect.vue';
-import DataSelect from './util/DataSelect.vue';
 import {
     TablerBreadCrumb,
     TablerDelete,
@@ -131,8 +129,6 @@ import {
 } from '@tak-ps/vue-tabler';
 import {
     IconSettings,
-    IconBuildingBroadcastTower,
-    IconDatabase,
 } from '@tabler/icons-vue';
 import TaskModal from './Layer/utils/TaskModal.vue';
 
@@ -246,15 +242,11 @@ export default {
     },
     components: {
         PageFooter,
-        ConnectionSelect,
-        DataSelect,
         TablerBreadCrumb,
         TablerInput,
         TablerDelete,
         TablerLoading,
         IconSettings,
-        IconBuildingBroadcastTower,
-        IconDatabase,
         TaskModal,
     }
 }
