@@ -60,10 +60,9 @@ export const useCOTStore = defineStore('cots', {
                     type: 'FeatureCollection',
                     features:  Array.from(this.cots.values()).filter((cot) => {
                         if (profileStore.profile.display_stale === 'Immediate' && now.isAfter(cot.properties.stale)) {
-                            console.error('AFTER', cot.properties.stale);
                             return false;
                         } else if (!['Never', 'Immediate'].includes(profileStore.profile.display_stale)) {
-                            return now.isAfter(moment(cot.properties.stale).add(...profileStore.profile.display_stale.split(' ')))
+                            return now.isBefore(moment(cot.properties.stale).add(...profileStore.profile.display_stale.split(' ')))
                         }
 
                         return true;

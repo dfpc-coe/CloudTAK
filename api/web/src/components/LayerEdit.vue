@@ -59,7 +59,12 @@
                                 </div>
                                 <template v-if='!$route.params.layerid'>
                                     <div class="col-md-6">
-                                        <TablerInput v-model='layer.cron' :error='errors.cron' placeholder='Cron Expression'>
+                                        <TablerInput
+                                            v-model='layer.cron'
+                                            :error='errors.cron'
+                                            label='Cron Expression'
+                                            placeholder='Cron Expression'
+                                        >
                                             <div class='dropdown'>
                                                 <div class="dropdown-toggle" type="button" id="dropdownCron" data-bs-toggle="dropdown" aria-expanded="false">
                                                     <IconSettings size='16' class='cursor-pointer dropdown-toggle'/>
@@ -77,39 +82,16 @@
                                     <div class="col-md-6">
                                         <div class='d-flex'>
                                         </div>
-                                        <TablerInput v-model='layer.task' :error='errors.task' placeholder='Schedule Task'>
+                                        <TablerInput
+                                            v-model='layer.task'
+                                            :error='errors.task'
+                                            label='Schedule Task'
+                                            placeholder='Schedule Task'
+                                        >
                                             <div class='ms-auto btn-list'>
                                                 <IconSettings @click='taskmodal = true' size='16' class='cursor-pointer'/>
                                             </div>
                                         </TablerInput>
-                                    </div>
-                                    <div class="col-md-12">
-                                        <div class='row'>
-                                            <div class='col-12'>
-                                                <label>Data Destination</label>
-                                            </div>
-                                            <div class='col-12 d-flex'>
-                                                <div class='btn-group' role="group">
-                                                    <input :disabled='disabled' v-model='destination' value='connection' type="radio" class="btn-check" name="connection-toolbar" id="connection-toolbar-connection" autocomplete="off">
-                                                    <label for="connection-toolbar-connection" class="btn btn-icon"><IconBuildingBroadcastTower size='32'/></label>
-
-                                                    <input :disabled='disabled' v-model='destination' value='data' type="radio" class="btn-check" name="connection-toolbar" id="connection-toolbar-data" autocomplete="off">
-                                                    <label for="connection-toolbar-data" class="btn btn-icon"><IconDatabase size='32'/></label>
-                                                </div>
-                                                <ConnectionSelect
-                                                    v-if='destination === "connection"'
-                                                    class='mx-2'
-                                                    :disabled='disabled'
-                                                    v-model='layer.connection'
-                                                />
-                                                <DataSelect
-                                                    v-else
-                                                    class='mx-2'
-                                                    :disabled='disabled'
-                                                    v-model='layer.data'
-                                                />
-                                            </div>
-                                        </div>
                                     </div>
                                 </template>
                                 <div class="col-lg-12 d-flex">
@@ -168,12 +150,11 @@ export default {
                 description: '',
             },
             taskmodal: false,
-            destination: 'connection',
             layer: {
                 name: '',
                 description: '',
-                data: null,
-                connection: null,
+                data: this.$route.params.dataid ? parseInt(this.$route.params.dataid) : undefined,
+                connection: this.$route.params.dataid ? undefined : parseInt(this.$route.params.connectionid),
                 cron: '',
                 task: '',
                 enabled: true,
@@ -216,10 +197,8 @@ export default {
             this.$router.push('/layer');
         },
         create: async function() {
-            let fields =  ['name', 'description']
-            if (!this.$route.params.connectionid) fields.push('task', 'cron');
-
-            for (const field of ['name', 'description']) {
+            let fields =  ['name', 'description', 'task', 'cron']
+            for (const field of fields) {
                 this.errors[field] = !this.layer[field] ? 'Cannot be empty' : '';
             }
             for (const e in this.errors) if (this.errors[e]) return;
