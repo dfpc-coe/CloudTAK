@@ -110,7 +110,7 @@ export default {
 
             if (!this.hasDateTime()) {
                 delete config.timezone;
-            } else {
+            } else if (!config.timezone) {
                 config.timezone = {
                     timezone: 'No TimeZone'
                 }
