@@ -33,11 +33,11 @@
 
         <div class='px-2'>
             <!-- AutoSuggested Filters -->
-            <template v-if='hasDateTime'>
+            <template v-if='config.timezone'>
                 <TablerTimeZone
                     label='Date TimeZone Override'
                     :disabled='disabled'
-                    v-model='config.timezone'
+                    v-model='config.timezone.timezone'
                 />
             </template>
         </div>
@@ -80,9 +80,7 @@ export default {
             alert: false,
             esriView: false,
             disabled: true,
-            config: {
-                timezone: 'No TimeZone'
-            },
+            config: {},
             environment: {},
             schema: { properties: {} },
             schemaOutput: { properties: {} },
@@ -94,10 +92,10 @@ export default {
         };
     },
     mounted: async function() {
-        this.reload();
         await this.fetchSchema()
+        this.reload();
     },
-    computed: {
+    methods: {
         hasDateTime: function() {
             for (const prop of Object.keys(this.schemaOutput.properties)) {
                 if (this.schemaOutput.properties[prop].format && this.schemaOutput.properties[prop].format === 'date-time') {
@@ -105,11 +103,21 @@ export default {
                 }
             }
             return false;
-        }
-    },
-    methods: {
+        },
         reload: function() {
             this.environment = JSON.parse(JSON.stringify(this.layer.environment));
+            const config = JSON.parse(JSON.stringify(this.layer.config));
+
+            if (!this.hasDateTime()) {
+                delete config.timezone;
+            } else {
+                config.timezone = {
+                    timezone: 'No TimeZone'
+                }
+            }
+            
+            this.config = config;
+
             this.disabled = true;
         },
         fetchSchema: async function() {
@@ -128,17 +136,11 @@ export default {
         saveLayer: async function() {
             this.loading.save = true;
 
-            const config = JSON.parse(JSON.stringify(this.config));
-
-            if (!this.hasDateTime) {
-                delete config.timezone;
-            }
-
             const layer = await std(`/api/layer/${this.$route.params.layerid}`, {
                 method: 'PATCH',
                 body: {
                     environment: this.environment,
-                    config
+                    config: this.config
                 }
             });
 
