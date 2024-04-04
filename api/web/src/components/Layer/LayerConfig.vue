@@ -72,6 +72,7 @@
             </div>
             <div class="col-md-4">
                 <TablerInput v-model='config.stale' label='Stale Value (ms)' :disabled='disabled' type='number' min='1' step='1'/>
+                <label v-if='config.stale' v-text='humanstr(config.stale)'/>
             </div>
             <div class="col-md-4">
                 <TablerInput v-model='config.memory' label='Memory (Mb)' :disabled='disabled' type='number' min='1' step='1'/>
@@ -185,6 +186,19 @@ export default {
                     this.config.connection = undefined;
                 }
             }
+        }
+    },
+    computed: {
+        humanstr: function() {
+            if (!this.stale) return;
+            var date = new Date(this.stale);
+            var str = '';
+            str += date.getUTCDate()-1 + " days, ";
+            str += date.getUTCHours() + " hours, ";
+            str += date.getUTCMinutes() + " minutes, ";
+            str += date.getUTCSeconds() + " seconds, ";
+            str += date.getUTCMilliseconds() + " millis";
+            return;
         }
     },
     mounted: function() {
