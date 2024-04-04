@@ -20,7 +20,7 @@ import S3 from '../lib/aws/s3.js';
 import { Feature } from 'geojson';
 import { Param } from '@openaddresses/batch-generic';
 import { sql } from 'drizzle-orm';
-import { StandardResponse, LayerResponse } from '../lib/types.js';
+import { StandardResponse, LayerResponse, Layer_Config } from '../lib/types.js';
 import { Layer_Priority } from '../lib/enums.js';
 import { Layer } from '../lib/schema.js';
 import TAKAPI, { APIAuthCertificate, } from '../lib/tak-api.js';
@@ -235,6 +235,7 @@ export default async function router(schema: Schema, config: Config) {
             connection: Type.Optional(Type.Integer()),
             data: Type.Optional(Type.Integer()),
             environment: Type.Optional(Type.Any()),
+            config: Type.Optional(Layer_Config),
             schema: Type.Optional(Type.Any())
         }),
         res: LayerResponse

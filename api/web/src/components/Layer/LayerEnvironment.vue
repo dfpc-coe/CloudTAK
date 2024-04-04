@@ -30,6 +30,18 @@
         <template v-else>
             <Schema :schema='schema' :disabled='disabled' v-model='environment'/>
         </template>
+
+        <div class='px-2'>
+            <!-- AutoSuggested Filters -->
+            <template v-if='config.timezone'>
+                <TablerTimeZone
+                    label='Date TimeZone Override'
+                    :disabled='disabled'
+                    v-model='config.timezone.timezone'
+                />
+            </template>
+        </div>
+
         <div v-if='!disabled' class="col-12 px-2 py-2 d-flex">
             <button @click='reload' class='btn'>Cancel</button>
             <div class='ms-auto'>
@@ -44,6 +56,7 @@
 import { std } from '/src/std.ts';
 import {
     TablerLoading,
+    TablerTimeZone,
 } from '@tak-ps/vue-tabler';
 import LayerEnvironmentArcGIS from './LayerEnvironmentArcGIS.vue';
 import Schema from './utils/Schema.vue';
@@ -67,8 +80,10 @@ export default {
             alert: false,
             esriView: false,
             disabled: true,
+            config: {},
             environment: {},
-            schema: {},
+            schema: { properties: {} },
+            schemaOutput: { properties: {} },
             filterModal: false,
             loading: {
                 schema: false,
@@ -77,12 +92,32 @@ export default {
         };
     },
     mounted: async function() {
-        this.reload();
         await this.fetchSchema()
+        this.reload();
     },
     methods: {
+        hasDateTime: function() {
+            for (const prop of Object.keys(this.schemaOutput.properties)) {
+                if (this.schemaOutput.properties[prop].format && this.schemaOutput.properties[prop].format === 'date-time') {
+                    return true;
+                }
+            }
+            return false;
+        },
         reload: function() {
             this.environment = JSON.parse(JSON.stringify(this.layer.environment));
+            const config = JSON.parse(JSON.stringify(this.layer.config));
+
+            if (!this.hasDateTime()) {
+                delete config.timezone;
+            } else if (!config.timezone) {
+                config.timezone = {
+                    timezone: 'No TimeZone'
+                }
+            }
+            
+            this.config = config;
+
             this.disabled = true;
         },
         fetchSchema: async function() {
@@ -91,6 +126,7 @@ export default {
             try {
                 this.loading.schema = true;
                 this.schema = (await std(`/api/layer/${this.$route.params.layerid}/task/schema`)).schema;
+                this.schemaOutput = (await std(`/api/layer/${this.$route.params.layerid}/task/schema?type=schema:output`)).schema;
             } catch (err) {
                 this.alert = true;
             }
@@ -103,7 +139,8 @@ export default {
             const layer = await std(`/api/layer/${this.$route.params.layerid}`, {
                 method: 'PATCH',
                 body: {
-                    environment: this.environment
+                    environment: this.environment,
+                    config: this.config
                 }
             });
 
@@ -118,6 +155,7 @@ export default {
         IconCode,
         IconX,
         IconSettings,
+        TablerTimeZone,
         TablerLoading,
         LayerEnvironmentArcGIS
     }

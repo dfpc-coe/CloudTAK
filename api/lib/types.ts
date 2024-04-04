@@ -49,6 +49,12 @@ export const ProfileOverlayResponse = createSelectSchema(schemas.ProfileOverlay,
     visible: Type.Boolean(),
 });
 
+export const Layer_Config = Type.Object({
+    timezone: Type.Optional(Type.Object({
+        timezone: Type.String()
+    }))
+});
+
 export const LayerResponse = Type.Object({
     id: Type.Integer(),
     status: Type.String(),
@@ -66,6 +72,7 @@ export const LayerResponse = Type.Object({
     connection: Type.Optional(Type.Integer()),
     cron: Type.String(),
     environment: Type.Any(),
+    config: Layer_Config,
     memory: Type.Integer(),
     timeout: Type.Integer(),
     data: Type.Optional(Type.Integer()),
