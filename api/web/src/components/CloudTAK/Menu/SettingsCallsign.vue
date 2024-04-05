@@ -26,10 +26,6 @@
 import MenuTemplate from '../util/MenuTemplate.vue';
 import { std } from '/src/std.ts';
 import {
-    IconUserCog,
-    IconAdjustments,
-} from '@tabler/icons-vue';
-import {
     TablerInput,
     TablerEnum,
     TablerLoading
@@ -71,8 +67,6 @@ export default {
         }
     },
     components: {
-        IconUserCog,
-        IconAdjustments,
         TablerInput,
         TablerEnum,
         TablerLoading,
