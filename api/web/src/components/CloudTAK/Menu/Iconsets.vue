@@ -62,7 +62,6 @@ import {
     TablerNone,
 } from '@tak-ps/vue-tabler';
 import {
-    IconCircleArrowLeft,
     IconRefresh,
     IconDownload,
     IconFileUpload,
@@ -118,7 +117,6 @@ export default {
         IconDownload,
         MenuTemplate,
         IconsetEditModal,
-        IconCircleArrowLeft,
         IconFileUpload,
         IconCombineds,
         TablerNone,
