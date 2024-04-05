@@ -21,7 +21,7 @@
             <template v-else>
                 <div @click='setBasemap(basemap)' :key='basemap.id' v-for='basemap in list.items' class="col-12 hover-dark cursor-pointer py-2 px-3">
                     <div class="d-flex align-items-center my-2">
-                        <span class='mx-2' style='font-size: 18px;' v-text='basemap.name'/>
+                        <span class='mx-2 text-truncate' style='font-size: 18px;' v-text='basemap.name'/>
 
                         <div class='ms-auto btn-list'>
                             <IconSettings
