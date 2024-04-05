@@ -1,26 +1,20 @@
 <template>
-<div>
-    <div class='col-12 border-bottom border-light'>
-        <div class='modal-header px-0 mx-2'>
-            <IconCircleArrowLeft @click='$router.back()' size='32' class='cursor-pointer'/>
-            <div class='modal-title'>Iconsets</div>
-            <div class='btn-list'>
-                <IconPlus v-if='iconset.username || profile.system_admin' v-tooltip='"Create Icon"' @click='editIconModal = {}' size='32' class='cursor-pointer'/>
-                <IconSettings v-if='iconset.username || profile.system_admin' @click='editIconsetModal = iconset' class='cursor-pointer' size='32'/>
-                <IconDownload v-tooltip='"Download TAK Zip"' size='32' class='cursor-pointer' @click.stop='download'/>
-                <TablerDelete v-if='iconset.username || profile.system_admin' displaytype='icon' @delete='deleteIconset'/>
-            </div>
+<MenuTemplate :name='iconset.name'>
+    <template #buttons>
+        <IconPlus v-if='iconset.username || profile.system_admin' v-tooltip='"Create Icon"' @click='editIconModal = {}' size='32' class='cursor-pointer'/> <IconSettings v-if='iconset.username || profile.system_admin' @click='editIconsetModal = iconset' class='cursor-pointer' size='32'/>
+        <IconDownload v-tooltip='"Download TAK Zip"' size='32' class='cursor-pointer' @click.stop='download'/>
+        <TablerDelete v-if='iconset.username || profile.system_admin' displaytype='icon' @delete='deleteIconset'/>
+    </template>
+    <template #default>
+        <TablerLoading v-if='loading'/>
+        <div v-else class="col-lg-12">
+            <CombinedIcons v-if='!loading' :iconset='iconset.uid' :labels='false'/>
         </div>
-    </div>
+    </template>
+</MenuTemplate>
 
-    <TablerLoading v-if='loading'/>
-    <div v-else class="col-lg-12">
-        <CombinedIcons v-if='!loading' :iconset='iconset.uid' :labels='false'/>
-    </div>
-
-    <IconsetEditModal v-if='editIconsetModal' :icon='editIconsetModal' @close='refresh'/>
-    <IconEditModal v-if='editIconModal' :icon='editIconModal' @close='refresh'/>
-</div>
+<IconsetEditModal v-if='editIconsetModal' :icon='editIconsetModal' @close='refresh'/>
+<IconEditModal v-if='editIconModal' :icon='editIconModal' @close='refresh'/>
 </template>
 
 <script>
@@ -34,8 +28,8 @@ import {
     IconPlus,
     IconSettings,
     IconDownload,
-    IconCircleArrowLeft
 } from '@tabler/icons-vue';
+import MenuTemplate from '../util/MenuTemplate.vue';
 import IconEditModal from './Icon/EditModal.vue';
 import IconsetEditModal from './Iconset/EditModal.vue';
 import { mapState } from 'pinia';
@@ -89,9 +83,9 @@ export default {
         IconPlus,
         IconSettings,
         IconDownload,
-        IconCircleArrowLeft,
         IconEditModal,
         IconsetEditModal,
+        MenuTemplate,
         CombinedIcons,
         TablerDelete,
         TablerLoading

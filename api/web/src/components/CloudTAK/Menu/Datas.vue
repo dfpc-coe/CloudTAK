@@ -1,12 +1,5 @@
 <template>
-<div>
-    <div class='col-12 border-bottom border-light'>
-        <div class='modal-header px-0 mx-2'>
-            <IconCircleArrowLeft @click='$router.back()' size='32' class='cursor-pointer'/>
-            <div class='modal-title'>Data Explorer</div>
-        </div>
-    </div>
-
+<MenuTemplate name='Data Explorer'>
     <div class='mx-4'>
         <div class="btn-group w-100 py-2" role="group">
             <input @change="mode = 'data'" :checked='mode === "data"' value='data' type="radio" class="btn-check" name="mode-select" id="data" autocomplete="off">
@@ -79,14 +72,14 @@
             </template>
         </template>
     </template>
-</div>
+</MenuTemplate>
 </template>
 
 <script>
 import { std, stdurl } from '/src/std.ts';
 import { useMapStore } from '/src/stores/map.ts';
 const mapStore = useMapStore();
-
+import MenuTemplate from '../util/MenuTemplate.vue';
 import {
     TablerNone,
     TablerPager,
@@ -100,7 +93,6 @@ import {
     IconEye,
     IconEyeX,
     IconEyeOff,
-    IconCircleArrowLeft
 } from '@tabler/icons-vue'
 
 export default {
@@ -290,7 +282,7 @@ export default {
         TablerPager,
         TablerLoading,
         TablerDelete,
-        IconCircleArrowLeft
+        MenuTemplate
     }
 }
 </script>

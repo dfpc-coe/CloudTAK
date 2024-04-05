@@ -23,6 +23,14 @@ const router = new VueRouter.createRouter({
                     name: 'home-menu-settings',
                     component: () => import('./components/CloudTAK/Menu/Settings.vue')
                 },{
+                    path: 'settings/callsign',
+                    name: 'home-menu-settings-callsign',
+                    component: () => import('./components/CloudTAK/Menu/SettingsCallsign.vue')
+                },{
+                    path: 'settings/display',
+                    name: 'home-menu-settings-display',
+                    component: () => import('./components/CloudTAK/Menu/SettingsDisplay.vue')
+                },{
                     path: 'imports',
                     name: 'home-menu-imports',
                     component: () => import('./components/CloudTAK/Menu/Imports.vue')
@@ -50,10 +58,6 @@ const router = new VueRouter.createRouter({
                     path: 'iconset/:iconset/:icon',
                     name: 'home-menu-iconset-icon',
                     component: () => import('./components/CloudTAK/Menu/Icon.vue')
-                },{
-                    path: 'iconset/:iconset/:icon/edit',
-                    name: 'home-menu-iconset-icon-edit',
-                    component: () => import('./components/CloudTAK/Menu/IconEdit.vue')
                 },{
                     path: 'overlays',
                     name: 'home-menu-overlays',
