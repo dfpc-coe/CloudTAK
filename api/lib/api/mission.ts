@@ -30,9 +30,19 @@ export const Mission = Type.Object({
     uids: Type.Array(Type.Unknown()),
     logs: Type.Optional(Type.Array(MissionLog)),                // Only present if ?logs=true
     contents: Type.Array(Type.Object({
+        timestamp: Type.String(),
+        creatorUid: Type.String(),
         data: Type.Object({
+            keywords: Type.Array(Type.String()),
+            mimeType: Type.String(),
             name: Type.String(),
-            hash: Type.String()
+            hash: Type.String(),
+            submissionTime: Type.String(),
+            submitter: Type.String(),
+            uid: Type.String(),
+            creatorUid: Type.String(),
+            size: Type.Integer(),
+            expiration: Type.Integer()
         })
     })),
     passwordProtected: Type.Boolean(),
