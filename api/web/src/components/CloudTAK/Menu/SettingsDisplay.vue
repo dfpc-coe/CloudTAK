@@ -1,7 +1,8 @@
 <template>
 <MenuTemplate name='Display Preferences'>
     <div class='mx-2'>
-        <div class='col-12'>
+        <TablerLoading v-if='loading'/>
+        <div v-else class='col-12'>
             <TablerEnum
                 label='Remove Stale Elements'
                 v-model='profile.display_stale'
@@ -59,11 +60,6 @@
 import MenuTemplate from '../util/MenuTemplate.vue';
 import { std } from '/src/std.ts';
 import {
-    IconUserCog,
-    IconAdjustments,
-} from '@tabler/icons-vue';
-import {
-    TablerInput,
     TablerEnum,
     TablerLoading
 } from '@tak-ps/vue-tabler';
@@ -104,9 +100,6 @@ export default {
         }
     },
     components: {
-        IconUserCog,
-        IconAdjustments,
-        TablerInput,
         TablerEnum,
         TablerLoading,
         MenuTemplate,
