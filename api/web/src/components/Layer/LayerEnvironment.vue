@@ -86,14 +86,13 @@ export default {
             schemaOutput: { properties: {} },
             filterModal: false,
             loading: {
-                schema: false,
+                schema: true,
                 save: false
             },
         };
     },
     mounted: async function() {
-        await this.fetchSchema()
-        this.reload();
+        await this.reload();
     },
     methods: {
         hasDateTime: function() {
@@ -104,21 +103,22 @@ export default {
             }
             return false;
         },
-        reload: function() {
+        reload: async function() {
+            await this.fetchSchema()
             this.environment = JSON.parse(JSON.stringify(this.layer.environment));
             const config = JSON.parse(JSON.stringify(this.layer.config));
 
             if (!this.hasDateTime()) {
                 delete config.timezone;
             } else if (!config.timezone) {
-                config.timezone = {
-                    timezone: 'No TimeZone'
-                }
+                config.timezone = { timezone: 'No TimeZone' }
             }
             
             this.config = config;
 
             this.disabled = true;
+
+            this.loading.schema = false;
         },
         fetchSchema: async function() {
             this.alert = false;
@@ -130,8 +130,6 @@ export default {
             } catch (err) {
                 this.alert = true;
             }
-
-            this.loading.schema = false;
         },
         saveLayer: async function() {
             this.loading.save = true;
