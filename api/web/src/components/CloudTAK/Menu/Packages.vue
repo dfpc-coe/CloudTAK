@@ -7,8 +7,8 @@
         <TablerLoading v-if='loading'/>
         <TablerNone v-else-if='!list.items.length' label='Imports' :create='false'/>
         <template v-else>
-            <div :key='pkg.id' v-for='pkg in list.items'>
-                <div class='col-12 py-2 px-3 align-items-center hover-dark'>
+            <div :key='pkg.Hash' v-for='pkg in list.items'>
+                <div @click='$router.push(`/menu/package/${pkg.Hash}`)' class='col-12 py-2 px-3 align-items-center hover-dark cursor-pointer'>
                     <div class='col-12' v-text='pkg.Name'></div>
                     <div class='col-12 subheader d-flex'>
                         <div v-text='timeDiff(pkg.SubmissionDateTime)'></div>
