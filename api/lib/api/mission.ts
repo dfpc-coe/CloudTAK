@@ -41,7 +41,6 @@ export const Mission = Type.Object({
             submitter: Type.String(),
             uid: Type.String(),
             creatorUid: Type.String(),
-            hash: Type.String(),
             size: Type.Integer(),
             expiration: Type.Integer()
         })
