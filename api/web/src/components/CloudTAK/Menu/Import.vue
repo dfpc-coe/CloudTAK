@@ -1,7 +1,7 @@
 <template>
 <MenuTemplate name='Import'>
     <template #buttons>
-        <IconRefresh @click='fetchList' size='32' class='cursor-pointer' v-tooltip='"Refresh"'/>
+        <IconRefresh @click='fetch' size='32' class='cursor-pointer' v-tooltip='"Refresh"'/>
     </template>
     <template #default>
         <TablerLoading v-if='loading.initial'/>
@@ -9,8 +9,8 @@
             <div class='datagrid'>
                 <div class="datagrid-item">
                     <div class="datagrid-title">Import Name</div>
-                    <div class="datagrid-content">
-                        <Status :status='imported.stats'/><span v-text='imported.name'/>
+                    <div class="datagrid-content d-flex align-items-center">
+                        <Status :status='imported.status'/><span class='mx-2' v-text='imported.name'/>
                     </div>
                 </div>
                 <div class="datagrid-item">
