@@ -1,36 +1,31 @@
 <template>
-<div>
-    <div class='col-12 border-bottom border-light'>
-        <div class='modal-header px-0 mx-2'>
-            <IconCircleArrowLeft @click='$router.back()' size='32' class='cursor-pointer'/>
-            <div class='modal-title'>Channels</div>
-            <div class='btn-list'>
-                <IconSearch v-if='rawChannels.length' @click='search.shown = !search.shown' v-tooltip='"Search"' size='32' class='cursor-pointer'/>
-                <IconRefresh v-if='!loading' @click='fetchList' size='32' class='cursor-pointer' v-tooltip='"Refresh"'/>
-            </div>
+<MenuTemplate name='Channels'>
+    <template #buttons>
+        <IconSearch v-if='rawChannels.length' @click='search.shown = !search.shown' v-tooltip='"Search"' size='32' class='cursor-pointer'/>
+        <IconRefresh v-if='!loading' @click='fetchList' size='32' class='cursor-pointer' v-tooltip='"Refresh"'/>
+    </template>
+    <template #default>
+        <div v-if='search.shown' class='col-12 px-3'>
+            <TablerInput v-model='search.filter' placeholder='Filter'/>
         </div>
-    </div>
 
-    <div v-if='search.shown' class='col-12 px-3'>
-        <TablerInput v-model='search.filter' placeholder='Filter'/>
-    </div>
-
-    <TablerLoading v-if='loading'/>
-    <TablerNone v-else-if='!Object.keys(processChannels).length' :create='false'/>
-    <template v-else>
-        <div :key='ch.name' v-for='ch in processChannels' class="col-lg-12 hover-dark">
-            <div class='hover-dark'>
-                <div class='px-2'>
-                    <div class='col-12 py-2 px-2 d-flex align-items-center'>
-                        <IconEye v-if='ch.active' @click='setStatus(ch, false)' v-tooltip='"Disable"' size='32' class='cursor-pointer'/>
-                        <IconEyeOff v-else @click='setStatus(ch, true)' v-tooltip='"Enable"' size='32' class='cursor-pointer'/>
-                        <span class="mx-2" v-text='ch.name'></span>
+        <TablerLoading v-if='loading'/>
+        <TablerNone v-else-if='!Object.keys(processChannels).length' :create='false'/>
+        <template v-else>
+            <div :key='ch.name' v-for='ch in processChannels' class="col-lg-12 hover-dark">
+                <div class='hover-dark'>
+                    <div class='px-2'>
+                        <div class='col-12 py-2 px-2 d-flex align-items-center'>
+                            <IconEye v-if='ch.active' @click='setStatus(ch, false)' v-tooltip='"Disable"' size='32' class='cursor-pointer'/>
+                            <IconEyeOff v-else @click='setStatus(ch, true)' v-tooltip='"Enable"' size='32' class='cursor-pointer'/>
+                            <span class="mx-2" v-text='ch.name'></span>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
+        </template>
     </template>
-</div>
+</MenuTemplate>
 </template>
 
 <script>
@@ -40,9 +35,8 @@ import {
     TablerInput,
     TablerLoading
 } from '@tak-ps/vue-tabler';
-
+import MenuTemplate from '../util/MenuTemplate.vue';
 import {
-    IconCircleArrowLeft,
     IconRefresh,
     IconSearch,
     IconEye,
@@ -126,7 +120,7 @@ export default {
         TablerNone,
         TablerInput,
         TablerLoading,
-        IconCircleArrowLeft,
+        MenuTemplate
     }
 }
 </script>

@@ -1,16 +1,10 @@
 <template>
-<div>
-    <div class='col-12 border-bottom border-light'>
-        <div class='modal-header px-0 mx-2'>
-            <IconCircleArrowLeft @click='$router.back()' size='32' class='cursor-pointer'/>
-            <div class='modal-title'>Chats</div>
-            <div class='btn-list'>
-                <IconPlus @click='$router.push("/menu/contacts")' size='32' class='cursor-pointer' v-tooltip='"New Chat"'/>
-                <IconRefresh v-if='!loading' @click='fetchList' size='32' class='cursor-pointer' v-tooltip='"Refresh"'/>
-            </div>
-        </div>
-    </div>
-    <div class='py-2 px-2'>
+<MenuTemplate name='Chats'>
+    <template #buttons>
+        <IconPlus @click='$router.push("/menu/contacts")' size='32' class='cursor-pointer' v-tooltip='"New Chat"'/>
+        <IconRefresh v-if='!loading' @click='fetchList' size='32' class='cursor-pointer' v-tooltip='"Refresh"'/>
+    </template>
+    <template #default>
         <TablerLoading v-if='loading'/>
         <TablerNone v-else-if='!chats.items.length' :create='false'/>
         <template v-else>
@@ -21,8 +15,8 @@
                 </div>
             </div>
         </template>
-    </div>
-</div>
+    </template>
+</MenuTemplate>
 </template>
 
 <script>
@@ -31,9 +25,8 @@ import {
     TablerNone,
     TablerLoading
 } from '@tak-ps/vue-tabler';
-
+import MenuTemplate from '../util/MenuTemplate.vue';
 import {
-    IconCircleArrowLeft,
     IconUser,
     IconPlus,
     IconRefresh,
@@ -68,7 +61,7 @@ export default {
         IconUser,
         TablerNone,
         TablerLoading,
-        IconCircleArrowLeft,
+        MenuTemplate
     }
 }
 </script>
