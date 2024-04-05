@@ -1,48 +1,46 @@
 <template>
 <div>
-    <div class='col-12 border-bottom border-light'>
-        <div class='modal-header px-0 mx-2'>
-            <IconCircleArrowLeft @click='$router.back()' size='32' class='cursor-pointer'/>
-            <div class='modal-title'>Basemaps</div>
-            <div class='btn-list'>
-                <IconPlus @click='editModal = {}' size='32' class='cursor-pointer' v-tooltip='"Create Basemap"'/>
-                <IconSearch @click='query = !query' v-tooltip='"Search"' size='32' class='cursor-pointer'/>
-                <IconRefresh v-if='!loading' @click='fetchList' size='32' class='cursor-pointer' v-tooltip='"Refresh"'/>
+    <MenuTemplate name='Basemaps'>
+        <template #buttons>
+            <IconPlus @click='editModal = {}' size='32' class='cursor-pointer' v-tooltip='"Create Basemap"'/>
+            <IconSearch @click='query = !query' v-tooltip='"Search"' size='32' class='cursor-pointer'/>
+            <IconRefresh v-if='!loading' @click='fetchList' size='32' class='cursor-pointer' v-tooltip='"Refresh"'/>
+        </template>
+
+        <template #default>
+            <div v-if='query' class='col-12 px-3 pb-3'>
+                <TablerInput v-model='paging.filter' placeholder='Filter'/>
             </div>
-        </div>
-    </div>
 
-    <div v-if='query' class='col-12 px-3'>
-        <TablerInput v-model='paging.filter' placeholder='Filter'/>
-    </div>
+            <TablerLoading v-if='loading'/>
+            <TablerNone
+                v-else-if='!list.items.length'
+                label='Basemaps'
+                @create='$router.push("/basemap/new")'
+            />
+            <template v-else>
+                <div @click='setBasemap(basemap)' :key='basemap.id' v-for='basemap in list.items' class="col-12 hover-dark cursor-pointer py-2 px-3">
+                    <div class="d-flex align-items-center my-2">
+                        <span class='mx-2' style='font-size: 18px;' v-text='basemap.name'/>
 
-    <TablerLoading v-if='loading'/>
-    <TablerNone
-        v-else-if='!list.items.length'
-        label='Basemaps'
-        @create='$router.push("/basemap/new")'
-    />
-    <template v-else>
-        <div @click='setBasemap(basemap)' :key='basemap.id' v-for='basemap in list.items' class="col-12 hover-dark cursor-pointer py-2 px-3">
-            <div class="d-flex align-items-center my-2">
-                <span class='mx-2' style='font-size: 18px;' v-text='basemap.name'/>
-
-                <div class='ms-auto btn-list'>
-                    <IconSettings
-                        v-if='(!basemap.username && profile.system_admin) || basemap.username'
-                        v-tooltip='"Edit Basemap"'
-                        size='32'
-                        class='cursor-pointer'
-                        @click.stop.prevent='editModal = basemap'
-                    />
+                        <div class='ms-auto btn-list'>
+                            <IconSettings
+                                v-if='(!basemap.username && profile.system_admin) || basemap.username'
+                                v-tooltip='"Edit Basemap"'
+                                size='32'
+                                class='cursor-pointer'
+                                @click.stop.prevent='editModal = basemap'
+                            />
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </div>
 
-        <div class="col-lg-12">
-            <TablerPager v-if='list.total > paging.limit' @page='paging.page = $event' :page='paging.page'  :total='list.total' :limit='paging.limit'/>
-        </div>
-    </template>
+                <div class="col-lg-12">
+                    <TablerPager v-if='list.total > paging.limit' @page='paging.page = $event' :page='paging.page'  :total='list.total' :limit='paging.limit'/>
+                </div>
+            </template>
+        </template>
+    </MenuTemplate>
 
     <BasemapEditModal v-if='editModal' size='xl' :basemap='editModal' @close='editModal = false' />
 </div>
@@ -51,6 +49,7 @@
 <script>
 import { std, stdurl } from '/src/std.ts';
 import BasemapEditModal from './Basemaps/EditModal.vue';
+import MenuTemplate from '../util/MenuTemplate.vue';
 import {
     TablerNone,
     TablerInput,
@@ -58,7 +57,6 @@ import {
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import {
-    IconCircleArrowLeft,
     IconPlus,
     IconRefresh,
     IconSettings,
@@ -141,13 +139,13 @@ export default {
         TablerNone,
         TablerPager,
         TablerInput,
-        IconCircleArrowLeft,
         IconSettings,
         IconPlus,
         IconRefresh,
         IconSearch,
         TablerLoading,
-        BasemapEditModal
+        BasemapEditModal,
+        MenuTemplate
     }
 }
 </script>
