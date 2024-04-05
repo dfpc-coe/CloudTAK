@@ -1,31 +1,28 @@
 <template>
-<div>
-    <div class='col-12 border-bottom border-light'>
-        <div class='modal-header px-0 mx-2'>
-            <IconCircleArrowLeft @click='$router.back()' size='32' class='cursor-pointer'/>
-            <div class='modal-title'>Contacts</div>
-            <div class='btn-list'>
-                <IconSearch v-if='contacts.length' @click='search.shown = !search.shown' v-tooltip='"Search"' size='32' class='cursor-pointer'/>
-                <IconRefresh v-if='!loading' @click='fetchList' size='32' class='cursor-pointer' v-tooltip='"Refresh"'/>
-            </div>
-        </div>
-    </div>
-    <div v-if='search.shown' class='col-12 px-3'>
-        <TablerInput v-model='search.filter' placeholder='Filter'/>
-    </div>
-
-    <TablerLoading v-if='loading'/>
-    <TablerNone v-else-if='!visibleContacts.length' :create='false'/>
-    <template v-else>
-        <div :key='a.id' v-for='a of visibleContacts' class="col-lg-12">
-            <Contact @chat='$router.push(`/menu/chats/${$event}`)' :contact='a'/>
-        </div>
+<MenuTemplate name='Contacts'>
+    <template #buttons>
+        <IconSearch v-if='contacts.length' @click='search.shown = !search.shown' v-tooltip='"Search"' size='32' class='cursor-pointer'/>
+        <IconRefresh v-if='!loading' @click='fetchList' size='32' class='cursor-pointer' v-tooltip='"Refresh"'/>
     </template>
-</div>
+    <template #default>
+        <div v-if='search.shown' class='col-12 px-3'>
+            <TablerInput v-model='search.filter' placeholder='Filter'/>
+        </div>
+
+        <TablerLoading v-if='loading'/>
+        <TablerNone v-else-if='!visibleContacts.length' :create='false'/>
+        <template v-else>
+            <div :key='a.id' v-for='a of visibleContacts' class="col-lg-12">
+                <Contact @chat='$router.push(`/menu/chats/${$event}`)' :contact='a'/>
+            </div>
+        </template>
+    </template>
+</MenuTemplate>
 </template>
 
 <script>
 import { std, stdurl } from '/src/std.ts';
+import MenuTemplate from '../util/MenuTemplate.vue';
 import {
     TablerNone,
     TablerInput,
@@ -35,7 +32,6 @@ import Contact from '../partial/Contact.vue';
 import {
     IconRefresh,
     IconSearch,
-    IconCircleArrowLeft
 } from '@tabler/icons-vue';
 
 export default {
@@ -84,7 +80,7 @@ export default {
         TablerLoading,
         IconRefresh,
         IconSearch,
-        IconCircleArrowLeft,
+        MenuTemplate
     }
 }
 </script>
