@@ -27,13 +27,11 @@
 import { std, stdurl } from '/src/std.ts';
 import timeDiff from '../../../timediff.js';
 import {
-    TablerNone,
     TablerDelete,
     TablerLoading,
 } from '@tak-ps/vue-tabler';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import {
-    IconRefresh,
     IconDownload
 } from '@tabler/icons-vue';
 import { mapState } from 'pinia'
@@ -73,9 +71,7 @@ export default {
         },
     },
     components: {
-        IconRefresh,
         IconDownload,
-        TablerNone,
         TablerDelete,
         TablerLoading,
         MenuTemplate,
