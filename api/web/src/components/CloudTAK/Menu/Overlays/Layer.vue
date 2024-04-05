@@ -1,15 +1,5 @@
 <template>
-<div>
-    <div class='col-12 border-bottom border-light'>
-        <div class='modal-header px-0 mx-2'>
-            <IconCircleArrowLeft @click='$emit("close")' size='32' class='cursor-pointer'/>
-
-            <div class='modal-title'>
-                <span v-text='l.id'/>
-            </div>
-            <div class='btn-list'></div>
-        </div>
-    </div>
+<MenuTemplate :name='l.id'>
     <div class="col-lg py-2 px-3">
         <label class='subheader pb-2'>Filter</label>
         <div class='col-12 bg-gray-500 px-2 my-2 py-2'>
@@ -90,7 +80,7 @@
             </template>
         </div>
     </div>
-</div>
+</MenuTemplate>
 </template>
 
 <script>
@@ -98,9 +88,7 @@ import {
     TablerInput,
     TablerRange
 } from '@tak-ps/vue-tabler';
-import {
-    IconCircleArrowLeft,
-} from '@tabler/icons-vue';
+import MenuTemplate from '../../util/MenuTemplate.vue';
 import { useMapStore } from '/src/stores/map.ts';
 import { mapState } from 'pinia'
 const mapStore = useMapStore();
@@ -136,9 +124,9 @@ export default {
         }
     },
     components: {
+        MenuTemplate,
         TablerRange,
         TablerInput,
-        IconCircleArrowLeft,
     }
 }
 </script>
