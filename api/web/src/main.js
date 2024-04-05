@@ -23,6 +23,14 @@ const router = new VueRouter.createRouter({
                     name: 'home-menu-settings',
                     component: () => import('./components/CloudTAK/Menu/Settings.vue')
                 },{
+                    path: 'settings',
+                    name: 'home-menu-settings-callsign',
+                    component: () => import('./components/CloudTAK/Menu/SettingsCallsign.vue')
+                },{
+                    path: 'settings',
+                    name: 'home-menu-settings-display',
+                    component: () => import('./components/CloudTAK/Menu/SettingsDisplay.vue')
+                },{
                     path: 'imports',
                     name: 'home-menu-imports',
                     component: () => import('./components/CloudTAK/Menu/Imports.vue')
