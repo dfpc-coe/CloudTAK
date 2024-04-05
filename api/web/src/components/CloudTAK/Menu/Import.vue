@@ -8,6 +8,12 @@
         <div v-else class='mx-4 my-4'>
             <div class='datagrid'>
                 <div class="datagrid-item">
+                    <div class="datagrid-title">Import Name</div>
+                    <div class="datagrid-content">
+                        <Status :status='imported.stats'/><span v-text='imported.name'/>
+                    </div>
+                </div>
+                <div class="datagrid-item">
                     <div class="datagrid-title">Import Type</div>
                     <div class="datagrid-content" v-text='imported.mode + ": " + imported.mode_id'></div>
                 </div>
