@@ -21,6 +21,11 @@ export const Package = Type.Object({
     Tool: Type.String()
 });
 
+export const ListInput = Type.Object({
+    tool: Type.Optional(Type.String()),
+    uid: Type.Optional(Type.String())
+});
+
 /**
  * @class
  */
@@ -31,11 +36,12 @@ export default class {
         this.api = api;
     }
 
-    async list(): Promise<{
+    async list(query: Static<typeof ListInput>): Promise<{
         resultCount: number;
         results: Array<Static<typeof Package>>
     }> {
-        const url = new URL(`/Marti/sync/search?tool=public`, this.api.url);
+        const url = new URL(`/Marti/sync/search`, this.api.url);
+        for (const q in query) url.searchParams.append(q, String(query[q]));
 
         const res = await this.api.fetch(url, {
             method: 'GET'

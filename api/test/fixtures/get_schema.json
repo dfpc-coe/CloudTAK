@@ -524,6 +524,11 @@
         "query": false,
         "res": true
     },
+    "GET /marti/package/:hash": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
     "GET /marti/group": {
         "body": false,
         "query": true,
