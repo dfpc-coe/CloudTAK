@@ -2,7 +2,7 @@
 <MenuTemplate :name='pkg.Name'>
     <template #buttons>
         <TablerDelete v-if='profile.username === pkg.SubmissionUser' @delete='deleteFile(pkg.Hash)' displaytype='icon'/>
-        <a :href='downloadFile' v-tooltip='"Download Asset"'><IconDownload size='32' class='cursor-pointer'/></a>
+        <a :href='downloadFile()' v-tooltip='"Download Asset"'><IconDownload size='32' class='cursor-pointer'/></a>
     </template>
     <template #default>
         <TablerLoading v-if='loading'/>
@@ -62,7 +62,7 @@ export default {
         downloadFile: function() {
             const url = stdurl(`/api/marti/api/files/${this.pkg.Hash}`)
             url.searchParams.append('token', localStorage.token);
-            url.searchParams.append('name', this.pkg.Name);
+            url.searchParams.append('name', this.pkg.Name + '.zip');
             return url;
         },
         fetch: async function() {
