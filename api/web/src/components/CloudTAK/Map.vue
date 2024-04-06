@@ -11,18 +11,52 @@
             <IconX v-if='!noMenuShown' @click='$router.push("/"); cot = feat = false' size='40' class='mx-2 cursor-pointer bg-dark'/>
         </div>
 
-        <div v-if='profile' class='position-absolute bottom-0 begin-0 text-white' style='z-index: 1; width: 200px; background-color: rgba(0, 0, 0, 0.5);'>
-            <div class='d-flex align-items-center'>
-                <div class='mx-2 hover-dark rounded py-2 px-2 cursor-pointer' v-tooltip='"Set Location"'>
-                    <IconLocationOff size='32' @click='setLocation' v-if='!profile.tak_loc'/>
-                    <IconLocation size='32' @click='setLocation' v-else/>
+        <div
+            v-if='profile'
+            class='position-absolute bottom-0 begin-0 text-white'
+            style='
+                z-index: 1;
+                width: 200px;
+                height: 40px;
+                background-color: rgba(0, 0, 0, 0.5);
+            '
+        >
+            <div class='d-flex align-items-center h-100'>
+                <div
+                    class='hover-dark h-100 px-2 d-flex align-items-center cursor-pointer'
+                    style='width: 40px;'
+                    v-tooltip='"Set Location"'
+                >
+                    <IconLocationOff size='20' @click='setLocation' v-if='!profile.tak_loc'/>
+                    <IconLocation size='20' @click='setLocation' v-else/>
                 </div>
                 <div
                     v-text='profile.tak_callsign'
                     @click='toLocation'
-                    class='mx-1 my-1 cursor-pointer hover-dark px-2 py-2 rounded'
-                    v-tooltip='"To Location"'
+                    style='line-height: 40px; width: calc(100% - 40px);'
+                    class='h-100 cursor-pointer text-center px-2 text-truncate subheader text-white hover-dark'
+                    v-tooltip='"Zoom To Location"'
                 ></div>
+            </div>
+        </div>
+        <div
+            v-if='selected.size'
+            class='position-absolute bottom-0 begin-0 text-white bg-dark'
+            style='z-index: 1; width: 200px;'
+        >
+            <div class='col-12 d-flex align-items-center'>
+                <div class='subheader mx-2 my-2'>Selected Features</div>
+                <div class='ms-auto'><IconX @click='selected.clear()' class='cursor-pointer mx-2 my-2' size='20' v-tooltip='"Clear Selection"'/></div>
+            </div>
+            <div v-for='select in selected.values()' class='col-12 d-flex hover-dark'>
+                <span class='mx-2 my-2' v-text='select.properties.callsign'/>
+                <IconTrash @click='selected.delete(select.properties.id)' size='20' class='ms-auto cursor-pointer mx-2 my-2' v-tooltip='"Remove from Selection"'/>
+            </div>
+            <div class='py-2 px-2'>
+                <button class='w-100 btn'>
+                    <IconPackageExport size='20'/>
+                    <span class='mx-2'>Share</span>
+                </button>
             </div>
         </div>
 
@@ -116,6 +150,7 @@
 <script>
 import { std, stdurl } from '/src/std.ts';
 import {
+    IconTrash,
     IconMessage,
     IconLocationOff,
     IconLocation,
@@ -124,6 +159,8 @@ import {
     IconMinus,
     IconFocus2,
     IconLockAccess,
+    IconPackageExport,
+    IconPackage,
     IconPencil,
     IconX,
     IconPoint,
@@ -162,7 +199,7 @@ export default {
         }
     },
     computed: {
-        ...mapState(useMapStore, ['bearing', 'radial', 'isLoaded']),
+        ...mapState(useMapStore, ['bearing', 'radial', 'isLoaded', 'selected']),
         ...mapState(useProfileStore, ['profile', 'notifications']),
         humanBearing: function() {
             if (this.bearing < 0) {
@@ -461,18 +498,21 @@ export default {
         CloudTAKFeatView,
         IconMessage,
         IconLocationOff,
+        IconTrash,
         IconLocation,
         IconMinus,
         IconBell,
         IconPlus,
         IconFocus2,
         IconLockAccess,
+        IconPackage,
         IconPoint,
         IconLine,
         IconPolygon,
         IconVector,
         IconMenu2,
         IconPencil,
+        IconPackageExport,
         IconX,
     }
 }
