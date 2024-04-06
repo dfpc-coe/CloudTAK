@@ -126,6 +126,10 @@ export const useCOTStore = defineStore('cots', {
          * Add a CoT GeoJSON to the store and modify props to meet MapLibre style requirements
          */
         add: function(feat: Feature, mission_guid=null) {
+            if (!feat.id && !feat.properties.id) {
+                feat.id = self.crypto.randomUUID();
+            }
+
             //Vector Tiles only support integer IDs
             feat.properties.id = feat.id;
 

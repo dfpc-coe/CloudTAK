@@ -54,6 +54,7 @@ export const useMapStore = defineStore('cloudtak', {
                 y: 0,
             },
             layers: [],
+            selected: new Map()
         }
     },
     actions: {
@@ -100,23 +101,28 @@ export const useMapStore = defineStore('cloudtak', {
                 this.map.on('click', click.id, (e) => {
                     if (this.draw && this.draw.getMode() !== 'static') return;
 
-                    const flyTo: mapgl.FlyToOptions = { speed: Infinity };
-                    if (e.features[0].geometry.type === 'Point') {
-                        flyTo.center = e.features[0].geometry.coordinates;
+                    // MultiSelect Mode
+                    if (e.originalEvent.ctrlKey) {
+                        this.selected.set(e.features[0].properties.id, e.features[0]);
                     } else {
-                        flyTo.center = pointOnFeature(e.features[0].geometry).geometry.coordinates;
+                        const flyTo: mapgl.FlyToOptions = { speed: Infinity };
+                        if (e.features[0].geometry.type === 'Point') {
+                            flyTo.center = e.features[0].geometry.coordinates;
+                        } else {
+                            flyTo.center = pointOnFeature(e.features[0].geometry).geometry.coordinates;
+                        }
+
+                        // This is required to ensure the map has nowhere to flyTo - ie the whole world is shown
+                        // and then the radial menu won't actually be on the CoT when the CoT is clicked
+                        if (this.map.getZoom() < 3) flyTo.zoom = 4;
+                        this.map.flyTo(flyTo)
+
+                        this.radial.x = this.container ? this.container.clientWidth / 2 : 0;
+                        this.radial.y = this.container ? this.container.clientHeight / 2 : 0;
+
+                        this.radial.cot = e.features[0];
+                        this.radial.mode = click.type;
                     }
-
-                    // This is required to ensure the map has nowhere to flyTo - ie the whole world is shown
-                    // and then the radial menu won't actually be on the CoT when the CoT is clicked
-                    if (this.map.getZoom() < 3) flyTo.zoom = 4;
-                    this.map.flyTo(flyTo)
-
-                    this.radial.x = this.container ? this.container.clientWidth / 2 : 0;
-                    this.radial.y = this.container ? this.container.clientHeight / 2 : 0;
-
-                    this.radial.cot = e.features[0];
-                    this.radial.mode = click.type;
                 });
             }
 
@@ -132,8 +138,6 @@ export const useMapStore = defineStore('cloudtak', {
             const pos = this.getLayerPos(newLayer.name);
             if (pos === false) return
             this.layers[pos] = newLayer;
-
-            console.error(newLayer);
 
             for (const l of newLayer.layers) {
                 if (newLayer.type === 'raster') {
