@@ -5,6 +5,7 @@
     <template v-else>
         <div :key='a.id' v-for='a of visibleContacts' class="col-lg-12">
             <Contact
+                :compact='compact'
                 :contact='a'
                 :buttonChat='false'
                 :buttonZoom='false'
@@ -15,12 +16,18 @@
     </template>
 
     <div class='col-6' style='padding-left: 20px;'>
-        <button @click='share' class='w-100 btn btn-primary'>Share to Selected</button>
+        <button @click='share' class='w-100 btn btn-primary' v-tooltip='"Share to Selected"'>
+            <IconShare2 v-if='compact' size='20'/>
+            <span v-else>Broadcast to All</span>
+        </button>
     </div>
     <div class='col-6' style='padding-right: 20px;'>
-        <button @click='broadcast' class='w-100 btn btn-secondary'>Broadcast to All</button>
+        <button @click='broadcast' class='w-100 btn btn-secondary' v-tooltip='"Broadcast to All"'>
+            <IconBroadcast v-if='compact' size='20'/>
+            <span v-else>Broadcast to All</span>
+        </button>
     </div>
-    <div @click='$emit("done")' class='col-12 py-2' style='padding-right: 20px; padding-left: 20px;'>
+    <div @click='$emit("cancel")' class='col-12 py-2' style='padding-right: 20px; padding-left: 20px;'>
         <button class='w-100 btn btn-secondary'>Cancel</button>
     </div>
 </div>
@@ -32,6 +39,10 @@ import {
     TablerNone,
     TablerLoading
 } from '@tak-ps/vue-tabler';
+import {
+    IconBroadcast,
+    IconShare2
+} from '@tabler/icons-vue';
 import Contact from '../partial/Contact.vue';
 import { useConnectionStore } from '/src/stores/connection.ts';
 
@@ -43,6 +54,10 @@ export default {
         feats: {
             type: Array,
             required: true,
+        },
+        compact: {
+            type: Boolean,
+            default: false
         }
     },
     data: function() {
@@ -94,6 +109,8 @@ export default {
     },
     components: {
         Contact,
+        IconBroadcast,
+        IconShare2,
         TablerNone,
         TablerLoading,
     }
