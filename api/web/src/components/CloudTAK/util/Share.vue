@@ -1,34 +1,36 @@
 <template>
-<div class='row g-2'>
-    <TablerLoading v-if='loading'/>
-    <TablerNone v-else-if='!visibleContacts.length' :create='false'/>
-    <template v-else>
-        <div :key='a.id' v-for='a of visibleContacts' class="col-lg-12">
-            <Contact
-                :compact='compact'
-                :contact='a'
-                :buttonChat='false'
-                :buttonZoom='false'
-                :selected='selected.has(a)'
-                @click='selected.has(a) ? selected.delete(a) : selected.add(a)'
-            />
-        </div>
-    </template>
+<div class='row g-2 container'>
+    <div class='overflow-auto'>
+        <TablerLoading v-if='loading'/>
+        <TablerNone v-else-if='!visibleContacts.length' :create='false'/>
+        <template v-else>
+            <div :key='a.id' v-for='a of visibleContacts' class="col-lg-12">
+                <Contact
+                    :compact='compact'
+                    :contact='a'
+                    :buttonChat='false'
+                    :buttonZoom='false'
+                    :selected='selected.has(a)'
+                    @click='selected.has(a) ? selected.delete(a) : selected.add(a)'
+                />
+            </div>
+        </template>
 
-    <div class='col-6' style='padding-left: 20px;'>
-        <button @click='share' class='w-100 btn btn-primary' v-tooltip='"Share to Selected"'>
-            <IconShare2 v-if='compact' size='20'/>
-            <span v-else>Broadcast to All</span>
-        </button>
-    </div>
-    <div class='col-6' style='padding-right: 20px;'>
-        <button @click='broadcast' class='w-100 btn btn-secondary' v-tooltip='"Broadcast to All"'>
-            <IconBroadcast v-if='compact' size='20'/>
-            <span v-else>Broadcast to All</span>
-        </button>
-    </div>
-    <div @click='$emit("cancel")' class='col-12 py-2' style='padding-right: 20px; padding-left: 20px;'>
-        <button class='w-100 btn btn-secondary'>Cancel</button>
+        <div class='col-6' style='padding-left: 20px;'>
+            <button @click='share' class='w-100 btn btn-primary' v-tooltip='"Share to Selected"'>
+                <IconShare2 v-if='compact' size='20'/>
+                <span v-else>Broadcast to All</span>
+            </button>
+        </div>
+        <div class='col-6' style='padding-right: 20px;'>
+            <button @click='broadcast' class='w-100 btn btn-secondary' v-tooltip='"Broadcast to All"'>
+                <IconBroadcast v-if='compact' size='20'/>
+                <span v-else>Broadcast to All</span>
+            </button>
+        </div>
+        <div @click='$emit("cancel")' class='col-12 py-2' style='padding-right: 20px; padding-left: 20px;'>
+            <button class='w-100 btn btn-secondary'>Cancel</button>
+        </div>
     </div>
 </div>
 </template>
@@ -58,6 +60,10 @@ export default {
         compact: {
             type: Boolean,
             default: false
+        },
+        maxheight: {
+            type: String,
+            default: '100%'
         }
     },
     data: function() {
