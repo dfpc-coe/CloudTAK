@@ -2,26 +2,30 @@
 <div class='col-12 py-2 d-flex hover-dark cursor-pointer'>
     <div class='row col-12 align-items-center'>
         <div class='col-auto'>
-            <IconCircleFilled style='margin-left: 16px;' size='32' :class='{
-                "text-yellow": contact.team === "Yellow",
-                "text-cyan": contact.team === "Cyan",
-                "text-lime": contact.team === "Green",
-                "text-red": contact.team === "Red",
-                "text-purple": contact.team === "Purple",
-                "text-orange": contact.team === "Orange",
-                "text-azure": contact.team === "Blue",
-                "text-dribble": contact.team === "Magenta",
-                "text-white": contact.team === "White",
-                "text-pinterest": contact.team === "Maroon",
-                "text-blue": contact.team === "Dark Blue",
-                "text-teal": contact.team === "Teal",
-                "text-green": contact.team === "Dark Green",
-                "text-google": contact.team === "Brown",
-            }'/>
+            <IconCircleFilled
+                :style='compact ? "margin-left: 8px" : "margin-left: 16px;"'
+                :size='compact ? 20 : 32'
+                :class='{
+                    "text-yellow": contact.team === "Yellow",
+                    "text-cyan": contact.team === "Cyan",
+                    "text-lime": contact.team === "Green",
+                    "text-red": contact.team === "Red",
+                    "text-purple": contact.team === "Purple",
+                    "text-orange": contact.team === "Orange",
+                    "text-azure": contact.team === "Blue",
+                    "text-dribble": contact.team === "Magenta",
+                    "text-white": contact.team === "White",
+                    "text-pinterest": contact.team === "Maroon",
+                    "text-blue": contact.team === "Dark Blue",
+                    "text-teal": contact.team === "Teal",
+                    "text-green": contact.team === "Dark Green",
+                    "text-google": contact.team === "Brown",
+                }'
+            />
         </div>
-        <div class='col-auto'>
-            <div v-text='contact.callsign'></div>
-            <div v-text='contact.notes.trim()' class='subheader'></div>
+        <div class='col-7'>
+            <div class='text-truncate' v-text='contact.callsign'></div>
+            <div v-text='contact.notes.trim()' class='text-truncate subheader'></div>
         </div>
         <div class='col-auto ms-auto btn-list'>
             <IconMessage
@@ -38,7 +42,7 @@
                 size='32'
                 class='cursor-pointer'
             />
-            <IconCheck v-if='selected' size='32' style='margin-left: 16px;'/>
+            <IconCheck v-if='selected' :size='compact ? 20 : 32' style='margin-left: 16px;'/>
         </div>
     </div>
 </div>
@@ -74,6 +78,10 @@ export default {
         buttonChat: {
             type: Boolean,
             default: true
+        },
+        compact: {
+            type: Boolean,
+            default: false
         }
     },
     methods: {

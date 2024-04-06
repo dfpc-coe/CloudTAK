@@ -84,7 +84,11 @@
         </div>
     </template>
     <template v-else-if='mode === "share"'>
-        <Share @done='mode = "default"' :feat='feat'/>
+        <Share
+            @done='mode = "default"'
+            @cancel='mode = "default"'
+            :feat='feat'
+        />
     </template>
     <template v-else-if='mode === "raw"'>
         <pre v-text='feat'/>
