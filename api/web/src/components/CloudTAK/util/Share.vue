@@ -40,8 +40,8 @@ const connectionStore = useConnectionStore();
 export default {
     name: 'COTShare',
     props: {
-        feat: {
-            type: Object,
+        feats: {
+            type: Array,
             required: true,
         }
     },
@@ -69,11 +69,16 @@ export default {
                 throw new Error('No Users Selected to Share With');
             }
 
-            for (const contact of this.selected) {
-                const feat = JSON.parse(JSON.stringify(this.feat));
-                feat.properties.dest = [{ uid: contact.uid }];
-                connectionStore.sendCOT(feat);
+            if (this.feats.length === 1) {
+                for (const contact of this.selected) {
+                    const feat = JSON.parse(JSON.stringify(this.feats[0]));
+                    feat.properties.dest = [{ uid: contact.uid }];
+                    connectionStore.sendCOT(feat);
+                }
+            } else {
+                // TODO Data Package
             }
+
             this.$emit('done');
         },
         broadcast: async function() {

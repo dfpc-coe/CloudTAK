@@ -48,12 +48,12 @@
                 width: 200px;
             '
         >
-            <div class='col-12 d-flex align-items-center'>
+            <div class='col-12 d-flex align-items-center user-select-none'>
                 <div class='subheader mx-2 my-2'>Selected Features</div>
                 <div class='ms-auto'><IconX @click='selected.clear()' class='cursor-pointer mx-2 my-2' size='20' v-tooltip='"Clear Selection"'/></div>
             </div>
             <div v-for='select in selected.values()' class='col-12 d-flex hover-dark'>
-                <span class='mx-2 my-2' v-text='select.properties.callsign'/>
+                <span class='mx-2 my-2 user-select-none' v-text='select.properties.callsign'/>
                 <IconTrash @click='selected.delete(select.properties.id)' size='20' class='ms-auto cursor-pointer mx-2 my-2' v-tooltip='"Remove from Selection"'/>
             </div>
             <div class='py-2 px-2'>
@@ -173,6 +173,7 @@ import {
     IconVector,
     IconBell
 } from '@tabler/icons-vue';
+import Share from './util/Share.vue';
 import {
     TablerDropdown,
     TablerNone,
@@ -494,6 +495,7 @@ export default {
         }
     },
     components: {
+        Share,
         RadialMenu,
         TablerNone,
         TablerDropdown,
