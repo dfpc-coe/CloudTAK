@@ -41,8 +41,12 @@
         </div>
         <div
             v-if='selected.size'
-            class='position-absolute bottom-0 begin-0 text-white bg-dark'
-            style='z-index: 1; width: 200px;'
+            class='position-absolute begin-0 text-white bg-dark'
+            style='
+                z-index: 1;
+                bottom: 40px;
+                width: 200px;
+            '
         >
             <div class='col-12 d-flex align-items-center'>
                 <div class='subheader mx-2 my-2'>Selected Features</div>
