@@ -31,7 +31,7 @@
                 <div class='btn-list'>
                     <IconShare2 @click='mode === "share" ? mode = "default" : mode = "share"' size='32' class='cursor-pointer' v-tooltip='"Share"'/>
                 </div>
-                <div class='ms-auto btn-list'>
+                <div class='ms-auto btn-list mx-2'>
                     <IconZoomPan @click='zoomTo' size='32' class='cursor-pointer' v-tooltip='"Zoom To"'/>
 
                     <IconCode v-if='mode === "default"' @click='mode = "raw"' size='32' class='cursor-pointer' v-tooltip='"Raw View"'/>
