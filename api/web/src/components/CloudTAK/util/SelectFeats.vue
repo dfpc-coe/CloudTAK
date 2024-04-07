@@ -1,5 +1,5 @@
 <template>
-<div class='col-12 container' style='max-height: 400px;'>
+<div class='col-12' style='max-height: 400px;'>
     <template v-if='!share'>
         <div class='sticky-top col-12 d-flex align-items-center user-select-none'>
             <div class='subheader mx-2 my-2'>Selected Features</div>

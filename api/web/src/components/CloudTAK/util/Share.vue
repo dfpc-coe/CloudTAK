@@ -1,6 +1,16 @@
 <template>
-<div class='row g-2 container'>
-    <div class='overflow-auto'>
+<div class='position-relative mb-2' :style='`height: ${maxheight}`'>
+    <div class='sticky-top col-12 d-flex align-items-center user-select-none'>
+        <div class='subheader mx-2 my-2'>Share</div>
+        <div v-if='compact' class='ms-auto'>
+            <IconX @click='$emit("cancel")' class='cursor-pointer mx-2 my-2' size='20' v-tooltip='"Cancel Share"'/>
+        </div>
+    </div>
+    <div
+        class='overflow-auto row g-1'
+        :style='`height: calc(${maxheight} - 36px - 30px);`'
+        style='margin-bottom: 30px;'
+    >
         <TablerLoading v-if='loading'/>
         <TablerNone v-else-if='!visibleContacts.length' :create='false'/>
         <template v-else>
@@ -15,20 +25,31 @@
                 />
             </div>
         </template>
-
-        <div class='col-6' style='padding-left: 20px;'>
-            <button @click='share' class='w-100 btn btn-primary' v-tooltip='"Share to Selected"'>
+    </div>
+    <div class='position-absolute row g-0 bottom-0 start-0 end-0'>
+        <div class='col-6 px-2'>
+            <button
+                @click='share'
+                class='w-100 btn btn-primary'
+                :style='compact ? "height: 30px" : ""'
+                v-tooltip='"Share to Selected"'
+            >
                 <IconShare2 v-if='compact' size='20'/>
                 <span v-else>Broadcast to All</span>
             </button>
         </div>
-        <div class='col-6' style='padding-right: 20px;'>
-            <button @click='broadcast' class='w-100 btn btn-secondary' v-tooltip='"Broadcast to All"'>
+        <div class='col-6 px-2'>
+            <button
+                @click='broadcast' 
+                class='w-100 btn btn-secondary'
+                :style='compact ? "height: 30px" : ""'
+                v-tooltip='"Broadcast to All"'
+            >
                 <IconBroadcast v-if='compact' size='20'/>
                 <span v-else>Broadcast to All</span>
             </button>
         </div>
-        <div @click='$emit("cancel")' class='col-12 py-2' style='padding-right: 20px; padding-left: 20px;'>
+        <div v-if='!compact' @click='$emit("cancel")' class='col-12'>
             <button class='w-100 btn btn-secondary'>Cancel</button>
         </div>
     </div>
@@ -42,6 +63,7 @@ import {
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import {
+    IconX,
     IconBroadcast,
     IconShare2
 } from '@tabler/icons-vue';
@@ -115,6 +137,7 @@ export default {
     },
     components: {
         Contact,
+        IconX,
         IconBroadcast,
         IconShare2,
         TablerNone,
