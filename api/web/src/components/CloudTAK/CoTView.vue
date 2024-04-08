@@ -84,11 +84,14 @@
         </div>
     </template>
     <template v-else-if='mode === "share"'>
-        <Share
-            @done='mode = "default"'
-            @cancel='mode = "default"'
-            :feat='feat'
-        />
+        <div class='overflow-auto'>
+            <Share
+                @done='mode = "default"'
+                @cancel='mode = "default"'
+                style='height: 70vh'
+                :feat='feat'
+            />
+        </div>
     </template>
     <template v-else-if='mode === "raw"'>
         <pre v-text='feat'/>

@@ -11,9 +11,11 @@
     <TablerNone v-else-if='!visibleContacts.length' :create='false'/>
     <template v-else>
         <div
-            class='overflow-auto row g-0'
-            :style='`height: calc(100% - 36px - 30px);`'
-            style='margin-bottom: 30px;'
+            class='overflow-auto'
+            :style='`
+                height: calc(100% - 36px - ${compact ? "30px" : "100px"});
+                margin-bottom: ${compact ? "30px" : "100px"};
+            `'
         >
             <Contact
                 :key='a.id'
@@ -35,7 +37,7 @@
                     v-tooltip='"Share to Selected"'
                 >
                     <IconShare2 v-if='compact' size='20'/>
-                    <span v-else>Broadcast to All</span>
+                    <span v-else>Share to Selected</span>
                 </button>
             </div>
             <div class='col-6 px-2'>
@@ -49,7 +51,7 @@
                     <span v-else>Broadcast to All</span>
                 </button>
             </div>
-            <div v-if='!compact' @click='$emit("cancel")' class='col-12'>
+            <div v-if='!compact' @click='$emit("cancel")' class='col-12 px-2 pt-2'>
                 <button class='w-100 btn btn-secondary'>Cancel</button>
             </div>
         </div>
