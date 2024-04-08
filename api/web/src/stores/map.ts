@@ -559,7 +559,7 @@ function cotStyles(id: string, opts: {
 
     if (opts.labels) {
         styles.push({
-            id: `${id}-text-circle`,
+            id: `${id}-text-point`,
             type: 'symbol',
             source: id,
             filter: [ 'all', ['==', '$type', 'Point'], ],
@@ -576,10 +576,27 @@ function cotStyles(id: string, opts: {
         });
 
         styles.push({
-            id: `${id}-text-other`,
+            id: `${id}-text-line`,
             type: 'symbol',
             source: id,
-            filter: [ 'all', ['!=', '$type', 'Point'], ],
+            filter: [ 'all', ['==', '$type', 'LineString'], ],
+            paint: {
+                'text-color': '#ffffff',
+                'text-halo-color': '#000000',
+                'text-halo-width': 2,
+            },
+            layout: {
+                "symbol-placement": "line",
+                'text-font': ['Open Sans Bold'],
+                'text-field':  '{callsign}'
+            }
+        });
+
+        styles.push({
+            id: `${id}-text-poly`,
+            type: 'symbol',
+            source: id,
+            filter: [ 'all', ['==', '$type', 'Polygon'], ],
             paint: {
                 'text-color': '#ffffff',
                 'text-halo-color': '#000000',
