@@ -31,7 +31,7 @@
     <template v-else>
         <Share
             style='height: 400px;'
-            feats='selected.values()'
+            :feats='selected.values()'
             @done='selected.clear()'
             @cancel='share = false'
             :compact='true'
@@ -47,9 +47,6 @@ import {
     IconX,
 } from '@tabler/icons-vue';
 import Share from './Share.vue';
-import {
-    TablerLoading
-} from '@tak-ps/vue-tabler';
 
 export default {
     name: 'SelectFeats',
