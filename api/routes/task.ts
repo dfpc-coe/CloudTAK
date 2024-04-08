@@ -174,7 +174,7 @@ export default async function router(schema: Schema, config: Config) {
                 return await config.models.Layer.from(parseInt(String(req.params.layerid)));
             });
 
-            await CF.delete(config, layer.id);
+            await CF.cancel(config, layer.id);
 
             return res.json({
                 status: 200,
