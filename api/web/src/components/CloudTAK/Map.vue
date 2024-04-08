@@ -141,7 +141,6 @@
 <script>
 import { std, stdurl } from '/src/std.ts';
 import {
-    IconTrash,
     IconMessage,
     IconLocationOff,
     IconLocation,
@@ -150,8 +149,6 @@ import {
     IconMinus,
     IconFocus2,
     IconLockAccess,
-    IconPackageExport,
-    IconPackage,
     IconPencil,
     IconX,
     IconPoint,
@@ -491,14 +488,12 @@ export default {
         CloudTAKFeatView,
         IconMessage,
         IconLocationOff,
-        IconTrash,
         IconLocation,
         IconMinus,
         IconBell,
         IconPlus,
         IconFocus2,
         IconLockAccess,
-        IconPackage,
         IconPoint,
         IconLine,
         IconPolygon,

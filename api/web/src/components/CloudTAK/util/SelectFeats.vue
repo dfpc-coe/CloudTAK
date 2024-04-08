@@ -47,9 +47,6 @@ import {
     IconX,
 } from '@tabler/icons-vue';
 import Share from './Share.vue';
-import {
-    TablerLoading
-} from '@tak-ps/vue-tabler';
 
 export default {
     name: 'SelectFeats',
