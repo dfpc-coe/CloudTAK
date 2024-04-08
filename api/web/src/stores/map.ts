@@ -559,9 +559,10 @@ function cotStyles(id: string, opts: {
 
     if (opts.labels) {
         styles.push({
-            id: `${id}-text`,
+            id: `${id}-text-circle`,
             type: 'symbol',
             source: id,
+            filter: [ 'all', ['==', '$type', 'Point'], ],
             paint: {
                 'text-color': '#ffffff',
                 'text-halo-color': '#000000',
@@ -569,6 +570,22 @@ function cotStyles(id: string, opts: {
             },
             layout: {
                 'text-offset': [0, 2],
+                'text-font': ['Open Sans Bold'],
+                'text-field':  '{callsign}'
+            }
+        });
+
+        styles.push({
+            id: `${id}-text-other`,
+            type: 'symbol',
+            source: id,
+            filter: [ 'all', ['!=', '$type', 'Point'], ],
+            paint: {
+                'text-color': '#ffffff',
+                'text-halo-color': '#000000',
+                'text-halo-width': 2,
+            },
+            layout: {
                 'text-font': ['Open Sans Bold'],
                 'text-field':  '{callsign}'
             }
