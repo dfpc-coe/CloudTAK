@@ -1,58 +1,59 @@
 <template>
-<div class='position-relative mb-2' :style='`height: ${maxheight}`'>
+<div class='position-relative mb-2'>
     <div class='sticky-top col-12 d-flex align-items-center user-select-none'>
         <div class='subheader mx-2 my-2'>Share</div>
         <div v-if='compact' class='ms-auto'>
             <IconX @click='$emit("cancel")' class='cursor-pointer mx-2 my-2' size='20' v-tooltip='"Cancel Share"'/>
         </div>
     </div>
-    <div
-        class='overflow-auto row g-1'
-        :style='`height: calc(${maxheight} - 36px - 30px);`'
-        style='margin-bottom: 30px;'
-    >
-        <TablerLoading v-if='loading'/>
-        <TablerNone v-else-if='!visibleContacts.length' :create='false'/>
-        <template v-else>
-            <div :key='a.id' v-for='a of visibleContacts' class="col-lg-12">
-                <Contact
-                    :compact='compact'
-                    :contact='a'
-                    :buttonChat='false'
-                    :buttonZoom='false'
-                    :selected='selected.has(a)'
-                    @click='selected.has(a) ? selected.delete(a) : selected.add(a)'
-                />
+
+    <TablerLoading v-if='loading'/>
+    <TablerNone v-else-if='!visibleContacts.length' :create='false'/>
+    <template v-else>
+        <div
+            class='overflow-auto row g-0'
+            :style='`height: calc(100% - 36px - 30px);`'
+            style='margin-bottom: 30px;'
+        >
+            <Contact
+                :key='a.id'
+                v-for='a of visibleContacts'
+                :compact='compact'
+                :contact='a'
+                :buttonChat='false'
+                :buttonZoom='false'
+                :selected='selected.has(a)'
+                @click='selected.has(a) ? selected.delete(a) : selected.add(a)'
+            />
+        </div>
+        <div class='position-absolute row g-0 bottom-0 start-0 end-0'>
+            <div class='col-6 px-2'>
+                <button
+                    @click='share'
+                    class='w-100 btn btn-primary'
+                    :style='compact ? "height: 30px" : ""'
+                    v-tooltip='"Share to Selected"'
+                >
+                    <IconShare2 v-if='compact' size='20'/>
+                    <span v-else>Broadcast to All</span>
+                </button>
             </div>
-        </template>
-    </div>
-    <div class='position-absolute row g-0 bottom-0 start-0 end-0'>
-        <div class='col-6 px-2'>
-            <button
-                @click='share'
-                class='w-100 btn btn-primary'
-                :style='compact ? "height: 30px" : ""'
-                v-tooltip='"Share to Selected"'
-            >
-                <IconShare2 v-if='compact' size='20'/>
-                <span v-else>Broadcast to All</span>
-            </button>
+            <div class='col-6 px-2'>
+                <button
+                    @click='broadcast'
+                    class='w-100 btn btn-secondary'
+                    :style='compact ? "height: 30px" : ""'
+                    v-tooltip='"Broadcast to All"'
+                >
+                    <IconBroadcast v-if='compact' size='20'/>
+                    <span v-else>Broadcast to All</span>
+                </button>
+            </div>
+            <div v-if='!compact' @click='$emit("cancel")' class='col-12'>
+                <button class='w-100 btn btn-secondary'>Cancel</button>
+            </div>
         </div>
-        <div class='col-6 px-2'>
-            <button
-                @click='broadcast' 
-                class='w-100 btn btn-secondary'
-                :style='compact ? "height: 30px" : ""'
-                v-tooltip='"Broadcast to All"'
-            >
-                <IconBroadcast v-if='compact' size='20'/>
-                <span v-else>Broadcast to All</span>
-            </button>
-        </div>
-        <div v-if='!compact' @click='$emit("cancel")' class='col-12'>
-            <button class='w-100 btn btn-secondary'>Cancel</button>
-        </div>
-    </div>
+    </template>
 </div>
 </template>
 
