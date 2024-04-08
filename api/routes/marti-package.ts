@@ -20,7 +20,7 @@ export default async function router(schema: Schema, config: Config) {
         name: 'Create Package',
         group: 'MartiPackages',
         description: 'Helper API to create share package',
-        req: Type.Object({
+        body: Type.Object({
             features: Type.Array(Type.Object({
                 id: Type.String(),
                 properties: Type.Any(),
@@ -31,7 +31,7 @@ export default async function router(schema: Schema, config: Config) {
     }, async (req, res) => {
         try {
             const archive = archiver('zip', { zlib: { level: 9 } });
-            for (const feat of req.features) {
+            for (const feat of req.body.features) {
                 archive.directory('/', feat.id);
             }
         } catch (err) {
