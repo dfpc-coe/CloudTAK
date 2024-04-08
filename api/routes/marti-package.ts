@@ -1,10 +1,11 @@
 import { Type } from '@sinclair/typebox'
+import archiver from 'archiver';
 import TAK from '@tak-ps/node-tak';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
-import { GenericMartiResponse } from '../lib/types.js';
+import { StandardResponse, GenericMartiResponse } from '../lib/types.js';
 import { Package } from '../lib/api/package.js';
 import { Profile } from '../lib/schema.js';
 import S3 from '../lib/aws/s3.js';
@@ -15,6 +16,29 @@ import TAKAPI, {
 } from '../lib/tak-api.js';
 
 export default async function router(schema: Schema, config: Config) {
+    await schema.put('/marti/package', {
+        name: 'Create Package',
+        group: 'MartiPackages',
+        description: 'Helper API to create share package',
+        req: Type.Object({
+            features: Type.Array(Type.Object({
+                id: Type.String(),
+                properties: Type.Any(),
+                geometry: Type.Any()
+            }))
+        }),
+        res: StandardResponse
+    }, async (req, res) => {
+        try {
+            const archive = archiver('zip', { zlib: { level: 9 } });
+            for (const feat of req.features) {
+                archive.directory('/', feat.id);
+            }
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
+
     await schema.get('/marti/package', {
         name: 'List Packages',
         group: 'MartiPackages',
