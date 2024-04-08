@@ -519,6 +519,11 @@
         "query": false,
         "res": true
     },
+    "PUT /marti/package": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
     "GET /marti/package": {
         "body": false,
         "query": false,
