@@ -520,7 +520,7 @@
         "res": true
     },
     "PUT /marti/package": {
-        "body": false,
+        "body": true,
         "query": false,
         "res": true
     },
