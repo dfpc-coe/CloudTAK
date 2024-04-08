@@ -1,5 +1,5 @@
 <template>
-<div class='col-12' style='max-height: 400px;'>
+<div class='col-12' style='max-height: 400px'>
     <template v-if='!share'>
         <div class='sticky-top col-12 d-flex align-items-center user-select-none'>
             <div class='subheader mx-2 my-2'>Selected Features</div>
@@ -8,7 +8,7 @@
         <div
             class='overflow-auto'
             style='
-                max-height: calc(400px - 36px - 36px);
+                max-height: calc(400px - 36px);
                 margin-bottom: 36px;
             '
         >
@@ -30,10 +30,10 @@
     </template>
     <template v-else>
         <Share
+            style='height: 400px;'
             feats='selected.values()'
             @done='selected.clear()'
             @cancel='share = false'
-            maxheight='400px'
             :compact='true'
         />
     </template>
