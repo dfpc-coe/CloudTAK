@@ -18,7 +18,7 @@
             <div class='mx-1 my-1' v-text='"°" + weather.properties.periods[0].temperatureUnit'></div>
         </div>
         <div class='d-flex ms-auto'>
-            <div style='font-size: 20px;' v-text='weather.properties.periods[0].shortForecast'></div>
+            <div class='mx-2' style='font-size: 20px;' v-text='weather.properties.periods[0].shortForecast'></div>
         </div>
     </div>
 </div>
