@@ -14,7 +14,7 @@
         <div class='col-12 overflow-auto' style='height: calc(100% - 106px)'>
             <TablerLoading v-if='loading' desc='Querying...'/>
             <template v-else>
-                HERE
+                <QueryWeather :weather='query.weather'/>
             </template>
         </div>
     </div>
@@ -25,6 +25,7 @@
 import {
 } from '@tabler/icons-vue';
 import { std } from '/src/std.ts';
+import QueryWeather from './Query/Weather.vue';
 import {
     TablerLoading
 } from '@tak-ps/vue-tabler';
@@ -62,6 +63,7 @@ export default {
         }
     },
     components: {
+        QueryWeather,
         TablerLoading
     }
 }

@@ -2,7 +2,7 @@ import { Type } from '@sinclair/typebox'
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
-import Weather from '../lib/weather.js';
+import Weather, { FetchHourly } from '../lib/weather.js';
 import Config from '../lib/config.js';
 
 export default async function router(schema: Schema, config: Config) {
@@ -17,6 +17,7 @@ export default async function router(schema: Schema, config: Config) {
             longitude: Type.Number()
         }),
         res: Type.Object({
+            weather: FetchHourly
         })
     }, async (req, res) => {
         try {
