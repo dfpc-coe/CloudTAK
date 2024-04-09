@@ -1,6 +1,6 @@
 <template>
 <div class='col-12 row g-0 hover-dark'>
-    <div class='col-12 mt-2'>
+    <div class='col-12'>
         <label class='subheader mx-2'>National Weather Service</label>
     </div>
     <div class='col-12 d-flex py-2 px-2'>

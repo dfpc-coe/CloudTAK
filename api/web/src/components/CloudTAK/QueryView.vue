@@ -16,7 +16,15 @@
         <div class='col-12 overflow-auto' style='height: calc(100% - 106px)'>
             <TablerLoading v-if='loading' desc='Querying...'/>
             <template v-else>
-                <QueryWeather :weather='query.weather'/>
+                <Coordinate
+                    :coordinates='coords'
+                    class='py-2'
+                />
+
+                <QueryWeather
+                    :weather='query.weather'
+                    class='py-2'
+                />
             </template>
         </div>
     </div>
@@ -32,6 +40,7 @@ import QueryWeather from './Query/Weather.vue';
 import {
     TablerLoading
 } from '@tak-ps/vue-tabler';
+import Coordinate from './util/Coordinate.vue';
 
 export default {
     name: 'CloudTAKQueryMode',
@@ -66,6 +75,7 @@ export default {
         }
     },
     components: {
+        Coordinate,
         IconRefresh,
         QueryWeather,
         TablerLoading
