@@ -8,7 +8,7 @@
             style='z-index: 1; width: 60px; background-color: rgba(0, 0, 0, 0.5);'
        >
             <IconMenu2 v-if='noMenuShown' @click='$router.push("/menu")' size='40' class='mx-2 cursor-pointer'/>
-            <IconX v-if='!noMenuShown' @click='$router.push("/"); cot = feat = false' size='40' class='mx-2 cursor-pointer bg-dark'/>
+            <IconX v-if='!noMenuShown' @click='$router.push("/"); cot = feat = query = false' size='40' class='mx-2 cursor-pointer bg-dark'/>
         </div>
 
         <div
@@ -120,6 +120,10 @@
             v-if='feat && mode === "Default"'
             :feat='feat'
         />
+        <CloudTAKQueryView
+            v-if='query && mode === "Default"'
+            :coords='query'
+        />
         <div
             ref="map"
             style='width: 100%;'
@@ -165,6 +169,7 @@ import {
 } from '@tak-ps/vue-tabler';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import CloudTAKCoTView from './CoTView.vue';
+import CloudTAKQueryView from './QueryView.vue';
 import CloudTAKFeatView from './FeatView.vue';
 import RadialMenu from './RadialMenu/RadialMenu.vue';
 import { mapState, mapActions } from 'pinia'
@@ -198,7 +203,7 @@ export default {
             }
         },
         noMenuShown: function() {
-            return !this.cot && !this.feat && !this.$route.path.startsWith('/menu')
+            return !this.cot && !this.feat && !this.query && !this.$route.path.startsWith('/menu')
         }
     },
     unmounted: function() {
@@ -246,6 +251,7 @@ export default {
             edit: false,        // If a radial.cot is set and edit is true then load the cot into terra-draw
             cot: null,          // Show the CoT Viewer sidebar
             feat: null,         // Show the Feat Viewer sidebar
+            query: null,        // Show the Query Viewer sidebar
             timer: null,        // Interval for pushing GeoJSON Map Updates (CoT)
             timerSelf: null,    // Interval for pushing your location to the server
             loading: {
@@ -356,6 +362,9 @@ export default {
             } else if (event === 'context:new') {
                 cotStore.add(mapStore.radial.cot);
                 this.updateCOT();
+                this.closeRadial()
+            } else if (event === 'context:info') {
+                this.query = mapStore.radial.cot.geometry.coordinates;
                 this.closeRadial()
             } else {
                 this.closeRadial()
@@ -484,6 +493,7 @@ export default {
         TablerNone,
         TablerDropdown,
         TablerLoading,
+        CloudTAKQueryView,
         CloudTAKCoTView,
         CloudTAKFeatView,
         IconMessage,

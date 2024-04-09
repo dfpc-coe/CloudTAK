@@ -31,7 +31,7 @@
     <template v-else>
         <Share
             style='height: 400px;'
-            :feats='selected.values()'
+            :feats='Array.from(selected.values())'
             @done='selected.clear()'
             @cancel='share = false'
             :compact='true'

@@ -50,8 +50,7 @@ export const useMapStore = defineStore('cloudtak', {
             isLoaded: false,
             bearing: 0,
             radial: {
-                x: 0,
-                y: 0,
+                x: 0, y: 0,
             },
             layers: [],
             selected: new Map()
