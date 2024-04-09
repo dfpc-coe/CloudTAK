@@ -8,7 +8,9 @@
             <div class='modal-header px-0 mx-2 align-center'>
                 <div class='modal-title'></div>
                 <div class='modal-title'>Query Mode</div>
-                <div class='modal-title'></div>
+                <div class='btn-list'>
+                    <IconRefresh @click='fetch' class='cursor-pointer' size='32'/>
+                </div>
             </div>
         </div>
         <div class='col-12 overflow-auto' style='height: calc(100% - 106px)'>
@@ -23,6 +25,7 @@
 
 <script>
 import {
+    IconRefresh
 } from '@tabler/icons-vue';
 import { std } from '/src/std.ts';
 import QueryWeather from './Query/Weather.vue';
@@ -63,6 +66,7 @@ export default {
         }
     },
     components: {
+        IconRefresh,
         QueryWeather,
         TablerLoading
     }
