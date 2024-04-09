@@ -1,7 +1,11 @@
+import fs from 'node:fs'
+import crypto from 'node:crypto';
+import xmljs from 'xml-js';
 import { Type } from '@sinclair/typebox'
 import archiver from 'archiver';
 import TAK from '@tak-ps/node-tak';
 import Schema from '@openaddresses/batch-schema';
+import { CoT } from '@tak-ps/node-tak';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
@@ -33,9 +37,39 @@ export default async function router(schema: Schema, config: Config) {
     }, async (req, res) => {
         try {
             const archive = archiver('zip', { zlib: { level: 9 } });
+            const manifest = {
+                MissionPackageManifest: {
+                    _attributes: { version: 2 },
+                    Configuration: {
+                        Parameter: [{
+                            _attributes: { name: "uid", value: crypto.randomUUID() },
+                            _attributes: { name: "name", value: "Auto Share - CloudTAK" },
+                        }],
+                        Contents: {
+                            Content: []
+                        }
+                    }
+                }
+            };
+
             for (const feat of req.body.features) {
-                archive.directory('/', feat.id);
+                const cot = CoT.from_geojson(feat);
+                manifest.MissionPackageManifest.Configuration.Contents.Content.push({
+                    _attributes: { ignore: "false", zipEntry: `${feat.id}/${feat.id}.cot` },
+                    Parameter: [{ name: 'uid', value: feat.id }, { name: 'name', value: feat.properties.callsign }]
+                })
+                archive.append(cot.to_xml(), { name: `${feat.id}/${feat.id}.cot` });
             }
+
+            archive.append(Buffer.from(xmljs.js2xml(manifest, { compact: true })), { name: 'MANIFEST/manifest.xml' });
+
+            archive.pipe(fs.createWriteStream('/tmp/download.zip'));
+            archive.finalize();
+
+            return res.json({
+                status: 200,
+                message: 'Data Package Created'
+            });
         } catch (err) {
             return Err.respond(err, res);
         }
