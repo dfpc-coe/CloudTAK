@@ -1,7 +1,7 @@
 import fetch from './fetch.js';
 import { Static, Type } from "@sinclair/typebox";
 
-const FetchHourly = Type.Object({
+export const FetchHourly = Type.Object({
     type: Type.String(),
     properties: Type.Object({
         updated: Type.String(),
@@ -48,7 +48,7 @@ const FetchHourly = Type.Object({
     })
 });
 
-const FetchType = Type.Object({
+export const FetchType = Type.Object({
     id: Type.String(),
     type: Type.String(),
     properties: Type.Object({
