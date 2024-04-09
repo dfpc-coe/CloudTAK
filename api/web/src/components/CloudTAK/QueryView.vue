@@ -14,13 +14,13 @@
             </div>
         </div>
         <div class='col-12 overflow-auto' style='height: calc(100% - 106px)'>
+            <Coordinate
+                :coordinates='coords'
+                class='py-2'
+            />
+
             <TablerLoading v-if='loading' desc='Querying...'/>
             <template v-else>
-                <Coordinate
-                    :coordinates='coords'
-                    class='py-2'
-                />
-
                 <QueryWeather
                     :weather='query.weather'
                     class='py-2'
