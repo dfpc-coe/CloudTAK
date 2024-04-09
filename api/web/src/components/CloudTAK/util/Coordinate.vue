@@ -1,6 +1,6 @@
 <template>
 <div class='col-12'>
-    <label class='subheader'>Coordinates</label>
+    <label class='subheader mx-2'>Coordinates</label>
     <div class='mx-2'>
         <div
             v-text='inMode'

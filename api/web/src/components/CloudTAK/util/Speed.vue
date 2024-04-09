@@ -1,6 +1,6 @@
 <template>
 <div class='col-12'>
-    <label class='subheader'>Speed</label>
+    <label class='subheader mx-2'>Speed</label>
     <div class='mx-2'>
         <div
             v-text='inMode'
