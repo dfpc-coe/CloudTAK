@@ -21,8 +21,10 @@ export default async function router(schema: Schema, config: Config) {
         group: 'MartiPackages',
         description: 'Helper API to create share package',
         body: Type.Object({
+            type: Type.String(),
             features: Type.Array(Type.Object({
                 id: Type.String(),
+                type: Type.String(),
                 properties: Type.Any(),
                 geometry: Type.Any()
             }))
