@@ -42,8 +42,8 @@ export default async function router(schema: Schema, config: Config) {
                     _attributes: { version: 2 },
                     Configuration: {
                         Parameter: [{
-                            _attributes: { name: "uid", value: crypto.randomUUID() },
-                            _attributes: { name: "name", value: "Auto Share - CloudTAK" },
+                            _attributes: { name: "onReceiveImport", value: "true" },
+                            _attributes: { name: "onReceiveDelete", value: "true" },
                         }],
                         Contents: {
                             Content: []
