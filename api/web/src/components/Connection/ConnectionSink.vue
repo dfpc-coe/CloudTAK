@@ -1,9 +1,9 @@
 <template>
 <div>
     <div class='card-header d-flex'>
-        Outbound Sinks
+        <h2 class='card-title'>Outbound Sinks</h2>
 
-        <div class='ms-auto'>
+        <div class='ms-auto btn-list'>
             <div class='dropdown'>
                 <div type="button" id="connectionSinkButton" data-bs-toggle="dropdown" aria-expanded="false">
                     <IconPlus v-tooltip='"Create Sink"' size='32' class='cursor-pointer'/>
@@ -19,27 +19,27 @@
         </div>
     </div>
 
-    <Alert v-if='err' title='ETL Server Error' :err='err.message' :compact='true'/>
-    <TablerLoading v-else-if='loading'/>
-    <TablerNone v-else-if='!list.items.length' :create='false' label='Sinks'/>
-    <div v-else class='table-resposive'>
-        <table class='table card-table table-vcenter datatable table-hover'>
-            <thead>
-                <tr>
-                    <th>Name</th>
-                </tr>
-            </thead>
-            <tbody class='table-tbody'>
-                <tr @click='$router.push(`/connection/${connection.id}/sink/${sink.id}`)' :key='sink.id' v-for='sink of list.items' class='cursor-pointer'>
-                    <td>
-                        <div class='d-flex'>
-                            <span class='mt-2' v-text='sink.name'/>
-                        </div>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-        <TableFooter :limit='paging.limit' :total='list.total' @page='paging.page = $event'/>
+    <div style='min-height: 20vh; margin-bottom: 61px'>
+        <Alert v-if='err' title='ETL Server Error' :err='err.message' :compact='true'/>
+        <TablerLoading v-else-if='loading'/>
+        <TablerNone v-else-if='!list.items.length' :create='false' label='Sinks'/>
+        <div v-else class='table-resposive'>
+            <table class='table card-table table-vcenter datatable table-hover'>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                    </tr>
+                </thead>
+                <tbody class='table-tbody'>
+                    <tr @click='$router.push(`/connection/${connection.id}/sink/${sink.id}`)' :key='sink.id' v-for='sink of list.items' class='cursor-pointer'>
+                        <td v-text='sink.name'></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class='position-absolute bottom-0 w-100' style='height: 61px;'>
+            <TableFooter :limit='paging.limit' :total='list.total' @page='paging.page = $event'/>
+        </div>
     </div>
 </div>
 
