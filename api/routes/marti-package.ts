@@ -9,6 +9,7 @@ import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
 import { StandardResponse, GenericMartiResponse } from '../lib/types.js';
+import { Content } from '../lib/api/file.js';
 import { Package } from '../lib/api/package.js';
 import { Profile } from '../lib/schema.js';
 import S3 from '../lib/aws/s3.js';
@@ -31,7 +32,7 @@ export default async function router(schema: Schema, config: Config) {
                 geometry: Type.Any()
             }))
         }),
-        res: StandardResponse
+        res: Content
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
@@ -55,12 +56,7 @@ export default async function router(schema: Schema, config: Config) {
                     creatorUid: creatorUid,
                 }, buff);
 
-                console.error(content);
-
-                return res.json({
-                    status: 200,
-                    message: 'Data Package Submitted'
-                })
+                return res.json(content)
             })
 
             for (const feat of req.body.features) {
