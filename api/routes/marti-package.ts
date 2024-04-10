@@ -1,4 +1,5 @@
 import { Type } from '@sinclair/typebox'
+import CoT from '@tak-ps/node-cot';
 import DataPackage from '../lib/data-package.js';
 import TAK from '@tak-ps/node-tak';
 import Schema from '@openaddresses/batch-schema';
@@ -23,6 +24,7 @@ export default async function router(schema: Schema, config: Config) {
         body: Type.Object({
             features: Type.Array(Type.Object({
                 id: Type.String(),
+                type: Type.Literal('Feature'),
                 properties: Type.Any(),
                 geometry: Type.Any()
             }))
