@@ -1,5 +1,5 @@
 import { Type } from '@sinclair/typebox'
-import archiver from 'archiver';
+import DataPackage from '../lib/data-package.js';
 import TAK from '@tak-ps/node-tak';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
@@ -30,10 +30,12 @@ export default async function router(schema: Schema, config: Config) {
         res: StandardResponse
     }, async (req, res) => {
         try {
-            const archive = archiver('zip', { zlib: { level: 9 } });
+            const pkg = new DataPackage();
             for (const feat of req.body.features) {
-                archive.directory('/', feat.id);
+                pkg.addCoT(CoT.from_geojson(feat))
             }
+
+            pkg.finalize()
         } catch (err) {
             return Err.respond(err, res);
         }
