@@ -31,7 +31,7 @@
             <Schema :schema='schema' :disabled='disabled' v-model='environment'/>
         </template>
 
-        <div class='px-2'>
+        <div class='px-2 pb-3'>
             <!-- AutoSuggested Filters -->
             <template v-if='config.timezone'>
                 <TablerTimeZone

@@ -639,6 +639,11 @@
         "query": false,
         "res": true
     },
+    "GET /search/reverse/:longitude/:latitude": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
     "GET /server": {
         "body": false,
         "query": false,

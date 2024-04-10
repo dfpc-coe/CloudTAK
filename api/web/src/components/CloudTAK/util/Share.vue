@@ -122,7 +122,15 @@ export default {
                     connectionStore.sendCOT(feat);
                 }
             } else {
-                // TODO Data Package
+                await std('/api/marti/package', {
+                    method: 'PUT',
+                    body: {
+                        type: 'FeatureCollection',
+                        features: JSON.parse(JSON.stringify(this.feats)).map((f) => {
+                            return { id: f.id || f.properties.id, type: f.type, properties: f.properties, geometry: f.geometry }
+                        })
+                    }
+                });
             }
 
             this.$emit('done');
