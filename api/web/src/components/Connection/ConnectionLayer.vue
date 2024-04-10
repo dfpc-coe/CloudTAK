@@ -78,12 +78,12 @@ export default {
         await this.listLayers();
     },
     watch: {
-       'paging.page': async function() {
-           await this.listLayers();
-       },
-       'paging.filter': async function() {
-           await this.listLayers();
-       },
+        paging: {
+            deep: true,
+            handler: async function() {
+                await this.listLayers();
+            },
+        }
     },
     methods: {
         listLayers: async function() {
