@@ -63,6 +63,8 @@ export default class DataPackage {
     } = {
         ignore: false
     }) {
+        console.error(cot.to_xml())
+
         const zipEntry = `${cot.raw.event._attributes.uid}/${cot.raw.event._attributes.uid}.cot`;
         this.archive.append(cot.to_xml(), {
             name: zipEntry

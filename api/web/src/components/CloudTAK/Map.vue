@@ -456,7 +456,7 @@ export default {
                     const feat = mapStore.draw._store.store[id];
 
                     feat.id = id;
-                    feat.properties.archive = true;
+                    feat.properties.archived = true;
                     feat.properties.callsign = 'New Feature'
                     if (mapStore.draw.getMode() === 'polygon' || mapStore.draw.getMode() === 'rectangle') {
                         feat.properties.type = 'u-d-f';

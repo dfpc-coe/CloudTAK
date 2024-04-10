@@ -67,9 +67,10 @@ export const useCOTStore = defineStore('cots', {
 
                         return true;
                     }).map((cot) => {
-                        // TODO if not archived set color opacity
-                        cot.properties['icon-opacity'] = now.isBefore(moment(cot.properties.stale)) ? 1 : 0.5;
-                        cot.properties['circle-opacity'] = now.isBefore(moment(cot.properties.stale)) ? 1 : 0.5;
+                        if (!cot.properties.archived) {
+                            cot.properties['icon-opacity'] = now.isBefore(moment(cot.properties.stale)) ? 1 : 0.5;
+                            cot.properties['circle-opacity'] = now.isBefore(moment(cot.properties.stale)) ? 1 : 0.5;
+                        }
                         return cot;
                     })
                 }
@@ -87,7 +88,7 @@ export const useCOTStore = defineStore('cots', {
         update: function(feat: Feature): void {
             this.cots.set(feat.id, feat);
 
-            if (feat.properties.archive) {
+            if (feat.properties.archived) {
                 this.archive.set(feat.id, feat);
                 this.saveArchive();
             }
@@ -220,7 +221,7 @@ export const useCOTStore = defineStore('cots', {
             } else {
                 this.cots.set(feat.id, feat);
 
-                if (feat.properties.archive) {
+                if (feat.properties.archived) {
                     this.archive.set(feat.id, feat);
                     this.saveArchive();
                 }
