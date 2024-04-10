@@ -2,7 +2,12 @@
 <div class='col-12 py-2 d-flex hover-dark cursor-pointer'>
     <div class='row col-12 align-items-center'>
         <div class='col-auto'>
-            <IconCircleFilled
+            <IconCheck
+                v-if='selected'
+                :size='compact ? 20 : 32'
+                :style='compact ? "margin-left: 8px" : "margin-left: 16px;"'
+            />
+            <IconCircleFilled v-else
                 :style='compact ? "margin-left: 8px" : "margin-left: 16px;"'
                 :size='compact ? 20 : 32'
                 :class='{
@@ -23,11 +28,14 @@
                 }'
             />
         </div>
-        <div class='col-7'>
+        <div :class='{
+            "col-7": buttonChat || buttonZoom,
+            "col-9": !buttonChat && !buttonZoom
+        }'>
             <div class='text-truncate' v-text='contact.callsign'></div>
             <div v-text='contact.notes.trim()' class='text-truncate subheader'></div>
         </div>
-        <div class='col-auto ms-auto btn-list'>
+        <div v-if='buttomChat || buttonZoom' class='col-auto ms-auto btn-list'>
             <IconMessage
                 @click='$emit("chat", contact.uid)'
                 v-if='buttonChat && isChatable(contact)'
@@ -42,7 +50,6 @@
                 size='32'
                 class='cursor-pointer'
             />
-            <IconCheck v-if='selected' :size='compact ? 20 : 32' style='margin-left: 16px;'/>
         </div>
     </div>
 </div>
