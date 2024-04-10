@@ -228,10 +228,7 @@ export default async function router(schema: Schema, config: Config) {
             token: Type.Optional(Type.String()),
             expires: Type.Optional(Type.Integer())
         }),
-        res: Type.Object({
-            folders: Type.Array(Type.Any()),
-            services: Type.Array(Type.Any())
-        })
+        res: Type.Any()
     }, async (req, res) => {
         try {
             await Auth.is_auth(config, req, {

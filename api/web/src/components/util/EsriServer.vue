@@ -157,12 +157,16 @@ export default {
         if (postfix.length && !postfix.startsWith('http')) {
             // TODO Support Directories / Layer Parsing
             postfix = postfix.split('/');
+            
+            const last = postfix.pop();
 
-            const id = parseInt(postfix.pop());
-            const type = postfix.pop()
-
-            this.listpath = [{ name: postfix.join('/'), type }]
-            this.layer = { id };
+            if (!isNaN(parseInt(last))) {
+                const type = postfix.pop()
+                this.listpath = [{ name: postfix.join('/'), type }]
+                this.layer = { id: last };
+            } else {
+                this.listpath = [{ name: postfix.join('/'), type: last }]
+            }
         } else {
             await this.getList();
         }

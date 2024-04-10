@@ -42,7 +42,7 @@
                                         <div class="datagrid-content" v-text='connection.certificate.validFrom'></div>
                                     </div>
                                     <div class="datagrid-item pb-2">
-                                        <div class="datagrid-title">Certificate Valid From</div>
+                                        <div class="datagrid-title">Certificate Valid To</div>
                                         <div class="datagrid-content" v-text='connection.certificate.validTo'></div>
                                     </div>
                                 </div>
@@ -62,24 +62,24 @@
                                     <h4 class="subheader">Connection Sections</h4>
                                     <div class="list-group list-group-transparent">
                                         <span @click='$router.push(`/connection/${$route.params.connectionid}/layer`)' class="list-group-item list-group-item-action d-flex align-items-center" :class='{
-                                            "active": $route.name === "connection-layer",
-                                            "cursor-pointer": $route.name !== "connection-layer"
+                                            "active": $route.name === "connection-layers",
+                                            "cursor-pointer": $route.name !== "connection-layers"
                                         }'><IconBuildingBroadcastTower size='32'/><span class='mx-3'>Layers</span></span>
                                         <span @click='$router.push(`/connection/${$route.params.connectionid}/groups`)' class="list-group-item list-group-item-action d-flex align-items-center" :class='{
                                             "active": $route.name === "connection-groups",
                                             "cursor-pointer": $route.name !== "connection-groups"
                                         }'><IconAffiliate size='32'/><span class='mx-3'>Channels</span></span>
                                         <span @click='$router.push(`/connection/${$route.params.connectionid}/data`)' class="list-group-item list-group-item-action d-flex align-items-center" :class='{
-                                            "active": $route.name === "connection-data",
-                                            "cursor-pointer": $route.name !== "connection-data"
+                                            "active": $route.name === "connection-datas",
+                                            "cursor-pointer": $route.name !== "connection-datas"
                                         }'><IconDatabase size='32'/><span class='mx-3'>Data Store</span></span>
                                         <span @click='$router.push(`/connection/${$route.params.connectionid}/sink`)' class="list-group-item list-group-item-action d-flex align-items-center" :class='{
-                                            "active": $route.name === "connection-sink",
-                                            "cursor-pointer": $route.name !== "connection-sink"
+                                            "active": $route.name === "connection-sinks",
+                                            "cursor-pointer": $route.name !== "connection-sinks"
                                         }'><IconOutbound size='32'/><span class='mx-3'>Outbounds Sinks</span></span>
                                         <span @click='$router.push(`/connection/${$route.params.connectionid}/health`)' class="list-group-item list-group-item-action d-flex align-items-center" :class='{
-                                            "active": $route.name === "connection-health",
-                                            "cursor-pointer": $route.name !== "connection-health"
+                                            "active": $route.name === "connection-healths",
+                                            "cursor-pointer": $route.name !== "connection-healths"
                                         }'><IconCloudDataConnection size='32'/><span class='mx-3'>Health &amp; Metrics</span></span>
                                         <span @click='$router.push(`/connection/${$route.params.connectionid}/tokens`)' class="list-group-item list-group-item-action d-flex align-items-center" :class='{
                                             "active": $route.name === "connection-tokens",

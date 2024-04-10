@@ -185,7 +185,7 @@ const router = new VueRouter.createRouter({
                 path: '',
                 name: 'connection-default',
                 redirect: () => {
-                    return { name: 'connection-layer' };
+                    return { name: 'connection-layers' };
                 }
             },{
                 path: 'groups',
@@ -193,19 +193,19 @@ const router = new VueRouter.createRouter({
                 component: () => import('./components/Connection/ConnectionGroups.vue')
             },{
                 path: 'layer',
-                name: 'connection-layer',
+                name: 'connection-layers',
                 component: () => import('./components/Connection/ConnectionLayer.vue')
             },{
                 path: 'data',
-                name: 'connection-data',
+                name: 'connection-datas',
                 component: () => import('./components/Connection/ConnectionData.vue')
             },{
                 path: 'sink',
-                name: 'connection-sink',
+                name: 'connection-sinks',
                 component: () => import('./components/Connection/ConnectionSink.vue')
             },{
                 path: 'health',
-                name: 'connection-health',
+                name: 'connection-healths',
                 component: () => import('./components/Connection/ConnectionHealth.vue')
             },{
                 path: 'tokens',
