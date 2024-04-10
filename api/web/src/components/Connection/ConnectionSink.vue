@@ -84,12 +84,12 @@ export default {
         await this.listSinks();
     },
     watch: {
-       'paging.page': async function() {
-           await this.listSinks();
-       },
-       'paging.filter': async function() {
-           await this.listSinks();
-       },
+        paging: {
+            deep: true,
+            handler: async function() {
+                await this.listSinks();
+            },
+        }
     },
     methods: {
         listSinks: async function() {
