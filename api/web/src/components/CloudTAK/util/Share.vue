@@ -126,6 +126,7 @@ export default {
                     method: 'PUT',
                     body: {
                         type: 'FeatureCollection',
+                        uids: Array.from(this.selected).map((contact) => { return contact.uid }),
                         features: JSON.parse(JSON.stringify(this.feats)).map((f) => {
                             return { id: f.id || f.properties.id, type: f.type, properties: f.properties, geometry: f.geometry }
                         })
