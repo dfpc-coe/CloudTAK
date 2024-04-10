@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import crypto from 'node:crypto';
 import { Type } from '@sinclair/typebox'
-import CoT from '@tak-ps/node-cot';
+import CoT, { FileShare } from '@tak-ps/node-cot';
 import DataPackage from '../lib/data-package.js';
 import TAK from '@tak-ps/node-tak';
 import Schema from '@openaddresses/batch-schema';
@@ -25,6 +25,8 @@ export default async function router(schema: Schema, config: Config) {
         group: 'MartiPackages',
         description: 'Helper API to create share package',
         body: Type.Object({
+            type: Type.Literal('FeatureCollection'),
+            uids: Type.Optional(Type.Array(Type.String())),
             features: Type.Array(Type.Object({
                 id: Type.String(),
                 type: Type.Literal('Feature'),
@@ -49,12 +51,35 @@ export default async function router(schema: Schema, config: Config) {
             pkg.archive.on('data', (d) => { buffs.push(d); });
             pkg.archive.on('end', async () => {
                 const buff = Buffer.concat(buffs);
+                const size = Buffer.byteLength(buff);
+                const name = crypto.randomUUID();
                 const content = await api.Files.upload({
-                    name: crypto.randomUUID(),
-                    contentLength: Buffer.byteLength(buff),
+                    name: name,
+                    contentLength: size,
                     keywords: [],
                     creatorUid: creatorUid,
                 }, buff);
+
+                const client = config.conns.get(profile.username);
+                const cot = new FileShare({
+                    filename: name,
+                    name: name,
+                    senderCallsign: profile.tak_callsign,
+                    senderUid: `ANDROID-CloudTAK-${profile.username}`,
+                    senderUrl: `${config.server.api}/Marti/sync/content?hash=${content.Hash}`,
+                    sha256: content.Hash,
+                    sizeInBytes: size
+                });
+
+                if (client && req.body.uids) {
+                    cot.raw.event.detail.marti = {
+                        dest: req.body.uids.map((uid) => {
+                            return { _attributes: { uid: uid } };
+                        })
+                    }
+                }
+
+                client.tak.write([cot]);
 
                 return res.json(content)
             })
