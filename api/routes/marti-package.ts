@@ -46,13 +46,13 @@ export default async function router(schema: Schema, config: Config) {
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
             const pkg = new DataPackage();
+            const name = crypto.randomUUID();
 
             const buffs = [];
             pkg.archive.on('data', (d) => { buffs.push(d); });
             pkg.archive.on('end', async () => {
                 const buff = Buffer.concat(buffs);
                 const size = Buffer.byteLength(buff);
-                const name = crypto.randomUUID();
                 const content = await api.Files.upload({
                     name: name,
                     contentLength: size,
@@ -88,7 +88,7 @@ export default async function router(schema: Schema, config: Config) {
                 pkg.addCoT(CoT.from_geojson(feat))
             }
 
-            pkg.finalize()
+            pkg.finalize(name, name)
 
         } catch (err) {
             return Err.respond(err, res);
