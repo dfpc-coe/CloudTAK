@@ -39,8 +39,10 @@ import {
 export default {
     name: 'QueryWeather',
     props: {
-        weather: Object,
-        required: true
+        weather: {
+            type: Object,
+            required: true
+        }
     },
     components: {
         IconSun,
