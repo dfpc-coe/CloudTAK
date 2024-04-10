@@ -1,6 +1,6 @@
 <template>
 <div data-bs-theme="dark" class="d-flex position-relative" style='height: calc(100vh) !important;'>
-    <TablerLoading v-if='loading.main'/>
+    <Loading v-if='loading.main'/>
     <template v-else>
         <div
             v-if='mode === "Default"'
@@ -167,6 +167,7 @@ import {
     TablerNone,
     TablerLoading
 } from '@tak-ps/vue-tabler';
+import Loading from '../Loading.vue';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import CloudTAKCoTView from './CoTView.vue';
 import CloudTAKQueryView from './QueryView.vue';
@@ -488,6 +489,7 @@ export default {
         }
     },
     components: {
+        Loading,
         SelectFeats,
         RadialMenu,
         TablerNone,
