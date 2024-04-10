@@ -7,8 +7,8 @@
     "scripts": {
         "test": "tape test/*.test.js",
         "tstest": "test/test",
-        "build": "tsc && rm ./routes/*.ts",
-        "prod": "NODE_OPTIONS='--max-old-space-size=6144' forever index.js",
+        "build": "tsc && cp .env* dist/ || true && cp ./lib/jobs dist/lib/jobs -r && cp ./icons dist/icons -r",
+        "prod": "NODE_OPTIONS='--max-old-space-size=6144' forever dist/index.js",
         "lint": "eslint index.ts lib/**.ts test/**.ts",
         "loaddb": "echo 'DROP DATABASE tak_ps_etl' | psql && echo 'CREATE DATABASE tak_ps_etl' | psql && psql tak_ps_etl < coe-etl-latest.dump",
         "migratedb": "npm run lint && git stash && npm run build && drizzle-kit generate:pg && git add migrations/* && git commit -m \"DB Migration\" && git clean -f && git stash",
