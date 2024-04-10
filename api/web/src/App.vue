@@ -59,7 +59,7 @@
         </TablerModal>
     </template>
 
-    <TablerLoading v-if='loading && !$route.path.includes("login")' desc='Loading CloudTAK'/>
+    <Loading v-if='loading && !$route.path.includes("login")'/>
     <router-view
         v-else
         @err='err = $event'
@@ -95,9 +95,9 @@ import {
     IconSettings,
     IconBuildingBroadcastTower,
 } from '@tabler/icons-vue';
+import Loading from './components/Loading.vue';
 import {
     TablerModal,
-    TablerLoading,
     TablerError
 } from '@tak-ps/vue-tabler';
 import { std, stdurl } from '/src/std.ts';
@@ -187,7 +187,7 @@ export default {
         IconNetwork,
         TablerError,
         TablerModal,
-        TablerLoading,
+        Loading,
         IconBuildingBroadcastTower,
     }
 }

@@ -3,7 +3,7 @@
     class='position-absolute end-0 bottom-0 text-white py-2 bg-dark'
     style='z-index: 1; width: 400px; top: 56px;'
 >
-    <div class='col-12 border-light border-bottom d-flex mb-2'>
+    <div class='col-12 border-light border-bottom d-flex'>
         <div class='col-12 card-header row mx-1 my-2 d-flex'>
             <div class='card-title d-flex'>
                 <span
@@ -42,23 +42,33 @@
     </div>
 
     <template v-if='mode === "default"'>
-        <div v-if='!isNaN(feat.properties.speed)' class='col-12 px-3 pb-2'>
-            <Coordinate :coordinates='center'/>
-        </div>
-        <div v-if='!isNaN(feat.properties.speed)' class='col-12 px-3 pb-2'>
-            <Speed :unit='profile.display_speed' :speed='feat.properties.speed'/>
-        </div>
+        <Coordinate
+            :coordinates='center'
+            class='py-2'
+        />
+
+        <Speed
+            v-if='!isNaN(feat.properties.speed)'
+            :unit='profile.display_speed'
+            :speed='feat.properties.speed'
+            class='py-2'
+        />
+
         <div v-if='feat.properties.contact && feat.properties.contact.phone' class='col-12 px-3 pb-2'>
             <label class='subheader'>Phone</label>
             <div v-text='phone(feat.properties.contact.phone)' class='bg-gray-500 rounded mx-2 py-2 px-2'/>
         </div>
-        <div v-if='!isNaN(feat.properties.course)' class='col-12 px-3 pb-2'>
-            <label class='subheader'>Course</label>
+        <div v-if='!isNaN(feat.properties.course)' class='col-12 py-2'>
+            <label class='subheader mx-2'>Course</label>
             <div v-text='feat.properties.course' class='bg-gray-500 rounded mx-2 py-2 px-2'/>
         </div>
-        <div class='col-12 px-3 pb-2'>
-            <label class='subheader'>Remarks</label>
-            <TablerInput rows='2' v-model='feat.properties.remarks'/>
+        <div class='col-12 py-2'>
+            <label class='subheader mx-2'>Remarks</label>
+            <TablerInput
+                rows='2'
+                v-model='feat.properties.remarks'
+                class='mx-1'
+            />
         </div>
 
         <template v-if='isUserDrawn'>

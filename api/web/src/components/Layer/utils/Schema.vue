@@ -1,5 +1,5 @@
 <template>
-<div class='px-2 py-2'>
+<div v-if='data' class='px-2 py-2'>
     <div :key='key' v-for='key in Object.keys(schema.properties)' class='py-2 floating-input'>
         <template v-if='schema.properties[key].enum'>
             <TablerEnum
@@ -148,7 +148,7 @@ export default {
     },
     data: function() {
         return {
-            data: {},
+            data: false,
             edit: {},
             upload: {
                 headers: [],
