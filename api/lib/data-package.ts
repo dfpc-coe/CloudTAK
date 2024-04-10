@@ -78,8 +78,11 @@ export default class DataPackage {
         });
     }
 
-    finalize() {
+    finalize(uid: string, name: string) {
         this.writable = false;
+
+        this.settings.uid = uid;
+        this.settings.name = name;
 
         for (const key in this.settings) {
             this.manifest.MissionPackageManifest.Configuration.Parameter.push({
@@ -87,7 +90,8 @@ export default class DataPackage {
             })
         }
 
-        this.archive.append(xmljs.js2xml(this.manifest, { compact: true }), {
+        const xml = `<?xml version="1.0" encoding="UTF-8"?>\n${xmljs.js2xml(this.manifest, { compact: true })}`;
+        this.archive.append(xml, {
             name: 'MANIFEST/manifest.xml'
         });
 
