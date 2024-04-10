@@ -137,8 +137,20 @@ export default {
             this.$emit('done');
         },
         broadcast: async function() {
-            connectionStore.sendCOT(this.feat);
-            this.$emit('done');
+            if (this.feats.length === 1) {
+                connectionStore.sendCOT(this.feat);
+                this.$emit('done');
+            } else {
+                await std('/api/marti/package', {
+                    method: 'PUT',
+                    body: {
+                        type: 'FeatureCollection',
+                        features: JSON.parse(JSON.stringify(this.feats)).map((f) => {
+                            return { id: f.id || f.properties.id, type: f.type, properties: f.properties, geometry: f.geometry }
+                        })
+                    }
+                });
+            }
         },
         fetchList: async function() {
             this.loading = true;
