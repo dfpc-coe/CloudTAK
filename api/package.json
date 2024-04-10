@@ -7,7 +7,7 @@
     "scripts": {
         "test": "tape test/*.test.js",
         "tstest": "test/test",
-        "build": "tsc && cp .env* dist/ || true && cp ./lib/jobs dist/lib/jobs -r && cp ./icons dist/icons -r",
+        "build": "tsc && cp .env* dist/ || true && cp ./lib/jobs dist/lib/jobs -r && cp ./icons dist/icons -r && cp package.json dist/ && cp migrations/ dist/ -r",
         "prod": "NODE_OPTIONS='--max-old-space-size=6144' forever dist/index.js",
         "lint": "eslint index.ts lib/**.ts test/**.ts",
         "loaddb": "echo 'DROP DATABASE tak_ps_etl' | psql && echo 'CREATE DATABASE tak_ps_etl' | psql && psql tak_ps_etl < coe-etl-latest.dump",
