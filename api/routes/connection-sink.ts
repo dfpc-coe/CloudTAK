@@ -71,7 +71,9 @@ export default async function router(schema: Schema, config: Config) {
             enabled: Type.Boolean(),
             body: Type.Object({
                 layer: Type.String(),
-                url: Type.String()
+                url: Type.String(),
+                username: Type.Optional(Type.String()),
+                password: Type.Optional(Type.String())
             })
         }),
         res: ConnectionSinkResponse
