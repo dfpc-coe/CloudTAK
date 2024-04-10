@@ -21,23 +21,21 @@
                         <div class="card-header">
                             <h1 class='card-title' v-text='sink.name'/>
 
-                            <div class='ms-auto'>
-                                <div class='btn-list'>
-                                    <div class='d-flex'>
-                                        <span class='px-2'>Logging</span>
-                                        <label class="form-check form-switch">
-                                            <input disabled v-model='sink.logging' class="form-check-input" type="checkbox">
-                                        </label>
-                                    </div>
-                                    <div class='d-flex'>
-                                        <span class='px-2'>Enabled</span>
-                                        <label class="form-check form-switch">
-                                            <input disabled v-model='sink.enabled' class="form-check-input" type="checkbox">
-                                        </label>
-                                    </div>
-                                    <IconRefresh size='32' class='cursor-pointer' @click='fetch'/>
-                                    <IconSettings size='32' class='cursor-pointer' @click='$router.push(`/connection/${$route.params.connectionid}/sink/${$route.params.sinkid}/edit`)'/>
+                            <div class='ms-auto btn-list'>
+                                <div class='d-flex'>
+                                    <span class='px-2'>Logging</span>
+                                    <label class="form-check form-switch">
+                                        <input disabled v-model='sink.logging' class="form-check-input" type="checkbox">
+                                    </label>
                                 </div>
+                                <div class='d-flex'>
+                                    <span class='px-2'>Enabled</span>
+                                    <label class="form-check form-switch">
+                                        <input disabled v-model='sink.enabled' class="form-check-input" type="checkbox">
+                                    </label>
+                                </div>
+                                <IconRefresh size='32' class='cursor-pointer' @click='fetch'/>
+                                <IconSettings size='32' class='cursor-pointer' @click='$router.push(`/connection/${$route.params.connectionid}/sink/${$route.params.sinkid}/edit`)'/>
                             </div>
                         </div>
                         <div class='card-body'>
