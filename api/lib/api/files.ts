@@ -1,8 +1,21 @@
 import TAKAPI from '../tak-api.js';
 import { Readable } from 'node:stream';
 import mime from 'mime';
+import { Type, Static } from '@sinclair/typebox';
 
-export default class {
+export const Content = Type.Object({
+  UID: Type.String(),
+  SubmissionDateTime: Type.String(),
+  Keywords: Type.Array(Type.String()),
+  MIMEType: Type.String(),
+  SubmissionUser: Type.String(),
+  PrimaryKey: Type.String(),
+  Hash: Type.String(),
+  CreatorUid: Type.String(),
+  Name: Type.String()
+});
+
+export default class File {
     api: TAKAPI;
 
     constructor(api: TAKAPI) {
@@ -38,7 +51,7 @@ export default class {
         latitude?: string;
         longitude?: string;
         altitude?: string;
-    }, body: Readable | Buffer) {
+    }, body: Readable | Buffer): Promise<Static<typeof Content>> {
         const url = new URL(`/Marti/sync/upload`, this.api.url);
         url.searchParams.append('name', opts.name)
         url.searchParams.append('keywords', opts.keywords.join(','))

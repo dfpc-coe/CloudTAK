@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import crypto from 'node:crypto';
 import { Type } from '@sinclair/typebox'
 import CoT from '@tak-ps/node-cot';
 import DataPackage from '../lib/data-package.js';
@@ -33,9 +34,34 @@ export default async function router(schema: Schema, config: Config) {
         res: StandardResponse
     }, async (req, res) => {
         try {
+            const user = await Auth.as_user(config, req);
+
+            const profile = await config.models.Profile.from(user.email);
+            const auth = profile.auth;
+            const creatorUid = profile.username;
+
+            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
+
             const pkg = new DataPackage();
 
-            pkg.archive.pipe(fs.createWriteStream('/tmp/pkg.zip'))
+            const buffs = [];
+            pkg.archive.on('data', (d) => { buffs.push(d); });
+            pkg.archive.on('end', async () => {
+                const buff = Buffer.concat(buffs);
+                const content = await api.Files.upload({
+                    name: crypto.randomUUID(),
+                    contentLength: Buffer.byteLength(buff),
+                    keywords: [],
+                    creatorUid: creatorUid,
+                }, buff);
+
+                console.error(content);
+
+                return res.json({
+                    status: 200,
+                    message: 'Data Package Submitted'
+                })
+            })
 
             for (const feat of req.body.features) {
                 pkg.addCoT(CoT.from_geojson(feat))
@@ -43,10 +69,6 @@ export default async function router(schema: Schema, config: Config) {
 
             pkg.finalize()
 
-            return res.json({
-                status: 200,
-                message: 'Data Package Submitted'
-            })
         } catch (err) {
             return Err.respond(err, res);
         }
