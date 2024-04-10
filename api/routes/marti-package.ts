@@ -1,3 +1,4 @@
+import fs from 'node:fs';
 import { Type } from '@sinclair/typebox'
 import CoT from '@tak-ps/node-cot';
 import DataPackage from '../lib/data-package.js';
@@ -33,11 +34,19 @@ export default async function router(schema: Schema, config: Config) {
     }, async (req, res) => {
         try {
             const pkg = new DataPackage();
+
+            pkg.archive.pipe(fs.createWriteStream('/tmp/pkg.zip'))
+
             for (const feat of req.body.features) {
                 pkg.addCoT(CoT.from_geojson(feat))
             }
 
             pkg.finalize()
+
+            return res.json({
+                status: 200,
+                message: 'Data Package Submitted'
+            })
         } catch (err) {
             return Err.respond(err, res);
         }

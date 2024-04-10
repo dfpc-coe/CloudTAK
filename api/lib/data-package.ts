@@ -87,9 +87,10 @@ export default class DataPackage {
             })
         }
 
-        this.archive.append(xmljs.js2xml(this.manifest), {
+        this.archive.append(xmljs.js2xml(this.manifest, { compact: true }), {
             name: 'MANIFEST/manifest.xml'
         });
+
         this.archive.finalize()
     }
 }
