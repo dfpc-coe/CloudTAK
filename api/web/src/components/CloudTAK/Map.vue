@@ -165,7 +165,6 @@ import SelectFeats from './util/SelectFeats.vue';
 import {
     TablerDropdown,
     TablerNone,
-    TablerLoading
 } from '@tak-ps/vue-tabler';
 import Loading from '../Loading.vue';
 import 'maplibre-gl/dist/maplibre-gl.css';
@@ -494,7 +493,6 @@ export default {
         RadialMenu,
         TablerNone,
         TablerDropdown,
-        TablerLoading,
         CloudTAKQueryView,
         CloudTAKCoTView,
         CloudTAKFeatView,
