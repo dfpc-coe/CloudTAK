@@ -51,18 +51,6 @@
         </div>
     </header>
 
-    <template v-if='upload'>
-        <TablerModal>
-            <div class="modal-status bg-red"></div>
-            <button type="button" class="btn-close" @click='upload = false' aria-label="Close"></button>
-            <div class='modal-body'>
-                <UploadImport
-                    @close='upload = false'
-                />
-            </div>
-        </TablerModal>
-    </template>
-
     <Loading v-if='loading && !$route.path.includes("login")'/>
     <router-view
         v-else
@@ -81,6 +69,11 @@
         background: #f5f5f5;
     }
 
+    .hover-button:hover {
+        border-radius: 6px;
+        background-color: rgba(0, 0, 0, 0.3);
+    }
+
     .hover-dark:hover {
         background: #0f172a;
     }
@@ -89,7 +82,6 @@
 <script>
 import '@tabler/core/dist/js/tabler.min.js';
 import '@tabler/core/dist/css/tabler.min.css';
-import UploadImport from './components/util/UploadImport.vue'
 import LoginModal from './components/util/LoginModal.vue'
 import {
     IconCode,
@@ -101,7 +93,6 @@ import {
 } from '@tabler/icons-vue';
 import Loading from './components/Loading.vue';
 import {
-    TablerModal,
     TablerError
 } from '@tak-ps/vue-tabler';
 import { std, stdurl } from '/src/std.ts';
@@ -111,8 +102,6 @@ export default {
     data: function() {
         return {
             loading: true,
-            upload: false,
-            dragTimer: false,
             login: false,
             mounted: false,
             user: null,
@@ -138,14 +127,6 @@ export default {
         }
 
         this.mounted = true;
-
-        addEventListener('dragover', (e) => {
-            const dt = e.dataTransfer;
-            if (dt.types && (dt.types.indexOf ? dt.types.indexOf('Files') != -1 : dt.types.contains('Files'))) {
-                this.upload = true;
-                window.clearTimeout(this.dragTimer);
-            }
-        });
     },
     computed: {
         docsURL: function() {
@@ -183,14 +164,12 @@ export default {
     },
     components: {
         LoginModal,
-        UploadImport,
         IconCode,
         IconSettings,
         IconLogout,
         IconUser,
         IconNetwork,
         TablerError,
-        TablerModal,
         Loading,
         IconBuildingBroadcastTower,
     }
