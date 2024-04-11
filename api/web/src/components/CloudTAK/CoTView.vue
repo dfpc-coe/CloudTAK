@@ -65,7 +65,7 @@
         <div class='col-12 py-2'>
             <label class='subheader mx-2'>Remarks</label>
             <TablerInput
-                rows='2'
+                :rows='2'
                 v-model='feat.properties.remarks'
                 class='mx-1'
             />
@@ -99,7 +99,7 @@
                 @done='mode = "default"'
                 @cancel='mode = "default"'
                 style='height: 70vh'
-                :feat='feat'
+                :feats='[feat]'
             />
         </div>
     </template>
