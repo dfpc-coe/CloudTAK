@@ -12,7 +12,7 @@ import TAKAPI, {
 
 export default async function router(schema: Schema, config: Config) {
     await schema.delete('/marti/api/files/:hash', {
-        name: 'delete File',
+        name: 'Delete File',
         group: 'MartiFiles',
         params: Type.Object({
             hash: Type.String(),

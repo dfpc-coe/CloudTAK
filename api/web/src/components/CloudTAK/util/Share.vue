@@ -72,6 +72,7 @@ import {
 } from '@tabler/icons-vue';
 import Contact from '../partial/Contact.vue';
 import { useConnectionStore } from '/src/stores/connection.ts';
+import { extract } from '/src/stores/cots.ts';
 
 const connectionStore = useConnectionStore();
 
@@ -117,7 +118,7 @@ export default {
 
             if (this.feats.length === 1) {
                 for (const contact of this.selected) {
-                    const feat = JSON.parse(JSON.stringify(this.feats[0]));
+                    const feat = extract(this.feats[0]);
                     feat.properties.dest = [{ uid: contact.uid }];
                     connectionStore.sendCOT(feat);
                 }
@@ -126,7 +127,9 @@ export default {
                     method: 'PUT',
                     body: {
                         type: 'FeatureCollection',
-                        features: JSON.parse(JSON.stringify(this.feats)).map((f) => {
+                        uids: Array.from(this.selected).map((contact) => { return contact.uid }),
+                        features: this.feats.map((f) => {
+                            f = extract(f)
                             return { id: f.id || f.properties.id, type: f.type, properties: f.properties, geometry: f.geometry }
                         })
                     }
@@ -136,8 +139,21 @@ export default {
             this.$emit('done');
         },
         broadcast: async function() {
-            connectionStore.sendCOT(this.feat);
-            this.$emit('done');
+            if (this.feats.length === 1) {
+                connectionStore.sendCOT(extract(this.feats[0]));
+                this.$emit('done');
+            } else {
+                await std('/api/marti/package', {
+                    method: 'PUT',
+                    body: {
+                        type: 'FeatureCollection',
+                        features: this.feats.map((f) => {
+                            f = extract(f)
+                            return { id: f.id || f.properties.id, type: f.type, properties: f.properties, geometry: f.geometry }
+                        })
+                    }
+                });
+            }
         },
         fetchList: async function() {
             this.loading = true;
