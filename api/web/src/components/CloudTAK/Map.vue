@@ -1,5 +1,5 @@
 <template>
-<Loading v-if='true'/>
+<Loading v-if='loading.main'/>
 <div v-else data-bs-theme="dark" class="d-flex position-relative" style='height: calc(100vh) !important;'>
     <div
         v-if='mode === "Default"'
