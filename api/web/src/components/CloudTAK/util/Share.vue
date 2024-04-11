@@ -118,7 +118,7 @@ export default {
 
             if (this.feats.length === 1) {
                 for (const contact of this.selected) {
-                    extract(this.feats[0]);
+                    const feat = extract(this.feats[0]);
                     feat.properties.dest = [{ uid: contact.uid }];
                     connectionStore.sendCOT(feat);
                 }
