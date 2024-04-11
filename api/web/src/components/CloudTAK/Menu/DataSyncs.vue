@@ -88,7 +88,6 @@ export default {
     },
     watch: {
         data: async function() {
-            if (this.mode !== 'data') return
             if (this.data) {
                 await this.fetchAssetList();
             } else {
@@ -104,32 +103,17 @@ export default {
     },
     methods: {
         flipVisible: async function(a) {
-            if (this.mode === 'user') {
-                const id = `profile-${a.name.replace(/\..*$/, '')}`;
-                if (a.visible) {
-                    mapStore.map.removeLayer(id);
-                    mapStore.map.removeSource(id);
-                    a.visible = false;
-                } else {
-                    a.visible = true;
-                    const url = stdurl(`/api/profile/asset/${encodeURIComponent(a.visualized)}/tile`);
-                    url.searchParams.append('token', localStorage.token);
-
-                    await this.createOverlay(id, url, a);
-                }
+            const id = `data-${this.data.id}-${a.name.replace(/\..*$/, '')}`;
+            if (a.visible) {
+                mapStore.map.removeLayer(id);
+                mapStore.map.removeSource(id);
+                a.visible = false;
             } else {
-                const id = `data-${this.data.id}-${a.name.replace(/\..*$/, '')}`;
-                if (a.visible) {
-                    mapStore.map.removeLayer(id);
-                    mapStore.map.removeSource(id);
-                    a.visible = false;
-                } else {
-                    a.visible = true;
-                    const url = stdurl(`/api/connection/${this.data.connection}/data/${this.data.id}/asset/${a.visualized}/tile`);
-                    url.searchParams.append('token', localStorage.token);
+                a.visible = true;
+                const url = stdurl(`/api/connection/${this.data.connection}/data/${this.data.id}/asset/${a.visualized}/tile`);
+                url.searchParams.append('token', localStorage.token);
 
-                    await this.createOverlay(id, url, a)
-                }
+                await this.createOverlay(id, url, a)
             }
         },
         createOverlay: async function(id, url) {
