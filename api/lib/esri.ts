@@ -153,7 +153,12 @@ export class EsriBase {
             return json.currentVersion;
         } catch (err) {
             if (err.name === 'PublicError') throw err;
-            throw new Err(400, err instanceof Error ? err : new Error(String(err)), err instanceof Error ? err.message : String(err));
+            if (err instanceof Error) {
+                if (err.cause) err.message = `${err.message}: ${err.cause}`;
+                throw new Err(400, err, String(err));
+            } else {
+                throw new Err(400, new Error(String(err)), String(err));
+            }
         }
     }
 
