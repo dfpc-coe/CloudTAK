@@ -109,7 +109,7 @@ export default {
             event.preventDefault();
             this.$refs.dragger.classList.remove('custom-drop-drag')
         },
-        dragDrop: function(event) {
+        dragDrop: function() {
             
         },
         upload: async function(event) {
