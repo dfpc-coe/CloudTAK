@@ -35,7 +35,7 @@
             <div class='text-truncate' v-text='contact.callsign'></div>
             <div v-text='contact.notes.trim()' class='text-truncate subheader'></div>
         </div>
-        <div v-if='buttomChat || buttonZoom' class='col-auto ms-auto btn-list'>
+        <div v-if='buttonChat || buttonZoom' class='col-auto ms-auto btn-list'>
             <IconMessage
                 @click='$emit("chat", contact.uid)'
                 v-if='buttonChat && isChatable(contact)'
