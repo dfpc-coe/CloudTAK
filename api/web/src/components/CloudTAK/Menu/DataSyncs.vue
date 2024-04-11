@@ -48,12 +48,9 @@ import MenuTemplate from '../util/MenuTemplate.vue';
 import {
     TablerNone,
     TablerPager,
-    TablerDelete,
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import {
-    IconDatabase,
-    IconUser,
     IconFolder,
     IconEye,
     IconEyeX,
@@ -184,8 +181,6 @@ export default {
         }
     },
     components: {
-        IconUser,
-        IconDatabase,
         IconFolder,
         IconEye,
         IconEyeX,
@@ -193,7 +188,6 @@ export default {
         TablerNone,
         TablerPager,
         TablerLoading,
-        TablerDelete,
         MenuTemplate
     }
 }

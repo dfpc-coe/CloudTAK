@@ -29,14 +29,10 @@ const mapStore = useMapStore();
 import MenuTemplate from '../util/MenuTemplate.vue';
 import {
     TablerNone,
-    TablerPager,
     TablerDelete,
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import {
-    IconDatabase,
-    IconUser,
-    IconFolder,
     IconEye,
     IconEyeX,
     IconEyeOff,
@@ -153,14 +149,10 @@ export default {
         },
     },
     components: {
-        IconUser,
-        IconDatabase,
-        IconFolder,
         IconEye,
         IconEyeX,
         IconEyeOff,
         TablerNone,
-        TablerPager,
         TablerLoading,
         TablerDelete,
         MenuTemplate
