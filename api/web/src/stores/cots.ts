@@ -6,6 +6,17 @@ import type { Feature } from 'geojson';
 import { useProfileStore } from './profile.js';
 const profileStore = useProfileStore();
 
+
+/**
+ * modify props to meet CoT style requirements
+ */
+export function extract(feat: Feature) {
+    feat = JSON.parse(JSON.stringify(feat));
+    if (feat.properties['stroke-opacity']) feat.properties['stroke-opacity'] = feat.properties['stroke-opacity'] * 255;
+    if (feat.properties['fill-opacity']) feat.properties['fill-opacity'] = feat.properties['fill-opacity'] * 255;
+    return feat;
+}
+
 export const useCOTStore = defineStore('cots', {
     state: (): {
         archive: Map<string, Feature>;
@@ -67,9 +78,10 @@ export const useCOTStore = defineStore('cots', {
 
                         return true;
                     }).map((cot) => {
-                        // TODO if not archived set color opacity
-                        cot.properties['icon-opacity'] = now.isBefore(moment(cot.properties.stale)) ? 1 : 0.5;
-                        cot.properties['circle-opacity'] = now.isBefore(moment(cot.properties.stale)) ? 1 : 0.5;
+                        if (!cot.properties.archived) {
+                            cot.properties['icon-opacity'] = now.isBefore(moment(cot.properties.stale)) ? 1 : 0.5;
+                            cot.properties['circle-opacity'] = now.isBefore(moment(cot.properties.stale)) ? 1 : 0.5;
+                        }
                         return cot;
                     })
                 }
@@ -87,7 +99,7 @@ export const useCOTStore = defineStore('cots', {
         update: function(feat: Feature): void {
             this.cots.set(feat.id, feat);
 
-            if (feat.properties.archive) {
+            if (feat.properties.archived) {
                 this.archive.set(feat.id, feat);
                 this.saveArchive();
             }
@@ -122,6 +134,7 @@ export const useCOTStore = defineStore('cots', {
             this.archive.clear();
             localStorage.removeItem('archive');
         },
+
         /**
          * Add a CoT GeoJSON to the store and modify props to meet MapLibre style requirements
          */
@@ -220,7 +233,7 @@ export const useCOTStore = defineStore('cots', {
             } else {
                 this.cots.set(feat.id, feat);
 
-                if (feat.properties.archive) {
+                if (feat.properties.archived) {
                     this.archive.set(feat.id, feat);
                     this.saveArchive();
                 }
