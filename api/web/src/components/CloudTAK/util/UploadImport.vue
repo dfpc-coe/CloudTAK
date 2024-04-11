@@ -43,6 +43,10 @@ export default {
         modeid: {
             type: String
         },
+        dragging: {
+            type: Boolean,
+            default: false
+        },
         config: {
             type: Object,
             default: function() {
