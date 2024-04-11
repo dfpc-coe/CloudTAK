@@ -2,7 +2,7 @@
 <MenuTemplate name='Overlay Explorer'>
     <div class='row g-0 py-2'>
         <div class='col-6 px-2'>
-            <button @click='$router.push("/menu/datas/user")'class='btn btn-primary w-100'>
+            <button @click='$router.push("/menu/datas/user")' class='btn btn-primary w-100'>
                 <IconUser size='32'/>User Overlays
             </button>
         </div>
@@ -32,13 +32,9 @@
 </template>
 
 <script>
-import { std, stdurl } from '/src/std.ts';
-import { useMapStore } from '/src/stores/map.ts';
-const mapStore = useMapStore();
 import MenuTemplate from '../util/MenuTemplate.vue';
 import {
     TablerNone,
-    TablerPager,
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import {
@@ -61,7 +57,6 @@ export default {
         IconUser,
         IconDatabase,
         TablerNone,
-        TablerPager,
         TablerLoading,
         MenuTemplate
     }
