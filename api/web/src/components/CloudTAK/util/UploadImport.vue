@@ -1,11 +1,25 @@
 <template>
-<div class='card-body'>
-    <div class='row' :class='{ "d-none": progress !== 0 }'>
-        <div class='col-12 d-flex justify-content-center mb-3'>Select a file to import</div>
-        <div class='col-12 d-flex justify-content-center'>
-            <div class='btn-list'>
-                <button @click='$emit("cancel")' class='btn btn-secondary'>Cancel</button>
-                <button @click='$refs.fileInput.click()' class='btn btn-primary'>Upload</button>
+<div>
+    <div class='row g-0' :class='{ "d-none": progress !== 0 }'>
+        <div class='col-12 d-flex justify-content-center mb-3 subheader'>Select a file to import</div>
+        <div 
+            ref='dragger'
+            :ondragenter='dragEnter'
+            :ondragleave='dragLeave'
+            :drop='dragDrop'
+            class='custom-drop row g-0 d-flex col-12 justify-content-center py-2'
+        >
+            <div class='col-12 my-3 d-flex justify-content-center'>
+                <div>Drag &amp; Drop Files Here</div>
+            </div>
+            <div class='col-12 d-flex justify-content-center'>
+                <div>or</div>
+            </div>
+            <div class='col-12 d-flex justify-content-center'>
+                <div class='btn-list my-3'>
+                    <button v-if='cancelButton' @click='$emit("cancel")' class='btn btn-secondary'>Cancel</button>
+                    <button @click='$refs.fileInput.click()' class='btn btn-primary'>Select Files</button>
+                </div>
             </div>
         </div>
         <form>
@@ -25,6 +39,19 @@
     </div>
 </div>
 </template>
+
+<style>
+.custom-drop {
+    border-radius: 10px;
+    border-style: solid;
+    border-width: 1px;
+    border-color: white;
+}
+
+.custom-drop-drag {
+    border-color: blue;
+}
+</style>
 
 <script>
 import { std, stdurl } from '/src/std.ts';
@@ -47,6 +74,10 @@ export default {
             type: Boolean,
             default: false
         },
+        cancelButton: {
+            type: Boolean,
+            default: true
+        },
         config: {
             type: Object,
             default: function() {
@@ -67,6 +98,19 @@ export default {
             const input = this.$refs.fileInput;
             input.type = 'text';
             input.type = 'file';
+        },
+        dragEnter: function(event) {
+            event.stopPropagation();
+            event.preventDefault();
+            this.$refs.dragger.classList.add('custom-drop-drag')
+        },
+        dragLeave: function(event) {
+            event.stopPropagation();
+            event.preventDefault();
+            this.$refs.dragger.classList.remove('custom-drop-drag')
+        },
+        dragDrop: function(event) {
+            
         },
         upload: async function(event) {
             const file = event.target.files[0];

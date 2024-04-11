@@ -150,13 +150,15 @@
         ref='radial'
     />
 
-    <template v-if='upload'>
+    <template v-if='upload.shown'>
         <TablerModal>
             <div class="modal-status bg-red"></div>
-            <button type="button" class="btn-close" @click='upload = false' aria-label="Close"></button>
+            <button type="button" class="btn-close" @click='upload.shown = false' aria-label="Close"></button>
             <div class='modal-body text-white'>
                 <UploadImport
-                    @close='upload = false'
+                    :dragging='upload.dragging'
+                    :cancelButton='false'
+                    @close='upload.shown = false'
                 />
             </div>
         </TablerModal>
@@ -251,7 +253,8 @@ export default {
         window.addEventListener('dragover', (e) => {
             const dt = e.dataTransfer;
             if (dt.types && (dt.types.indexOf ? dt.types.indexOf('Files') != -1 : dt.types.contains('Files'))) {
-                this.upload = true;
+                this.upload.shown = true;
+                this.upload.dragging = true;
             }
         });
 
@@ -281,7 +284,10 @@ export default {
             locked: [],         // Lock the map view to a given CoT - The last element is the currently locked value
                                 //   this is an array so that things like the radial menu can temporarily lock state but remember the previous lock value when they are closed
             edit: false,        // If a radial.cot is set and edit is true then load the cot into terra-draw
-            upload: false,
+            upload: {
+                shown: false,
+                dragging: false
+            },
             cot: null,          // Show the CoT Viewer sidebar
             feat: null,         // Show the Feat Viewer sidebar
             query: null,        // Show the Query Viewer sidebar
