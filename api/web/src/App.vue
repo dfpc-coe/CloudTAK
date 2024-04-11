@@ -53,9 +53,13 @@
 
     <template v-if='upload'>
         <TablerModal>
-            <UploadImport
-                @close='upload = false'
-            />
+            <div class="modal-status bg-red"></div>
+            <button type="button" class="btn-close" @click='upload = false' aria-label="Close"></button>
+            <div class='modal-body'>
+                <UploadImport
+                    @close='upload = false'
+                />
+            </div>
         </TablerModal>
     </template>
 
