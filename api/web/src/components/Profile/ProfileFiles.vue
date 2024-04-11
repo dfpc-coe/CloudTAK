@@ -21,7 +21,7 @@
             <tbody>
                 <tr :key='asset.name' v-for='asset in list.assets'>
                     <td>
-                        <div class='d-flex'>
+                        <div class='d-flex align-items-center'>
                             <div class='btn-list'>
                                 <IconMap v-if='asset.visualized' v-tooltip='"Visualizable"' size='32'/>
                                 <IconMapOff v-else v-tooltip='"Not Cloud Optimized"' size='32'/>
@@ -33,7 +33,7 @@
                     <td>
                         <TablerBytes :bytes='asset.size'/>
                     </td>
-                    <td class='d-flex'>
+                    <td class='d-flex align-items-center'>
                         <TablerEpoch :date='asset.updated'/>
                         <div class='ms-auto btn-list'>
                             <TablerDelete displaytype='icon' @delete='deleteAsset(asset)' v-tooltip='"Delete Asset"'/>
