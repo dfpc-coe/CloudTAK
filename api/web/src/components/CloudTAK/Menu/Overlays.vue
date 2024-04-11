@@ -10,9 +10,7 @@
             <TablerLoading v-if='loading'/>
             <template v-else>
                 <div :key='layer.url' v-for='layer in layers' class="col-lg py-2 px-3 hover-dark">
-                    <div @click='editor(layer)' class='py-2 px-2 hover-dark' :class='{
-                        "cursor-pointer": ["data", "profile"].includes(layer.mode) && layer.type === "vector"
-                    }'>
+                    <div class='py-2 px-2 hover-dark'>
                         <div class='col-12 d-flex align-items-center'>
                             <IconEye v-if='layer.visible === "visible"' @click.stop.prevent='flipVisible(layer)' size='32' class='cursor-pointer' v-tooltip='"Hide Layer"'/>
                             <IconEyeOff v-else @click.stop.prevent='flipVisible(layer)' size='32' class='cursor-pointer' v-tooltip='"Show Layer"'/>
@@ -22,7 +20,9 @@
                                 <IconVector v-else v-tooltip='"Vector"' size='32'/>
                             </span>
 
-                            <span class='mx-2 user-select-none' v-text='layer.name'/>
+                            <span @click='editor(layer)' class='mx-2 user-select-none' v-text='layer.name' :class='{
+                                "cursor-pointer": ["data", "profile"].includes(layer.mode) && layer.type === "vector"
+                            }'/>
 
                             <div class='ms-auto btn-list'>
                                 <IconMaximize v-if='getSource(layer).bounds' @click.stop.prevent='zoomTo(getSource(layer).bounds)' size='32' class='cursor-pointer' v-tooltip='"Zoom To Overlay"'/>
