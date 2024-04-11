@@ -1,134 +1,132 @@
 <template>
-<div data-bs-theme="dark" class="d-flex position-relative" style='height: calc(100vh) !important;'>
-    <Loading v-if='loading.main'/>
-    <template v-else>
-        <div
-            v-if='mode === "Default"'
-            class='position-absolute top-0 end-0 text-white py-2'
-            style='z-index: 1; width: 60px; background-color: rgba(0, 0, 0, 0.5);'
-       >
-            <IconMenu2 v-if='noMenuShown' @click='$router.push("/menu")' size='40' class='mx-2 cursor-pointer'/>
-            <IconX v-if='!noMenuShown' @click='$router.push("/"); cot = feat = query = false' size='40' class='mx-2 cursor-pointer bg-dark'/>
-        </div>
+<Loading v-if='true'/>
+<div v-else data-bs-theme="dark" class="d-flex position-relative" style='height: calc(100vh) !important;'>
+    <div
+        v-if='mode === "Default"'
+        class='position-absolute top-0 end-0 text-white py-2'
+        style='z-index: 1; width: 60px; background-color: rgba(0, 0, 0, 0.5);'
+   >
+        <IconMenu2 v-if='noMenuShown' @click='$router.push("/menu")' size='40' class='mx-2 cursor-pointer'/>
+        <IconX v-if='!noMenuShown' @click='$router.push("/"); cot = feat = query = false' size='40' class='mx-2 cursor-pointer bg-dark'/>
+    </div>
 
-        <div
-            v-if='profile'
-            class='position-absolute bottom-0 begin-0 text-white'
-            style='
-                z-index: 1;
-                width: 200px;
-                height: 40px;
-                background-color: rgba(0, 0, 0, 0.5);
-            '
-        >
-            <div class='d-flex align-items-center h-100'>
-                <div
-                    class='hover-dark h-100 px-2 d-flex align-items-center cursor-pointer'
-                    style='width: 40px;'
-                    v-tooltip='"Set Location"'
-                >
-                    <IconLocationOff size='20' @click='setLocation' v-if='!profile.tak_loc'/>
-                    <IconLocation size='20' @click='setLocation' v-else/>
+    <div
+        v-if='profile'
+        class='position-absolute bottom-0 begin-0 text-white'
+        style='
+            z-index: 1;
+            width: 200px;
+            height: 40px;
+            background-color: rgba(0, 0, 0, 0.5);
+        '
+    >
+        <div class='d-flex align-items-center h-100'>
+            <div
+                class='hover-dark h-100 px-2 d-flex align-items-center cursor-pointer'
+                style='width: 40px;'
+                v-tooltip='"Set Location"'
+            >
+                <IconLocationOff size='20' @click='setLocation' v-if='!profile.tak_loc'/>
+                <IconLocation size='20' @click='setLocation' v-else/>
+            </div>
+            <div
+                v-text='profile.tak_callsign'
+                @click='toLocation'
+                style='line-height: 40px; width: calc(100% - 40px);'
+                class='h-100 cursor-pointer text-center px-2 text-truncate subheader text-white hover-dark'
+                v-tooltip='"Zoom To Location"'
+            ></div>
+        </div>
+    </div>
+    <div
+        v-if='selected.size'
+        class='position-absolute begin-0 text-white bg-dark'
+        style='
+            z-index: 1;
+            bottom: 40px;
+            width: 200px;
+        '
+    >
+        <SelectFeats :selected='selected'/>
+    </div>
+
+    <div
+        v-if='mode === "Default"'
+        class='position-absolute top-0 beginning-0 text-white py-2 px-2'
+        style='z-index: 1; width: 60px; background-color: rgba(0, 0, 0, 0.5)'>
+        <div @click='setBearing(0)' style='padding-bottom: 10px;' class='cursor-pointer'>
+            <svg width="40" height="40" :transform='`rotate(${360 - bearing})`' viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" /><path d="M12 8l-4 4" /><path d="M12 8v8" /><path d="M16 12l-4 -4" /></svg>
+            <div v-if='bearing !== 0' class='text-center' v-text='humanBearing'></div>
+        </div>
+        <IconFocus2 v-if='!radial.cot && !locked.length' @click='getLocation' size='40' class='cursor-pointer'/>
+        <IconLockAccess v-else-if='!radial.cot' @click='locked.splice(0, locked.length)' size='40' class='cursor-pointer'/>
+
+        <div class='mt-3'>
+            <IconPlus size='40' @click='setZoom(getZoom() + 1);' class='cursor-pointer'/>
+            <IconMinus size='40' @click='setZoom(getZoom() - 1);' class='cursor-pointer'/>
+        </div>
+    </div>
+
+    <div v-if='isLoaded && mode === "Default"'
+        class='d-flex position-absolute top-0 text-white py-2'
+        style='z-index: 1; width: 120px; right: 60px; background-color: rgba(0, 0, 0, 0.5)'
+    >
+        <TablerDropdown>
+            <template #default>
+                <div class='mx-2 cursor-pointer'>
+                    <IconBell size='40'/>
+                    <span v-if='notifications.length' class="badge bg-red mb-2"></span>
+                    <span v-else style='width: 10px;'/>
                 </div>
-                <div
-                    v-text='profile.tak_callsign'
-                    @click='toLocation'
-                    style='line-height: 40px; width: calc(100% - 40px);'
-                    class='h-100 cursor-pointer text-center px-2 text-truncate subheader text-white hover-dark'
-                    v-tooltip='"Zoom To Location"'
-                ></div>
-            </div>
-        </div>
-        <div
-            v-if='selected.size'
-            class='position-absolute begin-0 text-white bg-dark'
-            style='
-                z-index: 1;
-                bottom: 40px;
-                width: 200px;
-            '
-        >
-            <SelectFeats :selected='selected'/>
-        </div>
-
-        <div
-            v-if='mode === "Default"'
-            class='position-absolute top-0 beginning-0 text-white py-2 px-2'
-            style='z-index: 1; width: 60px; background-color: rgba(0, 0, 0, 0.5)'>
-            <div @click='setBearing(0)' style='padding-bottom: 10px;' class='cursor-pointer'>
-                <svg width="40" height="40" :transform='`rotate(${360 - bearing})`' viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" /><path d="M12 8l-4 4" /><path d="M12 8v8" /><path d="M16 12l-4 -4" /></svg>
-                <div v-if='bearing !== 0' class='text-center' v-text='humanBearing'></div>
-            </div>
-            <IconFocus2 v-if='!radial.cot && !locked.length' @click='getLocation' size='40' class='cursor-pointer'/>
-            <IconLockAccess v-else-if='!radial.cot' @click='locked.splice(0, locked.length)' size='40' class='cursor-pointer'/>
-
-            <div class='mt-3'>
-                <IconPlus size='40' @click='setZoom(getZoom() + 1);' class='cursor-pointer'/>
-                <IconMinus size='40' @click='setZoom(getZoom() - 1);' class='cursor-pointer'/>
-            </div>
-        </div>
-
-        <div v-if='isLoaded && mode === "Default"'
-            class='d-flex position-absolute top-0 text-white py-2'
-            style='z-index: 1; width: 120px; right: 60px; background-color: rgba(0, 0, 0, 0.5)'
-        >
-            <TablerDropdown>
-                <template #default>
-                    <div class='mx-2 cursor-pointer'>
-                        <IconBell size='40'/>
-                        <span v-if='notifications.length' class="badge bg-red mb-2"></span>
-                        <span v-else style='width: 10px;'/>
+            </template>
+            <template #dropdown>
+                <TablerNone v-if='!notifications.length' label='New Notifications' :create='false'/>
+                <template v-else>
+                    <div class='col-12 d-flex py-2 px-2'>
+                        <div @click='clearNotifications' class='ms-auto cursor-pointer'>Clear All</div>
+                    </div>
+                    <div class='col-12 px-2 py-2' v-for='n of notifications'>
+                        <div @click='$router.push(n.url)' v-if='n.type === "Chat"' class='col-12 cursor-pointer hover-dark'>
+                            <IconMessage size='32'/>
+                            <span v-text='n.name'/>
+                        </div>
                     </div>
                 </template>
-                <template #dropdown>
-                    <TablerNone v-if='!notifications.length' label='New Notifications' :create='false'/>
-                    <template v-else>
-                        <div class='col-12 d-flex py-2 px-2'>
-                            <div @click='clearNotifications' class='ms-auto cursor-pointer'>Clear All</div>
-                        </div>
-                        <div class='col-12 px-2 py-2' v-for='n of notifications'>
-                            <div @click='$router.push(n.url)' v-if='n.type === "Chat"' class='col-12 cursor-pointer hover-dark'>
-                                <IconMessage size='32'/>
-                                <span v-text='n.name'/>
-                            </div>
-                        </div>
-                    </template>
-                </template>
-            </TablerDropdown>
-            <TablerDropdown>
-                <template #default>
-                    <IconPencil @click='menu.draw = true' size='40' class='mx-2 cursor-pointer'/>
-                </template>
-                <template #dropdown>
-                    <div class='btn-list my-2'>
-                        <IconPoint      size='35' @click='startDraw("point")' class='cursor-pointer'/>
-                        <IconLine       size='35' @click='startDraw("linestring")' class='cursor-pointer'/>
-                        <IconPolygon    size='35' @click='startDraw("polygon")' class='cursor-pointer'/>
-                        <IconVector     size='35' @click='startDraw("rectangle")' class='cursor-pointer'/>
-                    </div>
-                </template>
-            </TablerDropdown>
-        </div>
+            </template>
+        </TablerDropdown>
+        <TablerDropdown>
+            <template #default>
+                <IconPencil @click='menu.draw = true' size='40' class='mx-2 cursor-pointer'/>
+            </template>
+            <template #dropdown>
+                <div class='btn-list my-2'>
+                    <IconPoint      size='35' @click='startDraw("point")' class='cursor-pointer'/>
+                    <IconLine       size='35' @click='startDraw("linestring")' class='cursor-pointer'/>
+                    <IconPolygon    size='35' @click='startDraw("polygon")' class='cursor-pointer'/>
+                    <IconVector     size='35' @click='startDraw("rectangle")' class='cursor-pointer'/>
+                </div>
+            </template>
+        </TablerDropdown>
+    </div>
 
-        <router-view @reset='deleteCOT()'/>
+    <router-view @reset='deleteCOT()'/>
 
-        <CloudTAKCoTView
-            v-if='cot && mode === "Default"'
-            :cot='cot'
-        />
-        <CloudTAKFeatView
-            v-if='feat && mode === "Default"'
-            :feat='feat'
-        />
-        <CloudTAKQueryView
-            v-if='query && mode === "Default"'
-            :coords='query'
-        />
-        <div
-            ref="map"
-            style='width: 100%;'
-        ></div>
-    </template>
+    <CloudTAKCoTView
+        v-if='cot && mode === "Default"'
+        :cot='cot'
+    />
+    <CloudTAKFeatView
+        v-if='feat && mode === "Default"'
+        :feat='feat'
+    />
+    <CloudTAKQueryView
+        v-if='query && mode === "Default"'
+        :coords='query'
+    />
+    <div
+        ref="map"
+        style='width: 100%;'
+    ></div>
 
     <RadialMenu
         v-if='radial.mode'
