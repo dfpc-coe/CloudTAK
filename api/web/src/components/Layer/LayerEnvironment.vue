@@ -126,9 +126,16 @@ export default {
             try {
                 this.loading.schema = true;
                 this.schema = (await std(`/api/layer/${this.$route.params.layerid}/task/schema`)).schema;
-                this.schemaOutput = (await std(`/api/layer/${this.$route.params.layerid}/task/schema?type=schema:output`)).schema;
             } catch (err) {
                 this.alert = true;
+            }
+
+            try {
+                const output = (await std(`/api/layer/${this.$route.params.layerid}/task/schema?type=schema:output`)).schema;
+                if (output.properties) this.schemaOutput = output;
+            } catch (err) {
+                //For now this is allowed to fail as dynamic schemas can require input schemas to be defined
+                console.error(err)
             }
         },
         saveLayer: async function() {

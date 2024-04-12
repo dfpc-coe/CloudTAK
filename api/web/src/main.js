@@ -71,6 +71,14 @@ const router = new VueRouter.createRouter({
                     name: 'home-menu-datas',
                     component: () => import('./components/CloudTAK/Menu/Datas.vue')
                 },{
+                    path: 'datas/sync',
+                    name: 'home-menu-datas-sync',
+                    component: () => import('./components/CloudTAK/Menu/DataSyncs.vue')
+                },{
+                    path: 'datas/user',
+                    name: 'home-menu-datas-user',
+                    component: () => import('./components/CloudTAK/Menu/DataUser.vue')
+                },{
                     path: 'contacts',
                     name: 'home-menu-contacts',
                     component: () => import('./components/CloudTAK/Menu/Contacts.vue')

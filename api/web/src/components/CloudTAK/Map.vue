@@ -6,7 +6,7 @@
         class='position-absolute top-0 end-0 text-white py-2'
         style='z-index: 1; width: 60px; background-color: rgba(0, 0, 0, 0.5);'
    >
-        <IconMenu2 v-if='noMenuShown' @click='$router.push("/menu")' size='40' class='mx-2 cursor-pointer'/>
+        <IconMenu2 v-if='noMenuShown' @click='$router.push("/menu")' size='40' class='mx-2 cursor-pointer hover-button'/>
         <IconX v-if='!noMenuShown' @click='$router.push("/"); cot = feat = query = false' size='40' class='mx-2 cursor-pointer bg-dark'/>
     </div>
 
@@ -17,12 +17,13 @@
             z-index: 1;
             width: 200px;
             height: 40px;
+            border-radius: 0px 6px 0px 0px;
             background-color: rgba(0, 0, 0, 0.5);
         '
     >
         <div class='d-flex align-items-center h-100'>
             <div
-                class='hover-dark h-100 px-2 d-flex align-items-center cursor-pointer'
+                class='hover-button h-100 px-2 d-flex align-items-center cursor-pointer'
                 style='width: 40px;'
                 v-tooltip='"Set Location"'
             >
@@ -33,7 +34,7 @@
                 v-text='profile.tak_callsign'
                 @click='toLocation'
                 style='line-height: 40px; width: calc(100% - 40px);'
-                class='h-100 cursor-pointer text-center px-2 text-truncate subheader text-white hover-dark'
+                class='h-100 cursor-pointer text-center px-2 text-truncate subheader text-white hover-button'
                 v-tooltip='"Zoom To Location"'
             ></div>
         </div>
@@ -53,28 +54,39 @@
     <div
         v-if='mode === "Default"'
         class='position-absolute top-0 beginning-0 text-white py-2 px-2'
-        style='z-index: 1; width: 60px; background-color: rgba(0, 0, 0, 0.5)'>
-        <div @click='setBearing(0)' style='padding-bottom: 10px;' class='cursor-pointer'>
+        style='
+            z-index: 1;
+            width: 60px;
+            background-color: rgba(0, 0, 0, 0.5);
+            border-radius: 0px 0px 6px 0px;
+        '>
+        <div @click='setBearing(0)' style='margin-bottom: 10px;' class='cursor-pointer hover-button'>
             <svg width="40" height="40" :transform='`rotate(${360 - bearing})`' viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" /><path d="M12 8l-4 4" /><path d="M12 8v8" /><path d="M16 12l-4 -4" /></svg>
             <div v-if='bearing !== 0' class='text-center' v-text='humanBearing'></div>
         </div>
-        <IconFocus2 v-if='!radial.cot && !locked.length' @click='getLocation' size='40' class='cursor-pointer'/>
-        <IconLockAccess v-else-if='!radial.cot' @click='locked.splice(0, locked.length)' size='40' class='cursor-pointer'/>
+        <IconFocus2 v-if='!radial.cot && !locked.length' @click='getLocation' size='40' class='cursor-pointer hover-button'/>
+        <IconLockAccess v-else-if='!radial.cot' @click='locked.splice(0, locked.length)' size='40' class='cursor-pointer hover-button'/>
 
         <div class='mt-3'>
-            <IconPlus size='40' @click='setZoom(getZoom() + 1);' class='cursor-pointer'/>
-            <IconMinus size='40' @click='setZoom(getZoom() - 1);' class='cursor-pointer'/>
+            <IconPlus size='40' @click='setZoom(getZoom() + 1);' class='cursor-pointer hover-button'/>
+            <IconMinus size='40' @click='setZoom(getZoom() - 1);' class='cursor-pointer hover-button'/>
         </div>
     </div>
 
     <div v-if='isLoaded && mode === "Default"'
         class='d-flex position-absolute top-0 text-white py-2'
-        style='z-index: 1; width: 120px; right: 60px; background-color: rgba(0, 0, 0, 0.5)'
+        style='
+            z-index: 1;
+            width: 120px;
+            right: 60px;
+            background-color: rgba(0, 0, 0, 0.5);
+            border-radius: 0px 0px 0px 6px;
+        '
     >
         <TablerDropdown>
             <template #default>
                 <div class='mx-2 cursor-pointer'>
-                    <IconBell size='40'/>
+                    <IconBell size='40' class='hover-button'/>
                     <span v-if='notifications.length' class="badge bg-red mb-2"></span>
                     <span v-else style='width: 10px;'/>
                 </div>
@@ -96,14 +108,14 @@
         </TablerDropdown>
         <TablerDropdown>
             <template #default>
-                <IconPencil @click='menu.draw = true' size='40' class='mx-2 cursor-pointer'/>
+                <IconPencil @click='menu.draw = true' size='40' class='mx-2 cursor-pointer hover-button'/>
             </template>
             <template #dropdown>
                 <div class='btn-list my-2'>
-                    <IconPoint      size='35' @click='startDraw("point")' class='cursor-pointer'/>
-                    <IconLine       size='35' @click='startDraw("linestring")' class='cursor-pointer'/>
-                    <IconPolygon    size='35' @click='startDraw("polygon")' class='cursor-pointer'/>
-                    <IconVector     size='35' @click='startDraw("rectangle")' class='cursor-pointer'/>
+                    <IconPoint      size='35' @click='startDraw("point")' class='cursor-pointer hover-button'/>
+                    <IconLine       size='35' @click='startDraw("linestring")' class='cursor-pointer hover-button'/>
+                    <IconPolygon    size='35' @click='startDraw("polygon")' class='cursor-pointer hover-button'/>
+                    <IconVector     size='35' @click='startDraw("rectangle")' class='cursor-pointer hover-button'/>
                 </div>
             </template>
         </TablerDropdown>
@@ -137,6 +149,21 @@
         :y='radial.y'
         ref='radial'
     />
+
+    <template v-if='upload.shown'>
+        <TablerModal>
+            <div class="modal-status bg-red"></div>
+            <button type="button" class="btn-close" @click='upload.shown = false' aria-label="Close"></button>
+            <div class='modal-body text-white'>
+                <UploadImport
+                    :dragging='upload.dragging'
+                    :cancelButton='false'
+                    @close='upload.shown = false'
+                />
+            </div>
+        </TablerModal>
+    </template>
+
 </div>
 </template>
 
@@ -162,6 +189,7 @@ import {
 import SelectFeats from './util/SelectFeats.vue';
 import {
     TablerDropdown,
+    TablerModal,
     TablerNone,
 } from '@tak-ps/vue-tabler';
 import Loading from '../Loading.vue';
@@ -176,6 +204,7 @@ import { useOverlayStore } from '/src/stores/overlays.ts';
 import { useProfileStore } from '/src/stores/profile.js';
 import { useCOTStore } from '/src/stores/cots.ts';
 import { useConnectionStore } from '/src/stores/connection.ts';
+import UploadImport from './util/UploadImport.vue'
 const profileStore = useProfileStore();
 const cotStore = useCOTStore();
 const mapStore = useMapStore();
@@ -221,6 +250,14 @@ export default {
         await cotStore.loadArchive();
         this.loading.main = false;
 
+        window.addEventListener('dragover', (e) => {
+            const dt = e.dataTransfer;
+            if (dt.types && (dt.types.indexOf ? dt.types.indexOf('Files') != -1 : dt.types.contains('Files'))) {
+                this.upload.shown = true;
+                this.upload.dragging = true;
+            }
+        });
+
         window.addEventListener('keydown', (e) => {
             if (e.key == 'Escape') {
                 if (mapStore.radial.mode) {
@@ -247,6 +284,10 @@ export default {
             locked: [],         // Lock the map view to a given CoT - The last element is the currently locked value
                                 //   this is an array so that things like the radial menu can temporarily lock state but remember the previous lock value when they are closed
             edit: false,        // If a radial.cot is set and edit is true then load the cot into terra-draw
+            upload: {
+                shown: false,
+                dragging: false
+            },
             cot: null,          // Show the CoT Viewer sidebar
             feat: null,         // Show the Feat Viewer sidebar
             query: null,        // Show the Query Viewer sidebar
@@ -488,8 +529,10 @@ export default {
     components: {
         Loading,
         SelectFeats,
+        UploadImport,
         RadialMenu,
         TablerNone,
+        TablerModal,
         TablerDropdown,
         CloudTAKQueryView,
         CloudTAKCoTView,
