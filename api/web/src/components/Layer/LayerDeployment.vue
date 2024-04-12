@@ -5,33 +5,15 @@
         <div class='ms-auto'>
             <div class='btn-list'>
                 <IconPlayerPlay
-                    v-if='mode !== "logs"'
                     @click='invoke'
                     v-tooltip='"Manually Run"'
                     size='24'
                     class='cursor-pointer'
                 />
 
-                <IconArticle
-                    v-if='mode !== "logs"'
-                    @click='mode = "logs"'
-                    v-tooltip='"View Logs"'
-                    size='24'
-                    class='cursor-pointer'
-                />
-
                 <IconCloudUpload
-                    v-if='mode !== "logs"'
                     @click='redeploy'
                     v-tooltip='"Redeploy"'
-                    size='24'
-                    class='cursor-pointer'
-                />
-
-                <IconCircleDot
-                    v-if='mode !== "status"'
-                    @click='mode = "status"'
-                    v-tooltip='"View Stack"'
                     size='24'
                     class='cursor-pointer'
                 />
@@ -50,14 +32,14 @@
         <template v-if='loading.full'>
             <TablerLoading/>
         </template>
-        <template v-else-if='mode === "status" && errors.cloudformation'>
+        <template v-else-if='errors.cloudformation'>
             <Alert title='AWS CloudFormation Error' :err='errors.cloudformation.message' :compact='true'/>
 
             <div class="d-flex justify-content-center my-3">
                 <div @click='refresh' class='btn btn-secondary'>Refresh</div>
             </div>
         </template>
-        <template v-else-if='mode === "logs" && errors.cloudwatch'>
+        <template v-else-if='errors.cloudwatch'>
             <Alert title='AWS CloudWatch Error' :err='errors.cloudwatch.message' :compact='true'/>
 
             <div class="d-flex justify-content-center my-3">
@@ -72,10 +54,10 @@
                 <div @click='postStack' class='btn btn-primary'>Deploy Stack</div>
             </div>
         </template>
-        <template v-else-if='mode === "status"'>
+        <template v-else>
+            <label class='subheader'>Stack Status</label>
             <pre v-text='stack.status'/>
-        </template>
-        <template v-else-if='mode === "logs"'>
+            <label class='subheader'>Layer Runtime Logs</label>
             <pre v-text='logs'/>
         </template>
     </div>
@@ -89,9 +71,7 @@ import {
 } from '@tak-ps/vue-tabler';
 import Alert from '../util/Alert.vue';
 import {
-    IconArticle,
     IconPlayerPlay,
-    IconCircleDot,
     IconRefresh,
     IconCloudUpload,
 } from '@tabler/icons-vue';
@@ -106,7 +86,6 @@ export default {
     },
     data: function() {
         return {
-            mode: 'status',
             looping: false,
             errors: {
                 cloudwatch: false
@@ -124,28 +103,18 @@ export default {
     unmounted: function() {
         this.clear()
     },
-    watch: {
-        mode: async function() {
-            this.clear();
-            await this.init();
-        }
-    },
     methods: {
         init: async function() {
-            if (this.mode === 'logs') {
-                await this.fetchLogs();
-                this.looping = setInterval(() => {
-                    this.fetchLogs(false);
-                }, 10 * 1000);
-            } else {
-                this.loading.full = false;
-            }
+            await this.fetchLogs();
+            this.looping = setInterval(() => {
+                this.fetchLogs(false);
+            }, 10 * 1000);
         },
         clear: function() {
             if (this.looping) clearInterval(this.looping);
         },
         refresh: async function() {
-            if (this.mode === 'logs') await this.fetchLogs();
+            await this.fetchLogs();
         },
         invoke: async function() {
             this.loading.full = true;
@@ -211,9 +180,7 @@ export default {
     },
     components: {
         Alert,
-        IconArticle,
         IconPlayerPlay,
-        IconCircleDot,
         IconRefresh,
         TablerLoading,
         IconCloudUpload,
