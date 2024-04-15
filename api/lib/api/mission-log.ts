@@ -1,6 +1,5 @@
 import TAKAPI from '../tak-api.js';
-import { Readable } from 'node:stream'
-import { Type, Static } from '@sinclair/typebox';
+import { Type } from '@sinclair/typebox';
 
 export const MissionLog = Type.Object({
     id: Type.String(),

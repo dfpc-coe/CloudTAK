@@ -1,8 +1,7 @@
 import SinkInterface from '../sink.js';
 import { ConnectionSink } from '../schema.js';
 import { type InferSelectModel } from 'drizzle-orm';
-import Err from '@openaddresses/batch-error';
-import { EsriBase, EsriProxyPortal } from '../esri.js';
+import { EsriBase } from '../esri.js';
 import Cacher from '../cacher.js';
 import Config from '../config.js';
 

@@ -1,7 +1,6 @@
 import * as S3AWS from '@aws-sdk/client-s3';
 import { Upload } from '@aws-sdk/lib-storage';
 import Err from '@openaddresses/batch-error';
-import { Response } from 'express';
 import { Readable } from 'node:stream';
 import process from 'node:process';
 
@@ -109,7 +108,7 @@ export default class S3 {
      * @param {boolean} [opts.recurse]      Recursive Delete on key
      */
     static async del(key: string, opts: {
-        recurse: Boolean
+        recurse: boolean
     } = { recurse: false }): Promise<void> {
         if (!process.env.ASSET_BUCKET) return;
         const s3 = new S3AWS.S3Client({ region: process.env.AWS_DEFAULT_REGION });

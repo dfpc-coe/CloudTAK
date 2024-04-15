@@ -1,8 +1,7 @@
 import fs from 'node:fs';
 import crypto from 'node:crypto';
 import { Type } from '@sinclair/typebox'
-import CoT, { FileShare } from '@tak-ps/node-cot';
-import DataPackage from '../lib/data-package.js';
+import CoT, { FileShare, DataPackage } from '@tak-ps/node-cot';
 import TAK from '@tak-ps/node-tak';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
