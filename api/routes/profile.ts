@@ -36,10 +36,10 @@ export default async function router(schema: Schema, config: Config) {
             tak_callsign: Type.Optional(Type.String()),
             tak_group: Type.Optional(Type.Enum(TAKGroup)),
             tak_role: Type.Optional(Type.Enum(TAKRole)),
-            tak_loc: Type.Optional(Type.Object({
+            tak_loc: Type.Optional([Type.Null(), Type.Object({
                 type: Type.String(),
                 coordinates: Type.Array(Type.Number())
-            }))
+            })])
         }),
         res: ProfileResponse
     }, async (req, res) => {
