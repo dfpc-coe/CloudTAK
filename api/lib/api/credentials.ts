@@ -32,7 +32,6 @@ export default class {
             }
         }
 
-        // @ts-expect-error No Type Defs
         const createCSR = pem.promisified.createCSR;
 
         const keys: {
