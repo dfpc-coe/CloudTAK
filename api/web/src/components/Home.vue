@@ -1,8 +1,8 @@
 <template>
-  <CloudTAK
-    v-if='user'
-    :user='user'
-  />
+    <CloudTAK
+        v-if='user'
+        :user='user'
+    />
 </template>
 
 <script>
