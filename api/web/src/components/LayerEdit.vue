@@ -1,190 +1,190 @@
 <template>
-  <div>
-    <div class='page-wrapper'>
-      <div class='page-header d-print-none'>
-        <div class='container-xl'>
-          <div class='row g-2 align-items-center'>
-            <div class='col d-flex'>
-              <TablerBreadCrumb />
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <TablerLoading
-      v-if='loading.layer'
-      desc='Loading Layer'
-    />
-    <div
-      v-else
-      class='page-body'
-    >
-      <div class='container-xl'>
-        <div class='row row-deck row-cards'>
-          <div class='col-lg-12'>
-            <div class='card'>
-              <div class='card-header'>
-                <h3 class='card-title'>
-                  Layer <span v-text='layer.id' />
-                </h3>
-
-                <div class='ms-auto'>
-                  <div class='d-flex'>
-                    <div class='btn-list'>
-                      <div class='d-flex'>
-                        <span class='px-2'>Logging</span>
-                        <label class='form-check form-switch'>
-                          <input
-                            v-model='layer.logging'
-                            class='form-check-input'
-                            type='checkbox'
-                          >
-                        </label>
-                      </div>
-                      <div class='d-flex'>
-                        <span class='px-2'>Enabled</span>
-                        <label class='form-check form-switch'>
-                          <input
-                            v-model='layer.enabled'
-                            class='form-check-input'
-                            type='checkbox'
-                          >
-                        </label>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class='card-body'>
-                <div class='row row-cards'>
-                  <div class='col-md-12'>
-                    <TablerInput
-                      v-model='layer.name'
-                      label='Layer Name'
-                      :error='errors.name'
-                    />
-                  </div>
-                  <div class='col-md-12'>
-                    <TablerInput
-                      v-model='layer.description'
-                      label='Layer Description'
-                      :rows='6'
-                      :error='errors.description'
-                    />
-                  </div>
-                  <template v-if='!$route.params.layerid'>
-                    <div class='col-md-6'>
-                      <TablerInput
-                        v-model='layer.cron'
-                        :error='errors.cron'
-                        label='Cron Expression'
-                        placeholder='Cron Expression'
-                      >
-                        <div class='dropdown'>
-                          <div
-                            id='dropdownCron'
-                            class='dropdown-toggle'
-                            type='button'
-                            data-bs-toggle='dropdown'
-                            aria-expanded='false'
-                          >
-                            <IconSettings
-                              size='16'
-                              class='cursor-pointer dropdown-toggle'
-                            />
-                          </div>
-                          <ul
-                            class='dropdown-menu px-1 py-1'
-                            aria-labelledby='dropdownCron'
-                          >
-                            <li
-                              class='py-1 cursor-pointer'
-                              @click='layer.cron = "rate(1 minute)"'
-                            >
-                              rate(1 minute)
-                            </li>
-                            <li
-                              class='py-1 cursor-pointer'
-                              @click='layer.cron = "rate(5 minutes)"'
-                            >
-                              rate(5 minutes)
-                            </li>
-                            <li
-                              class='py-1 cursor-pointer'
-                              @click='layer.cron = "cron(15 10 * * ? *)"'
-                            >
-                              cron(15 10 * * ? *)
-                            </li>
-                            <li
-                              class='py-1 cursor-pointer'
-                              @click='layer.cron = "cron(0/5 8-17 ? * MON-FRI *)"'
-                            >
-                              cron(0/5 8-17 ? * MON-FRI *)
-                            </li>
-                          </ul>
+    <div>
+        <div class='page-wrapper'>
+            <div class='page-header d-print-none'>
+                <div class='container-xl'>
+                    <div class='row g-2 align-items-center'>
+                        <div class='col d-flex'>
+                            <TablerBreadCrumb />
                         </div>
-                      </TablerInput>
-                      <label
-                        v-if='layer.cron'
-                        v-text='cronstr(layer.cron)'
-                      />
                     </div>
-                    <div class='col-md-6'>
-                      <div class='d-flex' />
-                      <TablerInput
-                        v-model='layer.task'
-                        :error='errors.task'
-                        label='Schedule Task'
-                        placeholder='Schedule Task'
-                      >
-                        <div class='ms-auto btn-list'>
-                          <IconSettings
-                            size='16'
-                            class='cursor-pointer'
-                            @click='taskmodal = true'
-                          />
-                        </div>
-                      </TablerInput>
-                    </div>
-                  </template>
-                  <div class='col-lg-12 d-flex'>
-                    <div v-if='$route.params.layerid'>
-                      <TablerDelete
-                        label='Delete Layer'
-                        @delete='deleteLayer'
-                      />
-                    </div>
-                    <div class='ms-auto'>
-                      <a
-                        v-if='$route.params.layerid'
-                        class='cursor-pointer btn btn-primary'
-                        @click='create'
-                      >Update Layer</a>
-                      <a
-                        v-else
-                        class='cursor-pointer btn btn-primary'
-                        @click='create'
-                      >Create Layer</a>
-                    </div>
-                  </div>
                 </div>
-              </div>
             </div>
-          </div>
         </div>
-      </div>
+
+        <TablerLoading
+            v-if='loading.layer'
+            desc='Loading Layer'
+        />
+        <div
+            v-else
+            class='page-body'
+        >
+            <div class='container-xl'>
+                <div class='row row-deck row-cards'>
+                    <div class='col-lg-12'>
+                        <div class='card'>
+                            <div class='card-header'>
+                                <h3 class='card-title'>
+                                    Layer <span v-text='layer.id' />
+                                </h3>
+
+                                <div class='ms-auto'>
+                                    <div class='d-flex'>
+                                        <div class='btn-list'>
+                                            <div class='d-flex'>
+                                                <span class='px-2'>Logging</span>
+                                                <label class='form-check form-switch'>
+                                                    <input
+                                                        v-model='layer.logging'
+                                                        class='form-check-input'
+                                                        type='checkbox'
+                                                    >
+                                                </label>
+                                            </div>
+                                            <div class='d-flex'>
+                                                <span class='px-2'>Enabled</span>
+                                                <label class='form-check form-switch'>
+                                                    <input
+                                                        v-model='layer.enabled'
+                                                        class='form-check-input'
+                                                        type='checkbox'
+                                                    >
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class='card-body'>
+                                <div class='row row-cards'>
+                                    <div class='col-md-12'>
+                                        <TablerInput
+                                            v-model='layer.name'
+                                            label='Layer Name'
+                                            :error='errors.name'
+                                        />
+                                    </div>
+                                    <div class='col-md-12'>
+                                        <TablerInput
+                                            v-model='layer.description'
+                                            label='Layer Description'
+                                            :rows='6'
+                                            :error='errors.description'
+                                        />
+                                    </div>
+                                    <template v-if='!$route.params.layerid'>
+                                        <div class='col-md-6'>
+                                            <TablerInput
+                                                v-model='layer.cron'
+                                                :error='errors.cron'
+                                                label='Cron Expression'
+                                                placeholder='Cron Expression'
+                                            >
+                                                <div class='dropdown'>
+                                                    <div
+                                                        id='dropdownCron'
+                                                        class='dropdown-toggle'
+                                                        type='button'
+                                                        data-bs-toggle='dropdown'
+                                                        aria-expanded='false'
+                                                    >
+                                                        <IconSettings
+                                                            size='16'
+                                                            class='cursor-pointer dropdown-toggle'
+                                                        />
+                                                    </div>
+                                                    <ul
+                                                        class='dropdown-menu px-1 py-1'
+                                                        aria-labelledby='dropdownCron'
+                                                    >
+                                                        <li
+                                                            class='py-1 cursor-pointer'
+                                                            @click='layer.cron = "rate(1 minute)"'
+                                                        >
+                                                            rate(1 minute)
+                                                        </li>
+                                                        <li
+                                                            class='py-1 cursor-pointer'
+                                                            @click='layer.cron = "rate(5 minutes)"'
+                                                        >
+                                                            rate(5 minutes)
+                                                        </li>
+                                                        <li
+                                                            class='py-1 cursor-pointer'
+                                                            @click='layer.cron = "cron(15 10 * * ? *)"'
+                                                        >
+                                                            cron(15 10 * * ? *)
+                                                        </li>
+                                                        <li
+                                                            class='py-1 cursor-pointer'
+                                                            @click='layer.cron = "cron(0/5 8-17 ? * MON-FRI *)"'
+                                                        >
+                                                            cron(0/5 8-17 ? * MON-FRI *)
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </TablerInput>
+                                            <label
+                                                v-if='layer.cron'
+                                                v-text='cronstr(layer.cron)'
+                                            />
+                                        </div>
+                                        <div class='col-md-6'>
+                                            <div class='d-flex' />
+                                            <TablerInput
+                                                v-model='layer.task'
+                                                :error='errors.task'
+                                                label='Schedule Task'
+                                                placeholder='Schedule Task'
+                                            >
+                                                <div class='ms-auto btn-list'>
+                                                    <IconSettings
+                                                        size='16'
+                                                        class='cursor-pointer'
+                                                        @click='taskmodal = true'
+                                                    />
+                                                </div>
+                                            </TablerInput>
+                                        </div>
+                                    </template>
+                                    <div class='col-lg-12 d-flex'>
+                                        <div v-if='$route.params.layerid'>
+                                            <TablerDelete
+                                                label='Delete Layer'
+                                                @delete='deleteLayer'
+                                            />
+                                        </div>
+                                        <div class='ms-auto'>
+                                            <a
+                                                v-if='$route.params.layerid'
+                                                class='cursor-pointer btn btn-primary'
+                                                @click='create'
+                                            >Update Layer</a>
+                                            <a
+                                                v-else
+                                                class='cursor-pointer btn btn-primary'
+                                                @click='create'
+                                            >Create Layer</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <PageFooter />
+
+        <TaskModal
+            v-if='taskmodal'
+            :task='layer.task'
+            @close='taskmodal = false'
+            @task='taskmodal = false; layer.task = $event'
+        />
     </div>
-
-    <PageFooter />
-
-    <TaskModal
-      v-if='taskmodal'
-      :task='layer.task'
-      @close='taskmodal = false'
-      @task='taskmodal = false; layer.task = $event'
-    />
-  </div>
 </template>
 
 <script>

@@ -5,6 +5,7 @@ export default [
   ...pluginVue.configs['flat/recommended'],
   {
     rules: {
+        "vue/html-indent": ["error", 4],
         "vue/html-quotes": ["error", "single", { "avoidEscape": false } ],
         "vue/multi-word-component-names": 1,
         "vue/no-multiple-template-root": 0,

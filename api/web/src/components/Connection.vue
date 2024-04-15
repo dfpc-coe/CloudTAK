@@ -1,163 +1,163 @@
 <template>
-  <div>
-    <div class='page-wrapper'>
-      <div class='page-header d-print-none'>
-        <div class='container-xl'>
-          <div class='row g-2 align-items-center'>
-            <div class='col d-flex'>
-              <TablerBreadCrumb />
+    <div>
+        <div class='page-wrapper'>
+            <div class='page-header d-print-none'>
+                <div class='container-xl'>
+                    <div class='row g-2 align-items-center'>
+                        <div class='col d-flex'>
+                            <TablerBreadCrumb />
+                        </div>
+                    </div>
+                </div>
             </div>
-          </div>
         </div>
-      </div>
-    </div>
 
-    <div class='page-body'>
-      <div class='container-xl'>
-        <div class='row row-deck row-cards'>
-          <div class='col-lg-12'>
-            <TablerLoading v-if='loading.connection' />
+        <div class='page-body'>
+            <div class='container-xl'>
+                <div class='row row-deck row-cards'>
+                    <div class='col-lg-12'>
+                        <TablerLoading v-if='loading.connection' />
 
-            <div
-              v-else
-              class='card'
-            >
-              <div class='card-header'>
-                <ConnectionStatus :connection='connection' />
+                        <div
+                            v-else
+                            class='card'
+                        >
+                            <div class='card-header'>
+                                <ConnectionStatus :connection='connection' />
 
-                <a
-                  class='card-title cursor-pointer mx-2'
-                  @click='$router.push(`/connection/${connection.id}`)'
-                  v-text='connection.name'
-                />
+                                <a
+                                    class='card-title cursor-pointer mx-2'
+                                    @click='$router.push(`/connection/${connection.id}`)'
+                                    v-text='connection.name'
+                                />
 
-                <div class='ms-auto'>
-                  <div class='btn-list'>
-                    <IconRefresh
-                      v-tooltip='"Refresh"'
-                      size='32'
-                      class='cursor-pointer'
-                      @click='refresh'
-                    />
-                    <IconSettings
-                      v-tooltip='"Edit"'
-                      size='32'
-                      class='cursor-pointer'
-                      @click='$router.push(`/connection/${connection.id}/edit`)'
-                    />
-                  </div>
-                </div>
-              </div>
-              <div class='card-body'>
-                <div class='row g-2'>
-                  <div class='col-12'>
-                    <TablerMarkdown :markdown='connection.description' />
-                  </div>
-                  <div class='col-12 datagrid'>
-                    <div class='datagrid-item pb-2'>
-                      <div class='datagrid-title'>
-                        Certificate Valid From
-                      </div>
-                      <div
-                        class='datagrid-content'
-                        v-text='connection.certificate.validFrom'
-                      />
+                                <div class='ms-auto'>
+                                    <div class='btn-list'>
+                                        <IconRefresh
+                                            v-tooltip='"Refresh"'
+                                            size='32'
+                                            class='cursor-pointer'
+                                            @click='refresh'
+                                        />
+                                        <IconSettings
+                                            v-tooltip='"Edit"'
+                                            size='32'
+                                            class='cursor-pointer'
+                                            @click='$router.push(`/connection/${connection.id}/edit`)'
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                            <div class='card-body'>
+                                <div class='row g-2'>
+                                    <div class='col-12'>
+                                        <TablerMarkdown :markdown='connection.description' />
+                                    </div>
+                                    <div class='col-12 datagrid'>
+                                        <div class='datagrid-item pb-2'>
+                                            <div class='datagrid-title'>
+                                                Certificate Valid From
+                                            </div>
+                                            <div
+                                                class='datagrid-content'
+                                                v-text='connection.certificate.validFrom'
+                                            />
+                                        </div>
+                                        <div class='datagrid-item pb-2'>
+                                            <div class='datagrid-title'>
+                                                Certificate Valid To
+                                            </div>
+                                            <div
+                                                class='datagrid-content'
+                                                v-text='connection.certificate.validTo'
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class='card-footer'>
+                                Last updated <span v-text='timeDiff(connection.updated)' />
+                            </div>
+                        </div>
                     </div>
-                    <div class='datagrid-item pb-2'>
-                      <div class='datagrid-title'>
-                        Certificate Valid To
-                      </div>
-                      <div
-                        class='datagrid-content'
-                        v-text='connection.certificate.validTo'
-                      />
+
+                    <div
+                        v-if='!loading.connection'
+                        class='col-lg-12'
+                    >
+                        <div class='card'>
+                            <div class='row g-0'>
+                                <div class='col-12 col-md-3 border-end'>
+                                    <div class='card-body'>
+                                        <h4 class='subheader'>
+                                            Connection Sections
+                                        </h4>
+                                        <div class='list-group list-group-transparent'>
+                                            <span
+                                                class='list-group-item list-group-item-action d-flex align-items-center'
+                                                :class='{
+                                                    "active": $route.name === "connection-layers",
+                                                    "cursor-pointer": $route.name !== "connection-layers"
+                                                }'
+                                                @click='$router.push(`/connection/${$route.params.connectionid}/layer`)'
+                                            ><IconBuildingBroadcastTower size='32' /><span class='mx-3'>Layers</span></span>
+                                            <span
+                                                class='list-group-item list-group-item-action d-flex align-items-center'
+                                                :class='{
+                                                    "active": $route.name === "connection-groups",
+                                                    "cursor-pointer": $route.name !== "connection-groups"
+                                                }'
+                                                @click='$router.push(`/connection/${$route.params.connectionid}/groups`)'
+                                            ><IconAffiliate size='32' /><span class='mx-3'>Channels</span></span>
+                                            <span
+                                                class='list-group-item list-group-item-action d-flex align-items-center'
+                                                :class='{
+                                                    "active": $route.name === "connection-datas",
+                                                    "cursor-pointer": $route.name !== "connection-datas"
+                                                }'
+                                                @click='$router.push(`/connection/${$route.params.connectionid}/data`)'
+                                            ><IconDatabase size='32' /><span class='mx-3'>Data Store</span></span>
+                                            <span
+                                                class='list-group-item list-group-item-action d-flex align-items-center'
+                                                :class='{
+                                                    "active": $route.name === "connection-sinks",
+                                                    "cursor-pointer": $route.name !== "connection-sinks"
+                                                }'
+                                                @click='$router.push(`/connection/${$route.params.connectionid}/sink`)'
+                                            ><IconOutbound size='32' /><span class='mx-3'>Outbounds Sinks</span></span>
+                                            <span
+                                                class='list-group-item list-group-item-action d-flex align-items-center'
+                                                :class='{
+                                                    "active": $route.name === "connection-healths",
+                                                    "cursor-pointer": $route.name !== "connection-healths"
+                                                }'
+                                                @click='$router.push(`/connection/${$route.params.connectionid}/health`)'
+                                            ><IconCloudDataConnection size='32' /><span class='mx-3'>Health &amp; Metrics</span></span>
+                                            <span
+                                                class='list-group-item list-group-item-action d-flex align-items-center'
+                                                :class='{
+                                                    "active": $route.name === "connection-tokens",
+                                                    "cursor-pointer": $route.name !== "connection-tokens"
+                                                }'
+                                                @click='$router.push(`/connection/${$route.params.connectionid}/tokens`)'
+                                            ><IconRobot size='32' /><span class='mx-3'>API Tokens</span></span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class='col-12 col-md-9 position-relative'>
+                                    <router-view
+                                        :connection='connection'
+                                    />
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                  </div>
                 </div>
-              </div>
-              <div class='card-footer'>
-                Last updated <span v-text='timeDiff(connection.updated)' />
-              </div>
             </div>
-          </div>
-
-          <div
-            v-if='!loading.connection'
-            class='col-lg-12'
-          >
-            <div class='card'>
-              <div class='row g-0'>
-                <div class='col-12 col-md-3 border-end'>
-                  <div class='card-body'>
-                    <h4 class='subheader'>
-                      Connection Sections
-                    </h4>
-                    <div class='list-group list-group-transparent'>
-                      <span
-                        class='list-group-item list-group-item-action d-flex align-items-center'
-                        :class='{
-                          "active": $route.name === "connection-layers",
-                          "cursor-pointer": $route.name !== "connection-layers"
-                        }'
-                        @click='$router.push(`/connection/${$route.params.connectionid}/layer`)'
-                      ><IconBuildingBroadcastTower size='32' /><span class='mx-3'>Layers</span></span>
-                      <span
-                        class='list-group-item list-group-item-action d-flex align-items-center'
-                        :class='{
-                          "active": $route.name === "connection-groups",
-                          "cursor-pointer": $route.name !== "connection-groups"
-                        }'
-                        @click='$router.push(`/connection/${$route.params.connectionid}/groups`)'
-                      ><IconAffiliate size='32' /><span class='mx-3'>Channels</span></span>
-                      <span
-                        class='list-group-item list-group-item-action d-flex align-items-center'
-                        :class='{
-                          "active": $route.name === "connection-datas",
-                          "cursor-pointer": $route.name !== "connection-datas"
-                        }'
-                        @click='$router.push(`/connection/${$route.params.connectionid}/data`)'
-                      ><IconDatabase size='32' /><span class='mx-3'>Data Store</span></span>
-                      <span
-                        class='list-group-item list-group-item-action d-flex align-items-center'
-                        :class='{
-                          "active": $route.name === "connection-sinks",
-                          "cursor-pointer": $route.name !== "connection-sinks"
-                        }'
-                        @click='$router.push(`/connection/${$route.params.connectionid}/sink`)'
-                      ><IconOutbound size='32' /><span class='mx-3'>Outbounds Sinks</span></span>
-                      <span
-                        class='list-group-item list-group-item-action d-flex align-items-center'
-                        :class='{
-                          "active": $route.name === "connection-healths",
-                          "cursor-pointer": $route.name !== "connection-healths"
-                        }'
-                        @click='$router.push(`/connection/${$route.params.connectionid}/health`)'
-                      ><IconCloudDataConnection size='32' /><span class='mx-3'>Health &amp; Metrics</span></span>
-                      <span
-                        class='list-group-item list-group-item-action d-flex align-items-center'
-                        :class='{
-                          "active": $route.name === "connection-tokens",
-                          "cursor-pointer": $route.name !== "connection-tokens"
-                        }'
-                        @click='$router.push(`/connection/${$route.params.connectionid}/tokens`)'
-                      ><IconRobot size='32' /><span class='mx-3'>API Tokens</span></span>
-                    </div>
-                  </div>
-                </div>
-                <div class='col-12 col-md-9 position-relative'>
-                  <router-view
-                    :connection='connection'
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
-      </div>
-    </div>
 
-    <PageFooter />
-  </div>
+        <PageFooter />
+    </div>
 </template>
 
 <script>

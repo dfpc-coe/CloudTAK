@@ -1,35 +1,35 @@
 <template>
-  <div>
-    <div class='page-wrapper'>
-      <div class='page-header d-print-none'>
-        <div class='container-xl'>
-          <div class='row g-2 align-items-center'>
-            <div class='col d-flex'>
-              <TablerBreadCrumb />
+    <div>
+        <div class='page-wrapper'>
+            <div class='page-header d-print-none'>
+                <div class='container-xl'>
+                    <div class='row g-2 align-items-center'>
+                        <div class='col d-flex'>
+                            <TablerBreadCrumb />
+                        </div>
+                    </div>
+                </div>
             </div>
-          </div>
         </div>
-      </div>
-    </div>
 
-    <div class='page-body'>
-      <div class='container-xl'>
-        <div class='row row-deck row-cards'>
-          <div class='col-lg-12'>
-            <TablerLoading v-if='loading' />
-          </div>
+        <div class='page-body'>
+            <div class='container-xl'>
+                <div class='row row-deck row-cards'>
+                    <div class='col-lg-12'>
+                        <TablerLoading v-if='loading' />
+                    </div>
 
-          <div class='col-lg-12'>
-            <ConnectionSinks
-              v-if='connection.id'
-              :connection='connection'
-            />
-          </div>
+                    <div class='col-lg-12'>
+                        <ConnectionSinks
+                            v-if='connection.id'
+                            :connection='connection'
+                        />
+                    </div>
+                </div>
+            </div>
         </div>
-      </div>
+        <PageFooter />
     </div>
-    <PageFooter />
-  </div>
 </template>
 
 <script>
