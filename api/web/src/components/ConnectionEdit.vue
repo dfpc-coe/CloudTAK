@@ -1,138 +1,179 @@
 <template>
-<div>
+  <div>
     <div class='page-wrapper'>
-        <div class="page-header d-print-none">
-            <div class="container-xl">
-                <div class="row g-2 align-items-center">
-                    <div class="col d-flex">
-                        <TablerBreadCrumb/>
-                    </div>
-                </div>
+      <div class='page-header d-print-none'>
+        <div class='container-xl'>
+          <div class='row g-2 align-items-center'>
+            <div class='col d-flex'>
+              <TablerBreadCrumb />
             </div>
+          </div>
         </div>
+      </div>
     </div>
 
     <div class='page-body'>
-        <div class='container-xl'>
-            <div class='row row-deck row-cards'>
-                <div class="col-lg-12">
-                    <template v-if='loading'>
-                        <TablerLoading/>
+      <div class='container-xl'>
+        <div class='row row-deck row-cards'>
+          <div class='col-lg-12'>
+            <template v-if='loading'>
+              <TablerLoading />
+            </template>
+            <template v-else>
+              <div class='card'>
+                <div class='card-header'>
+                  <h3
+                    v-if='$route.params.connectionid'
+                    class='card-title'
+                  >
+                    Connection <span v-text='connection.id' />
+                  </h3>
+                  <h3
+                    v-else
+                    class='card-title'
+                  >
+                    New Connection
+                  </h3>
+
+                  <div class='ms-auto'>
+                    <div class='d-flex'>
+                      <div class='btn-list'>
+                        <div class='d-flex'>
+                          <span class='px-2'>Enabled</span>
+                          <label class='form-check form-switch'>
+                            <input
+                              v-model='connection.enabled'
+                              class='form-check-input'
+                              type='checkbox'
+                            >
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class='card-body'>
+                  <div class='row row-cards'>
+                    <div class='col-md-12 mt-3'>
+                      <TablerInput
+                        v-model='connection.name'
+                        label='Connection Name'
+                        :error='errors.name'
+                      />
+                    </div>
+                    <div class='col-md-12'>
+                      <TablerInput
+                        v-model='connection.description'
+                        label='Connection Description'
+                        :error='errors.description'
+                        :rows='6'
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div class='card-header d-flex'>
+                  <h3 class='card-title'>
+                    Connection Authentication
+                  </h3>
+                  <div
+                    v-if='!$route.params.connectionid || regen'
+                    class='ms-auto btn-list'
+                  >
+                    <IconLogin
+                      v-tooltip='"User Login"'
+                      size='32'
+                      class='cursor-pointer'
+                      @click='modal.login = true'
+                    />
+                    <IconPlus
+                      v-tooltip='"P12 Upload"'
+                      size='32'
+                      class='cursor-pointer'
+                      @click='modal.upload = true'
+                    />
+                  </div>
+                </div>
+                <div class='card-body'>
+                  <div class='row mt-3'>
+                    <template v-if='!$route.params.connectionid || regen'>
+                      <div class='col-md-6'>
+                        <TablerInput
+                          v-model='connection.auth.cert'
+                          label='Connection Cert'
+                          :error='errors.cert'
+                          :rows='6'
+                        />
+                      </div>
+                      <div class='col-md-6'>
+                        <TablerInput
+                          v-model='connection.auth.key'
+                          label='Connection Key'
+                          :error='errors.key'
+                          :rows='6'
+                        />
+                      </div>
                     </template>
                     <template v-else>
-                        <div class="card">
-                            <div class='card-header'>
-                                <h3 v-if='$route.params.connectionid' class='card-title'>Connection <span v-text='connection.id'/></h3>
-                                <h3 v-else class='card-title'>New Connection</h3>
-
-                                <div class='ms-auto'>
-                                    <div class='d-flex'>
-                                        <div class='btn-list'>
-                                            <div class='d-flex'>
-                                                <span class='px-2'>Enabled</span>
-                                                <label class="form-check form-switch">
-                                                    <input v-model='connection.enabled' class="form-check-input" type="checkbox">
-                                                </label>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="card-body">
-                                <div class='row row-cards'>
-                                    <div class="col-md-12 mt-3">
-                                        <TablerInput
-                                            label='Connection Name'
-                                            v-model='connection.name'
-                                            :error='errors.name'
-                                        />
-                                    </div>
-                                    <div class="col-md-12">
-                                        <TablerInput
-                                            label='Connection Description'
-                                            v-model='connection.description'
-                                            :error='errors.description'
-                                            :rows='6'
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class='card-header d-flex'>
-                                <h3 class='card-title'>Connection Authentication</h3>
-                                <div v-if='!$route.params.connectionid || regen' class='ms-auto btn-list'>
-                                    <IconLogin @click='modal.login = true' size='32' class='cursor-pointer' v-tooltip='"User Login"'/>
-                                    <IconPlus @click='modal.upload = true' size='32' class='cursor-pointer' v-tooltip='"P12 Upload"'/>
-                                </div>
-                            </div>
-                            <div class='card-body'>
-                                <div class='row mt-3'>
-                                    <template v-if='!$route.params.connectionid || regen'>
-                                        <div class="col-md-6">
-                                            <TablerInput
-                                                label='Connection Cert'
-                                                v-model='connection.auth.cert'
-                                                :error='errors.cert'
-                                                :rows='6'
-                                            />
-                                        </div>
-                                        <div class="col-md-6">
-                                            <TablerInput
-                                                label='Connection Key'
-                                                v-model='connection.auth.key'
-                                                :error='errors.key'
-                                                :rows='6'
-                                            />
-                                        </div>
-                                    </template>
-                                    <template v-else>
-                                        <div class='border px-3 py-3'>
-                                            <div class='d-flex justify-content-center'>
-                                                <IconLock size='50'/>
-                                            </div>
-                                            <div class='d-flex justify-content-center my-3'>
-                                                Once Certificates are generated they cannot be viewed
-                                            </div>
-                                            <div class='d-flex justify-content-center'>
-                                                <button @click='regen=true' class='btn btn-secondary'>Regenerate Certificate</button>
-                                            </div>
-                                        </div>
-                                    </template>
-
-                                    <div class="col-md-12 mt-3">
-                                        <div class='d-flex'>
-                                            <TablerDelete v-if='$route.params.connectionid' @delete='del' label='Delete Connection'/>
-
-                                            <div class='ms-auto'>
-                                                <a @click='create' class="cursor-pointer btn btn-primary">Save Connection</a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                      <div class='border px-3 py-3'>
+                        <div class='d-flex justify-content-center'>
+                          <IconLock size='50' />
                         </div>
+                        <div class='d-flex justify-content-center my-3'>
+                          Once Certificates are generated they cannot be viewed
+                        </div>
+                        <div class='d-flex justify-content-center'>
+                          <button
+                            class='btn btn-secondary'
+                            @click='regen=true'
+                          >
+                            Regenerate Certificate
+                          </button>
+                        </div>
+                      </div>
                     </template>
+
+                    <div class='col-md-12 mt-3'>
+                      <div class='d-flex'>
+                        <TablerDelete
+                          v-if='$route.params.connectionid'
+                          label='Delete Connection'
+                          @delete='del'
+                        />
+
+                        <div class='ms-auto'>
+                          <a
+                            class='cursor-pointer btn btn-primary'
+                            @click='create'
+                          >Save Connection</a>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-            </div>
+              </div>
+            </template>
+          </div>
         </div>
+      </div>
     </div>
 
     <Upload
-        v-if='modal.upload'
-        @certs='p12upload($event)'
-        @close='modal.upload = false'
-        @err='err = $event'
+      v-if='modal.upload'
+      @certs='p12upload($event)'
+      @close='modal.upload = false'
+      @err='err = $event'
     />
 
     <LoginCertModal
-        v-if='modal.login'
-        @certs='marti($event)'
-        @close='modal.login = false'
-        @err='err = $event'
+      v-if='modal.login'
+      @certs='marti($event)'
+      @close='modal.login = false'
+      @err='err = $event'
     />
 
-    <PageFooter/>
-</div>
+    <PageFooter />
+  </div>
 </template>
 
 <script>
@@ -154,6 +195,18 @@ import {
 
 export default {
     name: 'ConnectionNew',
+    components: {
+        Upload,
+        IconPlus,
+        IconLock,
+        IconLogin,
+        TablerDelete,
+        TablerBreadCrumb,
+        LoginCertModal,
+        TablerInput,
+        TablerLoading,
+        PageFooter,
+    },
     data: function() {
         return {
             loading: true,
@@ -245,18 +298,6 @@ export default {
             });
             this.$router.push('/connection');
         }
-    },
-    components: {
-        Upload,
-        IconPlus,
-        IconLock,
-        IconLogin,
-        TablerDelete,
-        TablerBreadCrumb,
-        LoginCertModal,
-        TablerInput,
-        TablerLoading,
-        PageFooter,
     }
 }
 </script>
