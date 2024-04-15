@@ -1,115 +1,139 @@
 <template>
-<div>
+  <div>
     <div class='page-wrapper'>
-        <div class="page-header d-print-none">
-            <div class="container-xl">
-                <div class="row g-2 align-items-center">
-                    <div class="col d-flex">
-                        <TablerBreadCrumb/>
-                    </div>
-                </div>
+      <div class='page-header d-print-none'>
+        <div class='container-xl'>
+          <div class='row g-2 align-items-center'>
+            <div class='col d-flex'>
+              <TablerBreadCrumb />
             </div>
+          </div>
         </div>
+      </div>
     </div>
 
-    <TablerLoading v-if='loading.data' desc='Loading Data'/>
-    <div v-else class='page-body'>
-        <div class='container-xl'>
-            <div class='row row-deck row-cards'>
-                <div class="col-lg-12">
-                    <div class="card">
-                        <div class='card-header'>
-                            <h3 class='card-title'>Data <span v-text='data.id'/></h3>
-                        </div>
-                        <div class="card-body">
-                            <div class='row row-cards'>
-                                <div class="col-md-12">
-                                    <TablerInput
-                                        label='Data Name'
-                                        description='The human readable name of the Data Layer'
-                                        v-model='data.name'
-                                        :error='errors.name'
-                                    />
-                                </div>
-                                <div class="col-md-12">
-                                    <TablerToggle
-                                        label='Auto Transform'
-                                        description='If Enabled, Assets uploaded to the Data package will be automatically transformed into Cloud & TAK Native formats'
-                                        v-model='data.auto_transform'
-                                    />
-                                </div>
-                                <div class='col-md-12'>
-                                    <TablerInput
-                                        label='Mission Sync Groups'
-                                        description='Choose which TAK Channels this Data Sync should be availiable in'
-                                        v-model='mission_groups'
-                                        disabled
-                                    >
-                                        <IconSettings v-if='!$route.params.dataid' @click='modal = true' size='32' class='cursor-pointer'/>
-                                    </TablerInput>
+    <TablerLoading
+      v-if='loading.data'
+      desc='Loading Data'
+    />
+    <div
+      v-else
+      class='page-body'
+    >
+      <div class='container-xl'>
+        <div class='row row-deck row-cards'>
+          <div class='col-lg-12'>
+            <div class='card'>
+              <div class='card-header'>
+                <h3 class='card-title'>
+                  Data <span v-text='data.id' />
+                </h3>
+              </div>
+              <div class='card-body'>
+                <div class='row row-cards'>
+                  <div class='col-md-12'>
+                    <TablerInput
+                      v-model='data.name'
+                      label='Data Name'
+                      description='The human readable name of the Data Layer'
+                      :error='errors.name'
+                    />
+                  </div>
+                  <div class='col-md-12'>
+                    <TablerToggle
+                      v-model='data.auto_transform'
+                      label='Auto Transform'
+                      description='If Enabled, Assets uploaded to the Data package will be automatically transformed into Cloud & TAK Native formats'
+                    />
+                  </div>
+                  <div class='col-md-12'>
+                    <TablerInput
+                      v-model='mission_groups'
+                      label='Mission Sync Groups'
+                      description='Choose which TAK Channels this Data Sync should be availiable in'
+                      disabled
+                    >
+                      <IconSettings
+                        v-if='!$route.params.dataid'
+                        size='32'
+                        class='cursor-pointer'
+                        @click='modal = true'
+                      />
+                    </TablerInput>
 
-                                    <GroupSelectModal
-                                        v-if='modal'
-                                        :connection='$route.params.connectionid'
-                                        @close='modal = false'
-                                        v-model='data.mission_groups'
-                                    />
-                                </div>
-                                <div class='col-md-12'>
-                                    <TablerEnum
-                                        label='Mission Default Role'
-                                        :disabled='$route.params.dataid'
-                                        v-model='data.mission_role'
-                                        description='The Default role assigned to subscribers to the mission'
-                                        :options='["MISSION_OWNER", "MISSION_SUBSCRIBER", "MISSION_READONLY_SUBSCRIBER"]'
-                                    />
-                                </div>
-                                <div class="col-md-12">
-                                    <TablerToggle
-                                        label='Mission Sync'
-                                        description='If Enabled, Assets will be uploaded to the Mission'
-                                        v-model='data.mission_sync'
-                                    />
-                                </div>
-                                <div class="col-md-12">
-                                    <TablerToggle
-                                        label='Mission Layer Diff'
-                                        description='
+                    <GroupSelectModal
+                      v-if='modal'
+                      v-model='data.mission_groups'
+                      :connection='$route.params.connectionid'
+                      @close='modal = false'
+                    />
+                  </div>
+                  <div class='col-md-12'>
+                    <TablerEnum
+                      v-model='data.mission_role'
+                      label='Mission Default Role'
+                      :disabled='$route.params.dataid'
+                      description='The Default role assigned to subscribers to the mission'
+                      :options='["MISSION_OWNER", "MISSION_SUBSCRIBER", "MISSION_READONLY_SUBSCRIBER"]'
+                    />
+                  </div>
+                  <div class='col-md-12'>
+                    <TablerToggle
+                      v-model='data.mission_sync'
+                      label='Mission Sync'
+                      description='If Enabled, Assets will be uploaded to the Mission'
+                    />
+                  </div>
+                  <div class='col-md-12'>
+                    <TablerToggle
+                      v-model='data.mission_diff'
+                      label='Mission Layer Diff'
+                      description='
                                             If Enabled only a single layer will be allowed to be associated with the data sync
                                             and CoTs submitted will be diff against existing CoTs, with CoTs not in each new
                                             FeatureSet being removed from the Mission Sync
                                         '
-                                        v-model='data.mission_diff'
-                                    />
-                                </div>
-                                <div class="col-md-12">
-                                    <TablerInput
-                                        label='Data Description'
-                                        description='The human readable description of the Data Layer'
-                                        :rows='6'
-                                        v-model='data.description'
-                                        :error='errors.description'
-                                    />
-                                </div>
-                                <div class='d-flex'>
-                                    <div v-if='$route.params.dataid'>
-                                        <TablerDelete @delete='deleteData' label='Delete Data'/>
-                                    </div>
-                                    <div class='ms-auto'>
-                                        <a v-if='$route.params.dataid' @click='create' class="cursor-pointer btn btn-primary">Update Data</a>
-                                        <a v-else @click='create' class="cursor-pointer btn btn-primary">Create Data</a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                    />
+                  </div>
+                  <div class='col-md-12'>
+                    <TablerInput
+                      v-model='data.description'
+                      label='Data Description'
+                      description='The human readable description of the Data Layer'
+                      :rows='6'
+                      :error='errors.description'
+                    />
+                  </div>
+                  <div class='d-flex'>
+                    <div v-if='$route.params.dataid'>
+                      <TablerDelete
+                        label='Delete Data'
+                        @delete='deleteData'
+                      />
                     </div>
+                    <div class='ms-auto'>
+                      <a
+                        v-if='$route.params.dataid'
+                        class='cursor-pointer btn btn-primary'
+                        @click='create'
+                      >Update Data</a>
+                      <a
+                        v-else
+                        class='cursor-pointer btn btn-primary'
+                        @click='create'
+                      >Create Data</a>
+                    </div>
+                  </div>
                 </div>
+              </div>
             </div>
+          </div>
         </div>
+      </div>
     </div>
 
-    <PageFooter/>
-</div>
+    <PageFooter />
+  </div>
 </template>
 
 <script>
@@ -130,6 +154,17 @@ import GroupSelectModal from './util/GroupSelectModal.vue';
 
 export default {
     name: 'DataEdit',
+    components: {
+        IconSettings,
+        PageFooter,
+        GroupSelectModal,
+        TablerBreadCrumb,
+        TablerEnum,
+        TablerToggle,
+        TablerDelete,
+        TablerInput,
+        TablerLoading
+    },
     data: function() {
         return {
             modal: false,
@@ -211,17 +246,6 @@ export default {
                 throw err;
             }
         }
-    },
-    components: {
-        IconSettings,
-        PageFooter,
-        GroupSelectModal,
-        TablerBreadCrumb,
-        TablerEnum,
-        TablerToggle,
-        TablerDelete,
-        TablerInput,
-        TablerLoading
     }
 }
 </script>
