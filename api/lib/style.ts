@@ -139,7 +139,8 @@ export default class Style {
         // Properties that support Templating
         for (const prop of ['remarks', 'callsign']) {
             if (!feature.properties[prop]) continue;
-            feature.properties[prop] = handlebars.compile(feature.properties[prop])(feature.properties);
+            if (!feature.properties.metadata) feature.properties.metadata = {};
+            feature.properties[prop] = handlebars.compile(feature.properties[prop])(feature.properties.metadata);
         }
     }
 }
