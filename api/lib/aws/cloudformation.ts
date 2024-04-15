@@ -85,7 +85,7 @@ export default class CloudFormation {
         const cf = new AWSCloudFormation.CloudFormationClient({ region: process.env.AWS_DEFAULT_REGION });
 
         try {
-            const res = await cf.send(new AWSCloudFormation.DescribeStacksCommand({
+            await cf.send(new AWSCloudFormation.DescribeStacksCommand({
                 StackName: this.stdname(config, layerid)
             }));
 
@@ -114,4 +114,4 @@ export default class CloudFormation {
             StackName: this.stdname(config, layerid)
         }));
     }
-};
+}

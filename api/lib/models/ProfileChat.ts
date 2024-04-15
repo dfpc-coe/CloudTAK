@@ -1,4 +1,4 @@
-import Modeler, { Param } from '@openaddresses/batch-generic';
+import Modeler from '@openaddresses/batch-generic';
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import { ProfileChat } from '../schema.js';
 import { sql, eq } from 'drizzle-orm';

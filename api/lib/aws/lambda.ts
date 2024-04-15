@@ -1,4 +1,4 @@
-// @ts-ignore
+// @ts-expect-error No Type Definitions
 import cf from '@openaddresses/cloudfriend';
 import { InferSelectModel } from 'drizzle-orm';
 import { Layer } from '../schema.js';
@@ -143,4 +143,4 @@ export default class Lambda {
 
         return stack;
     }
-};
+}
