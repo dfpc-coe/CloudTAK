@@ -72,7 +72,7 @@ export default class Flight {
                         migrationsFolder: (new URL('../migrations', import.meta.url)).pathname,
                         schema: pgschema
                     });
-                    // @ts-expect-error
+                    // @ts-expect-error Not present in type def
                     pool.session.client.end();
                 }
             } catch (err) {
@@ -265,7 +265,7 @@ export default class Flight {
     landing() {
         test('test server landing - api', (t) => {
             this.srv.close(async () => {
-                // @ts-expect-error
+                // @ts-expect-error not present in type def
                 this.config.pg.session.client.end();
                 this.config.cacher.end();
                 delete this.config;

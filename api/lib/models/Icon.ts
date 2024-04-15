@@ -1,4 +1,4 @@
-import Modeler, { Param, GenericList, GenericListInput } from '@openaddresses/batch-generic';
+import Modeler, { GenericListInput } from '@openaddresses/batch-generic';
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import * as pgschema from '../schema.js';
 import { sql, eq, asc, desc } from 'drizzle-orm';
