@@ -1,9 +1,9 @@
 import js from "@eslint/js";
-import n from "@eslint/js";
+import nodePlugin from "eslint-plugin-n";
 
 export default [
     js.configs.recommended,
-    n.configs.recommended,
+    nodePlugin.configs["flat/recommended-module"],
     {
         "rules": {
             "no-console": 0,
