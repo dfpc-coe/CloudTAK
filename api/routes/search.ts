@@ -17,7 +17,7 @@ export default async function router(schema: Schema, config: Config) {
             longitude: Type.Number()
         }),
         res: Type.Object({
-            weather: FetchHourly
+            weather: Type.Union([FetchHourly, Type.Null()])
         })
     }, async (req, res) => {
         try {
@@ -26,7 +26,12 @@ export default async function router(schema: Schema, config: Config) {
                 weather: null
             };
 
-            response.weather = await weather.get(req.params.longitude, req.params.latitude);
+            try {
+                response.weather = await weather.get(req.params.longitude, req.params.latitude);
+            } catch (err) {
+                console.error('Weather Fetch Error', err)
+                response.weather = null;
+            }
     
             return res.json(response);
         } catch (err) {
