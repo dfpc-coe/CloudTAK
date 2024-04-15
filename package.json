@@ -27,7 +27,7 @@
     },
     "devDependencies": {
         "@types/xml2js": "^0.4.11",
-        "eslint": "^8.9.0",
-        "eslint-plugin-node": "^11.1.0"
+        "eslint": "^9.0.0",
+        "eslint-plugin-n": "^17.2.1"
     }
 }
