@@ -4,7 +4,7 @@
     "version": "1.2.0",
     "description": "Facilitate ETL operations to bring non-TAK sources into a TAK Server",
     "scripts": {
-        "lint": "eslint cloudformation/*.js cloudformation/lib/*.js",
+        "lint": "eslint cloudformation/**/*.js",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "engines": {
@@ -27,7 +27,7 @@
     },
     "devDependencies": {
         "@types/xml2js": "^0.4.11",
-        "eslint": "^8.9.0",
-        "eslint-plugin-node": "^11.1.0"
+        "eslint": "^9.0.0",
+        "eslint-plugin-n": "^17.2.1"
     }
 }

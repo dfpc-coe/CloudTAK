@@ -1,5 +1,3 @@
-// @ts-ignore
-import cf from '@openaddresses/cloudfriend';
 import AWSBatch from '@aws-sdk/client-batch';
 import Config from '../config.js';
 import jwt from 'jsonwebtoken';
@@ -24,7 +22,7 @@ export default class Batch {
     static async submitUser(config: Config, email: string, asset: string, task: object = {}): Promise<AWSBatch.SubmitJobCommandOutput> {
         const batch = new AWSBatch.BatchClient({ region: process.env.AWS_DEFAULT_REGION });
 
-        let jobName = `profile-${email.replace('@', '_at_').replace(/[^a-zA-Z0-9]/g, '_')}-${asset.replace(/[^a-zA-Z0-9]/g, '_').slice(0, 50)}`;
+        const jobName = `profile-${email.replace('@', '_at_').replace(/[^a-zA-Z0-9]/g, '_')}-${asset.replace(/[^a-zA-Z0-9]/g, '_').slice(0, 50)}`;
 
         const batchres = await batch.send(new AWSBatch.SubmitJobCommand({
             jobName,
@@ -48,7 +46,7 @@ export default class Batch {
     static async submitData(config: Config, data: InferSelectModel<typeof Data>, asset: string, task: object = {}): Promise<AWSBatch.SubmitJobCommandOutput> {
         const batch = new AWSBatch.BatchClient({ region: process.env.AWS_DEFAULT_REGION });
 
-        let jobName = `data-${data.id}-${asset.replace(/[^a-zA-Z0-9]/g, '_').slice(0, 50)}`;
+        const jobName = `data-${data.id}-${asset.replace(/[^a-zA-Z0-9]/g, '_').slice(0, 50)}`;
 
         const batchres = await batch.send(new AWSBatch.SubmitJobCommand({
             jobName,
@@ -85,7 +83,7 @@ export default class Batch {
         if (!job.status) throw new Err(400, null, 'AWS Does not report a Status')
 
         const name = job.jobName.replace(/data-[0-9]+-/, '');
-        let asset: string[] = [...name];
+        const asset: string[] = [...name];
         asset[name.lastIndexOf('_')] = '.';
 
         return {
@@ -115,7 +113,7 @@ export default class Batch {
             if (!job.jobName) throw new Err(400, null, 'AWS Does not report a jobName')
             if (!job.jobId) throw new Err(400, null, 'AWS Does not report a jobId')
             const name = job.jobName.replace(`${prefix}-`, '');
-            let asset: string[] = [...name];
+            const asset: string[] = [...name];
             asset[name.lastIndexOf('_')] = '.';
 
             return {
@@ -131,4 +129,4 @@ export default class Batch {
 
         return final;
     }
-};
+}

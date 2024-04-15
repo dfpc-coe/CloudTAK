@@ -1,10 +1,5 @@
 import TAKAPI from '../tak-api.js';
-import TAK from '@tak-ps/node-tak';
-import { CoT } from '@tak-ps/node-tak';
 import { Type, Static } from '@sinclair/typebox';
-import Err from '@openaddresses/batch-error';
-import { Readable } from 'node:stream'
-import { Feature } from 'geojson';
 
 export const Package = Type.Object({
     EXPIRATION: Type.String(),

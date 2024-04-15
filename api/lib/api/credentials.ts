@@ -32,7 +32,6 @@ export default class {
             }
         }
 
-        //@ts-ignore
         const createCSR = pem.promisified.createCSR;
 
         const keys: {

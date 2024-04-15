@@ -1,4 +1,3 @@
-// @ts-ignore
 import cf from '@openaddresses/cloudfriend';
 import { InferSelectModel } from 'drizzle-orm';
 import { Layer } from '../schema.js';
@@ -143,4 +142,4 @@ export default class Lambda {
 
         return stack;
     }
-};
+}
