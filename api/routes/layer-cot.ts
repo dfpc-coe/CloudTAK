@@ -89,7 +89,7 @@ export default async function router(schema: Schema, config: Config) {
                         }
                     }
 
-                    const existMap: Map<String, Feature> = new Map()
+                    const existMap: Map<string, Feature> = new Map()
                     for (const feat of features) {
                         existMap.set(String(feat.id), feat);
                     }
@@ -97,7 +97,7 @@ export default async function router(schema: Schema, config: Config) {
                     for (const feat of req.body.features) {
                         const cot = CoT.from_geojson(feat);
 
-                        let exist = existMap.get(String(feat.id));
+                        const exist = existMap.get(String(feat.id));
                         if (exist && data.mission_diff) {
                             const b = CoT.from_geojson(exist);
                             if (!cot.isDiff(b)) continue;
