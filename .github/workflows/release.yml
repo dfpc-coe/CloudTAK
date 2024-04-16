@@ -15,6 +15,10 @@ jobs:
         id: tag
         uses: dawidd6/action-get-tag@v1
 
+      - id: changelog
+        name: Generate CHANGELOG
+        run: echo "body=$(./release ${{steps.tag.outputs.tag}})" >> "$GITHUB_OUTPUT"
+
       - name: Github Release
         uses: softprops/action-gh-release@v2
-
+        body: ${{steps.changelog.outputs.body}}

@@ -1,0 +1,8 @@
+if [[ -z "$1" ]]; then
+    echo "No Version Specified: ./release <version>"
+    exit 1
+fi
+
+set -euo pipefail
+
+grep -Pzo "### ${1}(?s).*?(?=###)" CHANGELOG.md
