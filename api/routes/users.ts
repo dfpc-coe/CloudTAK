@@ -3,10 +3,9 @@ import { sql } from 'drizzle-orm';
 import Schema from '@openaddresses/batch-schema';
 import { GenericListOrder } from '@openaddresses/batch-generic';
 import Err from '@openaddresses/batch-error';
-import Auth, { AuthResource } from '../lib/auth.js';
+import Auth from '../lib/auth.js';
 import { ProfileResponse } from '../lib/types.js'
 import Config from '../lib/config.js';
-import { TAKRole, TAKGroup } from '../lib/api/types.js'
 import { Profile } from '../lib/schema.js';
 
 export default async function router(schema: Schema, config: Config) {

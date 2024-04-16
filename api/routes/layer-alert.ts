@@ -6,7 +6,6 @@ import Cacher from '../lib/cacher.js';
 import Auth, { AuthResourceAccess } from '../lib/auth.js';
 import { LayerAlert } from '../lib/schema.js';
 import Config from '../lib/config.js';
-import { Param } from '@openaddresses/batch-generic';
 import { sql, eq, InferSelectModel } from 'drizzle-orm';
 import { StandardResponse, LayerAlertResponse } from '../lib/types.js';
 
@@ -123,7 +122,7 @@ export default async function router(schema: Schema, config: Config) {
                 return await config.models.Layer.from(req.params.layerid)
             });
 
-            const list = await config.models.LayerAlert.delete(eq(layer.id, LayerAlert.layer))
+            await config.models.LayerAlert.delete(eq(layer.id, LayerAlert.layer))
 
             res.json({
                 status: 200,

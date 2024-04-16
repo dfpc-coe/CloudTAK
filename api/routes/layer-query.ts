@@ -5,7 +5,6 @@ import Dynamo from '../lib/aws/dynamo.js';
 import Config from '../lib/config.js';
 import Cacher from '../lib/cacher.js';
 import Auth, { AuthResourceAccess }  from '../lib/auth.js';
-import { Response } from 'express';
 
 export default async function router(schema: Schema, config: Config) {
     const ddb = new Dynamo(config.StackName);

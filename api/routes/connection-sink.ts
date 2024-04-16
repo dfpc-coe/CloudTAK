@@ -2,7 +2,6 @@ import Err from '@openaddresses/batch-error';
 import Auth, { AuthResourceAccess } from '../lib/auth.js';
 import CW from '../lib/aws/metric.js';
 import Config from '../lib/config.js';
-import { Response } from 'express';
 import { Param } from '@openaddresses/batch-generic';
 import { sql } from 'drizzle-orm';
 import { Type } from '@sinclair/typebox'
@@ -205,7 +204,7 @@ export default async function router(schema: Schema, config: Config) {
                 }
             }
 
-            let ts_arr = Array.from(timestamps).sort((d1, d2) => {
+            const ts_arr = Array.from(timestamps).sort((d1, d2) => {
                 return d1.getTime() - d2.getTime();
             }).map((d) => {
                 return String(d);

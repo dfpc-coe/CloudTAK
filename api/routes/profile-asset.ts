@@ -3,16 +3,12 @@ import { StandardResponse, ProfileAssetResponse } from '../lib/types.js';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import busboy from 'busboy';
-import fs from 'node:fs/promises';
-import path from 'path';
 import Auth from '../lib/auth.js';
 import S3 from '../lib/aws/s3.js';
 import Stream from 'node:stream';
 import Batch from '../lib/aws/batch.js';
 import jwt from 'jsonwebtoken';
-import { includesWithGlob } from "array-includes-with-glob";
 import assetList from '../lib/asset.js';
-import { Response } from 'express';
 import Config from '../lib/config.js';
 
 export default async function router(schema: Schema, config: Config) {

@@ -64,7 +64,8 @@ export default async function router(schema: Schema, config: Config) {
                 resources: [{ access: AuthResourceAccess.DATA, id: req.params.dataid }]
             });
 
-            const data = await config.models.Data.from(req.params.dataid);
+            // TODO Check that data is part of connection
+            await config.models.Data.from(req.params.dataid);
 
             const job = await Batch.job(config, req.params.jobid);
 
@@ -98,7 +99,7 @@ export default async function router(schema: Schema, config: Config) {
                 resources: [{ access: AuthResourceAccess.DATA, id: req.params.dataid }]
             });
 
-            const data = await config.models.Data.from(req.params.dataid);
+            await config.models.Data.from(req.params.dataid);
 
             const job = await Batch.job(config, req.params.jobid);
 
