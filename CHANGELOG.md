@@ -10,6 +10,10 @@
 
 ## Version History
 
+### v1.3.2 - 2024-04-15
+
+- :rocket: Attempt to get GH Actions releaser to incldue CHANGESET entries
+
 ### v1.3.1 - 2024-04-15
 
 - :rocket: Attempt to get GH Actions releaser to incldue CHANGESET entries
