@@ -79,7 +79,7 @@ export default async function router(schema: Schema, config: Config) {
                     const inputFeats = new Set(req.body.uids);
                     const features = await api.Mission.latestFeats(data.name, { token: data.mission_token });
 
-                    for (const feat of features) {
+                    for (const feat of features.values()) {
                         if (!inputFeats.has(String(feat.id))) {
                             await api.Mission.detachContents(
                                 data.name,
@@ -88,11 +88,31 @@ export default async function router(schema: Schema, config: Config) {
                             );
                         }
                     }
-                }
 
-                for (const feat of req.body.features) {
-                    feat.properties.dest = [{ mission: data.name }];
-                    cots.push(CoT.from_geojson(feat))
+                    const existMap: Map<String, Feature> = new Map()
+                    for (const feat of features) {
+                        existMap.set(String(feat.id), feat);
+                    }
+
+                    for (const feat of req.body.features) {
+                        const cot = CoT.from_geojson(feat);
+
+                        let exist = existMap.get(String(feat.id));
+                        if (exist && data.mission_diff) {
+                            const b = CoT.from_geojson(exist);
+                            if (!cot.isDiff(b)) continue;
+                            console.error('DIFFERENT');
+                        }
+
+                        cot.addDest({ mission: data.name });
+                        cots.push(cot)
+                    }
+                } else {
+                    for (const feat of req.body.features) {
+                        const cot = CoT.from_geojson(feat);
+                        cot.addDest({ mission: data.name });
+                        cots.push(cot)
+                    }
                 }
             } else {
                 throw new Err(400, null, 'Either connection or data must be set');
