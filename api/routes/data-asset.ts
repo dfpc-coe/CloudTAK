@@ -101,7 +101,7 @@ export default async function router(schema: Schema, config: Config) {
             }
 
             try {
-                mission = await DataMission.sync(config, data);
+                await DataMission.sync(config, data);
             } catch (err) {
                 console.error(err)
             }

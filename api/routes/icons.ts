@@ -214,7 +214,6 @@ export default async function router(schema: Schema, config: Config) {
                     }
 
                     archive.append(Buffer.from(icon.data, 'base64'), { name: icon.name });
-                    // @ts-expect-error No XML Schema
                     xmljson.iconset.icon.push({ $: { name: path.parse(icon.name).base, type2525b: icon.type2525b } })
                 }
 
