@@ -15,7 +15,6 @@ import Schema from '@openaddresses/batch-schema';
 import { Geometry, BBox } from 'geojson';
 import { Type } from '@sinclair/typebox'
 import { StandardResponse, BasemapResponse } from '../lib/types.js';
-import BasemapManager from '../lib/basemap.js';
 import { Basemap } from '../lib/schema.js';
 
 enum BasemapType {
@@ -71,7 +70,7 @@ export default async function router(schema: Schema, config: Config) {
                 });
 
                 let buffer: Buffer;
-                bb.on('file', async (fieldname, file, blob) => {
+                bb.on('file', async (fieldname, file) => {
                     try {
                         buffer = await stream2buffer(file);
                     } catch (err) {
@@ -378,7 +377,7 @@ export default async function router(schema: Schema, config: Config) {
             }
 
 
-            // @ts-ignore
+            // @ts-expect-error Doesnt meet TS def
             return Readable.fromWeb(proxy.body).pipe(res);
         } catch (err) {
             return Err.respond(err, res);

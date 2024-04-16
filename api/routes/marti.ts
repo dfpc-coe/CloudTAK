@@ -2,7 +2,7 @@ import { Type } from '@sinclair/typebox'
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import { GenericMartiResponse } from '../lib/types.js';
-import Auth, { AuthUser, AuthResource } from '../lib/auth.js';
+import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
 import { Contact } from '../lib/api/contacts.js'
 import TAKAPI, {

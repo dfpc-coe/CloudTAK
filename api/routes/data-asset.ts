@@ -2,8 +2,6 @@ import { Static, Type } from '@sinclair/typebox'
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import busboy from 'busboy';
-import fs from 'node:fs/promises';
-import path from 'path';
 import Auth, { AuthResourceAccess }  from '../lib/auth.js';
 import S3 from '../lib/aws/s3.js';
 import Stream from 'node:stream';
@@ -17,9 +15,7 @@ import { InferSelectModel } from 'drizzle-orm';
 import { Data } from '../lib/schema.js';
 import { StandardResponse, AssetResponse, GenericMartiResponse } from '../lib/types.js';
 import TAKAPI, {
-    APIAuthToken,
     APIAuthCertificate,
-    APIAuthPassword
 } from '../lib/tak-api.js';
 
 export default async function router(schema: Schema, config: Config) {
@@ -100,12 +96,12 @@ export default async function router(schema: Schema, config: Config) {
 
             // @ts-expect-error Morgan will throw an error after not getting req.ip and there not being req.connection.remoteAddress
             req.connection = {
-                // @ts-expect-error
+                // @ts-expect-error Not in spec
                 remoteAddress: req._remoteAddress || '127.0.0.1'
             }
 
             try {
-                const mission = await DataMission.sync(config, data);
+                mission = await DataMission.sync(config, data);
             } catch (err) {
                 console.error(err)
             }
@@ -246,7 +242,7 @@ export default async function router(schema: Schema, config: Config) {
             const file = `${req.params.asset}.${req.params.ext}`;
             try {
                 if (data.mission_sync) {
-                    let mission = await api.Mission.get(data.name, {}, {
+                    const mission = await api.Mission.get(data.name, {}, {
                         token: data.mission_token
                     });
 

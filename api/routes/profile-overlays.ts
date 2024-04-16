@@ -6,14 +6,11 @@ import Config from '../lib/config.js';
 import Schema from '@openaddresses/batch-schema';
 import S3 from '../lib/aws/s3.js';
 import Err from '@openaddresses/batch-error';
-import Auth, { AuthResource } from '../lib/auth.js';
+import Auth from '../lib/auth.js';
 import { StandardResponse, ProfileOverlayResponse } from '../lib/types.js'
-import { Response } from 'express';
 import { sql } from 'drizzle-orm';
 import TAKAPI, {
-    APIAuthToken,
     APIAuthCertificate,
-    APIAuthPassword
 } from '../lib/tak-api.js';
 
 export default async function router(schema: Schema, config: Config) {

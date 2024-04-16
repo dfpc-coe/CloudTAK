@@ -7,7 +7,6 @@ import fs from 'node:fs/promises';
 import Err from '@openaddresses/batch-error';
 import Config from '../lib/config.js';
 import Sprites from '../lib/sprites.js';
-import Cacher from '../lib/cacher.js';
 import archiver from 'archiver';
 import xml2js from 'xml2js';
 import { Param } from '@openaddresses/batch-generic';
@@ -215,7 +214,7 @@ export default async function router(schema: Schema, config: Config) {
                     }
 
                     archive.append(Buffer.from(icon.data, 'base64'), { name: icon.name });
-                    // @ts-ignore
+                    // @ts-expect-error No XML Schema
                     xmljson.iconset.icon.push({ $: { name: path.parse(icon.name).base, type2525b: icon.type2525b } })
                 }
 
@@ -442,7 +441,8 @@ export default async function router(schema: Schema, config: Config) {
                 throw new Err(400, null, 'Only System Admin can edit Server Resource');
             }
 
-            const icon = await config.models.Icon.delete(sql`${req.params.iconset} = iconset AND ${req.params.icon} = name`);
+            await config.models.Icon.delete(sql`${req.params.iconset} = iconset AND ${req.params.icon} = name`);
+
             return res.json({
                 status: 200,
                 message: 'Icon Deleted'

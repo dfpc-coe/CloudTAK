@@ -1,17 +1,12 @@
 import { Type } from '@sinclair/typebox'
-import TAK from '@tak-ps/node-tak';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
 import { GenericMartiResponse } from '../lib/types.js';
 import { MissionSubscriber, Mission, ChangesInput } from '../lib/api/mission.js';
-import { Profile } from '../lib/schema.js';
-import S3 from '../lib/aws/s3.js';
 import TAKAPI, {
-    APIAuthToken,
     APIAuthCertificate,
-    APIAuthPassword
 } from '../lib/tak-api.js';
 
 export default async function router(schema: Schema, config: Config) {
@@ -313,7 +308,7 @@ export default async function router(schema: Schema, config: Config) {
 
             // @ts-expect-error Morgan will throw an error after not getting req.ip and there not being req.connection.remoteAddress
             req.connection = {
-                // @ts-expect-error
+                // @ts-expect-error not a known type
                 remoteAddress: req._remoteAddress
             }
 
