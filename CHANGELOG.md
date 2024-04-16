@@ -10,6 +10,10 @@
 
 ## Version History
 
+### v1.4.0 - 2024-04-15
+
+- :rocket: `UI` Remove ARCGIS_TIMEZONE option now that config.timezone does the same thing generically
+
 ### v1.3.3 - 2024-04-15
 
 - :rocket: Attempt to get GH Actions releaser to include CHANGESET entries
