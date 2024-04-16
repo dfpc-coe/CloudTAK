@@ -35,7 +35,6 @@ async function listTasks(): Promise<{
         tasks.get(match[1]).push(match[2]);
     }
 
-    const taskarr = new Array()
     for (const key of tasks.keys()) {
         tasks.set(key, semver.desc(tasks.get(key)));
     }
@@ -83,7 +82,7 @@ export default async function router(schema: Schema, config: Config) {
             await Auth.is_auth(config, req);
 
             // Stuck with this approach for now - https://github.com/aws/containers-roadmap/issues/418
-            const { total, tasks } = await listTasks();
+            const { tasks } = await listTasks();
 
             return res.json({
                 total: tasks.get(req.params.task).length || 0,
@@ -107,7 +106,7 @@ export default async function router(schema: Schema, config: Config) {
         try {
             await Auth.is_auth(config, req);
 
-            const { total, tasks } = await listTasks();
+            const { tasks } = await listTasks();
 
             const versions = tasks.get(req.params.task);
             if (!versions) throw new Err(400, null, 'Task does not exist');

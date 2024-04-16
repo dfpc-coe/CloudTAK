@@ -4,12 +4,8 @@ import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
-import bodyparser from 'body-parser';
-import S3 from '../lib/aws/s3.js';
 import TAKAPI, {
-    APIAuthToken,
     APIAuthCertificate,
-    APIAuthPassword
 } from '../lib/tak-api.js';
 
 export default async function router(schema: Schema, config: Config) {

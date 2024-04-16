@@ -6,7 +6,7 @@ import { Data } from '../lib/schema.js';
 import Config from '../lib/config.js';
 import S3 from '../lib/aws/s3.js';
 import { Param } from '@openaddresses/batch-generic';
-import { sql, eq } from 'drizzle-orm';
+import { sql } from 'drizzle-orm';
 import DataMission from '../lib/data-mission.js';
 import { GenericListOrder } from '@openaddresses/batch-generic';
 import { StandardResponse, DataResponse, DataListResponse } from '../lib/types.js';
@@ -69,10 +69,10 @@ export default async function router(schema: Schema, config: Config) {
                 ]
             });
 
-            let data = await config.models.Data.from(req.params.dataid);
+            const data = await config.models.Data.from(req.params.dataid);
 
             try {
-                const mission = await DataMission.sync(config, data);
+                await DataMission.sync(config, data);
             } catch (err) {
                 return res.json({
                     mission_exists: false,
@@ -164,7 +164,7 @@ export default async function router(schema: Schema, config: Config) {
             });
 
             try {
-                const mission = await DataMission.sync(config, data);
+                await DataMission.sync(config, data);
             } catch (err) {
                 return res.json({
                     mission_exists: false,
@@ -213,13 +213,13 @@ export default async function router(schema: Schema, config: Config) {
                 throw new Err(400, null, 'MissionDiff can only be enabled with a single layer')
             }
 
-            let data = await config.models.Data.commit(req.params.dataid, {
+            const data = await config.models.Data.commit(req.params.dataid, {
                 updated: sql`Now()`,
                 ...req.body
             });
 
             try {
-                const mission = await DataMission.sync(config, data);
+                await DataMission.sync(config, data);
             } catch (err) {
                 return res.json({
                     mission_exists: false,
@@ -255,10 +255,10 @@ export default async function router(schema: Schema, config: Config) {
                 ]
             });
 
-            let data = await config.models.Data.from(req.params.dataid);
+            const data = await config.models.Data.from(req.params.dataid);
 
             try {
-                const mission = await DataMission.sync(config, data);
+                await DataMission.sync(config, data);
             } catch (err) {
                 return res.json({
                     mission_exists: false,

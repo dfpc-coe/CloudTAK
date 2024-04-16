@@ -5,9 +5,7 @@ import Schema from '@openaddresses/batch-schema';
 import { ProfileChat } from '../lib/schema.js';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
-import { Response } from 'express';
 import Config from '../lib/config.js';
-import Modeler from '@openaddresses/batch-generic';
 
 export default async function router(schema: Schema, config: Config) {
     await schema.get('/profile/chat', {

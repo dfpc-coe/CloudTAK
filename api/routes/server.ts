@@ -4,7 +4,6 @@ import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import { sql } from 'drizzle-orm';
 import Config from '../lib/config.js';
-import { Param } from '@openaddresses/batch-generic';
 import { ServerResponse } from '../lib/types.js';
 
 export default async function router(schema: Schema, config: Config) {

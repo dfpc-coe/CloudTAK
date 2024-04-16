@@ -284,7 +284,7 @@ export default async function router(schema: Schema, config: Config) {
                 map.set(String(stat.Timestamps[i]), Number(stat.Values[i]));
             }
 
-            let ts_arr = Array.from(timestamps).sort((d1, d2) => {
+            const ts_arr = Array.from(timestamps).sort((d1, d2) => {
                 return d1.getTime() - d2.getTime();
             }).map((d) => {
                 return String(d);
