@@ -21,4 +21,5 @@ jobs:
 
       - name: Github Release
         uses: softprops/action-gh-release@v2
-        body: ${{steps.changelog.outputs.body}}
+        with:
+          body: ${{steps.changelog.outputs.body}}
