@@ -3,7 +3,7 @@ import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
-import { EsriType, EsriAuth, EsriBase, EsriProxyPortal, EsriProxyServer, EsriProxyLayer } from '../lib/esri.js';
+import { EsriType, EsriBase, EsriProxyPortal, EsriProxyServer, EsriProxyLayer } from '../lib/esri.js';
 
 export default async function router(schema: Schema, config: Config) {
     await schema.post('/esri', {

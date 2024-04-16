@@ -10,6 +10,16 @@
 
 ## Version History
 
+### v1.3.0 - 2024-04-15
+
+- :rocket: `API` Data Sync CoTs are now diffed with existing CoTs to avoid duplicate pushes
+- :bug: `API` Fix saving Profile information when location is not set
+- :bug: `API` Gracefully handle when a weather API request fails
+- :bug: `API` `UI` Fix creation of ESRI Sinks
+- :rocket: `UI` Menus now scroll in place (overflow)
+- :rocket: `UI` `API` Add support for sending CoT Data Packages
+- :rocket: `UI` Updated Overlays panel
+
 ### v1.2.0
 
 - :rocket: `DevOps` Update Build system to output to `dist/` instead of parallel for cleaner building

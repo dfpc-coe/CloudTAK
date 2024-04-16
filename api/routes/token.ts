@@ -3,9 +3,7 @@ import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
-import { promisify } from 'util';
 import jwt from 'jsonwebtoken';
-import { Param } from '@openaddresses/batch-generic';
 import { GenericListOrder } from '@openaddresses/batch-generic';
 import { sql } from 'drizzle-orm';
 import { Token } from '../lib/schema.js';
@@ -87,7 +85,7 @@ export default async function router(schema: Schema, config: Config) {
         try {
             const user = await Auth.as_user(config, req);
 
-            let token = await config.models.Token.from(sql`id = ${Number(req.params.id)}::INT`);
+            const token = await config.models.Token.from(sql`id = ${Number(req.params.id)}::INT`);
             if (token.email !== user.email) throw new Err(400, null, 'You can only modify your own tokens');
 
             await config.models.Token.commit(sql`id = ${token.id}::INT`, {
@@ -112,7 +110,7 @@ export default async function router(schema: Schema, config: Config) {
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
-            let token = await config.models.Token.from(sql`id = ${Number(req.params.id)}::INT`);
+            const token = await config.models.Token.from(sql`id = ${Number(req.params.id)}::INT`);
             if (token.email !== user.email) throw new Err(400, null, 'You can only modify your own tokens');
 
             await config.models.Token.delete(sql`id = ${token.id}::INT`);
