@@ -50,13 +50,6 @@
                     <button v-if='!disabled' @click='filterModal = true' class='btn' style='margin-left: 8px; margin-top: 26px;'><IconFilter size='32'/> Query Editor</button>
                 </div>
             </div>
-            <div class="col-12 mt-3">
-                <TablerTimeZone
-                    label='Date TimeZone Override'
-                    :disabled='disabled'
-                    v-model='environment.ARCGIS_TIMEZONE'
-                />
-            </div>
         </div>
     </div>
     <div class="col-md-12 mt-3">
@@ -98,7 +91,6 @@
 <script>
 import {
     TablerInput,
-    TablerTimeZone,
 } from '@tak-ps/vue-tabler';
 import EsriPortal from './../util/EsriPortal.vue';
 import EsriFilter from './../util/EsriFilter.vue';
@@ -149,7 +141,6 @@ export default {
         IconSquareChevronRight,
         IconChevronDown,
         TablerInput,
-        TablerTimeZone,
         IconFilter,
         EsriFilter
     }
