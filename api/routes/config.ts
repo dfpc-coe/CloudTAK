@@ -22,7 +22,7 @@ export default async function router(schema: Schema, config: Config) {
                 return config.models.Setting.from(key);
             })))).forEach((k) => {
                 if (k.status === 'rejected') return;
-                return final[k.key] = k.value;
+                return final[k.value.key] = k.value.value;
             });
 
             return res.json(final);
