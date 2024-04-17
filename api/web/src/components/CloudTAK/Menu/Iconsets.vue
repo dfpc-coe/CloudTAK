@@ -33,6 +33,7 @@
                         <td>
                             <div class='d-flex align-items-center'>
                                 <span v-text='iconset.name'/>
+                                <span class='ms-auto badge border border-red bg-red text-white'>Admin</span>
                                 <div class='ms-auto'>
                                     <IconDownload v-tooltip='"Download TAK Zip"' size='32' class='cursor-pointer' @click.stop='download(iconset)'/>
                                 </div>
