@@ -10,27 +10,31 @@
 
 ## Version History
 
-### v1.4.1 - 2024-04-15
+### v1.4.2 - 2024-04-17
+
+- :bug: `UI` When uploading an Iconset Zip, redirect to correct import page
+
+### v1.4.1 - 2024-04-17
 
 - :bug: `UI` Avoid CloudTAK Init error if no basemap is configured
 
-### v1.4.0 - 2024-04-15
+### v1.4.0 - 2024-04-16
 
 - :rocket: `UI` Remove ARCGIS_TIMEZONE option now that config.timezone does the same thing generically
 
-### v1.3.3 - 2024-04-15
+### v1.3.3 - 2024-04-16
 
 - :rocket: Attempt to get GH Actions releaser to include CHANGESET entries
 
-### v1.3.2 - 2024-04-15
+### v1.3.2 - 2024-04-16
 
 - :rocket: Attempt to get GH Actions releaser to include CHANGESET entries
 
-### v1.3.1 - 2024-04-15
+### v1.3.1 - 2024-04-16
 
 - :rocket: Attempt to get GH Actions releaser to include CHANGESET entries
 
-### v1.3.0 - 2024-04-15
+### v1.3.0 - 2024-04-16
 
 - :rocket: `API` Data Sync CoTs are now diffed with existing CoTs to avoid duplicate pushes
 - :bug: `API` Fix saving Profile information when location is not set

@@ -91,7 +91,7 @@ export default {
         },
         processUpload: function(body) {
             body = JSON.parse(body);
-            this.$router.push(`/menu/import/${body.imports[0].uid}`);
+            this.$router.push(`/menu/imports/${body.imports[0].uid}`);
         },
         uploadHeaders: function() {
             return {
