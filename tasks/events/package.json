@@ -5,7 +5,7 @@
     "private": true,
     "scripts": {
         "tsc": "tsc --noEmit --watch",
-        "lint": "eslint src/index.ts",
+        "lint": "eslint src/*.ts",
         "build": "tsup --target es2022 --format esm src/index.ts"
     },
     "dependencies": {
@@ -22,10 +22,9 @@
         "@types/aws-lambda": "^8.10.108",
         "@types/jsonwebtoken": "^9.0.5",
         "@types/node": "^20.0.0",
-        "@typescript-eslint/eslint-plugin": "^7.0.0",
-        "@typescript-eslint/parser": "^7.0.0",
         "eslint": "^8.37.0",
         "tsup": "^8.0.0",
-        "typescript": "^5.0.0"
+        "typescript": "^5.0.0",
+        "typescript-eslint": "^7.7.0"
     }
 }

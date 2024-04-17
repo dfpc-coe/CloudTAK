@@ -10,6 +10,12 @@
 
 ## Version History
 
+### v1.5.0 - 2024-04-17
+
+- :bug: `API` More generic fallbacks for parsing ESRI Enterprise Server URLs
+- :arrow_up: `Events` Update all deps
+- :rocket: `Events` Update to Flat ESLint Config and lint api calls
+
 ### v1.4.2 - 2024-04-17
 
 - :bug: `UI` When uploading an Iconset Zip, redirect to correct import page
