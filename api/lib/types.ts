@@ -42,6 +42,10 @@ export const ProfileResponse = Type.Object({
     display_speed: Type.String()
 });
 
+export const OverlayResponse = createSelectSchema(schemas.Overlay, {
+    id: Type.Integer(),
+});
+
 export const ProfileOverlayResponse = createSelectSchema(schemas.ProfileOverlay, {
     id: Type.Integer(),
     pos: Type.Integer(),

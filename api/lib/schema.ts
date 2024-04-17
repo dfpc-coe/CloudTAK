@@ -226,6 +226,16 @@ export const ProfileMission = pgTable('profile_missions', {
     updated: timestamp('updated', { withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
 });
 
+export const Overlay = pgTable('overlays', {
+    id: serial('id').primaryKey(),
+    name: text('name').notNull(),
+    created: timestamp('created', { withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    updated: timestamp('updated', { withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    type: text('type').notNull().default('vector'),
+    styles: json('styles'),
+    url: text('url').notNull()
+});
+
 export const ProfileOverlay = pgTable('profile_overlays', {
     id: serial('id').primaryKey(),
     name: text('name').notNull(),
