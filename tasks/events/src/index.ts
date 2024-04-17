@@ -15,6 +15,7 @@ import API from './api.js';
 export type Event = {
     ID?: string;
     Token?: string;
+    UserToken?: string;
     Bucket: string;
     Key: string;
     Name: string;
@@ -91,6 +92,8 @@ async function genericEvent(md: Event) {
 
             console.error('Import', JSON.stringify(imported));
 
+            const md.UserToken = jwt.sign({ access: 'user', imported.username }, String(process.env.SigningSecret));
+
             const s3 = new S3.S3Client({ region: process.env.AWS_DEFAULT_REGION || 'us-east-1' });
             await pipeline(
                 (await s3.send(new S3.GetObjectCommand({
@@ -103,12 +106,11 @@ async function genericEvent(md: Event) {
             const result = {};
             if (imported.mode === 'Mission') {
                 if (!imported.config.id) throw new Error('No mission name defined');
-                if (!imported.config.token) throw new Error('No token defined');
 
                 const res = await API.uploadMission(md, {
                     name: imported.config.id,
                     filename: imported.name,
-                    token: imported.config.token
+                    token: md.UserToken
                 });
 
                 console.error(JSON.stringify(res));
@@ -224,7 +226,7 @@ async function processIndex(event: Event, xmlstr: string, zip?: StreamZipAsync) 
         const check = await fetch(new URL(`/api/iconset/${iconset.uid}`, process.env.TAK_ETL_API), {
             method: 'GET',
             headers: {
-                'Authorization': `Bearer ${event.Token}`
+                'Authorization': `Bearer ${event.UserToken}`
             },
         });
 
@@ -240,7 +242,7 @@ async function processIndex(event: Event, xmlstr: string, zip?: StreamZipAsync) 
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${event.Token}`
+                'Authorization': `Bearer ${event.UserToken}`
             },
             body: JSON.stringify(iconset)
         });
@@ -260,7 +262,7 @@ async function processIndex(event: Event, xmlstr: string, zip?: StreamZipAsync) 
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${event.Token}`
+                    'Authorization': `Bearer ${event.UserToken}`
                 },
                 body: JSON.stringify({
                     name: lookup.get(icon.$.name).name,
