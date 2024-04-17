@@ -92,7 +92,7 @@ async function genericEvent(md: Event) {
 
             console.error('Import', JSON.stringify(imported));
 
-            const md.UserToken = jwt.sign({ access: 'user', imported.username }, String(process.env.SigningSecret));
+            const md.UserToken = jwt.sign({ access: 'user', email: imported.username }, String(process.env.SigningSecret));
 
             const s3 = new S3.S3Client({ region: process.env.AWS_DEFAULT_REGION || 'us-east-1' });
             await pipeline(
