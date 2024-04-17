@@ -11,7 +11,7 @@ export default async function router(schema: Schema, config: Config) {
         name: 'Get Config',
         group: 'Config',
         description: 'Get Config',
-        query: Type.Array({
+        query: Type.Object({
             keys: Type.Array(Type.String())
         }),
         res: Type.Any()
@@ -19,7 +19,14 @@ export default async function router(schema: Schema, config: Config) {
         try {
             await Auth.as_user(config, req, { admin: true });
 
-            return res.json({});
+            const final: Record<string, string> = {};
+            (await Promise.all((req.query.keys.map((key) => {
+                return config.models.Setting.from(key);
+            })))).map((k) => {
+                return final[k.key] = k.value;
+            });
+
+            return res.json(final);
         } catch (err) {
             return Err.respond(err, res);
         }
