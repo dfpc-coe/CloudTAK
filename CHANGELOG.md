@@ -12,6 +12,8 @@
 
 ### Pending Release
 
+- :rocket: `UI` Push to overlays menu upon adding a new overlay
+- :rocket: `API` Allow admins to flip iconsets between public/private
 - :rocket: `UI` Differentiate between Private & Public Iconsets in UI
 - :tada: `API` Add preliminary support for server-wide default overlays
 - :tada: `API` Add preliminary support for setting server config that are used internally such as Search API Tokens
