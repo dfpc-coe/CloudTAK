@@ -285,6 +285,10 @@ const router = new VueRouter.createRouter({
                 path: 'server',
                 name: 'admin-server',
                 component: () => import('./components/Admin/AdminServer.vue')
+            },{
+                path: 'config',
+                name: 'admin-config',
+                component: () => import('./components/Admin/AdminConfig.vue')
             }]
         },
 

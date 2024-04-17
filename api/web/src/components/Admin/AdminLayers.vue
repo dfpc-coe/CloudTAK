@@ -28,7 +28,7 @@
         <TablerNone
             v-if='!list.items.length'
             label='Layers'
-            @create='$router.push("/layer/new")'
+            :create='false'
         />
         <template v-else>
             <div class='table-responsive'>

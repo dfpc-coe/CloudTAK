@@ -232,6 +232,20 @@
       "when": 1712194930275,
       "tag": "0032_lucky_tempest",
       "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "5",
+      "when": 1713370036581,
+      "tag": "0033_pretty_skreet",
+      "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "5",
+      "when": 1713385048447,
+      "tag": "0034_amazing_tiger_shark",
+      "breakpoints": true
     }
   ]
 }

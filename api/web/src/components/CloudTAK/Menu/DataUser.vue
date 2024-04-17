@@ -81,6 +81,8 @@ export default {
 
                 await this.createOverlay(id, url, a);
             }
+
+            this.$router.push('/menu/overlays');
         },
         deleteProfileAsset: async function(a) {
             this.loading = true;

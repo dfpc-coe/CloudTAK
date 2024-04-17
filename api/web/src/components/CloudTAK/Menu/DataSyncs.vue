@@ -112,6 +112,8 @@ export default {
 
                 await this.createOverlay(id, url, a)
             }
+
+            this.$router.push('/menu/overlays');
         },
         createOverlay: async function(id, url) {
             this.loading = true;
