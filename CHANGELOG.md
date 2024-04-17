@@ -10,6 +10,14 @@
 
 ## Version History
 
+### Pending Release
+
+- :tada: `API` Add preliminary support for setting server config that are used internally such as Search API Tokens
+- :rocket: `UI` Add tooltips to nav panel in upper right hand corner of CloudTAK
+- :bug: `UI` Remove one last instance of `window.std` vs imported `std` call
+- :rocket: `UI` Add server config section of Admin Panel
+- :rocket: `Events` Generate temporary token for imports with scope defined by `username`
+
 ### v1.5.0 - 2024-04-17
 
 - :bug: `API` More generic fallbacks for parsing ESRI Enterprise Server URLs
