@@ -26,6 +26,7 @@ test('Style: Basic Point', async () => {
         properties: {
             color: '#ffffff',
             remarks: 'Test Remarks',
+            metadata: {},
             stale: 123
         },
         geometry: {
