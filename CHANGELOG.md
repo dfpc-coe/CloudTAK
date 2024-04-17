@@ -12,6 +12,8 @@
 
 ### Pending Release
 
+- :rocket: `UI` Differentiate between Private & Public Iconsets in UI
+- :tada: `API` Add preliminary support for server-wide default overlays
 - :tada: `API` Add preliminary support for setting server config that are used internally such as Search API Tokens
 - :rocket: `UI` Add tooltips to nav panel in upper right hand corner of CloudTAK
 - :bug: `UI` Remove one last instance of `window.std` vs imported `std` call

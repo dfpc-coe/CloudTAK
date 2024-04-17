@@ -19,8 +19,9 @@
             </div>
         </template>
         <template v-else>
+            <TablerLoading v-if='loading' desc='Loading Iconsets'/>
             <TablerNone
-                v-if='!list.items.length'
+                v-else-if='!list.items.length'
                 label='Iconsets'
                 :create='false'
             />
@@ -33,8 +34,9 @@
                         <td>
                             <div class='d-flex align-items-center'>
                                 <span v-text='iconset.name'/>
-                                <span class='ms-auto badge border border-red bg-red text-white'>Admin</span>
-                                <div class='ms-auto'>
+                                <div class='ms-auto d-flex align-items-center'>
+                                    <span v-if='!iconset.username' class='mx-3 ms-auto badge border bg-blue text-white'>Public</span>
+                                    <span v-else='!iconset.username' class='mx-3 ms-auto badge border bg-red text-white'>Private</span>
                                     <IconDownload v-tooltip='"Download TAK Zip"' size='32' class='cursor-pointer' @click.stop='download(iconset)'/>
                                 </div>
                             </div>
@@ -61,6 +63,7 @@ import IconCombineds from '../util/Icons.vue'
 import IconsetEditModal from './Iconset/EditModal.vue';
 import {
     TablerNone,
+    TablerLoading,
 } from '@tak-ps/vue-tabler';
 import {
     IconRefresh,
@@ -121,6 +124,7 @@ export default {
         IconFileUpload,
         IconCombineds,
         TablerNone,
+        TablerLoading,
         IconRefresh,
     }
 }
