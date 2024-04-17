@@ -41,8 +41,9 @@ export class EsriBase {
             this.postfix = base.pathname.replace(/.*sharing\/rest/i, '');
             base.pathname = base.pathname.replace(/(?<=sharing\/rest).*/i, '');
         } else { // EsriType === SERVER
-            this.postfix = base.pathname.replace(/.*arcgis\/rest/i, '');
-            base.pathname = base.pathname.replace(/(?<=arcgis\/rest).*/i, '');
+            this.postfix = base.pathname;
+            base.pathname = base.pathname = '';
+
         }
 
         this.base = base;
@@ -119,6 +120,8 @@ export class EsriBase {
             return EsriType.SERVER;
         } else if (base.pathname.toLowerCase().includes('/sharing/rest')) {
             return EsriType.PORTAL;
+        } else if (base.pathname.toLowerCase().includes('/rest/services')) {
+            return EsriType.SERVER;
         }
 
         throw new Err(400, null, 'Could not determine URL Type');
