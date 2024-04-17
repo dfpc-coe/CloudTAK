@@ -14,6 +14,8 @@ export default class Models {
     ConnectionSink: Modeler<typeof pgtypes.ConnectionSink>;
     ConnectionToken: Modeler<typeof pgtypes.ConnectionToken>;
 
+    Setting: Modeler<typeof pgtypes.Setting>;
+
     Profile: Modeler<typeof pgtypes.Profile>;
     ProfileChat: ProfileChat;
     ProfileOverlay: Modeler<typeof pgtypes.ProfileOverlay>;
@@ -30,6 +32,7 @@ export default class Models {
         this.Icon = new Icon(pg);
 
         this.Token = new Modeler(pg, pgtypes.Token);
+        this.Setting = new Modeler(pg, pgtypes.Setting);
         this.Server = new Modeler(pg, pgtypes.Server);
         this.Profile = new Modeler(pg, pgtypes.Profile);
         this.ProfileOverlay = new Modeler(pg, pgtypes.ProfileOverlay);
