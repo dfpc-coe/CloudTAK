@@ -10,7 +10,7 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Config',
         description: 'Get Config',
         query: Type.Object({
-            keys: Type.Array(Type.String())
+            keys: Type.String()
         }),
         res: Type.Any()
     }, async (req, res) => {
@@ -18,9 +18,10 @@ export default async function router(schema: Schema, config: Config) {
             await Auth.as_user(config, req, { admin: true });
 
             const final: Record<string, string> = {};
-            (await Promise.all((req.query.keys.map((key) => {
+            (await Promise.allSettled((req.query.keys.split(',').map((key) => {
                 return config.models.Setting.from(key);
-            })))).map((k) => {
+            })))).forEach((k) => {
+                if (k.status === 'rejected') return;
                 return final[k.key] = k.value;
             });
 
