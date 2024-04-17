@@ -223,6 +223,9 @@ async function processIndex(event: Event, xmlstr: string, zip?: StreamZipAsync) 
 
         const check = await fetch(new URL(`/api/iconset/${iconset.uid}`, process.env.TAK_ETL_API), {
             method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${event.Token}`
+            },
         });
 
         if (check.status === 200) {
