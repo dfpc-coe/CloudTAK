@@ -46,7 +46,7 @@ export const useCOTStore = defineStore('cots', {
          */
         loadMission: async function(guid: string): Promise<void> {
              try {
-                 const fc = await window.std(`/api/marti/missions/${encodeURIComponent(guid)}/cot`);
+                 const fc = await std(`/api/marti/missions/${encodeURIComponent(guid)}/cot`);
                  for (const feat of fc.features) this.add(feat, guid);
              } catch (err) {
                 console.error(err);

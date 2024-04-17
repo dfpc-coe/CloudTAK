@@ -123,6 +123,7 @@ export default async function router(schema: Schema, config: Config) {
             iconset: Type.String()
         }),
         body: Type.Object({
+            public: Type.Optional(Type.Boolean()),
             default_group: Type.Optional(Type.String()),
             default_friendly: Type.Optional(Type.String()),
             default_hostile: Type.Optional(Type.String()),
@@ -143,6 +144,15 @@ export default async function router(schema: Schema, config: Config) {
                 throw new Err(400, null, 'Only System Admin can edit Server Resource');
             }
 
+            if (typeof req.body.public === 'boolean' && user.access === AuthUserAccess.ADMIN) {
+                if (req.body.public === true) {
+                    await config.models.Iconset.commit(req.params.iconset, { username: null });
+                } else {
+                    await config.models.Iconset.commit(req.params.iconset, { username: user.email });
+                }
+            }
+   
+            delete req.body.public;
             const iconset = await config.models.Iconset.commit(req.params.iconset, req.body);
 
             return res.json(iconset);

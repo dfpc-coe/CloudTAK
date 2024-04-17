@@ -363,10 +363,7 @@ export default {
             this.fetchMission();
         },
         genConfig: function() {
-            return {
-                id: this.mission.name,
-                token: localStorage.token
-            }
+            return { id: this.mission.name }
         },
         fetchImports: async function() {
             try {

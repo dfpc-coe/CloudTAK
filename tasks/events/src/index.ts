@@ -15,6 +15,7 @@ import API from './api.js';
 export type Event = {
     ID?: string;
     Token?: string;
+    UserToken?: string;
     Bucket: string;
     Key: string;
     Name: string;
@@ -48,7 +49,7 @@ async function sqsEvent(record: Lambda.SQSRecord) {
     const event = JSON.parse(record.body)
     console.log(event);
     const msg = event.Message.split('\n');
-    const res = {};
+    const res: any = {};
     for (const e of msg) {
         if (!e) continue;
         res[e.split('=')[0]] = e.split('=')[1].replace(/'/g, '')
@@ -91,8 +92,11 @@ async function genericEvent(md: Event) {
 
             console.error('Import', JSON.stringify(imported));
 
+            md.UserToken = jwt.sign({ access: 'user', email: imported.username }, String(process.env.SigningSecret));
+
             const s3 = new S3.S3Client({ region: process.env.AWS_DEFAULT_REGION || 'us-east-1' });
             await pipeline(
+                // @ts-expect-error 'StreamingBlobPayloadOutputTypes | undefined' is not assignable to parameter of type 'ReadableStream'
                 (await s3.send(new S3.GetObjectCommand({
                     Bucket: md.Bucket,
                     Key: md.Key
@@ -103,12 +107,11 @@ async function genericEvent(md: Event) {
             const result = {};
             if (imported.mode === 'Mission') {
                 if (!imported.config.id) throw new Error('No mission name defined');
-                if (!imported.config.token) throw new Error('No token defined');
 
                 const res = await API.uploadMission(md, {
                     name: imported.config.id,
                     filename: imported.name,
-                    token: imported.config.token
+                    token: md.UserToken
                 });
 
                 console.error(JSON.stringify(res));
@@ -169,6 +172,7 @@ async function genericEvent(md: Event) {
                 console.log(`ok - Data ${md.Key} syncing with ${data.name}`);
                 const s3 = new S3.S3Client({ region: process.env.AWS_DEFAULT_REGION || 'us-east-1' });
                 await pipeline(
+                    // @ts-expect-error 'StreamingBlobPayloadOutputTypes | undefined' is not assignable to parameter of type 'ReadableStream'
                     (await s3.send(new S3.GetObjectCommand({
                         Bucket: md.Bucket,
                         Key: md.Key
@@ -223,6 +227,9 @@ async function processIndex(event: Event, xmlstr: string, zip?: StreamZipAsync) 
 
         const check = await fetch(new URL(`/api/iconset/${iconset.uid}`, process.env.TAK_ETL_API), {
             method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${event.UserToken}`
+            },
         });
 
         if (check.status === 200) {
@@ -237,7 +244,7 @@ async function processIndex(event: Event, xmlstr: string, zip?: StreamZipAsync) 
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${event.Token}`
+                'Authorization': `Bearer ${event.UserToken}`
             },
             body: JSON.stringify(iconset)
         });
@@ -257,7 +264,7 @@ async function processIndex(event: Event, xmlstr: string, zip?: StreamZipAsync) 
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${event.Token}`
+                    'Authorization': `Bearer ${event.UserToken}`
                 },
                 body: JSON.stringify({
                     name: lookup.get(icon.$.name).name,

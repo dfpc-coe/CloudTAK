@@ -1,6 +1,6 @@
 <template>
-<div class='page'>
-    <header v-if='!$route || !$route.name || !$route.name.startsWith("home")' class='navbar navbar-expand-md d-print-none' data-bs-theme="dark">
+<div class='page h-100'>
+    <header v-if='navShown' class='navbar navbar-expand-md d-print-none' data-bs-theme="dark">
         <div class="container-xl">
             <div class="col-auto">
                 <img @click='$router.push("/")' class='cursor-pointer' height='50' width='50' src='/logo.png'>
@@ -131,6 +131,9 @@ export default {
     computed: {
         docsURL: function() {
             return stdurl('/docs')
+        },
+        navShown: function() {
+            return !this.$route || !this.$route.name || (!this.$route.name.startsWith("home") && !["login"].includes(this.$route.name))
         }
     },
     methods: {

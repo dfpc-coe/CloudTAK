@@ -6,7 +6,7 @@ import { Event } from './index.js'
 
 export default class API {
     static async fetchSchema(event: {
-        layer: string;
+        layer: number;
         token: string;
     }) {
         const url = new URL(`/api/layer/${event.layer}/task/schema`, process.env.TAK_ETL_API);
@@ -29,7 +29,7 @@ export default class API {
     }
 
     static async updateLayer(event: {
-        layer: string;
+        layer: number;
         token: string;
         body: object;
     }) {
@@ -154,9 +154,9 @@ export default class API {
         id: string;
         mode: string;
         name: string;
+        username: string;
         config: {
             id: string;
-            token: string;
         }
     }> {
         const res = await fetch(new URL(`/api/import/${event.ID}`, process.env.TAK_ETL_API), {

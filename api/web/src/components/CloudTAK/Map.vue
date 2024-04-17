@@ -60,16 +60,19 @@
             background-color: rgba(0, 0, 0, 0.5);
             border-radius: 0px 0px 6px 0px;
         '>
+
+        <IconSearch v-if='false' size='40' class='cursor-pointer hover-button mb-3' v-tooltip='"Search"'/>
+
         <div @click='setBearing(0)' style='margin-bottom: 10px;' class='cursor-pointer hover-button'>
-            <svg width="40" height="40" :transform='`rotate(${360 - bearing})`' viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" /><path d="M12 8l-4 4" /><path d="M12 8v8" /><path d="M16 12l-4 -4" /></svg>
+            <IconCircleArrowUp :transform='`rotate(${360 - bearing})`' size='40' v-tooltip='"Snap to North"'/>
             <div v-if='bearing !== 0' class='text-center' v-text='humanBearing'></div>
         </div>
-        <IconFocus2 v-if='!radial.cot && !locked.length' @click='getLocation' size='40' class='cursor-pointer hover-button'/>
+        <IconFocus2 v-if='!radial.cot && !locked.length' @click='getLocation' size='40' class='cursor-pointer hover-button' v-tooltip='"Get Location"'/>
         <IconLockAccess v-else-if='!radial.cot' @click='locked.splice(0, locked.length)' size='40' class='cursor-pointer hover-button'/>
 
         <div class='mt-3'>
-            <IconPlus size='40' @click='setZoom(getZoom() + 1);' class='cursor-pointer hover-button'/>
-            <IconMinus size='40' @click='setZoom(getZoom() - 1);' class='cursor-pointer hover-button'/>
+            <IconPlus size='40' @click='setZoom(getZoom() + 1);' class='cursor-pointer hover-button' v-tooltip='"Zoom In"'/>
+            <IconMinus size='40' @click='setZoom(getZoom() - 1);' class='cursor-pointer hover-button' v-tooltip='"Zoom Out"'/>
         </div>
     </div>
 
@@ -170,6 +173,7 @@
 <script>
 import { std, stdurl } from '/src/std.ts';
 import {
+    IconSearch,
     IconMessage,
     IconLocationOff,
     IconLocation,
@@ -184,7 +188,8 @@ import {
     IconLine,
     IconPolygon,
     IconVector,
-    IconBell
+    IconBell,
+    IconCircleArrowUp,
 } from '@tabler/icons-vue';
 import SelectFeats from './util/SelectFeats.vue';
 import {
@@ -537,6 +542,7 @@ export default {
         CloudTAKQueryView,
         CloudTAKCoTView,
         CloudTAKFeatView,
+        IconSearch,
         IconMessage,
         IconLocationOff,
         IconLocation,
@@ -551,6 +557,7 @@ export default {
         IconVector,
         IconMenu2,
         IconPencil,
+        IconCircleArrowUp,
         IconX,
     }
 }

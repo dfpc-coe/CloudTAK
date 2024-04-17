@@ -22,6 +22,8 @@
 
 <script>
 import { std, stdurl } from '/src/std.ts';
+import { mapState } from 'pinia'
+import { useProfileStore } from '/src/stores/profile.js';
 import {
     TablerModal,
     TablerLoading,
@@ -41,6 +43,9 @@ export default {
             }
         }
     },
+    computed: {
+        ...mapState(useProfileStore, ['profile']),
+    },
     mounted: async function() {
         await this.fetchSchema();
 
@@ -55,6 +60,16 @@ export default {
             this.loading.iconset = true;
             this.iconset = await std(`/api/iconset/${this.$route.params.iconset}`);
             this.loading.iconset = false;
+        },
+        flipAccess: async function() {
+            const url = await stdurl(`/api/iconset/${this.$route.params.iconset ||''}`);
+
+            await std(url, {
+                method: this.$route.params.iconset ? 'PATCH' : 'POST',
+                body: this.iconset
+            });
+
+            this.$emit('close');
         },
         submit: async function() {
             const url = await stdurl(`/api/iconset/${this.$route.params.iconset ||''}`);
