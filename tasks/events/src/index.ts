@@ -49,7 +49,7 @@ async function sqsEvent(record: Lambda.SQSRecord) {
     const event = JSON.parse(record.body)
     console.log(event);
     const msg = event.Message.split('\n');
-    const res = {};
+    const res: any = {};
     for (const e of msg) {
         if (!e) continue;
         res[e.split('=')[0]] = e.split('=')[1].replace(/'/g, '')
@@ -92,10 +92,11 @@ async function genericEvent(md: Event) {
 
             console.error('Import', JSON.stringify(imported));
 
-            const md.UserToken = jwt.sign({ access: 'user', email: imported.username }, String(process.env.SigningSecret));
+            md.UserToken = jwt.sign({ access: 'user', email: imported.username }, String(process.env.SigningSecret));
 
             const s3 = new S3.S3Client({ region: process.env.AWS_DEFAULT_REGION || 'us-east-1' });
             await pipeline(
+                // @ts-expect-error 'StreamingBlobPayloadOutputTypes | undefined' is not assignable to parameter of type 'ReadableStream'
                 (await s3.send(new S3.GetObjectCommand({
                     Bucket: md.Bucket,
                     Key: md.Key
@@ -171,6 +172,7 @@ async function genericEvent(md: Event) {
                 console.log(`ok - Data ${md.Key} syncing with ${data.name}`);
                 const s3 = new S3.S3Client({ region: process.env.AWS_DEFAULT_REGION || 'us-east-1' });
                 await pipeline(
+                    // @ts-expect-error 'StreamingBlobPayloadOutputTypes | undefined' is not assignable to parameter of type 'ReadableStream'
                     (await s3.send(new S3.GetObjectCommand({
                         Bucket: md.Bucket,
                         Key: md.Key

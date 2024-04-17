@@ -46,6 +46,14 @@
                                             <span
                                                 class='list-group-item list-group-item-action d-flex align-items-center'
                                                 :class='{
+                                                    "active": $route.name === "admin-config",
+                                                    "cursor-pointer": $route.name !== "admin-config"
+                                                }'
+                                                @click='$router.push(`/admin/config`)'
+                                            ><IconSettings size='32' /><span class='mx-3'>Settings</span></span>
+                                            <span
+                                                class='list-group-item list-group-item-action d-flex align-items-center'
+                                                :class='{
                                                     "active": $route.name === "admin-task",
                                                     "cursor-pointer": $route.name !== "admin-task"
                                                 }'
@@ -96,6 +104,7 @@ import {
 } from '@tak-ps/vue-tabler'
 import {
     IconUsers,
+    IconSettings,
     IconServer,
     IconBrandDocker,
     IconBuildingBroadcastTower,
@@ -113,6 +122,7 @@ export default {
     },
     components: {
         Alert,
+        IconSettings,
         IconUsers,
         IconServer,
         IconBrandDocker,
