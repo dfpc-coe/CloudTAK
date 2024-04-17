@@ -44,6 +44,11 @@
         "query": false,
         "res": true
     },
+    "GET /config": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
     "GET /connection/:connectionid/channel": {
         "body": false,
         "query": false,
@@ -264,36 +269,6 @@
         "query": true,
         "res": true
     },
-    "POST /import": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "PUT /import/:import": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "PUT /import": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /import/:import": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "PATCH /import/:import": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "GET /import": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
     "GET /iconset": {
         "body": false,
         "query": true,
@@ -359,6 +334,36 @@
         "query": true,
         "res": false
     },
+    "POST /import": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "PUT /import/:import": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "PUT /import": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /import/:import": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "PATCH /import/:import": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "GET /import": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
     "GET /layer/:layerid/alert": {
         "body": false,
         "query": true,
@@ -377,6 +382,11 @@
     "DELETE /layer/:layerid/alert/:alertid": {
         "body": false,
         "query": false,
+        "res": true
+    },
+    "POST /layer/:layerid/cot": {
+        "body": true,
+        "query": true,
         "res": true
     },
     "GET /layer/:layerid/query": {
@@ -422,11 +432,6 @@
     "DELETE /layer/:layerid": {
         "body": false,
         "query": false,
-        "res": true
-    },
-    "POST /layer/:layerid/cot": {
-        "body": true,
-        "query": true,
         "res": true
     },
     "POST /login": {
