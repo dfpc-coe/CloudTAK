@@ -10,6 +10,10 @@
 
 ## Version History
 
+### v1.4.1 - 2024-04-15
+
+- :bug: `UI` Avoid CloudTAK Init error if no basemap is configured
+
 ### v1.4.0 - 2024-04-15
 
 - :rocket: `UI` Remove ARCGIS_TIMEZONE option now that config.timezone does the same thing generically

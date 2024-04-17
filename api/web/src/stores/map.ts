@@ -326,20 +326,22 @@ export const useMapStore = defineStore('cloudtak', {
                 }]);
             }
         },
-        initLayers: async function(basemap: Static<typeof BasemapResponse>) {
+        initLayers: async function(basemap?: Static<typeof BasemapResponse>) {
             if (!this.map) throw new Error('Cannot initLayers before map has loaded');
 
-            await this.addLayer({
-                name: basemap.name,
-                source: 'basemap',
-                type: 'raster',
-            }, [{
-                id: 'basemap',
-                type: 'raster',
-                source: 'basemap',
-                minzoom: basemap.minzoom,
-                maxzoom: basemap.maxzoom
-            }]);
+            if (basemap) {
+                await this.addLayer({
+                    name: basemap.name,
+                    source: 'basemap',
+                    type: 'raster',
+                }, [{
+                    id: 'basemap',
+                    type: 'raster',
+                    source: 'basemap',
+                    minzoom: basemap.minzoom,
+                    maxzoom: basemap.maxzoom
+                }]);
+            }
 
             await this.addLayer({
                 name: 'CoT Icons',
