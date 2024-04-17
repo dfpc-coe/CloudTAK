@@ -12,6 +12,8 @@
 
 ### Pending Release
 
+### v1.6.0 - 2024-04-17
+
 - :rocket: `UI` Push to overlays menu upon adding a new overlay
 - :rocket: `API` Allow admins to flip iconsets between public/private
 - :rocket: `UI` Differentiate between Private & Public Iconsets in UI
