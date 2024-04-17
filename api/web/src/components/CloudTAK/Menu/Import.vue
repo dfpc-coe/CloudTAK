@@ -4,7 +4,7 @@
         <IconRefresh @click='fetch' size='32' class='cursor-pointer' v-tooltip='"Refresh"'/>
     </template>
     <template #default>
-        <TablerLoading v-if='loading.initial'/>
+        <TablerLoading v-if='loading.initial || loading.main'/>
         <div v-else class='mx-4 my-4'>
             <div class='datagrid'>
                 <div class="datagrid-item">
