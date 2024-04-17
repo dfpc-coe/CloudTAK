@@ -1,6 +1,4 @@
-import os from 'node:os';
 import { fetch } from 'undici';
-import fsp from 'node:fs/promises';
 import fs from 'node:fs';
 import { Readable } from 'node:stream';
 import path from 'node:path';

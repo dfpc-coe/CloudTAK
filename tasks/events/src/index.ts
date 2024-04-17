@@ -93,7 +93,6 @@ async function genericEvent(md: Event) {
 
             const s3 = new S3.S3Client({ region: process.env.AWS_DEFAULT_REGION || 'us-east-1' });
             await pipeline(
-                // @ts-ignore
                 (await s3.send(new S3.GetObjectCommand({
                     Bucket: md.Bucket,
                     Key: md.Key
@@ -170,7 +169,6 @@ async function genericEvent(md: Event) {
                 console.log(`ok - Data ${md.Key} syncing with ${data.name}`);
                 const s3 = new S3.S3Client({ region: process.env.AWS_DEFAULT_REGION || 'us-east-1' });
                 await pipeline(
-                    // @ts-ignore
                     (await s3.send(new S3.GetObjectCommand({
                         Bucket: md.Bucket,
                         Key: md.Key
