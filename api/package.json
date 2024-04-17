@@ -11,7 +11,7 @@
         "prod": "NODE_OPTIONS='--max-old-space-size=6144' forever dist/index.js",
         "lint": "eslint index.ts lib/**/*.ts routes/**/*.ts test/**.ts",
         "loaddb": "echo 'DROP DATABASE tak_ps_etl' | psql && echo 'CREATE DATABASE tak_ps_etl' | psql && psql tak_ps_etl < coe-etl-latest.dump",
-        "migratedb": "npm run lint && git stash && tsc --build --outDir . && drizzle-kit generate:pg && git add migrations/* && git commit -m \"DB Migration\" && git clean -f && git stash",
+        "migratedb": "npm run lint && git stash && tsc --outDir . && drizzle-kit generate:pg && git add migrations/* && git commit -m \"DB Migration\" && git clean -f && git stash",
         "dev": "tsx watch --ignore web/ index.ts --noevents --nosinks --nometrics --unsafe"
     },
     "repository": {
