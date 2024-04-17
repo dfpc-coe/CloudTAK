@@ -17,16 +17,15 @@
                     <div class="datagrid-title">Import Type</div>
                     <div class="datagrid-content" v-text='imported.mode + ": " + imported.mode_id'></div>
                 </div>
-                <div class="datagrid-item">
-                    <div class="datagrid-title">Filename</div>
-                    <div class="datagrid-content" v-text='imported.name'></div>
-                </div>
             </div>
             <div class='py-2'>
                 <TablerNone v-if='imported.status === "Empty"' :create='false'/>
                 <TablerLoading v-else-if='loading.run' desc='Running Import'/>
                 <template v-else-if='imported.status === "Fail"'>
-                    <pre v-text='imported.error'/>
+                    <div class="datagrid-item">
+                        <div class="datagrid-title">Import Error</div>
+                        <div class="datagrid-content" v-text='imported.error'></div>
+                    </div>
                 </template>
             </div>
             <div class='datagrid d-flex'>
@@ -90,7 +89,7 @@ export default {
             this.loading.main = true;
             const url = stdurl(`/api/import/${this.$route.params.import}`);
             this.imported = await std(url);
-            if (this.imported.status === 'Failed' || this.imported.status === 'Success') {
+            if (this.imported.status === 'Fail' || this.imported.status === 'Success') {
                 if (this.interval) clearInterval(this.interval);
                 this.loading.run = false;
             }
