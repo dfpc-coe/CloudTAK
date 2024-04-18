@@ -90,32 +90,32 @@ export default class Style {
      * @returns             GeoJSON Feature
      */
     async feat(feature: Feature): Promise<Feature> {
-        if (!feature.properties) feature.properties = {};
+        try {
+            if (!feature.properties) feature.properties = {};
 
-        if (this.style.stale && !feature.properties.stale) {
-            feature.properties.stale = this.style.stale;
-        }
+            if (this.style.stale && !feature.properties.stale) {
+                feature.properties.stale = this.style.stale;
+            }
 
-        if (!this.style.enabled_styles) {
-            return feature;
-        } else if (this.style.styles.queries) {
-            for (const q of this.style.styles.queries) {
-                try {
+            if (!this.style.enabled_styles) {
+                return feature;
+            } else if (this.style.styles.queries) {
+                for (const q of this.style.styles.queries) {
                     const expression = jsonata(q.query);
 
                     if (await expression.evaluate(feature) === true) {
                         this.#by_geom(q.styles, feature);
                     }
-                } catch (err) {
-                    console.error(`Failed to style ${JSON.stringify(feat)} with ${q.query}`);
                 }
+
+                return feature;
+            } else {
+                this.#by_geom(this.style.styles, feature);
+
+                return feature;
             }
-
-            return feature;
-        } else {
-            this.#by_geom(this.style.styles, feature);
-
-            return feature;
+        } catch (err) {
+            throw new Err(400, err instanceof Error ? err.message : new Error(String(err)), err instanceof Error ? err.message : String(err));
         }
     }
 

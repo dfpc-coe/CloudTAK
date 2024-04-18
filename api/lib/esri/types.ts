@@ -1,4 +1,4 @@
-import { Static, Type } from '@sinclair/typebox';
+import { Type } from '@sinclair/typebox';
 
 export const ESRIField = Type.Object({
     name: Type.String(),
