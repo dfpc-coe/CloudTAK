@@ -209,7 +209,7 @@ export default {
             return JSON.parse(this.cot.properties.center);
         },
         remarks: function() {
-            return this.cot.properties.remarks.replace(/(http(s)?:\/\/.*?(\s|$))/g, '[$1]($1)');
+            return this.cot.properties.remarks.replace(/(http(s)?:\/\/.*?(\s|$))/g, '[$1]($1) ');
         }
     },
     methods: {
