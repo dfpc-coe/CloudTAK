@@ -64,11 +64,12 @@
         </div>
         <div class='col-12 py-2'>
             <label class='subheader mx-2'>Remarks</label>
-            <TablerInput
-                :rows='2'
-                v-model='feat.properties.remarks'
-                class='mx-1'
-            />
+            <div class='bg-gray-500 rounded mx-2 py-2 px-2'>
+                <TablerMarkdown
+                    :markdown='feat.properties.remarks'
+                    class='mx-1'
+                />
+            </div>
         </div>
 
         <template v-if='isUserDrawn'>
@@ -115,6 +116,7 @@ import { useMapStore } from '/src/stores/map.ts';
 const mapStore = useMapStore();
 import {
     TablerInput,
+    TablerMarkdown
 } from '@tak-ps/vue-tabler';
 import Share from './util/Share.vue';
 import CoTStyle from './util/CoTStyle.vue';
@@ -243,6 +245,7 @@ export default {
         Share,
         Coordinate,
         TablerInput,
+        TablerMarkdown,
         IconBattery1,
         IconBattery2,
         IconBattery3,
