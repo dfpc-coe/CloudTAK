@@ -66,7 +66,7 @@
             <label class='subheader mx-2'>Remarks</label>
             <div class='bg-gray-500 rounded mx-2 py-2 px-2'>
                 <TablerMarkdown
-                    :markdown='feat.properties.remarks'
+                    :markdown='remarks'
                     class='mx-1'
                 />
             </div>
@@ -207,6 +207,9 @@ export default {
         },
         center: function() {
             return JSON.parse(this.cot.properties.center);
+        },
+        remarks: function() {
+            return this.cot.properties.remarks.replace(/(http(s)?:\/\/.*?(\s|$))/g, '[$1]($1)');
         }
     },
     methods: {
