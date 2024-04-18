@@ -20,7 +20,7 @@
             <tbody>
                 <tr :key='group.name' v-for='group in processChannels'>
                     <td>
-                        <div class='d-flex'>
+                        <div class='d-flex align-items-center'>
                             <IconEye v-if='group.active' @click='setStatus(group, false)' v-tooltip='"Disable"' size='32' class='cursor-pointer'/>
                             <IconEyeOff v-else @click='setStatus(group, true)' v-tooltip='"Enable"' size='32' class='cursor-pointer'/>
                             <span class='mx-2' v-text='group.name'/>
