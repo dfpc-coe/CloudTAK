@@ -1,11 +1,10 @@
-import Lambda from "aws-lambda";
 import { geojsonToArcGIS } from '@terraformer/arcgis'
 import proj4 from 'proj4';
 
 export default async function arcgis(data: any): Promise<boolean> {
     if (data.feat.geometry.type !== 'Point') return false;
 
-    const res_query: any = await fetch(data.body.layer + '/query', {
+    const res_query = await fetch(data.body.layer + '/query', {
         method: 'POST',
         headers: {
             'Referer': data.secrets.referer,
@@ -24,7 +23,7 @@ export default async function arcgis(data: any): Promise<boolean> {
 
     if (query.error) throw new Error(query.error.message);
 
-    let geometry: any = geojsonToArcGIS(data.feat.geometry);
+    let geometry = geojsonToArcGIS(data.feat.geometry);
     if (!geometry.x || !geometry.y) throw new Error('Incompatible Geometry');
 
     const proj = proj4('EPSG:4326', 'EPSG:3857', [ geometry.x, geometry.y ]);
@@ -39,7 +38,7 @@ export default async function arcgis(data: any): Promise<boolean> {
     }
 
     if (!query.features.length) {
-        const res: any = await fetch(new URL(data.body.layer + '/addFeatures'), {
+        const res = await fetch(new URL(data.body.layer + '/addFeatures'), {
             method: 'POST',
             headers: {
                 'Referer': data.secrets.referer,
@@ -52,6 +51,7 @@ export default async function arcgis(data: any): Promise<boolean> {
                     attributes: {
                         cotuid: data.feat.id,
                         callsign: data.feat.properties.callsign,
+                        remarks: data.feat.properties.remarks,
                         type: data.feat.properties.type,
                         how: data.feat.properties.how,
                         time: data.feat.properties.time,
@@ -75,7 +75,7 @@ export default async function arcgis(data: any): Promise<boolean> {
     } else {
         const oid = query.features[0].attributes.objectid;
 
-        const res: any = await fetch(new URL(data.body.layer + '/updateFeatures'), {
+        const res = await fetch(new URL(data.body.layer + '/updateFeatures'), {
             method: 'POST',
             headers: {
                 'Referer': data.secrets.referer,
