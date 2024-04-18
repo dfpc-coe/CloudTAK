@@ -79,7 +79,7 @@ export default class Style {
 
             return true;
         } catch (err) {
-            throw new Err(400, err instanceof Error ? err.message : new Error(String(err)), err instanceof Error ? err.message : String(err));
+            throw new Err(400, err, err instanceof Error ? err.message : String(err));
         }
     }
 
@@ -115,7 +115,7 @@ export default class Style {
                 return feature;
             }
         } catch (err) {
-            throw new Err(400, err instanceof Error ? err.message : new Error(String(err)), err instanceof Error ? err.message : String(err));
+            throw new Err(400, err, err instanceof Error ? err.message : String(err));
         }
     }
 
