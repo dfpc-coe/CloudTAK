@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v1.9.0 - 2024-04-18
+
+- :rocket: `UI` Automatically convert http(s) URLs to clickable links in remarks field
+
 ### v1.8.0 - 2024-04-18
 
 - :rocket: `UI` Error check Style Queries in browser and display as TablerInput Error
