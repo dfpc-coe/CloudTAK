@@ -100,10 +100,14 @@ export default class Style {
             return feature;
         } else if (this.style.styles.queries) {
             for (const q of this.style.styles.queries) {
-                const expression = jsonata(q.query);
+                try {
+                    const expression = jsonata(q.query);
 
-                if (await expression.evaluate(feature) === true) {
-                    this.#by_geom(q.styles, feature);
+                    if (await expression.evaluate(feature) === true) {
+                        this.#by_geom(q.styles, feature);
+                    }
+                } catch (err) {
+                    console.error(`Failed to style ${JSON.stringify(feat)} with ${q.query}`);
                 }
             }
 
