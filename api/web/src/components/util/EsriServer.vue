@@ -32,8 +32,11 @@
                                 <span v-text='l.name' class='mx-3'/>
                             </template>
                             <template v-else>
-                                <IconMap size='32'/>
-                                <span v-text='l.name' class='mx-3'/>
+                                <div class='d-flex align-items-center'>
+                                    <IconMap size='32'/>
+                                    <span v-text='l.name' class='mx-3'/>
+                                    <span class='ms-auto badge' v-text='l.type'/>
+                                </div>
                             </template>
                         </td>
                     </tr></tbody>
@@ -157,7 +160,7 @@ export default {
         if (postfix.length && !postfix.startsWith('http')) {
             // TODO Support Directories / Layer Parsing
             postfix = postfix.split('/');
-            
+
             const last = postfix.pop();
 
             if (!isNaN(parseInt(last))) {
