@@ -12,7 +12,7 @@
                             <IconAbc size='32'/> Basic
                         </label>
                         <input v-model='mode' type="radio" class="btn-check" name="type-toolbar" value='query'>
-                        <label @click='mode="query"' class="btn btn-icon px-3">
+                        <label @click='mode= "query" ' class="btn btn-icon px-3">
                             <IconCode size='32'/> Query
                         </label>
                         <input v-model='mode' type="radio" class="btn-check" name="type-toolbar" value='disabled'>
@@ -88,7 +88,13 @@
             </template>
             <template v-else-if='query && typeof query === "object"'>
                 <div class='card-body'>
-                    <TablerInput :disabled='disabled' v-model='query.query' placeholder='JSONata Query' label='JSONata Query' :error='errors.query'/>
+                    <TablerInput
+                        :disabled='disabled'
+                        v-model='query.query'
+                        placeholder='JSONata Query'
+                        label='JSONata Query'
+                        :error='error_query'
+                    />
 
                     <StyleSingle :schema='layer.schema' :disabled='disabled' v-model='query.styles'/>
 
@@ -128,6 +134,7 @@ import {
     IconSettings,
     IconBrushOff,
 } from '@tabler/icons-vue'
+import jsonata from 'jsonata';
 import {
     TablerInput,
     TablerNone,
@@ -155,10 +162,17 @@ export default {
             query: null,
             queries: [],
             basic: {},
-            errors: {
-                query: ''
-            }
         };
+    },
+    computed: {
+        error_query: function() {
+            try {
+                jsonata(this.query.query)
+                return '';
+            } catch (err) {
+                return err.message;
+            }
+        }
     },
     watch: {
         mode: function() {
@@ -198,7 +212,12 @@ export default {
         saveLayer: async function(query = null) {
             this.loading.save = true;
 
-            if (query) this.queries.push(query);
+            if (query && query.id) {
+                this.queries[query.id] = query;
+            } else if (query) {
+                this.query.id = this.queries.length;
+                this.queries.push(query);
+            }
 
             let styles = {}
             if (this.mode === 'basic') {
