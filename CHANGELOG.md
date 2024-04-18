@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v1.7.0 - 2024-04-18
+
+- :bug: `UI` Small papercut fixes to ESRI viewer
+- :rocket: `API` Continue to handle a wider variety of ESRI Server Configurations
+
 ### v1.6.1 - 2024-04-18
 
 - :rocket: `UI` Surface ESRI Type (MapServer/FeatureServer/etc) in ESRI Server List UI

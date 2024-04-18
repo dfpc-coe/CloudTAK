@@ -41,8 +41,8 @@ export class EsriBase {
             this.postfix = base.pathname.replace(/.*sharing\/rest/i, '');
             base.pathname = base.pathname.replace(/(?<=sharing\/rest).*/i, '');
         } else { // EsriType === SERVER
-            this.postfix = base.pathname;
-            base.pathname = base.pathname = '';
+            this.postfix = base.pathname.replace(/.*\/rest/, '');
+            base.pathname = base.pathname.replace(/\/rest.*/, '/rest');
 
         }
 
@@ -120,7 +120,7 @@ export class EsriBase {
             return EsriType.SERVER;
         } else if (base.pathname.toLowerCase().includes('/sharing/rest')) {
             return EsriType.PORTAL;
-        } else if (base.pathname.toLowerCase().includes('/rest/services')) {
+        } else if (base.pathname.toLowerCase().includes('/rest')) {
             return EsriType.SERVER;
         }
 

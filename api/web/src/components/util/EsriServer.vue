@@ -27,17 +27,17 @@
                     <thead><tr><th>Name</th></tr></thead>
                     <tbody><tr @click='listpath.push(l)' :key='l.id' v-for='l in list'>
                         <td>
-                            <template v-if='l.type === "folder"'>
-                                <IconFolder size='32'/>
-                                <span v-text='l.name' class='mx-3'/>
-                            </template>
-                            <template v-else>
-                                <div class='d-flex align-items-center'>
+                            <div class='d-flex align-items-center'>
+                                <template v-if='l.type === "folder"'>
+                                    <IconFolder size='32'/>
+                                    <span v-text='l.name' class='mx-3'/>
+                                </template>
+                                <template v-else>
                                     <IconMap size='32'/>
                                     <span v-text='l.name' class='mx-3'/>
                                     <span class='ms-auto badge' v-text='l.type'/>
-                                </div>
-                            </template>
+                                </template>
+                            </div>
                         </td>
                     </tr></tbody>
                 </table>
@@ -72,7 +72,7 @@
                     <thead><tr><th>Name</th></tr></thead>
                     <tbody><tr @click='!disabled && (layer && layer.id === lyr.id) ? layer = nulll : layer = lyr' :key='lyr.id' v-for='lyr in container.layers'>
                         <td>
-                            <div class='d-flex'>
+                            <div class='d-flex align-items-center'>
                                 <IconMap size='32'/><span v-text='lyr.name' class='mx-3'/>
                                 <div class='ms-auto btn-list'>
                                     <IconCheck v-if='layer && layer.id === lyr.id' size='32'/>
