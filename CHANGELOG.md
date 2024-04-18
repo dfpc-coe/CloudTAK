@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v1.8.0 - 2024-04-18
+
+- :rocket: `UI` Error check Style Queries in browser and display as TablerInput Error
+- :bug: `UI` Ensure editing a query doesn't result in a duplicate being created
+
 ### v1.7.0 - 2024-04-18
 
 - :bug: `UI` Small papercut fixes to ESRI viewer

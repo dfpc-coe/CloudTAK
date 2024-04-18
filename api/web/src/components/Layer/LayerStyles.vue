@@ -212,7 +212,7 @@ export default {
         saveLayer: async function(query = null) {
             this.loading.save = true;
 
-            if (query && query.id) {
+            if (query && !isNaN(query.id)) {
                 this.queries[query.id] = query;
             } else if (query) {
                 this.query.id = this.queries.length;
