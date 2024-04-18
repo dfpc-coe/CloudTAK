@@ -16,7 +16,7 @@
 
 - :rocket: `API` Add `remarks` field as default column in ESRI Sink
 - :rocket` `API` Significant refactor of `ESRI.addLayer` function to support new layer builder for future dynamic layers
-- :bug: Gracefully handle invalid jsonata query by logging bad query on cot submission
+- :bug: Gracefully handle invalid jsonata query by returning 4xx instead of 5xx
 
 ### v1.9.0 - 2024-04-18
 
