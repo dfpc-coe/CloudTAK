@@ -12,6 +12,8 @@
 
 ### Pending Release
 
+- :rocket: `UI` Fix text spacing in Connection Tables
+
 ### v1.6.0 - 2024-04-17
 
 - :rocket: `UI` Push to overlays menu upon adding a new overlay
