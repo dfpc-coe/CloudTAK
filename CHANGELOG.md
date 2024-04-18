@@ -12,6 +12,12 @@
 
 ### Pending Release
 
+### v1.10.0 - 2024-04-18
+
+- :rocket: `API` Add `remarks` field as default column in ESRI Sink
+- :rocket` `API` Significant refactor of `ESRI.addLayer` function to support new layer builder for future dynamic layers
+- :bug: Gracefully handle invalid jsonata query by returning 4xx instead of 5xx
+
 ### v1.9.0 - 2024-04-18
 
 - :rocket: `UI` Automatically convert http(s) URLs to clickable links in remarks field
