@@ -43,7 +43,6 @@ export const StyleSingleContainer = Type.Object({
     styles: StyleSingle
 })
 
-
 export const StyleContainer = Type.Object({
     line: Type.Optional(StyleLine),
     point: Type.Optional(StylePoint),

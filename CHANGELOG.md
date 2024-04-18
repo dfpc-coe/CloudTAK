@@ -12,6 +12,9 @@
 
 ### Pending Release
 
+### v1.6.1 - 2024-04-18
+
+- :rocket: `UI` Surface ESRI Type (MapServer/FeatureServer/etc) in ESRI Server List UI
 - :rocket: `UI` Fix text spacing in Connection Tables
 
 ### v1.6.0 - 2024-04-17
