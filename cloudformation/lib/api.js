@@ -170,7 +170,7 @@ export default {
                                 'sns:publish'
                             ],
                             Resource: [
-                                cf.join(['arn:', cf.partition, ':sns:', cf.region, ':', cf.accountId, ':coe-etl-prod-stack-events'])
+                                cf.join(['arn:', cf.partition, ':sns:', cf.region, ':', cf.accountId, ':', cf.stackName, '-*'])
                             ]
                         },{
                             Effect: 'Allow',
