@@ -3,13 +3,13 @@
     <div class='card-header bg-white sticky-top'>
         <h3 class='card-title'>Style Overrides</h3>
         <div class='ms-auto btn-list'>
-            <IconSettings v-if='disabled' @click='disabled = false' size='32' class='cursor-pointer'/>
+            <IconSettings v-if='disabled' @click='disabled = false' size='32' class='cursor-pointer' v-tooltip='"Edit Style"'/>
             <template v-else-if='!loading.save'>
                 <div class='btn-list d-flex align-items-center'>
                     <TablerToggle label='Styling Enabled' v-model='enabled'/>
 
                     <div @click='saveLayer' class="btn btn-primary btn-icon px-2">
-                        <IconDeviceFloppy size='32'/>
+                        <IconDeviceFloppy size='32' v-tooltip='"Save Style"'/>
                     </div>
                 </div>
             </template>
@@ -30,14 +30,14 @@
             </h3>
             <div class='ms-auto btn-list'>
                 <button @click='help("query")' class='btn'>
-                    <IconHelp size='32'/>
+                    <IconHelp size='32' v-tooltip='"JSONata Help"'/>
                 </button>
                 <button v-if='query' @click='query = null' class='btn'>
-                    <IconX size='32'/>
+                    <IconX size='32' v-tooltip='"Return to list"'/>
                 </button>
                 <template v-if='!disabled'>
                     <button v-if='query === null' @click='newQuery' class='btn'>
-                        <IconPlus size='32'/>
+                        <IconPlus size='32' v-tooltip='"New Query"'/>
                     </button>
                 </template>
             </div>
