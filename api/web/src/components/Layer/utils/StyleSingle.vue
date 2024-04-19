@@ -41,7 +41,7 @@
 
     <div class='col-md-12 hover-light rounded px-2 py-2'>
         <div class='col-12 d-flex align-items-center'>
-            <label>Callsign Override</label>
+            <label><IconBlockquote size='20'/> Callsign Override</label>
             <div class='ms-auto'>
                 <TablerToggle v-model='filters[mode].enabled.callsign' :disabled='disabled' label='Enabled'/>
             </div>
@@ -57,7 +57,7 @@
 
     <div class='col-md-12 hover-light rounded px-2 py-2'>
         <div class='col-12 d-flex align-items-center'>
-            <label>Remarks Override</label>
+            <label><IconBlockquote size='20'/> Remarks Override</label>
             <div class='ms-auto'>
                 <TablerToggle v-model='filters[mode].enabled.remarks' :disabled='disabled' label='Enabled'/>
             </div>
@@ -74,7 +74,7 @@
     <template v-if='mode === "point"'>
         <div class='col-md-12 hover-light rounded px-2 py-2'>
             <div class='col-12 d-flex align-items-center'>
-                <label>Point Icon</label>
+                <label><IconPhoto size='20'/> Point Icon</label>
                 <div class='ms-auto'>
                     <TablerToggle v-model='filters[mode].enabled.icon' :disabled='disabled' label='Enabled'/>
                 </div>
@@ -83,7 +83,7 @@
         </div>
         <div class='col-md-12 hover-light rounded px-2 py-2'>
             <div class='col-12 d-flex align-items-center'>
-                <label>Point Color</label>
+                <label><IconPaint size='20'/> Point Color</label>
                 <div class='ms-auto'>
                     <TablerToggle v-model='filters[mode].enabled.color' :disabled='disabled' label='Enabled'/>
                 </div>
@@ -94,7 +94,7 @@
     <template v-else-if='mode !== "point"'>
         <div class='col-md-12 hover-light rounded px-2 py-2'>
             <div class='col-12 d-flex align-items-center'>
-                <label>Line Color</label>
+                <div><IconPaint size='20'/> Line Color</div>
                 <div class='ms-auto'>
                     <TablerToggle v-model='filters[mode].enabled.stroke' :disabled='disabled' label='Enabled'/>
                 </div>
@@ -104,16 +104,16 @@
 
         <div class='col-md-12 hover-light rounded px-2 py-2'>
             <div class='col-12 d-flex align-items-center'>
-                <label>Line Style</label>
+                <label><IconBorderStyle2 size='20'/> Line Style</label>
                 <div class='ms-auto'>
                     <TablerToggle v-model='filters[mode].enabled["stroke-style"]' :disabled='disabled' label='Enabled'/>
                 </div>
             </div>
             <TablerEnum v-if='filters[mode].enabled["stroke-style"]' :disabled='disabled || !filters[mode].enabled["stroke-style"]' v-model='filters[mode].properties["stroke-style"]' :options='["Solid", "Dashed", "Dotted", "Outlined"]'/>
         </div>
-        <div class='col-md-12 hover-light round'>
+        <div class='col-md-12 hover-light rounded px-2 py-2'>
             <div class='col-12 d-flex align-items-center'>
-                <label>Line Width</label>
+                <label><IconRuler2 size='20'/> Line Width</label>
                 <div class='ms-auto'>
                     <TablerToggle v-model='filters[mode].enabled["stroke-width"]' :disabled='disabled' label='Enabled'/>
                 </div>
@@ -122,7 +122,7 @@
         </div>
         <div class='col-md-12 hover-light rounded px-2 py-2'>
             <div class='col-12 d-flex align-items-center'>
-                <label>Line Opacity</label>
+                <label><IconGhost size='20'/> Line Opacity</label>
                 <div class='ms-auto'>
                     <TablerToggle v-model='filters[mode].enabled["stroke-opacity"]' :disabled='disabled' label='Enabled'/>
                 </div>
@@ -133,7 +133,7 @@
     <template v-if='mode === "polygon"'>
         <div class='col-md-12 hover-light rounded px-2 py-2'>
             <div class='col-12 d-flex align-items-center'>
-                <label>Fill Color</label>
+                <label><IconPaint size='20'/> Fill Color</label>
                 <div class='ms-auto'>
                     <TablerToggle v-model='filters[mode].enabled.fill' :disabled='disabled' label='Enabled'/>
                 </div>
@@ -142,7 +142,7 @@
         </div>
         <div class='col-md-12 hover-light rounded px-2 py-2'>
             <div class='col-12 d-flex align-items-center'>
-                <label>Fill Opacity</label>
+                <label><IconGhost size='20'/> Fill Opacity</label>
                 <div class='ms-auto'>
                     <TablerToggle v-model='filters[mode].enabled["fill-opacity"]' :disabled='disabled' label='Enabled'/>
                 </div>
@@ -156,9 +156,15 @@
 <script>
 import StyleTemplate from './StyleTemplate.vue';
 import {
+    IconPaint,
+    IconGhost,
     IconPoint,
+    IconPhoto,
     IconLine,
     IconPolygon,
+    IconBorderStyle2,
+    IconBlockquote,
+    IconRuler2,
 } from '@tabler/icons-vue'
 import IconSelect from '../../util/IconSelect.vue';
 import {
@@ -312,9 +318,15 @@ export default {
         }
     },
     components: {
+        IconRuler2,
+        IconGhost,
+        IconPaint,
         IconPoint,
         IconLine,
         IconPolygon,
+        IconPhoto,
+        IconBlockquote,
+        IconBorderStyle2,
         TablerToggle,
         TablerRange,
         TablerEnum,
