@@ -8,6 +8,9 @@ export const StylePoint = Type.Object({
     color: Type.Optional(Type.String()),
     remarks: Type.Optional(Type.String()),
     callsign: Type.Optional(Type.String()),
+    links: Type.Optional(Type.Array(Type.Object({
+        url: Type.String()
+    }))),
     icon: Type.Optional(Type.String())
 });
 
@@ -18,6 +21,9 @@ export const StyleLine = Type.Object({
     'stroke-width': Type.Optional(Type.String()),
     remarks: Type.Optional(Type.String()),
     callsign: Type.Optional(Type.String()),
+    links: Type.Optional(Type.Array(Type.Object({
+        url: Type.String()
+    })))
 });
 
 export const StylePolygon = Type.Object({
@@ -28,14 +34,21 @@ export const StylePolygon = Type.Object({
     fill: Type.Optional(Type.String()),
     'fill-opacity': Type.Optional(Type.String()),
     remarks: Type.Optional(Type.String()),
-    callsign: Type.Optional(Type.String())
+    callsign: Type.Optional(Type.String()),
+    links: Type.Optional(Type.Array(Type.Object({
+        url: Type.String()
+    })))
 });
 
 export const StyleSingle = Type.Object({
+    remarks: Type.Optional(Type.String()),
+    callsign: Type.Optional(Type.String()),
+    links: Type.Optional(Type.Array(Type.Object({
+        url: Type.String()
+    }))),
     line: Type.Optional(StyleLine),
     point: Type.Optional(StylePoint),
     polygon: Type.Optional(StylePolygon)
-
 })
 
 export const StyleSingleContainer = Type.Object({
@@ -47,6 +60,11 @@ export const StyleContainer = Type.Object({
     line: Type.Optional(StyleLine),
     point: Type.Optional(StylePoint),
     polygon: Type.Optional(StylePolygon),
+    remarks: Type.Optional(Type.String()),
+    callsign: Type.Optional(Type.String()),
+    links: Type.Optional(Type.Array(Type.Object({
+        url: Type.String()
+    }))),
     queries: Type.Optional(Type.Array(StyleSingleContainer))
 })
 
