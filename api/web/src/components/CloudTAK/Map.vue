@@ -151,19 +151,18 @@
     <router-view @reset='deleteCOT()'/>
 
     <div
-        v-if='menu.point'
-        class='position-absolute end-0 text-white'
+        v-if='pointInput'
+        class='position-absolute end-0 text-white bg-dark'
         style='
             top: 56px;
             z-index: 1;
             width: 200px;
             height: 100px;
             border-radius: 0px 6px 0px 0px;
-            background-color: rgba(0, 0, 0, 0.5);
         '
     >
         <div class='d-flex align-items-center h-100'>
-            <Coordinate :coordinates='[0,0]'/>
+            <Coordinate :coordinates='[0,0]' :edit='true' :modes='["dd"]'/>
         </div>
     </div>
 
