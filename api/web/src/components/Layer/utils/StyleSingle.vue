@@ -49,6 +49,7 @@
 
         <StyleTemplate
             v-if='filters[mode].enabled.callsign'
+            placeholder='Callsign Override'
             :disabled='disabled'
             :schema='schema'
             v-model='filters[mode].properties.callsign'
@@ -65,6 +66,7 @@
 
         <StyleTemplate
             v-if='filters[mode].enabled.remarks'
+            placeholder='Remarks Override'
             :disabled='disabled'
             :schema='schema'
             v-model='filters[mode].properties.remarks'
@@ -302,7 +304,9 @@ export default {
 
             for (const geom of ['point', 'line', 'polygon']) {
                 res[geom] = {};
-                for (const key in styles[geom].properties) {
+                for (const key in styles[geom].enabled) {
+                    if (!styles[geom].enabled[key]) continue;
+
                     if (['fill-opacity', 'stroke-width', 'stroke-opacity'].includes(key)) {
                         if (res[geom][key] !== undefined) res[geom][key] = parseInt(res[geom][key])
                     } else if (['remarks', 'callsign'].includes(key)) {

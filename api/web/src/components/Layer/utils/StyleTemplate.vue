@@ -7,6 +7,7 @@
         :label='label'
         :disabled='disabled'
         :description='description'
+        :placeholder='placeholder'
         v-model='template'
     ></TablerInput>
 
@@ -42,6 +43,9 @@ export default {
             default: false
         },
         label: {
+            type: String,
+        },
+        placeholder: {
             type: String,
         },
         description: {
