@@ -1,20 +1,15 @@
 <template>
 <div>
-    <div class='card-header'>
+    <div class='card-header bg-white sticky-top'>
         <h3 class='card-title'>Style Overrides</h3>
         <div class='ms-auto btn-list'>
             <IconSettings v-if='disabled' @click='disabled = false' size='32' class='cursor-pointer'/>
             <template v-else>
-                <div class='row d-flex mx-2'>
-                    <div class="btn-group" role="group">
-                        <input v-model='mode' type="radio" class="btn-check" name="type-toolbar" value='enabled'>
-                        <label @click='mode= "enabled"' class="btn btn-icon px-3">
-                            <IconCode size='32'/> Query
-                        </label>
-                        <input v-model='mode' type="radio" class="btn-check" name="type-toolbar" value='disabled'>
-                        <label @click='mode="disabled"' class="btn btn-icon px-3">
-                            <IconBrushOff size='32'/> Disabled
-                        </label>
+                <div class='btn-list'>
+                    <TablerToggle v-model='enabled'/>
+
+                    <div @click='saveLayer' class="btn btn-primary btn-icon px-2">
+                        <IconDeviceFloppy size='32'/>
                     </div>
                 </div>
             </template>
@@ -27,14 +22,6 @@
     <template v-else>
         <div class='card-body'>
             <StyleSingle :schema='layer.schema' :disabled='disabled' v-model='style'/>
-
-            <div v-if='!disabled' class="col-12 py-2 d-flex">
-                <button @click='reload' class='btn'>Cancel</button>
-                <div class='ms-auto'>
-                    <button @click='saveLayer' class='btn btn-primary'>Save</button>
-                </div>
-            </div>
-
         </div>
 
         <div class='col-12 d-flex align-items-center card-header'>
@@ -66,7 +53,7 @@
         <template v-if='query === null && queries'>
             <div class="list-group list-group-flush px-2 py-2">
                 <div :key='q_idx' v-for='(q, q_idx) in queries' class='my-1'>
-                    <div @click='openQuery(q_idx)' class="cursor-pointer list-group-item list-group-item-action">
+                    <div @click='openQuery(q_idx)' class="cursor-pointer hover-light list-group-item list-group-item-action">
                         <div class='d-flex'>
                             <div class='align-self-center' v-text='q.query'></div>
                             <div class='ms-auto'>
@@ -88,13 +75,6 @@
                 />
 
                 <StyleSingle :schema='layer.schema' :disabled='disabled' v-model='query.styles'/>
-
-                <div v-if='!disabled' class="col-12 py-2 px-2 d-flex">
-                    <button @click='query = null' class='btn'>Cancel</button>
-                    <div class='ms-auto'>
-                        <button @click='saveLayer(query)' class='btn btn-primary'>Save</button>
-                    </div>
-                </div>
             </div>
         </template>
     </template>
@@ -112,6 +92,7 @@ import {
     IconTrash,
     IconSettings,
     IconBrushOff,
+    IconDeviceFloppy
 } from '@tabler/icons-vue'
 import jsonata from 'jsonata';
 import {
@@ -131,7 +112,6 @@ export default {
     },
     data: function() {
         return {
-            mode: 'enabled',
             disabled: true,
             loading: {
                 init: true,
@@ -194,13 +174,6 @@ export default {
         saveLayer: async function(query = null) {
             this.loading.save = true;
 
-            if (query && !isNaN(query.id)) {
-                this.queries[query.id] = query;
-            } else if (query) {
-                this.query.id = this.queries.length;
-                this.queries.push(query);
-            }
-
             try {
                 const layer = await std(`/api/layer/${this.$route.params.layerid}`, {
                     method: 'PATCH',
@@ -240,6 +213,7 @@ export default {
         TablerNone,
         IconSettings,
         IconBrushOff,
+        IconDeviceFloppy
     }
 }
 </script>
