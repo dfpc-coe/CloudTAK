@@ -117,7 +117,7 @@ export default {
         },
         listLayerSchema: async function() {
             const schema = await std('/api/schema?method=GET&url=/layer');
-            this.header = ['name', 'cron', 'task'].map((h) => {
+            this.header = ['id', 'name', 'cron', 'task'].map((h) => {
                 return { name: h, display: true };
             });
 
