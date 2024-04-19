@@ -15,12 +15,6 @@
                                     >
                                         <IconSearch size='32' />
                                     </a>
-                                    <a
-                                        class='cursor-pointer btn btn-primary'
-                                        @click='$router.push("/layer/new")'
-                                    >
-                                        New Layer
-                                    </a>
                                 </div>
                             </div>
                         </div>
@@ -61,7 +55,7 @@
                         <TablerNone
                             v-if='!list.items.length'
                             label='Layers'
-                            @create='$router.push("/layer/new")'
+                            :create='false'
                         />
                         <template v-else>
                             <div
