@@ -5,8 +5,8 @@
         <div class='ms-auto btn-list'>
             <IconSettings v-if='disabled' @click='disabled = false' size='32' class='cursor-pointer'/>
             <template v-else>
-                <div class='btn-list'>
-                    <TablerToggle v-model='enabled'/>
+                <div class='btn-list d-flex align-items-center'>
+                    <TablerToggle label='Styling Enabled' v-model='enabled'/>
 
                     <div @click='saveLayer' class="btn btn-primary btn-icon px-2">
                         <IconDeviceFloppy size='32'/>
@@ -18,7 +18,7 @@
 
     <TablerLoading v-if='loading.save' desc='Saving Styles'/>
     <TablerLoading v-else-if='loading.init' desc='Loading Styles'/>
-    <TablerNone v-else-if='!enabled && disabled' label='Style Overrides' :create='false'/>
+    <TablerNone v-else-if='!enabled' label='Style Overrides' :create='false'/>
     <template v-else>
         <div class='card-body'>
             <StyleSingle :schema='layer.schema' :disabled='disabled' v-model='style'/>
@@ -97,6 +97,7 @@ import {
 import jsonata from 'jsonata';
 import {
     TablerInput,
+    TablerToggle,
     TablerNone,
     TablerLoading,
 } from '@tak-ps/vue-tabler';
@@ -179,7 +180,10 @@ export default {
                     method: 'PATCH',
                     body: {
                         enabled_styles: this.enabled,
-                        styles
+                        styles: {
+                            ...this.style,
+                            queries: this.queries
+                        }
                     }
                 });
 
@@ -210,6 +214,7 @@ export default {
         TablerInput,
         IconTrash,
         TablerLoading,
+        TablerToggle,
         TablerNone,
         IconSettings,
         IconBrushOff,
