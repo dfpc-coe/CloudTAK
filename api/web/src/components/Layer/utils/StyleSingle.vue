@@ -23,6 +23,7 @@
     <div class='col-md-12 hover-light rounded px-2 py-2'>
         <StyleLinks
             :disabled='disabled'
+            :schema='schema'
             v-model='filters.links'
         />
     </div>
