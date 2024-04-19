@@ -20,6 +20,13 @@
         />
     </div>
 
+    <div class='col-md-12 hover-light rounded px-2 py-2'>
+        <StyleLinks
+            :disabled='disabled'
+            v-model='filters.links'
+        />
+    </div>
+
     <div class="d-flex justify-content-center">
         <div class="btn-list">
             <div class="btn-group" role="group">
@@ -169,6 +176,7 @@ import {
     IconRuler2,
 } from '@tabler/icons-vue'
 import IconSelect from '../../util/IconSelect.vue';
+import StyleLinks from './StyleLinks.vue';
 import {
     TablerRange,
     TablerColour,
@@ -336,6 +344,7 @@ export default {
         TablerEnum,
         TablerColour,
         StyleTemplate,
+        StyleLinks,
         IconSelect,
     }
 }

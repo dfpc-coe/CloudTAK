@@ -52,7 +52,7 @@
                         <div class='d-flex'>
                             <div class='align-self-center' v-text='q.query'></div>
                             <div class='ms-auto'>
-                                <div v-if='!disabled' @click.stop='queries.splice(q_idx, 1)' class='btn'><IconTrash size='32'/></div>
+                                <IconTrash v-if='!disabled' @click.stop='queries.splice(q_idx, 1)' size='32'/>
                             </div>
                         </div>
                     </div>
