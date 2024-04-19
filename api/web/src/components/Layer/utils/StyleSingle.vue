@@ -1,91 +1,151 @@
 <template>
-<div class='card-body'>
-    <div class='row g-2'>
-        <div class="d-flex justify-content-center">
-            <div class="btn-list">
-                <div class="btn-group" role="group">
-                    <input v-model='mode' type="radio" class="btn-check" name="geom-toolbar" value='point'>
-                    <label @click='mode="point"' class="btn btn-icon px-3">
-                        <IconPoint size='32'/> Points
-                    </label>
-                    <input v-model='mode' type="radio" class="btn-check" name="geom-toolbar" value='line'>
-                    <label @click='mode="line"' class="btn btn-icon px-3">
-                        <IconLine size='32'/> Lines
-                    </label>
-                    <input v-model='mode' type="radio" class="btn-check" name="geom-toolbar" value='polygon'>
-                    <label @click='mode="polygon"' class="btn btn-icon px-3">
-                        <IconPolygon size='32'/> Polygons
-                    </label>
+<div class='row g-2 my-2'>
+    <StyleTemplate
+        label='Global Callsign'
+        description='Global Callsign will apply to all CoT markers unless they are overriden by a callsign field on a given query'
+        :disabled='disabled'
+        :schema='schema'
+        v-model='filters.callsign'
+    />
+
+    <StyleTemplate
+        label='Global Remarks'
+        description='Global Remarks will apply to all CoT markers unless they are overriden by a remarks field on a given query'
+        :disabled='disabled'
+        :schema='schema'
+        v-model='filters.remarks'
+    />
+
+    <div class="d-flex justify-content-center">
+        <div class="btn-list">
+            <div class="btn-group" role="group">
+                <input v-model='mode' type="radio" class="btn-check" name="geom-toolbar" value='point'>
+                <label @click='mode="point"' class="btn btn-icon px-3">
+                    <IconPoint size='32'/> Points
+                </label>
+                <input v-model='mode' type="radio" class="btn-check" name="geom-toolbar" value='line'>
+                <label @click='mode="line"' class="btn btn-icon px-3">
+                    <IconLine size='32'/> Lines
+                </label>
+                <input v-model='mode' type="radio" class="btn-check" name="geom-toolbar" value='polygon'>
+                <label @click='mode="polygon"' class="btn btn-icon px-3">
+                    <IconPolygon size='32'/> Polygons
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <div class='col-md-12 darken round'>
+        <div class='col-12 d-flex align-items-center'>
+            <label>Callsign Override</label>
+            <div class='ms-auto'>
+                <TablerToggle v-model='filters[mode].enabled.callsign' :disabled='disabled' label='Enabled'/>
+            </div>
+        </div>
+
+        <StyleTemplate
+            v-if='filters[mode].enabled.callsign'
+            :disabled='disabled'
+            :schema='schema'
+            v-model='filters[mode].properties.callsign'
+        />
+    </div>
+
+    <div class='col-md-12 darken round'>
+        <div class='col-12 d-flex align-items-center'>
+            <label>Remarks Override</label>
+            <div class='ms-auto'>
+                <TablerToggle v-model='filters[mode].enabled.remarks' :disabled='disabled' label='Enabled'/>
+            </div>
+        </div>
+
+        <StyleTemplate
+            v-if='filters[mode].enabled.remarks'
+            :disabled='disabled'
+            :schema='schema'
+            v-model='filters[mode].properties.remarks'
+        />
+    </div>
+
+    <template v-if='mode === "point"'>
+        <div class='col-md-12 darken round'>
+            <div class='col-12 d-flex align-items-center'>
+                <label>Point Icon</label>
+                <div class='ms-auto'>
+                    <TablerToggle v-model='filters[mode].enabled.icon' :disabled='disabled' label='Enabled'/>
                 </div>
             </div>
+            <IconSelect v-if='filters[mode].enabled.icon' v-model='filters[mode].properties.icon' :disabled='disabled || !filters[mode].enabled.icon'/>
         </div>
-
         <div class='col-md-12 darken round'>
-            <StyleTemplate
-                :disabled='disabled'
-                :schema='schema'
-                v-model='filters[mode].properties.callsign'
-                label='Callsign'
-            />
-        </div>
-
-        <div class='col-md-12 darken round'>
-            <StyleTemplate
-                :disabled='disabled'
-                :schema='schema'
-                v-model='filters[mode].properties.remarks'
-                label='Remarks'
-            />
-        </div>
-
-        <template v-if='mode === "point"'>
-            <div class='col-md-12 darken round'>
-                <IconSelect label='Point Icon' v-model='filters[mode].properties.icon' :disabled='disabled || !filters[mode].enabled.icon'>
-                    <TablerToggle v-model='filters[mode].enabled.icon' :disabled='disabled' label='Enabled'/>
-                </IconSelect>
-            </div>
-            <div class='col-md-12 darken round'>
-                <TablerColour label='Point Color' v-model='filters[mode].properties.color' :disabled='disabled || !filters[mode].enabled.color'>
+            <div class='col-12 d-flex align-items-center'>
+                <label>Point Color</label>
+                <div class='ms-auto'>
                     <TablerToggle v-model='filters[mode].enabled.color' :disabled='disabled' label='Enabled'/>
-                </TablerColour>
+                </div>
             </div>
-        </template>
-        <template v-else-if='mode !== "point"'>
-            <div class='col-md-12 darken round'>
-                <TablerColour label='Line Color' v-model='filters[mode].properties.stroke' :disabled='disabled || !filters[mode].enabled.stroke'>
+            <TablerColour v-if='filters[mode].enabled.color' v-model='filters[mode].properties.color' :disabled='disabled || !filters[mode].enabled.color'/>
+        </div>
+    </template>
+    <template v-else-if='mode !== "point"'>
+        <div class='col-md-12 darken round'>
+            <div class='col-12 d-flex align-items-center'>
+                <label>Line Color</label>
+                <div class='ms-auto'>
                     <TablerToggle v-model='filters[mode].enabled.stroke' :disabled='disabled' label='Enabled'/>
-                </TablerColour>
+                </div>
             </div>
+            <TablerColour v-if='filters[mode].enabled.stroke' v-model='filters[mode].properties.stroke' :disabled='disabled || !filters[mode].enabled.stroke'/>
+        </div>
 
-            <div class='col-md-12 darken round'>
-                <TablerEnum label='Line Style' :disabled='disabled || !filters[mode].enabled["stroke-style"]' v-model='filters[mode].properties["stroke-style"]' :options='["Solid", "Dashed", "Dotted", "Outlined"]'>
+        <div class='col-md-12 darken round'>
+            <div class='col-12 d-flex align-items-center'>
+                <label>Line Style</label>
+                <div class='ms-auto'>
                     <TablerToggle v-model='filters[mode].enabled["stroke-style"]' :disabled='disabled' label='Enabled'/>
-                </TablerEnum>
+                </div>
             </div>
-            <div class='col-md-12 darken round'>
-                <TablerRange label='Line Thickness' :disabled='disabled || !filters[mode].enabled["stroke-width"]' v-model='filters[mode].properties["stroke-width"]' :min="1" :max="6" :step="1">
+            <TablerEnum v-if='filters[mode].enabled["stroke-style"]' :disabled='disabled || !filters[mode].enabled["stroke-style"]' v-model='filters[mode].properties["stroke-style"]' :options='["Solid", "Dashed", "Dotted", "Outlined"]'/>
+        </div>
+        <div class='col-md-12 darken round'>
+            <div class='col-12 d-flex align-items-center'>
+                <label>Line Width</label>
+                <div class='ms-auto'>
                     <TablerToggle v-model='filters[mode].enabled["stroke-width"]' :disabled='disabled' label='Enabled'/>
-                </TablerRange>
+                </div>
             </div>
-            <div class='col-md-12 darken round'>
-                <TablerRange label='Line Opacity' :disabled='disabled || !filters[mode].enabled["stroke-opacity"]' v-model='filters[mode].properties["stroke-opacity"]' :min="0" :max="256" :step="1">
+            <TablerRange v-if='filters[mode].enabled["stroke-width"]' :disabled='disabled || !filters[mode].enabled["stroke-width"]' v-model='filters[mode].properties["stroke-width"]' :min="1" :max="6" :step="1"/>
+        </div>
+        <div class='col-md-12 darken round'>
+            <div class='col-12 d-flex align-items-center'>
+                <label>Line Opacity</label>
+                <div class='ms-auto'>
                     <TablerToggle v-model='filters[mode].enabled["stroke-opacity"]' :disabled='disabled' label='Enabled'/>
-                </TablerRange>
+                </div>
             </div>
-        </template>
-        <template v-if='mode === "polygon"'>
-            <div class='col-md-12 darken round'>
-                <TablerColour label='Fill Color' v-model='filters[mode].properties.fill' :disabled='disabled || !filters[mode].enabled.fill'>
+            <TablerRange v-if='filters[mode].enabled["stroke-opacity"]' :disabled='disabled || !filters[mode].enabled["stroke-opacity"]' v-model='filters[mode].properties["stroke-opacity"]' :min="0" :max="256" :step="1"/>
+        </div>
+    </template>
+    <template v-if='mode === "polygon"'>
+        <div class='col-md-12 darken round'>
+            <div class='col-12 d-flex align-items-center'>
+                <label>Fill Color</label>
+                <div class='ms-auto'>
                     <TablerToggle v-model='filters[mode].enabled.fill' :disabled='disabled' label='Enabled'/>
-                </TablerColour>
+                </div>
             </div>
-            <div class='col-md-12 darken round'>
-                <TablerRange label='Fill Opacity' :disabled='disabled' v-model='filters[mode].properties["fill-opacity"]' :min="0" :max="256" :step="1">
+            <TablerColour v-if='filters[mode].enabled.fill' v-model='filters[mode].properties.fill' :disabled='disabled || !filters[mode].enabled.fill'/>
+        </div>
+        <div class='col-md-12 darken round'>
+            <div class='col-12 d-flex align-items-center'>
+                <label>Fill Opacity</label>
+                <div class='ms-auto'>
                     <TablerToggle v-model='filters[mode].enabled["fill-opacity"]' :disabled='disabled' label='Enabled'/>
-                </TablerRange>
+                </div>
             </div>
-        </template>
-    </div>
+            <TablerRange v-if='filters[mode].enabled["fill-opacity"]' :disabled='disabled' v-model='filters[mode].properties["fill-opacity"]' :min="0" :max="256" :step="1"/>
+        </div>
+    </template>
 </div>
 </template>
 
@@ -127,9 +187,13 @@ export default {
         return {
             mode: 'point',
             filters: {
+                callsign: '',
+                remarks: '',
+                links: [],
                 point: {
                     enabled: {
                         icon: false,
+                        links: false,
                         color: false,
                         remarks: false,
                         callsign: false
@@ -147,6 +211,7 @@ export default {
                         'stroke-style': false,
                         'stroke-opacity': false,
                         'stroke-width': false,
+                        links: false,
                         remarks: false,
                         callsign: false
                     },
@@ -177,6 +242,7 @@ export default {
                         'stroke-width': 3,
                         'fill': '#d63939',
                         'fill-opacity': 256,
+                        links: false,
                         remarks: '',
                         callsign: ''
                     }
@@ -193,7 +259,13 @@ export default {
         }
     },
     mounted: function() {
-        for (const key in this.modelValue) {
+        for (const prop of ['remarks', 'callsign', 'links']) {
+            if (!this.modelValue[prop]) continue;
+            this.filters[prop] = this.modelValue[prop];
+        }
+
+        for (const key of ['point', 'line', 'polygon']) {
+            if (!this.modelValue[key]) continue;
             for (const prop in this.modelValue[key]) {
                 if (this.modelValue[key][prop] !== undefined) {
                     this.filters[key].enabled[prop] = true;
@@ -212,7 +284,11 @@ export default {
 
             const res = {};
 
-            for (const geom in styles) {
+            for (const prop of ['remarks', 'callsign', 'links']) {
+                res[prop] = styles[prop];
+            }
+
+            for (const geom of ['point', 'line', 'polygon']) {
                 res[geom] = {};
                 for (const key in styles[geom].properties) {
                     if (!['remarks', 'callsign'].includes(key) && !styles[geom].enabled[key]) continue;
