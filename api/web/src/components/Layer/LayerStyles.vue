@@ -29,20 +29,15 @@
                 Query Mode
             </h3>
             <div class='ms-auto btn-list'>
+                <button @click='help("query")' class='btn'>
+                    <IconHelp size='32'/>
+                </button>
+                <button v-if='query' @click='query = null' class='btn'>
+                    <IconX size='32'/>
+                </button>
                 <template v-if='!disabled'>
-                    <button @click='help("query")' class='btn'>
-                        <IconHelp size='32'/>
-                    </button>
                     <button v-if='query === null' @click='newQuery' class='btn'>
                         <IconPlus size='32'/>
-                    </button>
-                </template>
-                <template v-else>
-                    <button @click='help("query")' class='btn'>
-                        <IconHelp size='32'/>
-                    </button>
-                    <button v-if='query' @click='query = null' class='btn'>
-                        <IconX size='32'/>
                     </button>
                 </template>
             </div>
@@ -169,10 +164,11 @@ export default {
             }
         },
         newQuery: function() {
-            this.query = {
+            this.queries.push({
                 query: '',
                 styles: {}
-            }
+            })
+            this.query = this.queries[this.queries.length -1];
         },
         saveLayer: async function(query = null) {
             this.loading.save = true;
