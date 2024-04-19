@@ -15,11 +15,13 @@
         }'>
             <thead>
                 <tr>
+                    <th>Name</th>
                     <th>Link</th>
                 </tr>
             </thead>
             <tbody>
                 <tr @click='edit(link)' :key='link.name' v-for='(link, it) in links'>
+                    <td v-text='link.remarks'/>
                     <td>
                         <div class='d-flex align-items-center'>
                             <span v-text='link.url'/>

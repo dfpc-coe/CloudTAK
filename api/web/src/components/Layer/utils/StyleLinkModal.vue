@@ -6,6 +6,7 @@
             <span class='modal-title'>Edit Link</span>
         </div>
         <div class="modal-body py-4">
+            <StyleTemplate label='Link Name' :schema='schema' v-model='link.remarks' class='py-1'/>
             <StyleTemplate label='Link URL' :schema='schema' v-model='link.url' class='py-1'/>
 
             <button v-if='edit' @click='done' class='btn btn-primary w-100 mt-4'>Update</button>
@@ -34,6 +35,7 @@ export default {
     data: function() {
         return {
             link: {
+                remarks: '',
                 url: '',
             }
         }
