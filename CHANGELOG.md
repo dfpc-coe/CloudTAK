@@ -12,6 +12,9 @@
 
 ### Pending Release
 
+- :rocket: `API` Improve behavior if underlying LogStream isn't created or is missing
+- :rocket: `UI` Remove Create Layer buttons from non-connection page
+
 ### v1.11.0 - 2024-04-18
 
 - :rocket: `API` Add support for parsing `ackrequest` in CoT messages
