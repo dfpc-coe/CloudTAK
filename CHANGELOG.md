@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v1.11.0 - 2024-04-18
+
+- :rocket: `API` Add support for parsing `ackrequest` in CoT messages
+
 ### v1.10.0 - 2024-04-18
 
 - :rocket: `API` Add `remarks` field as default column in ESRI Sink
