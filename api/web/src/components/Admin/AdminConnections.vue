@@ -1,16 +1,9 @@
 <template>
 <div>
     <div class="card-header">
-        <h1 class='card-title'>Layer Admin</h1>
+        <h1 class='card-title'>Connection Admin</h1>
 
         <div class='ms-auto btn-list'>
-            <IconCloudUpload
-                @click='redeploy'
-                v-tooltip='"Redeploy"'
-                size='32'
-                class='cursor-pointer'
-            />
-
             <IconRefresh
                 @click='fetchList'
                 v-tooltip='"Refresh"'
@@ -21,7 +14,7 @@
     </div>
     <template v-if='loading'>
         <div class='card-body'>
-            <TablerLoading desc='Loading Layers'/>
+            <TablerLoading desc='Loading Connections'/>
         </div>
     </template>
     <template v-else>
@@ -39,11 +32,11 @@
                         v-model:header='header'
                     />
                     <tbody>
-                        <tr @click='stdclick($router, $event, `/layer/${layer.id}`)' :key='layer.id' v-for='layer in list.items' class='cursor-pointer'>
+                        <tr @click='stdclick($router, $event, `/connection/${connection.id}`)' :key='connection.id' v-for='connection in list.items' class='cursor-pointer'>
                             <template v-for='h in header'>
                                 <template v-if='h.display'>
                                     <td>
-                                        <span v-text='layer[h.name]'/>
+                                        <span v-text='connection[h.name]'/>
                                     </td>
                                 </template>
                             </template>
@@ -108,16 +101,9 @@ export default {
     },
     methods: {
         stdclick,
-        redeploy: async function() {
-            this.loading = true;
-            this.stack = await std(`/api/layer/redeploy`, {
-                method: 'POST'
-            });
-            this.loading = false;
-        },
         listLayerSchema: async function() {
-            const schema = await std('/api/schema?method=GET&url=/layer');
-            this.header = ['id', 'name', 'cron', 'task'].map((h) => {
+            const schema = await std('/api/schema?method=GET&url=/connection');
+            this.header = ['id', 'name'].map((h) => {
                 return { name: h, display: true };
             });
 
@@ -135,7 +121,7 @@ export default {
         },
         fetchList: async function() {
             this.loading = true;
-            const url = stdurl('/api/layer');
+            const url = stdurl('/api/connection');
             if (this.query && this.paging.filter) url.searchParams.append('filter', this.paging.filter);
             url.searchParams.append('limit', this.paging.limit);
             url.searchParams.append('page', this.paging.page);
