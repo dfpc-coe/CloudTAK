@@ -231,7 +231,8 @@ export default {
                         'stroke-opacity': 256,
                         'stroke-width': 3,
                         remarks: '',
-                        callsign: ''
+                        callsign: '',
+                        links: []
                     }
                 },
                 polygon: {
@@ -241,9 +242,10 @@ export default {
                         'stroke-opacity': false,
                         'stroke-width': false,
                         fill: false,
+                        links: false,
                         'fill-opacity': false,
                         remarks: false,
-                        callsign: false
+                        callsign: false,
                     },
                     properties: {
                         stroke: '#d63939',
@@ -252,9 +254,9 @@ export default {
                         'stroke-width': 3,
                         'fill': '#d63939',
                         'fill-opacity': 256,
-                        links: false,
                         remarks: '',
-                        callsign: ''
+                        callsign: '',
+                        links: []
                     }
                 }
             }
@@ -301,8 +303,6 @@ export default {
             for (const geom of ['point', 'line', 'polygon']) {
                 res[geom] = {};
                 for (const key in styles[geom].properties) {
-                    if (!['remarks', 'callsign'].includes(key) && !styles[geom].enabled[key]) continue;
-
                     if (['fill-opacity', 'stroke-width', 'stroke-opacity'].includes(key)) {
                         if (res[geom][key] !== undefined) res[geom][key] = parseInt(res[geom][key])
                     } else if (['remarks', 'callsign'].includes(key)) {
