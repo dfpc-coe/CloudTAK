@@ -23,8 +23,9 @@ export default class LogGroup {
     }> {
         const cwl = new CloudWatchLogs.CloudWatchLogsClient({ region: process.env.AWS_DEFAULT_REGION });
 
+        let streams;
         try {
-            const streams = await cwl.send(new CloudWatchLogs.DescribeLogStreamsCommand({
+            streams = await cwl.send(new CloudWatchLogs.DescribeLogStreamsCommand({
                 limit: 1,
                 descending: true,
                 logGroupName: `/aws/lambda/${config.StackName}-layer-${layer.id}`,
