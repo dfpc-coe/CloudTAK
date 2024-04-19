@@ -1,4 +1,4 @@
-import { Type, Static } from '@sinclair/typebox'
+import { Type } from '@sinclair/typebox'
 import sleep from '../lib/sleep.js';
 import { GenericListOrder } from '@openaddresses/batch-generic';
 import Schema from '@openaddresses/batch-schema';
@@ -104,20 +104,6 @@ export default async function router(schema: Schema, config: Config) {
 
             if (req.body.styles) {
                 await Style.validate(req.body.styles);
-
-                const style = req.body.styles as Static<typeof StyleContainer>;
-
-                if (style.queries) {
-                    req.body.styles = {
-                        queries: style.queries
-                    };
-                } else {
-                    req.body.styles = {
-                        point: style.point,
-                        line: style.line,
-                        polygon: style.polygon
-                    };
-                }
             }
 
             if ((!req.body.connection && !req.body.data) || (req.body.connection && req.body.data)) {
@@ -237,20 +223,6 @@ export default async function router(schema: Schema, config: Config) {
 
             if (req.body.styles) {
                 await Style.validate(req.body.styles);
-
-                const style = req.body.styles as Static<typeof StyleContainer>;
-
-                if (style.queries) {
-                    req.body.styles = {
-                        queries: style.queries
-                    };
-                } else {
-                    req.body.styles = {
-                        point: style.point,
-                        line: style.line,
-                        polygon: style.polygon
-                    };
-                }
             }
 
             if (req.body.connection && req.body.data) {
