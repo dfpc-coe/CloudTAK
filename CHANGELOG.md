@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v1.12.1 - 2024-04-19
+
+- :bug: `UI` Remove style properties in request when `enabled` is not checked
+
 ### v1.12.0 - 2024-04-19
 
 - :tada: `UI` Significant changes to Layer Style Editor
