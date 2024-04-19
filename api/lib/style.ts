@@ -8,6 +8,9 @@ export const StylePoint = Type.Object({
     color: Type.Optional(Type.String()),
     remarks: Type.Optional(Type.String()),
     callsign: Type.Optional(Type.String()),
+    links: Type.Optional(Type.Array(Type.Object({
+        url: Type.String()
+    }))),
     icon: Type.Optional(Type.String())
 });
 
@@ -18,6 +21,9 @@ export const StyleLine = Type.Object({
     'stroke-width': Type.Optional(Type.String()),
     remarks: Type.Optional(Type.String()),
     callsign: Type.Optional(Type.String()),
+    links: Type.Optional(Type.Array(Type.Object({
+        url: Type.String()
+    })))
 });
 
 export const StylePolygon = Type.Object({
@@ -28,14 +34,21 @@ export const StylePolygon = Type.Object({
     fill: Type.Optional(Type.String()),
     'fill-opacity': Type.Optional(Type.String()),
     remarks: Type.Optional(Type.String()),
-    callsign: Type.Optional(Type.String())
+    callsign: Type.Optional(Type.String()),
+    links: Type.Optional(Type.Array(Type.Object({
+        url: Type.String()
+    })))
 });
 
 export const StyleSingle = Type.Object({
+    remarks: Type.Optional(Type.String()),
+    callsign: Type.Optional(Type.String()),
+    links: Type.Optional(Type.Array(Type.Object({
+        url: Type.String()
+    }))),
     line: Type.Optional(StyleLine),
     point: Type.Optional(StylePoint),
     polygon: Type.Optional(StylePolygon)
-
 })
 
 export const StyleSingleContainer = Type.Object({
@@ -47,6 +60,11 @@ export const StyleContainer = Type.Object({
     line: Type.Optional(StyleLine),
     point: Type.Optional(StylePoint),
     polygon: Type.Optional(StylePolygon),
+    remarks: Type.Optional(Type.String()),
+    callsign: Type.Optional(Type.String()),
+    links: Type.Optional(Type.Array(Type.Object({
+        url: Type.String()
+    }))),
     queries: Type.Optional(Type.Array(StyleSingleContainer))
 })
 
@@ -67,6 +85,7 @@ export default class Style {
 
     constructor(style: StyleInterface) {
         this.style = style;
+        if (!this.style.styles.queries) this.style.styles.queries = [];
     }
 
     static validate(styles: Static<typeof StyleContainer>) {
@@ -97,23 +116,23 @@ export default class Style {
                 feature.properties.stale = this.style.stale;
             }
 
-            if (!this.style.enabled_styles) {
-                return feature;
-            } else if (this.style.styles.queries) {
-                for (const q of this.style.styles.queries) {
+            if (!this.style.enabled_styles) return feature;
+
+            this.#by_geom(this.style.styles, feature);
+
+            for (const q of this.style.styles.queries) {
+                try {
                     const expression = jsonata(q.query);
 
                     if (await expression.evaluate(feature) === true) {
                         this.#by_geom(q.styles, feature);
                     }
+                } catch (err) {
+                    // Ignore queries that result in invalid output - this is explicitly allowed
                 }
-
-                return feature;
-            } else {
-                this.#by_geom(this.style.styles, feature);
-
-                return feature;
             }
+
+            return feature;
         } catch (err) {
             throw new Err(400, err, err instanceof Error ? err.message : String(err));
         }
