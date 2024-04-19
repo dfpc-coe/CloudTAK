@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v1.13.0 - 2024-04-19
+
+- :rocket: `UI` Support HTTP Links in the CoTViewer
+- :rocket: `UI` Support Dynamically generating HTTP Links in Style Editor
+
 ### v1.12.1 - 2024-04-19
 
 - :bug: `UI` Remove style properties in request when `enabled` is not checked
