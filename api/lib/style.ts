@@ -85,7 +85,7 @@ export default class Style {
 
     constructor(style: StyleInterface) {
         this.style = style;
-        if (!this.style.queries) this.style.queries = [];
+        if (!this.style.styles.queries) this.style.styles.queries = [];
     }
 
     static validate(styles: Static<typeof StyleContainer>) {
@@ -118,19 +118,21 @@ export default class Style {
 
             if (!this.style.enabled_styles) return feature;
 
-            } else {
-                this.#by_geom(this.style.styles, feature);
+            this.#by_geom(this.style.styles, feature);
 
-                for (const q of this.style.styles.queries) {
+            for (const q of this.style.styles.queries) {
+                try {
                     const expression = jsonata(q.query);
 
                     if (await expression.evaluate(feature) === true) {
                         this.#by_geom(q.styles, feature);
                     }
+                } catch (err) {
+                    // Ignore queries that result in invalid output - this is explicitly allowed
                 }
-
-                return feature;
             }
+
+            return feature;
         } catch (err) {
             throw new Err(400, err, err instanceof Error ? err.message : String(err));
         }
