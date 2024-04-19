@@ -12,6 +12,14 @@
 
 ### Pending Release
 
+### v1.12.0 - 2024-04-19
+
+- :tada: `UI` Significant changes to Layer Style Editor
+    - Allow Global Callsign Remarks
+    - Allow Global Styling
+    - Query styles are optionally applied after global styling
+    - If a query is not successful it is gracefully passed over
+- :rocket: `API` Update Style schema to support global styles
 - :rocket: `API` Improve behavior if underlying LogStream isn't created or is missing
 - :rocket: `UI` Remove Create Layer buttons from non-connection page
 
