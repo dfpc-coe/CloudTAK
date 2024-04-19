@@ -85,6 +85,7 @@ export default class Style {
 
     constructor(style: StyleInterface) {
         this.style = style;
+        if (!this.style.queries) this.style.queries = [];
     }
 
     static validate(styles: Static<typeof StyleContainer>) {
@@ -115,9 +116,11 @@ export default class Style {
                 feature.properties.stale = this.style.stale;
             }
 
-            if (!this.style.enabled_styles) {
-                return feature;
-            } else if (this.style.styles.queries) {
+            if (!this.style.enabled_styles) return feature;
+
+            } else {
+                this.#by_geom(this.style.styles, feature);
+
                 for (const q of this.style.styles.queries) {
                     const expression = jsonata(q.query);
 
@@ -125,10 +128,6 @@ export default class Style {
                         this.#by_geom(q.styles, feature);
                     }
                 }
-
-                return feature;
-            } else {
-                this.#by_geom(this.style.styles, feature);
 
                 return feature;
             }
