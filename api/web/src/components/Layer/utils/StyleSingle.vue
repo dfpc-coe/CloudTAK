@@ -81,6 +81,23 @@
         />
     </div>
 
+    <div class='col-md-12 hover-light rounded px-2 py-2'>
+        <div class='col-12 d-flex align-items-center'>
+            <label><IconLink size='20'/> Links Override</label>
+            <div class='ms-auto'>
+                <TablerToggle v-model='filters[mode].enabled.links' :disabled='disabled' label='Enabled'/>
+            </div>
+        </div>
+
+        <StyleLinks
+            v-if='filters[mode].enabled.links'
+            :label='""'
+            :disabled='disabled'
+            :schema='schema'
+            v-model='filters[mode].properties.links'
+        />
+    </div>
+
     <template v-if='mode === "point"'>
         <div class='col-md-12 hover-light rounded px-2 py-2'>
             <div class='col-12 d-flex align-items-center'>
@@ -166,6 +183,7 @@
 <script>
 import StyleTemplate from './StyleTemplate.vue';
 import {
+    IconLink,
     IconPaint,
     IconGhost,
     IconPoint,
@@ -223,7 +241,8 @@ export default {
                         icon: '',
                         color: '#d63939',
                         remarks: '',
-                        callsign: ''
+                        callsign: '',
+                        links: []
                     }
                 },
                 line: {
@@ -338,6 +357,7 @@ export default {
         IconLine,
         IconPolygon,
         IconPhoto,
+        IconLink,
         IconBlockquote,
         IconBorderStyle2,
         TablerToggle,
