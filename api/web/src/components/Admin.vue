@@ -62,6 +62,14 @@
                                             <span
                                                 class='list-group-item list-group-item-action d-flex align-items-center'
                                                 :class='{
+                                                    "active": $route.name === "admin-connection",
+                                                    "cursor-pointer": $route.name !== "admin-connection"
+                                                }'
+                                                @click='$router.push(`/admin/connection`)'
+                                            ><IconNetwork size='32' /><span class='mx-3'>Connections</span></span>
+                                            <span
+                                                class='list-group-item list-group-item-action d-flex align-items-center'
+                                                :class='{
                                                     "active": $route.name === "admin-layer",
                                                     "cursor-pointer": $route.name !== "admin-layer"
                                                 }'
@@ -103,6 +111,7 @@ import {
     TablerBreadCrumb,
 } from '@tak-ps/vue-tabler'
 import {
+    IconNetwork,
     IconUsers,
     IconSettings,
     IconServer,
@@ -130,6 +139,7 @@ export default {
         PageFooter,
         TablerLoading,
         TablerBreadCrumb,
+        IconNetwork,
     }
 }
 </script>
