@@ -6,7 +6,7 @@
             <span class='modal-title'>Edit Link</span>
         </div>
         <div class="modal-body py-4">
-            <TablerInput label='Link URL' v-model='link.url' class='py-1'/>
+            <StyleTemplate label='Link URL' :schema='schema' v-model='link.url' class='py-1'/>
 
             <button v-if='edit' @click='done' class='btn btn-primary w-100 mt-4'>Update</button>
             <button v-else @click='done' class='btn btn-primary w-100 mt-4'>Create</button>
@@ -15,11 +15,8 @@
 </template>
 
 <script>
-
+import StyleTemplate from './StyleTemplate.vue';
 import {
-    TablerInput,
-    TablerToggle,
-    TablerEnum,
     TablerModal,
 } from '@tak-ps/vue-tabler';
 
@@ -30,7 +27,7 @@ export default {
             type: Object,
         },
         schema: {
-            type: Array,
+            type: Object,
             required: true
         }
     },
@@ -53,9 +50,7 @@ export default {
     },
     components: {
         TablerModal,
-        TablerInput,
-        TablerToggle,
-        TablerEnum
+        StyleTemplate,
     }
 }
 </script>

@@ -8,7 +8,7 @@
         </div>
     </div>
 
-    <TablerNone v-if='!modelValue.length' :create='false' :compact='true' label='Link Overrides'/>
+    <TablerNone v-if='!links.length' :create='false' :compact='true' label='Link Overrides'/>
     <div v-else class='table-responsive'>
         <table class="table table-hover card-table table-vcenter" :class='{
             "cursor-pointer": !disabled
@@ -19,12 +19,12 @@
                 </tr>
             </thead>
             <tbody>
-                <tr @click='edit(link)' :key='link.name' v-for='(link, it) in modelValue'>
+                <tr @click='edit(link)' :key='link.name' v-for='(link, it) in links'>
                     <td>
                         <div class='d-flex align-items-center'>
                             <span v-text='link.url'/>
                             <div class='ms-auto'>
-                                <IconTrash v-if='!disabled' @click.stop='schema.splice(field_it, 1)' size='32' class='cursor-pointer'/>
+                                <IconTrash v-if='!disabled' @click.stop='links.splice(it, 1)' size='32' class='cursor-pointer'/>
                             </div>
                         </div>
                     </td>
@@ -36,7 +36,8 @@
 
 <StyleLinkModal
     v-if='create'
-    :edit='editField'
+    :edit='editLink'
+    :schema='schema'
     @done='push($event)'
     @close='create = false'
 />
@@ -63,28 +64,48 @@ export default {
             type: Boolean,
             default: true
         },
+        schema: {
+            type: Object,
+            required: true
+        },
         label: {
             type: String,
             default: 'Link Override'
         }
     },
-    data: function() {
-        return {
-            create: false,
-            editField: {
-                url: ''
+    watch: {
+        modelValue: {
+            deep: true,
+            handler: function() {
+                this.links = this.modelValue;
             }
         }
     },
+    data: function() {
+        return {
+            create: false,
+            editLink: false,
+            links: this.modelValue
+        }
+    },
     methods: {
-        push: function(field) {
+        edit: function(link) {
+            if (this.disabled) return;
+            this.editLink = link;
+            this.create = true;
+        },
+        push: function(link) {
             this.create = false;
-            if (this.editField) {
-                this.editField = Object.assign(this.editField, field);
+
+            if (!this.editLink) {
+                this.links.push(link);
             } else {
-                this.schema.push(field);
+                this.editLink = Object.assign(this.editLink, link);
             }
-            this.editField = null;
+
+            this.$emit('update:modelValue', this.links);
+
+            this.editLink = null;
         },
     },
     components: {
