@@ -6,8 +6,18 @@
         class='position-absolute top-0 end-0 text-white py-2'
         style='z-index: 1; width: 60px; background-color: rgba(0, 0, 0, 0.5);'
    >
-        <IconMenu2 v-if='noMenuShown' @click='$router.push("/menu")' size='40' class='mx-2 cursor-pointer hover-button'/>
-        <IconX v-if='!noMenuShown' @click='$router.push("/"); cot = feat = query = false' size='40' class='mx-2 cursor-pointer bg-dark'/>
+        <IconMenu2
+            v-if='noMenuShown'
+            @click='$router.push("/menu")'
+            size='40'
+            class='mx-2 cursor-pointer hover-button'
+        />
+        <IconX
+            v-else
+            @click='closeAllMenu'
+            size='40'
+            class='mx-2 cursor-pointer bg-dark'
+        />
     </div>
 
     <div
@@ -111,20 +121,51 @@
         </TablerDropdown>
         <TablerDropdown>
             <template #default>
-                <IconPencil @click='menu.draw = true' size='40' class='mx-2 cursor-pointer hover-button'/>
+                <IconPencil @click='closeAllMenu' size='40' class='mx-2 cursor-pointer hover-button'/>
             </template>
             <template #dropdown>
-                <div class='btn-list my-2'>
-                    <IconPoint      size='35' @click='startDraw("point")' class='cursor-pointer hover-button'/>
-                    <IconLine       size='35' @click='startDraw("linestring")' class='cursor-pointer hover-button'/>
-                    <IconPolygon    size='35' @click='startDraw("polygon")' class='cursor-pointer hover-button'/>
-                    <IconVector     size='35' @click='startDraw("rectangle")' class='cursor-pointer hover-button'/>
+                <div @click='pointInput = true' class='col-12 py-1 px-2 hover-button cursor-pointer'>
+                    <IconCursorText size='25'/>
+                    Coordinate Input
+                </div>
+                <div @click='startDraw("point")' class='col-12 py-1 px-2 hover-button cursor-pointer'>
+                    <IconPoint size='25'/>
+                    Draw Point
+                </div>
+                <div @click='startDraw("linestring")' class='col-12 py-1 px-2 hover-button cursor-pointer'>
+                    <IconLine size='25'/>
+                    Draw Line
+                </div>
+                <div @click='startDraw("polygon")' class='col-12 py-1 px-2 hover-button cursor-pointer'>
+                    <IconPolygon size='25'/>
+                    Draw Polygon
+                </div>
+                <div @click='startDraw("rectangle")' class='col-12 py-1 px-2 hover-button cursor-pointer'>
+                    <IconVector size='25'/>
+                    Draw Rectangle
                 </div>
             </template>
         </TablerDropdown>
     </div>
 
     <router-view @reset='deleteCOT()'/>
+
+    <div
+        v-if='menu.point'
+        class='position-absolute end-0 text-white'
+        style='
+            top: 56px;
+            z-index: 1;
+            width: 200px;
+            height: 100px;
+            border-radius: 0px 6px 0px 0px;
+            background-color: rgba(0, 0, 0, 0.5);
+        '
+    >
+        <div class='d-flex align-items-center h-100'>
+            <Coordinate :coordinates='[0,0]'/>
+        </div>
+    </div>
 
     <CloudTAKCoTView
         v-if='cot && mode === "Default"'
@@ -187,6 +228,7 @@ import {
     IconPoint,
     IconLine,
     IconPolygon,
+    IconCursorText,
     IconVector,
     IconBell,
     IconCircleArrowUp,
@@ -197,6 +239,7 @@ import {
     TablerModal,
     TablerNone,
 } from '@tak-ps/vue-tabler';
+import Coordinate from './util/Coordinate.vue';
 import Loading from '../Loading.vue';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import CloudTAKCoTView from './CoTView.vue';
@@ -235,7 +278,7 @@ export default {
             }
         },
         noMenuShown: function() {
-            return !this.cot && !this.feat && !this.query && !this.$route.path.startsWith('/menu')
+            return !this.pointInput && !this.cot && !this.feat && !this.query && !this.$route.path.startsWith('/menu')
         }
     },
     unmounted: function() {
@@ -282,10 +325,7 @@ export default {
     data: function() {
         return {
             mode: 'Default',
-            menu: {
-                // Menu State Functions - true for shown
-                draw: false,
-            },
+            pointInput: false,
             locked: [],         // Lock the map view to a given CoT - The last element is the currently locked value
                                 //   this is an array so that things like the radial menu can temporarily lock state but remember the previous lock value when they are closed
             edit: false,        // If a radial.cot is set and edit is true then load the cot into terra-draw
@@ -343,6 +383,10 @@ export default {
     },
     methods: {
         ...mapActions(useProfileStore, ['clearNotifications']),
+        closeAllMenu: function() {
+            this.$router.push("/");
+            this.cot = this.feat = this.query = this.pointInput = false;
+        },
         closeRadial: function() {
             mapStore.radial.mode = null;
             mapStore.radial.cot = null;
@@ -534,6 +578,7 @@ export default {
     components: {
         Loading,
         SelectFeats,
+        Coordinate,
         UploadImport,
         RadialMenu,
         TablerNone,
@@ -557,6 +602,7 @@ export default {
         IconVector,
         IconMenu2,
         IconPencil,
+        IconCursorText,
         IconCircleArrowUp,
         IconX,
     }
