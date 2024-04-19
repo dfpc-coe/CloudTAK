@@ -4,7 +4,7 @@
         <h3 class='card-title'>Style Overrides</h3>
         <div class='ms-auto btn-list'>
             <IconSettings v-if='disabled' @click='disabled = false' size='32' class='cursor-pointer'/>
-            <template v-else>
+            <template v-else-if='!loading.save'>
                 <div class='btn-list d-flex align-items-center'>
                     <TablerToggle label='Styling Enabled' v-model='enabled'/>
 
@@ -66,13 +66,15 @@
         </template>
         <template v-else-if='query && typeof query === "object"'>
             <div class='card-body'>
-                <TablerInput
-                    :disabled='disabled'
-                    v-model='query.query'
-                    placeholder='JSONata Query'
-                    label='JSONata Query'
-                    :error='error_query'
-                />
+                <div class='col-md-12 hover-light rounded px-2 py-2'>
+                    <TablerInput
+                        :disabled='disabled'
+                        v-model='query.query'
+                        placeholder='JSONata Query'
+                        label='JSONata Query'
+                        :error='error_query'
+                    />
+                </div>
 
                 <StyleSingle :schema='layer.schema' :disabled='disabled' v-model='query.styles'/>
             </div>
