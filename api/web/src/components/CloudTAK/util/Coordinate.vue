@@ -3,10 +3,17 @@
     <label class='subheader mx-2'>Coordinates</label>
     <div class='mx-2'>
         <div
+            v-if='!edit'
             v-text='inMode'
             class='bg-gray-500 rounded-top py-2 px-2'
         />
+        <template v-else>
+            <TablerInput
+                v-model='coordinateEntry'
+            />
+        </template>
         <span
+            v-if='modes.includes("dd")'
             @click='mode = "dd"'
             class='my-1 px-2'
             :class='{
@@ -16,6 +23,7 @@
             v-tooltip='"Decimal Degrees"'
         >DD</span>
         <span
+            v-if='modes.includes("dms")'
             @click='mode = "dms"'
             class='my-1 px-2'
             :class='{
@@ -25,6 +33,7 @@
             v-tooltip='"Decimal Minutes Seconds"'
         >DMS</span>
         <span
+            v-if='modes.includes("mgrs")'
             @click='mode = "mgrs"'
             class='my-1 px-2'
             :class='{
@@ -34,6 +43,7 @@
             v-tooltip='"Military Grid Reference System"'
         >MGRS</span>
         <span
+            v-if='modes.includes("utm")'
             @click='mode = "utm"'
             class='my-1 px-2'
             :class='{
@@ -47,9 +57,23 @@
 </template>
 
 <script>
+import {
+    TablerInput
+} from '@tak-ps/vue-tabler';
+
 export default {
     name: 'COTCoordinate',
     props: {
+        edit: {
+            type: Boolean,
+            default: false
+        },
+        modes: {
+            type: Array,
+            default: function() {
+                return ['dd', 'dms', 'mgrs', 'utm']
+            }
+        },
         coordinates: {
             type: Array,
             required: true
@@ -67,6 +91,7 @@ export default {
     data: function() {
         return {
             mode: 'dd',
+            coordinateEntry: this.coordinates.join()
         }
     },
     methods: {
@@ -199,6 +224,9 @@ export default {
             ab = Math.floor (ab%100000); ab = pad (ab);
             return c + ad + ' ' + af + ah + ' ' + aa + ' ' + ab;
         }
+    },
+    components: {
+        TablerInput
     }
 }
 </script>
