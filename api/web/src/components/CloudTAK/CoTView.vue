@@ -72,6 +72,23 @@
             </div>
         </div>
 
+        <div v-if='feat.properties.links' class='col-12 py-2'>
+            <div class='table-responsive rounded mx-2 py-2 px-2'>
+                <table class="table card-table table-hover table-vcenter datatable">
+                    <thead>
+                        <th>Key</th>
+                        <th>Value</th>
+                    </thead>
+                    <tbody class='bg-gray-500'>
+                        <tr :key='link_it' v-for='(link, link_it) of feat.properties.links'>
+                            <td v-text='link.remarks'/>
+                            <td><a :href='link.url' v-text='link.url'/></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
         <template v-if='isUserDrawn'>
             <CoTStyle v-model='feat'/>
         </template>
