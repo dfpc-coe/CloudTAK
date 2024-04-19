@@ -10,7 +10,7 @@
 
     <TablerNone v-if='!links.length' :create='false' :compact='true' label='Link Overrides'/>
     <div v-else class='table-responsive'>
-        <table class="table table-hover card-table table-vcenter" :class='{
+        <table class="table card-table table-vcenter" :class='{
             "cursor-pointer": !disabled
         }'>
             <thead>
