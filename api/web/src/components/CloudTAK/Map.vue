@@ -161,8 +161,8 @@
         '
     >
         <div class='mx-2 my-2'>
-            <TablerInput label='Name' v-on:keyup.enter='submitPoint' v-model='pointInput.name'/>
-            <Coordinate v-model='pointInput.coordinates' v-on:keyup.enter='submitPoint' :edit='true' :modes='["dd"]'/>
+            <TablerInput label='Name' v-model='pointInput.name' @submit='submitPoint'/>
+            <Coordinate v-model='pointInput.coordinates' :edit='true' :modes='["dd"]' @submit='submitPoint'/>
             <button @click='submitPoint' class='btn btn-primary w-100 mt-3'>Save</button>
         </div>
     </div>

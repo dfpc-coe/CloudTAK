@@ -10,6 +10,7 @@
         <template v-else>
             <TablerInput
                 v-model='coordinateEntry'
+                @submit='$emit("submit")'
             />
         </template>
         <span
@@ -63,6 +64,7 @@ import {
 
 export default {
     name: 'COTCoordinate',
+    emits: ['submit'],
     props: {
         edit: {
             type: Boolean,
