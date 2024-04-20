@@ -1,4 +1,5 @@
 import CloudWatchLogs from '@aws-sdk/client-cloudwatch-logs';
+import Err from '@openaddresses/batch-error';
 import Config from '../config.js';
 import process from 'node:process';
 
@@ -22,12 +23,21 @@ export default class LogGroup {
     }> {
         const cwl = new CloudWatchLogs.CloudWatchLogsClient({ region: process.env.AWS_DEFAULT_REGION });
 
-        const streams = await cwl.send(new CloudWatchLogs.DescribeLogStreamsCommand({
-            limit: 1,
-            descending: true,
-            logGroupName: `/aws/lambda/${config.StackName}-layer-${layer.id}`,
-            orderBy: 'LastEventTime'
-        }));
+        let streams;
+        try {
+            streams = await cwl.send(new CloudWatchLogs.DescribeLogStreamsCommand({
+                limit: 1,
+                descending: true,
+                logGroupName: `/aws/lambda/${config.StackName}-layer-${layer.id}`,
+                orderBy: 'LastEventTime'
+            }));
+        } catch (err) {
+            if (String(err).includes('ResourceNotFoundException')) {
+                return { logs: [] }
+            } else {
+                throw new Err(500, new Error(err instanceof Error ? err.message : String(err)), 'Failed to list lambda logs');
+            }
+        }
 
         if (!streams.logStreams || !streams.logStreams.length) {
             return { logs: [] }

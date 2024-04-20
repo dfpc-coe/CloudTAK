@@ -2,7 +2,7 @@
     <TablerModal>
         <button type="button" class="btn-close" @click='$emit("close")' aria-label="Close"></button>
         <div class="modal-status bg-yellow"></div>
-        <div class="modal-header py-4">
+        <div class="modal-header">
             <span class='modal-title'>Create Field</span>
         </div>
         <div class="modal-body py-4">
