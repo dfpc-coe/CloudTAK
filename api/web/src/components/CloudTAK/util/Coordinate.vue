@@ -96,6 +96,15 @@ export default {
             coordinateEntry: this.modelValue.join()
         }
     },
+    watch: {
+        coordinateEntry: function() {
+            this.$emit('update:modelValue', this.coordinateEntry
+                .split(',')
+                .map((c) => Number(c.trim()))
+                .reverse()
+            );
+        }
+    },
     methods: {
         asDMS: function(dd) {
             const deg = dd | 0;
