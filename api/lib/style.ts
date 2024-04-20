@@ -1,5 +1,4 @@
 import { Type, Static } from '@sinclair/typebox'
-import crypto from 'node:crypto';
 import jsonata from 'jsonata';
 import { Feature } from 'geojson';
 import handlebars from 'handlebars';
@@ -150,7 +149,7 @@ export default class Style {
         if (!feature.properties.links) feature.properties.links = [];
         for (const link of links) {
             feature.properties.links.push({
-                uid: crypto.randomUUID(),
+                uid: feature.id,
                 relation: 'r-u',
                 mime: 'text/html',
                 url: handlebars.compile(link.url)(feature.properties.metadata),
