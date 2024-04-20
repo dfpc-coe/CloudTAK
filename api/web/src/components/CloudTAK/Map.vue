@@ -404,6 +404,7 @@ export default {
                 properties: {
                     type: 'u-d-p',
                     color: '#00FF00',
+                    archived: true,
                     callsign: this.pointInput.name || 'New Feature'
                 },
                 geometry: {
