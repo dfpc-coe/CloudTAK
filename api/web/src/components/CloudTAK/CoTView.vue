@@ -43,7 +43,7 @@
 
     <template v-if='mode === "default"'>
         <Coordinate
-            :coordinates='center'
+            v-model='center'
             class='py-2'
         />
 

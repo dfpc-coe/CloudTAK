@@ -15,7 +15,7 @@
         </div>
         <div class='col-12 overflow-auto' style='height: calc(100% - 106px)'>
             <Coordinate
-                :coordinates='coords'
+                v-bind='coords'
                 class='py-2'
             />
 
