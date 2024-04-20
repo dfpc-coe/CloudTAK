@@ -18,7 +18,7 @@
     <div class='col-12'>
         <template v-if='mode === "default"'>
             <div class='col-12 px-3 py-2'>
-                <Coordinate :coordinates='center'/>
+                <Coordinate v-model='center'/>
             </div>
 
             <div class='col-12 px-3 pb-2'>

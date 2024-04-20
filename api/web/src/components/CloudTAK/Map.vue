@@ -6,8 +6,18 @@
         class='position-absolute top-0 end-0 text-white py-2'
         style='z-index: 1; width: 60px; background-color: rgba(0, 0, 0, 0.5);'
    >
-        <IconMenu2 v-if='noMenuShown' @click='$router.push("/menu")' size='40' class='mx-2 cursor-pointer hover-button'/>
-        <IconX v-if='!noMenuShown' @click='$router.push("/"); cot = feat = query = false' size='40' class='mx-2 cursor-pointer bg-dark'/>
+        <IconMenu2
+            v-if='noMenuShown'
+            @click='$router.push("/menu")'
+            size='40'
+            class='mx-2 cursor-pointer hover-button'
+        />
+        <IconX
+            v-else
+            @click='closeAllMenu'
+            size='40'
+            class='mx-2 cursor-pointer bg-dark'
+        />
     </div>
 
     <div
@@ -111,20 +121,51 @@
         </TablerDropdown>
         <TablerDropdown>
             <template #default>
-                <IconPencil @click='menu.draw = true' size='40' class='mx-2 cursor-pointer hover-button'/>
+                <IconPencil @click='closeAllMenu' size='40' class='mx-2 cursor-pointer hover-button'/>
             </template>
             <template #dropdown>
-                <div class='btn-list my-2'>
-                    <IconPoint      size='35' @click='startDraw("point")' class='cursor-pointer hover-button'/>
-                    <IconLine       size='35' @click='startDraw("linestring")' class='cursor-pointer hover-button'/>
-                    <IconPolygon    size='35' @click='startDraw("polygon")' class='cursor-pointer hover-button'/>
-                    <IconVector     size='35' @click='startDraw("rectangle")' class='cursor-pointer hover-button'/>
+                <div @click='pointInput.shown = true' class='col-12 py-1 px-2 hover-button cursor-pointer'>
+                    <IconCursorText size='25'/>
+                    Coordinate Input
+                </div>
+                <div @click='startDraw("point")' class='col-12 py-1 px-2 hover-button cursor-pointer'>
+                    <IconPoint size='25'/>
+                    Draw Point
+                </div>
+                <div @click='startDraw("linestring")' class='col-12 py-1 px-2 hover-button cursor-pointer'>
+                    <IconLine size='25'/>
+                    Draw Line
+                </div>
+                <div @click='startDraw("polygon")' class='col-12 py-1 px-2 hover-button cursor-pointer'>
+                    <IconPolygon size='25'/>
+                    Draw Polygon
+                </div>
+                <div @click='startDraw("rectangle")' class='col-12 py-1 px-2 hover-button cursor-pointer'>
+                    <IconVector size='25'/>
+                    Draw Rectangle
                 </div>
             </template>
         </TablerDropdown>
     </div>
 
     <router-view @reset='deleteCOT()'/>
+
+    <div
+        v-if='pointInput.shown'
+        class='position-absolute end-0 text-white bg-dark'
+        style='
+            top: 56px;
+            z-index: 1;
+            width: 300px;
+            border-radius: 0px 6px 0px 0px;
+        '
+    >
+        <div class='mx-2 my-2'>
+            <TablerInput label='Name' v-model='pointInput.name' @submit='submitPoint'/>
+            <Coordinate v-model='pointInput.coordinates' :edit='true' :modes='["dd"]' @submit='submitPoint'/>
+            <button @click='submitPoint' class='btn btn-primary w-100 mt-3'>Save</button>
+        </div>
+    </div>
 
     <CloudTAKCoTView
         v-if='cot && mode === "Default"'
@@ -187,6 +228,7 @@ import {
     IconPoint,
     IconLine,
     IconPolygon,
+    IconCursorText,
     IconVector,
     IconBell,
     IconCircleArrowUp,
@@ -195,8 +237,10 @@ import SelectFeats from './util/SelectFeats.vue';
 import {
     TablerDropdown,
     TablerModal,
+    TablerInput,
     TablerNone,
 } from '@tak-ps/vue-tabler';
+import Coordinate from './util/Coordinate.vue';
 import Loading from '../Loading.vue';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import CloudTAKCoTView from './CoTView.vue';
@@ -235,7 +279,7 @@ export default {
             }
         },
         noMenuShown: function() {
-            return !this.cot && !this.feat && !this.query && !this.$route.path.startsWith('/menu')
+            return !this.pointInput.shown && !this.cot && !this.feat && !this.query && !this.$route.path.startsWith('/menu')
         }
     },
     unmounted: function() {
@@ -282,9 +326,10 @@ export default {
     data: function() {
         return {
             mode: 'Default',
-            menu: {
-                // Menu State Functions - true for shown
-                draw: false,
+            pointInput: {
+                shown: false,
+                name: '',
+                coordinate: []
             },
             locked: [],         // Lock the map view to a given CoT - The last element is the currently locked value
                                 //   this is an array so that things like the radial menu can temporarily lock state but remember the previous lock value when they are closed
@@ -337,12 +382,37 @@ export default {
                 mapStore.draw.setMode('polygon');
             }
         },
+        'pointInput.shown': function() {
+            this.pointInput.name = '';
+            const center = mapStore.map.getCenter()
+            this.pointInput.coordinates = [center.lng, center.lat]
+        },
         cot: function() {
             if (this.cot) this.closeRadial();
         }
     },
     methods: {
         ...mapActions(useProfileStore, ['clearNotifications']),
+        closeAllMenu: function() {
+            this.$router.push("/");
+            this.cot = this.feat = this.query = this.pointInput.shown = false;
+        },
+        submitPoint: function() {
+            this.pointInput.shown = false;
+            cotStore.add({
+                type: 'Feature',
+                properties: {
+                    type: 'u-d-p',
+                    color: '#00FF00',
+                    archived: true,
+                    callsign: this.pointInput.name || 'New Feature'
+                },
+                geometry: {
+                    type: 'Point',
+                    coordinates: this.pointInput.coordinates
+                }
+            });
+        },
         closeRadial: function() {
             mapStore.radial.mode = null;
             mapStore.radial.cot = null;
@@ -534,9 +604,11 @@ export default {
     components: {
         Loading,
         SelectFeats,
+        Coordinate,
         UploadImport,
         RadialMenu,
         TablerNone,
+        TablerInput,
         TablerModal,
         TablerDropdown,
         CloudTAKQueryView,
@@ -557,6 +629,7 @@ export default {
         IconVector,
         IconMenu2,
         IconPencil,
+        IconCursorText,
         IconCircleArrowUp,
         IconX,
     }
