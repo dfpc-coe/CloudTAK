@@ -12,6 +12,26 @@
 
 ### Pending Release
 
+### v1.13.0 - 2024-04-19
+
+- :rocket: `UI` Support HTTP Links in the CoTViewer
+- :rocket: `UI` Support Dynamically generating HTTP Links in Style Editor
+
+### v1.12.1 - 2024-04-19
+
+- :bug: `UI` Remove style properties in request when `enabled` is not checked
+
+### v1.12.0 - 2024-04-19
+
+- :tada: `UI` Significant changes to Layer Style Editor
+    - Allow Global Callsign Remarks
+    - Allow Global Styling
+    - Query styles are optionally applied after global styling
+    - If a query is not successful it is gracefully passed over
+- :rocket: `API` Update Style schema to support global styles
+- :rocket: `API` Improve behavior if underlying LogStream isn't created or is missing
+- :rocket: `UI` Remove Create Layer buttons from non-connection page
+
 ### v1.11.0 - 2024-04-18
 
 - :rocket: `API` Add support for parsing `ackrequest` in CoT messages

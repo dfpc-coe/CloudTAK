@@ -4,7 +4,7 @@
         <TablerLoading :inline='true'/>
     </template>
     <template v-else>
-        <div class='d-flex'>
+        <div class='d-flex align-items-center'>
             <template v-if='selected.id'>
                 <span @click='$router.push(`/connection/${selected.connection}/data/${selected.id}`)' class='mt-2 cursor-pointer' v-text='selected.name'/>
             </template>
@@ -32,7 +32,7 @@
                                     <tbody class='table-tbody'>
                                         <tr @click='selected = data' :key='data.id' v-for='data of data.items' class='cursor-pointer'>
                                             <td>
-                                                <div class='d-flex'>
+                                                <div class='d-flex align-items-center'>
                                                     <span class='mt-2' v-text='data.name'/>
                                                 </div>
                                             </td>
