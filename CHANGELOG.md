@@ -12,6 +12,8 @@
 
 ### Pending Release
 
+- :tada: `UI` Add `start`, `stale`, `time` in CoT view by default
+
 ### v1.14.0 - 2024-04-20
 
 - :tada: Add Manual Coordinate Entry box and Drawing button improvementst
