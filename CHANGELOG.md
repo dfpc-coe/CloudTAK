@@ -12,9 +12,9 @@
 
 ### Pending Release
 
-### v1.13.0 - 2024-04-20
+### v1.14.0 - 2024-04-20
 
-- :tada: Add Manual Coordinate Entry box and Drawing button improvements
+- :tada: Add Manual Coordinate Entry box and Drawing button improvementst
 
 ### v1.13.0 - 2024-04-19
 
