@@ -3,10 +3,18 @@
     <label class='subheader mx-2'>Coordinates</label>
     <div class='mx-2'>
         <div
+            v-if='!edit'
             v-text='inMode'
             class='bg-gray-500 rounded-top py-2 px-2'
         />
+        <template v-else>
+            <TablerInput
+                v-model='coordinateEntry'
+                @submit='$emit("submit")'
+            />
+        </template>
         <span
+            v-if='modes.includes("dd")'
             @click='mode = "dd"'
             class='my-1 px-2'
             :class='{
@@ -16,6 +24,7 @@
             v-tooltip='"Decimal Degrees"'
         >DD</span>
         <span
+            v-if='modes.includes("dms")'
             @click='mode = "dms"'
             class='my-1 px-2'
             :class='{
@@ -25,6 +34,7 @@
             v-tooltip='"Decimal Minutes Seconds"'
         >DMS</span>
         <span
+            v-if='modes.includes("mgrs")'
             @click='mode = "mgrs"'
             class='my-1 px-2'
             :class='{
@@ -34,6 +44,7 @@
             v-tooltip='"Military Grid Reference System"'
         >MGRS</span>
         <span
+            v-if='modes.includes("utm")'
             @click='mode = "utm"'
             class='my-1 px-2'
             :class='{
@@ -47,26 +58,51 @@
 </template>
 
 <script>
+import {
+    TablerInput
+} from '@tak-ps/vue-tabler';
+
 export default {
     name: 'COTCoordinate',
+    emits: ['submit'],
     props: {
-        coordinates: {
+        edit: {
+            type: Boolean,
+            default: false
+        },
+        modes: {
+            type: Array,
+            default: function() {
+                return ['dd', 'dms', 'mgrs', 'utm']
+            }
+        },
+        modelValue: {
             type: Array,
             required: true
         }
     },
     computed: {
         inMode: function() {
-            if (this.mode === 'dd') return `${this.coordinates[1]}, ${this.coordinates[0]}`;
-            else if (this.mode === 'dms') return `${this.asDMS(this.coordinates[1])}, ${this.asDMS(this.coordinates[0])}`;
+            if (this.mode === 'dd') return `${this.modelValue[1]}, ${this.modelValue[0]}`;
+            else if (this.mode === 'dms') return `${this.asDMS(this.modelValue[1])}, ${this.asDMS(this.modelValue[0])}`;
             else if (this.mode === 'mgrs') return this.asMGRS();
-            else if (this.mode === 'utm') return this.asUTM(this.coordinates[1], this.coordinates[0]);
+            else if (this.mode === 'utm') return this.asUTM(this.modelValue[1], this.modelValue[0]);
             return 'UNKNOWN'
         }
     },
     data: function() {
         return {
             mode: 'dd',
+            coordinateEntry: this.modelValue.join()
+        }
+    },
+    watch: {
+        coordinateEntry: function() {
+            this.$emit('update:modelValue', this.coordinateEntry
+                .split(',')
+                .map((c) => Number(c.trim()))
+                .reverse()
+            );
         }
     },
     methods: {
@@ -165,8 +201,8 @@ export default {
             return Math.floor((longitude + 180) / 6) + 1;
         },
         asMGRS: function() {
-            const Lat = this.coordinates[1];
-            const Long = this.coordinates[0];
+            const Lat = this.modelValue[1];
+            const Long = this.modelValue[0];
             if (Lat < -80) return 'Too far South' ; if (Lat > 84) return 'Too far North' ;
             const c = 1 + Math.floor ((Long+180)/6);
             const e = c*6 - 183 ;
@@ -199,6 +235,9 @@ export default {
             ab = Math.floor (ab%100000); ab = pad (ab);
             return c + ad + ' ' + af + ah + ' ' + aa + ' ' + ab;
         }
+    },
+    components: {
+        TablerInput
     }
 }
 </script>
