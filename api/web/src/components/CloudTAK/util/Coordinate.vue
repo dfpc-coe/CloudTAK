@@ -74,24 +74,24 @@ export default {
                 return ['dd', 'dms', 'mgrs', 'utm']
             }
         },
-        coordinates: {
+        modelValue: {
             type: Array,
             required: true
         }
     },
     computed: {
         inMode: function() {
-            if (this.mode === 'dd') return `${this.coordinates[1]}, ${this.coordinates[0]}`;
-            else if (this.mode === 'dms') return `${this.asDMS(this.coordinates[1])}, ${this.asDMS(this.coordinates[0])}`;
+            if (this.mode === 'dd') return `${this.modelValue[1]}, ${this.modelValue[0]}`;
+            else if (this.mode === 'dms') return `${this.asDMS(this.modelValue[1])}, ${this.asDMS(this.modelValue[0])}`;
             else if (this.mode === 'mgrs') return this.asMGRS();
-            else if (this.mode === 'utm') return this.asUTM(this.coordinates[1], this.coordinates[0]);
+            else if (this.mode === 'utm') return this.asUTM(this.modelValue[1], this.modelValue[0]);
             return 'UNKNOWN'
         }
     },
     data: function() {
         return {
             mode: 'dd',
-            coordinateEntry: this.coordinates.join()
+            coordinateEntry: this.modelValue.join()
         }
     },
     methods: {
@@ -190,8 +190,8 @@ export default {
             return Math.floor((longitude + 180) / 6) + 1;
         },
         asMGRS: function() {
-            const Lat = this.coordinates[1];
-            const Long = this.coordinates[0];
+            const Lat = this.modelValue[1];
+            const Long = this.modelValue[0];
             if (Lat < -80) return 'Too far South' ; if (Lat > 84) return 'Too far North' ;
             const c = 1 + Math.floor ((Long+180)/6);
             const e = c*6 - 183 ;
