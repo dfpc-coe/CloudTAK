@@ -81,6 +81,7 @@ export default async function router(schema: Schema, config: Config) {
             name: Type.String(),
             description: Type.String(),
             enabled: Type.Optional(Type.Boolean()),
+            agency: Type.Optional(Type.Integer()),
             auth: Type.Object({
                 key: Type.String(),
                 cert: Type.String()
@@ -89,7 +90,11 @@ export default async function router(schema: Schema, config: Config) {
         res: ConnectionResponse
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req);
+            const user = await Auth.as_user(config, req);
+
+            if (!req.body.agency && user.access !== 'admin') {
+                throw new Err(400, null, 'Only System Admins can create a server without an Agency Configured');
+            }
 
             if (!config.server) throw new Err(400, null, 'TAK Server must be configured before a connection can be made');
             const conn = await config.models.Connection.generate(req.body);
