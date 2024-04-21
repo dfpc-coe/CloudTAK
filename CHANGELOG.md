@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### V1.15.0 - 2024-04-21
+
+- :tada: Connection now has an optional `agency` column with auth checks
+- :tada: Initial API Scoping for new `/agency` route
+
 ### v1.14.0 - 2024-04-20
 
 - :tada: Add Manual Coordinate Entry box and Drawing button improvementst
