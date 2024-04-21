@@ -12,10 +12,14 @@
 
 ### Pending Release
 
+### V1.15.1 - 2024-04-21
+
+- :bug: `UI` Fix icon stretch in CoT Pane
+
 ### V1.15.0 - 2024-04-21
 
-- :tada: Connection now has an optional `agency` column with auth checks
-- :tada: Initial API Scoping for new `/agency` route
+- :tada: `API` Connection now has an optional `agency` column with auth checks
+- :tada: `API` Initial API Scoping for new `/agency` route
 - :tada: `UI` Add `start`, `stale`, `time` in CoT view by default
 
 ### v1.14.0 - 2024-04-20
