@@ -94,6 +94,12 @@ export default async function router(schema: Schema, config: Config) {
 
             if (!req.body.agency && user.access !== 'admin') {
                 throw new Err(400, null, 'Only System Admins can create a server without an Agency Configured');
+            } else if (req.body.agency && user.access !== 'admin') {
+                const profile = await config.models.Profile.from(user.email);
+
+                if (!profile.agency_admin.includes(req.body.agency)) {
+                    throw new Err(400, null, 'Cannot create a connection for an Agency you are not an admin of');
+                }
             }
 
             if (!config.server) throw new Err(400, null, 'TAK Server must be configured before a connection can be made');
@@ -135,6 +141,10 @@ export default async function router(schema: Schema, config: Config) {
             await Auth.is_auth(config, req, {
                 resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }]
             });
+
+            if (req.body.agency && user.access !== 'admin') {
+                throw new Err(400, null, 'Only System Admins can change an agency once a connection is created');
+            }
 
             const conn = await config.models.Connection.commit(req.params.connectionid, {
                 updated: sql`Now()`,
