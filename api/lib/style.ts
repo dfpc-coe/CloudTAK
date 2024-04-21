@@ -50,6 +50,9 @@ export const StyleSingle = Type.Object({
 
 export const StyleSingleContainer = Type.Object({
     query: Type.String(),
+    remarks: Type.Optional(Type.String()),
+    callsign: Type.Optional(Type.String()),
+    links: Type.Optional(Type.Array(StyleLink)),
     styles: StyleSingle
 })
 
@@ -131,7 +134,13 @@ export default class Style {
                     const expression = jsonata(q.query);
 
                     if (await expression.evaluate(feature) === true) {
+                        for (const prop of ['remarks', 'callsign']) {
+                            if (!q[prop]) continue;
+                            feature.properties[prop] = handlebars.compile(q[prop])(feature.properties.metadata);
+                        }
+
                         if (q.links) this.#links(q.links, feature);
+
                         this.#by_geom(q.styles, feature);
                     }
                 } catch (err) {

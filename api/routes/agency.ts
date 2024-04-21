@@ -6,7 +6,7 @@ import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 
 export const AgencyResponse = Type.Object({
-    id: Type.integer(),
+    id: Type.Integer(),
     name: Type.String()
 });
 
@@ -31,7 +31,10 @@ export default async function router(schema: Schema, config: Config) {
             await Auth.is_auth(config, req);
 
 
-            return res.json(overlays)
+            return res.json({
+                total: 0,
+                items: []
+            })
         } catch (err) {
             return Err.respond(err, res);
         }
