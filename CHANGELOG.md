@@ -16,6 +16,7 @@
 
 - :tada: Connection now has an optional `agency` column with auth checks
 - :tada: Initial API Scoping for new `/agency` route
+- :tada: `UI` Add `start`, `stale`, `time` in CoT view by default
 
 ### v1.14.0 - 2024-04-20
 

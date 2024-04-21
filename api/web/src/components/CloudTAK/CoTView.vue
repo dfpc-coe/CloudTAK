@@ -62,6 +62,7 @@
             <label class='subheader mx-2'>Course</label>
             <div v-text='feat.properties.course' class='bg-gray-500 rounded mx-2 py-2 px-2'/>
         </div>
+
         <div class='col-12 py-2'>
             <label class='subheader mx-2'>Remarks</label>
             <div class='bg-gray-500 rounded mx-2 py-2 px-2'>
@@ -89,12 +90,36 @@
             </div>
         </div>
 
+
+        <div class='col-12 pb-2'>
+            <label class='subheader mx-3'>Times</label>
+            <div class='table-responsive rounded mx-2 py-2 px-2'>
+                <table class="table card-table table-hover table-vcenter datatable">
+                    <thead>
+                        <th>Key</th>
+                        <th>Value</th>
+                    </thead>
+                    <tbody class='bg-gray-500'>
+                        <tr>
+                            <td>Time</td><td v-text='feat.properties.time'></td>
+                        </tr>
+                        <tr>
+                            <td>Start</td><td v-text='feat.properties.start'></td>
+                        </tr>
+                        <tr>
+                            <td>Stale</td><td v-text='feat.properties.stale'></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
         <template v-if='isUserDrawn'>
             <CoTStyle v-model='feat'/>
         </template>
 
-        <div v-if='feat.properties.takv && feat.properties.takv && Object.keys(feat.properties.takv).length' class='col-12 px-3 pb-2'>
-            <label class='subheader'>Metadata</label>
+        <div v-if='feat.properties.takv && feat.properties.takv && Object.keys(feat.properties.takv).length' class='col-12 px-1 pb-2'>
+            <label class='subheader px-2'>Metadata</label>
             <div class='table-responsive rounded mx-2 py-2 px-2'>
                 <table class="table card-table table-hover table-vcenter datatable">
                     <thead>
