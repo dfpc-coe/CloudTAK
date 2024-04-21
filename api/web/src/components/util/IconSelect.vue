@@ -13,9 +13,9 @@
     <template v-else>
         <div class='d-flex'>
             <template v-if='selected.name'>
-                <div class='d-flex mx-2'>
+                <div class='d-flex align-items-center'>
                     <img :src='iconurl(selected)' style='width: 25px; height: auto; margin-right: 5px;'>
-                    <span class='mt-2' v-text='selected.name'/>
+                    <span class='mt-2 mx-2' v-text='selected.name'/>
                 </div>
             </template>
             <template v-else>

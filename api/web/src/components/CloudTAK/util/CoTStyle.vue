@@ -1,7 +1,7 @@
 <template>
-<div class='px-3 pb-2 col-12'>
-    <label class='subheader'>COT Style</label>
-    <div class='mx-3 py-3'>
+<div class='px-1 pb-2 col-12'>
+    <label class='mx-1 subheader'>COT Style</label>
+    <div class='mx-2 py-3'>
         <div class='row g-2 rounded px-2 bg-gray-500'>
             <template v-if='feat.geometry.type === "Point"'>
                 <div class='col-12'>
@@ -9,7 +9,7 @@
                 </div>
                 <div class='col-12'>
                     <label class='subheader'>Point Colour</label>
-                    <TablerInput type='color' v-model='feat.properties.color'/>
+                    <TablerInput type='color' class='pb-2' v-model='feat.properties.color'/>
                 </div>
             </template>
             <template v-else-if='feat.geometry.type !== "Point"'>
