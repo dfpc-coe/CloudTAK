@@ -37,7 +37,7 @@ export const useMapStore = defineStore('cloudtak', {
         bearing: number;
         radial: {
             mode?: string;
-            cot?: object;
+            cots?: Array<object>;
             x: number;
             y: number;
         },
@@ -100,8 +100,8 @@ export const useMapStore = defineStore('cloudtak', {
                 this.map.on('click', click.id, (e) => {
                     if (this.draw && this.draw.getMode() !== 'static') return;
 
-                    // MultiSelect Mode
                     if (e.originalEvent.ctrlKey) {
+                        // MultiSelect Mode
                         this.selected.set(e.features[0].properties.id, e.features[0]);
                     } else {
                         const flyTo: mapgl.FlyToOptions = { speed: Infinity };
@@ -119,7 +119,7 @@ export const useMapStore = defineStore('cloudtak', {
                         this.radial.x = this.container ? this.container.clientWidth / 2 : 0;
                         this.radial.y = this.container ? this.container.clientHeight / 2 : 0;
 
-                        this.radial.cot = e.features[0];
+                        this.radial.cots = e.features;
                         this.radial.mode = click.type;
                     }
                 });

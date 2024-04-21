@@ -1,4 +1,5 @@
 <template>
+<template v-if='cots.length === 1'>
     <div
         ref='radialMenu'
         class='position-absolute'
@@ -17,8 +18,32 @@
          <symbol id='radial-pencil-plus' viewBox="0 0 24 24" stroke-width="2" stroke="#fff" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" /><path d="M13.5 6.5l4 4" /><path d="M16 19h6" /><path d="M19 16v6" /></symbol>
      </svg>
 </template>
+<template v-if='cots.length > 1'>
+    <div
+        ref='dropdownMenu'
+        class='position-absolute bg-light py-2 px-2 rounded'
+        :style='{
+            width: `${size}px`,
+            top: `${y + size / 10}px`,
+            left: `${x - size / 2}px`,
+        }'
+    >
+        <div :key='cot.properties.id' v-for='cot in cots' class='col-12 d-flex align-items-center cursor-pointer hover-light'>
+                <IconPoint v-if='cot.geometry.type.includes("Point")'       size='20'/>
+                <IconLine v-else-if='cot.geometry.type.includes("Line")'    size='20'/>
+                <IconPolygon v-else-if='cot.geometry.type.includes("Polygon")' size='20'/>
+                <div class='subheader' v-text='cot.properties.callsign'></div>
+        </div>
+    </div>
+</template>
+</template>
 
 <script>
+import {
+    IconPoint,
+    IconLine,
+    IconPolygon
+} from '@tabler/icons-vue';
 import RadialMenu from './RadialMenu.js';
 import './RadialMenu.css';
 
@@ -28,6 +53,10 @@ export default {
     props: {
         mode: {
             type: String,
+            required: true
+        },
+        cots: {
+            type: Array,
             required: true
         },
         x: {
@@ -50,23 +79,25 @@ export default {
         }
     },
     mounted: function() {
-        this.genMenuItems();
+        if (this.cots.length === 1) {
+            this.genMenuItems();
 
-        this.$nextTick(() => {
-            this.menu = new RadialMenu({
-                parent: this.$refs.radialMenu,
-                size: this.size,
-                closeOnClick: true,
-                menuItems: this.menuItems,
-                onClick: (item) => {
-                    this.$emit('click', `${this.mode}:${item.id}`);
-                },
-                onClose: () => {
-                    this.$emit('close')
-                }
-            });
-            this.menu.open();
-        })
+            this.$nextTick(() => {
+                this.menu = new RadialMenu({
+                    parent: this.$refs.radialMenu,
+                    size: this.size,
+                    closeOnClick: true,
+                    menuItems: this.menuItems,
+                    onClick: (item) => {
+                        this.$emit('click', `${this.mode}:${item.id}`);
+                    },
+                    onClose: () => {
+                        this.$emit('close')
+                    }
+                });
+                this.menu.open();
+            })
+        }
     },
     methods: {
         genMenuItems: function() {
@@ -82,6 +113,11 @@ export default {
                 this.menuItems.push({ id: 'info', icon: '#radial-question' })
             }
         }
+    },
+    components: {
+        IconPoint,
+        IconLine,
+        IconPolygon
     }
 }
 </script>

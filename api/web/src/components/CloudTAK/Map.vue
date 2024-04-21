@@ -77,8 +77,8 @@
             <IconCircleArrowUp :transform='`rotate(${360 - bearing})`' size='40' v-tooltip='"Snap to North"'/>
             <div v-if='bearing !== 0' class='text-center' v-text='humanBearing'></div>
         </div>
-        <IconFocus2 v-if='!radial.cot && !locked.length' @click='getLocation' size='40' class='cursor-pointer hover-button' v-tooltip='"Get Location"'/>
-        <IconLockAccess v-else-if='!radial.cot' @click='locked.splice(0, locked.length)' size='40' class='cursor-pointer hover-button'/>
+        <IconFocus2 v-if='!radial.cots && !locked.length' @click='getLocation' size='40' class='cursor-pointer hover-button' v-tooltip='"Get Location"'/>
+        <IconLockAccess v-else-if='!radial.cots' @click='locked.splice(0, locked.length)' size='40' class='cursor-pointer hover-button'/>
 
         <div class='mt-3'>
             <IconPlus size='40' @click='setZoom(getZoom() + 1);' class='cursor-pointer hover-button' v-tooltip='"Zoom In"'/>
@@ -189,6 +189,7 @@
         @close='closeRadial'
         @click='handleRadial($event)'
         :mode='radial.mode'
+        :cots='radial.cots'
         :x='radial.x'
         :y='radial.y'
         ref='radial'
