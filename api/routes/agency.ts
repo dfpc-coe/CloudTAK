@@ -6,7 +6,7 @@ import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import { sql } from 'drizzle-orm';
 
-export AgencyResponse = Type.Object({
+export const AgencyResponse = Type.Object({
     id: Type.integer(),
     name: Type.String()
 });
