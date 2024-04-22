@@ -54,7 +54,7 @@ export default class ExternalProvider {
     async agency(uid: number, agency_id: number): Promise<Static<typeof Agency>> {
         await this.auth();
 
-        const url = new URL(`/api/v1/server/agencies/${agency_id}`, this.config.server.provider_url);
+        const url = new URL(`/api/v1/proxy/agencies/${agency_id}`, this.config.server.provider_url);
         url.searchParams.append('proxy_user_id', String(uid));
         const agencyres = await fetch(url, {
             headers: {
@@ -76,7 +76,7 @@ export default class ExternalProvider {
     }> {
         await this.auth();
 
-        const url = new URL(`/api/v1/server/agencies`, this.config.server.provider_url);
+        const url = new URL(`/api/v1/proxy/agencies`, this.config.server.provider_url);
         url.searchParams.append('proxy_user_id', String(uid));
         url.searchParams.append('filter', filter);
 
