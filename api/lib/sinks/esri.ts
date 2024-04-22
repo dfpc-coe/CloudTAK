@@ -11,7 +11,7 @@ export default class ESRI extends SinkInterface {
     }
 
     static async secrets(config: Config, sink: InferSelectModel<typeof ConnectionSink>): Promise<any> {
-        let secrets: any = {};
+        let secrets: Record<string, string | number> = {};
         do {
             secrets = await config.cacher.get(Cacher.Miss({}, `connection-${sink.connection}-sink-${sink.id}-secrets`), async () => {
                 const body: any = sink.body;

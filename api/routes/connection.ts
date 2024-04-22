@@ -139,7 +139,7 @@ export default async function router(schema: Schema, config: Config) {
         res: ConnectionResponse
     }, async (req, res) => {
         try {
-            const auth = await Auth.is_auth(config, req, {
+            await Auth.is_auth(config, req, {
                 resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }]
             });
 
@@ -307,7 +307,12 @@ export default async function router(schema: Schema, config: Config) {
                 return String(d);
             });
 
-            const statsres: any = { stats: [] }
+            const statsres: {
+                status: Array<{
+                    label: string;
+                    success: number;
+                }>
+            } = { stats: [] }
 
             for (const ts of ts_arr) {
                 statsres.stats.push({

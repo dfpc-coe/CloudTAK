@@ -146,8 +146,6 @@ export default async function router(schema: Schema, config: Config) {
             const auth = (await config.models.Profile.from(user.email)).auth;
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
-            const query: any = {};
-            for (const q in req.query) query[q] = String(req.query[q]);
             const mission = await api.Mission.create(req.params.name, query);
             return res.json(mission);
         } catch (err) {
