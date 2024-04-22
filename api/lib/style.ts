@@ -96,7 +96,11 @@ export default class Style {
 
             return true;
         } catch (err) {
-            throw new Err(400, err, err instanceof Error ? err.message : String(err));
+            if (err instanceof Error) {
+                throw new Err(400, err, err.message);
+            } else {
+                throw new Err(400, new Error(String(err)), String(err));
+            }
         }
     }
 
@@ -118,10 +122,9 @@ export default class Style {
             if (!feature.properties.metadata) feature.properties.metadata = {};
 
             // Properties that support Templating
-            for (const prop of ['remarks', 'callsign']) {
-                if (!this.style.styles[prop]) continue;
-                feature.properties[prop] = handlebars.compile(this.style.styles[prop])(feature.properties.metadata);
-            }
+            if (this.style.styles.callsign) feature.properties.callsign = handlebars.compile(this.style.styles.callsign)(feature.properties.metadata);
+            if (this.style.styles.remarks) feature.properties.remarks = handlebars.compile(this.style.styles.remarks)(feature.properties.metadata);
+
 
             if (this.style.styles.links) {
                 this.#links(this.style.styles.links, feature);
@@ -129,16 +132,14 @@ export default class Style {
 
             this.#by_geom(this.style.styles, feature);
 
+            if (!this.style.styles.queries) this.style.styles.queries = [];
             for (const q of this.style.styles.queries) {
                 try {
                     const expression = jsonata(q.query);
 
                     if (await expression.evaluate(feature) === true) {
-
-                        for (const prop of ['remarks', 'callsign']) {
-                            if (!q.styles[prop]) continue;
-                            feature.properties[prop] = handlebars.compile(q.styles[prop])(feature.properties.metadata);
-                        }
+                        if (q.styles.callsign) feature.properties.callsign = handlebars.compile(q.styles.callsign)(feature.properties.metadata);
+                        if (q.styles.remarks) feature.properties.remarks = handlebars.compile(q.styles.remarks)(feature.properties.metadata);
 
                         if (q.links) this.#links(q.links, feature);
 
@@ -151,11 +152,16 @@ export default class Style {
 
             return feature;
         } catch (err) {
-            throw new Err(400, err, err instanceof Error ? err.message : String(err));
+            if (err instanceof Error) {
+                throw new Err(400, err, err.message);
+            } else {
+                throw new Err(400, new Error(String(err)), String(err));
+            }
         }
     }
 
     #links(links: Array<Static<typeof StyleLink>>, feature: Feature) {
+        if (!feature.properties) feature.properties = {};
         if (!feature.properties.links) feature.properties.links = [];
         for (const link of links) {
             feature.properties.links.push({
@@ -172,8 +178,10 @@ export default class Style {
         if (!feature.properties) feature.properties = {};
 
         if (feature.geometry.type === 'Point' && style.point) {
-            if (!style.point.remarks) delete style.point.remarks;
-            if (!style.point.callsign) delete style.point.callsign;
+            if (style.point.remarks) feature.properties.callsign = handlebars.compile(style.point.callsign)(feature.properties.metadata);
+            if (style.point.callsign) feature.properties.remarks = handlebars.compile(style.point.remarks)(feature.properties.metadata);
+            delete style.point.remarks;
+            delete style.point.callsign;
 
             if (style.point.links) {
                 this.#links(style.point.links, feature);
@@ -182,8 +190,10 @@ export default class Style {
 
             Object.assign(feature.properties, style.point);
         } else if (feature.geometry.type === 'LineString' && style.line) {
-            if (!style.line.remarks) delete style.line.remarks;
-            if (!style.line.callsign) delete style.line.callsign;
+            if (style.line.remarks) feature.properties.callsign = handlebars.compile(style.line.callsign)(feature.properties.metadata);
+            if (style.line.callsign) feature.properties.remarks = handlebars.compile(style.line.remarks)(feature.properties.metadata);
+            delete style.line.remarks;
+            delete style.line.callsign;
 
             if (style.line.links) {
                 this.#links(style.line.links, feature);
@@ -192,8 +202,10 @@ export default class Style {
 
             Object.assign(feature.properties, style.line);
         } else if (feature.geometry.type === 'Polygon' && style.polygon) {
-            if (!style.polygon.remarks) delete style.polygon.remarks;
-            if (!style.polygon.callsign) delete style.polygon.callsign;
+            if (style.polygon.remarks) feature.properties.callsign = handlebars.compile(style.polygon.callsign)(feature.properties.metadata);
+            if (style.polygon.callsign) feature.properties.remarks = handlebars.compile(style.polygon.remarks)(feature.properties.metadata);
+            delete style.polygon.remarks;
+            delete style.polygon.callsign;
 
             if (style.polygon.links) {
                 this.#links(style.polygon.links, feature);
@@ -203,10 +215,5 @@ export default class Style {
             Object.assign(feature.properties, style.polygon);
         }
 
-        // Properties that support Templating
-        for (const prop of ['remarks', 'callsign']) {
-            if (!feature.properties[prop]) continue;
-            feature.properties[prop] = handlebars.compile(feature.properties[prop])(feature.properties.metadata);
-        }
     }
 }

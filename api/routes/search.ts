@@ -1,4 +1,4 @@
-import { Type } from '@sinclair/typebox'
+import { Type, Static } from '@sinclair/typebox'
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
@@ -8,6 +8,10 @@ import Config from '../lib/config.js';
 export default async function router(schema: Schema, config: Config) {
     const weather = new Weather();
 
+    const ReverseResponse = Type.Object({
+        weather: Type.Union([FetchHourly, Type.Null()])
+    });
+
     await schema.get('/search/reverse/:longitude/:latitude', {
         name: 'Reverse Geocode',
         group: 'Search',
@@ -16,13 +20,11 @@ export default async function router(schema: Schema, config: Config) {
             latitude: Type.Number(),
             longitude: Type.Number()
         }),
-        res: Type.Object({
-            weather: Type.Union([FetchHourly, Type.Null()])
-        })
+        res: ReverseResponse
     }, async (req, res) => {
         try {
             await Auth.as_user(config, req);
-            const response = {
+            const response: Static<typeof ReverseResponse> = {
                 weather: null
             };
 
