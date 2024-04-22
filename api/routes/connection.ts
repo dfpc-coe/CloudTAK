@@ -144,8 +144,8 @@ export default async function router(schema: Schema, config: Config) {
             });
 
             if (req.body.agency && await Auth.is_user(config, req)) {
-                await Auth.as_user(config, req, { admin: true });
-                throw new Err(400, null, 'Only System Admins can change an agency once a connection is created');
+                const user = await Auth.as_user(config, req, { admin: true });
+                if (!user) throw new Err(400, null, 'Only System Admins can change an agency once a connection is created');
             }
 
             const conn = await config.models.Connection.commit(req.params.connectionid, {
