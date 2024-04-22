@@ -17,9 +17,6 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Agency',
         description: 'Return a list Agencies',
         query: Type.Object({
-            limit: Type.Integer({ default: 10 }),
-            page: Type.Integer({ default: 0 }),
-            order: Type.Enum(GenericListOrder, { default: GenericListOrder.ASC }),
             filter: Type.String({ default: '' })
         }),
         res: Type.Object({
@@ -35,6 +32,14 @@ export default async function router(schema: Schema, config: Config) {
                 return res.json({ total: 0, items: [] })
             }
 
+            const list = await config.external.agencies(req.query.filter);
+
+            console.error(list);
+
+            return res.json({
+                total: list.items.length, // This is a lie as there isn't a total in the API
+                items: list.items
+            });
         } catch (err) {
             return Err.respond(err, res);
         }

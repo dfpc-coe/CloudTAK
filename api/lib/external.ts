@@ -6,7 +6,7 @@ import { Static, Type } from '@sinclair/typebox';
 export const Agency = Type.Object({
     id: Type.Number(),
     name: Type.String(),
-    description: Type.String()
+    description: Type.Any()
 });
 
 export default class ExternalProvider {
@@ -51,13 +51,16 @@ export default class ExternalProvider {
         }
     }
 
-    async agencies(filter: string): Promise<{
+    async agencies(id: integer, filter: string): Promise<{
         items: Array<Static<typeof Agency>>
     }> {
-        const agencyres = await fetch(new URL(`/api/v1/admin/agencies`, this.config.server.provider_url), {
+        await this.auth();
+
+        const agencyres = await fetch(new URL(`/api/v1/server/agencies`, this.config.server.provider_url), {
             method: 'GET',
             headers: {
-                Accept: 'application/json'
+                Accept: 'application/json',
+                "Authorization": `Bearer ${this.cache.token}`
             },
         });
 
@@ -113,6 +116,8 @@ export default class ExternalProvider {
         }));
 
         return {
+            id: user_body.data.id,
+            name: user_body.data.name,
             phone: user_body.data.phone,
             system_admin: user_body.data.roles.some((role) => role.name === 'System Administrator'),
             agency_admin: user_body.data.adminAgencies.map((a) => a.id)
