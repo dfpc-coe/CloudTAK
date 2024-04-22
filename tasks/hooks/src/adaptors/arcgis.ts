@@ -51,7 +51,7 @@ export default async function arcgis(data: any): Promise<boolean> {
                     attributes: {
                         cotuid: data.feat.id,
                         callsign: data.feat.properties.callsign,
-                        remarks: data.feat.properties.remarks,
+                        remarks: data.feat.properties.remarks || '',
                         type: data.feat.properties.type,
                         how: data.feat.properties.how,
                         time: data.feat.properties.time,
