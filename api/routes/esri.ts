@@ -44,9 +44,13 @@ export default async function router(schema: Schema, config: Config) {
             }
 
             if (req.body.sinkid) {
-                const sink: any = await config.models.ConnectionSink.from(req.body.sinkid);
-                req.body.username = sink.body.username;
-                req.body.password = sink.body.password;
+                const sink = await config.models.ConnectionSink.from(req.body.sinkid);
+                const body = sink.body as {
+                    username: string;
+                    password: string;
+                };
+                req.body.username = body.username;
+                req.body.password = body.password;
             }
 
             let base;

@@ -1,4 +1,6 @@
 import CloudWatchLogs from '@aws-sdk/client-cloudwatch-logs';
+import { InferSelectModel } from 'drizzle-orm'
+import { Layer } from '../schema.js';
 import Err from '@openaddresses/batch-error';
 import Config from '../config.js';
 import process from 'node:process';
@@ -7,7 +9,7 @@ import process from 'node:process';
  * @class
  */
 export default class LogGroup {
-    static async delete(config: Config, layer: any): Promise<void> {
+    static async delete(config: Config, layer: InferSelectModel<typeof Layer>): Promise<void> {
         const cwl = new CloudWatchLogs.CloudWatchLogsClient({ region: process.env.AWS_DEFAULT_REGION });
 
         await cwl.send(new CloudWatchLogs.DeleteLogGroupCommand({
@@ -15,7 +17,7 @@ export default class LogGroup {
         }));
     }
 
-    static async list(config: Config, layer: any): Promise<{
+    static async list(config: Config, layer: InferSelectModel<typeof Layer>): Promise<{
         logs: Array<{
             message: string;
             timestamp: number;
