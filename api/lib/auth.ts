@@ -58,7 +58,6 @@ export class AuthResource {
 }
 
 export class AuthUser {
-    id: number;
     access: AuthUserAccess;
     email: string;
 
