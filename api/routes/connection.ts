@@ -97,7 +97,7 @@ export default async function router(schema: Schema, config: Config) {
             } else if (req.body.agency && user.access !== 'admin') {
                 const profile = await config.models.Profile.from(user.email);
 
-                if (!profile.agency_admin.includes(req.body.agency)) {
+                if (!profile.agency_admin || !profile.agency_admin.includes(req.body.agency)) {
                     throw new Err(400, null, 'Cannot create a connection for an Agency you are not an admin of');
                 }
             }
@@ -130,6 +130,7 @@ export default async function router(schema: Schema, config: Config) {
             name: Type.Optional(Type.String()),
             description: Type.Optional(Type.String()),
             enabled: Type.Optional(Type.Boolean()),
+            agency: Type.Optional(Type.Integer()),
             auth: Type.Optional(Type.Object({
                 key: Type.String(),
                 cert: Type.String()
@@ -142,7 +143,8 @@ export default async function router(schema: Schema, config: Config) {
                 resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }]
             });
 
-            if (req.body.agency && user.access !== 'admin') {
+            if (req.body.agency && await Auth.is_user(config, req)) {
+                await Auth.as_user(config, req, { admin: true });
                 throw new Err(400, null, 'Only System Admins can change an agency once a connection is created');
             }
 
@@ -305,7 +307,12 @@ export default async function router(schema: Schema, config: Config) {
                 return String(d);
             });
 
-            const statsres: any = { stats: [] }
+            const statsres: {
+                stats: Array<{
+                    label: string;
+                    success: number;
+                }>
+            } = { stats: [] }
 
             for (const ts of ts_arr) {
                 statsres.stats.push({

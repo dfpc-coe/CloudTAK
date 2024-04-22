@@ -47,7 +47,7 @@ export const Mission = Type.Object({
     })),
     passwordProtected: Type.Boolean(),
     token: Type.Optional(Type.String()),                        // Only present when mission created
-    groups: Type.Optional(Type.Array(Type.String())),           // Only present on Mission.get()
+    groups: Type.Optional(Type.Union([Type.String(), Type.Array(Type.String())])),           // Only present on Mission.get()
     missionChanges: Type.Optional(Type.Array(Type.Unknown()))   // Only present on Mission.get()
 });
 
@@ -135,7 +135,7 @@ export const ListInput = Type.Object({
 });
 
 export const CreateInput = Type.Object({
-    group: Type.Union([Type.Array(Type.String()), Type.String()]),
+    group: Type.Optional(Type.Union([Type.Array(Type.String()), Type.String()])),
     creatorUid: Type.String(),
     description: Type.Optional(Type.String({ default: '' })),
     chatRoom: Type.Optional(Type.String()),
