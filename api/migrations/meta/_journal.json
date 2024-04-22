@@ -253,6 +253,13 @@
       "when": 1713708562930,
       "tag": "0035_empty_mordo",
       "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "5",
+      "when": 1713818662077,
+      "tag": "0036_solid_goliath",
+      "breakpoints": true
     }
   ]
 }
