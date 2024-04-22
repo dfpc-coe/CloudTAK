@@ -210,7 +210,13 @@ export default async function router(schema: Schema, config: Config) {
                 return String(d);
             });
 
-            const statsres: any = { stats: [] }
+            const statsres: {
+                stats: Array<{
+                    label: string;
+                    success: number;
+                    failure: number;
+                }>
+            } = { stats: [] }
 
             for (const ts of ts_arr) {
                 statsres.stats.push({

@@ -44,7 +44,7 @@ export default async function router(schema: Schema, config: Config) {
             }
 
             if (req.body.sinkid) {
-                const sink: any = await config.models.ConnectionSink.from(req.body.sinkid);
+                const sink = await config.models.ConnectionSink.from(req.body.sinkid);
                 req.body.username = sink.body.username;
                 req.body.password = sink.body.password;
             }

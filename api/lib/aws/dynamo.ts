@@ -1,3 +1,4 @@
+import { Feature } from 'geojson';
 import DynamoDB from '@aws-sdk/client-dynamodb';
 import DynamoDBDoc from "@aws-sdk/lib-dynamodb";
 import Err from '@openaddresses/batch-error';
@@ -71,13 +72,13 @@ export default class Dynamo {
         }
     }
 
-    #expiry(feature: any) {
+    #expiry(feature: Feature) {
         const time = new Date(feature.properties.stale || feature.properties.time || Date.now());
         time.setHours(time.getHours() + 24);
         return Math.round(time.getTime() / 1000);
     }
 
-    async put(feature: any) {
+    async put(feature: Feature) {
         try {
             const ddb = new DynamoDB.DynamoDBClient({region: process.env.AWS_DEFAULT_REGION });
             const ddbdoc = DynamoDBDoc.DynamoDBDocumentClient.from(ddb);
@@ -97,7 +98,7 @@ export default class Dynamo {
         }
     }
 
-    async puts(features: any[]) {
+    async puts(features: Feature[]) {
         try {
             const ddb = new DynamoDB.DynamoDBClient({region: process.env.AWS_DEFAULT_REGION });
             const ddbdoc = DynamoDBDoc.DynamoDBDocumentClient.from(ddb);
