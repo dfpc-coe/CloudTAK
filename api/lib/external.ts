@@ -78,6 +78,8 @@ export default class ExternalProvider {
 
         const url = new URL(`/api/v1/server/agencies`, this.config.server.provider_url);
         url.searchParams.append('proxy_user_id', String(uid));
+        url.searchParams.append('filter', filter);
+
         const agencyres = await fetch(url, {
             headers: {
                 Accept: 'application/json',

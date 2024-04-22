@@ -4,17 +4,26 @@
         <TablerLoading :inline='true'/>
     </template>
     <template v-else>
+        <div class='col-12 pb-2'>
+            <label>Connection Agency</label>
+        </div>
         <div class='d-flex align-items-center'>
-            <div v-if='selected.id' v-text='selected.name'></div>
+            <IconTrash
+                v-if='selected.id'
+                size='32'
+                @click='selected.id = null'
+                class='cursor-pointer'
+            />
+            <div v-if='selected.id' v-text='selected.name' class='mx-2'></div>
             <div v-else>No Agency Selected</div>
 
-            <div v-if='!disabled' class='ms-auto'>
+            <div v-if='!disabled' class='ms-auto btn-list'>
                 <TablerDropdown>
                     <IconSettings
                         size='32'
+                        v-tooltip='"Select Agency"'
                         class='cursor-pointer dropdown-toggle'
                     />
-
                     <template #dropdown>
                         <div class='m-1'>
                             <TablerInput v-model='filter' placeholder='Filter...'/>
@@ -50,7 +59,8 @@
 <script>
 import { std, stdurl } from '/src/std.ts';
 import {
-    IconSettings
+    IconSettings,
+    IconTrash,
 } from '@tabler/icons-vue';
 import {
     TablerLoading,
@@ -83,8 +93,11 @@ export default {
         }
     },
     watch: {
-        selected: function() {
-            this.$emit('update:modelValue', this.selected.id);
+        selected: {
+            deep: true,
+            handler: function() {
+                this.$emit('update:modelValue', this.selected.id);
+            }
         },
         filter: async function() {
             await this.listData()
@@ -109,6 +122,7 @@ export default {
         },
     },
     components: {
+        IconTrash,
         IconSettings,
         TablerDropdown,
         TablerInput,
