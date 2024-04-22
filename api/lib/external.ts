@@ -51,13 +51,38 @@ export default class ExternalProvider {
         }
     }
 
-    async agencies(id: integer, filter: string): Promise<{
+    async agency(uid: number, agency_id: number): Promise<{
         items: Array<Static<typeof Agency>>
     }> {
         await this.auth();
 
-        const agencyres = await fetch(new URL(`/api/v1/server/agencies`, this.config.server.provider_url), {
-            method: 'GET',
+        const url = new URL(`/api/v1/server/agencies/${agency_id}`, this.config.server.provider_url);
+        url.searchParams.append('proxy_user_id', String(uid));
+        const agencyres = await fetch(url, {
+            headers: {
+                Accept: 'application/json',
+                "Authorization": `Bearer ${this.cache.token}`
+            },
+        });
+
+        if (!agencyres.ok) throw new Err(500, new Error(await agencyres.text()), 'External Agency List Error');
+        const list = await agencyres.typed(Type.Object({
+            data: Type.Array(Agency)
+        }));
+
+        return {
+            items: list.data
+        }
+    }
+
+    async agencies(uid: number, filter: string): Promise<{
+        items: Array<Static<typeof Agency>>
+    }> {
+        await this.auth();
+
+        const url = new URL(`/api/v1/server/agencies`, this.config.server.provider_url);
+        url.searchParams.append('proxy_user_id', String(uid));
+        const agencyres = await fetch(url, {
             headers: {
                 Accept: 'application/json',
                 "Authorization": `Bearer ${this.cache.token}`
@@ -75,6 +100,8 @@ export default class ExternalProvider {
     }
 
     async login(username: string): Promise<{
+        id: number;
+        name: string;
         phone: string;
         system_admin: boolean;
         agency_admin: Array<number>;
