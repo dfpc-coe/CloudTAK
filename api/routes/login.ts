@@ -17,6 +17,7 @@ export default async function router(schema: Schema, config: Config) {
             password: Type.String()
         }),
         res: Type.Object({
+            id: Type.Integer(),
             token: Type.String(),
             access: Type.String(),
             email: Type.String()
@@ -44,9 +45,10 @@ export default async function router(schema: Schema, config: Config) {
 
             const profile = await config.models.Profile.from(email);
 
+            const id = profile.id;
             const access = profile.system_admin ? 'admin' : 'user';
 
-            return res.json({ access, email, token: jwt.sign({ access, email }, config.SigningSecret) })
+            return res.json({ id, access, email, token: jwt.sign({ access, email }, config.SigningSecret) })
         } catch (err) {
             Err.respond(err, res);
         }
@@ -56,6 +58,7 @@ export default async function router(schema: Schema, config: Config) {
         name: 'Get Login',
         group: 'Login',
         res: Type.Object({
+            id: Type.Integer(),
             email: Type.String(),
             access: Type.String()
         })
@@ -64,6 +67,7 @@ export default async function router(schema: Schema, config: Config) {
 
         try {
             return res.json({
+                id: user.id,
                 email: user.email,
                 access: user.access
             });
