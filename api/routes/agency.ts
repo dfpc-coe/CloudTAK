@@ -1,6 +1,4 @@
 import { Type } from '@sinclair/typebox'
-import fetch from '../lib/fetch';
-import { GenericListOrder } from '@openaddresses/batch-generic';
 import Config from '../lib/config.js';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
