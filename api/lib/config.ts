@@ -1,4 +1,5 @@
 import STS from '@aws-sdk/client-sts';
+import External from './external.js';
 import SecretsManager from '@aws-sdk/client-secrets-manager';
 import type EventsPool from './events-pool.js';
 import { Pool } from '@openaddresses/batch-generic';
@@ -34,6 +35,7 @@ export default class Config {
     StackName: string;
     HookURL?: string;
     SigningSecret: string;
+    External: External;
     UnsafeSigningSecret: string;
     MartiAPI: string;
     AuthGroup: string;
@@ -97,7 +99,7 @@ export default class Config {
 
         this.conns = new ConnectionPool(this);
         this.cacher = new Cacher(this.nocache, this.silent);
-
+        this.external = new External(this)
     }
 
     static async env(args: ConfigArgs): Promise<Config> {
