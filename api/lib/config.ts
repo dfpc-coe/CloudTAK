@@ -35,7 +35,7 @@ export default class Config {
     StackName: string;
     HookURL?: string;
     SigningSecret: string;
-    External: External;
+    external: External;
     UnsafeSigningSecret: string;
     MartiAPI: string;
     AuthGroup: string;
