@@ -1,4 +1,5 @@
 import { Type } from '@sinclair/typebox'
+import fetch from '../lib/fetch';
 import { GenericListOrder } from '@openaddresses/batch-generic';
 import Config from '../lib/config.js';
 import Schema from '@openaddresses/batch-schema';
@@ -30,11 +31,10 @@ export default async function router(schema: Schema, config: Config) {
         try {
             await Auth.is_auth(config, req);
 
+            if (!config.server.provider_url || !config.server.provider_secret || !config.server.provider_client) {
+                return res.json({ total: 0, items: [] })
+            }
 
-            return res.json({
-                total: 0,
-                items: []
-            })
         } catch (err) {
             return Err.respond(err, res);
         }
