@@ -1,4 +1,6 @@
-import fetch from './fetch';
+import fetch from './fetch.js';
+import Err from '@openaddresses/batch-error';
+import Config from './config.js'
 import { Static, Type } from '@sinclair/typebox';
 
 export const Agency = Type.Object({
@@ -18,11 +20,7 @@ export default class ExternalProvider {
         this.config = config;
     }
 
-    async auth(): Promise<{
-        phone: string;
-        system_admin: boolean;
-        agency_admin: Array<number>;
-    }> {
+    async auth(): Promise<void> {
         if (!this.cache || this.cache.expires < new Date()) {
             const expires = new Date();
             const authres = await fetch(new URL(`/oauth/token`, this.config.server.provider_url), {
@@ -53,10 +51,10 @@ export default class ExternalProvider {
         }
     }
 
-    agencies(filter: string): Promise<{
-        items: Array<Static<Typeof Agency>>
+    async agencies(filter: string): Promise<{
+        items: Array<Static<typeof Agency>>
     }> {
-        const agencyres = await fetch(new URL(`/api/v1/admin/agencies`, config.server.provider_url), {
+        const agencyres = await fetch(new URL(`/api/v1/admin/agencies`, this.config.server.provider_url), {
             method: 'GET',
             headers: {
                 Accept: 'application/json'
@@ -68,9 +66,9 @@ export default class ExternalProvider {
             data: Type.Array(Agency)
         }));
 
-        return res.json({
+        return {
             items: list.data
-        })
+        }
     }
 
     async login(username: string): Promise<{
