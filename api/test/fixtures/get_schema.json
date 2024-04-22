@@ -14,6 +14,11 @@
         "query": true,
         "res": true
     },
+    "GET /agency/agencyid": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
     "PUT /basemap": {
         "body": false,
         "query": false,

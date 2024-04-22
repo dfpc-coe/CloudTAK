@@ -42,4 +42,30 @@ export default async function router(schema: Schema, config: Config) {
             return Err.respond(err, res);
         }
     });
+
+    await schema.get('/agency/agencyid', {
+        name: 'Get Agency',
+        group: 'Agency',
+        description: 'Return a single agency by id',
+        params: Type.Object({
+            agencyid: Type.Integer()
+        }),
+        res: AgencyResponse
+    }, async (req, res) => {
+        try {
+            const user = await Auth.as_user(config, req);
+            const profile = await config.models.Profile.from(user.email);
+
+            if (!config.server.provider_url || !config.server.provider_secret || !config.server.provider_client) {
+                throw new Err(404, null, 'External API not configured');
+            }
+
+            if (!profile.id) throw new Err(400, null, 'External ID must be set on profile');
+            const agency = await config.external.agency(profile.id, req.params.agencyid);
+
+            return res.json(agency);
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
 }
