@@ -19,6 +19,8 @@ export const SpatialRefSys = pgTable('spatial_ref_sys', {
 /** ==== END ==== */
 
 export const Profile = pgTable('profile', {
+    id: integer('id'),
+    name: text('name').default('Unknown'),
     username: text('username').primaryKey(),
     last_login: timestamp('last_login', { withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     auth: json('auth').$type<ConnectionAuth>().notNull(),
