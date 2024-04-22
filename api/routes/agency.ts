@@ -25,14 +25,14 @@ export default async function router(schema: Schema, config: Config) {
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
+            const profile = await config.models.Profile.from(user.email);
 
             if (!config.server.provider_url || !config.server.provider_secret || !config.server.provider_client) {
                 return res.json({ total: 0, items: [] })
             }
 
-            const list = await config.external.agencies(user.id, req.query.filter);
-
-            console.error(list);
+            if (!profile.id) throw new Err(400, null, 'External ID must be set on profile');
+            const list = await config.external.agencies(profile.id, req.query.filter);
 
             return res.json({
                 total: list.items.length, // This is a lie as there isn't a total in the API
