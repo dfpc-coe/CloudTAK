@@ -214,6 +214,5 @@ export default class Style {
 
             Object.assign(feature.properties, style.polygon);
         }
-
     }
 }

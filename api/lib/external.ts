@@ -51,9 +51,7 @@ export default class ExternalProvider {
         }
     }
 
-    async agency(uid: number, agency_id: number): Promise<{
-        items: Array<Static<typeof Agency>>
-    }> {
+    async agency(uid: number, agency_id: number): Promise<Static<typeof Agency>> {
         await this.auth();
 
         const url = new URL(`/api/v1/server/agencies/${agency_id}`, this.config.server.provider_url);
@@ -67,12 +65,10 @@ export default class ExternalProvider {
 
         if (!agencyres.ok) throw new Err(500, new Error(await agencyres.text()), 'External Agency List Error');
         const list = await agencyres.typed(Type.Object({
-            data: Type.Array(Agency)
+            data: Agency
         }));
 
-        return {
-            items: list.data
-        }
+        return list.data;
     }
 
     async agencies(uid: number, filter: string): Promise<{
