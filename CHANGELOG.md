@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### V1.16.0 - 2024-04-22
+
+- :bug: `API` Fix Style Overrides
+
 ### V1.15.1 - 2024-04-21
 
 - :bug: `UI` Fix icon stretch in CoT Pane
