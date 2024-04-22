@@ -31,21 +31,21 @@
                                     v-text='connection.name'
                                 />
 
-                                <div class='ms-auto'>
-                                    <div class='btn-list'>
-                                        <IconRefresh
-                                            v-tooltip='"Refresh"'
-                                            size='32'
-                                            class='cursor-pointer'
-                                            @click='refresh'
-                                        />
-                                        <IconSettings
-                                            v-tooltip='"Edit"'
-                                            size='32'
-                                            class='cursor-pointer'
-                                            @click='$router.push(`/connection/${connection.id}/edit`)'
-                                        />
-                                    </div>
+                                <div class='ms-auto d-flex align-items-center btn-list'>
+                                    <AgencyBadge :connection='connection'/>
+
+                                    <IconRefresh
+                                        v-tooltip='"Refresh"'
+                                        size='32'
+                                        class='cursor-pointer'
+                                        @click='refresh'
+                                    />
+                                    <IconSettings
+                                        v-tooltip='"Edit"'
+                                        size='32'
+                                        class='cursor-pointer'
+                                        @click='$router.push(`/connection/${connection.id}/edit`)'
+                                    />
                                 </div>
                             </div>
                             <div class='card-body'>
@@ -180,10 +180,12 @@ import {
     TablerMarkdown,
     TablerLoading
 } from '@tak-ps/vue-tabler';
+import AgencyBadge from './Connection/AgencyBadge.vue';
 
 export default {
     name: 'TAKConnection',
     components: {
+        AgencyBadge,
         IconRobot,
         IconSettings,
         IconAffiliate,

@@ -43,7 +43,7 @@ export default async function router(schema: Schema, config: Config) {
         }
     });
 
-    await schema.get('/agency/agencyid', {
+    await schema.get('/agency/:agencyid', {
         name: 'Get Agency',
         group: 'Agency',
         description: 'Return a single agency by id',
