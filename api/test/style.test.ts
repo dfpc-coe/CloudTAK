@@ -225,3 +225,63 @@ test('Style: Global Remarks & Callsign - Override by Global Query', async () => 
         }
     });
 });
+
+test('Style: Global Remarks & Callsign - Override by Query Point', async () => {
+    const style = new Style({
+        stale: 123,
+        enabled_styles: true,
+        styles: {
+            remarks: '{{override}}',
+            callsign: '{{override_callsign}}',
+            point: {
+                remarks: '{{override_point}}',
+                callsign: '{{override_point_callsign}}',
+            },
+            queries: [{
+                query: 'properties.metadata.override = "OVERRIDE"',
+                styles: {
+                    remarks: '{{override_query}}',
+                    callsign: '{{override_query_callsign}}',
+                    point: {
+                        remarks: '{{override_query_point}}',
+                        callsign: '{{override_query_point_callsign}}',
+                    }
+                }
+            }]
+        }
+    });
+
+    assert.deepEqual((await style.feat({
+        type: 'Feature',
+        properties: {
+            metadata: {
+                override: 'OVERRIDE',
+                override_callsign: 'OVERRIDE_CALLSIGN',
+                override_point: 'OVERRIDE_POINT',
+                override_point_callsign: 'OVERRIDE_POINT_CALLSIGN',
+                override_query: 'OVERRIDE_QUERY',
+                override_query_callsign: 'OVERRIDE_QUERY_CALLSIGN',
+                override_query_point: 'OVERRIDE_QUERY_POINT',
+                override_query_point_callsign: 'OVERRIDE_QUERY_POINT_CALLSIGN'
+            }
+        },
+        geometry: {
+            type: 'Point',
+            coordinates: [0, 0]
+        }
+    })).properties, {
+        stale: 123,
+        remarks: 'OVERRIDE_QUERY_POINT',
+        callsign: 'OVERRIDE_QUERY_POINT_CALLSIGN',
+        metadata: {
+            override: 'OVERRIDE',
+            override_callsign: 'OVERRIDE_CALLSIGN',
+            override_point: 'OVERRIDE_POINT',
+            override_point_callsign: 'OVERRIDE_POINT_CALLSIGN',
+            override_query: 'OVERRIDE_QUERY',
+            override_query_callsign: 'OVERRIDE_QUERY_CALLSIGN',
+            override_query_point: 'OVERRIDE_QUERY_POINT',
+            override_query_point_callsign: 'OVERRIDE_QUERY_POINT_CALLSIGN'
+        }
+    });
+});
