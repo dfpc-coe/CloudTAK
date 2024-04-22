@@ -38,7 +38,7 @@
                                         placeholder='Search…'
                                     >
                                     <span class='input-icon-addon'>
-                                        <IconSearch />
+                                        <IconSearch size='24'/>
                                     </span>
                                 </div>
                             </div>
@@ -61,7 +61,7 @@
                                 class='col-lg-12'
                             >
                                 <div class='card'>
-                                    <div class='card-header'>
+                                    <div class='card-header d-flex'>
                                         <ConnectionStatus :connection='connection' />
 
                                         <a
@@ -70,14 +70,23 @@
                                             v-text='connection.name'
                                         />
 
-                                        <div class='ms-auto'>
-                                            <div class='btn-list'>
-                                                <IconSettings
-                                                    size='32'
-                                                    class='cursor-pointer'
-                                                    @click='$router.push(`/connection/${connection.id}/edit`)'
-                                                />
-                                            </div>
+                                        <div class='ms-auto align-items-center btn-list'>
+                                            <span
+                                                v-if='connection.agency'
+                                                class='badge border bg-blue text-white'
+                                                style='height: 20px' v-text='`Agency`'
+                                            />
+                                            <span
+                                                v-else
+                                                class='badge border bg-red text-white'
+                                                style='height: 20px' v-text='`Server`'
+                                            />
+
+                                            <IconSettings
+                                                size='32'
+                                                class='cursor-pointer'
+                                                @click='$router.push(`/connection/${connection.id}/edit`)'
+                                            />
                                         </div>
                                     </div>
                                     <TablerMarkdown
