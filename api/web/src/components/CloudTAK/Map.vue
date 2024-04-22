@@ -334,7 +334,7 @@ export default {
             },
             locked: [],         // Lock the map view to a given CoT - The last element is the currently locked value
                                 //   this is an array so that things like the radial menu can temporarily lock state but remember the previous lock value when they are closed
-            edit: false,        // If a radial.cot is set and edit is true then load the cot into terra-draw
+            edit: false,        // If a radial.cots is set and edit is true then load the cot into terra-draw
             upload: {
                 shown: false,
                 dragging: false
@@ -416,7 +416,7 @@ export default {
         },
         closeRadial: function() {
             mapStore.radial.mode = null;
-            mapStore.radial.cot = null;
+            mapStore.radial.cots = [];
         },
         toLocation: function() {
             if (!profileStore.profile.tak_loc) throw new Error('No Location Set');

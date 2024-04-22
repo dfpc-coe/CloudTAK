@@ -395,7 +395,7 @@ export const useMapStore = defineStore('cloudtak', {
                     this.radial.y = e.point.y;
                 }
 
-                this.radial.cot = {
+                this.radial.cots = [{
                     id: window.crypto.randomUUID(),
                     type: 'Feature',
                     properties: {
@@ -407,7 +407,7 @@ export const useMapStore = defineStore('cloudtak', {
                         type: 'Point',
                         coordinates: [e.lngLat.lng, e.lngLat.lat]
                     }
-                };
+                }];
             });
         },
         initOverlays: async function() {
@@ -434,6 +434,8 @@ export const useMapStore = defineStore('cloudtak', {
             }
         },
         initDraw: function() {
+            if (!this.map) throw new Error('Cannot addLayer before map has loaded');
+
             this.draw = new terraDraw.TerraDraw({
                 adapter: new terraDraw.TerraDrawMapLibreGLAdapter({ map: this.map }),
                 modes: [
