@@ -17,7 +17,7 @@ export default async function router(schema: Schema, config: Config) {
             password: Type.String()
         }),
         res: Type.Object({
-            id: Type.Union([Type.Integer(), Type.Null()),
+            id: Type.Union([Type.Integer(), Type.Null()]),
             token: Type.String(),
             access: Type.String(),
             email: Type.String()
@@ -58,7 +58,7 @@ export default async function router(schema: Schema, config: Config) {
         name: 'Get Login',
         group: 'Login',
         res: Type.Object({
-            id: Type.Union([Type.Integer(), Type.Null()),
+            id: Type.Union([Type.Integer(), Type.Null()]),
             email: Type.String(),
             access: Type.String()
         })
