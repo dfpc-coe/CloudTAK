@@ -134,9 +134,10 @@ export default class Style {
                     const expression = jsonata(q.query);
 
                     if (await expression.evaluate(feature) === true) {
+
                         for (const prop of ['remarks', 'callsign']) {
-                            if (!q[prop]) continue;
-                            feature.properties[prop] = handlebars.compile(q[prop])(feature.properties.metadata);
+                            if (!q.styles[prop]) continue;
+                            feature.properties[prop] = handlebars.compile(q.styles[prop])(feature.properties.metadata);
                         }
 
                         if (q.links) this.#links(q.links, feature);

@@ -130,6 +130,7 @@ export default async function router(schema: Schema, config: Config) {
             name: Type.Optional(Type.String()),
             description: Type.Optional(Type.String()),
             enabled: Type.Optional(Type.Boolean()),
+            agency: Type.Optional(Type.Integer()),
             auth: Type.Optional(Type.Object({
                 key: Type.String(),
                 cert: Type.String()
@@ -138,11 +139,12 @@ export default async function router(schema: Schema, config: Config) {
         res: ConnectionResponse
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req, {
+            const auth = await Auth.is_auth(config, req, {
                 resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }]
             });
 
-            if (req.body.agency && user.access !== 'admin') {
+            if (req.body.agency && Auth.is_user(config, req)) {
+                await Auth.as_user(config, req, { admin: true });
                 throw new Err(400, null, 'Only System Admins can change an agency once a connection is created');
             }
 
