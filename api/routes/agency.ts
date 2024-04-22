@@ -30,7 +30,7 @@ export default async function router(schema: Schema, config: Config) {
                 return res.json({ total: 0, items: [] })
             }
 
-            const list = await config.external.agencies(req.query.filter);
+            const list = await config.external.agencies(user.id, req.query.filter);
 
             console.error(list);
 
