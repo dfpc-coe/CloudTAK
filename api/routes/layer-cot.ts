@@ -101,7 +101,6 @@ export default async function router(schema: Schema, config: Config) {
                         if (exist && data.mission_diff) {
                             const b = CoT.from_geojson(exist);
                             if (!cot.isDiff(b)) continue;
-                            console.error('DIFFERENT');
                         }
 
                         cot.addDest({ mission: data.name });

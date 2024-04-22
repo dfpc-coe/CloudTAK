@@ -204,7 +204,7 @@ export const ConnectionSinkResponse = createSelectSchema(schemas.ConnectionSink,
 export const ConnectionResponse = Type.Object({
     id: Type.Integer(),
     status: Type.String(),
-    agency: Type.Optional(Type.Integer()),
+    agency: Type.Optional(Type.Union([Type.Integer(), Type.Null()])),
     certificate: Type.Object({
         validFrom: Type.String(),
         validTo: Type.String()
