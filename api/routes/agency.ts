@@ -24,7 +24,7 @@ export default async function router(schema: Schema, config: Config) {
 
     }, async (req, res) => {
         try {
-            const user = await Auth.as_auth(config, req);
+            const user = await Auth.as_user(config, req);
 
             if (!config.server.provider_url || !config.server.provider_secret || !config.server.provider_client) {
                 return res.json({ total: 0, items: [] })
