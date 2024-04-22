@@ -71,16 +71,7 @@
                                         />
 
                                         <div class='ms-auto align-items-center btn-list'>
-                                            <span
-                                                v-if='connection.agency'
-                                                class='badge border bg-blue text-white'
-                                                style='height: 20px' v-text='`Agency`'
-                                            />
-                                            <span
-                                                v-else
-                                                class='badge border bg-red text-white'
-                                                style='height: 20px' v-text='`Server`'
-                                            />
+                                            <AgencyBadge :connection='connection'/>
 
                                             <IconSettings
                                                 size='32'
@@ -122,6 +113,7 @@ import { std, stdurl } from '/src/std.ts';
 import PageFooter from './PageFooter.vue';
 import ConnectionStatus from './Connection/Status.vue';
 import timeDiff from '../timediff.js';
+import AgencyBadge from './Connection/AgencyBadge.vue';
 import {
     TablerPager,
     TablerBreadCrumb,
@@ -138,6 +130,7 @@ export default {
     name: 'TAKConnections',
     components: {
         TablerNone,
+        AgencyBadge,
         TablerPager,
         IconSettings,
         IconSearch,
