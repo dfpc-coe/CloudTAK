@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### V1.17.1 - 2024-04-23
+
+- :bug: `api` Avoid deleting style properties as style object is reused
+
 ### V1.17.0 - 2024-04-22
 
 - :bug: `Hooks` If a `remarks` field isn't present, post an empty string
