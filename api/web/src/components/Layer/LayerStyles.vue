@@ -32,7 +32,7 @@
                 <button @click='help("query")' class='btn'>
                     <IconHelp size='32' v-tooltip='"JSONata Help"'/>
                 </button>
-                <button v-if='query' @click='query = null' class='btn'>
+                <button v-if='query !== null' @click='query = null' class='btn'>
                     <IconX size='32' v-tooltip='"Return to list"'/>
                 </button>
                 <template v-if='!disabled'>
@@ -59,19 +59,19 @@
                 </div>
             </div>
         </template>
-        <template v-else-if='query && typeof query === "object"'>
+        <template v-else-if='query !== null'>
             <div class='card-body'>
                 <div class='col-md-12 hover-light rounded px-2 py-2'>
                     <TablerInput
                         :disabled='disabled'
-                        v-model='query.query'
+                        v-model='queries[query].query'
                         placeholder='JSONata Query'
                         label='JSONata Query'
                         :error='error_query'
                     />
                 </div>
 
-                <StyleSingle :schema='layer.schema' :disabled='disabled' v-model='query.styles'/>
+                <StyleSingle :schema='layer.schema' :disabled='disabled' v-model='queries[query].styles'/>
             </div>
         </template>
     </template>
@@ -168,7 +168,7 @@ export default {
                 query: '',
                 styles: {}
             })
-            this.query = this.queries[this.queries.length -1];
+            this.query = this.queries.length - 1;
         },
         saveLayer: async function(query = null) {
             this.loading.save = true;
@@ -196,10 +196,7 @@ export default {
             }
         },
         openQuery: function(idx) {
-            this.query = {
-                id: idx,
-                ...this.queries[idx]
-            };
+            this.query = idx
         }
     },
     components: {
