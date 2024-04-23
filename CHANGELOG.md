@@ -12,34 +12,34 @@
 
 ### Pending Release
 
-### V1.17.3 - 2024-04-23
+### v1.17.3 - 2024-04-23
 
 - :bug: `ui` Style Queries wouldn't update after initial create
 
-### V1.17.2 - 2024-04-23
+### v1.17.2 - 2024-04-23
 
 - :bug: `ui` Fix bug in underlying Input library that prevented event firing on select => delete
 
-### V1.17.1 - 2024-04-23
+### v1.17.1 - 2024-04-23
 
 - :bug: `api` Avoid deleting style properties as style object is reused
 
-### V1.17.0 - 2024-04-22
+### v1.17.0 - 2024-04-22
 
 - :bug: `Hooks` If a `remarks` field isn't present, post an empty string
 - :tada: `UI` Add Adgency/Server badge for connections
 - :tada: `UI` Add `AgencySelect` component for adding/removing agencies
 - :rocket: `API` Allow updating/removing agencies on a connection
 
-### V1.16.0 - 2024-04-22
+### v1.16.0 - 2024-04-22
 
 - :bug: `API` Fix Style Overrides
 
-### V1.15.1 - 2024-04-21
+### v1.15.1 - 2024-04-21
 
 - :bug: `UI` Fix icon stretch in CoT Pane
 
-### V1.15.0 - 2024-04-21
+### v1.15.0 - 2024-04-21
 
 - :tada: `API` Connection now has an optional `agency` column with auth checks
 - :tada: `API` Initial API Scoping for new `/agency` route
