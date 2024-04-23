@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### V1.17.3 - 2024-04-23
+
+- :bug: `ui` Style Queries wouldn't update after initial create
+
 ### V1.17.2 - 2024-04-23
 
 - :bug: `ui` Fix bug in underlying Input library that prevented event firing on select => delete
