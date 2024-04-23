@@ -13,6 +13,7 @@ export enum ResourceCreationScope {
 
 export enum AuthUserAccess {
     ADMIN = 'admin',
+    AGENCY = 'agency',
     USER = 'user'
 }
 
@@ -100,7 +101,7 @@ export default class Auth {
             const auth_resource = auth as AuthResource;
 
             if (opts.anyResources && opts.resources.length) {
-                throw new Err(403, null, 'Server cannot specify defined resource access any resource access together');
+                throw new Err(403, null, 'Server cannot specify defined resource access and any resource access together');
             } else if (!opts.anyResources && !opts.resources.length) {
                 throw new Err(403, null, 'Resource token cannot access resource');
             }
