@@ -180,40 +180,27 @@ export default class Style {
         if (feature.geometry.type === 'Point' && style.point) {
             if (style.point.remarks) feature.properties.remarks = handlebars.compile(style.point.remarks)(feature.properties.metadata);
             if (style.point.callsign) feature.properties.callsign = handlebars.compile(style.point.callsign)(feature.properties.metadata);
+            if (style.point.links) this.#links(style.point.links, feature);
 
-            delete style.point.remarks;
-            delete style.point.callsign;
-
-            if (style.point.links) {
-                this.#links(style.point.links, feature);
-                delete style.point.links;
-            }
-
-            Object.assign(feature.properties, style.point);
+            const apply = Object.keys(style.point)
+                .filter((k) => { return !['links', 'remarks', 'callsign'].includes(k) })
+                .forEach((k) => { feature.properties[k] = style.point[k] });
         } else if (feature.geometry.type === 'LineString' && style.line) {
             if (style.line.remarks) feature.properties.remarks = handlebars.compile(style.line.remarks)(feature.properties.metadata);
             if (style.line.callsign) feature.properties.callsign = handlebars.compile(style.line.callsign)(feature.properties.metadata);
-            delete style.line.remarks;
-            delete style.line.callsign;
+            if (style.line.links) this.#links(style.line.links, feature);
 
-            if (style.line.links) {
-                this.#links(style.line.links, feature);
-                delete style.line.links;
-            }
-
-            Object.assign(feature.properties, style.line);
+            const apply = Object.keys(style.point)
+                .filter((k) => { return !['links', 'remarks', 'callsign'].includes(k) })
+                .forEach((k) => { feature.properties[k] = style.point[k] });
         } else if (feature.geometry.type === 'Polygon' && style.polygon) {
             if (style.polygon.remarks) feature.properties.remarks = handlebars.compile(style.polygon.remarks)(feature.properties.metadata);
             if (style.polygon.callsign) feature.properties.callsign = handlebars.compile(style.polygon.callsign)(feature.properties.metadata);
-            delete style.polygon.remarks;
-            delete style.polygon.callsign;
+            if (style.polygon.links) this.#links(style.polygon.links, feature);
 
-            if (style.polygon.links) {
-                this.#links(style.polygon.links, feature);
-                delete style.polygon.links;
-            }
-
-            Object.assign(feature.properties, style.polygon);
+            const apply = Object.keys(style.point)
+                .filter((k) => { return !['links', 'remarks', 'callsign'].includes(k) })
+                .forEach((k) => { feature.properties[k] = style.point[k] });
         }
     }
 }
