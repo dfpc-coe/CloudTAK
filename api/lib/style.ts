@@ -180,6 +180,7 @@ export default class Style {
         if (feature.geometry.type === 'Point' && style.point) {
             if (style.point.remarks) feature.properties.remarks = handlebars.compile(style.point.remarks)(feature.properties.metadata);
             if (style.point.callsign) feature.properties.callsign = handlebars.compile(style.point.callsign)(feature.properties.metadata);
+
             delete style.point.remarks;
             delete style.point.callsign;
 

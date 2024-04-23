@@ -285,3 +285,43 @@ test('Style: Global Remarks & Callsign - Override by Query Point', async () => {
         }
     });
 });
+
+test('Style: Lowest Level Remarks', async () => {
+    const style = new Style({
+        stale: 123,
+        enabled_styles: true,
+        styles: {
+            queries: [{
+                query: 'true',
+                styles: {
+                    point: {
+                        remarks: '{{override_query_point}}',
+                        callsign: '{{override_query_point_callsign}}',
+                    }
+                }
+            }]
+        }
+    });
+
+    assert.deepEqual((await style.feat({
+        type: 'Feature',
+        properties: {
+            metadata: {
+                override_query_point: 'LOWEST_REMARKS',
+                override_query_point_callsign: 'LOWEST_CALLSIGN'
+            }
+        },
+        geometry: {
+            type: 'Point',
+            coordinates: [0, 0]
+        }
+    })).properties, {
+        stale: 123,
+        remarks: 'LOWEST_REMARKS',
+        callsign: 'LOWEST_CALLSIGN',
+        metadata: {
+            override_query_point: 'LOWEST_REMARKS',
+            override_query_point_callsign: 'LOWEST_CALLSIGN'
+        }
+    });
+});
