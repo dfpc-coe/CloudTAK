@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v1.17.4 - 2024-04-23
+
+- :bug: Fix version numbers in this file
+
 ### v1.17.3 - 2024-04-23
 
 - :bug: `ui` Style Queries wouldn't update after initial create
