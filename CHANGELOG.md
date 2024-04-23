@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+- :bug: `Hooks` If a `remarks` field isn't present, post an empty string
+- :tada: `UI` Add Adgency/Server badge for connections
+- :tada: `UI` Add `AgencySelect` component for adding/removing agencies
+- :rocket: `API` Allow updating/removing agencies on a connection
+
 ### V1.16.0 - 2024-04-22
 
 - :bug: `API` Fix Style Overrides

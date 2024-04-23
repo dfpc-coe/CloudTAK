@@ -178,8 +178,8 @@ export default class Style {
         if (!feature.properties) feature.properties = {};
 
         if (feature.geometry.type === 'Point' && style.point) {
-            if (style.point.remarks) feature.properties.callsign = handlebars.compile(style.point.callsign)(feature.properties.metadata);
-            if (style.point.callsign) feature.properties.remarks = handlebars.compile(style.point.remarks)(feature.properties.metadata);
+            if (style.point.remarks) feature.properties.remarks = handlebars.compile(style.point.remarks)(feature.properties.metadata);
+            if (style.point.callsign) feature.properties.callsign = handlebars.compile(style.point.callsign)(feature.properties.metadata);
             delete style.point.remarks;
             delete style.point.callsign;
 
@@ -190,8 +190,8 @@ export default class Style {
 
             Object.assign(feature.properties, style.point);
         } else if (feature.geometry.type === 'LineString' && style.line) {
-            if (style.line.remarks) feature.properties.callsign = handlebars.compile(style.line.callsign)(feature.properties.metadata);
-            if (style.line.callsign) feature.properties.remarks = handlebars.compile(style.line.remarks)(feature.properties.metadata);
+            if (style.line.remarks) feature.properties.remarks = handlebars.compile(style.line.remarks)(feature.properties.metadata);
+            if (style.line.callsign) feature.properties.callsign = handlebars.compile(style.line.callsign)(feature.properties.metadata);
             delete style.line.remarks;
             delete style.line.callsign;
 
@@ -202,8 +202,8 @@ export default class Style {
 
             Object.assign(feature.properties, style.line);
         } else if (feature.geometry.type === 'Polygon' && style.polygon) {
-            if (style.polygon.remarks) feature.properties.callsign = handlebars.compile(style.polygon.callsign)(feature.properties.metadata);
-            if (style.polygon.callsign) feature.properties.remarks = handlebars.compile(style.polygon.remarks)(feature.properties.metadata);
+            if (style.polygon.remarks) feature.properties.remarks = handlebars.compile(style.polygon.remarks)(feature.properties.metadata);
+            if (style.polygon.callsign) feature.properties.callsign = handlebars.compile(style.polygon.callsign)(feature.properties.metadata);
             delete style.polygon.remarks;
             delete style.polygon.callsign;
 
@@ -214,6 +214,5 @@ export default class Style {
 
             Object.assign(feature.properties, style.polygon);
         }
-
     }
 }

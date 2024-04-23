@@ -1,5 +1,4 @@
 import { Type } from '@sinclair/typebox'
-import { GenericListOrder } from '@openaddresses/batch-generic';
 import Config from '../lib/config.js';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
@@ -16,9 +15,6 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Agency',
         description: 'Return a list Agencies',
         query: Type.Object({
-            limit: Type.Integer({ default: 10 }),
-            page: Type.Integer({ default: 0 }),
-            order: Type.Enum(GenericListOrder, { default: GenericListOrder.ASC }),
             filter: Type.String({ default: '' })
         }),
         res: Type.Object({
@@ -28,13 +24,46 @@ export default async function router(schema: Schema, config: Config) {
 
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req);
+            const user = await Auth.as_user(config, req);
+            const profile = await config.models.Profile.from(user.email);
 
+            if (!config.server.provider_url || !config.server.provider_secret || !config.server.provider_client) {
+                return res.json({ total: 0, items: [] })
+            }
+
+            if (!profile.id) throw new Err(400, null, 'External ID must be set on profile');
+            const list = await config.external.agencies(profile.id, req.query.filter);
 
             return res.json({
-                total: 0,
-                items: []
-            })
+                total: list.items.length, // This is a lie as there isn't a total in the API
+                items: list.items
+            });
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
+
+    await schema.get('/agency/:agencyid', {
+        name: 'Get Agency',
+        group: 'Agency',
+        description: 'Return a single agency by id',
+        params: Type.Object({
+            agencyid: Type.Integer()
+        }),
+        res: AgencyResponse
+    }, async (req, res) => {
+        try {
+            const user = await Auth.as_user(config, req);
+            const profile = await config.models.Profile.from(user.email);
+
+            if (!config.server.provider_url || !config.server.provider_secret || !config.server.provider_client) {
+                throw new Err(404, null, 'External API not configured');
+            }
+
+            if (!profile.id) throw new Err(400, null, 'External ID must be set on profile');
+            const agency = await config.external.agency(profile.id, req.params.agencyid);
+
+            return res.json(agency);
         } catch (err) {
             return Err.respond(err, res);
         }
