@@ -69,8 +69,6 @@ export default async function arcgis(data: any): Promise<boolean> {
 
         if (body.error) throw new Error(body.error.message);
 
-        console.error(JSON.stringify(body));
-
         return true;
     } else {
         const oid = query.features[0].attributes.objectid;
