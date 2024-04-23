@@ -101,5 +101,11 @@ export default {
                 ]
             }
         }
+    },
+    Outputs: {
+        HookQueue: {
+            Description: 'Hook Queue URL',
+            Value: cf.ref('HookQueue')
+        }
     }
 };

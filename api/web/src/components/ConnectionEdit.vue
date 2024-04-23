@@ -69,6 +69,12 @@
                                                 :rows='6'
                                             />
                                         </div>
+                                        <div class='col-md-12'>
+                                            <AgencySelect
+                                                v-model='connection.agency'
+                                                label='Agency Owner'
+                                            />
+                                        </div>
                                     </div>
                                 </div>
 
@@ -179,6 +185,7 @@
 <script>
 import { std } from '/src/std.ts';
 import PageFooter from './PageFooter.vue';
+import AgencySelect from './util/AgencySelect.vue';
 import Upload from './util/UploadP12.vue';
 import LoginCertModal from './util/LoginCertModal.vue';
 import {
@@ -200,6 +207,7 @@ export default {
         IconPlus,
         IconLock,
         IconLogin,
+        AgencySelect,
         TablerDelete,
         TablerBreadCrumb,
         LoginCertModal,
@@ -223,6 +231,7 @@ export default {
             },
             connection: {
                 name: '',
+                agency: null,
                 description: '',
                 enabled: true,
                 auth: { cert: '', key: '' }

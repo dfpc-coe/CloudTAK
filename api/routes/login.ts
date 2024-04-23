@@ -27,7 +27,7 @@ export default async function router(schema: Schema, config: Config) {
 
             if (config.server.provider_url) {
                 try {
-                    const response = await provider.external(email);
+                    const response = await config.external.login(email);
 
                     await config.models.Profile.commit(email, {
                         ...response,

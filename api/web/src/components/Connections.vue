@@ -38,7 +38,7 @@
                                         placeholder='Search…'
                                     >
                                     <span class='input-icon-addon'>
-                                        <IconSearch />
+                                        <IconSearch size='24'/>
                                     </span>
                                 </div>
                             </div>
@@ -61,7 +61,7 @@
                                 class='col-lg-12'
                             >
                                 <div class='card'>
-                                    <div class='card-header'>
+                                    <div class='card-header d-flex'>
                                         <ConnectionStatus :connection='connection' />
 
                                         <a
@@ -70,14 +70,14 @@
                                             v-text='connection.name'
                                         />
 
-                                        <div class='ms-auto'>
-                                            <div class='btn-list'>
-                                                <IconSettings
-                                                    size='32'
-                                                    class='cursor-pointer'
-                                                    @click='$router.push(`/connection/${connection.id}/edit`)'
-                                                />
-                                            </div>
+                                        <div class='ms-auto align-items-center btn-list'>
+                                            <AgencyBadge :connection='connection'/>
+
+                                            <IconSettings
+                                                size='32'
+                                                class='cursor-pointer'
+                                                @click='$router.push(`/connection/${connection.id}/edit`)'
+                                            />
                                         </div>
                                     </div>
                                     <TablerMarkdown
@@ -113,6 +113,7 @@ import { std, stdurl } from '/src/std.ts';
 import PageFooter from './PageFooter.vue';
 import ConnectionStatus from './Connection/Status.vue';
 import timeDiff from '../timediff.js';
+import AgencyBadge from './Connection/AgencyBadge.vue';
 import {
     TablerPager,
     TablerBreadCrumb,
@@ -129,6 +130,7 @@ export default {
     name: 'TAKConnections',
     components: {
         TablerNone,
+        AgencyBadge,
         TablerPager,
         IconSettings,
         IconSearch,
