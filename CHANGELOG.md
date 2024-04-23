@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### V1.17.2 - 2024-04-23
+
+- :bug: `ui` Fix bug in underlying Input library that prevented event firing on select => delete
+
 ### V1.17.1 - 2024-04-23
 
 - :bug: `api` Avoid deleting style properties as style object is reused
