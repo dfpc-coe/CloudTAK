@@ -12,6 +12,13 @@
 
 ### Pending Release
 
+### v1.18.0 - 2024-04-23
+
+- :rocket: `UI` Menu Coverage Effects
+- :rocket: `API` SystemAdmin shows all connections on server
+- :rocket: `API` AgencyAdmin shows only connections they are admin of
+- :rocket: `API` User shows no connections
+
 ### v1.17.4 - 2024-04-23
 
 - :bug: Fix version numbers in this file
