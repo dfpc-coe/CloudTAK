@@ -1,5 +1,5 @@
 import Err from '@openaddresses/batch-error';
-import { sql } from 'drizzle-orm';
+import { sql, ilike, and, inArray } from 'drizzle-orm';
 import Config from '../lib/config.js';
 import CW from '../lib/aws/metric.js';
 import Auth, { AuthResourceAccess } from '../lib/auth.js';
@@ -38,16 +38,14 @@ export default async function router(schema: Schema, config: Config) {
         try {
             const profile = await Auth.as_profile(config, req);
 
-            let where: sql;
+            let where;
             if (profile.system_admin) {
-                where = sql`
-                    name ~* ${req.query.filter}
-                `
+                where = ilike(Connection.name, req.query.filter);
             } else if (profile.agency_admin.length) {
-                where = sql`
-                    name ~* ${req.query.filter}
-                    AND id in (${profile.agency_admin.join(',')})
-                `
+                where = and(
+                    ilike(Connection.name, req.query.filter),
+                    inArray(Connection.id, profile.agency_admin)
+                );
             } else {
                 throw new Err(400, null, 'Insufficient Access')
             }
