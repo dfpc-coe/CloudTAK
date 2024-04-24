@@ -100,7 +100,7 @@ export default class ExternalProvider {
     async login(username: string): Promise<{
         id: number;
         name: string;
-        phone: string;
+        phone: string | null;
         system_admin: boolean;
         agency_admin: Array<number>;
     }> {
@@ -121,7 +121,7 @@ export default class ExternalProvider {
                 id: Type.Integer(),
                 name: Type.String(),
                 email: Type.String(),
-                phone: Type.String(),
+                phone: Type.Union([Type.String(), Type.Null()]),
                 active: Type.Boolean(),
                 agencies: Type.Array(Type.Object({
                     id: Type.Integer(),

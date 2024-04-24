@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 import Err from '@openaddresses/batch-error';
-import Auth from '../lib/auth.js';
+import Auth, { AuthUserAccess } from '../lib/auth.js';
 import Config from '../lib/config.js';
 import Schema from '@openaddresses/batch-schema';
 import { Type } from '@sinclair/typebox'
@@ -18,7 +18,7 @@ export default async function router(schema: Schema, config: Config) {
         }),
         res: Type.Object({
             token: Type.String(),
-            access: Type.String(),
+            access: Type.Enum(AuthUserAccess),
             email: Type.String()
         })
     }, async (req, res) => {
@@ -35,7 +35,11 @@ export default async function router(schema: Schema, config: Config) {
                     });
                 } catch (err) {
                     // If there are upstream errors the user is limited to WebTAK like functionality
-                    await config.models.Profile.commit(email, { system_admin: false, agency_admin: [], last_login: new Date().toISOString() });
+                    await config.models.Profile.commit(email, {
+                        system_admin: false,
+                        agency_admin: [],
+                        last_login: new Date().toISOString()
+                    });
                     console.error(err);
                 }
             } else {
@@ -44,7 +48,12 @@ export default async function router(schema: Schema, config: Config) {
 
             const profile = await config.models.Profile.from(email);
 
-            const access = profile.system_admin ? 'admin' : 'user';
+            let access = AuthUserAccess.USER
+            if (profile.system_admin) {
+                access = AuthUserAccess.ADMIN
+            } else if (profile.agency_admin.length) {
+                access = AuthUserAccess.AGENCY
+            }
 
             return res.json({ access, email, token: jwt.sign({ access, email }, config.SigningSecret) })
         } catch (err) {
@@ -57,7 +66,7 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Login',
         res: Type.Object({
             email: Type.String(),
-            access: Type.String()
+            access: Type.Enum(AuthUserAccess)
         })
     }, async (req, res) => {
         const user = await Auth.as_user(config, req);

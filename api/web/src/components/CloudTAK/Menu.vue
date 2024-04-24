@@ -73,17 +73,15 @@
 
         <div v-if='$route.name === "home-menu"' class='position-absolute bottom-0 start-0 end-0 border-top border-white bg-dark'>
             <div class='row g-0 align-items-center'>
-                <div class='py-2 d-flex align-items-center col-8'>
+                <div @click='$router.push("/profile")' style='width: calc(100% - 40px)' class='py-2 d-flex align-items-center hover-dark cursor-pointer'>
                     <div class='d-flex align-items-center'>
                         <IconUser size='32' class='mx-2'/>
-                        <span @click='$router.push("/profile")' style='font-size: 18px;' v-text='profile.username' class='cursor-pointer'></span>
+                        <span style='font-size: 18px;' v-text='profile.username'></span>
                     </div>
                 </div>
 
-                <div class='col-4 d-flex'>
-                    <div class='ms-auto mx-2'>
-                        <IconLogout @click.stop.prevent='logout' v-tooltip='"Logout"' size='32' class='cursor-pointer'/>
-                    </div>
+                <div @click.stop.prevent='logout' style='width: 40px;' class='py-2 px-2 ms-auto d-flex hover-dark cursor-pointer'>
+                    <IconLogout v-tooltip='"Logout"' size='32'/>
                 </div>
             </div>
         </div>

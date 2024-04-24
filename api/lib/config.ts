@@ -108,7 +108,6 @@ export default class Config {
         }
 
         if (!process.env.MartiAPI) throw new Error('MartiAPI env must be set');
-        if (!process.env.AuthGroup) throw new Error('AuthGroup env must be set');
 
         let SigningSecret, API_URL, DynamoDB, Bucket, HookURL;
         if (!process.env.StackName || process.env.StackName === 'test') {
