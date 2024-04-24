@@ -12,7 +12,7 @@
 
 ### Pending Release
 
-### v1.18.1 - 2024-04-23
+### v1.19.0 - 2024-04-23
 
 - :rocket: `API` Make DataSync Delete fault tolerant to TAK Server Errors
 
