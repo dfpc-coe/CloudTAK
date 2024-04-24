@@ -13,6 +13,7 @@ export enum ResourceCreationScope {
 
 export enum AuthUserAccess {
     ADMIN = 'admin',
+    AGENCY = 'agency',
     USER = 'user'
 }
 
@@ -78,11 +79,15 @@ export default class Auth {
     /**
      * Is the requester authenticated - can be either a Resource or User auth
      *
-     * @param {Object} req Express Request
-     * @param {boolean} token Should URL query tokens be allowed (usually only for downloads)
+     * @param config    - Server Config
+     * @param req       - Express Request
+     * @param opts.token        - Should URL query tokens be allowed (usually only for downloads)
+     * @param opts.anyResources - Any Resource token can use this endpoint
+     * @param resources         - Array of resource types that can use this endpoint
      */
     static async is_auth(config: Config, req: Request<any, any, any, any>, opts: {
         token?: boolean;
+        minAuth?: AuthUserAccess,
         anyResources?: boolean;
         resources?: Array<AuthResourceAccepted>;
     } = {}): Promise<AuthResource | AuthUser> {
@@ -100,7 +105,7 @@ export default class Auth {
             const auth_resource = auth as AuthResource;
 
             if (opts.anyResources && opts.resources.length) {
-                throw new Err(403, null, 'Server cannot specify defined resource access any resource access together');
+                throw new Err(403, null, 'Server cannot specify defined resource access and any resource access together');
             } else if (!opts.anyResources && !opts.resources.length) {
                 throw new Err(403, null, 'Resource token cannot access resource');
             }
