@@ -295,14 +295,23 @@ export default async function router(schema: Schema, config: Config) {
 
             await S3.del(`data-${String(req.params.dataid)}/`, { recurse: true });
 
-            data.mission_sync = false;
-            await DataMission.sync(config, data);
+            try {
+                data.mission_sync = false;
+                await DataMission.sync(config, data);
+            } catch (err) {
+                await config.models.Data.delete(req.params.dataid);
+
+                return res.json({
+                    status: 200,
+                    message: `Data Deleted - But TAK Server had an upstream error. Provide an admin with this error message ${String(err)}`
+                });
+            }
 
             await config.models.Data.delete(req.params.dataid);
 
             return res.json({
                 status: 200,
-                message: 'Data Deleted'
+                message: `Data Deleted`
             });
         } catch (err) {
             return Err.respond(err, res);
