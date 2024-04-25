@@ -131,10 +131,10 @@ export default class Auth {
         return auth;
     }
 
-    static async is_connection(config: Config, req: Request<any, any, any, any>, connectionid: number, opts: {
+    static async is_connection(config: Config, req: Request<any, any, any, any>, opts: {
         token?: boolean;
         resources?: Array<AuthResourceAccepted>;
-    }): Promise<boolean> {
+    }, connectionid: number): Promise<boolean> {
         const auth = await this.is_auth(config, req, opts)
 
         if (this.#is_user(auth)) {
