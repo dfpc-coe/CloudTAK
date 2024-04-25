@@ -12,6 +12,9 @@
 
 ### Pending Release
 
+- :rocket: `API` Lock Connections to System or Agency Admins
+- :rocket: `UI` Add paging to ConnectionToken page to be consistent with other pages
+
 ### v1.19.1 - 2024-04-25
 
 - :bug: `API` Fix Connection name filtering
