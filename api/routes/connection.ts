@@ -258,7 +258,19 @@ export default async function router(schema: Schema, config: Config) {
         try {
             await Auth.is_auth(config, req);
 
+            if (await config.models.Layer.count({
+                where: sql`connection = ${req.params.connectionid}`
+            }) > 0) throw new Err(400, null, 'Connection has active Layers - Delete layers before deleting Connection');
+
+            if (await config.models.ConnectionSink.count({
+                where: sql`connection = ${req.params.connectionid}`
+            }) > 0) throw new Err(400, null, 'Connection has active Sinks - Delete Sinks before deleting Connection');
+
             await config.models.Connection.delete(req.params.connectionid);
+
+            await config.models.ConnectionToken.delete(sql`
+                connection = ${req.params.connectionid}
+            `);
 
             config.conns.delete(req.params.connectionid);
 
