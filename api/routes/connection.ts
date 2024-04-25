@@ -40,10 +40,10 @@ export default async function router(schema: Schema, config: Config) {
 
             let where;
             if (profile.system_admin) {
-                where = ilike(Connection.name, req.query.filter);
+                where = sql`name ~* ${req.query.filter}`
             } else if (profile.agency_admin.length) {
                 where = and(
-                    ilike(Connection.name, req.query.filter),
+                    sql`name ~* ${req.query.filter}`,
                     inArray(Connection.id, profile.agency_admin)
                 );
             } else {
