@@ -9,25 +9,30 @@
         </div>
     </div>
 
-    <TablerNone v-if='!tokens.items.length' :create='false' label='Tokens'/>
-    <TablerLoading v-else-if='loading'/>
-    <div v-else class="table-responsive">
-        <table class="table table-hover card-table table-vcenter cursor-pointer">
-            <thead>
-                <tr>
-                    <th>Token Name</th>
-                    <th>Created</th>
-                    <th>Updated</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr @click='token = t' :key='t.id' v-for='t in tokens.items'>
-                    <td v-text='t.name'/>
-                    <td><TablerEpoch :date='t.created'/></td>
-                    <td><TablerEpoch :date='t.updated'/></td>
-                </tr>
-            </tbody>
-        </table>
+    <div style='min-height: 20vh; margin-bottom: 61px'>
+        <TablerNone v-if='!tokens.items.length' :create='false' label='Tokens'/>
+        <TablerLoading v-else-if='loading'/>
+        <div v-else class="table-responsive">
+            <table class="table table-hover card-table table-vcenter cursor-pointer">
+                <thead>
+                    <tr>
+                        <th>Token Name</th>
+                        <th>Created</th>
+                        <th>Updated</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr @click='token = t' :key='t.id' v-for='t in tokens.items'>
+                        <td v-text='t.name'/>
+                        <td><TablerEpoch :date='+new Date(t.created)'/></td>
+                        <td><TablerEpoch :date='+new Date(t.updated)'/></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class='position-absolute bottom-0 w-100' style='height: 61px;'>
+        <TableFooter :limit='paging.limit' :total='tokens.total' @page='paging.page = $event'/>
     </div>
 
     <TokenModal
@@ -40,8 +45,9 @@
 </template>
 
 <script>
-import { std } from '/src/std.ts';
+import { std, stdurl } from '/src/std.ts';
 import TokenModal from './TokenModal.vue';
+import TableFooter from '../util/TableFooter.vue';
 import {
     IconPlus,
     IconRefresh,
@@ -58,6 +64,11 @@ export default {
         return {
             loading: true,
             token: false,
+            paging: {
+                filter: '',
+                limit: 10,
+                page: 0
+            },
             tokens: {
                 total: 0,
                 items: []
@@ -67,15 +78,28 @@ export default {
     mounted: async function() {
         await this.fetch();
     },
+    watch: {
+        paging: {
+            deep: true,
+            handler: async function() {
+                await this.fetch();
+            },
+        }
+    },
     methods: {
         fetch: async function() {
             this.token = false;
             this.loading = true;
-            this.tokens = await std(`/api/connection/${this.$route.params.connectionid}/token`);
+            const url = stdurl(`/api/connection/${this.$route.params.connectionid}/token`);
+            url.searchParams.append('limit', this.paging.limit);
+            url.searchParams.append('page', this.paging.page);
+            url.searchParams.append('filter', this.paging.filter);
+            this.tokens = await std(url);
             this.loading = false;
         },
     },
     components: {
+        TableFooter,
         TokenModal,
         TablerNone,
         IconPlus,
