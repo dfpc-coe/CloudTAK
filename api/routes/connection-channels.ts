@@ -17,12 +17,11 @@ export default async function router(schema: Schema, config: Config) {
         res: GenericMartiResponse
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req, {
+            const { connection } = await Auth.is_connection(config, req, {
                 resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }]
-            });
-            const conn = await config.models.Connection.from(req.params.connectionid);
+            }, req.params.connectionid);
 
-            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(conn.auth.cert, conn.auth.key));
+            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(connection.auth.cert, connection.auth.key));
 
             const list = await api.Group.list({
                 useCache: 'true'

@@ -4,7 +4,7 @@ import Err from '@openaddresses/batch-error';
 import jwt from 'jsonwebtoken';
 import Config from './config.js';
 import { InferSelectModel } from 'drizzle-orm';
-import { Profile } from './schema.js';
+import { Profile, Connection } from './schema.js';
 
 export enum ResourceCreationScope {
     SERVER = 'server',
@@ -134,26 +134,31 @@ export default class Auth {
     static async is_connection(config: Config, req: Request<any, any, any, any>, opts: {
         token?: boolean;
         resources?: Array<AuthResourceAccepted>;
-    }, connectionid: number): Promise<boolean> {
+    }, connectionid: number): Promise<{
+        auth: AuthResource | AuthUser;
+        connection: InferSelectModel<typeof Connection>;
+        profile?: InferSelectModel<typeof Profile>;
+    }> {
         const auth = await this.is_auth(config, req, opts)
+
+        const connection = await config.models.Connection.from(connectionid);
 
         if (this.#is_user(auth)) {
             const profile = await this.#as_profile(config, auth as AuthUser);
 
             if (profile.system_admin === true) {
-                return true;
+                return { connection, profile, auth };
             } else {
-                const connection = await config.models.Connection.from(connectionid);
                 if (!connection.agency) throw new Err(401, null, 'Only a System Admin can access this connection');
                 if (!profile.agency_admin) throw new Err(401, null, 'Only an Agency Admin admin or higher can access connections');
                 if (!profile.agency_admin.includes(connection.agency)) throw new Err(401, null, `You are not an Agency Admin for Agency ${connection.agency}`);
 
-                return true;
+                return { connection, profile, auth };
             }
         } else {
             // If a resource token is used it's up to the caller to specify it is allowed via the resources array
             // is_auth will disallow resource tokens when no resource array is set
-            return true;
+            return { auth, connection };
         }
     }
 
