@@ -1,5 +1,5 @@
 import Err from '@openaddresses/batch-error';
-import { sql, ilike, and, inArray } from 'drizzle-orm';
+import { sql, and, inArray } from 'drizzle-orm';
 import Config from '../lib/config.js';
 import CW from '../lib/aws/metric.js';
 import Auth, { AuthResourceAccess } from '../lib/auth.js';
