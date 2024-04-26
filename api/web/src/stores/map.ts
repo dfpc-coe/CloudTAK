@@ -499,7 +499,9 @@ function cotStyles(id: string, opts: {
             'line-width': ["*", 2, ["number", ["get", "stroke-width"], 3]],
             'line-opacity': ["number", ["get", "stroke-opacity"], 1]
         }
-    },{
+    }])
+
+    const circle = {
         id: id,
         type: 'circle',
         source: id,
@@ -510,7 +512,13 @@ function cotStyles(id: string, opts: {
             'circle-radius': ["number", ["get", "circle-radius"], 4],
             'circle-opacity': ["number", ["get", "circle-opacity"], 1]
         }
-    }])
+    }
+
+    if (opts.group) {
+        circle.filter.push(['!has', 'group']);
+    }
+
+    styles.push(circle);
 
     if (opts.icons) {
         styles.push({

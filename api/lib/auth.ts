@@ -4,7 +4,7 @@ import Err from '@openaddresses/batch-error';
 import jwt from 'jsonwebtoken';
 import Config from './config.js';
 import { InferSelectModel } from 'drizzle-orm';
-import { Profile } from './schema.js';
+import { Profile, Connection } from './schema.js';
 
 export enum ResourceCreationScope {
     SERVER = 'server',
@@ -87,7 +87,6 @@ export default class Auth {
      */
     static async is_auth(config: Config, req: Request<any, any, any, any>, opts: {
         token?: boolean;
-        minAuth?: AuthUserAccess,
         anyResources?: boolean;
         resources?: Array<AuthResourceAccepted>;
     } = {}): Promise<AuthResource | AuthUser> {
@@ -132,6 +131,37 @@ export default class Auth {
         return auth;
     }
 
+    static async is_connection(config: Config, req: Request<any, any, any, any>, opts: {
+        token?: boolean;
+        resources?: Array<AuthResourceAccepted>;
+    }, connectionid: number): Promise<{
+        auth: AuthResource | AuthUser;
+        connection: InferSelectModel<typeof Connection>;
+        profile?: InferSelectModel<typeof Profile>;
+    }> {
+        const auth = await this.is_auth(config, req, opts)
+
+        const connection = await config.models.Connection.from(connectionid);
+
+        if (this.#is_user(auth)) {
+            const profile = await this.#as_profile(config, auth as AuthUser);
+
+            if (profile.system_admin === true) {
+                return { connection, profile, auth };
+            } else {
+                if (!connection.agency) throw new Err(401, null, 'Only a System Admin can access this connection');
+                if (!profile.agency_admin) throw new Err(401, null, 'Only an Agency Admin admin or higher can access connections');
+                if (!profile.agency_admin.includes(connection.agency)) throw new Err(401, null, `You are not an Agency Admin for Agency ${connection.agency}`);
+
+                return { connection, profile, auth };
+            }
+        } else {
+            // If a resource token is used it's up to the caller to specify it is allowed via the resources array
+            // is_auth will disallow resource tokens when no resource array is set
+            return { auth, connection };
+        }
+    }
+
     static async is_user(config: Config, req: Request<any, any, any, any>): Promise<boolean> {
         const auth = await this.is_auth(config, req);
         return this.#is_user(auth);
@@ -151,6 +181,8 @@ export default class Auth {
     }
 
     static async as_resource(config: Config, req: Request<any, any, any, any>, opts: {
+        anyResources?: boolean;
+        resources?: Array<AuthResourceAccepted>;
         token?: boolean;
     } = {}): Promise<AuthResource> {
         if (!opts.token) opts.token = false;
@@ -179,12 +211,16 @@ export default class Auth {
         return user;
     }
 
+    static async #as_profile(config: Config, user: AuthUser): Promise<InferSelectModel<typeof Profile>> {
+        return await config.models.Profile.from(user.email);
+    }
+
     static async as_profile(config: Config, req: Request<any, any, any, any>, opts: {
         token?: boolean;
         admin?: boolean;
     } = {}): Promise<InferSelectModel<typeof Profile>> {
         const user = await this.as_user(config, req, opts);
-        return await config.models.Profile.from(user.email);
+        return await this.#as_profile(config, user);
     }
 }
 
