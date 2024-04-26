@@ -12,8 +12,12 @@
 
 ### Pending Release
 
+### v1.20.0 - 2024-04-26
+
 - :rocket: `API` Lock Connections to System or Agency Admins
+- :rocket: `API` Lock Connections Data Sync Resources to System or Agency Admins
 - :rocket: `UI` Add paging to ConnectionToken page to be consistent with other pages
+- :bug: `UI` Avoid styling `group` CoT Markers to avoid green circle under group indicator
 
 ### v1.19.1 - 2024-04-25
 
