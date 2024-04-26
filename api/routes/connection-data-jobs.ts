@@ -23,7 +23,7 @@ export default async function router(schema: Schema, config: Config) {
         })
     }, async (req, res) => {
         try {
-            await Auth.is_connection(config, req, {
+            const { connection } = await Auth.is_connection(config, req, {
                 resources: [
                     { access: AuthResourceAccess.DATA, id: req.params.dataid },
                     { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }
@@ -64,7 +64,7 @@ export default async function router(schema: Schema, config: Config) {
         res: JobResponse
     }, async (req, res) => {
         try {
-            await Auth.is_connection(config, req, {
+            const { connection} = await Auth.is_connection(config, req, {
                 resources: [
                     { access: AuthResourceAccess.DATA, id: req.params.dataid },
                     { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }
@@ -102,7 +102,7 @@ export default async function router(schema: Schema, config: Config) {
         })
     }, async (req, res) => {
         try {
-            await Auth.is_connection(config, req, {
+            const { connection } = await Auth.is_connection(config, req, {
                 resources: [
                     { access: AuthResourceAccess.DATA, id: req.params.dataid },
                     { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }
