@@ -2,11 +2,11 @@ import { Type } from '@sinclair/typebox'
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth, { AuthResourceAccess } from '../lib/auth.js';
-import { Data } from '../lib/schema.js';
+import { Data, Connection } from '../lib/schema.js';
 import Config from '../lib/config.js';
 import S3 from '../lib/aws/s3.js';
 import { Param } from '@openaddresses/batch-generic';
-import { sql } from 'drizzle-orm';
+import { sql, inArray, and } from 'drizzle-orm';
 import DataMission from '../lib/data-mission.js';
 import { GenericListOrder } from '@openaddresses/batch-generic';
 import { StandardResponse, DataResponse, DataListResponse } from '../lib/types.js';
@@ -32,14 +32,26 @@ export default async function router(schema: Schema, config: Config) {
         })
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req);
+            const profile = await Auth.as_profile(config, req);
+
+            let where;
+            if (profile.system_admin) {
+                where = sql`name ~* ${req.query.filter}`
+            } else if (profile.agency_admin.length) {
+                where = and(
+                    sql`name ~* ${req.query.filter}`,
+                    inArray(Connection.id, profile.agency_admin)
+                );
+            } else {
+                throw new Err(400, null, 'Insufficient Access')
+            }
 
             const list = await config.models.Data.list({
                 limit: req.query.limit,
                 page: req.query.page,
                 order: req.query.order,
                 sort: req.query.sort,
-                where: sql`name ~* ${req.query.filter}`
+                where
             });
 
             res.json(list);
