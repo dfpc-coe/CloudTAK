@@ -14,7 +14,7 @@ import { StandardResponse, DataResponse, DataListResponse } from '../lib/types.j
 export default async function router(schema: Schema, config: Config) {
     await schema.get('/data', {
         private: true,
-        name: 'Internal List Data',
+        name: 'List Data',
         group: 'Data',
         description: `
             Used by the frontend UI to list data packages that the user can visualize
