@@ -5,7 +5,6 @@ import Auth, { AuthResourceAccess } from '../lib/auth.js';
 import { Data, Connection } from '../lib/schema.js';
 import Config from '../lib/config.js';
 import S3 from '../lib/aws/s3.js';
-import { Param } from '@openaddresses/batch-generic';
 import { sql, inArray, and } from 'drizzle-orm';
 import DataMission from '../lib/data-mission.js';
 import { GenericListOrder } from '@openaddresses/batch-generic';
@@ -40,7 +39,7 @@ export default async function router(schema: Schema, config: Config) {
             } else if (profile.agency_admin.length) {
                 where = and(
                     sql`name ~* ${req.query.filter}`,
-                    inArray(Connection.id, profile.agency_admin)
+                    inArray(Connection.agency, profile.agency_admin)
                 );
             } else {
                 throw new Err(400, null, 'Insufficient Access')
@@ -75,7 +74,7 @@ export default async function router(schema: Schema, config: Config) {
         res: DataResponse
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req, {
+            await Auth.as_resource(config, req, {
                 resources: [
                     { access: AuthResourceAccess.DATA, id: req.params.dataid }
                 ]
@@ -122,9 +121,9 @@ export default async function router(schema: Schema, config: Config) {
         })
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req, {
+            await Auth.is_connection(config, req, {
                 resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }]
-            });
+            }, req.params.connectionid);
 
             const list = await config.models.Data.list({
                 limit: req.query.limit,
@@ -133,7 +132,7 @@ export default async function router(schema: Schema, config: Config) {
                 sort: req.query.sort,
                 where: sql`
                     name ~* ${req.query.filter}
-                    AND (${Param(req.params.connectionid)}::BIGINT IS NULL OR connection = ${Param(req.params.connectionid)}::BIGINT)
+                    AND connection = ${req.params.connectionid}::BIGINT
                 `
             });
 
@@ -144,7 +143,7 @@ export default async function router(schema: Schema, config: Config) {
     });
 
     await schema.post('/connection/:connectionid/data', {
-        name: 'Create data',
+        name: 'Create Data',
         group: 'Data',
         description: 'Register a new data source',
         params: Type.Object({
@@ -162,9 +161,9 @@ export default async function router(schema: Schema, config: Config) {
         res: DataResponse
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req, {
+            await Auth.is_connection(config, req, {
                 resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }]
-            });
+            }, req.params.connectionid);
 
             if (req.body.mission_diff && req.body.mission_role !== 'MISSION_READONLY_SUBSCRIBER') {
                 throw new Err(400, null, 'MissionDiff can only be used when role is: MISSION_READONLY_SUBSCRIBER')
@@ -212,12 +211,12 @@ export default async function router(schema: Schema, config: Config) {
         res: DataResponse
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req, {
+            const { connection } = await Auth.is_connection(config, req, {
                 resources: [
                     { access: AuthResourceAccess.DATA, id: req.params.dataid },
                     { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }
                 ]
-            });
+            }, req.params.connectionid);
 
             if (req.body.mission_diff && await config.models.Layer.count({
                 where: sql`data = ${req.params.dataid}`
@@ -225,7 +224,10 @@ export default async function router(schema: Schema, config: Config) {
                 throw new Err(400, null, 'MissionDiff can only be enabled with a single layer')
             }
 
-            const data = await config.models.Data.commit(req.params.dataid, {
+            let data = await config.models.Data.from(req.params.dataid);
+            if (data.connection !== connection.id) throw new Err(400, null, 'Data Sync does not belong to given Connection');
+
+            data = await config.models.Data.commit(req.params.dataid, {
                 updated: sql`Now()`,
                 ...req.body
             });
@@ -260,14 +262,15 @@ export default async function router(schema: Schema, config: Config) {
         res: DataResponse
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req, {
+            const { connection } = await Auth.is_connection(config, req, {
                 resources: [
                     { access: AuthResourceAccess.DATA, id: req.params.dataid },
                     { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }
                 ]
-            });
+            }, req.params.connectionid);
 
             const data = await config.models.Data.from(req.params.dataid);
+            if (data.connection !== connection.id) throw new Err(400, null, 'Data Sync does not belong to given Connection');
 
             try {
                 await DataMission.sync(config, data);
@@ -299,11 +302,12 @@ export default async function router(schema: Schema, config: Config) {
         res: StandardResponse
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req, {
+            const { connection } = await Auth.is_connection(config, req, {
                 resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }]
-            });
+            }, req.params.connectionid);
 
             const data = await config.models.Data.from(req.params.dataid);
+            if (data.connection !== connection.id) throw new Err(400, null, 'Data Sync does not belong to given Connection');
 
             if (await config.models.Layer.count({
                 where: sql`data = ${req.params.dataid}`

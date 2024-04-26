@@ -181,6 +181,8 @@ export default class Auth {
     }
 
     static async as_resource(config: Config, req: Request<any, any, any, any>, opts: {
+        anyResources?: boolean;
+        resources?: Array<AuthResourceAccepted>;
         token?: boolean;
     } = {}): Promise<AuthResource> {
         if (!opts.token) opts.token = false;

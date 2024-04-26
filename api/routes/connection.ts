@@ -44,7 +44,7 @@ export default async function router(schema: Schema, config: Config) {
             } else if (profile.agency_admin.length) {
                 where = and(
                     sql`name ~* ${req.query.filter}`,
-                    inArray(Connection.id, profile.agency_admin)
+                    inArray(Connection.agency, profile.agency_admin)
                 );
             } else {
                 throw new Err(400, null, 'Insufficient Access')
