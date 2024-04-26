@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v1.20.1 - 2024-04-26
+
+- :rocket: Continue working on reducing drift
+
 ### v1.20.0 - 2024-04-26
 
 - :rocket: `API` Lock Connections to System or Agency Admins
