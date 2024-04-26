@@ -23,11 +23,15 @@ export default async function router(schema: Schema, config: Config) {
         })
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req, {
-                resources: [{ access: AuthResourceAccess.DATA, id: req.params.dataid }]
-            });
+            const { connection } = await Auth.is_connection(config, req, {
+                resources: [
+                    { access: AuthResourceAccess.DATA, id: req.params.dataid },
+                    { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }
+                ]
+            }, req.params.connectionid);
 
             const data = await config.models.Data.from(req.params.dataid);
+            if (data.connection !== connection.id) throw new Err(400, null, 'Data Sync does not belong to given Connection');
 
             const list = await Batch.list(config, `data-${data.id}`);
 
@@ -60,12 +64,15 @@ export default async function router(schema: Schema, config: Config) {
         res: JobResponse
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req, {
-                resources: [{ access: AuthResourceAccess.DATA, id: req.params.dataid }]
-            });
+            const { connection} = await Auth.is_connection(config, req, {
+                resources: [
+                    { access: AuthResourceAccess.DATA, id: req.params.dataid },
+                    { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }
+                ]
+            }, req.params.connectionid);
 
-            // TODO Check that data is part of connection
-            await config.models.Data.from(req.params.dataid);
+            const data = await config.models.Data.from(req.params.dataid);
+            if (data.connection !== connection.id) throw new Err(400, null, 'Data Sync does not belong to given Connection');
 
             const job = await Batch.job(config, req.params.jobid);
 
@@ -95,11 +102,15 @@ export default async function router(schema: Schema, config: Config) {
         })
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req, {
-                resources: [{ access: AuthResourceAccess.DATA, id: req.params.dataid }]
-            });
+            const { connection } = await Auth.is_connection(config, req, {
+                resources: [
+                    { access: AuthResourceAccess.DATA, id: req.params.dataid },
+                    { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }
+                ]
+            }, req.params.connectionid);
 
-            await config.models.Data.from(req.params.dataid);
+            const data = await config.models.Data.from(req.params.dataid);
+            if (data.connection !== connection.id) throw new Err(400, null, 'Data Sync does not belong to given Connection');
 
             const job = await Batch.job(config, req.params.jobid);
 

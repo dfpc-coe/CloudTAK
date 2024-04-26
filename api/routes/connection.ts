@@ -44,7 +44,7 @@ export default async function router(schema: Schema, config: Config) {
             } else if (profile.agency_admin.length) {
                 where = and(
                     sql`name ~* ${req.query.filter}`,
-                    inArray(Connection.id, profile.agency_admin)
+                    inArray(Connection.agency, profile.agency_admin)
                 );
             } else {
                 throw new Err(400, null, 'Insufficient Access')
@@ -149,9 +149,9 @@ export default async function router(schema: Schema, config: Config) {
         res: ConnectionResponse
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req, {
+            await Auth.is_connection(config, req, {
                 resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }]
-            });
+            }, req.params.connectionid);
 
             if (req.body.agency && await Auth.is_user(config, req)) {
                 const user = await Auth.as_user(config, req, { admin: true });
@@ -192,9 +192,9 @@ export default async function router(schema: Schema, config: Config) {
         res: ConnectionResponse
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req, {
+            await Auth.is_connection(config, req, {
                 resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }]
-            });
+            }, req.params.connectionid);
 
             const conn = await config.models.Connection.from(req.params.connectionid);
             const { validFrom, validTo } = new X509Certificate(conn.auth.cert);
@@ -219,9 +219,9 @@ export default async function router(schema: Schema, config: Config) {
         res: ConnectionResponse
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req, {
+            await Auth.is_connection(config, req, {
                 resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }]
-            });
+            }, req.params.connectionid);
 
             const conn = await config.models.Connection.from(req.params.connectionid);
 
@@ -256,7 +256,7 @@ export default async function router(schema: Schema, config: Config) {
         res: StandardResponse
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req);
+            await Auth.is_connection(config, req, {}, req.params.connectionid);
 
             if (await config.models.Layer.count({
                 where: sql`connection = ${req.params.connectionid}`
@@ -298,9 +298,9 @@ export default async function router(schema: Schema, config: Config) {
         })
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req, {
+            await Auth.is_connection(config, req, {
                 resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }]
-            });
+            }, req.params.connectionid);
 
             const conn = await config.models.Connection.from(req.params.connectionid);
 

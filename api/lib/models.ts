@@ -1,4 +1,5 @@
 import Modeler, { Pool } from '@openaddresses/batch-generic';
+import Data from './models/Data.js';
 import ProfileChat from './models/ProfileChat.js';
 import Icon from './models/Icon.js';
 import * as pgtypes from './schema.js';
@@ -6,7 +7,7 @@ import * as pgtypes from './schema.js';
 export default class Models {
     Basemap: Modeler<typeof pgtypes.Basemap>;
     Import: Modeler<typeof pgtypes.Import>;
-    Data: Modeler<typeof pgtypes.Data>;
+    Data: Data;
     Server: Modeler<typeof pgtypes.Server>;
     Token: Modeler<typeof pgtypes.Token>;
 
@@ -45,7 +46,7 @@ export default class Models {
         this.Connection = new Modeler(pg, pgtypes.Connection);
         this.ConnectionToken = new Modeler(pg, pgtypes.ConnectionToken);
         this.ConnectionSink = new Modeler(pg, pgtypes.ConnectionSink);
-        this.Data = new Modeler(pg, pgtypes.Data);
+        this.Data = new Data(pg);
         this.Iconset = new Modeler(pg, pgtypes.Iconset);
         this.Layer = new Modeler(pg, pgtypes.Layer);
         this.LayerAlert = new Modeler(pg, pgtypes.LayerAlert);

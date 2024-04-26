@@ -36,11 +36,12 @@ export default async function router(schema: Schema, config: Config) {
         })
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req, {
+            const { connection } = await Auth.is_connection(config, req, {
                 resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }]
-            });
+            }, req.params.connectionid);
 
             const data = await config.models.Data.from(req.params.dataid)
+            if (data.connection !== connection.id) throw new Err(400, null, 'Data Sync does not belong to given Connection');
 
             const list = await assetList(config, `data/${String(req.params.dataid)}/`);
 
@@ -74,18 +75,18 @@ export default async function router(schema: Schema, config: Config) {
         }),
         res: GenericMartiResponse
     }, async (req, res) => {
-        await Auth.is_auth(config, req, {
+        const { connection } = await Auth.is_connection(config, req, {
             resources: [
                 // Connection tokens shouldn't use this, only internal Data/Lambda Tokens
                 { access: AuthResourceAccess.DATA, id: req.params.dataid }
             ]
-        });
+        }, req.params.connectionid);
 
         try {
-            const auth = (await config.models.Connection.from(req.params.connectionid)).auth;
-            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
+            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(connection.auth.cert, connection.auth.key));
 
             const data = await config.models.Data.from(req.params.dataid);
+            if (data.connection !== connection.id) throw new Err(400, null, 'Data Sync does not belong to given Connection');
 
             const content = await api.Files.upload({
                 name: String(req.query.name),
@@ -133,14 +134,15 @@ export default async function router(schema: Schema, config: Config) {
         let bb;
         let data: InferSelectModel<typeof Data>;
         try {
-            await Auth.is_auth(config, req, {
+            const { connection } = await Auth.is_connection(config, req, {
                 resources: [
                     { access: AuthResourceAccess.DATA, id: req.params.dataid },
                     { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }
                 ]
-            });
+            }, req.params.connectionid);
 
             data = await config.models.Data.from(req.params.dataid);
+            if (data.connection !== connection.id) throw new Err(400, null, 'Data Sync does not belong to given Connection');
 
             if (!req.headers['content-type']) throw new Err(400, null, 'Missing Content-Type Header');
 
@@ -195,14 +197,15 @@ export default async function router(schema: Schema, config: Config) {
         res: StandardResponse
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req, {
+            const { connection } = await Auth.is_connection(config, req, {
                 resources: [
                     { access: AuthResourceAccess.DATA, id: req.params.dataid },
                     { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }
                 ]
-            });
+            }, req.params.connectionid);
 
             const data = await config.models.Data.from(req.params.dataid);
+            if (data.connection !== connection.id) throw new Err(400, null, 'Data Sync does not belong to given Connection');
 
             await Batch.submitData(config, data, `${req.params.asset}.${req.params.ext}`);
 
@@ -228,16 +231,16 @@ export default async function router(schema: Schema, config: Config) {
         res: StandardResponse
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req, {
+            const { connection } = await Auth.is_connection(config, req, {
                 resources: [
                     { access: AuthResourceAccess.DATA, id: req.params.dataid },
                     { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }
                 ]
-            });
+            }, req.params.connectionid);
 
-            const auth = (await config.models.Connection.from(req.params.connectionid)).auth;
-            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
+            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(connection.auth.cert, connection.auth.key));
             const data = await config.models.Data.from(req.params.dataid);
+            if (data.connection !== connection.id) throw new Err(400, null, 'Data Sync does not belong to given Connection');
 
             const file = `${req.params.asset}.${req.params.ext}`;
             try {
@@ -290,13 +293,16 @@ export default async function router(schema: Schema, config: Config) {
         }),
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req, {
+            const { connection } = await Auth.is_connection(config, req, {
                 token: true,
                 resources: [
                     { access: AuthResourceAccess.DATA, id: req.params.dataid },
                     { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }
                 ]
-            });
+            }, req.params.connectionid);
+
+            const data = await config.models.Data.from(req.params.dataid);
+            if (data.connection !== connection.id) throw new Err(400, null, 'Data Sync does not belong to given Connection');
 
             const stream = await S3.get(`data/${req.params.dataid}/${req.params.asset}.${req.params.ext}`);
 
@@ -317,15 +323,16 @@ export default async function router(schema: Schema, config: Config) {
         }),
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req, {
+            const { connection } = await Auth.is_connection(config, req, {
                 token: true,
                 resources: [
                     { access: AuthResourceAccess.DATA, id: req.params.dataid },
                     { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }
                 ]
-            });
+            }, req.params.connectionid);
 
             const data = await config.models.Data.from(req.params.dataid);
+            if (data.connection !== connection.id) throw new Err(400, null, 'Data Sync does not belong to given Connection');
 
             if (!await S3.exists(`data/${req.params.dataid}/${req.params.asset}.pmtiles`)) {
                 throw new Err(404, null, 'Asset does not exist');

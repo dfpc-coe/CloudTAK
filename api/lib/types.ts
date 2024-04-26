@@ -4,6 +4,9 @@ import { StyleContainer } from './style.js';
 import * as schemas from './schema.js';
 import { TAKGroup, TAKRole } from './api/types.js';
 import { Layer_Priority } from './enums.js';
+import { AugmentedData } from './models/Data.js';
+
+export const DataResponse = AugmentedData;
 
 export const StandardResponse = Type.Object({
     status: Type.Integer(),
@@ -98,23 +101,6 @@ export const IconsetResponse = createSelectSchema(schemas.Iconset, {
 
 export const IconResponse = createSelectSchema(schemas.Icon, {
     id: Type.Integer(),
-});
-
-export const DataResponse = Type.Object({
-    id: Type.Integer(),
-    created: Type.String(),
-    updated: Type.String(),
-    name: Type.String(),
-    mission_diff: Type.Boolean({description: "Allow a single layer to diff sync with TAK Server"}),
-    mission_sync: Type.Boolean({description: "Is the mission syncing with TAK Server"}),
-    mission_exists: Type.Boolean({description: "Does the mission exist in TAK Server"}),
-    mission_error: Type.Optional(Type.String({ description: "Returned only if there is an error syncing the mission with the TAK Server"})),
-    mission_groups: Type.Array(Type.String()),
-    mission_role: Type.String(),
-    assets: Type.Array(Type.String()),
-    description: Type.String(),
-    connection: Type.Integer(),
-    auto_transform: Type.Boolean()
 });
 
 export const DataListResponse = createSelectSchema(schemas.Data, {

@@ -253,8 +253,13 @@ export default class Flight {
      * Create a new user and return an API token for that user
      */
     user() {
-        test('Create Token: admin', async (t) => {
-            this.token.admin = jwt.sign({ access: 'user', email: 'test@example.com' }, 'coe-wildland-fire')
+        test('Create User: admin', async (t) => {
+            this.config.models.Profile.generate({
+                username: 'test@example.com',
+                system_admin: true,
+                auth: { cert: 'cert123', key: 'key123' },
+            });
+            this.token.admin = jwt.sign({ access: 'admin', email: 'test@example.com' }, 'coe-wildland-fire')
             t.end();
         });
     }
