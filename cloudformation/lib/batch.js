@@ -111,7 +111,7 @@ export default {
                         cf.importValue(cf.join(['coe-vpc-', cf.ref('Environment'), '-subnet-private-a'])),
                         cf.importValue(cf.join(['coe-vpc-', cf.ref('Environment'), '-subnet-private-b']))
                     ]
-                },
+                }
             }
         },
         BatchExecRole: {
