@@ -96,13 +96,13 @@ export default {
                 return ch;
             });
 
+            this.$emit('reset');
+
             const url = stdurl('/api/marti/group');
             await std(url, {
                 method: 'PUT',
                 body: this.rawChannels
             });
-
-            this.$emit('reset');
         },
         fetchList: async function() {
             this.loading = true;
