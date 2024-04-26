@@ -1,9 +1,8 @@
-import Modeler, { Param, GenericList, GenericListInput } from '@openaddresses/batch-generic';
-import Err from '@openaddresses/batch-error';
+import Modeler, { GenericList, GenericListInput } from '@openaddresses/batch-generic';
 import { Static, Type } from '@sinclair/typebox'
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import { Connection, Data } from '../schema.js';
-import { InferSelectModel, sql, eq, is, asc, desc, SQL } from 'drizzle-orm';
+import { sql, eq, asc, desc } from 'drizzle-orm';
 
 export const AugmentedData = Type.Object({
     id: Type.Integer(),
@@ -32,7 +31,6 @@ export default class DataModel extends Modeler<typeof Data> {
     async augmented_list(query: GenericListInput = {}): Promise<GenericList<Static<typeof AugmentedData>>> {
         const order = query.order && query.order === 'desc' ? desc : asc;
         const orderBy = order(query.sort ? this.key(query.sort) : this.requiredPrimaryKey());
-
 
         const pgres = await this.pool
             .select({
