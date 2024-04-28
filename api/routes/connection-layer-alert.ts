@@ -16,11 +16,12 @@ export enum LayerAlertPriority {
 }
 
 export default async function router(schema: Schema, config: Config) {
-    await schema.get('/layer/:layerid/alert', {
+    await schema.get('/connection/:connectionid/layer/:layerid/alert', {
         name: 'List Alerts',
         group: 'Layer Alerts',
         description: 'List layer alerts',
         params: Type.Object({
+            connectionid: Type.Integer(),
             layerid: Type.Integer()
         }),
         query: Type.Object({
@@ -61,11 +62,12 @@ export default async function router(schema: Schema, config: Config) {
         }
     });
 
-    await schema.post('/layer/:layerid/alert', {
+    await schema.post('/connection/:connectionid/layer/:layerid/alert', {
         name: 'Create Alert',
         group: 'Layer Alerts',
         description: 'Create a new layer alert',
         params: Type.Object({
+            connectionid: Type.Integer(),
             layerid: Type.Integer()
         }),
         body: Type.Object({
@@ -104,11 +106,12 @@ export default async function router(schema: Schema, config: Config) {
         }
     });
 
-    await schema.delete('/layer/:layerid/alert', {
+    await schema.delete('/connection/:connectionid/layer/:layerid/alert', {
         name: 'Delete Alerts',
         group: 'Layer Alerts',
         description: 'Delete all alerts for the layer',
         params: Type.Object({
+            connectionid: Type.Integer(),
             layerid: Type.Integer()
         }),
         res: StandardResponse
@@ -133,11 +136,12 @@ export default async function router(schema: Schema, config: Config) {
         }
     });
 
-    await schema.delete('/layer/:layerid/alert/:alertid', {
+    await schema.delete('/connection/:connectionid/layer/:layerid/alert/:alertid', {
         name: 'Delete Alerts',
         group: 'Layer Alerts',
         description: 'Delete all alerts for the layer',
         params: Type.Object({
+            connectionid: Type.Integer(),
             layerid: Type.Integer(),
             alertid: Type.Integer()
         }),

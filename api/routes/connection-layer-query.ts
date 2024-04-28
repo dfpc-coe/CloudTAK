@@ -9,11 +9,12 @@ import Auth, { AuthResourceAccess }  from '../lib/auth.js';
 export default async function router(schema: Schema, config: Config) {
     const ddb = new Dynamo(config.StackName);
 
-    await schema.get('/layer/:layerid/query', {
+    await schema.get('/connection/:connectionid/layer/:layerid/query', {
         name: 'Get Layer',
         group: 'LayerQuery',
         description: 'Get the latest feature from a layer',
         params: Type.Object({
+            connectionid: Type.Integer(),
             layerid: Type.Integer(),
         }),
         query: Type.Object({
@@ -53,11 +54,12 @@ export default async function router(schema: Schema, config: Config) {
         }
     });
 
-    await schema.get('/layer/:layerid/query/:featid', {
+    await schema.get('/connection/:connectionid/layer/:layerid/query/:featid', {
         name: 'Get Layer',
         group: 'LayerQuery',
         description: 'Get the latest feature from a layer',
         params: Type.Object({
+            connectionid: Type.Integer(),
             layerid: Type.Integer(),
             featid: Type.String()
         }),
