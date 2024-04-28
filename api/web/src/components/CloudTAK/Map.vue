@@ -495,7 +495,26 @@ export default {
         },
         updateCOT: function() {
             try {
-                mapStore.map.getSource('cots').setData(cotStore.collection())
+                const diff = cotStore.diff();
+             
+                for (const cot of cotStore.pending.values()) {
+                    if (cotStore.cots.has(cot.id)) {
+                        diff.update.push(cot);
+                    } else {
+                        diff.add.push(cot);
+                    }
+
+                    cotStore.pending.clear();
+                }
+
+                for (const id of cotStore.pendingDelete) {
+                    diff.delete.push(id);
+                    cotStore.pendingDelete.clear();
+                }
+
+                if (diff.add.length || diff.remove.length || diff.update.length) {
+                    mapStore.map.getSource('cots').updateData(diff);
+                }
 
                 for (const sub of cotStore.subscriptions.keys()) {
                     const overlay = overlayStore.subscriptions.get(sub)
