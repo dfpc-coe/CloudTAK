@@ -13,17 +13,21 @@ import Config from '../lib/config.js';
 import Schedule from '../lib/schedule.js';
 import { Param } from '@openaddresses/batch-generic';
 import { sql } from 'drizzle-orm';
-import { StandardResponse, LayerResponse, Layer_Config } from '../lib/types.js';
+import { StandardResponse, LayerResponse } from '../lib/types.js';
+import { Layer_Config } from '../lib/models/Layer.js';
 import { Layer_Priority } from '../lib/enums.js';
 import { Layer } from '../lib/schema.js';
 
 export default async function router(schema: Schema, config: Config) {
     const alarm = new Alarm(config.StackName);
 
-    await schema.get('/layer', {
+    await schema.get('/connection/:connectionid/layer', {
         name: 'List Layers',
         group: 'Layer',
         description: 'List layers',
+        params: Type.Object({
+            connectionid: Type.Integer()
+        }),
         query: Type.Object({
             limit: Type.Integer({ default: 10 }),
             page: Type.Integer({ default: 0 }),

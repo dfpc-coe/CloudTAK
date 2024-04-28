@@ -59,48 +59,6 @@ export default async function router(schema: Schema, config: Config) {
         }
     });
 
-    await schema.get('/data/:dataid', {
-        private: true,
-        name: 'Internal Get Data',
-        group: 'Data',
-        description: `
-            Events don't have the Connection ID but they have a valid data token
-            This API allows a data token to request the data object and obtain the
-            connectin Id for subsequent calls
-        `,
-        params: Type.Object({
-            dataid: Type.Integer()
-        }),
-        res: DataResponse
-    }, async (req, res) => {
-        try {
-            await Auth.as_resource(config, req, {
-                resources: [
-                    { access: AuthResourceAccess.DATA, id: req.params.dataid }
-                ]
-            });
-
-            const data = await config.models.Data.from(req.params.dataid);
-
-            try {
-                await DataMission.sync(config, data);
-            } catch (err) {
-                return res.json({
-                    mission_exists: false,
-                    mission_error: err instanceof Error ? err.message : String(err),
-                    ...data
-                });
-            }
-
-            return res.json({
-                mission_exists: true,
-                ...data
-            });
-        } catch (err) {
-            return Err.respond(err, res);
-        }
-    });
-
     await schema.get('/connection/:connectionid/data', {
         name: 'List Data',
         group: 'Data',
