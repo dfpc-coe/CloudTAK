@@ -131,7 +131,6 @@ export default {
                 AuthorizationType: 'NONE',
                 HttpMethod: 'GET',
                 Integration: {
-                    ConnectionType: 'INTERNET',
                     Credentials:  cf.getAtt('PMTilesApiGatewayRole', 'Arn'),
                     IntegrationHttpMethod: 'POST',
                     Type: 'AWS_PROXY',

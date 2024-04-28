@@ -100,6 +100,7 @@ export default {
             Type: 'AWS::Batch::ComputeEnvironment',
             Properties: {
                 Type: 'MANAGED',
+                State: 'ENABLED',
                 ServiceRole: cf.getAtt('BatchServiceRole', 'Arn'),
                 ComputeEnvironmentName: cf.join('-', ['etl', cf.stackName]),
                 ComputeResources: {
@@ -110,8 +111,7 @@ export default {
                         cf.importValue(cf.join(['coe-vpc-', cf.ref('Environment'), '-subnet-private-a'])),
                         cf.importValue(cf.join(['coe-vpc-', cf.ref('Environment'), '-subnet-private-b']))
                     ]
-                },
-                'State': 'ENABLED'
+                }
             }
         },
         BatchExecRole: {

@@ -50,8 +50,8 @@ export default async function arcgis(data: any): Promise<boolean> {
                 'features': JSON.stringify([{
                     attributes: {
                         cotuid: data.feat.id,
-                        callsign: data.feat.properties.callsign,
-                        remarks: data.feat.properties.remarks,
+                        callsign: data.feat.properties.callsign || 'Unknown',
+                        remarks: data.feat.properties.remarks || '',
                         type: data.feat.properties.type,
                         how: data.feat.properties.how,
                         time: data.feat.properties.time,
@@ -68,8 +68,6 @@ export default async function arcgis(data: any): Promise<boolean> {
         const body = await res.json();
 
         if (body.error) throw new Error(body.error.message);
-
-        console.error(JSON.stringify(body));
 
         return true;
     } else {

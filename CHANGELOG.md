@@ -12,11 +12,72 @@
 
 ### Pending Release
 
-### V1.15.1 - 2024-04-21
+### v1.21.1 - 2024-04-28
+
+- :bug: `UI` Retain FeatureCollection generation for non-default CoT store
+
+### v1.21.0 - 2024-04-28
+
+- :rocket: `UI` Support for partial updates (or no updates) to map, resulting in a faster map experience
+
+### v1.20.1 - 2024-04-26
+
+- :rocket: Continue working on reducing drift
+
+### v1.20.0 - 2024-04-26
+
+- :rocket: `API` Lock Connections to System or Agency Admins
+- :rocket: `API` Lock Connections Data Sync Resources to System or Agency Admins
+- :rocket: `UI` Add paging to ConnectionToken page to be consistent with other pages
+- :bug: `UI` Avoid styling `group` CoT Markers to avoid green circle under group indicator
+
+### v1.19.1 - 2024-04-25
+
+- :bug: `API` Fix Connection name filtering
+
+### v1.19.0 - 2024-04-23
+
+- :rocket: `API` Make DataSync Delete fault tolerant to TAK Server Errors
+
+### v1.18.0 - 2024-04-23
+
+- :rocket: `UI` Menu Coverage Effects
+- :rocket: `API` SystemAdmin shows all connections on server
+- :rocket: `API` AgencyAdmin shows only connections they are admin of
+- :rocket: `API` User shows no connections
+
+### v1.17.4 - 2024-04-23
+
+- :bug: Fix version numbers in this file
+
+### v1.17.3 - 2024-04-23
+
+- :bug: `ui` Style Queries wouldn't update after initial create
+
+### v1.17.2 - 2024-04-23
+
+- :bug: `ui` Fix bug in underlying Input library that prevented event firing on select => delete
+
+### v1.17.1 - 2024-04-23
+
+- :bug: `api` Avoid deleting style properties as style object is reused
+
+### v1.17.0 - 2024-04-22
+
+- :bug: `Hooks` If a `remarks` field isn't present, post an empty string
+- :tada: `UI` Add Adgency/Server badge for connections
+- :tada: `UI` Add `AgencySelect` component for adding/removing agencies
+- :rocket: `API` Allow updating/removing agencies on a connection
+
+### v1.16.0 - 2024-04-22
+
+- :bug: `API` Fix Style Overrides
+
+### v1.15.1 - 2024-04-21
 
 - :bug: `UI` Fix icon stretch in CoT Pane
 
-### V1.15.0 - 2024-04-21
+### v1.15.0 - 2024-04-21
 
 - :tada: `API` Connection now has an optional `agency` column with auth checks
 - :tada: `API` Initial API Scoping for new `/agency` route

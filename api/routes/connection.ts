@@ -1,5 +1,5 @@
 import Err from '@openaddresses/batch-error';
-import { sql } from 'drizzle-orm';
+import { sql, and, inArray } from 'drizzle-orm';
 import Config from '../lib/config.js';
 import CW from '../lib/aws/metric.js';
 import Auth, { AuthResourceAccess } from '../lib/auth.js';
@@ -36,16 +36,26 @@ export default async function router(schema: Schema, config: Config) {
         })
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req);
+            const profile = await Auth.as_profile(config, req);
+
+            let where;
+            if (profile.system_admin) {
+                where = sql`name ~* ${req.query.filter}`
+            } else if (profile.agency_admin.length) {
+                where = and(
+                    sql`name ~* ${req.query.filter}`,
+                    inArray(Connection.agency, profile.agency_admin)
+                );
+            } else {
+                throw new Err(400, null, 'Insufficient Access')
+            }
 
             const list = await config.models.Connection.list({
                 limit: req.query.limit,
                 page: req.query.page,
                 order: req.query.order,
                 sort: req.query.sort,
-                where: sql`
-                    name ~* ${req.query.filter}
-                `
+                where
             });
 
             const json = {
@@ -97,7 +107,7 @@ export default async function router(schema: Schema, config: Config) {
             } else if (req.body.agency && user.access !== 'admin') {
                 const profile = await config.models.Profile.from(user.email);
 
-                if (!profile.agency_admin.includes(req.body.agency)) {
+                if (!profile.agency_admin || !profile.agency_admin.includes(req.body.agency)) {
                     throw new Err(400, null, 'Cannot create a connection for an Agency you are not an admin of');
                 }
             }
@@ -130,6 +140,7 @@ export default async function router(schema: Schema, config: Config) {
             name: Type.Optional(Type.String()),
             description: Type.Optional(Type.String()),
             enabled: Type.Optional(Type.Boolean()),
+            agency: Type.Optional(Type.Integer()),
             auth: Type.Optional(Type.Object({
                 key: Type.String(),
                 cert: Type.String()
@@ -138,12 +149,13 @@ export default async function router(schema: Schema, config: Config) {
         res: ConnectionResponse
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req, {
+            await Auth.is_connection(config, req, {
                 resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }]
-            });
+            }, req.params.connectionid);
 
-            if (req.body.agency && user.access !== 'admin') {
-                throw new Err(400, null, 'Only System Admins can change an agency once a connection is created');
+            if (req.body.agency && await Auth.is_user(config, req)) {
+                const user = await Auth.as_user(config, req, { admin: true });
+                if (!user) throw new Err(400, null, 'Only System Admins can change an agency once a connection is created');
             }
 
             const conn = await config.models.Connection.commit(req.params.connectionid, {
@@ -180,9 +192,9 @@ export default async function router(schema: Schema, config: Config) {
         res: ConnectionResponse
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req, {
+            await Auth.is_connection(config, req, {
                 resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }]
-            });
+            }, req.params.connectionid);
 
             const conn = await config.models.Connection.from(req.params.connectionid);
             const { validFrom, validTo } = new X509Certificate(conn.auth.cert);
@@ -207,9 +219,9 @@ export default async function router(schema: Schema, config: Config) {
         res: ConnectionResponse
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req, {
+            await Auth.is_connection(config, req, {
                 resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }]
-            });
+            }, req.params.connectionid);
 
             const conn = await config.models.Connection.from(req.params.connectionid);
 
@@ -244,9 +256,21 @@ export default async function router(schema: Schema, config: Config) {
         res: StandardResponse
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req);
+            await Auth.is_connection(config, req, {}, req.params.connectionid);
+
+            if (await config.models.Layer.count({
+                where: sql`connection = ${req.params.connectionid}`
+            }) > 0) throw new Err(400, null, 'Connection has active Layers - Delete layers before deleting Connection');
+
+            if (await config.models.ConnectionSink.count({
+                where: sql`connection = ${req.params.connectionid}`
+            }) > 0) throw new Err(400, null, 'Connection has active Sinks - Delete Sinks before deleting Connection');
 
             await config.models.Connection.delete(req.params.connectionid);
+
+            await config.models.ConnectionToken.delete(sql`
+                connection = ${req.params.connectionid}
+            `);
 
             config.conns.delete(req.params.connectionid);
 
@@ -274,9 +298,9 @@ export default async function router(schema: Schema, config: Config) {
         })
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req, {
+            await Auth.is_connection(config, req, {
                 resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }]
-            });
+            }, req.params.connectionid);
 
             const conn = await config.models.Connection.from(req.params.connectionid);
 
@@ -305,7 +329,12 @@ export default async function router(schema: Schema, config: Config) {
                 return String(d);
             });
 
-            const statsres: any = { stats: [] }
+            const statsres: {
+                stats: Array<{
+                    label: string;
+                    success: number;
+                }>
+            } = { stats: [] }
 
             for (const ts of ts_arr) {
                 statsres.stats.push({

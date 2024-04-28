@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+import { GeoJSONSourceDiff } from 'maplibre-gl';
 import pointOnFeature from '@turf/point-on-feature';
 import { std, stdurl } from '../std.ts';
 import moment from 'moment';
@@ -21,12 +22,18 @@ export const useCOTStore = defineStore('cots', {
     state: (): {
         archive: Map<string, Feature>;
         cots: Map<string, Feature>;
+
+        // COTs are submitted to pending and picked up by the partial update code every .5s
+        pending: Map<string, Feature>;
+        pendingDelete: Set<string>;
         subscriptions: Map<string, Map<string, Feature>>;
     } => {
         return {
-            archive: new Map(),     // Store all archived CoT messages
-            cots: new Map(),        // Store all on-screen CoT messages
-            subscriptions: new Map()     // Store All Mission CoT messages by GUID
+            archive: new Map(),         // Store all archived CoT messages
+            cots: new Map(),            // Store all on-screen CoT messages
+            pending: new Map(),         // Store yet to be rendered on-screen CoT Messages
+            pendingDelete: new Set(),   // Store yet to be deleted on-screen CoT Messages
+            subscriptions: new Map()    // Store All Mission CoT messages by GUID
         }
     },
     actions: {
@@ -37,7 +44,7 @@ export const useCOTStore = defineStore('cots', {
             const archive = JSON.parse(localStorage.getItem('archive') || '[]');
             for (const a of archive) {
                 this.archive.set(a.id, a);
-                this.cots.set(a.id, a);
+                this.pending.set(a.id, a);
             }
         },
 
@@ -62,34 +69,45 @@ export const useCOTStore = defineStore('cots', {
         },
 
         /**
-         * Return CoTs as a FeatureCollection
+         * Generate a GeoJSONDiff on existing COT Features
          */
-        collection: function(store) {
-            if (!store) {
-                const now = moment();
-                return {
-                    type: 'FeatureCollection',
-                    features:  Array.from(this.cots.values()).filter((cot) => {
-                        if (profileStore.profile.display_stale === 'Immediate' && now.isAfter(cot.properties.stale)) {
-                            return false;
-                        } else if (!['Never', 'Immediate'].includes(profileStore.profile.display_stale)) {
-                            return now.isBefore(moment(cot.properties.stale).add(...profileStore.profile.display_stale.split(' ')))
-                        }
+        diff: function(): GeoJSONSourceDiff {
+            const now = moment();
+            const diff = {
+                add: [],
+                remove: [],
+                update: []
+            }
 
-                        return true;
-                    }).map((cot) => {
-                        if (!cot.properties.archived) {
-                            cot.properties['icon-opacity'] = now.isBefore(moment(cot.properties.stale)) ? 1 : 0.5;
-                            cot.properties['circle-opacity'] = now.isBefore(moment(cot.properties.stale)) ? 1 : 0.5;
-                        }
-                        return cot;
-                    })
+            for (const cot of this.cots.values()) {
+                if (profileStore.profile.display_stale === 'Immediate' && now.isAfter(cot.properties.stale)) {
+                    diff.remove.push(cot.id);
+                } else if (!['Never', 'Immediate'].includes(profileStore.profile.display_stale) && !now.isBefore(moment(cot.properties.stale).add(...profileStore.profile.display_stale.split(' ')))) {
+                    diff.remove.push(cot.id)
+                } else if (!cot.properties.archived) {
+                    //TODO Eventually do this via Data Driven Styling
+                    if (now.isBefore(moment(cot.properties.stale)) && (cot.properties['icon-opacity'] !== 1 || cot.properties['circle-opacity'] !== 1)) {
+                         cot.properties['icon-opacity'] = 1;
+                         cot.properties['circle-opacity'] = 1;
+                        diff.update.push(cot)
+                    } else if (!now.isBefore(moment(cot.properties.stale)) && (cot.properties['icon-opacity'] !== 0.5 || cot.properties['circle-opacity'] !== 0.5)) {
+                         cot.properties['icon-opacity'] = 0.5;
+                         cot.properties['circle-opacity'] = 0.5;
+                        diff.update.push(cot)
+                    }
                 }
-            } else {
-                return {
-                    type: 'FeatureCollection',
-                    features: Array.from(store.values())
-                }
+            }
+
+            return diff;
+        },
+
+        /**
+         * Return a FeatureCollection of a non-default CoT Store
+         */
+        collection(store) {
+            return {
+                type: 'FeatureCollection',
+                features: Array.from(store.values())
             }
         },
 
@@ -97,7 +115,7 @@ export const useCOTStore = defineStore('cots', {
          * Update a feature that exists in the store - bypasses feature standardization
          */
         update: function(feat: Feature): void {
-            this.cots.set(feat.id, feat);
+            this.pending.set(feat.id, feat);
 
             if (feat.properties.archived) {
                 this.archive.set(feat.id, feat);
@@ -120,7 +138,7 @@ export const useCOTStore = defineStore('cots', {
          * Remove a given CoT from the store
          */
         delete: function(id: string) {
-            this.cots.delete(id);
+            this.pendingDelete.add(id);
             if (this.archive.has(id)) {
                 this.archive.delete(id);
                 this.saveArchive();
@@ -231,7 +249,7 @@ export const useCOTStore = defineStore('cots', {
 
                 cots.set(feat.id, feat);
             } else {
-                this.cots.set(feat.id, feat);
+                this.pending.set(feat.id, feat);
 
                 if (feat.properties.archived) {
                     this.archive.set(feat.id, feat);
