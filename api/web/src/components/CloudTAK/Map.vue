@@ -508,7 +508,7 @@ export default {
                 }
 
                 for (const id of cotStore.pendingDelete) {
-                    diff.delete.push(id);
+                    diff.remove.push(id);
                     cotStore.pendingDelete.clear();
                 }
 

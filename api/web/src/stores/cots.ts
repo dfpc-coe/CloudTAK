@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+import { GeoJSONSourceDiff } from 'maplibre-gl';
 import pointOnFeature from '@turf/point-on-feature';
 import { std, stdurl } from '../std.ts';
 import moment from 'moment';
@@ -70,7 +71,7 @@ export const useCOTStore = defineStore('cots', {
         /**
          * Generate a GeoJSONDiff on existing COT Features
          */
-        diff: function(store) {
+        diff: function(store): GeoJSONSourceDiff {
             if (!store) {
                 const now = moment();
                 const diff = {
