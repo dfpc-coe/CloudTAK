@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v1.21.1 - 2024-04-28
+
+- :bug: `UI` Retain FeatureCollection generation for non-default CoT store
+
 ### v1.21.0 - 2024-04-28
 
 - :rocket: `UI` Support for partial updates (or no updates) to map, resulting in a faster map experience

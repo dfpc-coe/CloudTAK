@@ -71,40 +71,43 @@ export const useCOTStore = defineStore('cots', {
         /**
          * Generate a GeoJSONDiff on existing COT Features
          */
-        diff: function(store): GeoJSONSourceDiff {
-            if (!store) {
-                const now = moment();
-                const diff = {
-                    add: [],
-                    remove: [],
-                    update: []
-                }
+        diff: function(): GeoJSONSourceDiff {
+            const now = moment();
+            const diff = {
+                add: [],
+                remove: [],
+                update: []
+            }
 
-                for (const cot of this.cots.values()) {
-                    if (profileStore.profile.display_stale === 'Immediate' && now.isAfter(cot.properties.stale)) {
-                        diff.remove.push(cot.id);
-                    } else if (!['Never', 'Immediate'].includes(profileStore.profile.display_stale) && !now.isBefore(moment(cot.properties.stale).add(...profileStore.profile.display_stale.split(' ')))) {
-                        diff.remove.push(cot.id)
-                    } else if (!cot.properties.archived) {
-                        //TODO Eventually do this via Data Driven Styling
-                        if (now.isBefore(moment(cot.properties.stale)) && (cot.properties['icon-opacity'] !== 1 || cot.properties['circle-opacity'] !== 1)) {
-                             cot.properties['icon-opacity'] = 1;
-                             cot.properties['circle-opacity'] = 1;
-                            diff.update.push(cot)
-                        } else if (!now.isBefore(moment(cot.properties.stale)) && (cot.properties['icon-opacity'] !== 0.5 || cot.properties['circle-opacity'] !== 0.5)) {
-                             cot.properties['icon-opacity'] = 0.5;
-                             cot.properties['circle-opacity'] = 0.5;
-                            diff.update.push(cot)
-                        }
+            for (const cot of this.cots.values()) {
+                if (profileStore.profile.display_stale === 'Immediate' && now.isAfter(cot.properties.stale)) {
+                    diff.remove.push(cot.id);
+                } else if (!['Never', 'Immediate'].includes(profileStore.profile.display_stale) && !now.isBefore(moment(cot.properties.stale).add(...profileStore.profile.display_stale.split(' ')))) {
+                    diff.remove.push(cot.id)
+                } else if (!cot.properties.archived) {
+                    //TODO Eventually do this via Data Driven Styling
+                    if (now.isBefore(moment(cot.properties.stale)) && (cot.properties['icon-opacity'] !== 1 || cot.properties['circle-opacity'] !== 1)) {
+                         cot.properties['icon-opacity'] = 1;
+                         cot.properties['circle-opacity'] = 1;
+                        diff.update.push(cot)
+                    } else if (!now.isBefore(moment(cot.properties.stale)) && (cot.properties['icon-opacity'] !== 0.5 || cot.properties['circle-opacity'] !== 0.5)) {
+                         cot.properties['icon-opacity'] = 0.5;
+                         cot.properties['circle-opacity'] = 0.5;
+                        diff.update.push(cot)
                     }
                 }
+            }
 
-                return diff;
-            } else {
-                return {
-                    type: 'FeatureCollection',
-                    features: Array.from(store.values())
-                }
+            return diff;
+        },
+
+        /**
+         * Return a FeatureCollection of a non-default CoT Store
+         */
+        collection(store) {
+            return {
+                type: 'FeatureCollection',
+                features: Array.from(store.values())
             }
         },
 
