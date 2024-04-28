@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v1.21.0 - 2024-04-28
+
+- :rocket: `UI` Support for partial updates (or no updates) to map, resulting in a faster map experience
+
 ### v1.20.1 - 2024-04-26
 
 - :rocket: Continue working on reducing drift
