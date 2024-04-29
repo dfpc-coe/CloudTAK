@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v1.22.3 - 2024-04-29
+
+- :bug: `API` Fix bug where generated object wouldn't be returned
+
 ### v1.22.2 - 2024-04-28
 
 - :bug: `UI` Fix CoTs being moved to active Map upon render
