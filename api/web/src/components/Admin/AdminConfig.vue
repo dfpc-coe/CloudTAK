@@ -84,9 +84,10 @@ export default {
             const url = stdurl('/api/config')
             url.searchParams.append('keys', Object.keys(this.config).join(','));
             const config = await std(url);
+
             for (const key of Object.keys(config)) {
                 if (config[key] === undefined) continue;
-                this.config = config[key];
+                this.config[key] = config[key];
             }
             this.loading = false;
         },
