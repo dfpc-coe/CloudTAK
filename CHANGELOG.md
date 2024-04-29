@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v1.23.0 - 2024-04-29
+
+- :bug: `UI` Fix patch updating GeoJSON sources as the wrong format was being used for updates
+- :tada: `UI` Style features in place and avoid using additional layers for styling
+
 ### v1.22.3 - 2024-04-29
 
 - :bug: `API` Fix bug where generated object wouldn't be returned
