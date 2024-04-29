@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v1.22.0 - 2024-04-28
+
+- :rocket: `UI` Allow storing pre-defined key/values to power the Config API
+
 ### v1.21.1 - 2024-04-28
 
 - :bug: `UI` Retain FeatureCollection generation for non-default CoT store
