@@ -54,9 +54,9 @@
             class='py-2'
         />
 
-        <div v-if='feat.properties.contact && feat.properties.contact.phone' class='col-12 px-3 pb-2'>
+        <div v-if='feat.properties.contact && feat.properties.contact.phone' class='col-12 px-2 pb-2'>
             <label class='subheader'>Phone</label>
-            <div v-text='phone(feat.properties.contact.phone)' class='bg-gray-500 rounded mx-2 py-2 px-2'/>
+            <div v-text='phone(feat.properties.contact.phone)' class='bg-gray-500 rounded mx-2 px-2 py-2'/>
         </div>
         <div v-if='!isNaN(feat.properties.course)' class='col-12 py-2'>
             <label class='subheader mx-2'>Course</label>
