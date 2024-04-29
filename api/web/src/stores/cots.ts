@@ -7,17 +7,6 @@ import type { Feature } from 'geojson';
 import { useProfileStore } from './profile.js';
 const profileStore = useProfileStore();
 
-
-/**
- * modify props to meet CoT style requirements
- */
-export function extract(feat: Feature) {
-    feat = JSON.parse(JSON.stringify(feat));
-    if (feat.properties['stroke-opacity']) feat.properties['stroke-opacity'] = feat.properties['stroke-opacity'] * 255;
-    if (feat.properties['fill-opacity']) feat.properties['fill-opacity'] = feat.properties['fill-opacity'] * 255;
-    return feat;
-}
-
 export const useCOTStore = defineStore('cots', {
     state: (): {
         archive: Map<string, Feature>;
@@ -93,14 +82,13 @@ export const useCOTStore = defineStore('cots', {
                 ) {
                     diff.remove.push(cot.id)
                 } else if (!cot.properties.archived) {
-                    //TODO Eventually do this via Data Driven Styling
-                    if (now.isBefore(moment(cot.properties.stale)) && (cot.properties['icon-opacity'] !== 1 || cot.properties['circle-opacity'] !== 1)) {
+                    if (now.isBefore(moment(cot.properties.stale)) && (cot.properties['icon-opacity'] !== 1 || cot.properties['circle-opacity'] !== 255)) {
                          cot.properties['icon-opacity'] = 1;
-                         cot.properties['circle-opacity'] = 1;
+                         cot.properties['circle-opacity'] = 255;
                         diff.update.push(cot)
-                    } else if (!now.isBefore(moment(cot.properties.stale)) && (cot.properties['icon-opacity'] !== 0.5 || cot.properties['circle-opacity'] !== 0.5)) {
+                    } else if (!now.isBefore(moment(cot.properties.stale)) && (cot.properties['icon-opacity'] !== 0.5 || cot.properties['circle-opacity'] !== 127)) {
                          cot.properties['icon-opacity'] = 0.5;
-                         cot.properties['circle-opacity'] = 0.5;
+                         cot.properties['circle-opacity'] = 127;
                         diff.update.push(cot)
                     }
                 }
@@ -234,20 +222,19 @@ export const useCOTStore = defineStore('cots', {
                 if (!feat.properties['stroke-style']) feat.properties['stroke-style'] = 'solid';
                 if (!feat.properties['stroke-width']) feat.properties['stroke-width'] = 3;
 
-                // MapLibre Opacity must be of range 0-1
                 if (feat.properties['stroke-opacity']) {
-                    feat.properties['stroke-opacity'] = feat.properties['stroke-opacity'] / 255;
+                    feat.properties['stroke-opacity'] = feat.properties['stroke-opacity']
                 } else {
-                    feat.properties['stroke-opacity'] = 1;
+                    feat.properties['stroke-opacity'] = 255;
                 }
 
                 if (feat.geometry.type.includes('Polygon')) {
                     if (!feat.properties['fill']) feat.properties.fill = '#d63939';
 
                     if (feat.properties['fill-opacity']) {
-                        feat.properties['fill-opacity'] = feat.properties['fill-opacity'] / 255;
+                        feat.properties['fill-opacity'] = feat.properties['fill-opacity']
                     } else {
-                        feat.properties['fill-opacity'] = 1;
+                        feat.properties['fill-opacity'] = 255;
                     }
                 }
             }

@@ -218,7 +218,7 @@ export default {
                 filter: ['==', ['get', 'id'], this.cot.properties.id],
                 paint: {
                     'fill-color': this.cot.properties.fill,
-                    'fill-opacity': this.cot.properties['fill-opacity']
+                    'fill-opacity': this.cot.properties['fill-opacity'] / 255
                 },
             });
             mapStore.map.addLayer({
@@ -228,7 +228,7 @@ export default {
                 filter: ['==', ['get', 'id'], this.cot.properties.id],
                 paint: {
                     'line-color': this.cot.properties.stroke,
-                    'line-opacity': this.cot.properties['stroke-opacity'],
+                    'line-opacity': this.cot.properties['stroke-opacity'] / 255,
                     'line-width': this.cot.properties['stroke-width']
                 },
             });
@@ -268,10 +268,10 @@ export default {
         },
         updateStyle: function() {
             mapStore.map.setPaintProperty('cots-edit-fill', 'fill-color', this.feat.properties.fill);
-            mapStore.map.setPaintProperty('cots-edit-fill', 'fill-opacity', Number(this.feat.properties['fill-opacity']));
+            mapStore.map.setPaintProperty('cots-edit-fill', 'fill-opacity', Number(this.feat.properties['fill-opacity']) / 255);
             mapStore.map.setPaintProperty('cots-edit-line', 'line-color', this.feat.properties.stroke);
             mapStore.map.setPaintProperty('cots-edit-line', 'line-width', Number(this.feat.properties['stroke-width']));
-            mapStore.map.setPaintProperty('cots-edit-line', 'line-opacity', Number(this.feat.properties['stroke-opacity']));
+            mapStore.map.setPaintProperty('cots-edit-line', 'line-opacity', Number(this.feat.properties['stroke-opacity']) / 255);
 
             cotStore.update(this.feat);
         },
