@@ -83,13 +83,25 @@ export const useCOTStore = defineStore('cots', {
                     diff.remove.push(cot.id)
                 } else if (!cot.properties.archived) {
                     if (now.isBefore(moment(cot.properties.stale)) && (cot.properties['icon-opacity'] !== 1 || cot.properties['circle-opacity'] !== 255)) {
-                         cot.properties['icon-opacity'] = 1;
-                         cot.properties['circle-opacity'] = 255;
-                        diff.update.push(cot)
+                        cot.properties['icon-opacity'] = 1;
+                        cot.properties['circle-opacity'] = 255;
+                        diff.update.push({
+                            id: cot.id,
+                            addOrUpdateProperties: Object.keys(cot.properties).map((key) => {
+                                return { key, value: cot.properties[key] }
+                            }),
+                            newGeometry: cot.geometry
+                        })
                     } else if (!now.isBefore(moment(cot.properties.stale)) && (cot.properties['icon-opacity'] !== 0.5 || cot.properties['circle-opacity'] !== 127)) {
-                         cot.properties['icon-opacity'] = 0.5;
-                         cot.properties['circle-opacity'] = 127;
-                        diff.update.push(cot)
+                        cot.properties['icon-opacity'] = 0.5;
+                        cot.properties['circle-opacity'] = 127;
+                        diff.update.push({
+                            id: cot.id,
+                            addOrUpdateProperties: Object.keys(cot.properties).map((key) => {
+                                return { key, value: cot.properties[key] }
+                            }),
+                            newGeometry: cot.geometry
+                        })
                     }
                 }
             }

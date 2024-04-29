@@ -499,7 +499,13 @@ export default {
              
                 for (const cot of cotStore.pending.values()) {
                     if (cotStore.cots.has(cot.id)) {
-                        diff.update.push(cot);
+                        diff.update.push({
+                            id: cot.id,
+                            addOrUpdateProperties: Object.keys(cot.properties).map((key) => {
+                                return { key, value: cot.properties[key] }
+                            }),
+                            newGeometry: cot.geometry
+                        })
                     } else {
                         diff.add.push(cot);
                     }

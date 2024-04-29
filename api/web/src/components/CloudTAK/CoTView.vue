@@ -203,43 +203,8 @@ export default {
         }
     },
     mounted: function() {
-        if (this.isUserDrawn) {
-            if (mapStore.map.getLayer('cots-edit-fill')) {
-                mapStore.map.removeLayer('cots-edit-fill');
-            }
-            if (mapStore.map.getLayer('cots-edit-line')) {
-                mapStore.map.removeLayer('cots-edit-line');
-            }
-
-            mapStore.map.addLayer({
-                id: 'cots-edit-fill',
-                type: 'fill',
-                source: 'cots',
-                filter: ['==', ['get', 'id'], this.cot.properties.id],
-                paint: {
-                    'fill-color': this.cot.properties.fill,
-                    'fill-opacity': this.cot.properties['fill-opacity'] / 255
-                },
-            });
-            mapStore.map.addLayer({
-                id: 'cots-edit-line',
-                type: 'line',
-                source: 'cots',
-                filter: ['==', ['get', 'id'], this.cot.properties.id],
-                paint: {
-                    'line-color': this.cot.properties.stroke,
-                    'line-opacity': this.cot.properties['stroke-opacity'] / 255,
-                    'line-width': this.cot.properties['stroke-width']
-                },
-            });
-        }
     },
     unmounted: function() {
-        if (this.isUserDrawn) {
-            mapStore.map.removeLayer('cots-edit-fill');
-            mapStore.map.removeLayer('cots-edit-line');
-        }
-
         cotStore.update(this.feat);
     },
     computed: {
@@ -267,12 +232,6 @@ export default {
             }
         },
         updateStyle: function() {
-            mapStore.map.setPaintProperty('cots-edit-fill', 'fill-color', this.feat.properties.fill);
-            mapStore.map.setPaintProperty('cots-edit-fill', 'fill-opacity', Number(this.feat.properties['fill-opacity']) / 255);
-            mapStore.map.setPaintProperty('cots-edit-line', 'line-color', this.feat.properties.stroke);
-            mapStore.map.setPaintProperty('cots-edit-line', 'line-width', Number(this.feat.properties['stroke-width']));
-            mapStore.map.setPaintProperty('cots-edit-line', 'line-opacity', Number(this.feat.properties['stroke-opacity']) / 255);
-
             cotStore.update(this.feat);
         },
         zoomTo: function() {
