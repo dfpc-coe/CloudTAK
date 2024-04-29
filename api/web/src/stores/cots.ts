@@ -80,9 +80,17 @@ export const useCOTStore = defineStore('cots', {
             }
 
             for (const cot of this.cots.values()) {
-                if (profileStore.profile.display_stale === 'Immediate' && now.isAfter(cot.properties.stale)) {
+                if (
+                    profileStore.profile.display_stale === 'Immediate'
+                    && !cot.properties.archived
+                    && now.isAfter(cot.properties.stale)
+                ) {
                     diff.remove.push(cot.id);
-                } else if (!['Never', 'Immediate'].includes(profileStore.profile.display_stale) && !now.isBefore(moment(cot.properties.stale).add(...profileStore.profile.display_stale.split(' ')))) {
+                } else if (
+                    !['Never', 'Immediate'].includes(profileStore.profile.display_stale)
+                    && !cot.properties.archived
+                    && !now.isBefore(moment(cot.properties.stale).add(...profileStore.profile.display_stale.split(' ')))
+                ) {
                     diff.remove.push(cot.id)
                 } else if (!cot.properties.archived) {
                     //TODO Eventually do this via Data Driven Styling
@@ -169,6 +177,10 @@ export const useCOTStore = defineStore('cots', {
             if (!feat.properties.center) {
                 feat.properties.center = pointOnFeature(feat.geometry).geometry.coordinates;
             }
+
+            if (!feat.properties.time) feat.properties.time = new Date().toISOString();
+            if (!feat.properties.start) feat.properties.start = new Date().toISOString();
+            if (!feat.properties.stale) feat.properties.stale = moment().add(10, 'minutes').toISOString();
 
             if (!feat.properties.remarks) {
                 feat.properties.remarks = 'None';

@@ -272,6 +272,8 @@ export default {
             mapStore.map.setPaintProperty('cots-edit-line', 'line-color', this.feat.properties.stroke);
             mapStore.map.setPaintProperty('cots-edit-line', 'line-width', Number(this.feat.properties['stroke-width']));
             mapStore.map.setPaintProperty('cots-edit-line', 'line-opacity', Number(this.feat.properties['stroke-opacity']));
+
+            cotStore.update(this.feat);
         },
         zoomTo: function() {
             mapStore.map.flyTo({
