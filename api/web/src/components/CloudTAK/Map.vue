@@ -504,13 +504,16 @@ export default {
                         diff.add.push(cot);
                     }
 
-                    cotStore.pending.clear();
+                    cotStore.cots.set(cot.id, cot);
                 }
 
+                cotStore.pending.clear();
+
                 for (const id of cotStore.pendingDelete) {
+                    cotStore.delete(id)
                     diff.remove.push(id);
-                    cotStore.pendingDelete.clear();
                 }
+                cotStore.pendingDelete.clear();
 
                 if (diff.add.length || diff.remove.length || diff.update.length) {
                     mapStore.map.getSource('cots').updateData(diff);
