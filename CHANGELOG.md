@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v1.22.1 - 2024-04-28
+
+- :bug: `UO` Fix config being written by value of single key
+
 ### v1.22.0 - 2024-04-28
 
 - :rocket: `UI` Allow storing pre-defined key/values to power the Config API
