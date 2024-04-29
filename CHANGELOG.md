@@ -12,9 +12,13 @@
 
 ### Pending Release
 
+### v1.22.2 - 2024-04-28
+
+- :bug: `UI` Fix CoTs being moved to active Map upon render
+
 ### v1.22.1 - 2024-04-28
 
-- :bug: `UO` Fix config being written by value of single key
+- :bug: `UI` Fix config being written by value of single key
 
 ### v1.22.0 - 2024-04-28
 
