@@ -19,7 +19,7 @@
 
         <div class='ms-auto btn-list'>
             <TablerDelete
-                v-if='video.status === "RUNNING" && video.statusDesired === "RUNNING"'
+                v-if='!loading && video.status === "RUNNING" && video.statusDesired === "RUNNING"'
                 @delete='fetchDelete'
                 displaytype='icon'
                 v-tooltip='"Delete Server"'
