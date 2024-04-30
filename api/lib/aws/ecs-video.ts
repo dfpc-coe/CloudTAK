@@ -42,7 +42,7 @@ export default class ECSVideo {
                 return Number(def.replace(/.*\/coe-media-.*:/, ''));
             });
         } catch (err) {
-            throw new Err(500, new Error(err instanceof Error ? err.message : String(err)), 'Failed to list ECR Tasks');
+            throw new Err(500, new Error(err instanceof Error ? err.message : String(err)), 'Failed to list Media Server Task Definitions');
         }
     }
 
@@ -63,7 +63,24 @@ export default class ECSVideo {
 
             return descs.tasks[0];
         } catch (err) {
-            throw new Err(500, new Error(err instanceof Error ? err.message : String(err)), 'Failed to list ECR Tasks');
+            throw new Err(500, new Error(err instanceof Error ? err.message : String(err)), 'Failed to Get Media Server');
+        }
+    }
+
+    async delete(task: string): Promise<void> {
+        // Ensure it exists and we have permissions to delete it
+        await this.task(task)
+
+        try {
+            const ecs = new AWSECS.ECSClient({ region: process.env.AWS_DEFAULT_REGION });
+
+            await ecs.send(new AWSECS.StopTaskCommand({
+                cluster: `coe-ecs-${this.config.StackName.replace(/^coe-etl-/, '')}`,
+                task: task,
+                reason: 'User Requested Termination from CloudTAK'
+            }));
+        } catch (err) {
+            throw new Err(500, new Error(err instanceof Error ? err.message : String(err)), 'Failed to Delete Media Server');
         }
     }
 
@@ -94,7 +111,7 @@ export default class ECSVideo {
 
             return descs.tasks;
         } catch (err) {
-            throw new Err(500, new Error(err instanceof Error ? err.message : String(err)), 'Failed to list ECR Tasks');
+            throw new Err(500, new Error(err instanceof Error ? err.message : String(err)), 'Failed to list Media Servers');
         }
     }
 }

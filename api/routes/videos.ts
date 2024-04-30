@@ -5,7 +5,7 @@ import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
 import EC2 from '../lib/aws/ec2.js';
 import ECSVideo from '../lib/aws/ecs-video.js';
-import { VideoResponse } from '../lib/types.js';
+import { StandardResponse, VideoResponse } from '../lib/types.js';
 
 export default async function router(schema: Schema, config: Config) {
     const video = new ECSVideo(config);
@@ -43,6 +43,7 @@ export default async function router(schema: Schema, config: Config) {
                     version: Number(item.taskDefinitionArn.replace(/.*:/, '')),
                     created: item.startedAt.toISOString(),
                     status: item.lastStatus,
+                    statusDesired: item.desiredStatus,
                     memory: Number(item.memory),
                     cpu: Number(item.cpu)
                 }
@@ -57,7 +58,7 @@ export default async function router(schema: Schema, config: Config) {
     });
 
     await schema.get('/video/:serverid', {
-        name: 'Get Servers',
+        name: 'Get Server',
         group: 'Video',
         description: 'Get all info about a particular video server',
         params: Type.Object({
@@ -75,6 +76,7 @@ export default async function router(schema: Schema, config: Config) {
                 version: Number(item.taskDefinitionArn.replace(/.*:/, '')),
                 created: item.startedAt.toISOString(),
                 status: item.lastStatus,
+                statusDesired: item.desiredStatus,
                 memory: Number(item.memory),
                 cpu: Number(item.cpu)
             }
@@ -90,6 +92,29 @@ export default async function router(schema: Schema, config: Config) {
             }
 
             return res.json(i);
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
+
+    await schema.delete('/video/:serverid', {
+        name: 'Delete Server',
+        group: 'Video',
+        description: 'Shut down an existing video server',
+        params: Type.Object({
+            serverid: Type.String()
+        }),
+        res: StandardResponse
+    }, async (req, res) => {
+        try {
+            await Auth.as_user(config, req, { admin: true });
+
+            await video.delete(req.params.serverid);
+
+            return res.json({
+                status: 200,
+                message: 'Deleting Server',
+            });
         } catch (err) {
             return Err.respond(err, res);
         }
