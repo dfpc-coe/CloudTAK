@@ -41,7 +41,7 @@ export default async function router(schema: Schema, config: Config) {
                 const i: Static<typeof VideoResponse> = {
                     id: item.taskArn.replace(/.*\//, ''),
                     version: Number(item.taskDefinitionArn.replace(/.*:/, '')),
-                    created: item.startedAt.toISOString(),
+                    created: (item.startedAt ?? new Date()).toISOString(),
                     status: item.lastStatus,
                     statusDesired: item.desiredStatus,
                     memory: Number(item.memory),
@@ -74,19 +74,21 @@ export default async function router(schema: Schema, config: Config) {
             const i: Static<typeof VideoResponse> = {
                 id: item.taskArn.replace(/.*\//, ''),
                 version: Number(item.taskDefinitionArn.replace(/.*:/, '')),
-                created: item.startedAt.toISOString(),
+                created: (item.startedAt ?? new Date()).toISOString(),
                 status: item.lastStatus,
                 statusDesired: item.desiredStatus,
                 memory: Number(item.memory),
                 cpu: Number(item.cpu)
             }
 
-            for (const att of item.attachments) {
-                for (const det of att.details) {
-                    if (det.name === 'networkInterfaceId') {
-                        i.ipPublic = await EC2.eni(det.value);
-                    } else if (det.name === 'privateIPv4Address') {
-                        i.ipPrivate = det.value;
+            if (i.status === "RUNNING" && i.statusDesired === "RUNNING") {
+                for (const att of item.attachments) {
+                    for (const det of att.details) {
+                        if (det.name === 'networkInterfaceId') {
+                            i.ipPublic = await EC2.eni(det.value);
+                        } else if (det.name === 'privateIPv4Address') {
+                            i.ipPrivate = det.value;
+                        }
                     }
                 }
             }

@@ -104,6 +104,8 @@ export default class ECSVideo {
                 taskArns.push(...res.taskArns);
             } while (res.nextToken)
 
+            if (!taskArns.length) return [];
+
             const descs = await ecs.send(new AWSECS.DescribeTasksCommand({
                 cluster: `coe-ecs-${this.config.StackName.replace(/^coe-etl-/, '')}`,
                 tasks: taskArns
