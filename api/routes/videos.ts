@@ -64,13 +64,13 @@ export default async function router(schema: Schema, config: Config) {
         params: Type.Object({
             serverid: Type.String()
         }),
-        body: Type.Object({})
+        body: Type.Object({}),
         res: VideoResponse
     }, async (req, res) => {
         try {
             await Auth.as_user(config, req, { admin: true });
 
-            const item = await video.run(req.body);
+            const item = await video.run();
 
             const i: Static<typeof VideoResponse> = {
                 id: item.taskArn.replace(/.*\//, ''),
@@ -81,7 +81,8 @@ export default async function router(schema: Schema, config: Config) {
                 memory: Number(item.memory),
                 cpu: Number(item.cpu)
             }
-            
+           
+            return res.json(i); 
         } catch (err) {
             return Err.respond(err, res);
         }
