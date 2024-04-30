@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v1.25.0 - 2024-04-30
+
+- :rocket: Allow Deleting Media Management Servers
+
 ### v1.24.0 - 2024-04-30
 
 - :tada: Basic support of a Media Management Server System
