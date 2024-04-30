@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v1.23.1 - 2024-04-30
+
+- :bug: `UI` Force a re-render of CoT view if a new cot is clicked
+
 ### v1.23.0 - 2024-04-29
 
 - :bug: `UI` Fix patch updating GeoJSON sources as the wrong format was being used for updates
