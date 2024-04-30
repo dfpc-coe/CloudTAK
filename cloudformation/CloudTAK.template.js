@@ -1,4 +1,5 @@
 import cf from '@openaddresses/cloudfriend';
+import Media from './lib/media.js';
 import S3 from './lib/s3.js';
 import API from './lib/api.js';
 import KMS from './lib/kms.js';
@@ -17,7 +18,7 @@ import {
 } from '@openaddresses/batch-alarms';
 
 export default cf.merge(
-    S3, DB, API, KMS, Batch, Hooks, Signing, Dynamo, Alarms, PMTiles, Events, Stacks,
+    S3, DB, API, KMS, Batch, Hooks, Signing, Dynamo, Alarms, PMTiles, Events, Stacks, Media,
     {
         Description: 'Template for @tak-ps/etl',
         Parameters: {

@@ -50,6 +50,10 @@ export default class Config {
     conns: ConnectionPool;
     server: InferSelectModel<typeof Server>;
     events?: EventsPool;
+    VpcId?: string;
+    SubnetPublicA?: string;
+    SubnetPublicB?: string;
+    MediaSecurityGroup?: string;
 
     constructor(init: {
         local: boolean;
@@ -172,6 +176,11 @@ export default class Config {
             console.log(`ok - PMTiles: ${config.PMTILES_URL}`);
             console.error(`ok - StackName: ${config.StackName}`);
         }
+
+        if (process.env.VpcId) config.VpcId = process.env.VpcId;
+        if (process.env.SubnetPublicA) config.SubnetPublicA = process.env.SubnetPublicA;
+        if (process.env.SubnetPublicB) config.SubnetPublicB = process.env.SubnetPublicB;
+        if (process.env.MediaSecurityGroup) config.MediaSecurityGroup = process.env.MediaSecurityGroup;
 
         return config;
     }
