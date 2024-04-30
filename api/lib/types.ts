@@ -20,8 +20,8 @@ export const VideoResponse = Type.Object({
     status: Type.String(),
     ipPublic: Type.Optional(Type.String()),
     ipPrivate: Type.Optional(Type.String()),
-    memory: Type.Integer(),
-    cpu: Type.Integer()
+    memory: Type.Number(),
+    cpu: Type.Number()
 })
 
 export const ServerResponse = Type.Object({

@@ -1,7 +1,6 @@
 import AWSECS, {
     Task,
     ListTaskDefinitionsCommandInput,
-    ListTasksResponse,
     ListTasksCommandInput
 } from '@aws-sdk/client-ecs';
 import Config from '../config.js';
@@ -24,7 +23,7 @@ export default class ECSVideo {
     async definitions(): Promise<Array<number>> {
         try {
             const ecs = new AWSECS.ECSClient({ region: process.env.AWS_DEFAULT_REGION });
-            const taskDefinitionArns: String[] = [];
+            const taskDefinitionArns: string[] = [];
 
             let res;
             do {
@@ -50,14 +49,9 @@ export default class ECSVideo {
     /**
      * Return a single Media Server Task
      */
-    async task(task: string): Promise<Array<Task>> {
+    async task(task: string): Promise<Task> {
         try {
             const ecs = new AWSECS.ECSClient({ region: process.env.AWS_DEFAULT_REGION });
-
-            const req: ListTasksCommandInput = {
-                cluster: `coe-ecs-${this.config.StackName.replace(/^coe-etl-/, '')}`,
-                family: `coe-media-${this.config.StackName.replace(/^coe-etl-/, '')}`
-            };
 
             const descs = await ecs.send(new AWSECS.DescribeTasksCommand({
                 cluster: `coe-ecs-${this.config.StackName.replace(/^coe-etl-/, '')}`,

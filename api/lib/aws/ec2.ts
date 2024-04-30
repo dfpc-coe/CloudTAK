@@ -1,5 +1,4 @@
 import AWSEC2 from '@aws-sdk/client-ec2';
-import Config from '../config.js';
 import Err from '@openaddresses/batch-error';
 import process from 'node:process';
 

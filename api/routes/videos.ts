@@ -1,10 +1,8 @@
-import { Type } from '@sinclair/typebox'
+import { Static, Type } from '@sinclair/typebox'
 import Schema from '@openaddresses/batch-schema';
-import { GenericListOrder } from '@openaddresses/batch-generic';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
-import { Profile } from '../lib/schema.js';
 import EC2 from '../lib/aws/ec2.js';
 import ECSVideo from '../lib/aws/ecs-video.js';
 import { VideoResponse } from '../lib/types.js';
@@ -40,13 +38,13 @@ export default async function router(schema: Schema, config: Config) {
             };
 
             for (const item of items) {
-                const i = {
+                const i: Static<typeof VideoResponse> = {
                     id: item.taskArn.replace(/.*\//, ''),
                     version: Number(item.taskDefinitionArn.replace(/.*:/, '')),
-                    created: item.startedAt,
+                    created: item.startedAt.toISOString(),
                     status: item.lastStatus,
-                    memory: item.memory,
-                    cpu: item.cpu
+                    memory: Number(item.memory),
+                    cpu: Number(item.cpu)
                 }
 
                 list.items.push(i);
@@ -72,13 +70,13 @@ export default async function router(schema: Schema, config: Config) {
 
             const item = await video.task(req.params.serverid);
 
-            const i = {
+            const i: Static<typeof VideoResponse> = {
                 id: item.taskArn.replace(/.*\//, ''),
                 version: Number(item.taskDefinitionArn.replace(/.*:/, '')),
-                created: item.startedAt,
+                created: item.startedAt.toISOString(),
                 status: item.lastStatus,
-                memory: item.memory,
-                cpu: item.cpu
+                memory: Number(item.memory),
+                cpu: Number(item.cpu)
             }
 
             for (const att of item.attachments) {
