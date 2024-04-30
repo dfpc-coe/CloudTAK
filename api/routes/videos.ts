@@ -61,9 +61,6 @@ export default async function router(schema: Schema, config: Config) {
         name: 'Create Server',
         group: 'Video',
         description: 'Create a new Media Server',
-        params: Type.Object({
-            serverid: Type.String()
-        }),
         body: Type.Object({}),
         res: VideoResponse
     }, async (req, res) => {
