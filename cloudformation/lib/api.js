@@ -377,6 +377,10 @@ export default {
                         { Name: 'MartiAPI', Value: cf.ref('MartiAPI') },
                         { Name: 'AuthGroup', Value: cf.ref('AuthGroup') },
                         { Name: 'AWS_DEFAULT_REGION', Value: cf.region }
+                        { Name: 'VpcId', Value: cf.importValue(cf.join(['coe-vpc-', cf.ref('Environment'), '-vpc'])) },
+                        { Name: 'SubnetPublicA', Value: cf.importValue(cf.join(['coe-vpc-', cf.ref('Environment'), '-subnet-public-a'])) },
+                        { Name: 'SubnetPublicB', Value: cf.importValue(cf.join(['coe-vpc-', cf.ref('Environment'), '-subnet-public-b'])) }
+                        { Name: 'MediaSecurityGroup': Value: cf.ref('MediaSecurityGroup') }
                     ],
                     LogConfiguration: {
                         LogDriver: 'awslogs',
