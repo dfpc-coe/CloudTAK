@@ -63,6 +63,8 @@ export default class ECSVideo {
 
             return descs.tasks[0];
         } catch (err) {
+            if (err instanceof Error && err.message.includes('taskId length should be one of')) throw new Err(400, null, 'Invalid Media Server ID');
+            if (err instanceof Error && err.message.includes('Could not find task')) throw new Err(404, null, 'Could not find Media Server with that ID');
             throw new Err(500, new Error(err instanceof Error ? err.message : String(err)), 'Failed to Get Media Server');
         }
     }
