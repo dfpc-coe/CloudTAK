@@ -12,6 +12,12 @@
 
 ### Pending Release
 
+### v1.25.1 - 2024-04-30
+
+- :rocket: `UI` Redirect to Media Server List on 404
+- :rocket: `API` Handle invalid Media Server ID with 400
+- :rocket: `API` Handle not foudn Media Server ID with 404
+
 ### v1.25.0 - 2024-04-30
 
 - :rocket: Allow Deleting Media Management Servers
