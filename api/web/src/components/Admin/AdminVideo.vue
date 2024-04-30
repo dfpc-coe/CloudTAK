@@ -95,7 +95,7 @@ export default {
         fetchDelete: async function() {
             this.loading = true;
             const url = stdurl(`/api/video/${this.$route.params.video}`);
-            this.video = await std(url, {
+            await std(url, {
                 method: 'DELETE'
             });
 
