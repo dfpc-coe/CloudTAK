@@ -105,8 +105,13 @@ export default {
         },
         fetch: async function() {
             this.loading = true;
-            const url = stdurl(`/api/video/${this.$route.params.video}`);
-            this.video = await std(url);
+            try {
+                const url = stdurl(`/api/video/${this.$route.params.video}`);
+                this.video = await std(url);
+            } catch (err) {
+                if (err.message === 'Could not find Media Server with that ID') this.$router.push('/admin/video');
+                else throw err;
+            }
             this.loading = false;
         }
     },
