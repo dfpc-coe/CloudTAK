@@ -22,17 +22,19 @@
                         <th>ID</th>
                         <th>Version</th>
                         <th>Created</th>
-                        <th>Status</th>
                         <th>CPU</th>
                         <th>Memory</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr @click='$router.push(`/admin/video/${server.id}`)' :key='server.id' v-for='server in list.items' class='cursor-pointer'>
-                        <td v-text='server.id'></td>
+                        <td class='d-flex align-items-center'>
+                            <Status v-if='server.status === "RUNNING"' status='Success'/>
+                            <Status v-else :status='server.status'/>
+                            <span v-text='server.id' class='mx-2'/>
+                        </td>
                         <td v-text='server.version'></td>
                         <td v-text='server.created'></td>
-                        <td v-text='server.status'></td>
                         <td v-text='server.cpu'></td>
                         <td v-text='server.memory'></td>
                     </tr>
@@ -46,6 +48,7 @@
 <script>
 import { std, stdurl } from '/src/std.ts';
 import TableHeader from '../util/TableHeader.vue'
+import Status from '../util/Status.vue';
 import TableFooter from '../util/TableFooter.vue'
 import {
     TablerNone,
@@ -81,6 +84,7 @@ export default {
     },
     components: {
         TablerNone,
+        Status,
         IconRefresh,
         TablerLoading,
         TableHeader,
