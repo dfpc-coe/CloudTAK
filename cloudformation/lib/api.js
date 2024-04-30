@@ -169,7 +169,8 @@ export default {
                             Action: [
                                 'ecs:Describe*',
                                 'ecs:Get*',
-                                'ecs:List*'
+                                'ecs:List*',
+                                'ecs:StopTask'
                             ],
                             Resource: [
                                 cf.join(['arn:', cf.partition, ':ecs:', cf.region, ':', cf.accountId, ':container-instance/coe-ecs-', cf.ref('Environment'), '/*']),
