@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v1.24.0 - 2024-04-30
+
+- :tada: Basic support of a Media Management Server System
+
 ### v1.23.2 - 2024-04-30
 
 - :rocket: Move release script to inline GH Action
