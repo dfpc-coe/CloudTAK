@@ -1,10 +1,10 @@
 <template>
 <span v-tooltip='status' class="status-indicator status-indicator-animated" :class='{
-    "status-yellow": ["running", "pending"].includes(status.toLowerCase()),
-    "status-orange": ["warn"].includes(status.toLowerCase()),
-    "status-green": ["success"].includes(status.toLowerCase()),
-    "status-red": ["fail", "pending", "deprovisioning"].includes(status.toLowerCase()),
-    "status-dark": ["unknown", "empty"].includes(status.toLowerCase()),
+    "status-yellow": ["running", "pending"].includes(normalizeStatus),
+    "status-orange": ["warn"].includes(normalizeStatus),
+    "status-green": ["success"].includes(normalizeStatus),
+    "status-red": ["fail", "pending", "deprovisioning"].includes(normalizeStatus),
+    "status-dark": ["unknown", "empty"].includes(normalizeStatus),
 }'>
     <span class="status-indicator-circle"></span>
     <span class="status-indicator-circle"></span>
@@ -19,6 +19,11 @@ export default {
         status: {
             type: String,
             required: true
+        }
+    },
+    computed: {
+        normalizeStatus: function() {
+            return (this.status ?? '').toLowerCase()
         }
     }
 }
