@@ -169,10 +169,12 @@
 
     <CloudTAKCoTView
         v-if='cot && mode === "Default"'
+        :key='cot.id'
         :cot='cot'
     />
     <CloudTAKFeatView
         v-if='feat && mode === "Default"'
+        :key='feat.id'
         :feat='feat'
     />
     <CloudTAKQueryView
