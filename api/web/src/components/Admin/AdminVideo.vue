@@ -4,6 +4,12 @@
         <h1 class='card-title'>Video Server <span v-text='video.id'/></h1>
 
         <div class='ms-auto btn-list'>
+            <TablerDelete
+                v-if='video.status === "RUNNING" && video.statusDesired === "RUNNING"'
+                @delete='fetchDelete'
+                displaytype='icon'
+                v-tooltip='"Delete Server"'
+            />
             <IconRefresh
                 @click='fetch'
                 v-tooltip='"Refresh"'
@@ -25,8 +31,12 @@
                     <div class='datagrid-content subheader' v-text='video.created'/>
                 </div>
                 <div class='datagrid-item'>
-                    <div class='datagrid-title'>Status</div>
+                    <div class='datagrid-title'>Current Status</div>
                     <div class='datagrid-content subheader' v-text='video.status'/>
+                </div>
+                <div class='datagrid-item'>
+                    <div class='datagrid-title'>Desired Status</div>
+                    <div class='datagrid-content subheader' v-text='video.statusDesired'/>
                 </div>
                 <div class='datagrid-item'>
                     <div class='datagrid-title'>Memory</div>
@@ -50,6 +60,7 @@
 import { std, stdurl } from '/src/std.ts';
 import {
     TablerNone,
+    TablerDelete,
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import {
@@ -69,6 +80,15 @@ export default {
         await this.fetch();
     },
     methods: {
+        fetchDelete: async function() {
+            this.loading = true;
+            const url = stdurl(`/api/video/${this.$route.params.video}`);
+            this.video = await std(url, {
+                method: 'DELETE'
+            });
+
+            this.fetch();
+        },
         fetch: async function() {
             this.loading = true;
             const url = stdurl(`/api/video/${this.$route.params.video}`);
@@ -78,6 +98,7 @@ export default {
     },
     components: {
         TablerNone,
+        TablerDelete,
         IconRefresh,
         TablerLoading,
     }

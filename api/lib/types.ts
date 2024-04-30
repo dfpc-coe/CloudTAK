@@ -18,6 +18,7 @@ export const VideoResponse = Type.Object({
     version: Type.Integer(),
     created: Type.String(),
     status: Type.String(),
+    statusDesired: Type.String(),
     ipPublic: Type.Optional(Type.String()),
     ipPrivate: Type.Optional(Type.String()),
     memory: Type.Number(),
