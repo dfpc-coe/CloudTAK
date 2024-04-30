@@ -99,8 +99,6 @@ export default {
                 method: 'DELETE'
             });
 
-            await this.fetch();
-         
             this.$router.push("/admin/video");
         },
         fetch: async function() {
