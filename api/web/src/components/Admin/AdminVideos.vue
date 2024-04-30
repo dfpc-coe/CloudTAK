@@ -93,12 +93,13 @@ export default {
         },
         createServer: async function() {
             this.loading = true;
-            const url = stdurl('/api/video', {
+            const url = stdurl('/api/video');
+            const server = await std(url, {
                 method: 'POST',
                 body: {}
             });
-            await std(url);
-            this.loading = false;
+            
+            this.$router.push(`/admin/video/${server.id}`);
         }
     },
     components: {
