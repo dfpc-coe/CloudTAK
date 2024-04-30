@@ -69,7 +69,11 @@ export default class ECSVideo {
 
     async delete(task: string): Promise<void> {
         // Ensure it exists and we have permissions to delete it
-        await this.task(task)
+        const t = await this.task(task)
+
+        if (t.lastStatus !== 'RUNNING' && t.desiredStatus !== 'RUNNING') {
+            throw new Err(400, null, 'Only a Running Media Server can be deleted');
+        }
 
         try {
             const ecs = new AWSECS.ECSClient({ region: process.env.AWS_DEFAULT_REGION });
