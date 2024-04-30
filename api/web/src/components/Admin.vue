@@ -86,8 +86,8 @@
                                             <span
                                                 class='list-group-item list-group-item-action d-flex align-items-center'
                                                 :class='{
-                                                    "active": $route.name === "admin-video",
-                                                    "cursor-pointer": $route.name !== "admin-video"
+                                                    "active": $route.name.includes("admin-video"),
+                                                    "cursor-pointer": !$route.name.includes("admin-video")
                                                 }'
                                                 @click='$router.push(`/admin/video`)'
                                             ><IconVideo size='32' /><span class='mx-3'>Video Servers</span></span>

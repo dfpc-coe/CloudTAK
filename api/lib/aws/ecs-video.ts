@@ -1,4 +1,5 @@
 import AWSECS, {
+    Task,
     ListTaskDefinitionsCommandInput,
     ListTasksResponse,
     ListTasksCommandInput
@@ -47,9 +48,35 @@ export default class ECSVideo {
     }
 
     /**
+     * Return a single Media Server Task
+     */
+    async task(task: string): Promise<Array<Task>> {
+        try {
+            const ecs = new AWSECS.ECSClient({ region: process.env.AWS_DEFAULT_REGION });
+
+            const req: ListTasksCommandInput = {
+                cluster: `coe-ecs-${this.config.StackName.replace(/^coe-etl-/, '')}`,
+                family: `coe-media-${this.config.StackName.replace(/^coe-etl-/, '')}`
+            };
+
+            const descs = await ecs.send(new AWSECS.DescribeTasksCommand({
+                cluster: `coe-ecs-${this.config.StackName.replace(/^coe-etl-/, '')}`,
+                tasks: [task]
+            }));
+
+            if (!descs.tasks.length) throw new Err(404, null, 'Could not find task with that ID');
+            if (!descs.tasks[0].taskDefinitionArn.includes(`:task-definition/coe-media-${this.config.StackName.replace(/^coe-etl-/, '')}`)) throw new Err(404, null, 'Could not find task with that ID');
+
+            return descs.tasks[0];
+        } catch (err) {
+            throw new Err(500, new Error(err instanceof Error ? err.message : String(err)), 'Failed to list ECR Tasks');
+        }
+    }
+
+    /**
      * Return a list of Media Server Tasks
      */
-    async tasks(): Promise<Array<string>> {
+    async tasks(): Promise<Array<Task>> {
         try {
             const ecs = new AWSECS.ECSClient({ region: process.env.AWS_DEFAULT_REGION });
             const taskArns: string[] = [];
@@ -66,9 +93,12 @@ export default class ECSVideo {
                 taskArns.push(...res.taskArns);
             } while (res.nextToken)
 
-            return taskArns.map((def) => {
-                return def;
-            });
+            const descs = await ecs.send(new AWSECS.DescribeTasksCommand({
+                cluster: `coe-ecs-${this.config.StackName.replace(/^coe-etl-/, '')}`,
+                tasks: taskArns
+            }));
+
+            return descs.tasks;
         } catch (err) {
             throw new Err(500, new Error(err instanceof Error ? err.message : String(err)), 'Failed to list ECR Tasks');
         }

@@ -12,35 +12,32 @@
             />
         </div>
     </div>
-    <div style='min-height: 20vh; margin-bottom: 61px'>
+    <div>
         <TablerLoading v-if='loading'/>
         <TablerNone v-else-if='!list.items.length' label='Video Servers' :create='false' />
         <div v-else class='table-responsive'>
             <table class="table card-table table-hover table-vcenter datatable">
-                <TableHeader
-                    v-model:sort='paging.sort'
-                    v-model:order='paging.order'
-                    v-model:header='header'
-                />
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Version</th>
+                        <th>Created</th>
+                        <th>Status</th>
+                        <th>CPU</th>
+                        <th>Memory</th>
+                    </tr>
+                </thead>
                 <tbody>
-                    <tr  :key='user.id' v-for='user in list.items' class='cursor-pointer'>
-                        <template v-for='h in header'>
-                            <template v-if='h.display'>
-                                <td>
-                                    <span v-text='user[h.name]'/>
-                                </td>
-                            </template>
-                        </template>
+                    <tr @click='$router.push(`/admin/video/${server.id}`)' :key='server.id' v-for='server in list.items' class='cursor-pointer'>
+                        <td v-text='server.id'></td>
+                        <td v-text='server.version'></td>
+                        <td v-text='server.created'></td>
+                        <td v-text='server.status'></td>
+                        <td v-text='server.cpu'></td>
+                        <td v-text='server.memory'></td>
                     </tr>
                 </tbody>
             </table>
-        </div>
-        <div class='position-absolute bottom-0 w-100' style='height: 61px;'>
-            <TableFooter
-                :limit='paging.limit'
-                :total='list.total'
-                @page='paging.page = $event'
-            />
         </div>
     </div>
 </div>
@@ -65,56 +62,19 @@ export default {
             err: false,
             loading: true,
             header: [],
-            paging: {
-                filter: '',
-                sort: 'created',
-                order: 'desc',
-                limit: 100,
-                page: 0
-            },
             list: {
                 total: 0,
                 items: []
             }
         }
     },
-    watch: {
-       paging: {
-            deep: true,
-            handler: async function() {
-                await this.fetchList();
-            }
-        }
-    },
     mounted: async function() {
-        await this.listSchema();
         await this.fetchList();
     },
     methods: {
-        listSchema: async function() {
-            const schema = await std('/api/schema?method=GET&url=/video');
-            this.header = ['ip', 'created'].map((h) => {
-                return { name: h, display: true };
-            });
-
-            this.header.push(...schema.query.properties.sort.enum.map((h) => {
-                return {
-                    name: h,
-                    display: false
-                }
-            }).filter((h) => {
-                for (const hknown of this.header) {
-                    if (hknown.name === h.name) return false;
-                }
-                return true;
-            }));
-        },
         fetchList: async function() {
             this.loading = true;
             const url = stdurl('/api/video');
-            if (this.query && this.paging.filter) url.searchParams.append('filter', this.paging.filter);
-            url.searchParams.append('limit', this.paging.limit);
-            url.searchParams.append('page', this.paging.page);
             this.list = await std(url);
             this.loading = false;
         }

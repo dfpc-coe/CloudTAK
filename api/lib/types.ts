@@ -14,7 +14,14 @@ export const StandardResponse = Type.Object({
 });
 
 export const VideoResponse = Type.Object({
-    id: Type.Integer(),
+    id: Type.String(),
+    version: Type.Integer(),
+    created: Type.String(),
+    status: Type.String(),
+    ipPublic: Type.Optional(Type.String()),
+    ipPrivate: Type.Optional(Type.String()),
+    memory: Type.Integer(),
+    cpu: Type.Integer()
 })
 
 export const ServerResponse = Type.Object({
