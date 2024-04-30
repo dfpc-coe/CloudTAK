@@ -1,7 +1,7 @@
 <template>
 <div>
     <div class="card-header">
-        <h1 class='card-title'>Users</h1>
+        <h1 class='card-title'>Video Servers</h1>
 
         <div class='ms-auto btn-list'>
             <IconRefresh
@@ -59,7 +59,7 @@ import {
 } from '@tabler/icons-vue'
 
 export default {
-    name: 'UserAdmin',
+    name: 'VideoAdmin',
     data: function() {
         return {
             err: false,
@@ -67,7 +67,7 @@ export default {
             header: [],
             paging: {
                 filter: '',
-                sort: 'last_login',
+                sort: 'created',
                 order: 'desc',
                 limit: 100,
                 page: 0
@@ -87,13 +87,13 @@ export default {
         }
     },
     mounted: async function() {
-        await this.listLayerSchema();
+        await this.listSchema();
         await this.fetchList();
     },
     methods: {
-        listLayerSchema: async function() {
-            const schema = await std('/api/schema?method=GET&url=/user');
-            this.header = ['username', 'last_login', 'phone'].map((h) => {
+        listSchema: async function() {
+            const schema = await std('/api/schema?method=GET&url=/video');
+            this.header = ['ip', 'created'].map((h) => {
                 return { name: h, display: true };
             });
 
@@ -111,7 +111,7 @@ export default {
         },
         fetchList: async function() {
             this.loading = true;
-            const url = stdurl('/api/user');
+            const url = stdurl('/api/video');
             if (this.query && this.paging.filter) url.searchParams.append('filter', this.paging.filter);
             url.searchParams.append('limit', this.paging.limit);
             url.searchParams.append('page', this.paging.page);

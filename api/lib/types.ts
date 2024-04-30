@@ -13,6 +13,10 @@ export const StandardResponse = Type.Object({
     message: Type.String()
 });
 
+export const VideoResponse = Type.Object({
+    id: Type.Integer(),
+})
+
 export const ServerResponse = Type.Object({
     id: Type.Integer(),
     status: Type.String(),
