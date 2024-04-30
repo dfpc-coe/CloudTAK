@@ -17,53 +17,56 @@
             </div>
         </div>
     </div>
-    <TablerLoading v-if='loading'/>
-    <TablerNone
-        v-else-if='!Object.keys(tasks.items)'
-        label='Tasks'
-        :create='false'
-    />
-    <template v-else-if='task'>
-        <TablerNone v-if='!tasks.items[task].length' label='Versions' :create='false'/>
-        <div v-else class="table-responsive">
-            <table class="table card-table table-hover table-vcenter datatable cursor-pointer">
-                <tbody>
-                    <tr :key='version' v-for='version in tasks.items[task]'>
-                        <td>
-                            <div class='d-flex'>
-                                <span v-text='version'/>
-                                <div class='ms-auto'>
-                                    <TablerDelete displaytype='icon' @delete='deleteVersion(task, version)'/>
+
+    <div style='min-height: 20vh; margin-bottom: 61px'>
+        <TablerLoading v-if='loading'/>
+        <TablerNone v-else-if='!Object.keys(tasks.items)' label='Tasks' :create='false' />
+        <template v-else-if='task'>
+            <TablerNone v-if='!tasks.items[task].length' label='Versions' :create='false'/>
+            <div v-else class="table-responsive">
+                <table class="table card-table table-hover table-vcenter datatable cursor-pointer">
+                    <tbody>
+                        <tr :key='version' v-for='version in tasks.items[task]'>
+                            <td>
+                                <div class='d-flex align-items-center'>
+                                    <span v-text='version'/>
+                                    <div class='ms-auto'>
+                                        <TablerDelete displaytype='icon' @delete='deleteVersion(task, version)'/>
+                                    </div>
                                 </div>
-                            </div>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-            <TableFooter
-                :limit='tasks.items[task].length'
-                :total='tasks.items[task].length'
-                @page='0'
-            />
-        </div>
-    </template>
-    <template v-else>
-        <div class="table-responsive">
-            <table class="table card-table table-hover table-vcenter datatable cursor-pointer">
-                <tbody>
-                    <tr @click='task = t' :key='t' v-for='t in Object.keys(tasks.items)'>
-                        <td v-text='t'/>
-                        <td v-text='`${tasks.items[t].length} Versions`'/>
-                    </tr>
-                </tbody>
-            </table>
-            <TableFooter
-                :limit='Object.keys(tasks.items).length'
-                :total='Object.keys(tasks.items).length'
-                @page='0'
-            />
-        </div>
-    </template>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class='position-absolute bottom-0 w-100' style='height: 61px;'>
+                <TableFooter
+                    :limit='tasks.items[task].length'
+                    :total='tasks.items[task].length'
+                    @page='0'
+                />
+            </div>
+        </template>
+        <template v-else>
+            <div class="table-responsive">
+                <table class="table card-table table-hover table-vcenter datatable cursor-pointer">
+                    <tbody>
+                        <tr @click='task = t' :key='t' v-for='t in Object.keys(tasks.items)'>
+                            <td v-text='t'/>
+                            <td v-text='`${tasks.items[t].length} Versions`'/>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class='position-absolute bottom-0 w-100' style='height: 61px;'>
+                <TableFooter
+                    :limit='Object.keys(tasks.items).length'
+                    :total='Object.keys(tasks.items).length'
+                    @page='0'
+                />
+            </div>
+        </template>
+    </div>
 </div>
 </template>
 
