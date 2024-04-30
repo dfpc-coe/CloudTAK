@@ -14,7 +14,7 @@
         "query": true,
         "res": true
     },
-    "GET /agency/agencyid": {
+    "GET /agency/:agencyid": {
         "body": false,
         "query": false,
         "res": true
@@ -59,92 +59,12 @@
         "query": true,
         "res": true
     },
+    "PUT /config": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
     "GET /connection/:connectionid/channel": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /connection/:connectionid/sink": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "POST /connection/:connectionid/sink": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "PATCH /connection/:connectionid/sink/:sinkid": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "GET /connection/:connectionid/sink/:sinkid": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /connection/:connectionid/sink/:sinkid/stats": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "DELETE /connection/:connectionid/sink/:sinkid": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /connection/:connectionid/token": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "POST /connection/:connectionid/token": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "PATCH /connection/:connectionid/token/:id": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "DELETE /connection/:connectionid/token/:id": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /connection": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "POST /connection": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "PATCH /connection/:connectionid": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "GET /connection/:connectionid": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "POST /connection/:connectionid/refresh": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "DELETE /connection/:connectionid": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /connection/:connectionid/stats": {
         "body": false,
         "query": false,
         "res": true
@@ -234,81 +154,6 @@
         "query": false,
         "res": true
     },
-    "POST /esri": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "GET /esri/portal": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "GET /esri/portal/content": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "POST /esri/portal/service": {
-        "body": true,
-        "query": true,
-        "res": true
-    },
-    "GET /esri/portal/server": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "GET /esri/server": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "POST /esri/server/layer": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "DELETE /esri/server/layer": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "GET /esri/server/layer": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "POST /import": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "PUT /import/:import": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "PUT /import": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /import/:import": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "PATCH /import/:import": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "GET /import": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
     "GET /layer/:layerid/alert": {
         "body": false,
         "query": true,
@@ -379,6 +224,136 @@
         "query": false,
         "res": true
     },
+    "GET /connection/:connectionid/sink": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "POST /connection/:connectionid/sink": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "PATCH /connection/:connectionid/sink/:sinkid": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "GET /connection/:connectionid/sink/:sinkid": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /connection/:connectionid/sink/:sinkid/stats": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "DELETE /connection/:connectionid/sink/:sinkid": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /connection/:connectionid/token": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "POST /connection/:connectionid/token": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "PATCH /connection/:connectionid/token/:id": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "DELETE /connection/:connectionid/token/:id": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /connection": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "POST /connection": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "PATCH /connection/:connectionid": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "GET /connection/:connectionid": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "POST /connection/:connectionid/refresh": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "DELETE /connection/:connectionid": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /connection/:connectionid/stats": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "POST /esri": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "GET /esri/portal": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "GET /esri/portal/content": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "POST /esri/portal/service": {
+        "body": true,
+        "query": true,
+        "res": true
+    },
+    "GET /esri/portal/server": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "GET /esri/server": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "POST /esri/server/layer": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "DELETE /esri/server/layer": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "GET /esri/server/layer": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
     "GET /iconset": {
         "body": false,
         "query": true,
@@ -443,6 +418,36 @@
         "body": false,
         "query": true,
         "res": false
+    },
+    "POST /import": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "PUT /import/:import": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "PUT /import": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /import/:import": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "PATCH /import/:import": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "GET /import": {
+        "body": false,
+        "query": true,
+        "res": true
     },
     "POST /login": {
         "body": true,
