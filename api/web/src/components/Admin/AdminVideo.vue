@@ -1,7 +1,21 @@
 <template>
 <div>
     <div class="card-header">
-        <h1 class='card-title'>Video Server <span v-text='video.id'/></h1>
+            <IconCircleArrowLeft
+                @click='$router.push("/admin/video")'
+                size='32'
+                class='cursor-pointer'
+            />
+        <h1 class='mx-2 card-title d-flex align-items-center'>
+            <template v-if='video.status'>
+                <Status v-if='video.status === "RUNNING"' status='Success'/>
+                <Status v-else :status='video.status'/>
+            </template>
+            <div class='mx-2'>
+                Video Server
+                <span v-text='video.id' class='mx-2'/>
+            </div>
+        </h1>
 
         <div class='ms-auto btn-list'>
             <TablerDelete
@@ -24,31 +38,27 @@
             <div class='datagrid'>
                 <div class='datagrid-item'>
                     <div class='datagrid-title'>Version</div>
-                    <div class='datagrid-content subheader' v-text='video.version'/>
+                    <div class='datagrid-content' v-text='video.version'/>
                 </div>
                 <div class='datagrid-item'>
                     <div class='datagrid-title'>Created</div>
-                    <div class='datagrid-content subheader' v-text='video.created'/>
-                </div>
-                <div class='datagrid-item'>
-                    <div class='datagrid-title'>Current Status</div>
-                    <div class='datagrid-content subheader' v-text='video.status'/>
+                    <div class='datagrid-content' v-text='video.created'/>
                 </div>
                 <div class='datagrid-item'>
                     <div class='datagrid-title'>Desired Status</div>
-                    <div class='datagrid-content subheader' v-text='video.statusDesired'/>
+                    <div class='datagrid-content' v-text='video.statusDesired'/>
                 </div>
                 <div class='datagrid-item'>
                     <div class='datagrid-title'>Memory</div>
-                    <div class='datagrid-content subheader' v-text='video.memory'/>
+                    <div class='datagrid-content' v-text='video.memory'/>
                 </div>
                 <div class='datagrid-item'>
                     <div class='datagrid-title'>IP Public</div>
-                    <div class='datagrid-content subheader' v-text='video.ipPublic'/>
+                    <div class='datagrid-content' v-text='video.ipPublic'/>
                 </div>
                 <div class='datagrid-item'>
                     <div class='datagrid-title'>IP Private</div>
-                    <div class='datagrid-content subheader' v-text='video.ipPrivate'/>
+                    <div class='datagrid-content' v-text='video.ipPrivate'/>
                 </div>
             </div>
         </div>
@@ -63,8 +73,10 @@ import {
     TablerDelete,
     TablerLoading
 } from '@tak-ps/vue-tabler';
+import Status from '../util/Status.vue';
 import {
     IconRefresh,
+    IconCircleArrowLeft,
 } from '@tabler/icons-vue'
 
 export default {
@@ -97,9 +109,11 @@ export default {
         }
     },
     components: {
+        Status,
         TablerNone,
         TablerDelete,
         IconRefresh,
+        IconCircleArrowLeft,
         TablerLoading,
     }
 }
