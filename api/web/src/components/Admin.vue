@@ -83,6 +83,14 @@
                                                 }'
                                                 @click='$router.push(`/admin/user`)'
                                             ><IconUsers size='32' /><span class='mx-3'>Users</span></span>
+                                            <span
+                                                class='list-group-item list-group-item-action d-flex align-items-center'
+                                                :class='{
+                                                    "active": $route.name.includes("admin-video"),
+                                                    "cursor-pointer": !$route.name.includes("admin-video")
+                                                }'
+                                                @click='$router.push(`/admin/video`)'
+                                            ><IconVideo size='32' /><span class='mx-3'>Video Servers</span></span>
                                         </div>
                                     </div>
                                 </div>
@@ -112,6 +120,7 @@ import {
 } from '@tak-ps/vue-tabler'
 import {
     IconNetwork,
+    IconVideo,
     IconUsers,
     IconSettings,
     IconServer,
@@ -132,6 +141,7 @@ export default {
     components: {
         Alert,
         IconSettings,
+        IconVideo,
         IconUsers,
         IconServer,
         IconBrandDocker,

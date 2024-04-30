@@ -19,45 +19,37 @@
             />
         </div>
     </div>
-    <template v-if='loading'>
-        <div class='card-body'>
-            <TablerLoading desc='Loading Layers'/>
-        </div>
-    </template>
-    <template v-else>
-        <TablerNone
-            v-if='!list.items.length'
-            label='Layers'
-            :create='false'
-        />
-        <template v-else>
-            <div class='table-responsive'>
-                <table class="table card-table table-hover table-vcenter datatable">
-                    <TableHeader
-                        v-model:sort='paging.sort'
-                        v-model:order='paging.order'
-                        v-model:header='header'
-                    />
-                    <tbody>
-                        <tr @click='stdclick($router, $event, `/layer/${layer.id}`)' :key='layer.id' v-for='layer in list.items' class='cursor-pointer'>
-                            <template v-for='h in header'>
-                                <template v-if='h.display'>
-                                    <td>
-                                        <span v-text='layer[h.name]'/>
-                                    </td>
-                                </template>
-                            </template>
-                        </tr>
-                    </tbody>
-                </table>
-                <TableFooter
-                    :limit='paging.limit'
-                    :total='list.total'
-                    @page='paging.page = $event'
+    <div style='min-height: 20vh; margin-bottom: 61px'>
+        <TablerLoading v-if='loading' desc='Loading Layers'/>
+        <TablerNone v-else-if='!list.items.length' label='Layers' :create='false' />
+        <div v-else class='table-responsive'>
+            <table class="table card-table table-hover table-vcenter datatable">
+                <TableHeader
+                    v-model:sort='paging.sort'
+                    v-model:order='paging.order'
+                    v-model:header='header'
                 />
-            </div>
-        </template>
-    </template>
+                <tbody>
+                    <tr @click='stdclick($router, $event, `/layer/${layer.id}`)' :key='layer.id' v-for='layer in list.items' class='cursor-pointer'>
+                        <template v-for='h in header'>
+                            <template v-if='h.display'>
+                                <td>
+                                    <span v-text='layer[h.name]'/>
+                                </td>
+                            </template>
+                        </template>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class='position-absolute bottom-0 w-100' style='height: 61px;'>
+            <TableFooter
+                :limit='paging.limit'
+                :total='list.total'
+                @page='paging.page = $event'
+            />
+        </div>
+    </div>
 </div>
 </template>
 

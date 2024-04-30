@@ -164,6 +164,26 @@ export default {
                             Resource: [
                                 cf.join(['arn:', cf.partition, ':secretsmanager:', cf.region, ':', cf.accountId, ':secret:', cf.stackName, '/*'])
                             ]
+                        },{ // Media Server Permissions
+                            Effect: 'Allow',
+                            Action: [
+                                'ecs:Describe*',
+                                'ecs:Get*',
+                                'ecs:List*'
+                            ],
+                            Resource: [
+                                cf.join(['arn:', cf.partition, ':ecs:', cf.region, ':', cf.accountId, ':container-instance/coe-ecs-', cf.ref('Environment'), '/*']),
+                                cf.join(['arn:', cf.partition, ':ecs:', cf.region, ':', cf.accountId, ':cluster/coe-ecs-', cf.ref('Environment')]),
+                                cf.join(['arn:', cf.partition, ':ecs:', cf.region, ':', cf.accountId, ':task/coe-ecs-', cf.ref('Environment'), '/*']),
+                                cf.join(['arn:', cf.partition, ':ecs:', cf.region, ':', cf.accountId, ':task-definition/coe-media-', cf.ref('Environment')])
+                            ]
+                        },{ // Media Server Permissions
+                            Effect: 'Allow',
+                            Action: [
+                                'ec2:DescribeNetworkInterfaces',
+                                'ecs:ListTaskDefinitions'
+                            ],
+                            Resource: '*'
                         },{ // ------------ Permissions Required to stand up lambda tasks ------------
                             Effect: 'Allow',
                             Action: [

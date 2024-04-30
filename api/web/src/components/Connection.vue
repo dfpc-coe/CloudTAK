@@ -32,7 +32,7 @@
                                 />
 
                                 <div class='ms-auto d-flex align-items-center btn-list'>
-                                    <AgencyBadge :connection='connection'/>
+                                    <AgencyBadge :connection='connection' />
 
                                     <IconRefresh
                                         v-tooltip='"Refresh"'
