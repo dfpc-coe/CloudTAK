@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v1.23.2 - 2024-04-30
+
+- :rocket: Move release script to inline GH Action
+
 ### v1.23.1 - 2024-04-30
 
 - :bug: `UI` Force a re-render of CoT view if a new cot is clicked
