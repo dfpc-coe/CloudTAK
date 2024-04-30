@@ -14,7 +14,7 @@
     </div>
     <div style='min-height: 20vh; margin-bottom: 61px'>
         <TablerLoading v-if='loading'/>
-        <TablerNone v-else-if='!list.items.length' label='Layers' :create='false' />
+        <TablerNone v-else-if='!list.items.length' label='Video Servers' :create='false' />
         <div v-else class='table-responsive'>
             <table class="table card-table table-hover table-vcenter datatable">
                 <TableHeader
