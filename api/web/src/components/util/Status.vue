@@ -3,7 +3,7 @@
     "status-yellow": ["running", "pending"].includes(status.toLowerCase()),
     "status-orange": ["warn"].includes(status.toLowerCase()),
     "status-green": ["success"].includes(status.toLowerCase()),
-    "status-red": ["fail", "pending"].includes(status.toLowerCase()),
+    "status-red": ["fail", "pending", "deprovisioning"].includes(status.toLowerCase()),
     "status-dark": ["unknown", "empty"].includes(status.toLowerCase()),
 }'>
     <span class="status-indicator-circle"></span>
