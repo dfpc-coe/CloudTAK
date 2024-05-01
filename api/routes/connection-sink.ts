@@ -34,9 +34,9 @@ export default async function router(schema: Schema, config: Config) {
         })
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req, {
+            await Auth.is_connection(config, req, {
                 resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }]
-            });
+            }, req.params.connectionid);
 
             const list = await config.models.ConnectionSink.list({
                 limit: req.query.limit,
@@ -78,15 +78,13 @@ export default async function router(schema: Schema, config: Config) {
         res: ConnectionSinkResponse
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req, {
+            const { connection } =  await Auth.is_connection(config, req, {
                 resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }]
-            });
-
-            const conn = await config.models.Connection.from(req.params.connectionid);
+            }, req.params.connectionid);
 
             const sink = await config.models.ConnectionSink.generate({
                 ...req.body,
-                connection: conn.id,
+                connection: connection.id,
             });
 
             await config.cacher.del(`connection-${req.params.connectionid}-sinks`);
@@ -113,14 +111,13 @@ export default async function router(schema: Schema, config: Config) {
         res: ConnectionSinkResponse
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req, {
+            const { connection } = await Auth.is_connection(config, req, {
                 resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }]
-            });
+            }, req.params.connectionid);
 
-            const conn = await config.models.Connection.from(req.params.connectionid);
             let sink = await config.models.ConnectionSink.from(req.params.sinkid);
 
-            if (sink.connection !== conn.id) throw new Err(400, null, 'Sink must belong to parent connection');
+            if (sink.connection !== connection.id) throw new Err(400, null, 'Sink must belong to parent connection');
 
             sink = await config.models.ConnectionSink.commit(sink.id, req.body);
 
@@ -143,14 +140,12 @@ export default async function router(schema: Schema, config: Config) {
         res: ConnectionSinkResponse
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req, {
+            const { connection } = await Auth.is_connection(config, req, {
                 resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }]
-            });
+            }, req.params.connectionid);
 
-
-            const conn = await config.models.Connection.from(req.params.connectionid);
             const sink = await config.models.ConnectionSink.from(req.params.sinkid);
-            if (sink.connection !== conn.id) throw new Err(400, null, 'Sink must belong to parent connection');
+            if (sink.connection !== connection.id) throw new Err(400, null, 'Sink must belong to parent connection');
 
             return res.json(sink);
         } catch (err) {
@@ -175,13 +170,12 @@ export default async function router(schema: Schema, config: Config) {
         })
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req, {
+            const { connection } = await Auth.is_connection(config, req, {
                 resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }]
-            });
+            }, req.params.connectionid);
 
-            const conn = await config.models.Connection.from(req.params.connectionid);
             const sink = await config.models.ConnectionSink.from(req.params.sinkid);
-            if (sink.connection !== conn.id) throw new Err(400, null, 'Sink must belong to parent connection');
+            if (sink.connection !== connection.id) throw new Err(400, null, 'Sink must belong to parent connection');
 
             const stats = await cw.sink(sink.id);
 
@@ -243,13 +237,12 @@ export default async function router(schema: Schema, config: Config) {
         res: StandardResponse
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req, {
+            const { connection } = await Auth.is_connection(config, req, {
                 resources: [{ access: AuthResourceAccess.CONNECTION, id: req.params.connectionid }]
-            });
+            }, req.params.connectionid);
 
-            const conn = await config.models.Connection.from(req.params.connectionid);
             const sink = await config.models.ConnectionSink.from(req.params.sinkid);
-            if (sink.connection !== conn.id) throw new Err(400, null, 'Sink must belong to parent connection');
+            if (sink.connection !== connection.id) throw new Err(400, null, 'Sink must belong to parent connection');
 
             await config.models.ConnectionSink.delete(sink.id);
 
