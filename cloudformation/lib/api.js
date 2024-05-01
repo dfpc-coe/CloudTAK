@@ -170,13 +170,24 @@ export default {
                                 'ecs:Describe*',
                                 'ecs:Get*',
                                 'ecs:List*',
+                                'ecs:RunTask',
                                 'ecs:StopTask'
                             ],
                             Resource: [
                                 cf.join(['arn:', cf.partition, ':ecs:', cf.region, ':', cf.accountId, ':container-instance/coe-ecs-', cf.ref('Environment'), '/*']),
                                 cf.join(['arn:', cf.partition, ':ecs:', cf.region, ':', cf.accountId, ':cluster/coe-ecs-', cf.ref('Environment')]),
                                 cf.join(['arn:', cf.partition, ':ecs:', cf.region, ':', cf.accountId, ':task/coe-ecs-', cf.ref('Environment'), '/*']),
-                                cf.join(['arn:', cf.partition, ':ecs:', cf.region, ':', cf.accountId, ':task-definition/coe-media-', cf.ref('Environment')])
+                                cf.join(['arn:', cf.partition, ':ecs:', cf.region, ':', cf.accountId, ':task-definition/coe-media-', cf.ref('Environment'), ':*']),
+                                cf.join(['arn:', cf.partition, ':ecs:', cf.region, ':', cf.accountId, ':task-definition/coe-media-', cf.ref('Environment')]),
+                            ]
+                        },{
+                            Effect: 'Allow',
+                            Action: [
+                                'iam:PassRole',
+                            ],
+                            Resource: [
+                                cf.join(['arn:', cf.partition, ':iam::', cf.accountId, ':role/coe-media-*']),
+                                cf.join(['arn:', cf.partition, ':iam::', cf.accountId, ':role/service-role/coe-media-*'])
                             ]
                         },{ // Media Server Permissions
                             Effect: 'Allow',
@@ -376,7 +387,11 @@ export default {
                         { Name: 'PMTILES_URL', Value: cf.join(['https://', cf.ref('PMTilesLambdaAPI'), '.execute-api.', cf.region, '.amazonaws.com']) },
                         { Name: 'MartiAPI', Value: cf.ref('MartiAPI') },
                         { Name: 'AuthGroup', Value: cf.ref('AuthGroup') },
-                        { Name: 'AWS_DEFAULT_REGION', Value: cf.region }
+                        { Name: 'AWS_DEFAULT_REGION', Value: cf.region },
+                        { Name: 'VpcId', Value: cf.importValue(cf.join(['coe-vpc-', cf.ref('Environment'), '-vpc'])) },
+                        { Name: 'SubnetPublicA', Value: cf.importValue(cf.join(['coe-vpc-', cf.ref('Environment'), '-subnet-public-a'])) },
+                        { Name: 'SubnetPublicB', Value: cf.importValue(cf.join(['coe-vpc-', cf.ref('Environment'), '-subnet-public-b'])) },
+                        { Name: 'MediaSecurityGroup', Value: cf.ref('MediaSecurityGroup') }
                     ],
                     LogConfiguration: {
                         LogDriver: 'awslogs',

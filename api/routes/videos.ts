@@ -57,6 +57,34 @@ export default async function router(schema: Schema, config: Config) {
         }
     });
 
+    await schema.post('/video', {
+        name: 'Create Server',
+        group: 'Video',
+        description: 'Create a new Media Server',
+        body: Type.Object({}),
+        res: VideoResponse
+    }, async (req, res) => {
+        try {
+            await Auth.as_user(config, req, { admin: true });
+
+            const item = await video.run();
+
+            const i: Static<typeof VideoResponse> = {
+                id: item.taskArn.replace(/.*\//, ''),
+                version: Number(item.taskDefinitionArn.replace(/.*:/, '')),
+                created: (item.startedAt ?? new Date()).toISOString(),
+                status: item.lastStatus,
+                statusDesired: item.desiredStatus,
+                memory: Number(item.memory),
+                cpu: Number(item.cpu)
+            }
+           
+            return res.json(i); 
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
+
     await schema.get('/video/:serverid', {
         name: 'Get Server',
         group: 'Video',
