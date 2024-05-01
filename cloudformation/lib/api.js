@@ -170,13 +170,24 @@ export default {
                                 'ecs:Describe*',
                                 'ecs:Get*',
                                 'ecs:List*',
+                                'ecs:RunTask',
                                 'ecs:StopTask'
                             ],
                             Resource: [
                                 cf.join(['arn:', cf.partition, ':ecs:', cf.region, ':', cf.accountId, ':container-instance/coe-ecs-', cf.ref('Environment'), '/*']),
                                 cf.join(['arn:', cf.partition, ':ecs:', cf.region, ':', cf.accountId, ':cluster/coe-ecs-', cf.ref('Environment')]),
                                 cf.join(['arn:', cf.partition, ':ecs:', cf.region, ':', cf.accountId, ':task/coe-ecs-', cf.ref('Environment'), '/*']),
-                                cf.join(['arn:', cf.partition, ':ecs:', cf.region, ':', cf.accountId, ':task-definition/coe-media-', cf.ref('Environment')])
+                                cf.join(['arn:', cf.partition, ':ecs:', cf.region, ':', cf.accountId, ':task-definition/coe-media-', cf.ref('Environment'), ':*']),
+                                cf.join(['arn:', cf.partition, ':ecs:', cf.region, ':', cf.accountId, ':task-definition/coe-media-', cf.ref('Environment')]),
+                            ]
+                        },{
+                            Effect: 'Allow',
+                            Action: [
+                                'iam:PassRole',
+                            ],
+                            Resource: [
+                                cf.join(['arn:', cf.partition, ':iam::', cf.accountId, ':role/coe-media-*']),
+                                cf.join(['arn:', cf.partition, ':iam::', cf.accountId, ':role/service-role/coe-media-*'])
                             ]
                         },{ // Media Server Permissions
                             Effect: 'Allow',
