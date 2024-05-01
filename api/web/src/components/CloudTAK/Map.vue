@@ -597,11 +597,17 @@ export default {
                 this.setYou();
 
                 mapStore.draw.on('finish', (id) => {
-                    const feat = mapStore.draw._store.store[id];
+                    const geometry = mapStore.draw._store.store[id].geometry;
 
-                    feat.id = id;
-                    feat.properties.archived = true;
-                    feat.properties.callsign = 'New Feature'
+                    const feat = {
+                        id: id,
+                        properties: {
+                            archived: true,
+                            callsign: 'New Feature'
+                        },
+                        geometry
+                    };
+
                     if (mapStore.draw.getMode() === 'polygon' || mapStore.draw.getMode() === 'rectangle') {
                         feat.properties.type = 'u-d-f';
                     } else if (mapStore.draw.getMode() === 'linestring') {
