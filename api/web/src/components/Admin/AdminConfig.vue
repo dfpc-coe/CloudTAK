@@ -7,7 +7,7 @@
             <div class='ms-auto'>
                 <div class='btn-list'>
                     <IconSettings
-                        v-if='false'
+                        v-if='!edit'
                         v-tooltip='"Configure Server"'
                         size='32'
                         class='cursor-pointer'
@@ -18,14 +18,22 @@
         </div>
         <div class="card-body row">
             <div class='col-lg-12 py-2'>
-                <TablerInput
-                    v-model='config.esri_token'
+                <TablerToggle
+                    v-model='config["agol::enabled"]'
                     :disabled='!edit'
-                    label='ESRI AGOL Token'
+                    label='ArcGIS Online Enabled'
+                />
+                <TablerInput
+                    v-model='config["agol::token"]'
+                    :disabled='!edit'
+                    label='ArcGIS Online API Token'
                 />
             </div>
 
             <div v-if='edit' class='col-lg-12 d-flex py-2'>
+                <div @click='fetch' class='btn'>
+                    Cancel
+                </div>
                 <div class='ms-auto'>
                     <div @click='postConfig' class='btn btn-primary'>
                         Save Settings
@@ -41,6 +49,7 @@
 import { std, stdurl } from '/src/std.ts';
 import {
     TablerLoading,
+    TablerToggle,
     TablerInput
 } from '@tak-ps/vue-tabler';
 import {
@@ -57,8 +66,8 @@ export default {
             edit: false,
             loading: true,
             config: {
-                enabled_esri: false,
-                esri_token: ''
+                'agol::enabled': false,
+                'agol::token': ''
             }
         }
     },
@@ -70,17 +79,19 @@ export default {
             return timeDiff(updated);
         },
         fetch: async function() {
+            this.edit = false;
             this.loading = true;
             const url = stdurl('/api/config')
             url.searchParams.append('keys', Object.keys(this.config).join(','));
             const config = await std(url);
+
             for (const key of Object.keys(config)) {
                 if (config[key] === undefined) continue;
-                this.config = config[key];
+                this.config[key] = config[key];
             }
             this.loading = false;
         },
-        postServer: async function() {
+        postConfig: async function() {
             this.loading = true;
             await std(`/api/config`, {
                 method: 'PUT',
@@ -94,6 +105,7 @@ export default {
     components: {
         IconSettings,
         TablerLoading,
+        TablerToggle,
         TablerInput,
         IconLock,
         IconPlus,

@@ -12,6 +12,61 @@
 
 ### Pending Release
 
+### v1.26.0 - 2024-04-30
+
+- :rocket: `API/UI` Add ability to spin up Video Servers
+
+### v1.25.1 - 2024-04-30
+
+- :rocket: `UI` Redirect to Media Server List on 404
+- :rocket: `API` Handle invalid Media Server ID with 400
+- :rocket: `API` Handle not foudn Media Server ID with 404
+
+### v1.25.0 - 2024-04-30
+
+- :rocket: Allow Deleting Media Management Servers
+
+### v1.24.0 - 2024-04-30
+
+- :tada: Basic support of a Media Management Server System
+
+### v1.23.2 - 2024-04-30
+
+- :rocket: Move release script to inline GH Action
+
+### v1.23.1 - 2024-04-30
+
+- :bug: `UI` Force a re-render of CoT view if a new cot is clicked
+
+### v1.23.0 - 2024-04-29
+
+- :bug: `UI` Fix patch updating GeoJSON sources as the wrong format was being used for updates
+- :tada: `UI` Style features in place and avoid using additional layers for styling
+
+### v1.22.3 - 2024-04-29
+
+- :bug: `API` Fix bug where generated object wouldn't be returned
+
+### v1.22.2 - 2024-04-28
+
+- :bug: `UI` Fix CoTs being moved to active Map upon render
+
+### v1.22.1 - 2024-04-28
+
+- :bug: `UI` Fix config being written by value of single key
+
+### v1.22.0 - 2024-04-28
+
+- :rocket: `UI` Allow storing pre-defined key/values to power the Config API
+
+### v1.21.1 - 2024-04-28
+
+- :bug: `UI` Retain FeatureCollection generation for non-default CoT store
+
+### v1.21.0 - 2024-04-28
+
+- :rocket: `UI` Support for partial updates (or no updates) to map, resulting in a faster map experience
+
 ### v1.20.1 - 2024-04-26
 
 - :rocket: Continue working on reducing drift

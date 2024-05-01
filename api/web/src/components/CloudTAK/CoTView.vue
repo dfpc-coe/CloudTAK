@@ -54,9 +54,9 @@
             class='py-2'
         />
 
-        <div v-if='feat.properties.contact && feat.properties.contact.phone' class='col-12 px-3 pb-2'>
+        <div v-if='feat.properties.contact && feat.properties.contact.phone' class='col-12 px-2 pb-2'>
             <label class='subheader'>Phone</label>
-            <div v-text='phone(feat.properties.contact.phone)' class='bg-gray-500 rounded mx-2 py-2 px-2'/>
+            <div v-text='phone(feat.properties.contact.phone)' class='bg-gray-500 rounded mx-2 px-2 py-2'/>
         </div>
         <div v-if='!isNaN(feat.properties.course)' class='col-12 py-2'>
             <label class='subheader mx-2'>Course</label>
@@ -203,43 +203,8 @@ export default {
         }
     },
     mounted: function() {
-        if (this.isUserDrawn) {
-            if (mapStore.map.getLayer('cots-edit-fill')) {
-                mapStore.map.removeLayer('cots-edit-fill');
-            }
-            if (mapStore.map.getLayer('cots-edit-line')) {
-                mapStore.map.removeLayer('cots-edit-line');
-            }
-
-            mapStore.map.addLayer({
-                id: 'cots-edit-fill',
-                type: 'fill',
-                source: 'cots',
-                filter: ['==', ['get', 'id'], this.cot.properties.id],
-                paint: {
-                    'fill-color': this.cot.properties.fill,
-                    'fill-opacity': this.cot.properties['fill-opacity']
-                },
-            });
-            mapStore.map.addLayer({
-                id: 'cots-edit-line',
-                type: 'line',
-                source: 'cots',
-                filter: ['==', ['get', 'id'], this.cot.properties.id],
-                paint: {
-                    'line-color': this.cot.properties.stroke,
-                    'line-opacity': this.cot.properties['stroke-opacity'],
-                    'line-width': this.cot.properties['stroke-width']
-                },
-            });
-        }
     },
     unmounted: function() {
-        if (this.isUserDrawn) {
-            mapStore.map.removeLayer('cots-edit-fill');
-            mapStore.map.removeLayer('cots-edit-line');
-        }
-
         cotStore.update(this.feat);
     },
     computed: {
@@ -267,11 +232,7 @@ export default {
             }
         },
         updateStyle: function() {
-            mapStore.map.setPaintProperty('cots-edit-fill', 'fill-color', this.feat.properties.fill);
-            mapStore.map.setPaintProperty('cots-edit-fill', 'fill-opacity', Number(this.feat.properties['fill-opacity']));
-            mapStore.map.setPaintProperty('cots-edit-line', 'line-color', this.feat.properties.stroke);
-            mapStore.map.setPaintProperty('cots-edit-line', 'line-width', Number(this.feat.properties['stroke-width']));
-            mapStore.map.setPaintProperty('cots-edit-line', 'line-opacity', Number(this.feat.properties['stroke-opacity']));
+            cotStore.update(this.feat);
         },
         zoomTo: function() {
             mapStore.map.flyTo({

@@ -42,14 +42,19 @@ The following are dependencies which need to be created:
 
 | Name                  | Notes |
 | --------------------- | ----- |
-| `coe-vpc-<name>`      | VPC & networking to place tasks in - [repo](ttps://github.com/tak-ps/vpc) |
-| `coe-ecs-<name>`      | ECS Cluster for API Service - [repo](ttps://github.com/tak-ps/ecs) |
-| `coe-ecr-etl`         | ECR Repository for storing API Images - [repo](ttps://github.com/tak-ps/ecr)     |
-| `coe-ecr-etl-tasks`   | ECR Repository for storing Task Images - [repo](ttps://github.com/tak-ps/ecr)  |
+| `coe-vpc-<name>`      | VPC & networking to place tasks in - [repo](ttps://github.com/dfpc-coe/vpc) |
+| `coe-ecs-<name>`      | ECS Cluster for API Service - [repo](ttps://github.com/dfpc-coe/ecs) |
+| `coe-ecr-etl`         | ECR Repository for storing API Images - [repo](ttps://github.com/dfpc-coe/ecr)     |
+| `coe-ecr-etl-tasks`   | ECR Repository for storing Task Images - [repo](ttps://github.com/dfpc-coe/ecr)  |
+
+
+### Optional Dependencies that can be deployed at any time
+
+| `coe-media-<name>`   | Task Definitions for Media Server Support - [repo](ttps://github.com/dfoc-coe/media-infra)  |
 
 **coe-ecr-etl**
 
-Can be created using the [tak-ps/ecr](https://github.com/tak-ps/ecr) repository.
+Can be created using the [dfpc-coe/ecr](https://github.com/dfpc-coe/ecr) repository.
 
 From the ecr repo:
 ```sh
@@ -59,7 +64,7 @@ npx deploy create etl
 
 **coe-ecr-etl-tasks**
 
-Can be created using the [tak-ps/ecr](https://github.com/tak-ps/ecr) repository.
+Can be created using the [dfpc-coe/ecr](https://github.com/dfpc-coe/ecr) repository.
 
 From the ecr repo:
 ```sh
