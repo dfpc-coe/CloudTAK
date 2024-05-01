@@ -83,10 +83,13 @@ export default async function router(schema: Schema, config: Config) {
         }
     });
 
-    await schema.post('/layer', {
+    await schema.post('/connection/:connectionid/layer', {
         name: 'Create Layer',
         group: 'Layer',
         description: 'Register a new layer',
+        params: Type.Object({
+            connectionid: Type.Integer()
+        }),
         body: Type.Object({
             name: Type.String(),
             priority: Type.Optional(Type.Enum(Layer_Priority)),
@@ -152,9 +155,12 @@ export default async function router(schema: Schema, config: Config) {
         }
     });
 
-    await schema.post('/layer/redeploy', {
+    await schema.post('/connection/:connectionid/layer/redeploy', {
         name: 'Redeploy Layers',
         group: 'Layer',
+        params: Type.Object({
+            connectionid: Type.Integer()
+        }),
         description: 'Redeploy all Layers with latest CloudFormation output',
         res: StandardResponse
     }, async (req, res) => {
@@ -192,12 +198,13 @@ export default async function router(schema: Schema, config: Config) {
         }
     });
 
-    await schema.patch('/layer/:layerid', {
+    await schema.patch('/connection/:connectionid/layer/:layerid', {
         name: 'Update Layer',
         group: 'Layer',
         description: 'Update a layer',
         params: Type.Object({
             layerid: Type.Integer(),
+            connectionid: Type.Integer()
         }),
         body: Type.Object({
             name: Type.Optional(Type.String()),
@@ -286,11 +293,12 @@ export default async function router(schema: Schema, config: Config) {
         }
     });
 
-    await schema.get('/layer/:layerid', {
+    await schema.get('/connection/:connectionid/layer/:layerid', {
         name: 'Get Layer',
         group: 'Layer',
         description: 'Get a layer',
         params: Type.Object({
+            connectionid: Type.Integer(),
             layerid: Type.Integer(),
         }),
         res: LayerResponse
@@ -313,11 +321,12 @@ export default async function router(schema: Schema, config: Config) {
         }
     });
 
-    await schema.post('/layer/:layerid/redeploy', {
+    await schema.post('/connection/:connectionid/layer/:layerid/redeploy', {
         name: 'Redeploy Layers',
         group: 'Layer',
         description: 'Redeploy a specific Layer with latest CloudFormation output',
         params: Type.Object({
+            connectionid: Type.Integer(),
             layerid: Type.Integer()
         }),
         res: StandardResponse
@@ -350,11 +359,12 @@ export default async function router(schema: Schema, config: Config) {
         }
     });
 
-    await schema.delete('/layer/:layerid', {
+    await schema.delete('/connection/:connectionid/layer/:layerid', {
         name: 'Delete Layer',
         group: 'Layer',
         description: 'Delete a layer',
         params: Type.Object({
+            connectionid: Type.Integer(),
             layerid: Type.Integer()
         }),
         res: StandardResponse
