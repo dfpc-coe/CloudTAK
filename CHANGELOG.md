@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v1.26.0 - 2024-04-30
+
+- :rocket: `API/UI` Add ability to spin up Video Servers
+
 ### v1.25.1 - 2024-04-30
 
 - :rocket: `UI` Redirect to Media Server List on 404
