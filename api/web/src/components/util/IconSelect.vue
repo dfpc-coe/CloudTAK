@@ -162,8 +162,13 @@ export default {
             return String(url);
         },
         fetch: async function() {
-            const iconset = this.modelValue.split('/')[0];
-            const icon = this.modelValue.split('/').splice(1).join('/');
+            let path = this.modelValue;
+
+            // MapLibre needs the palette name seperated by a ":" isntead of a "/"
+            if (path.includes(':')) path = path.split(':').join('/') + '.png';
+
+            const iconset = path.split('/')[0];
+            const icon = path.split('/').splice(1).join('/');
             this.selected = await std(`/api/iconset/${iconset}/icon/${encodeURIComponent(icon)}`);
         },
         Iconlistsets: async function() {

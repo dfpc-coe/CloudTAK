@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v1.28.0 - 2024-05-01
+
+- :rocket: `UI` Allow Icons to take affect when selected via CotStyle Component
+- :rocket: `UI` Add unified `cot.style` method for universally handling feature properties on add or update
+
 ### v1.27.0 - 2024-05-01
 
 - :rocket: `UI` Add ability to remove Icon from Feature
