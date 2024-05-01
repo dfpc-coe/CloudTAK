@@ -122,4 +122,40 @@ export default class ECSVideo {
             throw new Err(500, new Error(err instanceof Error ? err.message : String(err)), 'Failed to list Media Servers');
         }
     }
+
+    /**
+     * Create a new Media Server
+     */
+    async run(): Promise<Task> {
+        try {
+            const ecs = new AWSECS.ECSClient({ region: process.env.AWS_DEFAULT_REGION });
+
+            const defs = await this.definitions();
+
+            if (!defs.length) throw new Err(400, null, 'Media Server Creation has not been configured for this account');
+            if (!this.config.SubnetPublicA) throw new Err(400, null, 'VPC PublicSubnetA is not configured - Contact your administrator');
+            if (!this.config.SubnetPublicB) throw new Err(400, null, 'VPC PublicSubnetB is not configured - Contact your administrator');
+            if (!this.config.MediaSecurityGroup) throw new Err(400, null, 'Media Security Group is not configured - Contact your administrator');
+
+            const res = await ecs.send(new AWSECS.RunTaskCommand({
+                cluster: `coe-ecs-${this.config.StackName.replace(/^coe-etl-/, '')}`,
+                count: 1,
+                enableECSManagedTags: true,
+                launchType: 'FARGATE',
+                networkConfiguration: {
+                    awsvpcConfiguration: {
+                        subnets: [this.config.SubnetPublicA, this.config.SubnetPublicB],
+                        securityGroups: [ this.config.MediaSecurityGroup ],
+                        assignPublicIp: 'ENABLED'
+                    },
+                },
+                propagateTags: 'TASK_DEFINITION',
+                taskDefinition: `coe-media-${this.config.StackName.replace(/^coe-etl-/, '')}`,
+            }));
+
+            return res.tasks[0];
+        } catch (err) {
+            throw new Err(500, new Error(err instanceof Error ? err.message : String(err)), 'Failed to Create Media Server');
+        }
+    }
 }

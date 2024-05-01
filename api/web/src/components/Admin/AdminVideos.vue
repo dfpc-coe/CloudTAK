@@ -4,6 +4,14 @@
         <h1 class='card-title'>Video Servers</h1>
 
         <div class='ms-auto btn-list'>
+            <IconPlus
+                v-if='list.versions.length'
+                @click='createServer'
+                v-tooltip='"Create Server"'
+                size='32'
+                class='cursor-pointer'
+            />
+
             <IconRefresh
                 @click='fetchList'
                 v-tooltip='"Refresh"'
@@ -56,6 +64,7 @@ import {
 } from '@tak-ps/vue-tabler';
 import {
     IconRefresh,
+    IconPlus,
 } from '@tabler/icons-vue'
 
 export default {
@@ -67,6 +76,7 @@ export default {
             header: [],
             list: {
                 total: 0,
+                versions: [],
                 items: []
             }
         }
@@ -80,12 +90,23 @@ export default {
             const url = stdurl('/api/video');
             this.list = await std(url);
             this.loading = false;
+        },
+        createServer: async function() {
+            this.loading = true;
+            const url = stdurl('/api/video');
+            const server = await std(url, {
+                method: 'POST',
+                body: {}
+            });
+            
+            this.$router.push(`/admin/video/${server.id}`);
         }
     },
     components: {
         TablerNone,
         Status,
         IconRefresh,
+        IconPlus,
         TablerLoading,
         TableHeader,
         TableFooter,
