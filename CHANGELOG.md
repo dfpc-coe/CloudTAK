@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v1.26.1 - 2024-04-30
+
+- :arrow_up: `API` Update node-cot to support `sensor` and `video` tags
+
 ### v1.26.0 - 2024-04-30
 
 - :rocket: `API/UI` Add ability to spin up Video Servers
