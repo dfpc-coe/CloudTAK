@@ -12,7 +12,12 @@
 
 ### Pending Release
 
-### v1.26.1 - 2024-04-30
+### v1.27.0 - 2024-05-01
+
+- :rocket: `UI` Add ability to remove Icon from Feature
+- :bug: Make iconset selection dark to avoid being a common icon colour (white)
+
+### v1.26.1 - 2024-05-01
 
 - :arrow_up: `API` Update node-cot to support `sensor` and `video` tags
 
