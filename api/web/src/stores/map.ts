@@ -213,6 +213,7 @@ export const useMapStore = defineStore('cloudtak', {
                         cots: {
                             type: 'geojson',
                             cluster: false,
+                            promoteId: 'id',
                             data: { type: 'FeatureCollection', features: [] }
                         },
                         you: {
@@ -468,7 +469,7 @@ function cotStyles(id: string, opts: {
         filter: ["==", "$type", "Polygon"],
         layout: {},
         paint: {
-            'fill-opacity': ["number", ["get", "fill-opacity"], 1],
+            'fill-opacity': ['/', ["number", ["get", "fill-opacity"], 255], 255],
             'fill-color': ["string", ["get", "fill"], "#00FF00"]
         }
     },{
@@ -483,7 +484,7 @@ function cotStyles(id: string, opts: {
         paint: {
             'line-color': ["string", ["get", "stroke"], "#00FF00"],
             'line-width': ["number", ["get", "stroke-width"], 3],
-            'line-opacity': ["number", ["get", "stroke-opacity"], 1]
+            'line-opacity': ['/', ["number", ["get", "stroke-opacity"], 255], 255],
         }
     },{
         id: `${id}-line`,
@@ -497,7 +498,7 @@ function cotStyles(id: string, opts: {
         'paint': {
             'line-color': ["string", ["get", "stroke"], "#00FF00"],
             'line-width': ["*", 2, ["number", ["get", "stroke-width"], 3]],
-            'line-opacity': ["number", ["get", "stroke-opacity"], 1]
+            'line-opacity': ['/', ["number", ["get", "stroke-opacity"], 255], 255],
         }
     }])
 
@@ -510,7 +511,7 @@ function cotStyles(id: string, opts: {
         paint: {
             'circle-color': ["string", ["get", "circle-color"], "#00FF00"],
             'circle-radius': ["number", ["get", "circle-radius"], 4],
-            'circle-opacity': ["number", ["get", "circle-opacity"], 1]
+            'circle-opacity': ['/', ["number", ["get", "circle-opacity"], 255], 255],
         }
     }
 
@@ -558,7 +559,7 @@ function cotStyles(id: string, opts: {
             filter: groupFilter,
             paint: {
                 'circle-color': ['get', 'color'],
-                'circle-opacity': ["number", ["get", "circle-opacity"], 1],
+                'circle-opacity': ['/', ["number", ["get", "circle-opacity"], 255], 255],
                 'circle-stroke-color': '#ffffff',
                 'circle-stroke-width': 2,
                 'circle-radius': 10

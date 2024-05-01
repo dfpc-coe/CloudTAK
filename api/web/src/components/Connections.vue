@@ -38,7 +38,7 @@
                                         placeholder='Search…'
                                     >
                                     <span class='input-icon-addon'>
-                                        <IconSearch size='24'/>
+                                        <IconSearch size='24' />
                                     </span>
                                 </div>
                             </div>
@@ -71,7 +71,7 @@
                                         />
 
                                         <div class='ms-auto align-items-center btn-list'>
-                                            <AgencyBadge :connection='connection'/>
+                                            <AgencyBadge :connection='connection' />
 
                                             <IconSettings
                                                 size='32'
