@@ -32,7 +32,14 @@
                 <tbody>
                     <tr @click='stdclick($router, $event, `/connection/${layer.connection}/layer/${layer.id}`)' :key='layer.id' v-for='layer in list.items' class='cursor-pointer'>
                         <template v-for='h in header'>
-                            <template v-if='h.display'>
+                            <template v-if='h.display && h.name === "name"'>
+                                <td>
+                                    <div class='d-flex align-items-center'>
+                                        <Status :layer='layer'/><span class='mx-2' v-text='layer[h.name]'/>
+                                    </div>
+                                </td>
+                            </template>
+                            <template v-else-if='h.display'>
                                 <td>
                                     <span v-text='layer[h.name]'/>
                                 </td>
@@ -57,6 +64,7 @@
 import { std, stdurl, stdclick } from '/src/std.ts';
 import TableHeader from '../util/TableHeader.vue'
 import TableFooter from '../util/TableFooter.vue'
+import Status from '../Layer/utils/Status.vue';
 import {
     TablerNone,
     TablerLoading
@@ -136,6 +144,7 @@ export default {
         }
     },
     components: {
+        Status,
         TablerNone,
         IconRefresh,
         IconCloudUpload,
