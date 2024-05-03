@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v2.1.0 - 2024-05-03
+
+- :bug: Continue to allow System Admins to access Layer List
+
 ### v2.0.0 - 2024-05-03
 
 - :rocket: Move Layers into their connection parent, allowing Agency level auth
