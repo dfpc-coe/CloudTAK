@@ -152,6 +152,7 @@ export default {
             const clone = JSON.parse(JSON.stringify(this.layer.styles));
             this.queries = clone.queries || [];
             delete clone.queries;
+
             this.style = Object.assign(this.style, JSON.parse(JSON.stringify(this.layer.styles)));
 
             if (!this.enabled) this.mode = "disabled";
