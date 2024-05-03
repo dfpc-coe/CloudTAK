@@ -163,7 +163,7 @@ export default {
     methods: {
         query: async function() {
             this.loading.alerts = true;
-            const url = stdurl(`/api/layer/${this.$route.params.layerid}/alert`);
+            const url = stdurl(`/api/connection/${this.$route.params.connectionid}/layer/${this.$route.params.layerid}/alert`);
             url.searchParams.append('filter', this.paging.filter);
             url.searchParams.append('limit', this.paging.limit);
             url.searchParams.append('page', this.paging.page);
@@ -173,11 +173,11 @@ export default {
         deleteAlerts: async function(id) {
             this.loading.alerts = true;
             if (id) {
-                await std(`/api/layer/${this.$route.params.layerid}/alert/${id}`, {
+                await std(`/api/connection/${this.$route.params.connectionid}/layer/${this.$route.params.layerid}/alert/${id}`, {
                     method: 'DELETE'
                 });
             } else {
-                await std(`/api/layer/${this.$route.params.layerid}/alert`, {
+                await std(`/api/connection/${this.$route.params.connectionid}/layer/${this.$route.params.layerid}/alert`, {
                     method: 'DELETE'
                 });
             }

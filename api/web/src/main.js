@@ -102,13 +102,11 @@ const router = new VueRouter.createRouter({
             }]
         },
 
-        { path: '/layer', name: 'layers', component: () => import('./components/Layers.vue') },
-
         { path: '/connection/:connectionid/layer/new', name: 'connection-layer-new', component: () => import('./components/LayerEdit.vue') },
         { path: '/connection/:connectionid/data/:dataid/layer/new', name: 'connection-data-layer-new', component: () => import('./components/LayerEdit.vue') },
 
         {
-            path: '/layer/:layerid',
+            path: '/connection/:connectionid/layer/:layerid',
             name: 'layer',
             component: () => import('./components/Layer.vue'),
             children: [{
@@ -141,10 +139,10 @@ const router = new VueRouter.createRouter({
         },
 
 
-        { path: '/layer/:layerid/edit', name: 'layer-edit', component: () => import('./components/LayerEdit.vue') },
-        { path: '/layer/:layerid/query', name: 'layer-query', component: () => import('./components/LayerQuery.vue') },
-        { path: '/layer/:layerid/query/:featid', name: 'layer-query-feat', component: () => import('./components/LayerQueryFeature.vue') },
-        { path: '/layer/:layerid/alert', name: 'layer-alerts', component: () => import('./components/LayerAlerts.vue') },
+        { path: '/connection/:connectionid/layer/:layerid/edit', name: 'layer-edit', component: () => import('./components/LayerEdit.vue') },
+        { path: '/connection/:connectionid/layer/:layerid/query', name: 'layer-query', component: () => import('./components/LayerQuery.vue') },
+        { path: '/connection/:connectionid/layer/:layerid/query/:featid', name: 'layer-query-feat', component: () => import('./components/LayerQueryFeature.vue') },
+        { path: '/connection/:connectionid/layer/:layerid/alert', name: 'layer-alerts', component: () => import('./components/LayerAlerts.vue') },
 
         { path: '/connection/:connectionid/data/new', name: 'data-new', component: () => import('./components/DataEdit.vue') },
         {

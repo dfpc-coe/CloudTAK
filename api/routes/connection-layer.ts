@@ -79,7 +79,6 @@ export default async function router(schema: Schema, config: Config) {
             sort: Type.Optional(Type.String({default: 'created', enum: Object.keys(Layer)})),
             filter: Type.Optional(Type.String({default: ''})),
             data: Type.Optional(Type.Integer()),
-            connection: Type.Optional(Type.Integer()),
         }),
         res: Type.Object({
             total: Type.Integer(),
@@ -103,7 +102,7 @@ export default async function router(schema: Schema, config: Config) {
                 sort: req.query.sort,
                 where: sql`
                     name ~* ${req.query.filter}
-                    AND connection = ${req.query.connection}
+                    AND connection = ${req.params.connectionid}
                     AND (${Param(req.query.data)}::BIGINT IS NULL OR ${Param(req.query.data)}::BIGINT = layers.data)
                 `
             });

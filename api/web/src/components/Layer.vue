@@ -29,7 +29,7 @@
 
                                 <a
                                     class='card-title cursor-pointer mx-2'
-                                    @click='$router.push(`/layer/${layer.id}`)'
+                                    @click='$router.push(`/connection/${$route.params.connectionid}/layer/${layer.id}`)'
                                     v-text='layer.name'
                                 />
 
@@ -40,19 +40,19 @@
                                             size='32'
                                             class='cursor-pointer'
                                             :class='{ "text-red": alerts.total }'
-                                            @click='$router.push(`/layer/${layer.id}/alert`)'
+                                            @click='$router.push(`/connection/${$route.params.connectionid}/layer/${layer.id}/alert`)'
                                         />
                                         <IconDatabase
                                             v-tooltip='"CoT Logging"'
                                             size='32'
                                             class='cursor-pointer'
-                                            @click='$router.push(`/layer/${layer.id}/query`)'
+                                            @click='$router.push(`/connection/${$route.params.connectionid}/layer/${layer.id}/query`)'
                                         />
                                         <IconSettings
                                             v-tooltip='"Edit"'
                                             size='32'
                                             class='cursor-pointer'
-                                            @click='$router.push(`/layer/${layer.id}/edit`)'
+                                            @click='$router.push(`/connection/${$route.params.connectionid}/layer/${layer.id}/edit`)'
                                         />
                                     </div>
                                 </div>
@@ -123,7 +123,7 @@
                                                     "active": $route.name === "layer-deployment",
                                                     "cursor-pointer": $route.name !== "layer-deployment"
                                                 }'
-                                                @click='$router.push(`/layer/${$route.params.layerid}/deployment`)'
+                                                @click='$router.push(`/connection/${$route.params.connectionid}/layer/${$route.params.layerid}/deployment`)'
                                             ><IconPlaneDeparture size='32' /><span class='mx-3'>Deployment</span></span>
                                             <span
                                                 class='list-group-item list-group-item-action d-flex align-items-center'
@@ -131,7 +131,7 @@
                                                     "active": $route.name === "layer-config",
                                                     "cursor-pointer": $route.name !== "layer-config"
                                                 }'
-                                                @click='$router.push(`/layer/${$route.params.layerid}/config`)'
+                                                @click='$router.push(`/connection/${$route.params.connectionid}/layer/${$route.params.layerid}/config`)'
                                             ><IconAdjustments size='32' /><span class='mx-3'>Config</span></span>
                                             <span
                                                 class='list-group-item list-group-item-action d-flex align-items-center'
@@ -139,7 +139,7 @@
                                                     "active": $route.name === "layer-environment",
                                                     "cursor-pointer": $route.name !== "layer-environment"
                                                 }'
-                                                @click='$router.push(`/layer/${$route.params.layerid}/environment`)'
+                                                @click='$router.push(`/connection/${$route.params.connectionid}/layer/${$route.params.layerid}/environment`)'
                                             ><IconBeach size='32' /><span class='mx-3'>Environment</span></span>
                                             <span
                                                 class='list-group-item list-group-item-action d-flex align-items-center'
@@ -147,7 +147,7 @@
                                                     "active": $route.name === "layer-schema",
                                                     "cursor-pointer": $route.name !== "layer-schema"
                                                 }'
-                                                @click='$router.push(`/layer/${$route.params.layerid}/schema`)'
+                                                @click='$router.push(`/connection/${$route.params.connectionid}/layer/${$route.params.layerid}/schema`)'
                                             ><IconSchema size='32' /><span class='mx-3'>Schema</span></span>
                                             <span
                                                 class='list-group-item list-group-item-action d-flex align-items-center'
@@ -155,7 +155,7 @@
                                                     "active": $route.name === "layer-styles",
                                                     "cursor-pointer": $route.name !== "layer-styles"
                                                 }'
-                                                @click='$router.push(`/layer/${$route.params.layerid}/styles`)'
+                                                @click='$router.push(`/connection/${$route.params.connectionid}/layer/${$route.params.layerid}/styles`)'
                                             ><IconPaint size='32' /><span class='mx-3'>Styling</span></span>
                                         </div>
                                     </div>
@@ -275,20 +275,20 @@ export default {
             }
         },
         fetch: async function() {
-            this.layer = await std(`/api/layer/${this.$route.params.layerid}`);
+            this.layer = await std(`/api/connection/${this.$route.params.connectionid}/layer/${this.$route.params.layerid}`);
         },
         cancelUpdate: async function() {
-            await std(`/api/layer/${this.$route.params.layerid}/task`, {
+            await std(`/api/connection/${this.$route.params.connectionid}/layer/${this.$route.params.layerid}/task`, {
                 method: 'DELETE'
             });
         },
         fetchStatus: async function(loading = false) {
             this.loading.stack = loading;
-            this.stack = await std(`/api/layer/${this.$route.params.layerid}/task`);
+            this.stack = await std(`/api/connection/${this.$route.params.connectionid}/layer/${this.$route.params.layerid}/task`);
             this.loading.stack = false;
         },
         fetchAlerts: async function() {
-            this.alerts = await std(`/api/layer/${this.$route.params.layerid}/alert`);
+            this.alerts = await std(`/api/connection/${this.$route.params.connectionid}/layer/${this.$route.params.layerid}/alert`);
         }
     }
 }

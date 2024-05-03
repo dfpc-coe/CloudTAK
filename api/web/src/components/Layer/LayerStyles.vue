@@ -175,7 +175,7 @@ export default {
             this.loading.save = true;
 
             try {
-                const layer = await std(`/api/layer/${this.$route.params.layerid}`, {
+                const layer = await std(`/api/connection/${this.$route.params.connectionid}/layer/${this.$route.params.layerid}`, {
                     method: 'PATCH',
                     body: {
                         enabled_styles: this.enabled,

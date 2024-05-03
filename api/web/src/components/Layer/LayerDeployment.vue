@@ -118,7 +118,7 @@ export default {
         },
         invoke: async function() {
             this.loading.full = true;
-            await std(`/api/layer/${this.$route.params.layerid}/task/invoke`, {
+            await std(`/api/connection/${this.$route.params.connectionid}/layer/${this.$route.params.layerid}/task/invoke`, {
                 method: 'POST'
             });
             this.loading.full = false;
@@ -133,7 +133,7 @@ export default {
             this.errors.cloudformation = false;
 
             try {
-                await std(`/api/layer/${this.$route.params.layerid}/redeploy`, {
+                await std(`/api/connection/${this.$route.params.connectionid}/layer/${this.$route.params.layerid}/redeploy`, {
                     method: 'POST'
                 });
 
@@ -155,7 +155,7 @@ export default {
             this.errors.cloudwatch = false;
 
             try {
-                this.logs = (await std(`/api/layer/${this.$route.params.layerid}/task/logs`))
+                this.logs = (await std(`/api/connection/${this.$route.params.connectionid}/layer/${this.$route.params.layerid}/task/logs`))
                     .logs
                     .map((log) => { return log.message })
                     .reverse()
@@ -169,7 +169,7 @@ export default {
         },
         postStack: async function() {
             this.loading.full = true;
-            await std(`/api/layer/${this.$route.params.layerid}/task`, {
+            await std(`/api/connection/${this.$route.params.connectionid}/layer/${this.$route.params.layerid}/task`, {
                 method: 'POST'
             });
 
