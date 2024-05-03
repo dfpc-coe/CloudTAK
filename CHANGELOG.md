@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v2.0.0 - 2024-05-03
+
+- :rocket: Move Layers into their connection parent, allowing Agency level auth
+
 ### v1.29.0 - 2024-05-03
 
 - :rocket: Automatically infer table view for Layer Environments
