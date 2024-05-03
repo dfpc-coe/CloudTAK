@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v1.29.0 - 2024-05-03
+
+- :rocket: Automatically infer table view for Layer Environments
+- :bug: Set Backup window to ensure it doesn't conflict with maintenance window
+
 ### v1.28.0 - 2024-05-03
 
 - :rocket: Include Preferred DB Maintenance Perdiod
