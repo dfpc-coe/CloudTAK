@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v1.28.0 - 2024-05-03
+
+- :rocket: Include Preferred DB Maintenance Perdiod
+
 ### v1.28.0 - 2024-05-01
 
 - :rocket: `UI` Allow Icons to take affect when selected via CotStyle Component
