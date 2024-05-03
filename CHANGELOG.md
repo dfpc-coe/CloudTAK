@@ -12,9 +12,13 @@
 
 ### Pending Release
 
+### v2.2.1 - 2024-05-03
+
+- :bug: `UI` Ensure Admin console adds connection prefix
+
 ### v2.2.0 - 2024-05-03
 
-- :rocket: Update UI to follow API path paradigm
+- :rocket: `UI` Update UI to follow API path paradigm
 
 ### v2.1.0 - 2024-05-03
 
