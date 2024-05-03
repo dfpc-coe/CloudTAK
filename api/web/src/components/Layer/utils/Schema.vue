@@ -26,17 +26,22 @@
                 :default='schema.properties[key].default'
             />
         </template>
-        <template v-else-if='schema.properties[key].type === "array"'>
+        <template
+            v-else-if='
+                schema.properties[key].type === "array"
+                && schema.properties[key].items.type === "object"
+                && schema.properties[key].items.properties
+            '
+        >
             <div class='d-flex'>
                 <label class='form-label' v-text='key'/>
-                <div class='ms-auto'>
-                    <IconTrash v-if='!disabled && schema.properties[key].display === "table" && schema.properties[key].items.properties' @click='this.data[key].splice(0, this.data[key].length)' size='32' class='cursor-pointer'/>
-                    <IconDatabaseImport v-if='!disabled && schema.properties[key].display === "table" && schema.properties[key].items.properties' @click='importModal(Object.keys(schema.properties[key].items.properties), data[key])' size='32' class='cursor-pointer'/>
-                    <IconPlus v-if='!disabled' @click='push(key)' size='32' class='cursor-pointer'/>
+                <div class='ms-auto' v-if='!disabled'>
+                    <IconTrash @click='this.data[key].splice(0, this.data[key].length)' size='32' class='cursor-pointer'/>
+                    <IconDatabaseImport @click='importModal(Object.keys(schema.properties[key].items.properties), data[key])' size='32' class='cursor-pointer'/>
+                    <IconPlus @click='push(key)' size='32' class='cursor-pointer'/>
                 </div>
             </div>
-
-            <template v-if='schema.properties[key].display === "table" && schema.properties[key].items.properties'>
+            <template v-if='schema.properties[key].items.type === "object" && schema.properties[key].items.properties'>
                 <div class='table-responsive'>
                 <table class="table card-table table-vcenter border rounded">
                     <thead>
