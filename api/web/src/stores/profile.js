@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { std } from '../std.ts';
+import { std, stdurl } from '../std.ts';
 
 export const useProfileStore = defineStore('profile', {
     state: () => {
