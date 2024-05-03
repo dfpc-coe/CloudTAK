@@ -1,4 +1,7 @@
 import { Type } from '@sinclair/typebox'
+import { GenericListOrder } from '@openaddresses/batch-generic';
+import { sql } from 'drizzle-orm';
+import { Param } from '@openaddresses/batch-generic';
 import Alarm from '../lib/aws/alarm.js';
 import Cacher from '../lib/cacher.js';
 import Schema from '@openaddresses/batch-schema';
@@ -7,9 +10,69 @@ import Auth, { AuthResourceAccess } from '../lib/auth.js';
 import Config from '../lib/config.js';
 import DataMission from '../lib/data-mission.js';
 import { DataResponse, LayerResponse } from '../lib/types.js';
+import { Layer } from '../lib/schema.js'
 
 export default async function router(schema: Schema, config: Config) {
     const alarm = new Alarm(config.StackName);
+
+    await schema.get('/layer', {
+        name: 'List Layers',
+        group: 'Internal',
+        description: 'Allow admins to list all layers on the server',
+        query: Type.Object({
+            limit: Type.Integer({ default: 10 }),
+            page: Type.Integer({ default: 0 }),
+            order: Type.Enum(GenericListOrder, { default: GenericListOrder.ASC }),
+            sort: Type.Optional(Type.String({default: 'created', enum: Object.keys(Layer)})),
+            filter: Type.Optional(Type.String({default: ''})),
+            data: Type.Optional(Type.Integer()),
+            connection: Type.Optional(Type.Integer()),
+        }),
+        res: Type.Object({
+            total: Type.Integer(),
+            status: Type.Object({
+                healthy: Type.Integer(),
+                alarm: Type.Integer(),
+                unknown: Type.Integer(),
+            }),
+            items: Type.Array(LayerResponse)
+        })
+    }, async (req, res) => {
+        try {
+            await Auth.as_user(config, req, { admin: true });
+
+            const list = await config.models.Layer.list({
+                limit: req.query.limit,
+                page: req.query.page,
+                order: req.query.order,
+                sort: req.query.sort,
+                where: sql`
+                    name ~* ${req.query.filter}
+                    AND (${Param(req.query.connection)}::BIGINT IS NULL OR ${Param(req.query.connection)}::BIGINT = layers.connection)
+                    AND (${Param(req.query.data)}::BIGINT IS NULL OR ${Param(req.query.data)}::BIGINT = layers.data)
+                `
+            });
+
+            const alarms = config.StackName !== 'test' ? await alarm.list() : new Map();
+
+            const status = { healthy: 0, alarm: 0, unknown: 0 };
+            for (const state of alarms.values()) {
+                if (state === 'healthy') status.healthy++;
+                if (state === 'alarm') status.alarm++;
+                if (state === 'unknown') status.unknown++;
+            }
+
+            res.json({
+                status,
+                total: list.total,
+                items: list.items.map((layer) => {
+                    return { status: alarms.get(layer.id) || 'unknown', ...layer }
+                })
+            });
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
 
     await schema.get('/data/:dataid', {
         private: true,
