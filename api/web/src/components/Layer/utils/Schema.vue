@@ -38,7 +38,7 @@
                 <div class='ms-auto' v-if='!disabled'>
                     <IconTrash v-tooltip='"Clear Table"' @click='this.data[key].splice(0, this.data[key].length)' size='32' class='cursor-pointer'/>
                     <IconDatabaseImport v-tooltip='"Import CSV"' @click='importModal(Object.keys(schema.properties[key].items.properties), data[key])' size='32' class='cursor-pointer'/>
-                    <IconPlus v-tooltip='"Add Row"' @click='editModal({}, schema.properties[key].items)' size='32' class='cursor-pointer'/>
+                    <IconPlus v-tooltip='"Add Row"' @click='editModal(schema.properties[key].items, {}, key)' size='32' class='cursor-pointer'/>
                 </div>
             </div>
             <template v-if='schema.properties[key].items.type === "object" && schema.properties[key].items.properties'>
@@ -50,7 +50,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr @click='editModal(arr, schema.properties[key].items)' :key='i' v-for='(arr, i) in data[key]'>
+                            <tr @click='editModal(schema.properties[key].items, arr, key, i)' :key='i' v-for='(arr, i) in data[key]'>
                                 <template v-if='disabled'>
                                     <td :key='prop' v-for='prop in Object.keys(schema.properties[key].items.properties)' v-text='arr[prop]'></td>
                                 </template>
@@ -89,11 +89,16 @@
     </div>
 
     <UploadCSV v-if='upload.shown' @close='upload.shown = false' @import='importCSV($event)'/>
+
+    <span v-text='"EDIT " + edit.id'/>
     <SchemaModal
         v-if='edit.shown !== false'
+        :allowDelete='!isNaN(edit.i) && !disabled'
         :edit='edit.row'
         :disabled='disabled'
         :schema='edit.schema'
+        @remove='editModalRemove'
+        @done='editModalDone($event)'
         @close='edit.shown = false'
     />
 </div>
@@ -136,6 +141,8 @@ export default {
         return {
             data: false,
             edit: {
+                id: false,
+                key: false,
                 shown: false,
                 data: false,
                 schema: false
@@ -190,14 +197,26 @@ export default {
                 this.upload.data.push(obj);
             }
         },
-        remove: function(key, arr, i) {
-            this.data[key].splice(i, 1)
+        editModalRemove: function() {
+            if (!isNaN(this.edit.id)) this.data[this.edit.key].splice(this.edit.id, 1)
+            this.edit.shown = false;
         },
-        editModal: function(row, schema) {
+        editModalDone: function(row) {
+            if (this.edit.id) {
+                this.data[this.edit.key][this.edit.id] = row;
+            } else {
+                this.data[this.edit.key].push(row);
+            }
+
+            this.edit.shown = false;
+        },
+        editModal: function(schema, row, key, id) {
             this.edit = {
                 shown: true,
+                key,
                 row,
-                schema
+                schema,
+                id: id ?? null
             }
         },
         push: function(key) {
