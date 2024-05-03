@@ -36,60 +36,32 @@
             <div class='d-flex'>
                 <label class='form-label' v-text='key'/>
                 <div class='ms-auto' v-if='!disabled'>
-                    <IconTrash @click='this.data[key].splice(0, this.data[key].length)' size='32' class='cursor-pointer'/>
-                    <IconDatabaseImport @click='importModal(Object.keys(schema.properties[key].items.properties), data[key])' size='32' class='cursor-pointer'/>
-                    <IconPlus @click='push(key)' size='32' class='cursor-pointer'/>
+                    <IconTrash v-tooltip='"Clear Table"' @click='this.data[key].splice(0, this.data[key].length)' size='32' class='cursor-pointer'/>
+                    <IconDatabaseImport v-tooltip='"Import CSV"' @click='importModal(Object.keys(schema.properties[key].items.properties), data[key])' size='32' class='cursor-pointer'/>
+                    <IconPlus v-tooltip='"Add Row"' @click='editModal({}, schema.properties[key].items)' size='32' class='cursor-pointer'/>
                 </div>
             </div>
             <template v-if='schema.properties[key].items.type === "object" && schema.properties[key].items.properties'>
                 <div class='table-responsive'>
-                <table class="table card-table table-vcenter border rounded">
-                    <thead>
-                        <tr>
-                            <th :key='prop' v-for='prop in Object.keys(schema.properties[key].items.properties)' v-text='prop'></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr :key='i' v-for='(arr, i) in data[key]'>
-                            <template v-if='disabled'>
-                                <td :key='prop' v-for='prop in Object.keys(schema.properties[key].items.properties)' v-text='arr[prop]'></td>
-                            </template>
-                            <template v-else>
-                                <td :key='prop' v-for='(prop, prop_it) in Object.keys(schema.properties[key].items.properties)'>
-                                    <template v-if='edit[key].has(arr)'>
-                                        <template v-if='prop_it === Object.keys(schema.properties[key].items.properties).length - 1'>
-                                            <div class='d-flex'>
-                                                <div clas='w-full'>
-                                                    <TablerInput v-model='arr[prop]' class='w-full'/>
-                                                </div>
-                                                <div class='ms-auto btn-list' style='padding-left: 12px;'>
-                                                    <IconCheck @click='removeEdit(key, arr, i)' size='32' class='my-1 cursor-pointer'/>
-                                                    <IconTrash @click='remove(key, arr, i)' size='32' class='my-1 cursor-pointer'/>
-                                                </div>
-                                            </div>
-                                        </template>
-                                        <template v-else>
-                                            <TablerInput v-model='arr[prop]'/>
-                                        </template>
-                                    </template>
-                                    <template v-else>
-                                        <template v-if='prop_it === Object.keys(schema.properties[key].items.properties).length - 1'>
-                                            <div class='d-flex'>
-                                                <span v-text='arr[prop]' class='w-full'/>
-                                                <div class='ms-auto' style='padding-left: 12px;'>
-                                                    <IconPencil @click='edit[key].set(arr, true)' size='32' class='my-1 cursor-pointer'/>
-                                                </div>
-                                            </div>
-                                        </template>
-                                        <template v-else>
-                                            <span v-text='arr[prop]'/>
-                                        </template>
-                                    </template>
-                                </td>
-                            </template>
-                        </tr>
-                    </tbody>
-                </table>
+                    <table class="table table-hover card-table table-vcenter border rounded cursor-pointer">
+                        <thead>
+                            <tr>
+                                <th :key='prop' v-for='prop in Object.keys(schema.properties[key].items.properties)' v-text='prop'></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr @click='editModal(arr, schema.properties[key].items)' :key='i' v-for='(arr, i) in data[key]'>
+                                <template v-if='disabled'>
+                                    <td :key='prop' v-for='prop in Object.keys(schema.properties[key].items.properties)' v-text='arr[prop]'></td>
+                                </template>
+                                <template v-else>
+                                    <td :key='prop' v-for='(prop, prop_it) in Object.keys(schema.properties[key].items.properties)'>
+                                        <span v-text='arr[prop]'/>
+                                    </td>
+                                </template>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </template>
             <template v-else>
@@ -101,7 +73,7 @@
                         </div>
                     </div>
 
-                    <Schema
+                    <TablerSchema
                         :schema='schema.properties[key].items'
                         :disabled='disabled'
                         v-model='data[key][i]'
@@ -117,6 +89,13 @@
     </div>
 
     <UploadCSV v-if='upload.shown' @close='upload.shown = false' @import='importCSV($event)'/>
+    <SchemaModal
+        v-if='edit.shown !== false'
+        :edit='edit.row'
+        :disabled='disabled'
+        :schema='edit.schema'
+        @close='edit.shown = false'
+    />
 </div>
 </template>
 
@@ -124,9 +103,11 @@
 import {
     TablerInput,
     TablerToggle,
+    TablerSchema,
     TablerEnum
 } from '@tak-ps/vue-tabler';
 import UploadCSV from '../../util/UploadCSV.vue';
+import SchemaModal from './SchemaModal.vue';
 import {
     IconPlus,
     IconTrash,
@@ -154,7 +135,11 @@ export default {
     data: function() {
         return {
             data: false,
-            edit: {},
+            edit: {
+                shown: false,
+                data: false,
+                schema: false
+            },
             upload: {
                 headers: [],
                 data: null,
@@ -172,12 +157,6 @@ export default {
     },
     mounted: async function() {
         this.data = JSON.parse(JSON.stringify(this.modelValue));
-
-        for (const key of Object.keys(this.schema.properties)) {
-            if (this.schema.properties[key].display === 'table') {
-                this.edit[key] = new Map();
-            }
-        }
 
         if (this.schema.type === 'object' && this.schema.properties) {
             for (const key in this.schema.properties) {
@@ -211,20 +190,21 @@ export default {
                 this.upload.data.push(obj);
             }
         },
-        removeEdit: function(key, arr) {
-            this.edit[key].delete(arr);
-        },
         remove: function(key, arr, i) {
-            this.edit[key].delete(arr);
             this.data[key].splice(i, 1)
+        },
+        editModal: function(row, schema) {
+            this.edit = {
+                shown: true,
+                row,
+                schema
+            }
         },
         push: function(key) {
             if (!this.schema.properties[key].items) this.data[key].push('');
             if (this.schema.properties[key].items.type === 'object') {
                 const obj = {};
                 this.data[key].push(obj);
-                if (!this.edit[key]) this.edit[key] = new Map();
-                this.edit[key].set(obj, true);
             } else if (this.schema.properties[key].items.type === 'array') {
                 this.data[key].push([]);
             } else if (this.schema.properties[key].items.type === 'boolean') {
@@ -243,7 +223,9 @@ export default {
         TablerInput,
         TablerToggle,
         TablerEnum,
-        UploadCSV
+        TablerSchema,
+        UploadCSV,
+        SchemaModal,
     }
 }
 </script>
