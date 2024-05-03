@@ -90,7 +90,6 @@
 
     <UploadCSV v-if='upload.shown' @close='upload.shown = false' @import='importCSV($event)'/>
 
-    <span v-text='"EDIT " + edit.id'/>
     <SchemaModal
         v-if='edit.shown !== false'
         :allowDelete='!isNaN(edit.i) && !disabled'

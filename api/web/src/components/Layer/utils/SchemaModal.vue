@@ -4,7 +4,7 @@
         <div class="modal-status bg-yellow"></div>
         <div class="modal-header">
             <span class='modal-title'>Row Editor</span>
-            <TablerDelete displaytype='icon' @delete='$emit("remove")'/>
+            <TablerDelete v-if='!disabled' displaytype='icon' @delete='$emit("remove")'/>
         </div>
         <div v-if='!loading' class="modal-body py-4">
             <TablerSchema
