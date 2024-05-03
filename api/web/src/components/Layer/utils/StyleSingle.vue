@@ -106,7 +106,12 @@
                     <TablerToggle v-model='filters[mode].enabled.icon' :disabled='disabled' label='Enabled'/>
                 </div>
             </div>
-            <IconSelect v-if='filters[mode].enabled.icon' v-model='filters[mode].properties.icon' :disabled='disabled || !filters[mode].enabled.icon'/>
+            <IconSelect
+                v-if='filters[mode].enabled.icon'
+                v-model='filters[mode].properties.icon'
+                label=''
+                :disabled='disabled || !filters[mode].enabled.icon'
+            />
         </div>
         <div class='col-md-12 hover-light rounded px-2 py-2'>
             <div class='col-12 d-flex align-items-center'>

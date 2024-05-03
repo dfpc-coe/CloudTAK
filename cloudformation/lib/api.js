@@ -178,12 +178,12 @@ export default {
                                 cf.join(['arn:', cf.partition, ':ecs:', cf.region, ':', cf.accountId, ':cluster/coe-ecs-', cf.ref('Environment')]),
                                 cf.join(['arn:', cf.partition, ':ecs:', cf.region, ':', cf.accountId, ':task/coe-ecs-', cf.ref('Environment'), '/*']),
                                 cf.join(['arn:', cf.partition, ':ecs:', cf.region, ':', cf.accountId, ':task-definition/coe-media-', cf.ref('Environment'), ':*']),
-                                cf.join(['arn:', cf.partition, ':ecs:', cf.region, ':', cf.accountId, ':task-definition/coe-media-', cf.ref('Environment')]),
+                                cf.join(['arn:', cf.partition, ':ecs:', cf.region, ':', cf.accountId, ':task-definition/coe-media-', cf.ref('Environment')])
                             ]
                         },{
                             Effect: 'Allow',
                             Action: [
-                                'iam:PassRole',
+                                'iam:PassRole'
                             ],
                             Resource: [
                                 cf.join(['arn:', cf.partition, ':iam::', cf.accountId, ':role/coe-media-*']),

@@ -120,17 +120,6 @@ export const useCOTStore = defineStore('cots', {
         },
 
         /**
-         * Update a feature that exists in the store - bypasses feature standardization
-         */
-        update: function(feat: Feature): void {
-            this.pending.set(feat.id, feat);
-
-            if (feat.properties.archived) {
-                this.archive.set(feat.id, feat);
-                this.saveArchive();
-            }
-        },
-        /**
          * Return a CoT by ID if it exists
          */
         get: function(id: string): Feature {
@@ -162,13 +151,9 @@ export const useCOTStore = defineStore('cots', {
         },
 
         /**
-         * Add a CoT GeoJSON to the store and modify props to meet MapLibre style requirements
+         * Consistent feature manipulation between add & update
          */
-        add: function(feat: Feature, mission_guid=null) {
-            if (!feat.id && !feat.properties.id) {
-                feat.id = self.crypto.randomUUID();
-            }
-
+        style: function(feat: Feature): Feature {
             //Vector Tiles only support integer IDs
             feat.properties.id = feat.id;
 
@@ -222,7 +207,13 @@ export const useCOTStore = defineStore('cots', {
 
                 } else if (feat.properties.icon) {
                     // Format of icon needs to change for spritesheet
-                    feat.properties.icon = feat.properties.icon.replace('/', ':').replace(/.png$/, '');
+                    if (!feat.properties.icon.includes(':')) {
+                        feat.properties.icon = feat.properties.icon.replace('/', ':')
+                    }
+                    
+                    if (feat.properties.icon.endsWith('.png')) {
+                        feat.properties.icon = feat.properties.icon.replace(/.png$/, '');
+                    }
                 } else {
                     // TODO Only add icon if one actually exists in the spritejson
                     if (!['u-d-p'].includes(feat.properties.type)) {
@@ -234,22 +225,44 @@ export const useCOTStore = defineStore('cots', {
                 if (!feat.properties['stroke-style']) feat.properties['stroke-style'] = 'solid';
                 if (!feat.properties['stroke-width']) feat.properties['stroke-width'] = 3;
 
-                if (feat.properties['stroke-opacity']) {
-                    feat.properties['stroke-opacity'] = feat.properties['stroke-opacity']
-                } else {
+                if (!feat.properties['stroke-opacity'] === undefined) {
                     feat.properties['stroke-opacity'] = 255;
                 }
 
                 if (feat.geometry.type.includes('Polygon')) {
                     if (!feat.properties['fill']) feat.properties.fill = '#d63939';
 
-                    if (feat.properties['fill-opacity']) {
-                        feat.properties['fill-opacity'] = feat.properties['fill-opacity']
-                    } else {
+                    if (feat.properties['fill-opacity'] === undefined) {
                         feat.properties['fill-opacity'] = 255;
                     }
                 }
             }
+
+            return feat;
+        },
+
+        /**
+         * Update a feature that exists in the store - bypasses feature standardization
+         */
+        update: function(feat: Feature): void {
+            feat = this.style(feat);
+            this.pending.set(feat.id, feat);
+
+            if (feat.properties.archived) {
+                this.archive.set(feat.id, feat);
+                this.saveArchive();
+            }
+        },
+
+        /**
+         * Add a CoT GeoJSON to the store and modify props to meet MapLibre style requirements
+         */
+        add: function(feat: Feature, mission_guid=null) {
+            if (!feat.id && !feat.properties.id) {
+                feat.id = self.crypto.randomUUID();
+            }
+
+            feat = this.style(feat);
 
             if (mission_guid)  {
                 let cots = this.subscriptions.get(mission_guid);

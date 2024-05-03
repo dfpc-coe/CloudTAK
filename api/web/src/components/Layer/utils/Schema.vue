@@ -26,65 +26,42 @@
                 :default='schema.properties[key].default'
             />
         </template>
-        <template v-else-if='schema.properties[key].type === "array"'>
+        <template
+            v-else-if='
+                schema.properties[key].type === "array"
+                && schema.properties[key].items.type === "object"
+                && schema.properties[key].items.properties
+            '
+        >
             <div class='d-flex'>
                 <label class='form-label' v-text='key'/>
-                <div class='ms-auto'>
-                    <IconTrash v-if='!disabled && schema.properties[key].display === "table" && schema.properties[key].items.properties' @click='this.data[key].splice(0, this.data[key].length)' size='32' class='cursor-pointer'/>
-                    <IconDatabaseImport v-if='!disabled && schema.properties[key].display === "table" && schema.properties[key].items.properties' @click='importModal(Object.keys(schema.properties[key].items.properties), data[key])' size='32' class='cursor-pointer'/>
-                    <IconPlus v-if='!disabled' @click='push(key)' size='32' class='cursor-pointer'/>
+                <div class='ms-auto' v-if='!disabled'>
+                    <IconTrash v-tooltip='"Clear Table"' @click='this.data[key].splice(0, this.data[key].length)' size='32' class='cursor-pointer'/>
+                    <IconDatabaseImport v-tooltip='"Import CSV"' @click='importModal(Object.keys(schema.properties[key].items.properties), data[key])' size='32' class='cursor-pointer'/>
+                    <IconPlus v-tooltip='"Add Row"' @click='editModal(schema.properties[key].items, {}, key)' size='32' class='cursor-pointer'/>
                 </div>
             </div>
-
-            <template v-if='schema.properties[key].display === "table" && schema.properties[key].items.properties'>
+            <template v-if='schema.properties[key].items.type === "object" && schema.properties[key].items.properties'>
                 <div class='table-responsive'>
-                <table class="table card-table table-vcenter border rounded">
-                    <thead>
-                        <tr>
-                            <th :key='prop' v-for='prop in Object.keys(schema.properties[key].items.properties)' v-text='prop'></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr :key='i' v-for='(arr, i) in data[key]'>
-                            <template v-if='disabled'>
-                                <td :key='prop' v-for='prop in Object.keys(schema.properties[key].items.properties)' v-text='arr[prop]'></td>
-                            </template>
-                            <template v-else>
-                                <td :key='prop' v-for='(prop, prop_it) in Object.keys(schema.properties[key].items.properties)'>
-                                    <template v-if='edit[key].has(arr)'>
-                                        <template v-if='prop_it === Object.keys(schema.properties[key].items.properties).length - 1'>
-                                            <div class='d-flex'>
-                                                <div clas='w-full'>
-                                                    <TablerInput v-model='arr[prop]' class='w-full'/>
-                                                </div>
-                                                <div class='ms-auto btn-list' style='padding-left: 12px;'>
-                                                    <IconCheck @click='removeEdit(key, arr, i)' size='32' class='my-1 cursor-pointer'/>
-                                                    <IconTrash @click='remove(key, arr, i)' size='32' class='my-1 cursor-pointer'/>
-                                                </div>
-                                            </div>
-                                        </template>
-                                        <template v-else>
-                                            <TablerInput v-model='arr[prop]'/>
-                                        </template>
-                                    </template>
-                                    <template v-else>
-                                        <template v-if='prop_it === Object.keys(schema.properties[key].items.properties).length - 1'>
-                                            <div class='d-flex'>
-                                                <span v-text='arr[prop]' class='w-full'/>
-                                                <div class='ms-auto' style='padding-left: 12px;'>
-                                                    <IconPencil @click='edit[key].set(arr, true)' size='32' class='my-1 cursor-pointer'/>
-                                                </div>
-                                            </div>
-                                        </template>
-                                        <template v-else>
-                                            <span v-text='arr[prop]'/>
-                                        </template>
-                                    </template>
-                                </td>
-                            </template>
-                        </tr>
-                    </tbody>
-                </table>
+                    <table class="table table-hover card-table table-vcenter border rounded cursor-pointer">
+                        <thead>
+                            <tr>
+                                <th :key='prop' v-for='prop in Object.keys(schema.properties[key].items.properties)' v-text='prop'></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr @click='editModal(schema.properties[key].items, arr, key, i)' :key='i' v-for='(arr, i) in data[key]'>
+                                <template v-if='disabled'>
+                                    <td :key='prop' v-for='prop in Object.keys(schema.properties[key].items.properties)' v-text='arr[prop]'></td>
+                                </template>
+                                <template v-else>
+                                    <td :key='prop' v-for='(prop, prop_it) in Object.keys(schema.properties[key].items.properties)'>
+                                        <span v-text='arr[prop]'/>
+                                    </td>
+                                </template>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </template>
             <template v-else>
@@ -96,7 +73,7 @@
                         </div>
                     </div>
 
-                    <Schema
+                    <TablerSchema
                         :schema='schema.properties[key].items'
                         :disabled='disabled'
                         v-model='data[key][i]'
@@ -112,6 +89,17 @@
     </div>
 
     <UploadCSV v-if='upload.shown' @close='upload.shown = false' @import='importCSV($event)'/>
+
+    <SchemaModal
+        v-if='edit.shown !== false'
+        :allowDelete='!isNaN(edit.i) && !disabled'
+        :edit='edit.row'
+        :disabled='disabled'
+        :schema='edit.schema'
+        @remove='editModalRemove'
+        @done='editModalDone($event)'
+        @close='edit.shown = false'
+    />
 </div>
 </template>
 
@@ -119,9 +107,11 @@
 import {
     TablerInput,
     TablerToggle,
+    TablerSchema,
     TablerEnum
 } from '@tak-ps/vue-tabler';
 import UploadCSV from '../../util/UploadCSV.vue';
+import SchemaModal from './SchemaModal.vue';
 import {
     IconPlus,
     IconTrash,
@@ -149,7 +139,13 @@ export default {
     data: function() {
         return {
             data: false,
-            edit: {},
+            edit: {
+                id: false,
+                key: false,
+                shown: false,
+                data: false,
+                schema: false
+            },
             upload: {
                 headers: [],
                 data: null,
@@ -167,12 +163,6 @@ export default {
     },
     mounted: async function() {
         this.data = JSON.parse(JSON.stringify(this.modelValue));
-
-        for (const key of Object.keys(this.schema.properties)) {
-            if (this.schema.properties[key].display === 'table') {
-                this.edit[key] = new Map();
-            }
-        }
 
         if (this.schema.type === 'object' && this.schema.properties) {
             for (const key in this.schema.properties) {
@@ -206,20 +196,33 @@ export default {
                 this.upload.data.push(obj);
             }
         },
-        removeEdit: function(key, arr) {
-            this.edit[key].delete(arr);
+        editModalRemove: function() {
+            if (!isNaN(this.edit.id)) this.data[this.edit.key].splice(this.edit.id, 1)
+            this.edit.shown = false;
         },
-        remove: function(key, arr, i) {
-            this.edit[key].delete(arr);
-            this.data[key].splice(i, 1)
+        editModalDone: function(row) {
+            if (this.edit.id) {
+                this.data[this.edit.key][this.edit.id] = row;
+            } else {
+                this.data[this.edit.key].push(row);
+            }
+
+            this.edit.shown = false;
+        },
+        editModal: function(schema, row, key, id) {
+            this.edit = {
+                shown: true,
+                key,
+                row,
+                schema,
+                id: id ?? null
+            }
         },
         push: function(key) {
             if (!this.schema.properties[key].items) this.data[key].push('');
             if (this.schema.properties[key].items.type === 'object') {
                 const obj = {};
                 this.data[key].push(obj);
-                if (!this.edit[key]) this.edit[key] = new Map();
-                this.edit[key].set(obj, true);
             } else if (this.schema.properties[key].items.type === 'array') {
                 this.data[key].push([]);
             } else if (this.schema.properties[key].items.type === 'boolean') {
@@ -238,7 +241,9 @@ export default {
         TablerInput,
         TablerToggle,
         TablerEnum,
-        UploadCSV
+        TablerSchema,
+        UploadCSV,
+        SchemaModal,
     }
 }
 </script>
