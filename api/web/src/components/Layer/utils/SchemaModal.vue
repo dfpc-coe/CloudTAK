@@ -4,6 +4,7 @@
         <div class="modal-status bg-yellow"></div>
         <div class="modal-header">
             <span class='modal-title'>Row Editor</span>
+            <TablerDelete displaytype='icon' @delete='$emit("remove")'/>
         </div>
         <div v-if='!loading' class="modal-body py-4">
             <TablerSchema
@@ -12,7 +13,7 @@
                 v-model='row'
             />
 
-            <button v-if='!disabled' @click='done' class='btn btn-primary w-100 mt-4'>Done</button>
+            <button v-if='!disabled' @click='$emit("done", this.row)' class='btn btn-primary w-100 mt-4'>Done</button>
         </div>
     </TablerModal>
 </template>
@@ -20,7 +21,8 @@
 <script>
 import {
     TablerModal,
-    TablerSchema
+    TablerSchema,
+    TablerDelete
 } from '@tak-ps/vue-tabler';
 
 export default {
@@ -49,13 +51,9 @@ export default {
         this.row = Object.assign(this.row, JSON.parse(JSON.stringify(this.edit)));
         this.loading = false;
     },
-    methods: {
-        done: function() {
-            this.$emit('done', this.row);
-        }
-    },
     components: {
         TablerModal,
+        TablerDelete,
         TablerSchema
     }
 }
