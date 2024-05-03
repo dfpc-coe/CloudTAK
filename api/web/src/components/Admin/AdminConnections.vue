@@ -26,7 +26,14 @@
                 <tbody>
                     <tr @click='stdclick($router, $event, `/connection/${connection.id}`)' :key='connection.id' v-for='connection in list.items' class='cursor-pointer'>
                         <template v-for='h in header'>
-                            <template v-if='h.display'>
+                            <template v-if='h.display && h.name === "name"'>
+                                <td>
+                                    <div class='d-flex align-items-center'>
+                                        <Status :connection='connection'/><span class='mx-2' v-text='connection[h.name]'/>
+                                    </div>
+                                </td>
+                            </template>
+                            <template v-else-if='h.display'>
                                 <td>
                                     <span v-text='connection[h.name]'/>
                                 </td>
@@ -59,6 +66,7 @@ import {
     IconRefresh,
     IconCloudUpload,
 } from '@tabler/icons-vue'
+import Status from '../Connection/Status.vue';
 
 export default {
     name: 'LayerAdmin',
@@ -123,6 +131,7 @@ export default {
         }
     },
     components: {
+        Status,
         TablerNone,
         IconRefresh,
         IconCloudUpload,

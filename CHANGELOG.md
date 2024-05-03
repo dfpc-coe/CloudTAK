@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v2.3.0 - 2024-05-03
+
+- :rocket: `UI` Display Layer & Connection status information in Admin UI
+
 ### v2.2.1 - 2024-05-03
 
 - :bug: `UI` Ensure Admin console adds connection prefix
