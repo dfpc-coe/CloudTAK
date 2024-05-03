@@ -19,7 +19,7 @@ export default async function router(schema: Schema, config: Config) {
 
     await schema.post('/layer/:layerid/cot', {
         name: 'Post COT',
-        group: 'Layer',
+        group: 'Internal',
         description: 'Post CoT data to a given layer',
         params: Type.Object({
             layerid: Type.Integer()
@@ -31,7 +31,7 @@ export default async function router(schema: Schema, config: Config) {
         res: StandardResponse
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req, {
+            await Auth.as_resource(config, req, {
                 resources: [{ access: AuthResourceAccess.LAYER, id: req.params.layerid }]
             });
 
@@ -56,7 +56,7 @@ export default async function router(schema: Schema, config: Config) {
             let pooledClient;
             let data;
             const cots = [];
-            if (!layer.data && layer.connection) {
+            if (!layer.data) {
                 pooledClient = await config.conns.get(layer.connection);
 
                 for (const feat of req.body.features) {
@@ -113,8 +113,6 @@ export default async function router(schema: Schema, config: Config) {
                         cots.push(cot)
                     }
                 }
-            } else {
-                throw new Err(400, null, 'Either connection or data must be set');
             }
 
             if (!pooledClient || !pooledClient.config || !pooledClient.config.enabled) {

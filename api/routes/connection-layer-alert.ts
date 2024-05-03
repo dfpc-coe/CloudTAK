@@ -16,11 +16,12 @@ export enum LayerAlertPriority {
 }
 
 export default async function router(schema: Schema, config: Config) {
-    await schema.get('/layer/:layerid/alert', {
+    await schema.get('/connection/:connectionid/layer/:layerid/alert', {
         name: 'List Alerts',
         group: 'Layer Alerts',
         description: 'List layer alerts',
         params: Type.Object({
+            connectionid: Type.Integer(),
             layerid: Type.Integer()
         }),
         query: Type.Object({
@@ -36,13 +37,20 @@ export default async function router(schema: Schema, config: Config) {
         })
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req, {
-                resources: [{ access: AuthResourceAccess.LAYER, id: req.params.layerid }]
-            });
+            const { connection } = await Auth.is_connection(config, req, {
+                resources: [
+                    { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
+                    { access: AuthResourceAccess.LAYER, id: req.params.layerid }
+                ]
+            }, req.params.connectionid);
 
             const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
-                return await config.models.Layer.from(req.params.layerid)
+                return await config.models.Layer.from(req.params.layerid);
             });
+
+            if (layer.connection !== connection.id) {
+                throw new Err(400, null, 'Layer does not belong to this connection');
+            }
 
             const list = await config.models.LayerAlert.list({
                 limit: req.query.limit,
@@ -61,11 +69,12 @@ export default async function router(schema: Schema, config: Config) {
         }
     });
 
-    await schema.post('/layer/:layerid/alert', {
+    await schema.post('/connection/:connectionid/layer/:layerid/alert', {
         name: 'Create Alert',
         group: 'Layer Alerts',
         description: 'Create a new layer alert',
         params: Type.Object({
+            connectionid: Type.Integer(),
             layerid: Type.Integer()
         }),
         body: Type.Object({
@@ -77,13 +86,20 @@ export default async function router(schema: Schema, config: Config) {
         res: LayerAlertResponse
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req, {
-                resources: [{ access: AuthResourceAccess.LAYER, id: req.params.layerid }]
-            });
+            const { connection } = await Auth.is_connection(config, req, {
+                resources: [
+                    { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
+                    { access: AuthResourceAccess.LAYER, id: req.params.layerid }
+                ]
+            }, req.params.connectionid);
 
             const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
-                return await config.models.Layer.from(req.params.layerid)
+                return await config.models.Layer.from(req.params.layerid);
             });
+
+            if (layer.connection !== connection.id) {
+                throw new Err(400, null, 'Layer does not belong to this connection');
+            }
 
             const alerts = await config.pg.insert(LayerAlert)
                 .values({
@@ -104,23 +120,31 @@ export default async function router(schema: Schema, config: Config) {
         }
     });
 
-    await schema.delete('/layer/:layerid/alert', {
+    await schema.delete('/connection/:connectionid/layer/:layerid/alert', {
         name: 'Delete Alerts',
         group: 'Layer Alerts',
         description: 'Delete all alerts for the layer',
         params: Type.Object({
+            connectionid: Type.Integer(),
             layerid: Type.Integer()
         }),
         res: StandardResponse
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req, {
-                resources: [{ access: AuthResourceAccess.LAYER, id: req.params.layerid }]
-            });
+            const { connection } = await Auth.is_connection(config, req, {
+                resources: [
+                    { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
+                    { access: AuthResourceAccess.LAYER, id: req.params.layerid }
+                ]
+            }, req.params.connectionid);
 
             const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
-                return await config.models.Layer.from(req.params.layerid)
+                return await config.models.Layer.from(req.params.layerid);
             });
+
+            if (layer.connection !== connection.id) {
+                throw new Err(400, null, 'Layer does not belong to this connection');
+            }
 
             await config.models.LayerAlert.delete(eq(layer.id, LayerAlert.layer))
 
@@ -133,24 +157,32 @@ export default async function router(schema: Schema, config: Config) {
         }
     });
 
-    await schema.delete('/layer/:layerid/alert/:alertid', {
+    await schema.delete('/connection/:connectionid/layer/:layerid/alert/:alertid', {
         name: 'Delete Alerts',
         group: 'Layer Alerts',
         description: 'Delete all alerts for the layer',
         params: Type.Object({
+            connectionid: Type.Integer(),
             layerid: Type.Integer(),
             alertid: Type.Integer()
         }),
         res: StandardResponse
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req, {
-                resources: [{ access: AuthResourceAccess.LAYER, id: req.params.layerid }]
-            });
+            const { connection } = await Auth.is_connection(config, req, {
+                resources: [
+                    { access: AuthResourceAccess.CONNECTION, id: req.params.connectionid },
+                    { access: AuthResourceAccess.LAYER, id: req.params.layerid }
+                ]
+            }, req.params.connectionid);
 
             const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
-                return await config.models.Layer.from(req.params.layerid)
+                return await config.models.Layer.from(req.params.layerid);
             });
+
+            if (layer.connection !== connection.id) {
+                throw new Err(400, null, 'Layer does not belong to this connection');
+            }
 
             const alert = await config.models.LayerAlert.from(req.params.alertid);
             if (alert.layer !== layer.id) throw new Err(400, null, 'Alert does not belong to this layer');

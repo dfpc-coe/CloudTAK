@@ -1,5 +1,6 @@
 import Modeler, { Pool } from '@openaddresses/batch-generic';
 import Data from './models/Data.js';
+import Layer from './models/Layer.js';
 import ProfileChat from './models/ProfileChat.js';
 import Icon from './models/Icon.js';
 import * as pgtypes from './schema.js';
@@ -27,7 +28,7 @@ export default class Models {
     Iconset: Modeler<typeof pgtypes.Iconset>;
     Icon: Icon;
 
-    Layer: Modeler<typeof pgtypes.Layer>;
+    Layer: Layer;
     LayerAlert: Modeler<typeof pgtypes.LayerAlert>;
 
     constructor(pg: Pool<typeof pgtypes>) {
@@ -48,7 +49,7 @@ export default class Models {
         this.ConnectionSink = new Modeler(pg, pgtypes.ConnectionSink);
         this.Data = new Data(pg);
         this.Iconset = new Modeler(pg, pgtypes.Iconset);
-        this.Layer = new Modeler(pg, pgtypes.Layer);
+        this.Layer = new Layer(pg);
         this.LayerAlert = new Modeler(pg, pgtypes.LayerAlert);
     }
 }
