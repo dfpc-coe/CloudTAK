@@ -28,10 +28,6 @@
                                         <IconNetwork size='32'/>
                                         <span class="mx-2">Connections</span>
                                     </div>
-                                    <div @click='$router.push("/layer")' class='d-flex dropdown-item cursor-pointer hover-dark'>
-                                        <IconBuildingBroadcastTower size='32'/>
-                                        <span class="mx-2">Layers</span>
-                                    </div>
                                     <div @click='$router.push("/admin")' class='d-flex dropdown-item cursor-pointer hover-dark'>
                                         <IconSettings size='32'/>
                                         <span class='mx-2'>Server</span>
@@ -89,7 +85,6 @@ import {
     IconUser,
     IconNetwork,
     IconSettings,
-    IconBuildingBroadcastTower,
 } from '@tabler/icons-vue';
 import Loading from './components/Loading.vue';
 import {
@@ -174,7 +169,6 @@ export default {
         IconNetwork,
         TablerError,
         Loading,
-        IconBuildingBroadcastTower,
     }
 }
 </script>

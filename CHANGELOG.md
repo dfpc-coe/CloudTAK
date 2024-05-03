@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v2.2.0 - 2024-05-03
+
+- :rocket: Update UI to follow API path paradigm
+
 ### v2.1.0 - 2024-05-03
 
 - :bug: Continue to allow System Admins to access Layer List

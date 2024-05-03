@@ -92,7 +92,7 @@ export default {
             this.error = false;
             this.loading.feature = true;
             try {
-                const url = stdurl(`/api/layer/${this.$route.params.layerid}/query/${this.$route.params.featid}`);
+                const url = stdurl(`/api/connection/${this.$route.params.connectionid}/layer/${this.$route.params.layerid}/query/${this.$route.params.featid}`);
                 this.feature = JSON.stringify(await std(url), null, 4);
             } catch (err) {
                 this.error = err;

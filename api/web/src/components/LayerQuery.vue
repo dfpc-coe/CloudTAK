@@ -93,7 +93,7 @@
                                             <td>
                                                 <a
                                                     class='cursor-pointer'
-                                                    @click='$router.push(`/layer/${$route.params.layerid}/query/${feature.id}`)'
+                                                    @click='$router.push(`/connection/${$route.params.connectionid}/layer/${$route.params.layerid}/query/${feature.id}`)'
                                                     v-text='feature.id'
                                                 />
                                             </td>
@@ -159,7 +159,7 @@ export default {
             this.error = false;
             this.loading.query = true;
             try {
-                const url = stdurl(`/api/layer/${this.$route.params.layerid}/query`);
+                const url = stdurl(`/api/connection/${this.$route.params.connectionid}/layer/${this.$route.params.layerid}/query`);
                 url.searchParams.append('filter', this.params.filter);
                 this.list = await std(url);
             } catch (err) {

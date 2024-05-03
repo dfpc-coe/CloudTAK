@@ -125,13 +125,13 @@ export default {
 
             try {
                 this.loading.schema = true;
-                this.schema = (await std(`/api/layer/${this.$route.params.layerid}/task/schema`)).schema;
+                this.schema = (await std(`/api/connection/${this.$route.params.connectionid}/layer/${this.$route.params.layerid}/task/schema`)).schema;
             } catch (err) {
                 this.alert = true;
             }
 
             try {
-                const output = (await std(`/api/layer/${this.$route.params.layerid}/task/schema?type=schema:output`)).schema;
+                const output = (await std(`/api/connection/${this.$route.params.connectionid}/layer/${this.$route.params.layerid}/task/schema?type=schema:output`)).schema;
                 if (output.properties) this.schemaOutput = output;
             } catch (err) {
                 //For now this is allowed to fail as dynamic schemas can require input schemas to be defined
@@ -141,7 +141,7 @@ export default {
         saveLayer: async function() {
             this.loading.save = true;
 
-            const layer = await std(`/api/layer/${this.$route.params.layerid}`, {
+            const layer = await std(`/api/connection/${this.$route.params.connectionid}/layer/${this.$route.params.layerid}`, {
                 method: 'PATCH',
                 body: {
                     environment: this.environment,

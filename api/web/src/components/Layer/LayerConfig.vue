@@ -224,7 +224,7 @@ export default {
         saveLayer: async function() {
             this.loading.save = true;
 
-            const layer = await std(`/api/layer/${this.$route.params.layerid}`, {
+            const layer = await std(`/api/connection/${this.$route.params.connectionid}/layer/${this.$route.params.layerid}`, {
                 method: 'PATCH',
                 body: this.config
             });

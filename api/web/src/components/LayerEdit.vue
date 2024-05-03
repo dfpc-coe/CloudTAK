@@ -261,15 +261,15 @@ export default {
         },
         fetch: async function() {
             this.loading.layer = true;
-            this.layer = await std(`/api/layer/${this.$route.params.layerid}`);
+            this.layer = await std(`/api/connection/${this.$route.params.connectionid}/layer/${this.$route.params.layerid}`);
             this.loading.layer = false;
         },
         deleteLayer: async function() {
-            await std(`/api/layer/${this.$route.params.layerid}`, {
+            await std(`/api/connection/${this.$route.params.connectionid}/layer/${this.$route.params.layerid}`, {
                 method: 'DELETE'
             });
 
-            this.$router.push('/layer');
+            this.$router.push(`/connection/${this.$route.params.connectionid}/layer`);
         },
         create: async function() {
             let fields =  ['name', 'description', 'task', 'cron']
@@ -285,7 +285,7 @@ export default {
             try {
                 let url;
                 if (this.$route.params.layerid) {
-                    url = stdurl(`/api/layer/${this.$route.params.layerid}`);
+                    url = stdurl(`/api/connection/${this.$route.params.connectionid}/layer/${this.$route.params.layerid}`);
                     layer = await std(url, {
                         method: 'PATCH',
                         body: {
@@ -296,7 +296,7 @@ export default {
                         }
                     });
                 } else {
-                    url = stdurl(`/api/layer`);
+                    url = stdurl(`/api/connection/${this.$route.params.connectionid}/layer`);
 
                     layer = JSON.parse(JSON.stringify(this.layer));
 
@@ -312,7 +312,7 @@ export default {
 
                 this.loading.layer = false;
 
-                this.$router.push(`/layer/${layer.id}`);
+                this.$router.push(`/connection/${this.$route.params.connectionid}/layer/${layer.id}`);
             } catch (err) {
                 this.loading.layer = false;
                 throw err;
