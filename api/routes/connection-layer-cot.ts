@@ -56,7 +56,7 @@ export default async function router(schema: Schema, config: Config) {
             let pooledClient;
             let data;
             const cots = [];
-            if (!layer.data && layer.connection) {
+            if (!layer.data) {
                 pooledClient = await config.conns.get(layer.connection);
 
                 for (const feat of req.body.features) {
@@ -113,8 +113,6 @@ export default async function router(schema: Schema, config: Config) {
                         cots.push(cot)
                     }
                 }
-            } else {
-                throw new Err(400, null, 'Either connection or data must be set');
             }
 
             if (!pooledClient || !pooledClient.config || !pooledClient.config.enabled) {
