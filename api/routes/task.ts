@@ -2,7 +2,7 @@ import { Type } from '@sinclair/typebox'
 import { sql } from 'drizzle-orm';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
-import Auth, { AuthResourceAccess } from '../lib/auth.js';
+import Auth from '../lib/auth.js';
 import ECR from '../lib/aws/ecr.js';
 import CF from '../lib/aws/cloudformation.js';
 import Lambda from '../lib/aws/lambda.js';
