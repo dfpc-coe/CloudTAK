@@ -1,8 +1,8 @@
 <template>
 <MenuTemplate name='Channels'>
     <template #buttons>
-        <IconSearch v-if='rawChannels.length' @click='search.shown = !search.shown' v-tooltip='"Search"' size='32' class='cursor-pointer'/>
-        <IconRefresh v-if='!loading' @click='fetchList' size='32' class='cursor-pointer' v-tooltip='"Refresh"'/>
+        <IconSearch v-if='channels.length' @click='search.shown = !search.shown' v-tooltip='"Search"' size='32' class='cursor-pointer'/>
+        <IconRefresh v-if='!loading' @click='loadChannels' size='32' class='cursor-pointer' v-tooltip='"Refresh"'/>
     </template>
     <template #default>
         <div v-if='search.shown' class='col-12 px-3'>
@@ -42,6 +42,10 @@ import {
     IconEye,
     IconEyeOff,
 } from '@tabler/icons-vue';
+import { useProfileStore } from '/src/stores/profile.js';
+import { mapState, mapActions } from 'pinia'
+
+const profileStore = useProfileStore();
 
 export default {
     name: 'CloudTAKChannels',
@@ -53,11 +57,10 @@ export default {
                 shown: false,
                 filter: ''
             },
-            rawChannels: []
         }
     },
     mounted: async function() {
-        await this.fetchList();
+        await this.refresh();
     },
     watch: {
         'search.shown': function() {
@@ -65,10 +68,11 @@ export default {
         }
     },
     computed: {
+        ...mapState(useProfileStore, ['channels']),
         processChannels: function() {
             const channels = {};
 
-            JSON.parse(JSON.stringify(this.rawChannels))
+            JSON.parse(JSON.stringify(profileStore.channels))
                 .sort((a, b) => {
                     return (a.name > b.name) ? 1 : ((b.name > a.name) ? -1 : 0);
                 }).forEach((channel) => {
@@ -90,8 +94,14 @@ export default {
         }
     },
     methods: {
+        ...mapActions(useProfileStore, ['loadChannels']),
+        refresh: async function() {
+            this.loading = true;
+            this.loadChannels()
+            this.loading = false;
+        },
         setStatus: async function(channel, active=false) {
-            this.rawChannels = this.rawChannels.map((ch) => {
+            profileStore.channels = profileStore.channels.map((ch) => {
                 if (ch.name === channel.name) ch.active = active;
                 return ch;
             });
@@ -101,15 +111,8 @@ export default {
             const url = stdurl('/api/marti/group');
             await std(url, {
                 method: 'PUT',
-                body: this.rawChannels
+                body: profileStore.channels
             });
-        },
-        fetchList: async function() {
-            this.loading = true;
-            const url = stdurl('/api/marti/group');
-            url.searchParams.append('useCache', 'true');
-            this.rawChannels = (await std(url)).data;
-            this.loading = false;
         },
     },
     components: {

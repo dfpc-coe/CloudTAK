@@ -298,6 +298,8 @@ export default {
         });
 
         await profileStore.load();
+        await profileStore.loadChannels();
+
         await cotStore.loadArchive();
         this.loading.main = false;
 
@@ -498,7 +500,7 @@ export default {
         updateCOT: function() {
             try {
                 const diff = cotStore.diff();
-             
+
                 for (const cot of cotStore.pending.values()) {
                     if (cotStore.cots.has(cot.id)) {
                         diff.update.push({
