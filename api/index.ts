@@ -122,12 +122,6 @@ export default async function server(config: Config) {
                 }, config.SigningSecret)
             });
         });
-
-        app.get('/Marti/api/groups/all', (req: Request, res: Response) => {
-            return res.json({
-                data: [{ name: config.AuthGroup}]
-            });
-        });
     }
 
     await schema.load(

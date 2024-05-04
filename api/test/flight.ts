@@ -1,6 +1,5 @@
 process.env.StackName = 'test';
 process.env.MartiAPI = 'https://example.com';
-process.env.AuthGroup = 'Admins';
 
 import assert from 'assert';
 import jwt from 'jsonwebtoken';

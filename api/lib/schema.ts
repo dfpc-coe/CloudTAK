@@ -51,6 +51,13 @@ export const ProfileChat = pgTable('profile_chats', {
     message: text('message').notNull()
 });
 
+export const ProfileFeature = pgTable('profile_features', {
+    uid: text('id').primaryKey(),
+    username: text('username').notNull().references(() => Profile.username),
+    properties: json('properties').notNull().default({}),
+    geometry: geometry('geometry', { type: GeometryType.Geometry, srid: 4326 }).notNull()
+});
+
 export const Basemap = pgTable('basemaps', {
     id: serial('id').primaryKey(),
     created: timestamp('created', { withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
