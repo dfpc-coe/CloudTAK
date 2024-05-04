@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v2.5.0 - 2024-05-04
+
+- :rocket: Remove `AuthGroup` restriction allowing any TAK User to access the map page
+- :tada: Add ProfileFeature database type for future archive storage
+
 ### v2.4.0 - 2024-05-03
 
 - :rocket: `API` Complete migration by adding `NOT NULL` Constraint on `layer.connection`
