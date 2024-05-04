@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v2.4.0 - 2024-05-03
+
+- :rocket: `API` Complete migration by adding `NOT NULL` Constraint on `layer.connection`
+
 ### v2.3.0 - 2024-05-03
 
 - :rocket: `UI` Display Layer & Connection status information in Admin UI
