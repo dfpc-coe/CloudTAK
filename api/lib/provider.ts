@@ -48,35 +48,6 @@ export default class AuthProvider {
             throw new Err(500, new Error(body.error_description), 'Unknown Login Error');
         }
 
-        if (this.config.AuthGroup) {
-            const url = new URL('/Marti/api/groups/all?useCache=true', this.config.local ? 'http://localhost:5001' : this.config.MartiAPI);
-
-            const groupres = await fetch(url, {
-                credentials: 'include',
-                dispatcher: agent
-            });
-
-            if (!groupres.ok) {
-                throw new Err(500, new Error(`Status: ${groupres.status}: ${await groupres.text()}`), 'Non-200 Response from Auth Server - Groups');
-            }
-
-            const gbody: {
-                data: Array<{
-                    name: string;
-                }>
-            } = await groupres.json() as any;
-
-            const groups = gbody.data.map((d: {
-                name: string
-            }) => {
-                return d.name
-            });
-
-            if (!groups.includes(this.config.AuthGroup)) {
-                throw new Err(403, null, 'Insufficient Group Privileges');
-            }
-        }
-
         const split = Buffer.from(body.access_token, 'base64').toString().split('}').map((ext) => { return ext + '}'});
         if (split.length < 2) throw new Err(500, null, 'Unexpected TAK JWT Format');
         const contents: { sub: string; aud: string; nbf: number; exp: number; iat: number; } = JSON.parse(split[1]);

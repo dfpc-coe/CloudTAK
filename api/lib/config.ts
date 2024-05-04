@@ -38,7 +38,6 @@ export default class Config {
     external: External;
     UnsafeSigningSecret: string;
     MartiAPI: string;
-    AuthGroup: string;
     API_URL: string;
     PMTILES_URL: string;
     TileBaseURL: URL;
@@ -73,7 +72,6 @@ export default class Config {
         pg: Pool<typeof pgtypes>;
         server: InferSelectModel<typeof Server>;
         MartiAPI: string;
-        AuthGroup: string;
         DynamoDB?: string;
         Bucket?: string;
         HookURL?: string;
@@ -95,7 +93,6 @@ export default class Config {
         this.wsClients = init.wsClients;
         this.pg = init.pg;
         this.MartiAPI = init.MartiAPI;
-        this.AuthGroup = init.AuthGroup;
         this.DynamoDB = init.DynamoDB;
         this.Bucket = init.Bucket;
         this.server = init.server;
@@ -165,7 +162,6 @@ export default class Config {
             TileBaseURL: process.env.TileBaseURL ? new URL(process.env.TileBaseURL) : new URL('./data-dev/zipcodes.tilebase', import.meta.url),
             PMTILES_URL: process.env.PMTILES_URL || 'http://localhost:5001',
             MartiAPI: process.env.MartiAPI,
-            AuthGroup: process.env.AuthGroup,
             StackName: process.env.StackName,
             wsClients: new Map(),
             server, SigningSecret, API_URL, DynamoDB, Bucket, pg, models, HookURL
