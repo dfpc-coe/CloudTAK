@@ -159,7 +159,7 @@ export const Layer = pgTable('layers', {
     logging: boolean('logging').notNull().default(true),
     stale: integer('stale').notNull().default(20000),
     task: text('task').notNull(),
-    connection: integer('connection').references(() => Connection.id),
+    connection: integer('connection').notNull().references(() => Connection.id),
     cron: text('cron').notNull(),
     environment: json('environment').notNull().default({}),
     config: json('config').notNull().default({}),
