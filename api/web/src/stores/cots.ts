@@ -126,7 +126,7 @@ export const useCOTStore = defineStore('cots', {
         /**
          * Remove a given CoT from the store
          */
-        delete: function(id: string) {
+        delete: async function(id: string) {
             this.pendingDelete.add(id);
             if (this.archive.has(id)) {
                 this.archive.delete(id);
