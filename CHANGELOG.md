@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v2.6.1 - 2024-05-05
+
+- :rocket: Remove `AuthGroup` CF Parameter
+
 ### v2.6.0 - 2024-05-05
 
 - :tada: Archived features are now stored in the database and not localstorage
