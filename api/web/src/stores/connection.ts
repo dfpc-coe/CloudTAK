@@ -38,12 +38,12 @@ export const useConnectionStore = defineStore('connection', {
                 // Otherwise the user is probably logged out
                 if (localStorage.token) this.connectSocket(connection);
             });
-            this.ws.addEventListener('message', (msg) => {
+            this.ws.addEventListener('message', async (msg) => {
                 msg = JSON.parse(msg.data);
                 if (msg.type === 'Error') throw new Error(msg.properties.message);
 
                 if (msg.type === 'cot') {
-                    cotStore.add(msg.data);
+                    await cotStore.add(msg.data);
                 } else if (msg.type === 'chat') {
                     profileStore.notifications.push({
                         type: 'Chat',

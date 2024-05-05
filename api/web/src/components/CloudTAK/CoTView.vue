@@ -190,8 +190,8 @@ export default {
     watch: {
         feat: {
             deep: true,
-            handler: function() {
-                this.updateStyle();
+            handler: async function() {
+                await this.updateStyle();
             }
         }
     },
@@ -204,8 +204,8 @@ export default {
     },
     mounted: function() {
     },
-    unmounted: function() {
-        cotStore.update(this.feat);
+    unmounted: async function() {
+        await cotStore.update(this.feat);
     },
     computed: {
         ...mapState(useProfileStore, ['profile']),
@@ -231,8 +231,8 @@ export default {
                 return p;
             }
         },
-        updateStyle: function() {
-            cotStore.update(this.feat);
+        updateStyle: async function() {
+            await cotStore.update(this.feat);
         },
         zoomTo: function() {
             mapStore.map.flyTo({

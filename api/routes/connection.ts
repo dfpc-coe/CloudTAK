@@ -113,6 +113,7 @@ export default async function router(schema: Schema, config: Config) {
             }
 
             if (!config.server) throw new Err(400, null, 'TAK Server must be configured before a connection can be made');
+
             const conn = await config.models.Connection.generate(req.body);
 
             if (conn.enabled) await config.conns.add(new MachineConnConfig(config, conn));
