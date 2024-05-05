@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v2.6.0 - 2024-05-05
+
+- :tada: Archived features are now stored in the database and not localstorage
+
 ### v2.5.0 - 2024-05-04
 
 - :rocket: Remove `AuthGroup` restriction allowing any TAK User to access the map page
