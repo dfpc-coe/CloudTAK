@@ -1,6 +1,6 @@
 {
     "name": "@tak-ps/CloudTAK.api",
-    "type": "package",
+    "type": "module",
     "version": "1.0.0",
     "description": "Facilitate ETL operations to bring non-TAK sources into a TAK Server",
     "main": "index.js",
