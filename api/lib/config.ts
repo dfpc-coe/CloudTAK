@@ -38,7 +38,6 @@ export default class Config {
     external: External;
     UnsafeSigningSecret: string;
     MartiAPI: string;
-    AuthGroup: string;
     API_URL: string;
     PMTILES_URL: string;
     TileBaseURL: URL;
@@ -50,6 +49,10 @@ export default class Config {
     conns: ConnectionPool;
     server: InferSelectModel<typeof Server>;
     events?: EventsPool;
+    VpcId?: string;
+    SubnetPublicA?: string;
+    SubnetPublicB?: string;
+    MediaSecurityGroup?: string;
 
     constructor(init: {
         local: boolean;
@@ -69,7 +72,6 @@ export default class Config {
         pg: Pool<typeof pgtypes>;
         server: InferSelectModel<typeof Server>;
         MartiAPI: string;
-        AuthGroup: string;
         DynamoDB?: string;
         Bucket?: string;
         HookURL?: string;
@@ -91,7 +93,6 @@ export default class Config {
         this.wsClients = init.wsClients;
         this.pg = init.pg;
         this.MartiAPI = init.MartiAPI;
-        this.AuthGroup = init.AuthGroup;
         this.DynamoDB = init.DynamoDB;
         this.Bucket = init.Bucket;
         this.server = init.server;
@@ -161,7 +162,6 @@ export default class Config {
             TileBaseURL: process.env.TileBaseURL ? new URL(process.env.TileBaseURL) : new URL('./data-dev/zipcodes.tilebase', import.meta.url),
             PMTILES_URL: process.env.PMTILES_URL || 'http://localhost:5001',
             MartiAPI: process.env.MartiAPI,
-            AuthGroup: process.env.AuthGroup,
             StackName: process.env.StackName,
             wsClients: new Map(),
             server, SigningSecret, API_URL, DynamoDB, Bucket, pg, models, HookURL
@@ -172,6 +172,11 @@ export default class Config {
             console.log(`ok - PMTiles: ${config.PMTILES_URL}`);
             console.error(`ok - StackName: ${config.StackName}`);
         }
+
+        if (process.env.VpcId) config.VpcId = process.env.VpcId;
+        if (process.env.SubnetPublicA) config.SubnetPublicA = process.env.SubnetPublicA;
+        if (process.env.SubnetPublicB) config.SubnetPublicB = process.env.SubnetPublicB;
+        if (process.env.MediaSecurityGroup) config.MediaSecurityGroup = process.env.MediaSecurityGroup;
 
         return config;
     }

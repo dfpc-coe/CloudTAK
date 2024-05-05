@@ -30,7 +30,9 @@ export default async function router(schema: Schema, config: Config) {
         })
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req);
+            await Auth.is_connection(config, req, {
+                resources: []
+            }, req.params.connectionid);
 
             const list = await config.models.ConnectionToken.list({
                 limit: req.query.limit,
@@ -62,13 +64,14 @@ export default async function router(schema: Schema, config: Config) {
         res: CreateConnectionTokenResponse
     }, async (req, res) => {
         try {
-            await Auth.as_user(config, req);
+            await Auth.is_connection(config, req, {
+                resources: []
+            }, req.params.connectionid);
 
-            const connectionid = parseInt(String(req.params.connectionid));
             const token = await config.models.ConnectionToken.generate({
                 name: req.body.name,
-                token: 'etl.' + jwt.sign({ id: connectionid, access: 'connection' }, config.SigningSecret),
-                connection: connectionid
+                token: 'etl.' + jwt.sign({ id: req.params.connectionid, access: 'connection' }, config.SigningSecret),
+                connection: req.params.connectionid
             });
 
             return res.json(token);
@@ -91,10 +94,12 @@ export default async function router(schema: Schema, config: Config) {
         res: StandardResponse
     }, async (req, res) => {
         try {
-            await Auth.as_user(config, req);
+            await Auth.is_connection(config, req, {
+                resources: []
+            }, req.params.connectionid);
 
-            const token = await config.models.ConnectionToken.from(sql`id = ${Number(req.params.id)}::INT`);
-            if (token.connection !== parseInt(String(req.params.connectionid))) throw new Err(400, null, 'You can only modify your own tokens');
+            const token = await config.models.ConnectionToken.from(sql`id = ${req.params.id}::INT`);
+            if (token.connection !== req.params.connectionid) throw new Err(400, null, `Token does not belong to Connection ${req.params.connectionid}`);
 
             await config.models.Token.commit(sql`id = ${token.id}::INT`, {
                 updated: sql`Now()`,
@@ -118,10 +123,12 @@ export default async function router(schema: Schema, config: Config) {
         res: StandardResponse
     }, async (req, res) => {
         try {
-            await Auth.as_user(config, req);
+            await Auth.is_connection(config, req, {
+                resources: []
+            }, req.params.connectionid);
 
-            const token = await config.models.ConnectionToken.from(sql`id = ${Number(req.params.id)}::INT`);
-            if (token.connection !== parseInt(String(req.params.connectionid))) throw new Err(400, null, 'You can only modify your own tokens');
+            const token = await config.models.ConnectionToken.from(sql`id = ${req.params.id}::INT`);
+            if (token.connection !== req.params.connectionid) throw new Err(400, null, `Token does not belong to Connection ${req.params.connectionid}`);
 
             await config.models.ConnectionToken.delete(sql`id = ${token.id}::INT`);
 

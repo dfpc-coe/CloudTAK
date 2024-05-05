@@ -1,17 +1,15 @@
 import { defineStore } from 'pinia'
-import { std } from '../std.ts';
+import { std, stdurl } from '../std.ts';
 
 export const useProfileStore = defineStore('profile', {
     state: () => {
         return {
             notifications: [],
+            channels: [],
             profile: null,
         }
     },
     actions: {
-        clearNotifications: function() {
-            this.notifications = [];
-        },
         CoT: function() {
             return {
                 // Need to differentiate between servers eventually
@@ -41,8 +39,16 @@ export const useProfileStore = defineStore('profile', {
                 geometry: this.profile.tak_loc
             }
         },
+        clearNotifications: function() {
+            this.notifications = [];
+        },
         load: async function() {
             this.profile = await std('/api/profile');
+        },
+        loadChannels: async function() {
+            const url = stdurl('/api/marti/group');
+            url.searchParams.append('useCache', 'true');
+            this.channels = (await std(url)).data;
         },
         update: async function(body) {
             this.profile = await std('/api/profile', {

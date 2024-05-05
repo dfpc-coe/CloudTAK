@@ -20,7 +20,7 @@
                     </tr>
                 </thead>
                 <tbody class='table-tbody'>
-                    <tr @click='$router.push(`/layer/${layer.id}`)' :key='layer.id' v-for='layer of list.items' class='cursor-pointer'>
+                    <tr @click='$router.push(`/connection/${$route.params.connectionid}/layer/${layer.id}`)' :key='layer.id' v-for='layer of list.items' class='cursor-pointer'>
                         <td>
                             <div class='d-flex align-items-center'>
                                 <LayerStatus :layer='layer'/><div class='mx-2' v-text='layer.name'></div>
@@ -89,8 +89,7 @@ export default {
         listLayers: async function() {
             this.loading = true;
             try {
-                const url = stdurl('/api/layer');
-                url.searchParams.append('connection', this.connection.id);
+                const url = stdurl(`/api/connection/${this.$route.params.connectionid}/layer`);
                 url.searchParams.append('limit', this.paging.limit);
                 url.searchParams.append('page', this.paging.page);
                 url.searchParams.append('filter', this.paging.filter);

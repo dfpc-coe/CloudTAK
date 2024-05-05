@@ -152,6 +152,7 @@ export default {
             const clone = JSON.parse(JSON.stringify(this.layer.styles));
             this.queries = clone.queries || [];
             delete clone.queries;
+
             this.style = Object.assign(this.style, JSON.parse(JSON.stringify(this.layer.styles)));
 
             if (!this.enabled) this.mode = "disabled";
@@ -174,7 +175,7 @@ export default {
             this.loading.save = true;
 
             try {
-                const layer = await std(`/api/layer/${this.$route.params.layerid}`, {
+                const layer = await std(`/api/connection/${this.$route.params.connectionid}/layer/${this.$route.params.layerid}`, {
                     method: 'PATCH',
                     body: {
                         enabled_styles: this.enabled,

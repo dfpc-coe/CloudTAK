@@ -260,6 +260,20 @@
       "when": 1713818662077,
       "tag": "0036_solid_goliath",
       "breakpoints": true
+    },
+    {
+      "idx": 37,
+      "version": "5",
+      "when": 1714786844578,
+      "tag": "0037_great_longshot",
+      "breakpoints": true
+    },
+    {
+      "idx": 38,
+      "version": "5",
+      "when": 1714827806956,
+      "tag": "0038_tan_hiroim",
+      "breakpoints": true
     }
   ]
 }

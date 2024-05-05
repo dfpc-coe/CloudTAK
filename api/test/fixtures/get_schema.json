@@ -14,7 +14,7 @@
         "query": true,
         "res": true
     },
-    "GET /agency/agencyid": {
+    "GET /agency/:agencyid": {
         "body": false,
         "query": false,
         "res": true
@@ -59,7 +59,162 @@
         "query": true,
         "res": true
     },
+    "PUT /config": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
     "GET /connection/:connectionid/channel": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /connection/:connectionid/data/:dataid/asset": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "POST /connection/:connectionid/data/:dataid/upload": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "POST /connection/:connectionid/data/:dataid/asset": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "POST /connection/:connectionid/data/:dataid/asset/:asset.:ext": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "DELETE /connection/:connectionid/data/:dataid/asset/:asset.:ext": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /connection/:connectionid/data/:dataid/asset/:asset.:ext": {
+        "body": false,
+        "query": false,
+        "res": false
+    },
+    "GET /connection/:connectionid/data/:dataid/asset/:asset.pmtiles/tile": {
+        "body": false,
+        "query": false,
+        "res": false
+    },
+    "GET /connection/:connectionid/data/:dataid/job": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /connection/:connectionid/data/:dataid/job/:jobid": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /connection/:connectionid/data/:dataid/job/:jobid/logs": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /data": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "GET /connection/:connectionid/data": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "POST /connection/:connectionid/data": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "PATCH /connection/:connectionid/data/:dataid": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "GET /connection/:connectionid/data/:dataid": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "DELETE /connection/:connectionid/data/:dataid": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /connection/:connectionid/layer/:layerid/alert": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "POST /connection/:connectionid/layer/:layerid/alert": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "DELETE /connection/:connectionid/layer/:layerid/alert": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "DELETE /connection/:connectionid/layer/:layerid/alert/:alertid": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "POST /layer/:layerid/cot": {
+        "body": true,
+        "query": true,
+        "res": true
+    },
+    "GET /connection/:connectionid/layer/:layerid/query": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "GET /connection/:connectionid/layer/:layerid/query/:featid": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "POST /layer/redeploy": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /connection/:connectionid/layer": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "POST /connection/:connectionid/layer": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "PATCH /connection/:connectionid/layer/:layerid": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "GET /connection/:connectionid/layer/:layerid": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "POST /connection/:connectionid/layer/:layerid/redeploy": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "DELETE /connection/:connectionid/layer/:layerid": {
         "body": false,
         "query": false,
         "res": true
@@ -149,91 +304,6 @@
         "query": false,
         "res": true
     },
-    "GET /connection/:connectionid/data/:dataid/asset": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "POST /connection/:connectionid/data/:dataid/upload": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "POST /connection/:connectionid/data/:dataid/asset": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "POST /connection/:connectionid/data/:dataid/asset/:asset.:ext": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "DELETE /connection/:connectionid/data/:dataid/asset/:asset.:ext": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /connection/:connectionid/data/:dataid/asset/:asset.:ext": {
-        "body": false,
-        "query": false,
-        "res": false
-    },
-    "GET /connection/:connectionid/data/:dataid/asset/:asset.pmtiles/tile": {
-        "body": false,
-        "query": false,
-        "res": false
-    },
-    "GET /connection/:connectionid/data/:dataid/job": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /connection/:connectionid/data/:dataid/job/:jobid": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /connection/:connectionid/data/:dataid/job/:jobid/logs": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /data": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "GET /data/:dataid": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /connection/:connectionid/data": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "POST /connection/:connectionid/data": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "PATCH /connection/:connectionid/data/:dataid": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "GET /connection/:connectionid/data/:dataid": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "DELETE /connection/:connectionid/data/:dataid": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
     "POST /esri": {
         "body": true,
         "query": false,
@@ -309,58 +379,13 @@
         "query": true,
         "res": true
     },
-    "GET /layer/:layerid/alert": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "POST /layer/:layerid/alert": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "DELETE /layer/:layerid/alert": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "DELETE /layer/:layerid/alert/:alertid": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "POST /layer/:layerid/cot": {
-        "body": true,
-        "query": true,
-        "res": true
-    },
-    "GET /layer/:layerid/query": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "GET /layer/:layerid/query/:featid": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
     "GET /layer": {
         "body": false,
         "query": true,
         "res": true
     },
-    "POST /layer": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "POST /layer/redeploy": {
+    "GET /data/:dataid": {
         "body": false,
-        "query": false,
-        "res": true
-    },
-    "PATCH /layer/:layerid": {
-        "body": true,
         "query": false,
         "res": true
     },
@@ -368,81 +393,6 @@
         "body": false,
         "query": false,
         "res": true
-    },
-    "POST /layer/:layerid/redeploy": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "DELETE /layer/:layerid": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /iconset": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "POST /iconset": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "PATCH /iconset/:iconset": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "GET /iconset/:iconset": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "DELETE /iconset/:iconset": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "POST /iconset/:iconset/icon": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "GET /icon": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "GET /iconset/:iconset/icon/:icon": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "PATCH /iconset/:iconset/icon/:icon": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "DELETE /iconset/:iconset/icon/:icon": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /iconset/:iconset/icon/:icon/raw": {
-        "body": false,
-        "query": true,
-        "res": false
-    },
-    "GET /icon/sprite:size?.json": {
-        "body": false,
-        "query": true,
-        "res": false
-    },
-    "GET /icon/sprite:size?.png": {
-        "body": false,
-        "query": true,
-        "res": false
     },
     "POST /login": {
         "body": true,
@@ -549,6 +499,71 @@
         "query": false,
         "res": true
     },
+    "GET /iconset": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "POST /iconset": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "PATCH /iconset/:iconset": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "GET /iconset/:iconset": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "DELETE /iconset/:iconset": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "POST /iconset/:iconset/icon": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "GET /icon": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "GET /iconset/:iconset/icon/:icon": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "PATCH /iconset/:iconset/icon/:icon": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "DELETE /iconset/:iconset/icon/:icon": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /iconset/:iconset/icon/:icon/raw": {
+        "body": false,
+        "query": true,
+        "res": false
+    },
+    "GET /icon/sprite:size?.json": {
+        "body": false,
+        "query": true,
+        "res": false
+    },
+    "GET /icon/sprite:size?.png": {
+        "body": false,
+        "query": true,
+        "res": false
+    },
     "GET /marti/group": {
         "body": false,
         "query": true,
@@ -612,6 +627,21 @@
     "GET /profile/chat/:chatroom": {
         "body": false,
         "query": true,
+        "res": true
+    },
+    "GET /profile/feature": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "PUT /profile/feature": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "DELETE /profile/feature/:id": {
+        "body": false,
+        "query": false,
         "res": true
     },
     "GET /profile/job": {
@@ -689,32 +719,32 @@
         "query": false,
         "res": true
     },
-    "GET /layer/:layerid/task": {
+    "GET /connection/:connectionid/layer/:layerid/task": {
         "body": false,
         "query": false,
         "res": true
     },
-    "DELETE /layer/:layerid/task": {
+    "DELETE /connection/:connectionid/layer/:layerid/task": {
         "body": false,
         "query": false,
         "res": true
     },
-    "POST /layer/:layerid/task/invoke": {
+    "POST /connection/:connectionid/layer/:layerid/task/invoke": {
         "body": false,
         "query": false,
         "res": true
     },
-    "GET /layer/:layerid/task/logs": {
+    "GET /connection/:connectionid/layer/:layerid/task/logs": {
         "body": false,
         "query": false,
         "res": true
     },
-    "GET /layer/:layerid/task/schema": {
+    "GET /connection/:connectionid/layer/:layerid/task/schema": {
         "body": false,
         "query": true,
         "res": true
     },
-    "POST /layer/:layerid/task": {
+    "POST /connection/:connectionid/layer/:layerid/task": {
         "body": false,
         "query": false,
         "res": true
@@ -742,6 +772,26 @@
     "GET /user": {
         "body": false,
         "query": true,
+        "res": true
+    },
+    "GET /video": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "POST /video": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "GET /video/:serverid": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "DELETE /video/:serverid": {
+        "body": false,
+        "query": false,
         "res": true
     }
 }

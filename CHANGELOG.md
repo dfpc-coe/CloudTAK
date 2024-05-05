@@ -12,6 +12,113 @@
 
 ### Pending Release
 
+### v2.6.1 - 2024-05-05
+
+- :rocket: Remove `AuthGroup` CF Parameter
+
+### v2.6.0 - 2024-05-05
+
+- :tada: Archived features are now stored in the database and not localstorage
+
+### v2.5.0 - 2024-05-04
+
+- :rocket: Remove `AuthGroup` restriction allowing any TAK User to access the map page
+- :tada: Add ProfileFeature database type for future archive storage
+
+### v2.4.0 - 2024-05-03
+
+- :rocket: `API` Complete migration by adding `NOT NULL` Constraint on `layer.connection`
+
+### v2.3.0 - 2024-05-03
+
+- :rocket: `UI` Display Layer & Connection status information in Admin UI
+
+### v2.2.1 - 2024-05-03
+
+- :bug: `UI` Ensure Admin console adds connection prefix
+
+### v2.2.0 - 2024-05-03
+
+- :rocket: `UI` Update UI to follow API path paradigm
+
+### v2.1.0 - 2024-05-03
+
+- :bug: Continue to allow System Admins to access Layer List
+
+### v2.0.0 - 2024-05-03
+
+- :rocket: Move Layers into their connection parent, allowing Agency level auth
+
+### v1.29.0 - 2024-05-03
+
+- :rocket: Automatically infer table view for Layer Environments
+- :bug: Set Backup window to ensure it doesn't conflict with maintenance window
+
+### v1.28.0 - 2024-05-03
+
+- :rocket: Include Preferred DB Maintenance Perdiod
+
+### v1.28.0 - 2024-05-01
+
+- :rocket: `UI` Allow Icons to take affect when selected via CotStyle Component
+- :rocket: `UI` Add unified `cot.style` method for universally handling feature properties on add or update
+
+### v1.27.0 - 2024-05-01
+
+- :rocket: `UI` Add ability to remove Icon from Feature
+- :bug: Make iconset selection dark to avoid being a common icon colour (white)
+
+### v1.26.1 - 2024-05-01
+
+- :arrow_up: `API` Update node-cot to support `sensor` and `video` tags
+
+### v1.26.0 - 2024-04-30
+
+- :rocket: `API/UI` Add ability to spin up Video Servers
+
+### v1.25.1 - 2024-04-30
+
+- :rocket: `UI` Redirect to Media Server List on 404
+- :rocket: `API` Handle invalid Media Server ID with 400
+- :rocket: `API` Handle not foudn Media Server ID with 404
+
+### v1.25.0 - 2024-04-30
+
+- :rocket: Allow Deleting Media Management Servers
+
+### v1.24.0 - 2024-04-30
+
+- :tada: Basic support of a Media Management Server System
+
+### v1.23.2 - 2024-04-30
+
+- :rocket: Move release script to inline GH Action
+
+### v1.23.1 - 2024-04-30
+
+- :bug: `UI` Force a re-render of CoT view if a new cot is clicked
+
+### v1.23.0 - 2024-04-29
+
+- :bug: `UI` Fix patch updating GeoJSON sources as the wrong format was being used for updates
+- :tada: `UI` Style features in place and avoid using additional layers for styling
+
+### v1.22.3 - 2024-04-29
+
+- :bug: `API` Fix bug where generated object wouldn't be returned
+
+### v1.22.2 - 2024-04-28
+
+- :bug: `UI` Fix CoTs being moved to active Map upon render
+
+### v1.22.1 - 2024-04-28
+
+- :bug: `UI` Fix config being written by value of single key
+
+### v1.22.0 - 2024-04-28
+
+- :rocket: `UI` Allow storing pre-defined key/values to power the Config API
+
 ### v1.21.1 - 2024-04-28
 
 - :bug: `UI` Retain FeatureCollection generation for non-default CoT store

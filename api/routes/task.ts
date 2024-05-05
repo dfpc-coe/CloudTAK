@@ -2,7 +2,7 @@ import { Type } from '@sinclair/typebox'
 import { sql } from 'drizzle-orm';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
-import Auth, { AuthResourceAccess } from '../lib/auth.js';
+import Auth from '../lib/auth.js';
 import ECR from '../lib/aws/ecr.js';
 import CF from '../lib/aws/cloudformation.js';
 import Lambda from '../lib/aws/lambda.js';
@@ -133,10 +133,11 @@ export default async function router(schema: Schema, config: Config) {
         }
     });
 
-    await schema.get('/layer/:layerid/task', {
+    await schema.get('/connection/:connectionid/layer/:layerid/task', {
         name: 'Task Status',
         group: 'Task',
         params: Type.Object({
+            connectionid: Type.Integer(),
             layerid: Type.Integer(),
         }),
         description: 'Get the status of a task stack in relation to a given layer',
@@ -145,11 +146,17 @@ export default async function router(schema: Schema, config: Config) {
         })
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req);
+            const { connection } = await Auth.is_connection(config, req, {
+                resources: []
+            }, req.params.connectionid);
 
             const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
                 return await config.models.Layer.from(parseInt(String(req.params.layerid)));
             });
+
+            if (layer.connection !== connection.id) {
+                throw new Err(400, null, 'Layer does not belong to this connection');
+            }
 
             return res.json(await CF.status(config, layer.id));
         } catch (err) {
@@ -157,21 +164,28 @@ export default async function router(schema: Schema, config: Config) {
         }
     });
 
-    await schema.delete('/layer/:layerid/task', {
+    await schema.delete('/connection/:connectionid/layer/:layerid/task', {
         name: 'Cancel Update',
         group: 'Task',
         params: Type.Object({
+            connectionid: Type.Integer(),
             layerid: Type.Integer(),
         }),
         description: 'If a stack is currently updating, cancel the stack update',
         res: StandardResponse
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req);
+            const { connection } = await Auth.is_connection(config, req, {
+                resources: []
+            }, req.params.connectionid);
 
             const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
                 return await config.models.Layer.from(parseInt(String(req.params.layerid)));
             });
+
+            if (layer.connection !== connection.id) {
+                throw new Err(400, null, 'Layer does not belong to this connection');
+            }
 
             await CF.cancel(config, layer.id);
 
@@ -184,21 +198,28 @@ export default async function router(schema: Schema, config: Config) {
         }
     });
 
-    await schema.post('/layer/:layerid/task/invoke', {
+    await schema.post('/connection/:connectionid/layer/:layerid/task/invoke', {
         name: 'Run Task',
         group: 'Task',
         params: Type.Object({
+            connectionid: Type.Integer(),
             layerid: Type.Integer(),
         }),
         description: 'Manually invoke a Task',
         res: StandardResponse
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req);
+            const { connection } = await Auth.is_connection(config, req, {
+                resources: []
+            }, req.params.connectionid);
 
             const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
                 return await config.models.Layer.from(parseInt(String(req.params.layerid)));
             });
+
+            if (layer.connection !== connection.id) {
+                throw new Err(400, null, 'Layer does not belong to this connection');
+            }
 
             await Lambda.invoke(config, layer.id)
 
@@ -211,10 +232,11 @@ export default async function router(schema: Schema, config: Config) {
         }
     });
 
-    await schema.get('/layer/:layerid/task/logs', {
+    await schema.get('/connection/:connectionid/layer/:layerid/task/logs', {
         name: 'Task Logs',
         group: 'Task',
         params: Type.Object({
+            connectionid: Type.Integer(),
             layerid: Type.Integer(),
         }),
         description: 'Get the logs related to the given task',
@@ -223,11 +245,17 @@ export default async function router(schema: Schema, config: Config) {
         })
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req);
+            const { connection } = await Auth.is_connection(config, req, {
+                resources: []
+            }, req.params.connectionid);
 
             const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
                 return await config.models.Layer.from(parseInt(String(req.params.layerid)));
             });
+
+            if (layer.connection !== connection.id) {
+                throw new Err(400, null, 'Layer does not belong to this connection');
+            }
 
             return res.json(await Logs.list(config, layer));
         } catch (err) {
@@ -235,10 +263,11 @@ export default async function router(schema: Schema, config: Config) {
         }
     });
 
-    await schema.get('/layer/:layerid/task/schema', {
+    await schema.get('/connection/:connectionid/layer/:layerid/task/schema', {
         name: 'Task Schema',
         group: 'Task',
         params: Type.Object({
+            connectionid: Type.Integer(),
             layerid: Type.Integer(),
         }),
         description: 'Get the JSONSchema for the expected environment variables',
@@ -252,13 +281,17 @@ export default async function router(schema: Schema, config: Config) {
         })
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req, {
-                resources: [{ access: AuthResourceAccess.LAYER, id: req.params.layerid }]
-            });
+            const { connection } = await Auth.is_connection(config, req, {
+                resources: []
+            }, req.params.connectionid);
 
             const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
                 return await config.models.Layer.from(parseInt(String(req.params.layerid)));
             });
+
+            if (layer.connection !== connection.id) {
+                throw new Err(400, null, 'Layer does not belong to this connection');
+            }
 
             return res.json({
                 schema: await Lambda.schema(config, layer.id, String(req.query.type))
@@ -268,10 +301,11 @@ export default async function router(schema: Schema, config: Config) {
         }
     });
 
-    await schema.post('/layer/:layerid/task', {
+    await schema.post('/connection/:connectionid/layer/:layerid/task', {
         name: 'Task Deploy',
         group: 'Task',
         params: Type.Object({
+            connectionid: Type.Integer(),
             layerid: Type.Integer(),
         }),
         description: 'Deploy a task stack',
@@ -280,11 +314,17 @@ export default async function router(schema: Schema, config: Config) {
         })
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req);
+            const { connection } = await Auth.is_connection(config, req, {
+                resources: []
+            }, req.params.connectionid);
 
             const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
                 return await config.models.Layer.from(parseInt(String(req.params.layerid)));
             });
+
+            if (layer.connection !== connection.id) {
+                throw new Err(400, null, 'Layer does not belong to this connection');
+            }
 
             try {
                 await Logs.delete(config, layer);

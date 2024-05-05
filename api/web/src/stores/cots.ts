@@ -7,17 +7,6 @@ import type { Feature } from 'geojson';
 import { useProfileStore } from './profile.js';
 const profileStore = useProfileStore();
 
-
-/**
- * modify props to meet CoT style requirements
- */
-export function extract(feat: Feature) {
-    feat = JSON.parse(JSON.stringify(feat));
-    if (feat.properties['stroke-opacity']) feat.properties['stroke-opacity'] = feat.properties['stroke-opacity'] * 255;
-    if (feat.properties['fill-opacity']) feat.properties['fill-opacity'] = feat.properties['fill-opacity'] * 255;
-    return feat;
-}
-
 export const useCOTStore = defineStore('cots', {
     state: (): {
         archive: Map<string, Feature>;
@@ -40,9 +29,9 @@ export const useCOTStore = defineStore('cots', {
         /**
          * Load Archived CoTs from localStorage
          */
-        loadArchive: function(): void {
-            const archive = JSON.parse(localStorage.getItem('archive') || '[]');
-            for (const a of archive) {
+        loadArchive: async function(): void {
+            const archive = await std('/api/profile/feature');
+            for (const a of archive.items) {
                 this.archive.set(a.id, a);
                 this.pending.set(a.id, a);
             }
@@ -61,14 +50,6 @@ export const useCOTStore = defineStore('cots', {
         },
 
         /**
-         * Save Archived CoTs from localStorage - called automatically every time an
-         * archived CoT changes
-         */
-        saveArchive: function(): void {
-            localStorage.setItem('archive', JSON.stringify(Array.from(this.archive.values())))
-        },
-
-        /**
          * Generate a GeoJSONDiff on existing COT Features
          */
         diff: function(): GeoJSONSourceDiff {
@@ -80,20 +61,39 @@ export const useCOTStore = defineStore('cots', {
             }
 
             for (const cot of this.cots.values()) {
-                if (profileStore.profile.display_stale === 'Immediate' && now.isAfter(cot.properties.stale)) {
+                if (
+                    profileStore.profile.display_stale === 'Immediate'
+                    && !cot.properties.archived
+                    && now.isAfter(cot.properties.stale)
+                ) {
                     diff.remove.push(cot.id);
-                } else if (!['Never', 'Immediate'].includes(profileStore.profile.display_stale) && !now.isBefore(moment(cot.properties.stale).add(...profileStore.profile.display_stale.split(' ')))) {
+                } else if (
+                    !['Never', 'Immediate'].includes(profileStore.profile.display_stale)
+                    && !cot.properties.archived
+                    && !now.isBefore(moment(cot.properties.stale).add(...profileStore.profile.display_stale.split(' ')))
+                ) {
                     diff.remove.push(cot.id)
                 } else if (!cot.properties.archived) {
-                    //TODO Eventually do this via Data Driven Styling
-                    if (now.isBefore(moment(cot.properties.stale)) && (cot.properties['icon-opacity'] !== 1 || cot.properties['circle-opacity'] !== 1)) {
-                         cot.properties['icon-opacity'] = 1;
-                         cot.properties['circle-opacity'] = 1;
-                        diff.update.push(cot)
-                    } else if (!now.isBefore(moment(cot.properties.stale)) && (cot.properties['icon-opacity'] !== 0.5 || cot.properties['circle-opacity'] !== 0.5)) {
-                         cot.properties['icon-opacity'] = 0.5;
-                         cot.properties['circle-opacity'] = 0.5;
-                        diff.update.push(cot)
+                    if (now.isBefore(moment(cot.properties.stale)) && (cot.properties['icon-opacity'] !== 1 || cot.properties['circle-opacity'] !== 255)) {
+                        cot.properties['icon-opacity'] = 1;
+                        cot.properties['circle-opacity'] = 255;
+                        diff.update.push({
+                            id: cot.id,
+                            addOrUpdateProperties: Object.keys(cot.properties).map((key) => {
+                                return { key, value: cot.properties[key] }
+                            }),
+                            newGeometry: cot.geometry
+                        })
+                    } else if (!now.isBefore(moment(cot.properties.stale)) && (cot.properties['icon-opacity'] !== 0.5 || cot.properties['circle-opacity'] !== 127)) {
+                        cot.properties['icon-opacity'] = 0.5;
+                        cot.properties['circle-opacity'] = 127;
+                        diff.update.push({
+                            id: cot.id,
+                            addOrUpdateProperties: Object.keys(cot.properties).map((key) => {
+                                return { key, value: cot.properties[key] }
+                            }),
+                            newGeometry: cot.geometry
+                        })
                     }
                 }
             }
@@ -112,17 +112,6 @@ export const useCOTStore = defineStore('cots', {
         },
 
         /**
-         * Update a feature that exists in the store - bypasses feature standardization
-         */
-        update: function(feat: Feature): void {
-            this.pending.set(feat.id, feat);
-
-            if (feat.properties.archived) {
-                this.archive.set(feat.id, feat);
-                this.saveArchive();
-            }
-        },
-        /**
          * Return a CoT by ID if it exists
          */
         get: function(id: string): Feature {
@@ -137,11 +126,13 @@ export const useCOTStore = defineStore('cots', {
         /**
          * Remove a given CoT from the store
          */
-        delete: function(id: string) {
+        delete: async function(id: string) {
             this.pendingDelete.add(id);
             if (this.archive.has(id)) {
                 this.archive.delete(id);
-                this.saveArchive();
+                await std(`/api/profile/feature/${id}`, {
+                    method: 'DELETE'
+                });
             }
         },
         /**
@@ -154,13 +145,9 @@ export const useCOTStore = defineStore('cots', {
         },
 
         /**
-         * Add a CoT GeoJSON to the store and modify props to meet MapLibre style requirements
+         * Consistent feature manipulation between add & update
          */
-        add: function(feat: Feature, mission_guid=null) {
-            if (!feat.id && !feat.properties.id) {
-                feat.id = self.crypto.randomUUID();
-            }
-
+        style: function(feat: Feature): Feature {
             //Vector Tiles only support integer IDs
             feat.properties.id = feat.id;
 
@@ -169,6 +156,10 @@ export const useCOTStore = defineStore('cots', {
             if (!feat.properties.center) {
                 feat.properties.center = pointOnFeature(feat.geometry).geometry.coordinates;
             }
+
+            if (!feat.properties.time) feat.properties.time = new Date().toISOString();
+            if (!feat.properties.start) feat.properties.start = new Date().toISOString();
+            if (!feat.properties.stale) feat.properties.stale = moment().add(10, 'minutes').toISOString();
 
             if (!feat.properties.remarks) {
                 feat.properties.remarks = 'None';
@@ -210,7 +201,13 @@ export const useCOTStore = defineStore('cots', {
 
                 } else if (feat.properties.icon) {
                     // Format of icon needs to change for spritesheet
-                    feat.properties.icon = feat.properties.icon.replace('/', ':').replace(/.png$/, '');
+                    if (!feat.properties.icon.includes(':')) {
+                        feat.properties.icon = feat.properties.icon.replace('/', ':')
+                    }
+                    
+                    if (feat.properties.icon.endsWith('.png')) {
+                        feat.properties.icon = feat.properties.icon.replace(/.png$/, '');
+                    }
                 } else {
                     // TODO Only add icon if one actually exists in the spritejson
                     if (!['u-d-p'].includes(feat.properties.type)) {
@@ -222,23 +219,44 @@ export const useCOTStore = defineStore('cots', {
                 if (!feat.properties['stroke-style']) feat.properties['stroke-style'] = 'solid';
                 if (!feat.properties['stroke-width']) feat.properties['stroke-width'] = 3;
 
-                // MapLibre Opacity must be of range 0-1
-                if (feat.properties['stroke-opacity']) {
-                    feat.properties['stroke-opacity'] = feat.properties['stroke-opacity'] / 255;
-                } else {
-                    feat.properties['stroke-opacity'] = 1;
+                if (!feat.properties['stroke-opacity'] === undefined) {
+                    feat.properties['stroke-opacity'] = 255;
                 }
 
                 if (feat.geometry.type.includes('Polygon')) {
                     if (!feat.properties['fill']) feat.properties.fill = '#d63939';
 
-                    if (feat.properties['fill-opacity']) {
-                        feat.properties['fill-opacity'] = feat.properties['fill-opacity'] / 255;
-                    } else {
-                        feat.properties['fill-opacity'] = 1;
+                    if (feat.properties['fill-opacity'] === undefined) {
+                        feat.properties['fill-opacity'] = 255;
                     }
                 }
             }
+
+            return feat;
+        },
+
+        /**
+         * Update a feature that exists in the store
+         */
+        update: async function(feat: Feature): void {
+            feat = this.style(feat);
+            this.pending.set(feat.id, feat);
+
+            if (feat.properties.archived) {
+                this.archive.set(feat.id, feat);
+                await std('/api/profile/feature', { method: 'PUT', body: feat })
+            }
+        },
+
+        /**
+         * Add a CoT GeoJSON to the store and modify props to meet MapLibre style requirements
+         */
+        add: async function(feat: Feature, mission_guid=null) {
+            if (!feat.id && !feat.properties.id) {
+                feat.id = self.crypto.randomUUID();
+            }
+
+            feat = this.style(feat);
 
             if (mission_guid)  {
                 let cots = this.subscriptions.get(mission_guid);
@@ -253,7 +271,7 @@ export const useCOTStore = defineStore('cots', {
 
                 if (feat.properties.archived) {
                     this.archive.set(feat.id, feat);
-                    this.saveArchive();
+                    await std('/api/profile/feature', { method: 'PUT', body: feat })
                 }
             }
         }

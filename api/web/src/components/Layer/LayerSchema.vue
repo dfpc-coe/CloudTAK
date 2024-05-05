@@ -155,7 +155,7 @@ export default {
                 }
             }
 
-            const layer = await std(`/api/layer/${this.$route.params.layerid}`, {
+            const layer = await std(`/api/connection/${this.$route.params.connectionid}/layer/${this.$route.params.layerid}`, {
                 method: 'PATCH',
                 body: {
                     schema: {
@@ -174,7 +174,7 @@ export default {
         },
         fetchSchema: async function() {
             this.loading.schema = true;
-            const url = stdurl(`/api/layer/${this.$route.params.layerid}/task/schema`);
+            const url = stdurl(`/api/connection/${this.$route.params.connectionid}/layer/${this.$route.params.layerid}/task/schema`);
             url.searchParams.append('type', 'schema:output');
             const schema = await std(url);
 

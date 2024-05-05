@@ -1,11 +1,11 @@
 <template>
-<div class='row'>
+<div data-bs-theme="dark" class='row'>
     <div class='col-12 d-flex my-1'>
         <span v-if='description' class='align-self-center'>
             <IconInfoSquare @click='help = true' size='20' class='cursor-pointer'/>
             <TablerHelp v-if='help' @click='help = false' :label='label || placeholder' :description='description'/>
         </span>
-        <div class="align-self-center px-2" :class='{ "required": required }' >Icon Select</div>
+        <div class="align-self-center px-2" :class='{ "required": required }' v-text='label'></div>
         <div class='ms-auto align-self-center'><slot/></div>
     </div>
 
@@ -19,13 +19,15 @@
                 </div>
             </template>
             <template v-else>
-                <span class='text-center w-100 my-2'>No Icon Selected</span>
+                <span class='text-center my-2 mx-2'>No Icon Selected</span>
             </template>
 
-            <div v-if='!disabled' class='ms-auto'>
+            <div v-if='!disabled' class='btn-list ms-auto'>
+                <IconTrash v-if='selected.name' @click='removeIcon' size='32' class='cursor-pointer' v-tooltip='"Remove Icon"'/>
+
                 <TablerDropdown>
                     <template #default>
-                        <IconSettings size='32' class='cursor-pointer dropdown-toggle'/>
+                        <IconSettings size='32' class='cursor-pointer' v-tooltip='"Select Icon"'/>
                     </template>
                     <template #dropdown>
                         <label class='w-100 subheader d-flex'>
@@ -61,6 +63,7 @@
 import { std, stdurl } from '/src/std.ts';
 import {
     IconInfoSquare,
+    IconTrash,
     IconSearch,
     IconSettings
 } from '@tabler/icons-vue';
@@ -90,6 +93,10 @@ export default {
         disabled: {
             type: Boolean,
             default: false
+        },
+        label: {
+            type: String,
+            default: 'Icon Select'
         }
     },
     computed: {
@@ -104,13 +111,14 @@ export default {
                iconsets: true,
                icons: true
            },
-            params: {
+           params: {
                 iconset: '',
                 showFilter: false,
                 filter: '',
             },
             selected: {
                 iconset: false,
+                path: '',
                 name: ''
             },
             sets: [],
@@ -121,8 +129,11 @@ export default {
         }
     },
     watch: {
-        selected: function() {
-            this.$emit('update:modelValue', this.selected.path);
+        selected: {
+            deep: true,
+            handler: function() {
+                this.$emit('update:modelValue', this.selected.path);
+            }
         },
         'params': {
             deep: true,
@@ -140,14 +151,24 @@ export default {
         await this.Iconlists();
     },
     methods: {
+        removeIcon: function() {
+            this.selected.path = '';
+            this.selected.iconset = false;
+            this.selected.name = '';
+        },
         iconurl: function(icon) {
             const url = stdurl(`/api/iconset/${icon.iconset}/icon/${encodeURIComponent(icon.name)}/raw`);
             url.searchParams.append('token', localStorage.token);
             return String(url);
         },
         fetch: async function() {
-            const iconset = this.modelValue.split('/')[0];
-            const icon = this.modelValue.split('/').splice(1).join('/');
+            let path = this.modelValue;
+
+            // MapLibre needs the palette name seperated by a ":" isntead of a "/"
+            if (path.includes(':')) path = path.split(':').join('/') + '.png';
+
+            const iconset = path.split('/')[0];
+            const icon = path.split('/').splice(1).join('/');
             this.selected = await std(`/api/iconset/${iconset}/icon/${encodeURIComponent(icon)}`);
         },
         Iconlistsets: async function() {
@@ -179,6 +200,7 @@ export default {
         TablerDropdown,
         IconInfoSquare,
         IconSearch,
+        IconTrash,
         IconSettings,
         TablerEnum,
         TablerLoading
