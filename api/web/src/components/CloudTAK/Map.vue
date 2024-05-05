@@ -401,9 +401,9 @@ export default {
             this.$router.push("/");
             this.cot = this.feat = this.query = this.pointInput.shown = false;
         },
-        submitPoint: function() {
+        submitPoint: async function() {
             this.pointInput.shown = false;
-            cotStore.add({
+            await cotStore.add({
                 type: 'Feature',
                 properties: {
                     type: 'u-d-p',
@@ -478,7 +478,7 @@ export default {
                 this.feat = mapStore.radial.cot;
                 this.closeRadial()
             } else if (event === 'context:new') {
-                cotStore.add(mapStore.radial.cot);
+                await cotStore.add(mapStore.radial.cot);
                 this.updateCOT();
                 this.closeRadial()
             } else if (event === 'context:info') {
@@ -603,6 +603,7 @@ export default {
 
                     const feat = {
                         id: id,
+                        type: 'Feature',
                         properties: {
                             archived: true,
                             callsign: 'New Feature'
@@ -622,7 +623,7 @@ export default {
                     mapStore.draw._store.delete([id]);
                     mapStore.draw.setMode('static');
                     mapStore.draw.stop();
-                    cotStore.add(feat);
+                    await cotStore.add(feat);
                     await this.updateCOT();
                 });
 

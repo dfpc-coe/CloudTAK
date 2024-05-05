@@ -244,14 +244,14 @@ export const useCOTStore = defineStore('cots', {
 
             if (feat.properties.archived) {
                 this.archive.set(feat.id, feat);
-                await this.saveArchive();
+                await std('/api/profile/feature', { method: 'PUT', body: feat })
             }
         },
 
         /**
          * Add a CoT GeoJSON to the store and modify props to meet MapLibre style requirements
          */
-        add: function(feat: Feature, mission_guid=null) {
+        add: async function(feat: Feature, mission_guid=null) {
             if (!feat.id && !feat.properties.id) {
                 feat.id = self.crypto.randomUUID();
             }
@@ -271,7 +271,7 @@ export const useCOTStore = defineStore('cots', {
 
                 if (feat.properties.archived) {
                     this.archive.set(feat.id, feat);
-                    this.saveArchive();
+                    await std('/api/profile/feature', { method: 'PUT', body: feat })
                 }
             }
         }
