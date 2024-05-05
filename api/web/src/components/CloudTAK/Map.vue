@@ -401,9 +401,9 @@ export default {
             this.$router.push("/");
             this.cot = this.feat = this.query = this.pointInput.shown = false;
         },
-        submitPoint: function() {
+        submitPoint: async function() {
             this.pointInput.shown = false;
-            cotStore.add({
+            await cotStore.add({
                 type: 'Feature',
                 properties: {
                     type: 'u-d-p',
@@ -463,7 +463,7 @@ export default {
             mapStore.draw.start();
             mapStore.draw.setMode(type);
         },
-        handleRadial: function(event) {
+        handleRadial: async function(event) {
             if (event === 'cot:view') {
                 const cot = mapStore.radial.cot;
                 this.closeRadial()
@@ -471,14 +471,14 @@ export default {
             } else if (event === 'cot:delete') {
                 const cot = mapStore.radial.cot;
                 this.closeRadial()
-                this.deleteCOT(cot);
+                await this.deleteCOT(cot);
             } else if (event === 'cot:edit') {
                 //this.edit = true;
             } else if (event === 'feat:view') {
                 this.feat = mapStore.radial.cot;
                 this.closeRadial()
             } else if (event === 'context:new') {
-                cotStore.add(mapStore.radial.cot);
+                await cotStore.add(mapStore.radial.cot);
                 this.updateCOT();
                 this.closeRadial()
             } else if (event === 'context:info') {
@@ -489,15 +489,15 @@ export default {
                 throw new Error(`Unimplemented Radial Action: ${event}`);
             }
         },
-        deleteCOT: function(cot) {
+        deleteCOT: async function(cot) {
             if (cot) {
-                cotStore.delete(cot.properties.id)
+                await cotStore.delete(cot.properties.id)
             } else {
                 cotStore.clear();
             }
-            this.updateCOT();
+            await this.updateCOT();
         },
-        updateCOT: function() {
+        updateCOT: async function() {
             try {
                 const diff = cotStore.diff();
 
@@ -520,7 +520,7 @@ export default {
                 cotStore.pending.clear();
 
                 for (const id of cotStore.pendingDelete) {
-                    cotStore.delete(id)
+                    await cotStore.delete(id)
                     diff.remove.push(id);
                 }
                 cotStore.pendingDelete.clear();
@@ -598,11 +598,12 @@ export default {
                 mapStore.initDraw();
                 this.setYou();
 
-                mapStore.draw.on('finish', (id) => {
+                mapStore.draw.on('finish', async (id) => {
                     const geometry = mapStore.draw._store.store[id].geometry;
 
                     const feat = {
                         id: id,
+                        type: 'Feature',
                         properties: {
                             archived: true,
                             callsign: 'New Feature'
@@ -622,8 +623,8 @@ export default {
                     mapStore.draw._store.delete([id]);
                     mapStore.draw.setMode('static');
                     mapStore.draw.stop();
-                    cotStore.add(feat);
-                    this.updateCOT();
+                    await cotStore.add(feat);
+                    await this.updateCOT();
                 });
 
                 this.timerSelf = window.setInterval(() => {
@@ -632,9 +633,9 @@ export default {
                     }
                 }, 2000);
 
-                this.timer = window.setInterval(() => {
+                this.timer = window.setInterval(async () => {
                     if (!mapStore.map) return;
-                    this.updateCOT();
+                    await this.updateCOT();
                 }, 500);
             });
         }
