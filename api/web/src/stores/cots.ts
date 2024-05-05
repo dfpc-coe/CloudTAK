@@ -29,9 +29,9 @@ export const useCOTStore = defineStore('cots', {
         /**
          * Load Archived CoTs from localStorage
          */
-        loadArchive: function(): void {
-            const archive = JSON.parse(localStorage.getItem('archive') || '[]');
-            for (const a of archive) {
+        loadArchive: async function(): void {
+            const archive = await std('/api/profile/feature');
+            for (const a of archive.items) {
                 this.archive.set(a.id, a);
                 this.pending.set(a.id, a);
             }
@@ -47,14 +47,6 @@ export const useCOTStore = defineStore('cots', {
              } catch (err) {
                 console.error(err);
             }
-        },
-
-        /**
-         * Save Archived CoTs from localStorage - called automatically every time an
-         * archived CoT changes
-         */
-        saveArchive: function(): void {
-            localStorage.setItem('archive', JSON.stringify(Array.from(this.archive.values())))
         },
 
         /**
@@ -138,7 +130,9 @@ export const useCOTStore = defineStore('cots', {
             this.pendingDelete.add(id);
             if (this.archive.has(id)) {
                 this.archive.delete(id);
-                this.saveArchive();
+                await std(`/api/profile/feature/${id}`, {
+                    method: 'DELETE'
+                });
             }
         },
         /**
@@ -242,15 +236,15 @@ export const useCOTStore = defineStore('cots', {
         },
 
         /**
-         * Update a feature that exists in the store - bypasses feature standardization
+         * Update a feature that exists in the store
          */
-        update: function(feat: Feature): void {
+        update: async function(feat: Feature): void {
             feat = this.style(feat);
             this.pending.set(feat.id, feat);
 
             if (feat.properties.archived) {
                 this.archive.set(feat.id, feat);
-                this.saveArchive();
+                await this.saveArchive();
             }
         },
 
