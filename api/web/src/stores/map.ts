@@ -97,32 +97,6 @@ export const useMapStore = defineStore('cloudtak', {
                     if (this.draw && this.draw.getMode() !== 'static') return;
                     this.map.getCanvas().style.cursor = '';
                 })
-                this.map.on('click', click.id, (e) => {
-                    if (this.draw && this.draw.getMode() !== 'static') return;
-
-                    // MultiSelect Mode
-                    if (e.originalEvent.ctrlKey) {
-                        this.selected.set(e.features[0].properties.id, e.features[0]);
-                    } else {
-                        const flyTo: mapgl.FlyToOptions = { speed: Infinity };
-                        if (e.features[0].geometry.type === 'Point') {
-                            flyTo.center = e.features[0].geometry.coordinates;
-                        } else {
-                            flyTo.center = pointOnFeature(e.features[0].geometry).geometry.coordinates;
-                        }
-
-                        // This is required to ensure the map has nowhere to flyTo - ie the whole world is shown
-                        // and then the radial menu won't actually be on the CoT when the CoT is clicked
-                        if (this.map.getZoom() < 3) flyTo.zoom = 4;
-                        this.map.flyTo(flyTo)
-
-                        this.radial.x = this.container ? this.container.clientWidth / 2 : 0;
-                        this.radial.y = this.container ? this.container.clientHeight / 2 : 0;
-
-                        this.radial.cot = e.features[0];
-                        this.radial.mode = click.type;
-                    }
-                });
             }
 
             if (layer.save && !config.initial) {
@@ -376,6 +350,42 @@ export const useMapStore = defineStore('cloudtak', {
             }]);
 
             this.map.on('rotate', () => { this.bearing = this.map.getBearing() })
+            this.map.on('click', (e) => {
+                if (this.draw && this.draw.getMode() !== 'static') return;
+
+                const features = this.map.queryRenderedFeatures(e.point);
+
+                // MultiSelect Mode
+                if (e.originalEvent.ctrlKey) {
+                    this.selected.set(features[0].properties.id, features[0]);
+                } else if (features.length) {
+                    const flyTo: mapgl.FlyToOptions = { speed: Infinity };
+                    if (features[0].geometry.type === 'Point') {
+                        flyTo.center = features[0].geometry.coordinates;
+                    } else {
+                        flyTo.center = pointOnFeature(features[0].geometry).geometry.coordinates;
+                    }
+
+                    // This is required to ensure the map has nowhere to flyTo - ie the whole world is shown
+                    // and then the radial menu won't actually be on the CoT when the CoT is clicked
+                    if (this.map.getZoom() < 3) flyTo.zoom = 4;
+                    this.map.flyTo(flyTo)
+
+                    this.radial.x = this.container ? this.container.clientWidth / 2 : 0;
+                    this.radial.y = this.container ? this.container.clientHeight / 2 : 0;
+
+                    this.radial.cot = features[0];
+                    for (const l of this.layers) {
+                        for (const click of l.clickable) {
+                            if (features[0].layer.id === click.id) {
+                                this.radial.mode = click.type;
+                                break;
+                            }
+                        }
+                    }
+                    if (!this.radial.mode) this.radial.mode === 'feat';
+                }
+            });
             this.map.on('contextmenu', (e) => {
                 if (!this.map) throw new Error('Cannot initLayers before map has loaded');
                 this.radial.mode = 'context';

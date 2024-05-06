@@ -186,6 +186,10 @@
         style='width: 100%;'
     ></div>
 
+    <MultipleSelect
+        cots='select.cots'
+    />
+
     <RadialMenu
         v-if='radial.mode'
         @close='closeRadial'
