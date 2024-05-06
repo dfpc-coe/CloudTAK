@@ -128,7 +128,11 @@ export default {
             return stdurl('/docs')
         },
         navShown: function() {
-            return !this.$route || !this.$route.name || (!this.$route.name.startsWith("home") && !["login"].includes(this.$route.name))
+            if (!this.$route || !this.$route.name) {
+                return false;
+            } else {
+                return (!this.$route.name.startsWith("home") && !["login"].includes(this.$route.name))
+            }
         }
     },
     methods: {
