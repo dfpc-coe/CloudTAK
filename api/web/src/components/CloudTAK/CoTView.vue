@@ -232,7 +232,7 @@ export default {
             }
         },
         updateStyle: async function() {
-            if (this.isUserDrawn()) {
+            if (this.isUserDrawn) {
                 await cotStore.update(this.feat);
             }
         },
