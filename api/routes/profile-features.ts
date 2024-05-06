@@ -16,7 +16,7 @@ export default async function router(schema: Schema, config: Config) {
             Return a list of Profile Features
         `,
         query: Type.Object({
-            limit: Type.Integer({ default: 100 }),
+            limit: Type.Integer({ default: 1000 }),
             page: Type.Integer({ default: 0 }),
             order: Type.Enum(GenericListOrder, { default: GenericListOrder.ASC }),
         }),
@@ -38,7 +38,13 @@ export default async function router(schema: Schema, config: Config) {
                 `
             });
 
-            return res.json(list)
+            return res.json({
+                total: list.total,
+                items: list.items.map((i) => {
+                    i.type = 'Feature';
+                    return i;
+                })
+            })
         } catch (err) {
             return Err.respond(err, res);
         }
@@ -73,7 +79,10 @@ export default async function router(schema: Schema, config: Config) {
                 upsert: GenerateUpsert.UPDATE
             });
 
-            return res.json(feat);
+            return res.json({
+                type: 'Feature',
+                ...feat
+            });
         } catch (err) {
             return Err.respond(err, res);
         }

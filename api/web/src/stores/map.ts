@@ -6,7 +6,10 @@ import * as terraDraw from 'terra-draw';
 import pointOnFeature from '@turf/point-on-feature';
 import { useOverlayStore } from './overlays.js'
 import type { Basemap } from '../types/types.js';
-import type { LayerSpecification } from 'maplibre-gl';
+import type {
+    LayerSpecification,
+    MapGeoJSONFeature
+} from 'maplibre-gl';
 import { Type } from '@sinclair/typebox';
 import type { Static } from '@sinclair/typebox';
 const overlayStore = useOverlayStore();
@@ -35,6 +38,11 @@ export const useMapStore = defineStore('cloudtak', {
         container?: HTMLElement;
         isLoaded: boolean;
         bearing: number;
+        select: {
+            feats: MapGeoJSONFeature[];
+            x: number;
+            y: number;
+        },
         radial: {
             mode?: string;
             cot?: object;
@@ -49,6 +57,10 @@ export const useMapStore = defineStore('cloudtak', {
         return {
             isLoaded: false,
             bearing: 0,
+            select: {
+                feats: [],
+                x: 0, y: 0,
+            },
             radial: {
                 x: 0, y: 0,
             },
@@ -353,37 +365,34 @@ export const useMapStore = defineStore('cloudtak', {
             this.map.on('click', (e) => {
                 if (this.draw && this.draw.getMode() !== 'static') return;
 
+                if (this.radial.mode) this.radial.mode === undefined;
+                if (this.select.feats) this.select.feats === [];
+
                 const features = this.map.queryRenderedFeatures(e.point);
 
                 // MultiSelect Mode
-                if (e.originalEvent.ctrlKey) {
+                if (e.originalEvent.ctrlKey && features.length) {
                     this.selected.set(features[0].properties.id, features[0]);
-                } else if (features.length) {
-                    const flyTo: mapgl.FlyToOptions = { speed: Infinity };
-                    if (features[0].geometry.type === 'Point') {
-                        flyTo.center = features[0].geometry.coordinates;
+                } else if (features.length === 1) {
+                    this.radialClick(features[0])
+                } else if (features.length > 1) {
+                    if (e.point.x < 150 || e.point.y < 150) {
+                        const flyTo: mapgl.FlyToOptions = {
+                            speed: Infinity,
+                            center: [e.lngLat.lng, e.lngLat.lat]
+                        };
+
+                        if (this.map.getZoom() < 3) flyTo.zoom = 4;
+                        this.map.flyTo(flyTo)
+
+                        this.select.x = this.container ? this.container.clientWidth / 2 : 0;
+                        this.select.y = this.container ? this.container.clientHeight / 2 : 0;
                     } else {
-                        flyTo.center = pointOnFeature(features[0].geometry).geometry.coordinates;
+                        this.select.x = e.point.x;
+                        this.select.y = e.point.y;
                     }
 
-                    // This is required to ensure the map has nowhere to flyTo - ie the whole world is shown
-                    // and then the radial menu won't actually be on the CoT when the CoT is clicked
-                    if (this.map.getZoom() < 3) flyTo.zoom = 4;
-                    this.map.flyTo(flyTo)
-
-                    this.radial.x = this.container ? this.container.clientWidth / 2 : 0;
-                    this.radial.y = this.container ? this.container.clientHeight / 2 : 0;
-
-                    this.radial.cot = features[0];
-                    for (const l of this.layers) {
-                        for (const click of l.clickable) {
-                            if (features[0].layer.id === click.id) {
-                                this.radial.mode = click.type;
-                                break;
-                            }
-                        }
-                    }
-                    if (!this.radial.mode) this.radial.mode === 'feat';
+                    this.select.feats = features;
                 }
             });
             this.map.on('contextmenu', (e) => {
@@ -420,6 +429,36 @@ export const useMapStore = defineStore('cloudtak', {
                     }
                 };
             });
+        },
+        radialClick: async function(feat: MapGeoJSONFeature) {
+            // If the call is coming from MultipleSelect, ensure this menu is closed
+            this.select.feats = [];
+
+            const flyTo: mapgl.FlyToOptions = { speed: Infinity };
+            if (feat.geometry.type === 'Point') {
+                flyTo.center = feat.geometry.coordinates;
+            } else {
+                flyTo.center = pointOnFeature(feat.geometry).geometry.coordinates;
+            }
+
+            // This is required to ensure the map has nowhere to flyTo - ie the whole world is shown
+            // and then the radial menu won't actually be on the CoT when the CoT is clicked
+            if (this.map.getZoom() < 3) flyTo.zoom = 4;
+            this.map.flyTo(flyTo)
+
+            this.radial.x = this.container ? this.container.clientWidth / 2 : 0;
+            this.radial.y = this.container ? this.container.clientHeight / 2 : 0;
+
+            this.radial.cot = feat;
+            for (const l of this.layers) {
+                for (const click of l.clickable) {
+                    if (feat.layer.id === click.id) {
+                        this.radial.mode = click.type;
+                        break;
+                    }
+                }
+            }
+            if (!this.radial.mode) this.radial.mode === 'feat';
         },
         initOverlays: async function() {
             await overlayStore.list();

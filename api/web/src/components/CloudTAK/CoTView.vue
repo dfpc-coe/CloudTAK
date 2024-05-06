@@ -232,7 +232,9 @@ export default {
             }
         },
         updateStyle: async function() {
-            await cotStore.update(this.feat);
+            if (this.isUserDrawn()) {
+                await cotStore.update(this.feat);
+            }
         },
         zoomTo: function() {
             mapStore.map.flyTo({
