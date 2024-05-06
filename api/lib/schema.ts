@@ -26,7 +26,7 @@ export const Profile = pgTable('profile', {
     auth: json('auth').$type<ConnectionAuth>().notNull(),
     created: timestamp('created', { withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp('updated', { withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
-    phone: text('phone').notNull().default(''),
+    phone: text('phone').default(''),
     tak_callsign: text('tak_callsign').notNull().default('CloudTAK User'),
     tak_group: text('tak_group').$type<TAKGroup>().notNull().default(TAKGroup.ORANGE),
     tak_role: text('tak_role').$type<TAKRole>().notNull().default(TAKRole.TEAM_MEMBER),
