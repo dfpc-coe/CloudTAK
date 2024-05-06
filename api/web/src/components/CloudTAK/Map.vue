@@ -181,10 +181,15 @@
         v-if='query && mode === "Default"'
         :coords='query'
     />
+
     <div
         ref="map"
         style='width: 100%;'
     ></div>
+
+    <MultipleSelect
+        v-if='select.feats.length'
+    />
 
     <RadialMenu
         v-if='radial.mode'
@@ -195,6 +200,7 @@
         :y='radial.y'
         ref='radial'
     />
+
 
     <template v-if='upload.shown'>
         <TablerModal>
@@ -236,6 +242,7 @@ import {
     IconCircleArrowUp,
 } from '@tabler/icons-vue';
 import SelectFeats from './util/SelectFeats.vue';
+import MultipleSelect from './util/MultipleSelect.vue';
 import {
     TablerDropdown,
     TablerModal,
@@ -271,7 +278,7 @@ export default {
         }
     },
     computed: {
-        ...mapState(useMapStore, ['bearing', 'radial', 'isLoaded', 'selected']),
+        ...mapState(useMapStore, ['bearing', 'select', 'radial', 'isLoaded', 'selected']),
         ...mapState(useProfileStore, ['profile', 'notifications']),
         humanBearing: function() {
             if (this.bearing < 0) {
@@ -643,6 +650,7 @@ export default {
     components: {
         Loading,
         SelectFeats,
+        MultipleSelect,
         Coordinate,
         UploadImport,
         RadialMenu,
