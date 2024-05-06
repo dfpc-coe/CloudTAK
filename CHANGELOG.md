@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v2.8.0 - 2024-05-06
+
+- :rocket: `API` Improved geometry parsing in ProfileFeature
+- :rocket: `API` Less stringent expectations on `phone` property
+
 ### v2.7.3 - 2024-05-06
 
 - :bug: `UI` Update `DataLayer` component to use new Layer URL Location
