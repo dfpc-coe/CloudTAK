@@ -274,6 +274,13 @@
       "when": 1714827806956,
       "tag": "0038_tan_hiroim",
       "breakpoints": true
+    },
+    {
+      "idx": 39,
+      "version": "5",
+      "when": 1715016818346,
+      "tag": "0039_powerful_mandroid",
+      "breakpoints": true
     }
   ]
 }
