@@ -12,6 +12,14 @@
 
 ### Pending Release
 
+### v2.7.1 - 2024-05-06
+
+- :bug: `UI` Ensure non-clickable underlying vector layers don't fire click events
+- :bug: `UI` Fix interaction between Locked State & Radial Menu
+- :bug: `UI` Fix Query Panel error on use of v-bing on Coordinates component
+- :bug: `UI` Fix Query Panel error when weather could not be retrieved
+- :rocket: `UI` Simplify props for MultipleSelect by using store
+
 ### v2.7.0 - 2024-05-05
 
 - :rocket: `UI` Preliminary support for a Feature Select Modal when clicking on overlapping features
