@@ -1,5 +1,5 @@
 import { Type } from '@sinclair/typebox'
-import { Geometry } from 'geojson';
+import { Geometry, GeometryCollection } from 'geojson';
 import { GenericListOrder, GenerateUpsert } from '@openaddresses/batch-generic';
 import Config from '../lib/config.js';
 import Schema from '@openaddresses/batch-schema';
@@ -40,9 +40,19 @@ export default async function router(schema: Schema, config: Config) {
 
             return res.json({
                 total: list.total,
-                items: list.items.map((i) => {
-                    i.type = 'Feature';
-                    return i;
+                items: list.items.map((feat) => {
+                    if (feat.geometry.type === 'GeometryCollection') {
+                        throw new Err(500, null, 'GeometryCollection should not be present in ProfileFeature');
+                    }
+
+                    const geometry = feat.geometry as Exclude<Geometry, GeometryCollection>
+
+                    return {
+                        id: feat.id,
+                        type: 'Feature',
+                        properties: feat.properties,
+                        geometry 
+                    }
                 })
             })
         } catch (err) {
@@ -79,9 +89,15 @@ export default async function router(schema: Schema, config: Config) {
                 upsert: GenerateUpsert.UPDATE
             });
 
+            if (feat.geometry.type === 'GeometryCollection') {
+                throw new Err(500, null, 'GeometryCollection should not be present in ProfileFeature');
+            }
+
             return res.json({
+                id: feat.id,
                 type: 'Feature',
-                ...feat
+                properties: feat.properties,
+                geometry: feat.geometry
             });
         } catch (err) {
             return Err.respond(err, res);
