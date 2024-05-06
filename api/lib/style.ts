@@ -182,7 +182,7 @@ export default class Style {
             if (style.point.callsign) feature.properties.callsign = handlebars.compile(style.point.callsign)(feature.properties.metadata);
             if (style.point.links) this.#links(style.point.links, feature);
 
-            const apply = Object.keys(style.point)
+            Object.keys(style.point)
                 .filter((k) => { return !['links', 'remarks', 'callsign'].includes(k) })
                 .forEach((k) => { feature.properties[k] = style.point[k] });
         } else if (feature.geometry.type === 'LineString' && style.line) {
@@ -190,17 +190,17 @@ export default class Style {
             if (style.line.callsign) feature.properties.callsign = handlebars.compile(style.line.callsign)(feature.properties.metadata);
             if (style.line.links) this.#links(style.line.links, feature);
 
-            const apply = Object.keys(style.point)
+            Object.keys(style.line)
                 .filter((k) => { return !['links', 'remarks', 'callsign'].includes(k) })
-                .forEach((k) => { feature.properties[k] = style.point[k] });
+                .forEach((k) => { feature.properties[k] = style.line[k] });
         } else if (feature.geometry.type === 'Polygon' && style.polygon) {
             if (style.polygon.remarks) feature.properties.remarks = handlebars.compile(style.polygon.remarks)(feature.properties.metadata);
             if (style.polygon.callsign) feature.properties.callsign = handlebars.compile(style.polygon.callsign)(feature.properties.metadata);
             if (style.polygon.links) this.#links(style.polygon.links, feature);
 
-            const apply = Object.keys(style.point)
+            Object.keys(style.polygon)
                 .filter((k) => { return !['links', 'remarks', 'callsign'].includes(k) })
-                .forEach((k) => { feature.properties[k] = style.point[k] });
+                .forEach((k) => { feature.properties[k] = style.polygon[k] });
         }
     }
 }

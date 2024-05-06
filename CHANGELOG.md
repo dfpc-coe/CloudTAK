@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v2.8.2 - 2024-05-06
+
+- :bug: `API` Geometry specific styles were being misapplied
+
 ### v2.8.1 - 2024-05-06
 
 - :bug: `UI` fix use of `===` when resetting RadialMenu
