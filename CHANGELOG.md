@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v2.7.2 - 2024-05-06
+
+- :bug: `UI` Update `data` vs `connection` dest differentiation in Layer Config
+
 ### v2.7.1 - 2024-05-06
 
 - :bug: `UI` Ensure non-clickable underlying vector layers don't fire click events

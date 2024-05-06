@@ -103,6 +103,7 @@
                             v-else
                             class='mx-2'
                             :disabled='disabled'
+                            :connection='$route.params.connectionid'
                             v-model='config.data'
                         />
                     </div>
@@ -182,8 +183,6 @@ export default {
             handler: function() {
                 if (this.destination === 'connection') {
                     this.config.data = undefined;
-                } else if (this.destination === 'data') {
-                    this.config.connection = undefined;
                 }
             }
         }
@@ -216,8 +215,8 @@ export default {
             this.config.stale = this.layer.stale;
             this.config.priority = this.layer.priority;
 
-            if (this.layer.connection) this.destination = 'connection';
-            else this.destination = 'data';
+            if (this.layer.data) this.destination = 'data';
+            else this.destination = 'connection';
 
             this.disabled = true;
         },

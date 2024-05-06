@@ -4,12 +4,12 @@
         <TablerLoading :inline='true'/>
     </template>
     <template v-else>
-        <div class='d-flex align-items-center'>
+        <div class='d-flex align-items-center mx-2'>
             <template v-if='selected.id'>
-                <span @click='$router.push(`/connection/${selected.connection}/data/${selected.id}`)' class='mt-2 cursor-pointer' v-text='selected.name'/>
+                <span @click='$router.push(`/connection/${selected.connection}/data/${selected.id}`)' class='cursor-pointer' v-text='selected.name'/>
             </template>
             <template v-else>
-                <span class='mt-2'>No Data Repo Selected</span>
+                <span>No Data Repo Selected</span>
             </template>
 
             <div v-if='!disabled' class='ms-auto'>
@@ -61,6 +61,7 @@ import {
 export default {
     name: 'DataSelect',
     props: {
+        connection: Number,
         modelValue: Number,
         disabled: {
             type: Boolean,
@@ -95,10 +96,10 @@ export default {
     },
     methods: {
         fetch: async function() {
-            this.selected = await std(`/api/data/${this.modelValue}`);
+            this.selected = await std(`/api/connection/${this.connection}/data/${this.modelValue}`);
         },
         listData: async function() {
-            this.data = await std('/api/data');
+            this.data = await std(`/api/connection/${this.connection}/data`);
         },
     },
     components: {
