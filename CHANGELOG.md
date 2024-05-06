@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v2.7.0 - 2024-05-05
+
+- :rocket: `UI` Preliminary support for a Feature Select Modal when clicking on overlapping features
+- :bug: `UI` Very rough initial fix for CoTView running off screen on smaller displays
+
 ### v2.6.1 - 2024-05-05
 
 - :rocket: Remove `AuthGroup` CF Parameter
