@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v2.8.1 - 2024-05-06
+
+- :bug: `UI` fix use of `===` when resetting RadialMenu
+
 ### v2.8.0 - 2024-05-06
 
 - :rocket: `API` Improved geometry parsing in ProfileFeature
