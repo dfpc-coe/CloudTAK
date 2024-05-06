@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v2.9.0 - 2024-05-06
+
+- :rocket: `UI` Avoid hash in Component to reduce number of 404 on request after deploy due to cachine
+
 ### v2.8.2 - 2024-05-06
 
 - :bug: `API` Geometry specific styles were being misapplied
