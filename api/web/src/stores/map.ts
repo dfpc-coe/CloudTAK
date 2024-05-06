@@ -371,8 +371,8 @@ export const useMapStore = defineStore('cloudtak', {
             this.map.on('click', (e) => {
                 if (this.draw && this.draw.getMode() !== 'static') return;
 
-                if (this.radial.mode) this.radial.mode === undefined;
-                if (this.select.feats) this.select.feats === [];
+                if (this.radial.mode) this.radial.mode = undefined;
+                if (this.select.feats) this.select.feats = [];
 
                 // Ignore Non-Clickable Layer
                 const clickMap: Map<string, { type: string, id: string }> = new Map();
