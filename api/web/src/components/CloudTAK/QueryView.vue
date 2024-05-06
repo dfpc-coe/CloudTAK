@@ -15,7 +15,7 @@
         </div>
         <div class='col-12 overflow-auto' style='height: calc(100% - 106px)'>
             <Coordinate
-                v-bind='coords'
+                v-bind:modelValue='coords'
                 class='py-2'
             />
 
@@ -60,6 +60,7 @@ export default {
         coords: {
             deep: true,
             handler: async function() {
+                if (!this.coords) return;
                 await this.fetch();
             }
         }

@@ -3,7 +3,7 @@
     <div class='col-12'>
         <label class='subheader mx-2'>National Weather Service</label>
     </div>
-    <div class='col-12 d-flex py-2 px-2'>
+    <div v-if='weather' class='col-12 d-flex py-2 px-2'>
         <IconSun v-if='weather.properties.periods[0].shortForecast.toLowerCase().includes("sunny")' size='40'/>
         <IconMoon v-else-if='weather.properties.periods[0].shortForecast.toLowerCase().includes("clear")' size='40'/>
         <IconCloud v-else-if='weather.properties.periods[0].shortForecast.toLowerCase().includes("cloud")' size='40'/>
@@ -20,6 +20,9 @@
         <div class='d-flex ms-auto'>
             <div class='mx-2' style='font-size: 20px;' v-text='weather.properties.periods[0].shortForecast'></div>
         </div>
+    </div>
+    <div v-else class='col-12 d-flex py-2 px-2'>
+        <div class='mx-2' style='font-size: 20px;'>No Forecast Found</div>
     </div>
 </div>
 </template>
@@ -41,7 +44,6 @@ export default {
     props: {
         weather: {
             type: Object,
-            required: true
         }
     },
     components: {

@@ -7,6 +7,9 @@ import pointOnFeature from '@turf/point-on-feature';
 import { useOverlayStore } from './overlays.js'
 import type { Basemap } from '../types/types.js';
 import type {
+    LngLat,
+    Point,
+    MapTouchEvent,
     LayerSpecification,
     MapGeoJSONFeature
 } from 'maplibre-gl';
@@ -39,6 +42,8 @@ export const useMapStore = defineStore('cloudtak', {
         isLoaded: boolean;
         bearing: number;
         select: {
+            mode?: string;
+            e?: MapTouchEvent;
             feats: MapGeoJSONFeature[];
             x: number;
             y: number;
@@ -58,6 +63,7 @@ export const useMapStore = defineStore('cloudtak', {
             isLoaded: false,
             bearing: 0,
             select: {
+                mode: undefined,
                 feats: [],
                 x: 0, y: 0,
             },
@@ -368,13 +374,24 @@ export const useMapStore = defineStore('cloudtak', {
                 if (this.radial.mode) this.radial.mode === undefined;
                 if (this.select.feats) this.select.feats === [];
 
-                const features = this.map.queryRenderedFeatures(e.point);
+                // Ignore Non-Clickable Layer
+                const clickMap: Map<string, { type: string, id: string }> = new Map();
+                for (const l of this.layers) for (const c of l.clickable) clickMap.set(c.id, c);
+                const features = this.map.queryRenderedFeatures(e.point).filter((feat) => {
+                    return clickMap.has(feat.layer.id);
+                });
+
+                if (!features) return;
 
                 // MultiSelect Mode
                 if (e.originalEvent.ctrlKey && features.length) {
                     this.selected.set(features[0].properties.id, features[0]);
                 } else if (features.length === 1) {
-                    this.radialClick(features[0])
+                    this.radialClick(features[0], {
+                        lngLat: e.lngLat,
+                        point: e.point,
+                        mode: clickMap.get(features[0].layer.id).type
+                    })
                 } else if (features.length > 1) {
                     if (e.point.x < 150 || e.point.y < 150) {
                         const flyTo: mapgl.FlyToOptions = {
@@ -392,34 +409,18 @@ export const useMapStore = defineStore('cloudtak', {
                         this.select.y = e.point.y;
                     }
 
+                    this.select.e = e;
                     this.select.feats = features;
                 }
             });
             this.map.on('contextmenu', (e) => {
                 if (!this.map) throw new Error('Cannot initLayers before map has loaded');
-                this.radial.mode = 'context';
-
-                if (e.point.x < 150 || e.point.y < 150) {
-                    const flyTo: mapgl.FlyToOptions = {
-                        speed: Infinity,
-                        center: [e.lngLat.lng, e.lngLat.lat]
-                    };
-
-                    if (this.map.getZoom() < 3) flyTo.zoom = 4;
-                    this.map.flyTo(flyTo)
-
-                    this.radial.x = this.container ? this.container.clientWidth / 2 : 0;
-                    this.radial.y = this.container ? this.container.clientHeight / 2 : 0;
-                } else {
-                    this.radial.x = e.point.x;
-                    this.radial.y = e.point.y;
-                }
-
-                this.radial.cot = {
+                this.radialClick({
                     id: window.crypto.randomUUID(),
                     type: 'Feature',
                     properties: {
                         callsign: 'New Feature',
+                        archived: true,
                         type: 'u-d-p',
                         color: '#00ff00'
                     },
@@ -427,38 +428,45 @@ export const useMapStore = defineStore('cloudtak', {
                         type: 'Point',
                         coordinates: [e.lngLat.lng, e.lngLat.lat]
                     }
-                };
+                }, {
+                    mode: 'context',
+                    point: e.point,
+                    lngLat: e.lngLat
+                });
             });
         },
-        radialClick: async function(feat: MapGeoJSONFeature) {
+        radialClick: async function(feat: MapGeoJSONFeature, opts: {
+            lngLat: LngLat;
+            point: Point;
+            mode?: string;
+        }) {
             // If the call is coming from MultipleSelect, ensure this menu is closed
             this.select.feats = [];
 
-            const flyTo: mapgl.FlyToOptions = { speed: Infinity };
-            if (feat.geometry.type === 'Point') {
-                flyTo.center = feat.geometry.coordinates;
-            } else {
-                flyTo.center = pointOnFeature(feat.geometry).geometry.coordinates;
+            if (!opts.mode) {
+                const clickMap: Map<string, { type: string, id: string }> = new Map();
+                for (const l of this.layers) for (const c of l.clickable) clickMap.set(c.id, c);
+                opts.mode = clickMap.get(feat.layer.id).type;
             }
 
-            // This is required to ensure the map has nowhere to flyTo - ie the whole world is shown
-            // and then the radial menu won't actually be on the CoT when the CoT is clicked
-            if (this.map.getZoom() < 3) flyTo.zoom = 4;
-            this.map.flyTo(flyTo)
+            if (opts.point.x < 150 || opts.point.y < 150) {
+                const flyTo: mapgl.FlyToOptions = {
+                    speed: Infinity,
+                    center: [opts.lngLat.lng, opts.lngLat.lat]
+                };
 
-            this.radial.x = this.container ? this.container.clientWidth / 2 : 0;
-            this.radial.y = this.container ? this.container.clientHeight / 2 : 0;
+                if (this.map.getZoom() < 3) flyTo.zoom = 4;
+                this.map.flyTo(flyTo)
+
+                this.radial.x = this.container ? this.container.clientWidth / 2 : 0;
+                this.radial.y = this.container ? this.container.clientHeight / 2 : 0;
+            } else {
+                this.radial.x = opts.point.x;
+                this.radial.y = opts.point.y;
+            }
 
             this.radial.cot = feat;
-            for (const l of this.layers) {
-                for (const click of l.clickable) {
-                    if (feat.layer.id === click.id) {
-                        this.radial.mode = click.type;
-                        break;
-                    }
-                }
-            }
-            if (!this.radial.mode) this.radial.mode === 'feat';
+            this.radial.mode = opts.mode;
         },
         initOverlays: async function() {
             await overlayStore.list();

@@ -191,8 +191,7 @@
         v-if='select.feats.length'
     />
 
-    <RadialMenu
-        v-if='radial.mode'
+    <RadialMenu v-else-if='radial.mode'
         @close='closeRadial'
         @click='handleRadial($event)'
         :mode='radial.mode'
@@ -200,7 +199,6 @@
         :y='radial.y'
         ref='radial'
     />
-
 
     <template v-if='upload.shown'>
         <TablerModal>
@@ -322,6 +320,8 @@ export default {
             if (e.key == 'Escape') {
                 if (mapStore.radial.mode) {
                     this.closeRadial()
+                } else if (mapStore.select.feats) {
+                    mapStore.select.feats = [];
                 } else if (this.$route.path.startsWith("/")) {
                     this.$router.push("/");
                 }
@@ -550,6 +550,11 @@ export default {
                         speed: Infinity
                     };
                     mapStore.map.flyTo(flyTo);
+
+                    if (mapStore.radial.mode) {
+                        mapStore.radial.x = mapStore.container ? mapStore.container.clientWidth / 2 : 0;
+                        mapStore.radial.y = mapStore.container ? mapStore.container.clientHeight / 2 : 0;
+                    }
                 }
             } catch (err) {
                 console.error(err);
