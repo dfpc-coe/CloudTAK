@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v2.11.0 - 2024-05-06
+
+- :rocket: `UI` Include Map Hash in URL
+
 ### v2.10.0 - 2024-05-06
 
 - :bug: `UI` `RadialMenu` Component was preventing backspace after use in text inputs
