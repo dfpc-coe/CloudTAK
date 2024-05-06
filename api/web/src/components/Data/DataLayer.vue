@@ -27,7 +27,7 @@
                     </tr>
                 </thead>
                 <tbody class='table-tbody'>
-                    <tr @click='$router.push(`/layer/${layer.id}`)' :key='layer.id' v-for='layer of list.items' class='cursor-pointer'>
+                    <tr @click='$router.push(`/connection/${$route.params.connectionid}/layer/${layer.id}`)' :key='layer.id' v-for='layer of list.items' class='cursor-pointer'>
                         <td>
                             <div class='d-flex align-items-center'>
                                 <LayerStatus :layer='layer'/><div class='mx-2' v-text='layer.name'></div>
