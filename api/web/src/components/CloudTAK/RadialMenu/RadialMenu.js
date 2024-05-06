@@ -30,8 +30,16 @@ export default function RadialMenu(params) {
     self.addIconSymbols();
 
     self.currentMenu = null;
-    document.addEventListener('wheel', self.onMouseWheel.bind(self));
-    document.addEventListener('keydown', self.onKeyDown.bind(self));
+
+    self.onMouseWheelHandler = (event) => {
+        this.onMouseWheel(event);
+    }
+    self.onKeyDownHandler = (event) => {
+        this.onMouseWheel(event);
+    }
+
+    document.addEventListener('wheel', self.onMouseWheelHandler);
+    document.addEventListener('keydown', self.onKeyDownHandler);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -51,6 +59,9 @@ RadialMenu.prototype.open = function () {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 RadialMenu.prototype.close = function () {
     var self = this;
+
+    document.removeEventListener('wheel', self.onMouseWheelHandler);
+    document.removeEventListener('keydown', self.onKeyDownHandler);
 
     if (self.currentMenu) {
         var parentMenu;

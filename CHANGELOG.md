@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v2.10.0 - 2024-05-06
+
+- :bug: `UI` `RadialMenu` Component was preventing backspace after use in text inputs
+
 ### v2.9.0 - 2024-05-06
 
 - :rocket: `UI` Avoid hash in Component to reduce number of 404 on request after deploy due to cachine
