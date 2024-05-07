@@ -80,6 +80,7 @@ export default {
     methods: {
         fetchMissions: async function() {
             await overlayStore.list();
+            this.err = false;
 
             try {
                 this.loading = true;
