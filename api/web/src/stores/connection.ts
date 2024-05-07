@@ -4,7 +4,7 @@ import { std, stdurl } from '../std.ts';
 import moment from 'moment';
 import type { Feature } from 'geojson';
 import { useCOTStore } from './cots.ts';
-import { useProfileStore } from './profile.js';
+import { useProfileStore } from './profile.ts';
 const profileStore = useProfileStore();
 const cotStore = useCOTStore();
 
@@ -55,7 +55,7 @@ export const useConnectionStore = defineStore('connection', {
                 }
             });
         },
-        sendCOT: function(data, type='cot') {
+        sendCOT: function(data: any, type = 'cot') {
             if (!this.ws || this.ws.readyState !== WebSocket.OPEN) return;
             this.ws.send(JSON.stringify({ type, data }));
         },

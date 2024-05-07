@@ -1,8 +1,17 @@
 import { defineStore } from 'pinia'
 import { std, stdurl } from '../std.ts';
+import type { Profile } from '../types.ts';
 
 export const useProfileStore = defineStore('profile', {
-    state: () => {
+    state: (): {
+        notifications: Array<{
+            type: string;
+            name: string;
+            url: string;
+        }>;
+        channels: Array<any>;
+        profile: Profile | null;
+    } => {
         return {
             notifications: [],
             channels: [],
@@ -11,6 +20,8 @@ export const useProfileStore = defineStore('profile', {
     },
     actions: {
         CoT: function() {
+            if (!this.profile) throw new Error('Profile must be loaded before CoT is called');
+
             return {
                 // Need to differentiate between servers eventually
                 id: `ANDROID-CloudTAK-${this.profile.username}`,

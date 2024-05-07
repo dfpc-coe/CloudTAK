@@ -35,7 +35,7 @@ import {
     IconDownload
 } from '@tabler/icons-vue';
 import { mapState } from 'pinia'
-import { useProfileStore } from '/src/stores/profile.js';
+import { useProfileStore } from '/src/stores/profile.ts';
 
 export default {
     name: 'CloudTAKPackage',

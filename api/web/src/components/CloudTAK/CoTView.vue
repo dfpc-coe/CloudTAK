@@ -182,7 +182,7 @@ import {
 } from '@tabler/icons-vue';
 import { useCOTStore } from '/src/stores/cots.ts';
 const cotStore = useCOTStore();
-import { useProfileStore } from '/src/stores/profile.js';
+import { useProfileStore } from '/src/stores/profile.ts';
 
 export default {
     name: 'CloudTAKCoTView',

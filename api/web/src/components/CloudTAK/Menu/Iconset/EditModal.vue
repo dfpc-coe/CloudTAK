@@ -23,7 +23,7 @@
 <script>
 import { std, stdurl } from '/src/std.ts';
 import { mapState } from 'pinia'
-import { useProfileStore } from '/src/stores/profile.js';
+import { useProfileStore } from '/src/stores/profile.ts';
 import {
     TablerModal,
     TablerLoading,
