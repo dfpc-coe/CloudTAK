@@ -523,23 +523,13 @@ export const useMapStore = defineStore('cloudtak', {
                 const url = stdurl(overlay.url);
                 url.searchParams.append('token', localStorage.token);
 
-                let base = {
+                await this.addDefaultLayer({
                     ...overlay,
                     id: `${overlay.mode}-${overlay.mode_id}-${overlay.id}`,
                     url: String(url),
                     save: true,
                     overlay: overlay.id,
-                };
-
-                if (overlay.mode == 'mission') {
-                    await this.addDefaultLayer({
-                    } as OverlayContainer, true)
-                } else {
-
-                    await this.addDefaultLayer({
-                        url: String(url),
-                    } as OverlayContainer, true)
-                }
+                } as OverlayContainer, true)
             }
         },
         initDraw: function() {
