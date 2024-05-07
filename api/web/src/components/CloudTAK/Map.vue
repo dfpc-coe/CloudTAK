@@ -540,7 +540,7 @@ export default {
                     const overlay = overlayStore.subscriptions.get(sub)
                     if (!overlay) continue;
 
-                    const oStore = mapStore.map.getSource(overlay.id);
+                    const oStore = mapStore.map.getSource(`${overlay.mode}-${overlay.mode_id}-${overlay.id}`);
                     if (oStore) oStore.setData(cotStore.collection(cotStore.subscriptions.get(sub)))
                 }
 
