@@ -17,28 +17,27 @@ import type {
     FillLayerSpecification,
     MapGeoJSONFeature
 } from 'maplibre-gl';
-import { Type } from '@sinclair/typebox';
-import type { Static } from '@sinclair/typebox';
 const overlayStore = useOverlayStore();
 
-export const OverlayContainer = Type.Object({
-    id: Type.String(),
-    url: Type.Optional(Type.String()),
-    name: Type.String(),
-    save: Type.Boolean(),
-    visible: Type.String(),
-    opacity: Type.Integer(),
-    mode: Type.String(),
-    mode_id: Type.Optional(Type.String()),
-    overlay: Type.Optional(Type.Integer()),
-    source: Type.String(),
-    type: Type.String(),
-    before: Type.String(),
-    clickable: Type.Array(Type.Object({
-        id: Type.String(),
-        type: Type.String()
-    }))
-});
+export type OverlayContainer = {
+    id: string;
+    url?: string;
+    name: string;
+    save: boolean;
+    visible: string;
+    opacity: number;
+    mode: string;
+    mode_id?: string;
+    overlay?: number;
+    source: string;
+    type: string;
+    before: string;
+    layers: Array<LayerSpecification>,
+    clickable: Array<{
+        id: string;
+        type: string;
+    }>
+};
 
 export const useMapStore = defineStore('cloudtak', {
     state: (): {
@@ -61,7 +60,7 @@ export const useMapStore = defineStore('cloudtak', {
             x: number;
             y: number;
         },
-        layers: Static<typeof OverlayContainer> []
+        layers: OverlayContainer[]
     } => {
         const protocol = new pmtiles.Protocol();
         mapgl.addProtocol('pmtiles', protocol.tile);
@@ -82,7 +81,22 @@ export const useMapStore = defineStore('cloudtak', {
         }
     },
     actions: {
-        addLayer: async function(layer, layers, config: {
+        addLayer: async function(layer: {
+            id: string;
+            name: string;
+            source: string;
+            layers: Array<LayerSpecification>;
+            url?: string;
+            save?: boolean;
+            visible?: string;
+            opacity?: number;
+            mode?: string;
+            mode_id?: string;
+            overlay?: number;
+            type?: string;
+            before?: string;
+            clickable?: Array<{ id: string; type: string; }>
+        }, config: {
             initial: boolean;
         } = {
             initial: false
@@ -99,8 +113,6 @@ export const useMapStore = defineStore('cloudtak', {
             if (!layer.visible) layer.visible = 'visible';
             if (isNaN(layer.opacity)) layer.opacity = 1;
             if (!layer.type) layer.type = 'raster';
-
-            layer.layers = layers;
 
             const beforePos = this.getLayerPos(layer.before)
             if (layer.before && beforePos !== false) {
@@ -133,7 +145,7 @@ export const useMapStore = defineStore('cloudtak', {
                 });
             }
         },
-        updateLayer: async function(newLayer: Static<typeof OverlayContainer>) {
+        updateLayer: async function(newLayer: OverlayContainer) {
             if (!this.map) throw new Error('Cannot updateLayer before map has loaded');
 
             const pos = this.getLayerPos(newLayer.name);
@@ -260,7 +272,7 @@ export const useMapStore = defineStore('cloudtak', {
             //@ts-expect-error Type instantiation is excessively deep and possibly infinite
             this.map = new mapgl.Map(init);
         },
-        addDefaultLayer: async function(layer: Static<typeof OverlayContainer>, initial=false) {
+        addDefaultLayer: async function(layer: OverlayContainer, initial=false) {
             if (!this.map) throw new Error('Cannot addDefaultLayer before map has loaded');
 
             if (this.map.getSource(layer.id)) {
@@ -300,11 +312,13 @@ export const useMapStore = defineStore('cloudtak', {
                         { id: `${layer.id}-line`, type: 'feat' },
                         { id: `${layer.id}-icon`, type: 'feat' },
                         { id: layer.id, type: 'feat' }
-                    ]
-                }, cotStyles(layer.id, {
-                    icons: layer.type === 'geojson',
-                    labels: layer.type === 'geojson',
-                }), {
+                    ],
+                    layers: cotStyles(layer.id, {
+                        icons: layer.type === 'geojson',
+                        labels: layer.type === 'geojson',
+                    }),
+                },
+                {
                     initial: initial
                 });
             } else {
@@ -325,11 +339,12 @@ export const useMapStore = defineStore('cloudtak', {
                     source: layer.id,
                     type: 'raster',
                     before: 'CoT Icons',
-                },[{
-                    id: layer.id,
-                    type: 'raster',
-                    source: layer.id
-                }]);
+                    layers: [{
+                        id: layer.id,
+                        type: 'raster',
+                        source: layer.id
+                    }]
+                });
             }
         },
         initLayers: async function(basemap?: Basemap) {
@@ -341,13 +356,14 @@ export const useMapStore = defineStore('cloudtak', {
                     name: basemap.name,
                     source: 'basemap',
                     type: 'raster',
-                }, [{
-                    id: 'basemap',
-                    type: 'raster',
-                    source: 'basemap',
-                    minzoom: basemap.minzoom,
-                    maxzoom: basemap.maxzoom
-                }]);
+                    layers: [{
+                        id: 'basemap',
+                        type: 'raster',
+                        source: 'basemap',
+                        minzoom: basemap.minzoom,
+                        maxzoom: basemap.maxzoom
+                    }]
+                });
             }
 
             await this.addLayer({
@@ -360,26 +376,28 @@ export const useMapStore = defineStore('cloudtak', {
                     { id: 'cots-group', type: 'cot' },
                     { id: `cots-icon`, type: 'cot' },
                     { id: 'cots-line', type: 'cot' }
-                ]
-            }, cotStyles('cots', {
-                group: true,
-                icons: true,
-                labels: true
-            }));
+                ],
+                layers: cotStyles('cots', {
+                    group: true,
+                    icons: true,
+                    labels: true
+                })
+            });
 
             await this.addLayer({
                 name: 'Your Location',
                 source: 'you',
-                type: 'vector'
-            }, [{
-                id: 'you',
-                type: 'circle',
-                source: 'you',
-                paint: {
-                    'circle-radius': 10,
-                    'circle-color': '#0000f6',
-                },
-            }]);
+                type: 'vector',
+                layers: [{
+                    id: 'you',
+                    type: 'circle',
+                    source: 'you',
+                    paint: {
+                        'circle-radius': 10,
+                        'circle-color': '#0000f6',
+                    },
+                }]
+            });
 
             map.on('rotate', () => {
                 this.bearing = map.getBearing()
@@ -497,7 +515,7 @@ export const useMapStore = defineStore('cloudtak', {
                         id: `${overlay.mode}-${overlay.mode_id}-${overlay.id}`,
                         save: true,
                         overlay: overlay.id,
-                    } as Static<typeof OverlayContainer>, true)
+                    } as OverlayContainer, true)
                 } else {
                     const url = stdurl(overlay.url);
                     url.searchParams.append('token', localStorage.token);
@@ -507,7 +525,7 @@ export const useMapStore = defineStore('cloudtak', {
                         overlay: overlay.id,
                         id: `${overlay.mode}-${overlay.mode_id}-${overlay.id}`,
                         save: true,
-                    } as Static<typeof OverlayContainer>, true)
+                    } as OverlayContainer, true)
                 }
             }
         },
@@ -536,8 +554,8 @@ function cotStyles(id: string, opts: {
     group: false,
     labels: false,
     icons: false
-}) {
-    const styles: LayerSpecification[] = [];
+}): Array<LayerSpecification> {
+    const styles: Array<LayerSpecification> = [];
 
     const poly: FillLayerSpecification = {
         id: `${id}-poly`,
@@ -707,4 +725,6 @@ function cotStyles(id: string, opts: {
             }
         });
     }
+
+    return styles;
 }

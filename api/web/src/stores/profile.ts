@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { std, stdurl } from '../std.ts';
-import type { Profile } from '../types.ts';
+import type { Profile, Profile_Update } from '../types.ts';
 
 export const useProfileStore = defineStore('profile', {
     state: (): {
@@ -30,7 +30,7 @@ export const useProfileStore = defineStore('profile', {
             url.searchParams.append('useCache', 'true');
             this.channels = (await std(url)).data;
         },
-        update: async function(body): Promise<void> {
+        update: async function(body: Profile_Update): Promise<void> {
             this.profile = await std('/api/profile', {
                 method: 'PATCH',
                 body
