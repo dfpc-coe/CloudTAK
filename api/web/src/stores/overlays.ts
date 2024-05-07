@@ -5,7 +5,6 @@ import pointOnFeature from '@turf/point-on-feature';
 import { useCOTStore } from './cots.js'
 const cotStore = useCOTStore();
 import type { ProfileOverlay } from '../types.js';
-import type { OverlayContainer } from './map.js';
 import type { Static } from '@sinclair/typebox';
 
 export const useOverlayStore = defineStore('overlays', {
@@ -21,7 +20,7 @@ export const useOverlayStore = defineStore('overlays', {
         }
     },
     actions: {
-        saveOverlay: async function(container: Static<typeof OverlayContainer>): Promise<number> {
+        saveOverlay: async function(container: ProfileOverlay): Promise<number> {
             const overlay = await std('/api/profile/overlay', {
                 method: 'POST',
                 body: container
@@ -31,7 +30,7 @@ export const useOverlayStore = defineStore('overlays', {
 
             return overlay.id;
         },
-        updateOverlay: async function(container: Static<typeof OverlayContainer>): Promise<number> {
+        updateOverlay: async function(container: ProfileOverlay): Promise<number> {
             const overlay = await std(`/api/profile/overlay/${container.id}`, {
                 method: 'PATCH',
                 body: container

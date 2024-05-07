@@ -1,10 +1,10 @@
 import { defineStore } from 'pinia'
-import { GeoJSONSourceDiff } from 'maplibre-gl';
+import type { GeoJSONSourceDiff } from 'maplibre-gl';
 import pointOnFeature from '@turf/point-on-feature';
 import { std, stdurl } from '../std.ts';
 import moment from 'moment';
 import type { Feature } from 'geojson';
-import { useProfileStore } from './profile.js';
+import { useProfileStore } from './profile.ts';
 const profileStore = useProfileStore();
 
 export const useCOTStore = defineStore('cots', {
@@ -29,7 +29,7 @@ export const useCOTStore = defineStore('cots', {
         /**
          * Load Archived CoTs from localStorage
          */
-        loadArchive: async function(): void {
+        loadArchive: async function(): Promise<void> {
             const archive = await std('/api/profile/feature');
             for (const a of archive.items) {
                 this.archive.set(a.id, a);
@@ -61,6 +61,8 @@ export const useCOTStore = defineStore('cots', {
             }
 
             for (const cot of this.cots.values()) {
+                if (!cot.properties) cot.properties = {};
+
                 if (
                     profileStore.profile.display_stale === 'Immediate'
                     && !cot.properties.archived
@@ -104,7 +106,7 @@ export const useCOTStore = defineStore('cots', {
         /**
          * Return a FeatureCollection of a non-default CoT Store
          */
-        collection(store) {
+        collection(store: Map<string, Feature>) {
             return {
                 type: 'FeatureCollection',
                 features: Array.from(store.values())
@@ -114,7 +116,7 @@ export const useCOTStore = defineStore('cots', {
         /**
          * Return a CoT by ID if it exists
          */
-        get: function(id: string): Feature {
+        get: function(id: string): Feature | undefined {
             return this.cots.get(id);
         },
         /**
@@ -148,6 +150,7 @@ export const useCOTStore = defineStore('cots', {
          * Consistent feature manipulation between add & update
          */
         style: function(feat: Feature): Feature {
+            if (!feat.properties) feat.properties = {};
             //Vector Tiles only support integer IDs
             feat.properties.id = feat.id;
 
@@ -238,9 +241,9 @@ export const useCOTStore = defineStore('cots', {
         /**
          * Update a feature that exists in the store
          */
-        update: async function(feat: Feature): void {
+        update: async function(feat: Feature): Promise<void> {
             feat = this.style(feat);
-            this.pending.set(feat.id, feat);
+            this.pending.set(String(feat.id), feat);
 
             if (feat.properties.archived) {
                 this.archive.set(feat.id, feat);
@@ -267,7 +270,7 @@ export const useCOTStore = defineStore('cots', {
 
                 cots.set(feat.id, feat);
             } else {
-                this.pending.set(feat.id, feat);
+                this.pending.set(String(feat.id), feat);
 
                 if (feat.properties.archived) {
                     this.archive.set(feat.id, feat);

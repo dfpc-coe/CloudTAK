@@ -111,7 +111,7 @@
 </template>
 
 <script>
-import { useProfileStore } from '/src/stores/profile.js';
+import { useProfileStore } from '/src/stores/profile.ts';
 import PageFooter from './PageFooter.vue';
 import Alert from './util/Alert.vue';
 import {

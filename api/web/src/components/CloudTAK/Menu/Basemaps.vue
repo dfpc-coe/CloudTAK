@@ -64,7 +64,7 @@ import {
 } from '@tabler/icons-vue'
 import { mapState } from 'pinia'
 import { useMapStore } from '/src/stores/map.ts';
-import { useProfileStore } from '/src/stores/profile.js';
+import { useProfileStore } from '/src/stores/profile.ts';
 const mapStore = useMapStore();
 
 export default {

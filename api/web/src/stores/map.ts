@@ -5,12 +5,16 @@ import mapgl from 'maplibre-gl'
 import * as terraDraw from 'terra-draw';
 import pointOnFeature from '@turf/point-on-feature';
 import { useOverlayStore } from './overlays.js'
-import type { Basemap, ProfileOverlay } from './types.js';
+import type { Basemap, ProfileOverlay } from '../types.ts';
+import type { Feature } from 'geojson';
 import type {
     LngLat,
     Point,
     MapTouchEvent,
     LayerSpecification,
+    CircleLayerSpecification,
+    LineLayerSpecification,
+    FillLayerSpecification,
     MapGeoJSONFeature
 } from 'maplibre-gl';
 import { Type } from '@sinclair/typebox';
@@ -22,6 +26,7 @@ export const OverlayContainer = Type.Object({
     url: Type.Optional(Type.String()),
     name: Type.String(),
     save: Type.Boolean(),
+    visible: Type.String(),
     mode: Type.String(),
     mode_id: Type.Optional(Type.String()),
     overlay: Type.Optional(Type.Integer()),
@@ -82,6 +87,7 @@ export const useMapStore = defineStore('cloudtak', {
             initial: false
         }) {
             if (!this.map) throw new Error('Cannot addLayer before map has loaded');
+            const map = this.map;
 
             if (!layer.name) throw new Error('Layer Name must be set');
             if (!layer.source) throw new Error('Layer Source must be set');
@@ -104,17 +110,17 @@ export const useMapStore = defineStore('cloudtak', {
             }
 
             for (const l of layer.layers) {
-                this.map.addLayer(l, layer.before);
+                map.addLayer(l, layer.before);
             }
 
             for (const click of layer.clickable) {
-                this.map.on('mouseenter', click.id, () => {
+                map.on('mouseenter', click.id, () => {
                     if (this.draw && this.draw.getMode() !== 'static') return;
-                    this.map.getCanvas().style.cursor = 'pointer';
+                    map.getCanvas().style.cursor = 'pointer';
                 })
-                this.map.on('mouseleave', click.id, () => {
+                map.on('mouseleave', click.id, () => {
                     if (this.draw && this.draw.getMode() !== 'static') return;
-                    this.map.getCanvas().style.cursor = '';
+                    map.getCanvas().style.cursor = '';
                 })
             }
 
@@ -127,6 +133,8 @@ export const useMapStore = defineStore('cloudtak', {
             }
         },
         updateLayer: async function(newLayer: Static<typeof OverlayContainer>) {
+            if (!this.map) throw new Error('Cannot updateLayer before map has loaded');
+
             const pos = this.getLayerPos(newLayer.name);
             if (pos === false) return
             this.layers[pos] = newLayer;
@@ -167,6 +175,8 @@ export const useMapStore = defineStore('cloudtak', {
             return false
         },
         removeLayer: async function(name: string) {
+            if (!this.map) throw new Error('Cannot removeLayer before map has loaded');
+
             const pos = this.getLayerPos(name);
             if (pos === false) return;
             const layer = this.layers[pos];
@@ -183,7 +193,7 @@ export const useMapStore = defineStore('cloudtak', {
                 await overlayStore.deleteOverlay(layer.overlay);
             }
         },
-        init: function(container: HTMLElement, basemap: Static<typeof BasemapResponse>, terrain?: Static<typeof BasemapResponse>) {
+        init: function(container: HTMLElement, basemap?: Basemap, terrain?: Basemap) {
             this.container = container;
 
             const init: mapgl.MapOptions = {
@@ -246,6 +256,7 @@ export const useMapStore = defineStore('cloudtak', {
                 }
             }
 
+            //@ts-expect-error Type instantiation is excessively deep and possibly infinite
             this.map = new mapgl.Map(init);
         },
         addDefaultLayer: async function(layer: Static<typeof OverlayContainer>, initial=false) {
@@ -321,8 +332,9 @@ export const useMapStore = defineStore('cloudtak', {
                 }]);
             }
         },
-        initLayers: async function(basemap?: Static<typeof BasemapResponse>) {
+        initLayers: async function(basemap?: Basemap) {
             if (!this.map) throw new Error('Cannot initLayers before map has loaded');
+            const map = this.map;
 
             if (basemap) {
                 await this.addLayer({
@@ -369,8 +381,10 @@ export const useMapStore = defineStore('cloudtak', {
                 },
             }]);
 
-            this.map.on('rotate', () => { this.bearing = this.map.getBearing() })
-            this.map.on('click', (e) => {
+            map.on('rotate', () => {
+                this.bearing = map.getBearing()
+            })
+            map.on('click', (e) => {
                 if (this.draw && this.draw.getMode() !== 'static') return;
 
                 if (this.radial.mode) this.radial.mode = undefined;
@@ -379,7 +393,7 @@ export const useMapStore = defineStore('cloudtak', {
                 // Ignore Non-Clickable Layer
                 const clickMap: Map<string, { type: string, id: string }> = new Map();
                 for (const l of this.layers) for (const c of l.clickable) clickMap.set(c.id, c);
-                const features = this.map.queryRenderedFeatures(e.point).filter((feat) => {
+                const features = map.queryRenderedFeatures(e.point).filter((feat) => {
                     return clickMap.has(feat.layer.id);
                 });
 
@@ -401,8 +415,8 @@ export const useMapStore = defineStore('cloudtak', {
                             center: [e.lngLat.lng, e.lngLat.lat]
                         };
 
-                        if (this.map.getZoom() < 3) flyTo.zoom = 4;
-                        this.map.flyTo(flyTo)
+                        if (map.getZoom() < 3) flyTo.zoom = 4;
+                        map.flyTo(flyTo)
 
                         this.select.x = this.container ? this.container.clientWidth / 2 : 0;
                         this.select.y = this.container ? this.container.clientHeight / 2 : 0;
@@ -415,8 +429,7 @@ export const useMapStore = defineStore('cloudtak', {
                     this.select.feats = features;
                 }
             });
-            this.map.on('contextmenu', (e) => {
-                if (!this.map) throw new Error('Cannot initLayers before map has loaded');
+            map.on('contextmenu', (e) => {
                 this.radialClick({
                     id: window.crypto.randomUUID(),
                     type: 'Feature',
@@ -437,18 +450,23 @@ export const useMapStore = defineStore('cloudtak', {
                 });
             });
         },
-        radialClick: async function(feat: MapGeoJSONFeature, opts: {
+        radialClick: async function(feat: MapGeoJSONFeature | Feature, opts: {
             lngLat: LngLat;
             point: Point;
             mode?: string;
-        }) {
+        }): Promise<void> {
+            if (!this.map) throw new Error('Cannot radialClick before map has loaded');
+
             // If the call is coming from MultipleSelect, ensure this menu is closed
             this.select.feats = [];
 
             if (!opts.mode) {
                 const clickMap: Map<string, { type: string, id: string }> = new Map();
                 for (const l of this.layers) for (const c of l.clickable) clickMap.set(c.id, c);
-                opts.mode = clickMap.get(feat.layer.id).type;
+                if (!feat.layer) return;
+                const click = clickMap.get(feat.layer.id);
+                if (!click) return;
+                opts.mode = click.type;
             }
 
             if (opts.point.x < 150 || opts.point.y < 150) {
@@ -521,7 +539,7 @@ function cotStyles(id: string, opts: {
 }) {
     const styles: LayerSpecification[] = [];
 
-    styles.push(...[{
+    const poly: FillLayerSpecification = {
         id: `${id}-poly`,
         type: 'fill',
         source: id,
@@ -531,7 +549,11 @@ function cotStyles(id: string, opts: {
             'fill-opacity': ['/', ["number", ["get", "fill-opacity"], 255], 255],
             'fill-color': ["string", ["get", "fill"], "#00FF00"]
         }
-    },{
+    }
+
+    styles.push(poly);
+
+    const polyline: LineLayerSpecification = {
         id: `${id}-polyline`,
         type: 'line',
         source: id,
@@ -545,7 +567,11 @@ function cotStyles(id: string, opts: {
             'line-width': ["number", ["get", "stroke-width"], 3],
             'line-opacity': ['/', ["number", ["get", "stroke-opacity"], 255], 255],
         }
-    },{
+    }
+
+    styles.push(polyline);
+   
+    const line: LineLayerSpecification = {
         id: `${id}-line`,
         type: 'line',
         source: id,
@@ -559,9 +585,11 @@ function cotStyles(id: string, opts: {
             'line-width': ["*", 2, ["number", ["get", "stroke-width"], 3]],
             'line-opacity': ['/', ["number", ["get", "stroke-opacity"], 255], 255],
         }
-    }])
+    };
 
-    const circle = {
+    styles.push(line);
+
+    const circle: CircleLayerSpecification = {
         id: id,
         type: 'circle',
         source: id,
@@ -575,6 +603,7 @@ function cotStyles(id: string, opts: {
     }
 
     if (opts.group) {
+        // @ts-expect-error Type defs don't allow this
         circle.filter.push(['!has', 'group']);
     }
 
@@ -611,6 +640,7 @@ function cotStyles(id: string, opts: {
             ['==', '$type', 'Point'],
             ['has', 'group']
         ]
+
         styles.push({
             id: 'cots-group',
             type: 'circle',

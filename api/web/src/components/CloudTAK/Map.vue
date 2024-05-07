@@ -257,7 +257,7 @@ import RadialMenu from './RadialMenu/RadialMenu.vue';
 import { mapState, mapActions } from 'pinia'
 import { useMapStore } from '/src/stores/map.ts';
 import { useOverlayStore } from '/src/stores/overlays.ts';
-import { useProfileStore } from '/src/stores/profile.js';
+import { useProfileStore } from '/src/stores/profile.ts';
 import { useCOTStore } from '/src/stores/cots.ts';
 import { useConnectionStore } from '/src/stores/connection.ts';
 import UploadImport from './util/UploadImport.vue'

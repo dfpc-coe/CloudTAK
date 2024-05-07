@@ -47,7 +47,7 @@ import {
 import MenuTemplate from '../util/MenuTemplate.vue';
 import IconEditModal from './Icon/EditModal.vue';
 import { mapState } from 'pinia';
-import { useProfileStore } from '/src/stores/profile.js';
+import { useProfileStore } from '/src/stores/profile.ts';
 
 export default {
     name: 'CloudTAKIcon',
