@@ -64,39 +64,48 @@ export const useCOTStore = defineStore('cots', {
                 update: []
             }
 
+            const display_stale = profileStore.profile ? profileStore.profile.display_stale : 'Immediate';
+
             for (const cot of this.cots.values()) {
                 if (!cot.properties) cot.properties = {};
 
                 if (
-                    profileStore.profile.display_stale === 'Immediate'
+                    display_stale === 'Immediate'
                     && !cot.properties.archived
                     && now.isAfter(cot.properties.stale)
                 ) {
                     diff.remove.push(cot.id);
                 } else if (
-                    !['Never', 'Immediate'].includes(profileStore.profile.display_stale)
+                    !['Never', 'Immediate'].includes(display_stale)
                     && !cot.properties.archived
-                    && !now.isBefore(moment(cot.properties.stale).add(...profileStore.profile.display_stale.split(' ')))
+                    && !now.isBefore(moment(cot.properties.stale).add(...display_stale.split(' ')))
                 ) {
-                    diff.remove.push(cot.id)
+                    diff.remove.push(String(cot.id))
                 } else if (!cot.properties.archived) {
                     if (now.isBefore(moment(cot.properties.stale)) && (cot.properties['icon-opacity'] !== 1 || cot.properties['circle-opacity'] !== 255)) {
                         cot.properties['icon-opacity'] = 1;
                         cot.properties['circle-opacity'] = 255;
+
+                        if (!['Point', 'Polygon', 'LineString'].includes(cot.geometry.type)) continue;
+
                         diff.update.push({
-                            id: cot.id,
+                            id: String(cot.id),
                             addOrUpdateProperties: Object.keys(cot.properties).map((key) => {
-                                return { key, value: cot.properties[key] }
+                                return { key, value: cot.properties ? cot.properties[key] : '' }
                             }),
+                            // @ts-expect-error Only Certain Geoms are supported
                             newGeometry: cot.geometry
                         })
                     } else if (!now.isBefore(moment(cot.properties.stale)) && (cot.properties['icon-opacity'] !== 0.5 || cot.properties['circle-opacity'] !== 127)) {
                         cot.properties['icon-opacity'] = 0.5;
                         cot.properties['circle-opacity'] = 127;
+
+                        if (!['Point', 'Polygon', 'LineString'].includes(cot.geometry.type)) continue;
+
                         diff.update.push({
-                            id: cot.id,
+                            id: String(cot.id),
                             addOrUpdateProperties: Object.keys(cot.properties).map((key) => {
-                                return { key, value: cot.properties[key] }
+                                return { key, value: cot.properties ? cot.properties[key] : '' }
                             }),
                             newGeometry: cot.geometry
                         })
@@ -211,7 +220,7 @@ export const useCOTStore = defineStore('cots', {
                     if (!feat.properties.icon.includes(':')) {
                         feat.properties.icon = feat.properties.icon.replace('/', ':')
                     }
-                    
+
                     if (feat.properties.icon.endsWith('.png')) {
                         feat.properties.icon = feat.properties.icon.replace(/.png$/, '');
                     }
@@ -245,7 +254,9 @@ export const useCOTStore = defineStore('cots', {
         /**
          * Add a CoT GeoJSON to the store and modify props to meet MapLibre style requirements
          */
-        add: async function(feat: Feature, mission_guid=null) {
+        add: async function(feat: Feature, mission_guid?: string) {
+            if (!feat.properties) feat.properties = {};
+
             if (!feat.id && !feat.properties.id) {
                 feat.id = self.crypto.randomUUID();
             }
@@ -259,12 +270,12 @@ export const useCOTStore = defineStore('cots', {
                     this.subscriptions.set(mission_guid, cots);
                 }
 
-                cots.set(feat.id, feat);
+                cots.set(String(feat.id), feat);
             } else {
                 this.pending.set(String(feat.id), feat);
 
-                if (feat.properties.archived) {
-                    this.archive.set(feat.id, feat);
+                if (feat.properties && feat.properties.archived) {
+                    this.archive.set(String(feat.id), feat);
                     await std('/api/profile/feature', { method: 'PUT', body: feat })
                 }
             }

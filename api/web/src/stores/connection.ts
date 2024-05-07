@@ -43,19 +43,28 @@ export const useConnectionStore = defineStore('connection', {
                 if (localStorage.token) this.connectSocket(connection);
             });
             this.ws.addEventListener('message', async (msg) => {
-                msg = JSON.parse(msg.data);
-                if (msg.type === 'Error') throw new Error(msg.properties.message);
+                const body = JSON.parse(msg.data) as {
+                    type: string;
+                    connection: number | string;
+                    data: unknown
+                };
 
-                if (msg.type === 'cot') {
-                    await cotStore.add(msg.data);
-                } else if (msg.type === 'chat') {
+                if (body.type === 'Error') {
+                    const err = body.data as {
+                        properties: { message: string }
+                    };
+
+                    throw new Error(err.properties.message);
+                } else if (body.type === 'cot') {
+                    await cotStore.add(body.data as Feature);
+                } else if (body.type === 'chat') {
                     profileStore.notifications.push({
                         type: 'Chat',
                         name: 'New Chat',
                         url: `/menu/chats`
                     });
                 } else {
-                    console.log('UNKNOWN', msg.data);
+                    console.log('UNKNOWN', body.data);
                 }
             });
         },
