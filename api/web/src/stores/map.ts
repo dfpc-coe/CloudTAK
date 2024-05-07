@@ -5,7 +5,7 @@ import mapgl from 'maplibre-gl'
 import * as terraDraw from 'terra-draw';
 import pointOnFeature from '@turf/point-on-feature';
 import { useOverlayStore } from './overlays.js'
-import type { Basemap } from '../types/types.js';
+import type { Basemap, ProfileOverlay } from './types.js';
 import type {
     LngLat,
     Point,
@@ -41,6 +41,7 @@ export const useMapStore = defineStore('cloudtak', {
         container?: HTMLElement;
         isLoaded: boolean;
         bearing: number;
+        selected: Map<string, MapGeoJSONFeature>;
         select: {
             mode?: string;
             e?: MapTouchEvent;
@@ -54,7 +55,7 @@ export const useMapStore = defineStore('cloudtak', {
             x: number;
             y: number;
         },
-        layers: Static<typeof OverlayContainer>
+        layers: Static<typeof OverlayContainer> []
     } => {
         const protocol = new pmtiles.Protocol();
         mapgl.addProtocol('pmtiles', protocol.tile);

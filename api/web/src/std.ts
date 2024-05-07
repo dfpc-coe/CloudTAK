@@ -1,3 +1,5 @@
+import type { APIError } from './types.js'
+
 export function stdurl(url: string | URL): URL {
     try {
         url = new URL(url);
@@ -42,6 +44,7 @@ export async function std(url: string | URL, opts: any = {}): Promise<any> {
                 throw new Error(`Status Code: ${res.status}`);
             }
 
+            const errbody = body as APIError;
             const err = new Error(bdy.message || `Status Code: ${res.status}`);
             err.body = bdy;
             throw err;

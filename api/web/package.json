@@ -5,6 +5,7 @@
     "private": true,
     "scripts": {
         "serve": "vite serve --port 8080",
+        "typegen": "openapi-typescript http://localhost:5001/api/swagger --output src/derived-types.d.ts",
         "check": "vue-tsc",
         "build": "vite build",
         "lint": "eslint ./src/**/*.vue ./src/**/*.js"
@@ -43,6 +44,7 @@
         "babel-preset-vite": "^1.1.3",
         "eslint": "^8.11.0",
         "eslint-plugin-vue": "^9.0.0",
+        "openapi-typescript": "^6.7.5",
         "vite": "^5.0.0",
         "vite-plugin-babel": "^1.2.0",
         "vue-tsc": "^2.0.3"
