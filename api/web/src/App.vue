@@ -114,6 +114,10 @@ export default {
         }
     },
     mounted: async function() {
+        window.addEventListener('unhandledrejection', (e) => {
+            this.err = e.reason;
+        });
+
         if (localStorage.token) {
             await this.getLogin();
             await this.getServer();

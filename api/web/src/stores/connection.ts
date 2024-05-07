@@ -1,3 +1,7 @@
+/*
+* ConnectionStore - Maintain the WebSocket connection with CloudTAK Server
+*/
+
 import { defineStore } from 'pinia'
 import pointOnFeature from '@turf/point-on-feature';
 import { std, stdurl } from '../std.ts';

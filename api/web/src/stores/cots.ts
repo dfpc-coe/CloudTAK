@@ -1,3 +1,7 @@
+/*
+* CotStore - Store & perform updates on all underlying CoT Features
+*/
+
 import { defineStore } from 'pinia'
 import type { GeoJSONSourceDiff } from 'maplibre-gl';
 import pointOnFeature from '@turf/point-on-feature';
