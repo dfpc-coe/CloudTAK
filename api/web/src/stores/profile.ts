@@ -42,7 +42,7 @@ export const useProfileStore = defineStore('profile', {
                     takv: {
                         device: navigator.userAgent,
                         platform: 'CloudTAK',
-                        os: navigator.oscpu,
+                        os: navigator.platform,
                         //TODO Use versions
                         version: '1.0.0'
                     }

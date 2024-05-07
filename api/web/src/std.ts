@@ -57,7 +57,7 @@ export async function std(url: string | URL, opts: any = {}): Promise<any> {
     return await res.json();
 }
 
-export function stdclick($router: Router, event: Event, path: string) {
+export function stdclick($router: Router, event: KeyboardEvent, path: string) {
     if (event.ctrlKey === true) {
         let routeData = $router.resolve(path);
         window.open(routeData.href, '_blank');

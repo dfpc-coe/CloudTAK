@@ -11,5 +11,5 @@ export type APIError = {
 };
 
 export type Profile = paths["/profile"]["get"]["responses"]["200"]["content"]["application/json"]
-export type Basemap = paths["/basemap/{:basemapid}"]["get"]["responses"]["200"]["content"]["application/json"]
+export type Basemap = paths["/basemap/{:basemapid}"]["patch"]["responses"]["200"]["content"]["application/json"]
 export type ProfileOverlay = paths["/profile/overlay/{:overlay}"]["get"]["responses"]["200"]["content"]["application/json"]
