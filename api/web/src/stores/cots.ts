@@ -239,19 +239,6 @@ export const useCOTStore = defineStore('cots', {
         },
 
         /**
-         * Update a feature that exists in the store
-         */
-        update: async function(feat: Feature): Promise<void> {
-            feat = this.style(feat);
-            this.pending.set(String(feat.id), feat);
-
-            if (feat.properties.archived) {
-                this.archive.set(feat.id, feat);
-                await std('/api/profile/feature', { method: 'PUT', body: feat })
-            }
-        },
-
-        /**
          * Add a CoT GeoJSON to the store and modify props to meet MapLibre style requirements
          */
         add: async function(feat: Feature, mission_guid=null) {

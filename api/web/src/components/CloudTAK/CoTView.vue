@@ -210,7 +210,7 @@ export default {
     mounted: function() {
     },
     unmounted: async function() {
-        await cotStore.update(this.feat);
+        await cotStore.add(this.feat);
     },
     computed: {
         ...mapState(useProfileStore, ['profile']),
@@ -238,7 +238,7 @@ export default {
         },
         updateStyle: async function() {
             if (this.isUserDrawn) {
-                await cotStore.update(this.feat);
+                await cotStore.add(this.feat);
             }
         },
         zoomTo: function() {

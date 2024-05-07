@@ -19,6 +19,23 @@ export const useProfileStore = defineStore('profile', {
         }
     },
     actions: {
+        clearNotifications: function(): void {
+            this.notifications = [];
+        },
+        load: async function(): Promise<void> {
+            this.profile = await std('/api/profile');
+        },
+        loadChannels: async function(): Promise<void> {
+            const url = stdurl('/api/marti/group');
+            url.searchParams.append('useCache', 'true');
+            this.channels = (await std(url)).data;
+        },
+        update: async function(body): Promise<void> {
+            this.profile = await std('/api/profile', {
+                method: 'PATCH',
+                body
+            })
+        },
         CoT: function() {
             if (!this.profile) throw new Error('Profile must be loaded before CoT is called');
 
@@ -50,22 +67,5 @@ export const useProfileStore = defineStore('profile', {
                 geometry: this.profile.tak_loc
             }
         },
-        clearNotifications: function() {
-            this.notifications = [];
-        },
-        load: async function() {
-            this.profile = await std('/api/profile');
-        },
-        loadChannels: async function() {
-            const url = stdurl('/api/marti/group');
-            url.searchParams.append('useCache', 'true');
-            this.channels = (await std(url)).data;
-        },
-        update: async function(body) {
-            this.profile = await std('/api/profile', {
-                method: 'PATCH',
-                body
-            })
-        }
     }
 })
