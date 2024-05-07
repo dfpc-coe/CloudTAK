@@ -27,6 +27,7 @@ export const OverlayContainer = Type.Object({
     name: Type.String(),
     save: Type.Boolean(),
     visible: Type.String(),
+    opacity: Type.Integer(),
     mode: Type.String(),
     mode_id: Type.Optional(Type.String()),
     overlay: Type.Optional(Type.Integer()),
@@ -301,7 +302,6 @@ export const useMapStore = defineStore('cloudtak', {
                         { id: layer.id, type: 'feat' }
                     ]
                 }, cotStyles(layer.id, {
-                    sourceLayer: layer.type === 'vector' ? 'out' : undefined,
                     icons: layer.type === 'geojson',
                     labels: layer.type === 'geojson',
                 }), {
@@ -707,12 +707,4 @@ function cotStyles(id: string, opts: {
             }
         });
     }
-
-
-    return styles.map((s) => {
-        if (opts.sourceLayer && typeof opts.sourceLayer === 'string') {
-            s['source-layer'] = opts.sourceLayer;
-        }
-        return s;
-    });
 }
