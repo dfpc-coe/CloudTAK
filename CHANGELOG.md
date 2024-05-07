@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v2.12.0 - 2024-05-06
+
+- :rocket: `UI` Ensure a refresh of the Mission List clears previous errors, if any
+- :rocket: `API` Use consistent Mission List input types
+
 ### v2.11.0 - 2024-05-06
 
 - :rocket: `UI` Include Map Hash in URL

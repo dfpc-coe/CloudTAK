@@ -4,7 +4,7 @@ import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
 import { GenericMartiResponse } from '../lib/types.js';
-import { MissionSubscriber, Mission, ChangesInput } from '../lib/api/mission.js';
+import { MissionSubscriber, Mission, ChangesInput, ListInput } from '../lib/api/mission.js';
 import TAKAPI, {
     APIAuthCertificate,
 } from '../lib/tak-api.js';
@@ -160,12 +160,7 @@ export default async function router(schema: Schema, config: Config) {
         name: 'List Missions',
         group: 'MartiMissions',
         description: 'Helper API to list missions',
-        query: Type.Object({
-            passwordProtected: Type.Optional(Type.Boolean()),
-            defaultRole: Type.Optional(Type.Boolean()),
-            nameFilter: Type.Optional(Type.String()),
-            tool: Type.Optional(Type.String()),
-        }),
+        query: ListInput,
         res: GenericMartiResponse
     }, async (req, res) => {
         try {
@@ -173,9 +168,8 @@ export default async function router(schema: Schema, config: Config) {
             const auth = (await config.models.Profile.from(user.email)).auth;
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
-            const query: Record<string, string> = {};
-            for (const q in req.query) query[q] = String(req.query[q]);
-            const missions = await api.Mission.list(query);
+            const missions = await api.Mission.list(req.query);
+
             return res.json(missions);
         } catch (err) {
             return Err.respond(err, res);
