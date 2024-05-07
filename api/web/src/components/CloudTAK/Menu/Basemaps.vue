@@ -117,13 +117,14 @@ export default {
                 before: 'CoT Icons',
                 type: 'raster',
                 source: 'basemap',
-            }, [{
-                id: 'basemap',
-                type: 'raster',
-                source: 'basemap',
-                minzoom: basemap.minzoom,
-                maxzoom: basemap.maxzoom
-            }]);
+                layers: [{
+                    id: 'basemap',
+                    type: 'raster',
+                    source: 'basemap',
+                    minzoom: basemap.minzoom,
+                    maxzoom: basemap.maxzoom
+                }]
+            });
         },
         fetchList: async function() {
             this.loading = true;
