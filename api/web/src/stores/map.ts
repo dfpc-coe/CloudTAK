@@ -10,7 +10,7 @@ import type { Feature } from 'geojson';
 import type {
     LngLat,
     Point,
-    MapTouchEvent,
+    MapMouseEvent,
     LayerSpecification,
     CircleLayerSpecification,
     LineLayerSpecification,
@@ -49,7 +49,7 @@ export const useMapStore = defineStore('cloudtak', {
         selected: Map<string, MapGeoJSONFeature>;
         select: {
             mode?: string;
-            e?: MapTouchEvent;
+            e?: MapMouseEvent;
             feats: MapGeoJSONFeature[];
             x: number;
             y: number;
@@ -111,13 +111,17 @@ export const useMapStore = defineStore('cloudtak', {
             if (this.getLayerPos(layer.name) !== false) return;
 
             if (!layer.visible) layer.visible = 'visible';
-            if (isNaN(layer.opacity)) layer.opacity = 1;
+            if (layer.opacity === undefined || isNaN(layer.opacity)) layer.opacity = 1;
             if (!layer.type) layer.type = 'raster';
 
-            const beforePos = this.getLayerPos(layer.before)
-            if (layer.before && beforePos !== false) {
-                layer.before = this.layers[beforePos].layers[0].id;
-                this.layers.splice(beforePos, 0, layer);
+            if (layer.before) {
+                const beforePos = this.getLayerPos(layer.before)
+                if (beforePos !== false) {
+                    layer.before = this.layers[beforePos].layers[0].id;
+                    this.layers.splice(beforePos, 0, layer);
+                } else {
+                    this.layers.push(layer);
+                }
             } else {
                 this.layers.push(layer);
             }
@@ -179,8 +183,12 @@ export const useMapStore = defineStore('cloudtak', {
             await this.removeLayer(layer.name);
         },
         getLayerPos: function(name: string, key='name') {
+            if (!['name', 'source'].includes(key)) throw new Error(`Unsupported Lookup Key: ${key}`);
+
             for (let i = 0; i < this.layers.length; i++) {
-                if (this.layers[i][key] === name) {
+                if (key === 'name' && this.layers[i].name === name) {
+                    return i;
+                } else if (key === 'source' && this.layers[i].source === name) {
                     return i;
                 }
             }
@@ -301,8 +309,8 @@ export const useMapStore = defineStore('cloudtak', {
                     save: true,
                     name: layer.name || layer.id,
                     mode: layer.mode || layer.id.split('-')[0],
-                    mode_id:  layer.mode_id || Number(layer.id.split('-')[1]),
-                    overlay: layer.overlay || null,
+                    mode_id:  String(layer.mode_id) || layer.id.split('-')[1],
+                    overlay: layer.overlay,
                     source: layer.id,
                     type: layer.type,
                     before: 'CoT Icons',
@@ -334,8 +342,8 @@ export const useMapStore = defineStore('cloudtak', {
                     save: true,
                     name: layer.name,
                     mode: layer.id.split('-')[0],
-                    mode_id:  Number(layer.id.split('-')[1]),
-                    overlay: layer.overlay || null,
+                    mode_id:  layer.id.split('-')[1],
+                    overlay: layer.overlay,
                     source: layer.id,
                     type: 'raster',
                     before: 'CoT Icons',
@@ -353,6 +361,7 @@ export const useMapStore = defineStore('cloudtak', {
 
             if (basemap) {
                 await this.addLayer({
+                    id: 'basemap',
                     name: basemap.name,
                     source: 'basemap',
                     type: 'raster',
@@ -367,6 +376,7 @@ export const useMapStore = defineStore('cloudtak', {
             }
 
             await this.addLayer({
+                id: 'cots',
                 name: 'CoT Icons',
                 source: 'cots',
                 type: 'vector',
@@ -385,6 +395,7 @@ export const useMapStore = defineStore('cloudtak', {
             });
 
             await this.addLayer({
+                id: 'you',
                 name: 'Your Location',
                 source: 'you',
                 type: 'vector',
@@ -402,7 +413,7 @@ export const useMapStore = defineStore('cloudtak', {
             map.on('rotate', () => {
                 this.bearing = map.getBearing()
             })
-            map.on('click', (e) => {
+            map.on('click', (e: MapMouseEvent) => {
                 if (this.draw && this.draw.getMode() !== 'static') return;
 
                 if (this.radial.mode) this.radial.mode = undefined;
@@ -415,7 +426,7 @@ export const useMapStore = defineStore('cloudtak', {
                     return clickMap.has(feat.layer.id);
                 });
 
-                if (!features) return;
+                if (!features.length) return;
 
                 // MultiSelect Mode
                 if (e.originalEvent.ctrlKey && features.length) {
@@ -423,8 +434,7 @@ export const useMapStore = defineStore('cloudtak', {
                 } else if (features.length === 1) {
                     this.radialClick(features[0], {
                         lngLat: e.lngLat,
-                        point: e.point,
-                        mode: clickMap.get(features[0].layer.id).type
+                        point: e.point
                     })
                 } else if (features.length > 1) {
                     if (e.point.x < 150 || e.point.y < 150) {
@@ -447,6 +457,7 @@ export const useMapStore = defineStore('cloudtak', {
                     this.select.feats = features;
                 }
             });
+
             map.on('contextmenu', (e) => {
                 this.radialClick({
                     id: window.crypto.randomUUID(),
@@ -481,7 +492,7 @@ export const useMapStore = defineStore('cloudtak', {
             if (!opts.mode) {
                 const clickMap: Map<string, { type: string, id: string }> = new Map();
                 for (const l of this.layers) for (const c of l.clickable) clickMap.set(c.id, c);
-                if (!feat.layer) return;
+                if (!('layer' in feat)) return;
                 const click = clickMap.get(feat.layer.id);
                 if (!click) return;
                 opts.mode = click.type;
@@ -509,28 +520,31 @@ export const useMapStore = defineStore('cloudtak', {
         initOverlays: async function() {
             await overlayStore.list();
             for (const overlay of overlayStore.overlays) {
+                const url = stdurl(overlay.url);
+                url.searchParams.append('token', localStorage.token);
+
+                let base = {
+                    ...overlay,
+                    id: `${overlay.mode}-${overlay.mode_id}-${overlay.id}`,
+                    url: String(url),
+                    save: true,
+                    overlay: overlay.id,
+                };
+
                 if (overlay.mode == 'mission') {
                     await this.addDefaultLayer({
-                        ...overlay,
-                        id: `${overlay.mode}-${overlay.mode_id}-${overlay.id}`,
-                        save: true,
-                        overlay: overlay.id,
                     } as OverlayContainer, true)
                 } else {
-                    const url = stdurl(overlay.url);
-                    url.searchParams.append('token', localStorage.token);
+
                     await this.addDefaultLayer({
-                        ...overlay,
                         url: String(url),
-                        overlay: overlay.id,
-                        id: `${overlay.mode}-${overlay.mode_id}-${overlay.id}`,
-                        save: true,
                     } as OverlayContainer, true)
                 }
             }
         },
         initDraw: function() {
             this.draw = new terraDraw.TerraDraw({
+                // @ts-expect-error Ref: https://github.com/JamesLMilner/terra-draw/issues/248
                 adapter: new terraDraw.TerraDrawMapLibreGLAdapter({ map: this.map }),
                 modes: [
                     new terraDraw.TerraDrawPointMode(),
@@ -588,7 +602,7 @@ function cotStyles(id: string, opts: {
     }
 
     styles.push(polyline);
-   
+
     const line: LineLayerSpecification = {
         id: `${id}-line`,
         type: 'line',
