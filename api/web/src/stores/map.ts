@@ -144,13 +144,13 @@ export const useMapStore = defineStore('cloudtak', {
                 })
             }
 
-            if (layer.save && !config.initial) {
-                if (!layer.url) throw new Error('Saved overlay must have url property');
+            if (overlay.save && !config.initial) {
+                if (!overlay.url || !overlay.mode) throw new Error('Saved overlay must have url & mode property');
 
-                const overlay = await overlayStore.saveOverlay({
-                    ...layer,
-                    url: layer.type === 'vector' ? new URL(layer.url).pathname : layer.url,
-                    visible: layer.visible === 'visible' ? true : false
+                await overlayStore.saveOverlay({
+                    ...overlay,
+                    url: overlay.type === 'vector' ? new URL(overlay.url).pathname : overlay.url,
+                    visible: overlay.visible === 'visible' ? true : false
                 });
             }
         },

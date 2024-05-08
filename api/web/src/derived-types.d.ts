@@ -4349,7 +4349,7 @@ export interface paths {
             opacity?: number;
             visible?: boolean;
             mode: string;
-            mode_id: string;
+            mode_id?: string;
             url: string;
             name: string;
           };
