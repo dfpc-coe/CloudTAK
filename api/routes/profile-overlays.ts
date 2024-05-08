@@ -138,7 +138,7 @@ export default async function router(schema: Schema, config: Config) {
             opacity: Type.Optional(Type.Number()),
             visible: Type.Optional(Type.Boolean()),
             mode: Type.String(),
-            mode_id: Type.String(),
+            mode_id: Type.Optional(Type.String()),
             url: Type.String(),
             name: Type.String()
         }),
