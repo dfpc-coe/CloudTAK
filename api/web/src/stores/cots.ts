@@ -58,11 +58,10 @@ export const useCOTStore = defineStore('cots', {
          */
         diff: function(): GeoJSONSourceDiff {
             const now = moment();
-            const diff = {
-                add: [],
-                remove: [],
-                update: []
-            }
+            const diff: GeoJSONSourceDiff = {};
+            diff.add = [];
+            diff.remove = [];
+            diff.update = [];
 
             const display_stale = profileStore.profile ? profileStore.profile.display_stale : 'Immediate';
 
@@ -74,7 +73,7 @@ export const useCOTStore = defineStore('cots', {
                     && !cot.properties.archived
                     && now.isAfter(cot.properties.stale)
                 ) {
-                    diff.remove.push(cot.id);
+                    diff.remove.push(String(cot.id));
                 } else if (
                     !['Never', 'Immediate'].includes(display_stale)
                     && !cot.properties.archived
@@ -93,7 +92,6 @@ export const useCOTStore = defineStore('cots', {
                             addOrUpdateProperties: Object.keys(cot.properties).map((key) => {
                                 return { key, value: cot.properties ? cot.properties[key] : '' }
                             }),
-                            // @ts-expect-error Only Certain Geoms are supported
                             newGeometry: cot.geometry
                         })
                     } else if (!now.isBefore(moment(cot.properties.stale)) && (cot.properties['icon-opacity'] !== 0.5 || cot.properties['circle-opacity'] !== 127)) {

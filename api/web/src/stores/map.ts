@@ -114,16 +114,19 @@ export const useMapStore = defineStore('cloudtak', {
             if (layer.opacity === undefined || isNaN(layer.opacity)) layer.opacity = 1;
             if (!layer.type) layer.type = 'raster';
 
-            if (layer.before) {
-                const beforePos = this.getLayerPos(layer.before)
+            const overlay = layer as OverlayContainer;
+
+            if (overlay.before) {
+                const beforePos = this.getLayerPos(overlay.before)
                 if (beforePos !== false) {
-                    layer.before = this.layers[beforePos].layers[0].id;
-                    this.layers.splice(beforePos, 0, layer);
+                    overlay.before = this.layers[beforePos].layers[0].id;
+                    // @ts-expect-error Type instantiation is excessively deep and possibly infinite.
+                    this.layers.splice(beforePos, 0, overlay);
                 } else {
-                    this.layers.push(layer);
+                    this.layers.push(overlay);
                 }
             } else {
-                this.layers.push(layer);
+                this.layers.push(overlay);
             }
 
             for (const l of layer.layers) {
@@ -142,6 +145,8 @@ export const useMapStore = defineStore('cloudtak', {
             }
 
             if (layer.save && !config.initial) {
+                if (!layer.url) throw new Error('Saved overlay must have url property');
+
                 layer.overlay = await overlayStore.saveOverlay({
                     ...layer,
                     url: layer.type === 'vector' ? new URL(layer.url).pathname : layer.url,
