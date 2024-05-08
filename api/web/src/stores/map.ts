@@ -27,7 +27,7 @@ export type OverlayContainer = {
     visible: string;
     opacity: number;
     mode: string;
-    mode_id?: string;
+    mode_id?: string | null;
     overlay?: number;
     source: string;
     type: string;
@@ -91,7 +91,7 @@ export const useMapStore = defineStore('cloudtak', {
             visible?: string;
             opacity?: number;
             mode?: string;
-            mode_id?: string;
+            mode_id?: string | null;
             overlay?: number;
             type?: string;
             before?: string;
@@ -149,6 +149,7 @@ export const useMapStore = defineStore('cloudtak', {
 
                 await overlayStore.saveOverlay({
                     ...overlay,
+                    mode_id: overlay.mode_id ? overlay.mode_id : undefined,
                     url: overlay.type === 'vector' ? new URL(overlay.url).pathname : overlay.url,
                     visible: overlay.visible === 'visible' ? true : false
                 });
@@ -281,10 +282,21 @@ export const useMapStore = defineStore('cloudtak', {
                 }
             }
 
-            //@ts-expect-error Type instantiation is excessively deep and possibly infinite
             this.map = new mapgl.Map(init);
         },
-        addDefaultLayer: async function(layer: OverlayContainer, initial=false) {
+        addDefaultLayer: async function(layer: {
+            id: string;
+            url?: string;
+            name: string;
+            save: boolean;
+            visible: boolean;
+            opacity: number;
+            mode: string;
+            mode_id?: string | null;
+            overlay?: number;
+            type: string;
+            before?: string;
+        }, initial=false) {
             if (!this.map) throw new Error('Cannot addDefaultLayer before map has loaded');
 
             if (this.map.getSource(layer.id)) {
@@ -313,7 +325,8 @@ export const useMapStore = defineStore('cloudtak', {
                     save: true,
                     name: layer.name || layer.id,
                     mode: layer.mode || layer.id.split('-')[0],
-                    mode_id:  String(layer.mode_id) || layer.id.split('-')[1],
+                    mode_id:  layer.mode_id ? layer.mode_id : layer.id.split('-')[1],
+                    visible: layer.visible ? 'visible' : 'none',
                     overlay: layer.overlay,
                     source: layer.id,
                     type: layer.type,
@@ -350,6 +363,7 @@ export const useMapStore = defineStore('cloudtak', {
                     overlay: layer.overlay,
                     source: layer.id,
                     type: 'raster',
+                    visible: layer.visible ? 'visible' : 'none',
                     before: 'CoT Icons',
                     layers: [{
                         id: layer.id,
@@ -533,7 +547,7 @@ export const useMapStore = defineStore('cloudtak', {
                     url: String(url),
                     save: true,
                     overlay: overlay.id,
-                } as OverlayContainer, true)
+                }, true)
             }
         },
         initDraw: function() {
