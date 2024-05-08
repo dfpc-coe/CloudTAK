@@ -1,9 +1,8 @@
 import { Type } from '@sinclair/typebox'
-import Config from '../lib/config.js';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 
-export default async function router(schema: Schema, config: Config) {
+export default async function router(schema: Schema) {
     await schema.get('/swagger', {
         name: 'Get Swagger',
         group: 'Swagger',
