@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v2.13.0 - 2024-05-06
+
+- :rocket: `UI` Compliant TypeScript Definitions for pinia stores
+
 ### v2.12.0 - 2024-05-06
 
 - :rocket: `UI` Ensure a refresh of the Mission List clears previous errors, if any
