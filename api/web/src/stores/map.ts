@@ -129,7 +129,7 @@ export const useMapStore = defineStore('cloudtak', {
                 this.layers.push(overlay);
             }
 
-            for (const l of layer.layers) {
+            for (const l of overlay.layers) {
                 map.addLayer(l, layer.before);
             }
 
@@ -147,7 +147,7 @@ export const useMapStore = defineStore('cloudtak', {
             if (layer.save && !config.initial) {
                 if (!layer.url) throw new Error('Saved overlay must have url property');
 
-                layer.overlay = await overlayStore.saveOverlay({
+                const overlay = await overlayStore.saveOverlay({
                     ...layer,
                     url: layer.type === 'vector' ? new URL(layer.url).pathname : layer.url,
                     visible: layer.visible === 'visible' ? true : false
@@ -174,8 +174,7 @@ export const useMapStore = defineStore('cloudtak', {
             }
 
             if (newLayer.save && newLayer.overlay) {
-                await overlayStore.updateOverlay({
-                    id: newLayer.overlay,
+                await overlayStore.updateOverlay(newLayer.overlay, {
                     visible: newLayer.visible === 'visible' ? true : false
                 });
             }
