@@ -1,8 +1,17 @@
 import { defineStore } from 'pinia'
 import { std, stdurl } from '../std.ts';
+import type { Profile, Profile_Update } from '../types.ts';
 
 export const useProfileStore = defineStore('profile', {
-    state: () => {
+    state: (): {
+        notifications: Array<{
+            type: string;
+            name: string;
+            url: string;
+        }>;
+        channels: Array<any>;
+        profile: Profile | null;
+    } => {
         return {
             notifications: [],
             channels: [],
@@ -10,7 +19,26 @@ export const useProfileStore = defineStore('profile', {
         }
     },
     actions: {
+        clearNotifications: function(): void {
+            this.notifications = [];
+        },
+        load: async function(): Promise<void> {
+            this.profile = await std('/api/profile');
+        },
+        loadChannels: async function(): Promise<void> {
+            const url = stdurl('/api/marti/group');
+            url.searchParams.append('useCache', 'true');
+            this.channels = (await std(url)).data;
+        },
+        update: async function(body: Profile_Update): Promise<void> {
+            this.profile = await std('/api/profile', {
+                method: 'PATCH',
+                body
+            })
+        },
         CoT: function() {
+            if (!this.profile) throw new Error('Profile must be loaded before CoT is called');
+
             return {
                 // Need to differentiate between servers eventually
                 id: `ANDROID-CloudTAK-${this.profile.username}`,
@@ -31,7 +59,7 @@ export const useProfileStore = defineStore('profile', {
                     takv: {
                         device: navigator.userAgent,
                         platform: 'CloudTAK',
-                        os: navigator.oscpu,
+                        os: navigator.platform,
                         //TODO Use versions
                         version: '1.0.0'
                     }
@@ -39,22 +67,5 @@ export const useProfileStore = defineStore('profile', {
                 geometry: this.profile.tak_loc
             }
         },
-        clearNotifications: function() {
-            this.notifications = [];
-        },
-        load: async function() {
-            this.profile = await std('/api/profile');
-        },
-        loadChannels: async function() {
-            const url = stdurl('/api/marti/group');
-            url.searchParams.append('useCache', 'true');
-            this.channels = (await std(url)).data;
-        },
-        update: async function(body) {
-            this.profile = await std('/api/profile', {
-                method: 'PATCH',
-                body
-            })
-        }
     }
 })

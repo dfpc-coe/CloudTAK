@@ -19,10 +19,12 @@ COPY ./ $HOME/api
 RUN cd web \
     && npm install \
     && npm run lint \
+    && npm run check \
     && npm run build \
     && cd ..
 
-RUN npm run build
+RUN npm run lint \
+    && npm run build
 
 COPY ./nginx.conf /etc/nginx/nginx.conf
 
