@@ -137,7 +137,7 @@ import {
     TablerInput
 } from '@tak-ps/vue-tabler';
 import { mapState } from 'pinia'
-import { useProfileStore } from '/src/stores/profile.js';
+import { useProfileStore } from '/src/stores/profile.ts';
 
 export default {
     name: 'BasemapEditModal',

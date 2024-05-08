@@ -64,7 +64,7 @@ import {
 } from '@tabler/icons-vue'
 import { mapState } from 'pinia'
 import { useMapStore } from '/src/stores/map.ts';
-import { useProfileStore } from '/src/stores/profile.js';
+import { useProfileStore } from '/src/stores/profile.ts';
 const mapStore = useMapStore();
 
 export default {
@@ -117,13 +117,14 @@ export default {
                 before: 'CoT Icons',
                 type: 'raster',
                 source: 'basemap',
-            }, [{
-                id: 'basemap',
-                type: 'raster',
-                source: 'basemap',
-                minzoom: basemap.minzoom,
-                maxzoom: basemap.maxzoom
-            }]);
+                layers: [{
+                    id: 'basemap',
+                    type: 'raster',
+                    source: 'basemap',
+                    minzoom: basemap.minzoom,
+                    maxzoom: basemap.maxzoom
+                }]
+            });
         },
         fetchList: async function() {
             this.loading = true;

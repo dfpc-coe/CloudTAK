@@ -42,7 +42,7 @@ import {
     IconEye,
     IconEyeOff,
 } from '@tabler/icons-vue';
-import { useProfileStore } from '/src/stores/profile.js';
+import { useProfileStore } from '/src/stores/profile.ts';
 import { mapState, mapActions } from 'pinia'
 
 const profileStore = useProfileStore();

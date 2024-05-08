@@ -63,7 +63,7 @@ import {
     TablerEnum,
     TablerLoading
 } from '@tak-ps/vue-tabler';
-import { useProfileStore } from '/src/stores/profile.js';
+import { useProfileStore } from '/src/stores/profile.ts';
 const profileStore = useProfileStore();
 
 export default {

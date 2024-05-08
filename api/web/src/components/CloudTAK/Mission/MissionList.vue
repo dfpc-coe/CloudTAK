@@ -86,6 +86,7 @@ export default {
                 this.loading = true;
                 const url = stdurl('/api/marti/mission');
                 url.searchParams.append('passwordProtected', 'true');
+                url.searchParams.append('defaultRole', 'true');
                 this.list = await std(url);
             } catch (err) {
                 this.err = err;

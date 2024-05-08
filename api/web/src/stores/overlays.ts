@@ -4,15 +4,14 @@ import * as pmtiles from 'pmtiles';
 import pointOnFeature from '@turf/point-on-feature';
 import { useCOTStore } from './cots.js'
 const cotStore = useCOTStore();
-import type { ProfileOverlay } from '../types/types.js';
-import type { OverlayContainer } from './map.js';
+import type { ProfileOverlay, ProfileOverlay_Update, ProfileOverlay_Create } from '../types.js';
 import type { Static } from '@sinclair/typebox';
 
 export const useOverlayStore = defineStore('overlays', {
     state: (): {
         initialized: boolean;
-        overlays: Static<typeof ProfileOverlayResponse>[],
-        subscriptions: Map<string, Static<typeof ProfileOverlayResponse>>
+        overlays: ProfileOverlay[],
+        subscriptions: Map<string, ProfileOverlay>
     } => {
         return {
             initialized: false,
@@ -21,7 +20,7 @@ export const useOverlayStore = defineStore('overlays', {
         }
     },
     actions: {
-        saveOverlay: async function(container: Static<typeof OverlayContainer>): Promise<number> {
+        saveOverlay: async function(container: ProfileOverlay_Create): Promise<number> {
             const overlay = await std('/api/profile/overlay', {
                 method: 'POST',
                 body: container
@@ -31,8 +30,8 @@ export const useOverlayStore = defineStore('overlays', {
 
             return overlay.id;
         },
-        updateOverlay: async function(container: Static<typeof OverlayContainer>): Promise<number> {
-            const overlay = await std(`/api/profile/overlay/${container.id}`, {
+        updateOverlay: async function(overlay_id: number, container: ProfileOverlay_Update): Promise<number> {
+            const overlay = await std(`/api/profile/overlay/${overlay_id}`, {
                 method: 'PATCH',
                 body: container
             });
@@ -54,10 +53,10 @@ export const useOverlayStore = defineStore('overlays', {
 
             this.subscriptions.clear();
             for (const overlay of this.overlays) {
-                if (overlay.mode === 'mission') {
+                if (overlay.mode === 'mission' && overlay.mode_id) {
                     // mode_id is GUID for mission type
-                    this.subscriptions.set(String(overlay.mode_id), overlay);
-                    await cotStore.loadMission(String(overlay.mode_id));
+                    this.subscriptions.set(overlay.mode_id, overlay);
+                    await cotStore.loadMission(overlay.mode_id);
                 }
             }
 

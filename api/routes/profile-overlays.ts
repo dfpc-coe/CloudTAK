@@ -72,6 +72,27 @@ export default async function router(schema: Schema, config: Config) {
         }
     });
 
+    await schema.get('/profile/overlay/:overlay', {
+        name: 'Get Overlay',
+        group: 'ProfileOverlay',
+        description: 'Get Profile Overlay',
+        params: Type.Object({
+            overlay: Type.Integer()
+        }),
+        res: ProfileOverlayResponse
+    }, async (req, res) => {
+        try {
+            const user = await Auth.as_user(config, req);
+
+            const overlay = await config.models.ProfileOverlay.from(req.params.overlay)
+            if (overlay.username !== user.email) throw new Err(401, null, 'Cannot get another\'s overlay');
+
+            return res.json(overlay);
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
+
     await schema.patch('/profile/overlay/:overlay', {
         name: 'Update Overlay',
         group: 'ProfileOverlay',
@@ -117,7 +138,7 @@ export default async function router(schema: Schema, config: Config) {
             opacity: Type.Optional(Type.Number()),
             visible: Type.Optional(Type.Boolean()),
             mode: Type.String(),
-            mode_id: Type.String(),
+            mode_id: Type.Optional(Type.String()),
             url: Type.String(),
             name: Type.String()
         }),

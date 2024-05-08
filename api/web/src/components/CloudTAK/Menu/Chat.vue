@@ -48,7 +48,7 @@ import {
 } from '@tabler/icons-vue'
 import { useConnectionStore } from '/src/stores/connection.ts';
 const connectionStore = useConnectionStore();
-import { useProfileStore } from '/src/stores/profile.js';
+import { useProfileStore } from '/src/stores/profile.ts';
 const profileStore = useProfileStore();
 
 export default {

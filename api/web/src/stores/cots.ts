@@ -1,10 +1,14 @@
+/*
+* CotStore - Store & perform updates on all underlying CoT Features
+*/
+
 import { defineStore } from 'pinia'
-import { GeoJSONSourceDiff } from 'maplibre-gl';
+import type { GeoJSONSourceDiff } from 'maplibre-gl';
 import pointOnFeature from '@turf/point-on-feature';
 import { std, stdurl } from '../std.ts';
 import moment from 'moment';
 import type { Feature } from 'geojson';
-import { useProfileStore } from './profile.js';
+import { useProfileStore } from './profile.ts';
 const profileStore = useProfileStore();
 
 export const useCOTStore = defineStore('cots', {
@@ -29,7 +33,7 @@ export const useCOTStore = defineStore('cots', {
         /**
          * Load Archived CoTs from localStorage
          */
-        loadArchive: async function(): void {
+        loadArchive: async function(): Promise<void> {
             const archive = await std('/api/profile/feature');
             for (const a of archive.items) {
                 this.archive.set(a.id, a);
@@ -54,43 +58,52 @@ export const useCOTStore = defineStore('cots', {
          */
         diff: function(): GeoJSONSourceDiff {
             const now = moment();
-            const diff = {
-                add: [],
-                remove: [],
-                update: []
-            }
+            const diff: GeoJSONSourceDiff = {};
+            diff.add = [];
+            diff.remove = [];
+            diff.update = [];
+
+            const display_stale = profileStore.profile ? profileStore.profile.display_stale : 'Immediate';
 
             for (const cot of this.cots.values()) {
+                if (!cot.properties) cot.properties = {};
+
                 if (
-                    profileStore.profile.display_stale === 'Immediate'
+                    display_stale === 'Immediate'
                     && !cot.properties.archived
                     && now.isAfter(cot.properties.stale)
                 ) {
-                    diff.remove.push(cot.id);
+                    diff.remove.push(String(cot.id));
                 } else if (
-                    !['Never', 'Immediate'].includes(profileStore.profile.display_stale)
+                    !['Never', 'Immediate'].includes(display_stale)
                     && !cot.properties.archived
-                    && !now.isBefore(moment(cot.properties.stale).add(...profileStore.profile.display_stale.split(' ')))
+                    && !now.isBefore(moment(cot.properties.stale).add(...display_stale.split(' ')))
                 ) {
-                    diff.remove.push(cot.id)
+                    diff.remove.push(String(cot.id))
                 } else if (!cot.properties.archived) {
                     if (now.isBefore(moment(cot.properties.stale)) && (cot.properties['icon-opacity'] !== 1 || cot.properties['circle-opacity'] !== 255)) {
                         cot.properties['icon-opacity'] = 1;
                         cot.properties['circle-opacity'] = 255;
+
+                        if (!['Point', 'Polygon', 'LineString'].includes(cot.geometry.type)) continue;
+
                         diff.update.push({
-                            id: cot.id,
+                            id: String(cot.id),
                             addOrUpdateProperties: Object.keys(cot.properties).map((key) => {
-                                return { key, value: cot.properties[key] }
+                                return { key, value: cot.properties ? cot.properties[key] : '' }
                             }),
                             newGeometry: cot.geometry
                         })
                     } else if (!now.isBefore(moment(cot.properties.stale)) && (cot.properties['icon-opacity'] !== 0.5 || cot.properties['circle-opacity'] !== 127)) {
                         cot.properties['icon-opacity'] = 0.5;
                         cot.properties['circle-opacity'] = 127;
+
+                        if (!['Point', 'Polygon', 'LineString'].includes(cot.geometry.type)) continue;
+
                         diff.update.push({
-                            id: cot.id,
+                            id: String(cot.id),
                             addOrUpdateProperties: Object.keys(cot.properties).map((key) => {
-                                return { key, value: cot.properties[key] }
+                                return { key, value: cot.properties ? cot.properties[key] : '' }
                             }),
                             newGeometry: cot.geometry
                         })
@@ -104,7 +117,7 @@ export const useCOTStore = defineStore('cots', {
         /**
          * Return a FeatureCollection of a non-default CoT Store
          */
-        collection(store) {
+        collection(store: Map<string, Feature>) {
             return {
                 type: 'FeatureCollection',
                 features: Array.from(store.values())
@@ -114,7 +127,7 @@ export const useCOTStore = defineStore('cots', {
         /**
          * Return a CoT by ID if it exists
          */
-        get: function(id: string): Feature {
+        get: function(id: string): Feature | undefined {
             return this.cots.get(id);
         },
         /**
@@ -148,6 +161,7 @@ export const useCOTStore = defineStore('cots', {
          * Consistent feature manipulation between add & update
          */
         style: function(feat: Feature): Feature {
+            if (!feat.properties) feat.properties = {};
             //Vector Tiles only support integer IDs
             feat.properties.id = feat.id;
 
@@ -204,7 +218,7 @@ export const useCOTStore = defineStore('cots', {
                     if (!feat.properties.icon.includes(':')) {
                         feat.properties.icon = feat.properties.icon.replace('/', ':')
                     }
-                    
+
                     if (feat.properties.icon.endsWith('.png')) {
                         feat.properties.icon = feat.properties.icon.replace(/.png$/, '');
                     }
@@ -236,22 +250,11 @@ export const useCOTStore = defineStore('cots', {
         },
 
         /**
-         * Update a feature that exists in the store
-         */
-        update: async function(feat: Feature): void {
-            feat = this.style(feat);
-            this.pending.set(feat.id, feat);
-
-            if (feat.properties.archived) {
-                this.archive.set(feat.id, feat);
-                await std('/api/profile/feature', { method: 'PUT', body: feat })
-            }
-        },
-
-        /**
          * Add a CoT GeoJSON to the store and modify props to meet MapLibre style requirements
          */
-        add: async function(feat: Feature, mission_guid=null) {
+        add: async function(feat: Feature, mission_guid?: string) {
+            if (!feat.properties) feat.properties = {};
+
             if (!feat.id && !feat.properties.id) {
                 feat.id = self.crypto.randomUUID();
             }
@@ -265,12 +268,12 @@ export const useCOTStore = defineStore('cots', {
                     this.subscriptions.set(mission_guid, cots);
                 }
 
-                cots.set(feat.id, feat);
+                cots.set(String(feat.id), feat);
             } else {
-                this.pending.set(feat.id, feat);
+                this.pending.set(String(feat.id), feat);
 
-                if (feat.properties.archived) {
-                    this.archive.set(feat.id, feat);
+                if (feat.properties && feat.properties.archived) {
+                    this.archive.set(String(feat.id), feat);
                     await std('/api/profile/feature', { method: 'PUT', body: feat })
                 }
             }
