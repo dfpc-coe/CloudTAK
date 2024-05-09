@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v2.15.0 - 2024-05-08
+
+- :rocket: `UI` Add basic Video list in the CloudTAK Settings Panel
+- :rocket: `UI` Add private/public differentiation on basemaps list
+
 ### v2.14.0 - 2024-05-08
 
 - :bug: `API` Upgrade `node-cot` to use stricter Feature type

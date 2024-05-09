@@ -23,7 +23,10 @@
                     <div class="d-flex align-items-center my-2">
                         <span class='mx-2 text-truncate' style='font-size: 18px;' v-text='basemap.name'/>
 
-                        <div class='ms-auto btn-list'>
+                        <div class='ms-auto d-flex align-items-center'>
+                            <span v-if='!basemap.username' class='mx-3 ms-auto badge border bg-blue text-white'>Public</span>
+                            <span v-else='!basemap.username' class='mx-3 ms-auto badge border bg-red text-white'>Private</span>
+
                             <IconSettings
                                 v-if='(!basemap.username && profile.system_admin) || basemap.username'
                                 v-tooltip='"Edit Basemap"'
