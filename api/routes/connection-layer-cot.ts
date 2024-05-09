@@ -1,4 +1,4 @@
-import { Type } from '@sinclair/typebox'
+import { Static, Type } from '@sinclair/typebox'
 import Schema from '@openaddresses/batch-schema';
 import { check } from '@placemarkio/check-geojson';
 import Err from '@openaddresses/batch-error';
@@ -9,7 +9,7 @@ import Auth, { AuthResourceAccess } from '../lib/auth.js';
 import Style from '../lib/style.js';
 import DDBQueue from '../lib/queue.js';
 import Config from '../lib/config.js';
-import { Feature } from 'geojson';
+import { Feature } from '@tak-ps/node-cot';
 import { StandardResponse } from '../lib/types.js';
 import TAKAPI, { APIAuthCertificate, } from '../lib/tak-api.js';
 
@@ -89,7 +89,7 @@ export default async function router(schema: Schema, config: Config) {
                         }
                     }
 
-                    const existMap: Map<string, Feature> = new Map()
+                    const existMap: Map<string, Static<typeof Feature>> = new Map()
                     for (const feat of features) {
                         existMap.set(String(feat.id), feat);
                     }
@@ -134,7 +134,7 @@ export default async function router(schema: Schema, config: Config) {
             }
 
             // TODO Only GeoJSON Features go to Dynamo, this should also store CoT XML
-            if (layer.logging && req.query.logging !== false) ddb.queue(req.body.features.map((feat: Feature) => {
+            if (layer.logging && req.query.logging !== false) ddb.queue(req.body.features.map((feat: Static<typeof Feature>) => {
                 const item: QueueItem = {
                     id: String(feat.id),
                     layer: layer.id,

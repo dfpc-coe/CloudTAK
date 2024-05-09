@@ -6,7 +6,7 @@ import Err from '@openaddresses/batch-error';
 import { Readable } from 'node:stream'
 import { TAKList } from './types.js';
 import { MissionLog } from './mission-log.js';
-import { Feature } from 'geojson';
+import { Feature } from '@tak-ps/node-cot';
 
 export const Mission = Type.Object({
     name: Type.String(),
@@ -201,8 +201,8 @@ export default class {
     async latestFeats(
         name: string,
         opts?: Static<typeof MissionOptions>
-    ): Promise<Feature[]> {
-        const feats: Feature[] = [];
+    ): Promise<Static<typeof Feature>[]> {
+        const feats: Static<typeof Feature>[] = [];
 
         let partial = {
             event: '',

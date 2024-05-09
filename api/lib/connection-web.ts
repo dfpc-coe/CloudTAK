@@ -1,5 +1,5 @@
-import { Feature } from 'geojson';
-import CoT, { DirectChat }  from '@tak-ps/node-cot';
+import { Static } from '@sinclair/typebox'
+import CoT, { DirectChat, Feature }  from '@tak-ps/node-cot';
 import { WebSocket } from 'ws';
 import { ConnectionClient } from './connection-pool.js';
 
@@ -32,7 +32,7 @@ export class ConnectionWebSocket {
                             message: msg.data.message
                         })
                     } else {
-                        const feat = msg.data as Feature;
+                        const feat = msg.data as Static<typeof Feature>;
 
                         const cot = CoT.from_geojson(feat);
                         client.tak.write([cot]);
