@@ -13,6 +13,7 @@ import type {
     MapMouseEvent,
     LayerSpecification,
     CircleLayerSpecification,
+    SymbolLayerSpecification,
     LineLayerSpecification,
     FillLayerSpecification,
     MapGeoJSONFeature
@@ -341,6 +342,7 @@ export const useMapStore = defineStore('cloudtak', {
                     layers: cotStyles(layer.id, {
                         icons: layer.type === 'geojson',
                         labels: layer.type === 'geojson',
+                        sourceLayer: layer.type === 'vector' ? 'out' : undefined
                     }),
                 },
                 {
@@ -591,6 +593,10 @@ function cotStyles(id: string, opts: {
         }
     }
 
+    if (opts.sourceLayer) {
+        poly['source-layer'] = opts.sourceLayer;
+    }
+
     styles.push(poly);
 
     const polyline: LineLayerSpecification = {
@@ -607,6 +613,10 @@ function cotStyles(id: string, opts: {
             'line-width': ["number", ["get", "stroke-width"], 3],
             'line-opacity': ['/', ["number", ["get", "stroke-opacity"], 255], 255],
         }
+    }
+
+    if (opts.sourceLayer) {
+        polyline['source-layer'] = opts.sourceLayer;
     }
 
     styles.push(polyline);
@@ -627,6 +637,10 @@ function cotStyles(id: string, opts: {
         }
     };
 
+    if (opts.sourceLayer) {
+        line['source-layer'] = opts.sourceLayer;
+    }
+
     styles.push(line);
 
     const circle: CircleLayerSpecification = {
@@ -642,6 +656,10 @@ function cotStyles(id: string, opts: {
         }
     }
 
+    if (opts.sourceLayer) {
+        circle['source-layer'] = opts.sourceLayer;
+    }
+
     if (opts.group) {
         // @ts-expect-error Type defs don't allow this
         circle.filter.push(['!has', 'group']);
@@ -650,7 +668,7 @@ function cotStyles(id: string, opts: {
     styles.push(circle);
 
     if (opts.icons) {
-        styles.push({
+        const icon: SymbolLayerSpecification = {
             id: `${id}-icon`,
             type: 'symbol',
             source: id,
@@ -671,7 +689,13 @@ function cotStyles(id: string, opts: {
                 'icon-image': '{icon}',
                 'icon-anchor': 'center',
             }
-        })
+        }
+
+        if (opts.sourceLayer) {
+            icon['source-layer'] = opts.sourceLayer;
+        }
+
+        styles.push(icon);
     }
 
     if (opts.group) {
@@ -681,7 +705,7 @@ function cotStyles(id: string, opts: {
             ['has', 'group']
         ]
 
-        styles.push({
+        const group: CircleLayerSpecification = {
             id: 'cots-group',
             type: 'circle',
             source: 'cots',
@@ -693,11 +717,17 @@ function cotStyles(id: string, opts: {
                 'circle-stroke-width': 2,
                 'circle-radius': 10
             },
-        })
+        }
+
+        if (opts.sourceLayer) {
+            group['source-layer'] = opts.sourceLayer;
+        }
+
+        styles.push(group);
     }
 
     if (opts.labels) {
-        styles.push({
+        const labels: SymbolLayerSpecification = {
             id: `${id}-text-point`,
             type: 'symbol',
             source: id,
@@ -712,9 +742,15 @@ function cotStyles(id: string, opts: {
                 'text-font': ['Open Sans Bold'],
                 'text-field':  '{callsign}'
             }
-        });
+        }
 
-        styles.push({
+        if (opts.sourceLayer) {
+            labels['source-layer'] = opts.sourceLayer;
+        }
+
+        styles.push(labels);
+
+        const labelsLine: SymbolLayerSpecification = {
             id: `${id}-text-line`,
             type: 'symbol',
             source: id,
@@ -729,9 +765,15 @@ function cotStyles(id: string, opts: {
                 'text-font': ['Open Sans Bold'],
                 'text-field':  '{callsign}'
             }
-        });
+        }
 
-        styles.push({
+        if (opts.sourceLayer) {
+            labelsLine['source-layer'] = opts.sourceLayer;
+        }
+
+        styles.push(labelsLine);
+
+        const labelsPoly: SymbolLayerSpecification = {
             id: `${id}-text-poly`,
             type: 'symbol',
             source: id,
@@ -745,7 +787,13 @@ function cotStyles(id: string, opts: {
                 'text-font': ['Open Sans Bold'],
                 'text-field':  '{callsign}'
             }
-        });
+        }
+
+        if (opts.sourceLayer) {
+            labelsPoly['source-layer'] = opts.sourceLayer;
+        }
+
+        styles.push(labelsPoly);
     }
 
     return styles;
