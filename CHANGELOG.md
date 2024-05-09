@@ -12,15 +12,19 @@
 
 ### Pending Release
 
-### v2.13.1 - 2024-05-06
+### v2.14.0 - 2024-05-08
+
+- :bug: `API` Upgrade `node-cot` to use stricter Feature type
+
+### v2.13.1 - 2024-05-08
 
 - :bug: `UI` Fix externally saved vector tiles that require a `source-layer`
 
-### v2.13.0 - 2024-05-06
+### v2.13.0 - 2024-05-08
 
 - :rocket: `UI` Compliant TypeScript Definitions for pinia stores
 
-### v2.12.0 - 2024-05-06
+### v2.12.0 - 2024-05-07
 
 - :rocket: `UI` Ensure a refresh of the Mission List clears previous errors, if any
 - :rocket: `API` Use consistent Mission List input types
