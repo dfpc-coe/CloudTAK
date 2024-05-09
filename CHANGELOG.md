@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v2.13.1 - 2024-05-06
+
+- :bug: `UI` Fix externally saved vector tiles that require a `source-layer`
+
 ### v2.13.0 - 2024-05-06
 
 - :rocket: `UI` Compliant TypeScript Definitions for pinia stores
