@@ -1,0 +1,50 @@
+<template>
+<MenuTemplate name='Videos'>
+    <template #buttons>
+        <IconRefresh @click='refresh' size='32' class='cursor-pointer' v-tooltip='"Refresh"'/>
+    </template>
+    <template #default>
+        <TablerNone v-if='!videos.length' label='Videos' :create='false'/>
+        <template v-else>
+            <div :key='video.id' v-for='video of videos' class='col-12 py-2 px-3 d-flex align-items-center hover-dark'>
+                <IconVideo size='32'/>
+                <span class='mx-2' style='font-size: 18px;' v-text='video.properties.callsign'></span>
+            </div>
+        </template>
+    </template>
+</MenuTemplate>
+</template>
+
+<script>
+import MenuTemplate from '../util/MenuTemplate.vue';
+import { useCOTStore } from '/src/stores/cots.ts';
+import {
+    TablerNone
+} from '@tak-ps/vue-tabler';
+import {
+    IconVideo,
+    IconRefresh,
+} from '@tabler/icons-vue';
+
+const cotStore = useCOTStore();
+
+export default {
+    name: 'CloudTAKSettings',
+    data: function() {
+        return {
+            videos: cotStore.videos()
+        }
+    },
+    methods: {
+        refresh: function() {
+            this.videos = cotStore.videos();
+        }
+    },
+    components: {
+        IconVideo,
+        IconRefresh,
+        MenuTemplate,
+        TablerNone
+    }
+}
+</script>

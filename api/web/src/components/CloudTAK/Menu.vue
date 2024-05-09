@@ -45,6 +45,10 @@
                     <IconAffiliate size='32'/>
                     <span class='mx-2' style='font-size: 18px;'>Channels</span>
                 </div>
+                <div @click='$router.push("/menu/videos")' class='cursor-pointer col-12 py-2 px-3 d-flex align-items-center hover-dark'>
+                    <IconVideo size='32'/>
+                    <span class='mx-2' style='font-size: 18px;'>Videos</span>
+                </div>
                 <div @click='$router.push("/menu/chats")' class='cursor-pointer col-12 py-2 px-3 d-flex align-items-center hover-dark'>
                     <IconMessage size='32'/>
                     <span class='mx-2' style='font-size: 18px;'>Chats</span>
@@ -94,6 +98,7 @@ import {
     IconMap,
     IconUser,
     IconUsers,
+    IconVideo,
     IconPhoto,
     IconLogout,
     IconMessage,
@@ -131,6 +136,7 @@ export default {
         IconSettings,
         IconFileImport,
         IconLogout,
+        IconVideo,
         IconUser,
         IconUsers,
         IconMap

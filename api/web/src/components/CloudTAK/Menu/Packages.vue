@@ -5,7 +5,7 @@
     </template>
     <template #default>
         <TablerLoading v-if='loading'/>
-        <TablerNone v-else-if='!list.items.length' label='Imports' :create='false'/>
+        <TablerNone v-else-if='!list.items.length' label='Packages' :create='false'/>
         <template v-else>
             <div :key='pkg.Hash' v-for='pkg in list.items'>
                 <div @click='$router.push(`/menu/packages/${pkg.Hash}`)' class='col-12 py-2 px-3 align-items-center hover-dark cursor-pointer'>
