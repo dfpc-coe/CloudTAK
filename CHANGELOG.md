@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v2.17.0 - 2024-05-08
+
+- :rocket: `UI` Update to latest TerraDraw which fixes required use of ts-ignore
+
 ### v2.16.0 - 2024-05-08
 
 - :rocket: `UI` Use URL Params for CoT & Query Panel

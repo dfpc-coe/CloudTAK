@@ -46,13 +46,17 @@
                     <table class="table table-hover card-table table-vcenter border rounded cursor-pointer">
                         <thead>
                             <tr>
-                                <th :key='prop' v-for='prop in Object.keys(schema.properties[key].items.properties)' v-text='prop'></th>
+                                <th :key='prop' v-for='prop in Object.keys(schema.properties[key].items.properties)'>
+                                    <span v-text='prop'/>
+                                </th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr @click='editModal(schema.properties[key].items, arr, key, i)' :key='i' v-for='(arr, i) in data[key]'>
                                 <template v-if='disabled'>
-                                    <td :key='prop' v-for='prop in Object.keys(schema.properties[key].items.properties)' v-text='arr[prop]'></td>
+                                    <td :key='prop' v-for='prop in Object.keys(schema.properties[key].items.properties)'>
+                                        <span v-text='arr[prop]'/>
+                                    </td>
                                 </template>
                                 <template v-else>
                                     <td :key='prop' v-for='(prop, prop_it) in Object.keys(schema.properties[key].items.properties)'>

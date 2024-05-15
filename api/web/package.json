@@ -31,7 +31,7 @@
         "sass": "^1.49.7",
         "sass-loader": "^14.0.0",
         "semver-sort": "^1.0.0",
-        "terra-draw": "^0.0.1-alpha.65",
+        "terra-draw": "^0.0.1-alpha.66",
         "vue": "^3.2.31",
         "vue-mention": "^2.0.0-alpha.3",
         "vue-router": "^4.0.14",

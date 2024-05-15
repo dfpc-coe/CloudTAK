@@ -554,7 +554,6 @@ export const useMapStore = defineStore('cloudtak', {
         },
         initDraw: function() {
             this.draw = new terraDraw.TerraDraw({
-                // @ts-expect-error Ref: https://github.com/JamesLMilner/terra-draw/issues/248
                 adapter: new terraDraw.TerraDrawMapLibreGLAdapter({ map: this.map }),
                 modes: [
                     new terraDraw.TerraDrawPointMode(),
