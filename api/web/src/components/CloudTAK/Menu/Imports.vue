@@ -10,7 +10,7 @@
             <div @click='$router.push(`/menu/imports/${imported.id}`)' :key='imported.id' v-for='imported in list.items'>
                 <div class='cursor-pointer col-12 py-2 px-3 d-flex align-items-center hover-dark'>
                     <div class='col-auto'>
-                        <Status :status='imported.status'/>
+                        <Status :dark='true' :status='imported.status'/>
                     </div>
                     <div class='mx-2 col-auto row' style='width: 300px;'>
                         <div class='text-truncate' v-text='imported.name'></div>

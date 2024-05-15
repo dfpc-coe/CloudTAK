@@ -15,7 +15,8 @@ import { Import } from '../lib/schema.js';
 
 export enum ImportModeEnum {
     UNKNOWN = 'Unknown',
-    MISSION = 'Mission'
+    MISSION = 'Mission',
+    PACKAGE = 'Package'
 }
 
 export default async function router(schema: Schema, config: Config) {

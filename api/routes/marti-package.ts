@@ -115,7 +115,7 @@ export default async function router(schema: Schema, config: Config) {
     });
 
     await schema.get('/marti/package/:hash', {
-        name: 'List Packages',
+        name: 'Get Package',
         group: 'MartiPackages',
         description: 'Helper API to get a single package',
         params: Type.Object({

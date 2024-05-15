@@ -18,6 +18,12 @@
                     <div class="datagrid-content" v-text='timeDiff(pkg.SubmissionDateTime)'></div>
                 </div>
             </div>
+
+            <div class='col-12 py-3'>
+                <button @click='createImport' class='btn btn-primary w-100'>
+                    <IconFileImport size='20' class='mx-1'/>Import
+                </button>
+            </div>
         </div>
     </template>
 </MenuTemplate>
@@ -32,7 +38,8 @@ import {
 } from '@tak-ps/vue-tabler';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import {
-    IconDownload
+    IconDownload,
+    IconFileImport
 } from '@tabler/icons-vue';
 import { mapState } from 'pinia'
 import { useProfileStore } from '/src/stores/profile.ts';
@@ -69,9 +76,25 @@ export default {
             this.pkg = await std(url);
             this.loading = false;
         },
+        createImport: async function() {
+            this.loading = true;
+            const url = stdurl(`/api/import`);
+            const imp = await std('/api/import', {
+                method: 'POST',
+                body: {
+                    name: this.pkg.Name,
+                    mode: 'Package',
+                    mode_id: this.pkg.Name
+                }
+            });
+           
+            this.$router.push(`/menu/imports/${imp.id}`)
+
+        },
     },
     components: {
         IconDownload,
+        IconFileImport,
         TablerDelete,
         TablerLoading,
         MenuTemplate,

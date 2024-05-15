@@ -4,7 +4,8 @@
     "status-orange": ["warn", "provisioning"].includes(normalizeStatus),
     "status-green": ["success"].includes(normalizeStatus),
     "status-red": ["fail", "pending", "deprovisioning"].includes(normalizeStatus),
-    "status-dark": ["unknown", "empty"].includes(normalizeStatus),
+    "status-dark": !dark && ["unknown", "empty"].includes(normalizeStatus),
+    "status-light": dark && ["unknown", "empty"].includes(normalizeStatus),
 }'>
     <span class="status-indicator-circle"></span>
     <span class="status-indicator-circle"></span>
@@ -19,6 +20,10 @@ export default {
         status: {
             type: String,
             required: true
+        },
+        dark: {
+            type: Boolean,
+            default: false
         }
     },
     computed: {
