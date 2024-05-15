@@ -117,7 +117,7 @@ export default {
             mapStore.map.addSource('basemap', { type: 'raster', tileSize: 256, tiles: [ url ] });
             mapStore.addLayer({
                 name: basemap.name,
-                before: 'CoT Icons',
+                before: mapStore.layers[0].name,
                 type: 'raster',
                 source: 'basemap',
                 layers: [{
