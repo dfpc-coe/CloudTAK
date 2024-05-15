@@ -15,6 +15,18 @@ const router = new VueRouter.createRouter({
             name: 'home',
             component: () => import('./components/Home.vue'),
             children: [{
+                path: 'query/:coords',
+                name: 'home-menu-query',
+                component: () => import('./components/CloudTAK/QueryView.vue'),
+            },{
+                path: 'feat/:id',
+                name: 'home-menu-feat',
+                component: () => import('./components/CloudTAK/FeatView.vue'),
+            },{
+                path: 'cot/:uid',
+                name: 'home-menu-cot',
+                component: () => import('./components/CloudTAK/CoTView.vue'),
+            },{
                 path: 'menu',
                 name: 'home-menu',
                 component: () => import('./components/CloudTAK/Menu.vue'),

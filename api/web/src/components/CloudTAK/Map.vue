@@ -125,24 +125,19 @@
             </template>
             <template #dropdown>
                 <div @click='pointInput.shown = true' class='col-12 py-1 px-2 hover-button cursor-pointer'>
-                    <IconCursorText size='25'/>
-                    Coordinate Input
+                    <IconCursorText size='25'/> Coordinate Input
                 </div>
                 <div @click='startDraw("point")' class='col-12 py-1 px-2 hover-button cursor-pointer'>
-                    <IconPoint size='25'/>
-                    Draw Point
+                    <IconPoint size='25'/> Draw Point
                 </div>
                 <div @click='startDraw("linestring")' class='col-12 py-1 px-2 hover-button cursor-pointer'>
-                    <IconLine size='25'/>
-                    Draw Line
+                    <IconLine size='25'/> Draw Line
                 </div>
                 <div @click='startDraw("polygon")' class='col-12 py-1 px-2 hover-button cursor-pointer'>
-                    <IconPolygon size='25'/>
-                    Draw Polygon
+                    <IconPolygon size='25'/> Draw Polygon
                 </div>
                 <div @click='startDraw("rectangle")' class='col-12 py-1 px-2 hover-button cursor-pointer'>
-                    <IconVector size='25'/>
-                    Draw Rectangle
+                    <IconVector size='25'/> Draw Rectangle
                 </div>
             </template>
         </TablerDropdown>
@@ -167,25 +162,7 @@
         </div>
     </div>
 
-    <CloudTAKCoTView
-        v-if='cot && mode === "Default"'
-        :key='cot.id'
-        :cot='cot'
-    />
-    <CloudTAKFeatView
-        v-if='feat && mode === "Default"'
-        :key='feat.id'
-        :feat='feat'
-    />
-    <CloudTAKQueryView
-        v-if='query && mode === "Default"'
-        :coords='query'
-    />
-
-    <div
-        ref="map"
-        style='width: 100%;'
-    ></div>
+    <div ref="map" style='width: 100%;'></div>
 
     <MultipleSelect
         v-if='select.feats.length'
@@ -194,9 +171,6 @@
     <RadialMenu v-else-if='radial.mode'
         @close='closeRadial'
         @click='handleRadial($event)'
-        :mode='radial.mode'
-        :x='radial.x'
-        :y='radial.y'
         ref='radial'
     />
 
@@ -250,9 +224,6 @@ import {
 import Coordinate from './util/Coordinate.vue';
 import Loading from '../Loading.vue';
 import 'maplibre-gl/dist/maplibre-gl.css';
-import CloudTAKCoTView from './CoTView.vue';
-import CloudTAKQueryView from './QueryView.vue';
-import CloudTAKFeatView from './FeatView.vue';
 import RadialMenu from './RadialMenu/RadialMenu.vue';
 import { mapState, mapActions } from 'pinia'
 import { useMapStore } from '/src/stores/map.ts';
@@ -286,7 +257,7 @@ export default {
             }
         },
         noMenuShown: function() {
-            return !this.pointInput.shown && !this.cot && !this.feat && !this.query && !this.$route.path.startsWith('/menu')
+            return !this.pointInput.shown && !this.$route.name.startsWith('home-menu')
         }
     },
     unmounted: function() {
@@ -349,9 +320,6 @@ export default {
                 shown: false,
                 dragging: false
             },
-            cot: null,          // Show the CoT Viewer sidebar
-            feat: null,         // Show the Feat Viewer sidebar
-            query: null,        // Show the Query Viewer sidebar
             timer: null,        // Interval for pushing GeoJSON Map Updates (CoT)
             timerSelf: null,    // Interval for pushing your location to the server
             loading: {
@@ -398,15 +366,12 @@ export default {
             const center = mapStore.map.getCenter()
             this.pointInput.coordinates = [center.lng, center.lat]
         },
-        cot: function() {
-            if (this.cot) this.closeRadial();
-        }
     },
     methods: {
         ...mapActions(useProfileStore, ['clearNotifications']),
         closeAllMenu: function() {
             this.$router.push("/");
-            this.cot = this.feat = this.query = this.pointInput.shown = false;
+            this.pointInput.shown = false;
         },
         submitPoint: async function() {
             this.pointInput.shown = false;
@@ -472,9 +437,8 @@ export default {
         },
         handleRadial: async function(event) {
             if (event === 'cot:view') {
-                const cot = mapStore.radial.cot;
+                this.$router.push(`/cot/${this.radial.cot.id}`);
                 this.closeRadial()
-                this.cot = cot;
             } else if (event === 'cot:delete') {
                 const cot = mapStore.radial.cot;
                 this.closeRadial()
@@ -482,14 +446,14 @@ export default {
             } else if (event === 'cot:edit') {
                 //this.edit = true;
             } else if (event === 'feat:view') {
-                this.feat = mapStore.radial.cot;
+                this.$router.push(`/feat/${this.radial.cot.id}`);
                 this.closeRadial()
             } else if (event === 'context:new') {
                 await cotStore.add(mapStore.radial.cot);
                 this.updateCOT();
                 this.closeRadial()
             } else if (event === 'context:info') {
-                this.query = mapStore.radial.cot.geometry.coordinates;
+                this.$router.push(`/query/${encodeURIComponent(this.radial.cot.geometry.coordinates.join(','))}`);
                 this.closeRadial()
             } else {
                 this.closeRadial()
@@ -663,9 +627,6 @@ export default {
         TablerInput,
         TablerModal,
         TablerDropdown,
-        CloudTAKQueryView,
-        CloudTAKCoTView,
-        CloudTAKFeatView,
         IconSearch,
         IconMessage,
         IconLocationOff,

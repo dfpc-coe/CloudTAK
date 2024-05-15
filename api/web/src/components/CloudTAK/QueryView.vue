@@ -44,14 +44,9 @@ import Coordinate from './util/Coordinate.vue';
 
 export default {
     name: 'CloudTAKQueryMode',
-    props: {
-        coords: {
-            type: Array,
-            required: true
-        }
-    },
     data: function() {
         return {
+            coords: this.$route.params.coords.split(','),
             loading: true,
             query: {}
         }

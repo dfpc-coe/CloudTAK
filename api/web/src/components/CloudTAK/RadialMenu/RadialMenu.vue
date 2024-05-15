@@ -4,8 +4,8 @@
         class='position-absolute'
         style='pointer-events: none;'
         :style='{
-            top: `${y - (size / 2)}px`,
-            left: `${x - (size / 2)}px`,
+            top: `${radial.y - (size / 2)}px`,
+            left: `${radial.x - (size / 2)}px`,
         }'
     ></div>
 
@@ -21,23 +21,14 @@
 <script>
 import RadialMenu from './RadialMenu.js';
 import './RadialMenu.css';
+import { useMapStore } from '/src/stores/map.ts';
+import { mapState, mapActions } from 'pinia'
+const mapStore = useMapStore();
 
 export default {
     name: 'RadialMenu',
     emits: ['close', 'click'],
     props: {
-        mode: {
-            type: String,
-            required: true
-        },
-        x: {
-            type: Number,
-            default: 0
-        },
-        y: {
-            type: Number,
-            default: 0
-        },
         size: {
             type: Number,
             default: 200
@@ -59,7 +50,7 @@ export default {
                 closeOnClick: true,
                 menuItems: this.menuItems,
                 onClick: (item) => {
-                    this.$emit('click', `${this.mode}:${item.id}`);
+                    this.$emit('click', `${this.radial.mode}:${item.id}`);
                 },
                 onClose: () => {
                     this.$emit('close')
@@ -68,16 +59,20 @@ export default {
             this.menu.open();
         })
     },
+    computed: {
+        ...mapState(useMapStore, ['radial']),
+    },
     methods: {
+        ...mapActions(useMapStore, ['radialClick']),
         genMenuItems: function() {
             this.menuItems.splice(0, this.menuItems.length);
-            if (this.mode === 'cot') {
+            if (this.radial.mode === 'cot') {
                 this.menuItems.push({ id: 'edit', icon: '#radial-pencil' })
                 this.menuItems.push({ id: 'view', icon: '#radial-view' })
                 this.menuItems.push({ id: 'delete', icon: '#radial-trash' })
-            } else if (this.mode === 'feat') {
+            } else if (this.radial.mode === 'feat') {
                 this.menuItems.push({ id: 'view', icon: '#radial-view' })
-            } else if (this.mode === 'context') {
+            } else if (this.radial.mode === 'context') {
                 this.menuItems.push({ id: 'new', icon: '#radial-pencil-plus' })
                 this.menuItems.push({ id: 'info', icon: '#radial-question' })
             }
