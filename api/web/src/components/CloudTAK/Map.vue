@@ -174,6 +174,12 @@
         ref='radial'
     />
 
+    <CloudTAKFeatView
+        v-if='feat && mode === "Default"'
+        :key='feat.id'
+        :feat='feat'
+    />
+
     <template v-if='upload.shown'>
         <TablerModal>
             <div class="modal-status bg-red"></div>
@@ -193,6 +199,7 @@
 
 <script>
 import { std, stdurl } from '/src/std.ts';
+import CloudTAKFeatView from './FeatView.vue';
 import {
     IconSearch,
     IconMessage,
@@ -257,7 +264,7 @@ export default {
             }
         },
         noMenuShown: function() {
-            return !this.pointInput.shown && !this.$route.name.startsWith('home-menu')
+            return !this.feat && !this.pointInput.shown && !this.$route.name.startsWith('home-menu')
         }
     },
     unmounted: function() {
@@ -313,6 +320,7 @@ export default {
                 name: '',
                 coordinate: []
             },
+            feat: null,         // Show the Feat Viewer sidebar
             locked: [],         // Lock the map view to a given CoT - The last element is the currently locked value
                                 //   this is an array so that things like the radial menu can temporarily lock state but remember the previous lock value when they are closed
             edit: false,        // If a radial.cot is set and edit is true then load the cot into terra-draw
@@ -370,6 +378,7 @@ export default {
     methods: {
         ...mapActions(useProfileStore, ['clearNotifications']),
         closeAllMenu: function() {
+            this.feat = false;
             this.$router.push("/");
             this.pointInput.shown = false;
         },
@@ -446,7 +455,7 @@ export default {
             } else if (event === 'cot:edit') {
                 //this.edit = true;
             } else if (event === 'feat:view') {
-                this.$router.push(`/feat/${this.radial.cot.id}`);
+                this.feat = this.radial.cot;
                 this.closeRadial()
             } else if (event === 'context:new') {
                 await cotStore.add(mapStore.radial.cot);
@@ -642,6 +651,7 @@ export default {
         IconVector,
         IconMenu2,
         IconPencil,
+        CloudTAKFeatView,
         IconCursorText,
         IconCircleArrowUp,
         IconX,
