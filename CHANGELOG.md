@@ -12,16 +12,20 @@
 
 ### Pending Release
 
-### v2.17.2 - 2024-05-08
+### v2.17.3 - 2024-05-16
+
+- :rocket: `API/UI` Ensure JSON Schemas are valid when the default DB value is used
+
+### v2.17.2 - 2024-05-16
 
 - :rocket: `UI` Add Import Button and redirect to Import UI for Data Package
 - :rocket: `API` Add `Package` type to Import API
 
-### v2.17.1 - 2024-05-08
+### v2.17.1 - 2024-05-16
 
 - :rocket: `UI` Background Imagery changes should always stay at bottom of stack
 
-### v2.17.0 - 2024-05-08
+### v2.17.0 - 2024-05-15
 
 - :rocket: `UI` Update to latest TerraDraw which fixes required use of ts-ignore
 
