@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v2.17.1 - 2024-05-08
+
+- :rocket: `UI` Background Imagery changes should always stay at bottom of stack
+
 ### v2.17.0 - 2024-05-08
 
 - :rocket: `UI` Update to latest TerraDraw which fixes required use of ts-ignore
