@@ -173,7 +173,7 @@ export const Layer = pgTable('layers', {
     memory: integer('memory').notNull().default(128),
     timeout: integer('timeout').notNull().default(128),
     data: integer('data').references(() => Data.id),
-    schema: json('schema').notNull().default({})
+    schema: json('schema').notNull().default({ type: 'object', required: [], properties: {} })
 });
 
 export const LayerAlert = pgTable('layer_alerts', {
