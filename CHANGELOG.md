@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v2.17.2 - 2024-05-08
+
+- :rocket: `UI` Add Import Button and redirect to Import UI for Data Package
+- :rocket: `API` Add `Package` type to Import API
+
 ### v2.17.1 - 2024-05-08
 
 - :rocket: `UI` Background Imagery changes should always stay at bottom of stack
