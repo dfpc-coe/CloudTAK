@@ -1,16 +1,17 @@
 <template>
 <MenuTemplate name='Import'>
     <template #buttons>
+        <TablerLoading v-if='loading.main'/>
         <IconRefresh @click='fetch' size='32' class='cursor-pointer' v-tooltip='"Refresh"'/>
     </template>
     <template #default>
-        <TablerLoading v-if='loading.initial || loading.main'/>
+        <TablerLoading v-if='loading.initial'/>
         <div v-else class='mx-4 my-4'>
             <div class='datagrid'>
                 <div class="datagrid-item">
                     <div class="datagrid-title">Import Name</div>
                     <div class="datagrid-content d-flex align-items-center">
-                        <Status :status='imported.status'/><span class='mx-2' v-text='imported.name'/>
+                        <Status :dark='true' :status='imported.status'/><span class='mx-2' v-text='imported.name'/>
                     </div>
                 </div>
                 <div class="datagrid-item">
