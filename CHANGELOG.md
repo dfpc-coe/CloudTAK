@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v2.16.0 - 2024-05-08
+
+- :rocket: `UI` Use URL Params for CoT & Query Panel
+
 ### v2.15.0 - 2024-05-08
 
 - :rocket: `UI` Add basic Video list in the CloudTAK Settings Panel
