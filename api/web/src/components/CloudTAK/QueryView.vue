@@ -52,12 +52,9 @@ export default {
         }
     },
     watch: {
-        coords: {
-            deep: true,
-            handler: async function() {
-                if (!this.coords) return;
-                await this.fetch();
-            }
+        '$route.params.coords': async function() {
+            this.coords = this.$route.params.coords.split(',');
+            await this.fetch();
         }
     },
     mounted: async function() {

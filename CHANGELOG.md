@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v2.18.2 - 2024-05-17
+
+- :rocket: `UI` Make query pane reactive to re-query
+
 ### v2.18.1 - 2024-05-17
 
 - :arrow_up: Update Depoy Deps
