@@ -16,7 +16,7 @@
             </div>
         </div>
         <TablerLoading v-if='loading.mission' desc='Saving Mission'/>
-        <Alert v-else-if='err' :err='err'/>
+        <TablerAlert v-else-if='err' :err='err'/>
         <template v-else>
             <div class='modal-body row g-2'>
                 <TablerInput label='Name' v-model='mission.name'/>
@@ -78,8 +78,8 @@ import {
     IconChevronDown,
 } from '@tabler/icons-vue';
 import GroupSelect from '../../util/GroupSelectModal.vue';
-import Alert from '../../util/Alert.vue';
 import {
+    TablerAlert,
     TablerInput,
     TablerEnum,
     TablerToggle,
@@ -145,7 +145,7 @@ export default {
         IconSquareChevronRight,
         IconChevronDown,
         GroupSelect,
-        Alert,
+        TablerAlert,
         TablerLoading,
         TablerInput,
         TablerEnum,

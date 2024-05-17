@@ -47,7 +47,7 @@
     </div>
     <div v-else class='card-body'>
         <template v-if='err'>
-            <Alert title='Asset Error' :err='err.message' :compact='true'/>
+            <TablerAlert title='Asset Error' :err='err' :compact='true'/>
         </template>
         <TablerLoading v-else-if='loading.list'/>
         <Upload
@@ -74,10 +74,10 @@ import {
     IconDownload,
     IconTransform,
 } from '@tabler/icons-vue'
-import Alert from '../util/Alert.vue';
 import TransformModal from './TransformModal.vue';
 import Upload from '../util/Upload.vue';
 import {
+    TablerAlert,
     TablerNone,
     TablerDelete,
     TablerLoading,
@@ -155,7 +155,7 @@ export default {
     components: {
         TablerNone,
         Upload,
-        Alert,
+        TablerAlert,
         IconPlus,
         IconMap,
         IconMapOff,

@@ -12,7 +12,7 @@
     </div>
 
     <template v-if='err'>
-        <Alert title='ESRI Connection Error' :err='err.message' :compact='true'/>
+        <TablerAlert title='ESRI Connection Error' :err='err' :compact='true'/>
     </template>
     <template v-else-if='loading'>
         <TablerLoading desc='Connecting to ESRI Server'/>
@@ -91,6 +91,7 @@
 <script>
 import { std, stdurl } from '/src/std.ts';
 import {
+    TablerAlert,
     TablerLoading,
     TablerDelete,
     TablerNone,
@@ -103,7 +104,6 @@ import {
     IconArrowBack,
     IconCheck
 } from '@tabler/icons-vue';
-import Alert from './Alert.vue';
 
 export default {
     name: 'EsriServer',
@@ -275,7 +275,7 @@ export default {
         },
     },
     components: {
-        Alert,
+        TablerAlert,
         IconX,
         TablerNone,
         IconMap,

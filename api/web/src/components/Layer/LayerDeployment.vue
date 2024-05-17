@@ -33,14 +33,14 @@
             <TablerLoading/>
         </template>
         <template v-else-if='errors.cloudformation'>
-            <Alert title='AWS CloudFormation Error' :err='errors.cloudformation.message' :compact='true'/>
+            <TablerAlert title='AWS CloudFormation Error' :err='new Error(errors.cloudformation.message)' :compact='true'/>
 
             <div class="d-flex justify-content-center my-3">
                 <div @click='refresh' class='btn btn-secondary'>Refresh</div>
             </div>
         </template>
         <template v-else-if='errors.cloudwatch'>
-            <Alert title='AWS CloudWatch Error' :err='errors.cloudwatch.message' :compact='true'/>
+            <TablerAlert title='AWS CloudWatch Error' :err='new Error(errors.cloudwatch.message)' :compact='true'/>
 
             <div class="d-flex justify-content-center my-3">
                 <div @click='refresh' class='btn btn-secondary'>Refresh</div>
@@ -67,9 +67,9 @@
 <script>
 import { std } from '/src/std.ts';
 import {
+    TablerAlert,
     TablerLoading
 } from '@tak-ps/vue-tabler';
-import Alert from '../util/Alert.vue';
 import {
     IconPlayerPlay,
     IconRefresh,
@@ -179,7 +179,7 @@ export default {
         }
     },
     components: {
-        Alert,
+        TablerAlert,
         IconPlayerPlay,
         IconRefresh,
         TablerLoading,

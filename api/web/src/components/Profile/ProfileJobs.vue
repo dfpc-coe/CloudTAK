@@ -36,7 +36,7 @@
     </div>
     <div v-else class='card-body'>
         <template v-if='err'>
-            <Alert title='Transforms Error' :err='err.message' :compact='true'/>
+            <TablerAlert title='Transforms Error' :err='err' :compact='true'/>
         </template>
         <TablerLoading v-else-if='loading.list'/>
         <TablerNone v-else-if='!list.items.length' :create='false' :compact='true'/>
@@ -46,12 +46,12 @@
 
 <script>
 import { std } from '/src/std.ts';
-import Alert from '../util/Alert.vue';
 import Status from '../util/Status.vue';
 import {
     IconRefresh
 } from '@tabler/icons-vue';
 import {
+    TablerAlert,
     TablerNone,
     TablerLoading,
     TablerEpoch
@@ -101,7 +101,7 @@ export default {
     components: {
         TablerNone,
         Status,
-        Alert,
+        TablerAlert,
         IconRefresh,
         TablerLoading,
         TablerEpoch,
