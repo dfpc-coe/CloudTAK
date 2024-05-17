@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v2.19.0 - 2024-05-17
+
+- :rocket: `UI` Significant improvements to ESRI Environment Editor
+- :rocket: `API` Relaxed token requirements when working with unauthenticated ESRI Layer
+
 ### v2.18.2 - 2024-05-17
 
 - :rocket: `UI` Make query pane reactive to re-query
