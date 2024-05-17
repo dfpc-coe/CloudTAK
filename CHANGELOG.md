@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v2.18.0 - 2024-05-16
+
+- :rocket: `API` Return 400 errors for invalid CoT Features
+- :rocket: `API` Allow Numbers for Speed/Course/Slope
+
 ### v2.17.6 - 2024-05-16
 
 - :arrow_up: `API` Update node-cot to ensure proto files are included in distribution
