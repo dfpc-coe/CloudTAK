@@ -54,9 +54,9 @@
                             />
                             <div v-else-if='error'>
                                 <div class='text-center py-4'>
-                                    <Alert
+                                    <TablerAlert
                                         title='Query Error'
-                                        :err='error.message'
+                                        :err='error'
                                         :compact='true'
                                     />
                                     <div class='d-flex justify-content-center my-3'>
@@ -116,7 +116,6 @@
 <script>
 import { std, stdurl } from '/src/std.ts';
 import PageFooter from './PageFooter.vue';
-import Alert from './util/Alert.vue';
 import {
     IconSearch
 } from '@tabler/icons-vue';
@@ -130,7 +129,7 @@ export default {
     name: 'LayerQuery',
     components: {
         TablerNone,
-        Alert,
+        TablerAlert,
         PageFooter,
         IconSearch,
         TablerBreadCrumb, 

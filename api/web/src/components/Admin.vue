@@ -20,7 +20,7 @@
                             v-if='!profile'
                             desc='Loading Profile'
                         />
-                        <Alert
+                        <TablerAlert
                             v-else-if='!profile.system_admin'
                             :err='new Error("Insufficient Access")'
                         />
@@ -113,8 +113,8 @@
 <script>
 import { useProfileStore } from '/src/stores/profile.ts';
 import PageFooter from './PageFooter.vue';
-import Alert from './util/Alert.vue';
 import {
+    TablerAlert,
     TablerLoading,
     TablerBreadCrumb,
 } from '@tak-ps/vue-tabler'
@@ -139,7 +139,7 @@ export default {
         await profileStore.load();
     },
     components: {
-        Alert,
+        TablerAlert,
         IconSettings,
         IconVideo,
         IconUsers,

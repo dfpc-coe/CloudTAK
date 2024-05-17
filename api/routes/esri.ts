@@ -93,11 +93,11 @@ export default async function router(schema: Schema, config: Config) {
                 anyResources: true
             });
 
-            const base = new EsriBase(String(req.query.portal));
+            const base = new EsriBase(req.query.portal);
             if (req.query.token && req.query.expires) {
                 base.token = {
-                    token: String(req.query.token),
-                    expires: Number(req.query.expires),
+                    token: req.query.token,
+                    expires: req.query.expires,
                     referer: config.API_URL
                 }
             }
@@ -129,11 +129,11 @@ export default async function router(schema: Schema, config: Config) {
                 anyResources: true
             });
 
-            const base = new EsriBase(String(req.query.portal));
+            const base = new EsriBase(req.query.portal);
             if (req.query.token && req.query.expires) {
                 base.token = {
-                    token: String(req.query.token),
-                    expires: Number(req.query.expires),
+                    token: req.query.token,
+                    expires: req.query.expires,
                     referer: config.API_URL
                 }
             }
@@ -141,7 +141,7 @@ export default async function router(schema: Schema, config: Config) {
             const portal = new EsriProxyPortal(base);
 
             const content = await portal.getContent({
-                title: req.query.title ? String(req.query.title) : undefined
+                title: req.query.title
             });
 
             return res.json(content);
@@ -169,7 +169,7 @@ export default async function router(schema: Schema, config: Config) {
                 anyResources: true
             });
 
-            const base = new EsriBase(String(req.query.portal));
+            const base = new EsriBase(req.query.portal);
             base.token = {
                 token: req.query.token,
                 expires: req.query.expires,
@@ -205,7 +205,7 @@ export default async function router(schema: Schema, config: Config) {
                 anyResources: true
             });
 
-            const base = new EsriBase(String(req.query.portal));
+            const base = new EsriBase(req.query.portal);
             base.token = {
                 token: req.query.token,
                 expires: req.query.expires,
@@ -239,7 +239,7 @@ export default async function router(schema: Schema, config: Config) {
                 anyResources: true
             });
 
-            const base = new EsriBase(String(req.query.server));
+            const base = new EsriBase(req.query.server);
             if (req.query.token && req.query.expires) {
                 base.token = {
                     token: req.query.token,
@@ -309,9 +309,9 @@ export default async function router(schema: Schema, config: Config) {
                 anyResources: true
             });
 
-            const url = new URL(String(req.query.server).replace(/\/\d+$/, ''));
+            const url = new URL(req.query.server.replace(/\/\d+$/, ''));
 
-            const parsed_layer = String(req.query.server).match(/\/\d+$/);
+            const parsed_layer = req.query.server.match(/\/\d+$/);
             if (!parsed_layer || !parsed_layer[0]) throw new Error('Could not parse layer ID');
             const layer_id = parseInt(parsed_layer[0].replace('/', ''));
 
@@ -347,16 +347,19 @@ export default async function router(schema: Schema, config: Config) {
                 anyResources: true
             });
 
-            const base = new EsriBase(String(req.query.layer));
-            base.token = {
-                token: String(req.query.token),
-                expires: Number(req.query.expires),
-                referer: config.API_URL
+            const base = new EsriBase(req.query.layer);
+
+            if (req.query.token && req.query.expires) {
+                base.token = {
+                    token: req.query.token,
+                    expires: req.query.expires,
+                    referer: config.API_URL
+                }
             }
 
             const layer = new EsriProxyLayer(base);
 
-            const count = await layer.query(String(req.query.query));
+            const count = await layer.query(req.query.query);
 
             return res.json(count)
         } catch (err) {

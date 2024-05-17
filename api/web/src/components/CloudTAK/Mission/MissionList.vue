@@ -12,7 +12,7 @@
     </div>
     <TablerLoading v-if='loading' desc='Loading Missions'/>
     <TablerNone v-else-if='!list.data.length' label='Missions' :create='false'/>
-    <Alert v-else-if='err' :err='err'/>
+    <TablerAlert v-else-if='err' :err='err'/>
     <template v-else>
         <div
             @click='$emit("mission", mission)'
@@ -54,8 +54,8 @@ import {
     IconRefresh,
     IconCircleArrowLeft,
 } from '@tabler/icons-vue';
-import Alert from '../../util/Alert.vue';
 import {
+    TablerAlert,
     TablerNone,
     TablerLoading
 } from '@tak-ps/vue-tabler';
@@ -95,7 +95,7 @@ export default {
         }
     },
     components: {
-        Alert,
+        TablerAlert,
         TablerNone,
         TablerLoading,
         IconCircleArrowLeft,

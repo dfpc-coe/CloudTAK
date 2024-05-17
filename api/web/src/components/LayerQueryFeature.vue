@@ -22,9 +22,9 @@
                                 desc='Loading Feature'
                             />
                             <div v-else-if='error'>
-                                <Alert
+                                <TablerAlert
                                     title='Query Error'
-                                    :err='error.message'
+                                    :err='error'
                                     :compact='true'
                                 />
 
@@ -60,8 +60,8 @@
 import { std, stdurl } from '/src/std.ts';
 import PageFooter from './PageFooter.vue';
 import LayerQueryMap from './LayerQuery/Map.vue';
-import Alert from './util/Alert.vue';
 import {
+    TablerAlert,
     TablerBreadCrumb, 
     TablerLoading
 } from '@tak-ps/vue-tabler'
@@ -69,7 +69,7 @@ import {
 export default {
     name: 'LayerQueryFeature',
     components: {
-        Alert,
+        TablerAlert,
         PageFooter,
         TablerBreadCrumb, 
         LayerQueryMap,

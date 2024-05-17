@@ -100,20 +100,25 @@
                     <div class='w-100'>
                         <TablerInput
                             label='ArcGIS SQL Query'
-                            :disabled='disabled'
+                            :disabled='disabled || !environment.ARCGIS_URL'
                             v-model='environment.ARCGIS_QUERY'
                         />
                     </div>
-                    <button v-if='!disabled' @click='filterModal = true' class='btn' style='height: 40px; margin-left: 8px; margin-top: 28px;'><IconFilter size='32'/> Query Editor</button>
+                    <button
+                        v-if='!disabled && environment.ARCGIS_URL'
+                        @click='filterModal = true'
+                        class='btn'
+                        style='height: 40px; margin-left: 8px; margin-top: 28px;'
+                    ><IconFilter size='32'/> Query Editor</button>
                 </div>
             </div>
         </div>
     </div>
-    <div class="col-md-12 mt-3">
+    <div v-if='type !== "server"' class="col-md-12 mt-3">
         <template v-if='!esriView'>
             <div class='d-flex'>
                 <div class='ms-auto'>
-                    <a @click='esriView = true' class="cursor-pointer btn btn-secondary">Connect</a>
+                    <a @click='connect' class="cursor-pointer btn btn-secondary">Connect</a>
                 </div>
             </div>
         </template>
@@ -136,10 +141,7 @@
         v-if='filterModal'
         @close='filterModal = false'
         v-model='environment.ARCGIS_QUERY'
-        :token='{
-            token: environment.ARCGIS_TOKEN,
-            expires: environment.ARCGIS_EXPIRES
-        }'
+        :token='environment.ARCGIS_TOKEN'
         :layer='environment.ARCGIS_URL'
     />
 </div>
@@ -188,6 +190,7 @@ export default {
     },
     data: function() {
         let type = 'agol';
+        console.error(JSON.stringify(this.modelValue))
         if (!this.modelValue.ARCGIS_PORTAL && !this.modelValue.ARCGIS_USERNAME) {
             type = 'server';
         } else if (this.modelValue.ARCGIS_PORTAL.includes('arcgis.com') && this.modelValue.ARCGIS_USERNAME) {
@@ -205,7 +208,10 @@ export default {
         };
     },
     methods: {
-        processToken(token) {
+        connect: function() {
+            this.esriView = true;
+        },
+        processToken: function(token) {
             if (!token) return;
 
             this.environment.ARCGIS_TOKEN = token.token;

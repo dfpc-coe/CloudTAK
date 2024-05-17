@@ -10,7 +10,7 @@
     </div>
 
     <div style='min-height: 20vh; margin-bottom: 61px'>
-        <Alert v-if='err' title='ETL Server Error' :err='err.message' :compact='true'/>
+        <TablerAlert v-if='err' title='ETL Server Error' :err='err' :compact='true'/>
         <TablerLoading v-else-if='loading'/>
         <TablerNone v-else-if='!list.items.length' :create='false' label='Data'/>
         <div v-else class='table-resposive'>
@@ -47,8 +47,8 @@
 <script>
 import { std, stdurl } from '/src/std.ts';
 import TableFooter from '../util/TableFooter.vue';
-import Alert from '../util/Alert.vue';
 import {
+    TablerAlert,
     TablerNone,
     TablerLoading
 } from '@tak-ps/vue-tabler'
@@ -115,7 +115,7 @@ export default {
         IconRefresh,
         IconPlus,
         TablerNone,
-        Alert,
+        TablerAlert,
         TablerLoading,
         TableFooter,
     }
