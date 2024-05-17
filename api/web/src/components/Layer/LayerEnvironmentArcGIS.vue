@@ -1,34 +1,91 @@
 <template>
 <div class='row g-2 mx-2 my-2'>
-    <div class="col-12">
-        <TablerInput
-            label='ArcGIS Portal URL (Example: https://example.com/portal/sharing/rest)'
-            :disabled='disabled'
-            v-model='environment.ARCGIS_PORTAL'
-        />
+    <div class='col-12 mb-3'>
+        <div class="btn-group w-100" role="group">
+            <input type="radio" class="btn-check" name="esri-type" id="agol" autocomplete="off" @click='type = "agol"' :checked='type === "agol"'>
+            <label for="agol" type="button" class="btn">ArcGIS Online</label>
+
+            <input type="radio" class="btn-check" name="esri-type" id="portal" autocomplete="off" @click='type = "portal"' :checked='type === "portal"'>
+            <label for="portal" type="button" class="btn">ArcGIS Enterprise Portal</label>
+
+            <input type="radio" class="btn-check" name="esri-type" id="server" autocomplete="off" @click='type = "server"' :checked='type === "server"'>
+            <label for="server" type="button" class="btn">ArcGIS Server</label>
+        </div>
     </div>
-    <div v-if='environment.ARCGIS_URL' class="col-12">
-        <TablerInput
-            label='ArcGIS Layer URL'
-            :disabled='disabled'
-            v-model='environment.ARCGIS_URL'
-        />
-    </div>
-    <div class="col-12 col-md-6 mt-3">
-        <TablerInput
-            label='ArcGIS Username'
-            :disabled='disabled'
-            v-model='environment.ARCGIS_USERNAME'
-        />
-    </div>
-    <div class="col-12 col-md-6 mt-3">
-        <TablerInput
-            type='password'
-            label='ArcGIS Password'
-            :disabled='disabled'
-            v-model='environment.ARCGIS_PASSWORD'
-        />
-    </div>
+
+    <template v-if='type === "agol"'>
+        <div class="col-12">
+            <TablerInput
+                label='ArcGIS Portal URL (Example: https://example.com/portal/sharing/rest)'
+                :disabled='disabled'
+                v-model='environment.ARCGIS_PORTAL'
+            />
+        </div>
+
+        <div v-if='environment.ARCGIS_URL' class="col-12">
+            <TablerInput
+                label='ArcGIS Layer URL'
+                :disabled='disabled'
+                v-model='environment.ARCGIS_URL'
+            />
+        </div>
+        <div class="col-12 col-md-6 mt-3">
+            <TablerInput
+                label='ArcGIS Username'
+                :disabled='disabled'
+                v-model='environment.ARCGIS_USERNAME'
+            />
+        </div>
+        <div class="col-12 col-md-6 mt-3">
+            <TablerInput
+                type='password'
+                label='ArcGIS Password'
+                :disabled='disabled'
+                v-model='environment.ARCGIS_PASSWORD'
+            />
+        </div>
+    </template>
+    <template v-else-if='type === "portal"'>
+        <div class="col-12">
+            <TablerInput
+                label='ArcGIS Portal URL (Example: https://example.com/portal/sharing/rest)'
+                :disabled='disabled'
+                v-model='environment.ARCGIS_PORTAL'
+            />
+        </div>
+
+        <div v-if='environment.ARCGIS_URL' class="col-12">
+            <TablerInput
+                label='ArcGIS Layer URL'
+                :disabled='disabled'
+                v-model='environment.ARCGIS_URL'
+            />
+        </div>
+        <div class="col-12 col-md-6 mt-3">
+            <TablerInput
+                label='ArcGIS Username'
+                :disabled='disabled'
+                v-model='environment.ARCGIS_USERNAME'
+            />
+        </div>
+        <div class="col-12 col-md-6 mt-3">
+            <TablerInput
+                type='password'
+                label='ArcGIS Password'
+                :disabled='disabled'
+                v-model='environment.ARCGIS_PASSWORD'
+            />
+        </div>
+    </template>
+    <template v-else-if='type === "server"'>
+        <div class="col-12">
+            <TablerInput
+                label='ArcGIS Layer URL'
+                :disabled='disabled'
+                v-model='environment.ARCGIS_URL'
+            />
+        </div>
+    </template>
 
     <label @click='advanced = !advanced' class='subheader mt-3 cursor-pointer'>
         <IconSquareChevronRight v-if='!advanced' size='32'/>
@@ -101,7 +158,7 @@ import {
 } from '@tabler/icons-vue'
 
 export default {
-    name: 'LayerEnvironment',
+    name: 'LayerEnvironmentArcGIS',
     props: {
         modelValue: {
             type: Object,
@@ -121,7 +178,17 @@ export default {
         }
     },
     data: function() {
+        let type = 'agol';
+        if (!this.modelValue.ARCGIS_PORTAL && !this.modelValue.ARCGIS_USERNAME) {
+            type = 'server';
+        } else if (!this.modelValue.ARCGIS_PORTAL && this.modelValue.ARCGIS_USERNAME) {
+            type = 'portal';
+        } else if (this.modelValue.ARCGIS_PORTAL && this.modelValue.ARCGIS_USERNAME) {
+            type = 'agol';
+        }
+
         return {
+            type,
             advanced: false,
             esriView: false,
             environment: this.modelValue,
