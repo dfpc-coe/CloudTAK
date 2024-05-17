@@ -121,6 +121,7 @@ import {
 } from '@tabler/icons-vue';
 import {
     TablerNone,
+    TablerAlert,
     TablerBreadCrumb, 
     TablerLoading
 } from '@tak-ps/vue-tabler'
