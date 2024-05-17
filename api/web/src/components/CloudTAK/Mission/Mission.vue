@@ -38,7 +38,7 @@
         </div>
         <TablerLoading v-if='loading.mission' desc='Loading Mission'/>
         <TablerLoading v-else-if='loading.delete' desc='Deleting Mission'/>
-        <Alert v-else-if='err' :err='err'/>
+        <TablerAlert v-else-if='err' :err='err'/>
         <template v-else-if='this.initial.passwordProtected && !password'>
             <div class='modal-body'>
                 <div class='d-flex justify-content-center py-3'>
@@ -234,10 +234,10 @@ import {
     IconRefresh,
     IconTrash,
 } from '@tabler/icons-vue';
-import Alert from '../../util/Alert.vue';
 import UploadImport from '../util/UploadImport.vue';
 import Status from '../../util/Status.vue';
 import {
+    TablerAlert,
     TablerNone,
     TablerDelete,
     TablerToggle,
@@ -429,7 +429,7 @@ export default {
         Status,
         TablerNone,
         UploadImport,
-        Alert,
+        TablerAlert,
         TablerLoading,
         TablerDelete,
         TablerToggle,

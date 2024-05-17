@@ -14,6 +14,7 @@
                 </div>
             </div>
 
+            <TablerAlert v-if='err' :err='err' title='Query Error'/>
             <TablerLoading v-if='loading.count' desc='Loading Features'/>
             <template v-else-if='list.features.features'>
                 <pre v-text='features'/>
@@ -29,6 +30,7 @@
 <script>
 import { std, stdurl } from '/src/std.ts';
 import {
+    TablerAlert,
     TablerModal,
     TablerInput,
     TablerLoading
@@ -61,6 +63,7 @@ export default {
     },
     data: function() {
         return {
+            err: null,
             loading: {
                 count: false
             },
@@ -79,23 +82,29 @@ export default {
             this.$emit('close');
         },
         fetch: async function() {
+            this.err = false;
             this.loading.count = true;
 
-            const url = stdurl('/api/esri/server/layer');
-            url.searchParams.append('query', this.filter.query);
-            url.searchParams.append('layer', this.layer);
-            if (this.token) url.searchParams.append('token', this.token);
+            try {
+                const url = stdurl('/api/esri/server/layer');
+                url.searchParams.append('query', this.filter.query);
+                url.searchParams.append('layer', this.layer);
+                if (this.token) url.searchParams.append('token', this.token);
 
-            this.list = await std(url, {
-                method: 'GET',
-                body: this.body
-            });
+                this.list = await std(url, {
+                    method: 'GET',
+                    body: this.body
+                });
+            } catch (err) {
+                this.err = err;
+            }
 
             this.loading.count = false;
         },
     },
     components: {
         TablerModal,
+        TablerAlert,
         TablerInput,
         TablerLoading
     }
