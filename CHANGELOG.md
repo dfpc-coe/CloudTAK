@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v2.17.5 - 2024-05-16
+
+- :arrow_up: `API` Update node-cot to ensure proto files are included in distribution
+
 ### v2.17.4 - 2024-05-16
 
 - :arrow_up: `API` Project wide dep update
