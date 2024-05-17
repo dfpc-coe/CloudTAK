@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v2.18.1 - 2024-05-17
+
+- :arrow_up: Update Depoy Deps
+
 ### v2.18.0 - 2024-05-16
 
 - :rocket: `API` Return 400 errors for invalid CoT Features
