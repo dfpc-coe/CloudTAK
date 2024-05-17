@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v2.17.4 - 2024-05-16
+
+- :arrow_up: `API` Project wide dep update
+
 ### v2.17.3 - 2024-05-16
 
 - :rocket: `API/UI` Ensure JSON Schemas are valid when the default DB value is used
