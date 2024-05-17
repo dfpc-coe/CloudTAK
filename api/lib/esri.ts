@@ -55,7 +55,7 @@ export class EsriBase {
     static async from(base: string | URL, auth?: EsriAuth): Promise<EsriBase> {
         const esri = new EsriBase(base, auth);
         await esri.fetchVersion();
-        await esri.generateToken();
+        if (auth) await esri.generateToken();
         return esri;
     }
 
@@ -182,7 +182,7 @@ export class EsriBase {
 
     standardHeaders(): Headers {
         const headers = new Headers();
-        if (this.token) {
+        if (this.token && this.token.token) {
             headers.append('Referer', this.token.referer);
             headers.append('X-Esri-Authorization', `Bearer ${this.token.token}`);
         }
@@ -431,6 +431,7 @@ class EsriProxyLayer {
 
         const headers = this.esri.standardHeaders();
         headers.append('Content-Type', 'application/x-www-form-urlencoded');
+
         const res = await fetch(url, {
             method: 'GET',
             headers

@@ -1,7 +1,7 @@
 <template>
 <div class='row col-12'>
     <template v-if='err'>
-        <Alert title='ESRI Connection Error' :err='err.message' :compact='true'/>
+        <TablerAlert title='ESRI Connection Error' :err='err' :compact='true'/>
         <div class="col-md-12 mt-3 pb-2 px-3">
             <div class='d-flex'>
                 <div class='ms-auto'>
@@ -128,6 +128,7 @@
 <script>
 import { std, stdurl } from '/src/std.ts';
 import {
+    TablerAlert,
     TablerLoading,
     TablerInput,
     TablerNone,
@@ -140,7 +141,6 @@ import {
 } from '@tabler/icons-vue';
 import EsriServer from './EsriServer.vue';
 import EsriPortalCreate from './EsriPortalCreate.vue';
-import Alert from './Alert.vue';
 
 export default {
     name: 'EsriProxy',
@@ -333,7 +333,7 @@ export default {
 
     },
     components: {
-        Alert,
+        TablerAlert,
         IconX,
         IconPlus,
         TablerNone,

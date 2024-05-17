@@ -88,9 +88,9 @@
                                 </h1>
                             </div>
                             <div class='card-body'>
-                                <Alert
+                                <TablerAlert
                                     title='Logging Disabled'
-                                    err='Turn on Sink Logging to get CoT Delivery Logs'
+                                    err='new Error("Turn on Sink Logging to get CoT Delivery Logs")'
                                 />
                             </div>
                         </div>
@@ -113,10 +113,10 @@ import {
 import EsriPortal from './util/EsriPortal.vue';
 import ConnectionSinkChart from './ConnectionSink/Chart.vue';
 import {
+    TablerAlert,
     TablerBreadCrumb,
     TablerLoading
 } from '@tak-ps/vue-tabler';
-import Alert from './util/Alert.vue';
 
 export default {
     name: 'ConnectionSink',
@@ -124,7 +124,7 @@ export default {
         IconRefresh,
         IconSettings,
         PageFooter,
-        Alert,
+        TablerAlert,
         EsriPortal,
         ConnectionSinkChart,
         TablerBreadCrumb,
