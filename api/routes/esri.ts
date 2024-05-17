@@ -336,9 +336,9 @@ export default async function router(schema: Schema, config: Config) {
         description: 'Return Sample features and count',
         query: Type.Object({
             layer: Type.String(),
-            token: Type.String(),
-            expires: Type.Integer(),
             query: Type.String(),
+            token: Type.Optional(Type.String()),
+            expires: Type.Optional(Type.Integer()),
         }),
         res: Type.Any()
     }, async (req, res) => {

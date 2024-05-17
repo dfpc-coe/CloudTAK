@@ -1,6 +1,6 @@
 <template>
 <div class='row g-2 mx-2 my-2'>
-    <div class='col-12 mb-3'>
+    <div v-if='!disabled' class='col-12 mb-3'>
         <div class="btn-group w-100" role="group">
             <input type="radio" class="btn-check" name="esri-type" id="agol" autocomplete="off" @click='type = "agol"' :checked='type === "agol"'>
             <label for="agol" type="button" class="btn">ArcGIS Online</label>
@@ -104,7 +104,7 @@
                             v-model='environment.ARCGIS_QUERY'
                         />
                     </div>
-                    <button v-if='!disabled' @click='filterModal = true' class='btn' style='margin-left: 8px; margin-top: 26px;'><IconFilter size='32'/> Query Editor</button>
+                    <button v-if='!disabled' @click='filterModal = true' class='btn' style='height: 40px; margin-left: 8px; margin-top: 28px;'><IconFilter size='32'/> Query Editor</button>
                 </div>
             </div>
         </div>
@@ -170,6 +170,15 @@ export default {
         }
     },
     watch: {
+        type: function() {
+            delete this.environment.ARCGIS_URL;
+            delete this.environment.ARCGIS_PORTAL;
+            delete this.environment.ARCGIS_USERNAME;
+            delete this.environment.ARCGIS_PASSWORD;
+            this.environment.ARCGIS_QUERY = '';
+            delete this.environment.ARCGIS_TOKEN;
+            delete this.environment.ARCGIS_EXPIRES;
+        },
         modelValue: function() {
             this.environment = this.modelValue;
         },
@@ -181,10 +190,10 @@ export default {
         let type = 'agol';
         if (!this.modelValue.ARCGIS_PORTAL && !this.modelValue.ARCGIS_USERNAME) {
             type = 'server';
-        } else if (!this.modelValue.ARCGIS_PORTAL && this.modelValue.ARCGIS_USERNAME) {
-            type = 'portal';
-        } else if (this.modelValue.ARCGIS_PORTAL && this.modelValue.ARCGIS_USERNAME) {
+        } else if (this.modelValue.ARCGIS_PORTAL.includes('arcgis.com') && this.modelValue.ARCGIS_USERNAME) {
             type = 'agol';
+        } else if (this.modelValue.ARCGIS_PORTAL && this.modelValue.ARCGIS_USERNAME) {
+            type = 'portal';
         }
 
         return {
