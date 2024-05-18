@@ -1,63 +1,84 @@
 <template>
-<div>
-    <div class="card-header">
-        <h1 class='card-title'>Video Servers</h1>
-
-        <div class='ms-auto btn-list'>
-            <IconPlus
-                v-if='list.versions.length'
-                @click='createServer'
-                v-tooltip='"Create Server"'
-                size='32'
-                class='cursor-pointer'
-            />
-
-            <IconRefresh
-                @click='fetchList'
-                v-tooltip='"Refresh"'
-                size='32'
-                class='cursor-pointer'
-            />
-        </div>
-    </div>
     <div>
-        <TablerLoading v-if='loading'/>
-        <TablerNone v-else-if='!list.items.length' label='Video Servers' :create='false' />
-        <div v-else class='table-responsive'>
-            <table class="table card-table table-hover table-vcenter datatable">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Version</th>
-                        <th>Created</th>
-                        <th>CPU</th>
-                        <th>Memory</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr @click='$router.push(`/admin/video/${server.id}`)' :key='server.id' v-for='server in list.items' class='cursor-pointer'>
-                        <td class='d-flex align-items-center'>
-                            <Status v-if='server.status === "RUNNING"' status='Success'/>
-                            <Status v-else :status='server.status'/>
-                            <span v-text='server.id' class='mx-2'/>
-                        </td>
-                        <td v-text='server.version'></td>
-                        <td v-text='server.created'></td>
-                        <td v-text='server.cpu'></td>
-                        <td v-text='server.memory'></td>
-                    </tr>
-                </tbody>
-            </table>
+        <div class='card-header'>
+            <h1 class='card-title'>
+                Video Servers
+            </h1>
+
+            <div class='ms-auto btn-list'>
+                <IconPlus
+                    v-if='list.versions.length'
+                    v-tooltip='"Create Server"'
+                    size='32'
+                    class='cursor-pointer'
+                    @click='createServer'
+                />
+
+                <IconRefresh
+                    v-tooltip='"Refresh"'
+                    size='32'
+                    class='cursor-pointer'
+                    @click='fetchList'
+                />
+            </div>
+        </div>
+        <div>
+            <TablerLoading v-if='loading' />
+            <TablerNone
+                v-else-if='!list.items.length'
+                label='Video Servers'
+                :create='false'
+            />
+            <div
+                v-else
+                class='table-responsive'
+            >
+                <table class='table card-table table-hover table-vcenter datatable'>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Version</th>
+                            <th>Created</th>
+                            <th>CPU</th>
+                            <th>Memory</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr
+                            v-for='server in list.items'
+                            :key='server.id'
+                            class='cursor-pointer'
+                            @click='$router.push(`/admin/video/${server.id}`)'
+                        >
+                            <td class='d-flex align-items-center'>
+                                <Status
+                                    v-if='server.status === "RUNNING"'
+                                    status='Success'
+                                />
+                                <Status
+                                    v-else
+                                    :status='server.status'
+                                />
+                                <span
+                                    class='mx-2'
+                                    v-text='server.id'
+                                />
+                            </td>
+                            <td v-text='server.version' />
+                            <td v-text='server.created' />
+                            <td v-text='server.cpu' />
+                            <td v-text='server.memory' />
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
-</div>
 </template>
 
 <script>
 import { std, stdurl } from '/src/std.ts';
-import TableHeader from '../util/TableHeader.vue'
 import Status from '../util/Status.vue';
-import TableFooter from '../util/TableFooter.vue'
 import {
     TablerNone,
     TablerLoading
@@ -69,6 +90,13 @@ import {
 
 export default {
     name: 'VideoAdmin',
+    components: {
+        TablerNone,
+        Status,
+        IconRefresh,
+        IconPlus,
+        TablerLoading,
+    },
     data: function() {
         return {
             err: false,
@@ -101,15 +129,6 @@ export default {
             
             this.$router.push(`/admin/video/${server.id}`);
         }
-    },
-    components: {
-        TablerNone,
-        Status,
-        IconRefresh,
-        IconPlus,
-        TablerLoading,
-        TableHeader,
-        TableFooter,
     }
 }
 </script>

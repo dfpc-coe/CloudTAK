@@ -1,57 +1,63 @@
 <template>
-<div>
-    <div class='row g-0' :class='{ "d-none": progress !== 0 }'>
-        <div class='col-12 d-flex justify-content-center mb-3 subheader'>Select a file to import</div>
-        <div 
-            ref='dragger'
-            :ondragenter='dragEnter'
-            :ondragleave='dragLeave'
-            :drop='dragDrop'
-            class='custom-drop row g-0 d-flex col-12 justify-content-center py-2'
+    <div>
+        <div
+            class='row g-0'
+            :class='{ "d-none": progress !== 0 }'
         >
-            <div class='col-12 my-3 d-flex justify-content-center'>
-                <div>Drag &amp; Drop Files Here</div>
+            <div class='col-12 d-flex justify-content-center mb-3 subheader'>
+                Select a file to import
             </div>
-            <div class='col-12 d-flex justify-content-center'>
-                <div>or</div>
-            </div>
-            <div class='col-12 d-flex justify-content-center'>
-                <div class='btn-list my-3'>
-                    <button v-if='cancelButton' @click='$emit("cancel")' class='btn btn-secondary'>Cancel</button>
-                    <button @click='$refs.fileInput.click()' class='btn btn-primary'>Select Files</button>
+            <div 
+                ref='dragger'
+                :ondragenter='dragEnter'
+                :ondragleave='dragLeave'
+                :drop='dragDrop'
+                class='custom-drop row g-0 d-flex col-12 justify-content-center py-2'
+            >
+                <div class='col-12 my-3 d-flex justify-content-center'>
+                    <div>Drag &amp; Drop Files Here</div>
+                </div>
+                <div class='col-12 d-flex justify-content-center'>
+                    <div>or</div>
+                </div>
+                <div class='col-12 d-flex justify-content-center'>
+                    <div class='btn-list my-3'>
+                        <button
+                            v-if='cancelButton'
+                            class='btn btn-secondary'
+                            @click='$emit("cancel")'
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            class='btn btn-primary'
+                            @click='$refs.fileInput.click()'
+                        >
+                            Select Files
+                        </button>
+                    </div>
                 </div>
             </div>
+            <form>
+                <input
+                    id='file'
+                    ref='fileInput'
+                    class='d-none'
+                    type='file'
+                    name='file'
+                    @change='upload'
+                >
+            </form>
         </div>
-        <form>
-            <input
-                ref='fileInput'
-                class='d-none'
-                type='file'
-                id='file'
-                name='file'
-                @change='upload'
-            />
-        </form>
+        <div
+            v-if='progress && progress < 101'
+            class='row'
+        >
+            <TablerLoading :desc='`Uploading ${name}`' />
+            <TablerProgress :percent='progress / 100' />
+        </div>
     </div>
-    <div v-if='progress && progress < 101' class='row'>
-        <TablerLoading :desc='`Uploading ${name}`'/>
-        <TablerProgress :percent='progress / 100'/>
-    </div>
-</div>
 </template>
-
-<style>
-.custom-drop {
-    border-radius: 10px;
-    border-style: solid;
-    border-width: 1px;
-    border-color: white;
-}
-
-.custom-drop-drag {
-    border-color: blue;
-}
-</style>
 
 <script>
 import { std, stdurl } from '/src/std.ts';
@@ -62,6 +68,10 @@ import {
 
 export default {
     name: 'UploadFile',
+    components: {
+        TablerLoading,
+        TablerProgress
+    },
     props: {
         mode: {
             type: String,
@@ -158,11 +168,20 @@ export default {
                 xhr.send(formData)
             });
         }
-    },
-    components: {
-        TablerLoading,
-        TablerProgress
     }
 }
 
 </script>
+
+<style>
+.custom-drop {
+    border-radius: 10px;
+    border-style: solid;
+    border-width: 1px;
+    border-color: white;
+}
+
+.custom-drop-drag {
+    border-color: blue;
+}
+</style>

@@ -1,62 +1,122 @@
 <template>
-<div data-bs-theme="dark" class='row'>
-    <div class='col-12 d-flex my-1'>
-        <span v-if='description' class='align-self-center'>
-            <IconInfoSquare @click='help = true' size='20' class='cursor-pointer'/>
-            <TablerHelp v-if='help' @click='help = false' :label='label || placeholder' :description='description'/>
-        </span>
-        <div class="align-self-center px-2" :class='{ "required": required }' v-text='label'></div>
-        <div class='ms-auto align-self-center'><slot/></div>
-    </div>
-
-    <TablerLoading desc='Loading Iconsets' v-if='loading.iconset'/>
-    <template v-else>
-        <div class='d-flex'>
-            <template v-if='selected.name'>
-                <div class='d-flex align-items-center'>
-                    <img :src='iconurl(selected)' style='width: 25px; height: auto; margin-right: 5px;'>
-                    <span class='mt-2 mx-2' v-text='selected.name'/>
-                </div>
-            </template>
-            <template v-else>
-                <span class='text-center my-2 mx-2'>No Icon Selected</span>
-            </template>
-
-            <div v-if='!disabled' class='btn-list ms-auto'>
-                <IconTrash v-if='selected.name' @click='removeIcon' size='32' class='cursor-pointer' v-tooltip='"Remove Icon"'/>
-
-                <TablerDropdown>
-                    <template #default>
-                        <IconSettings size='32' class='cursor-pointer' v-tooltip='"Select Icon"'/>
-                    </template>
-                    <template #dropdown>
-                        <label class='w-100 subheader d-flex'>
-                            <span class='mx-2 d-flex justify-content-center align-items-center'>Iconsets</span>
-                            <IconSearch @click.stop.prevent='params.showFilter = !params.showFilter' size='32' class='ms-auto cursor-pointer mx-2'/>
-                        </label>
-                        <TablerEnum v-model='params.iconset' :options='setsName'/>
-                        <TablerInput v-if='params.showFilter' placeholder='Icon Search' v-model='params.filter'/>
-                        <TablerLoading desc='Loading Icons' v-if='loading.icons'/>
-                        <div v-else class='row mx-2 my-2'>
-                            <div
-                                @click='selected = icon'
-                                :key='icon.id'
-                                v-for='icon of list.items'
-                                class='col-auto cursor-pointer'
-                            >
-                                <img
-                                    :src="iconurl(icon)"
-                                    style='width: 25px; height: 25px; margin-right: 5px;'
-                                    v-tooltip='icon.name'
-                                >
-                            </div>
-                        </div>
-                    </template>
-                </TablerDropdown>
+    <div
+        data-bs-theme='dark'
+        class='row'
+    >
+        <div class='col-12 d-flex my-1'>
+            <span
+                v-if='description'
+                class='align-self-center'
+            >
+                <IconInfoSquare
+                    size='20'
+                    class='cursor-pointer'
+                    @click='help = true'
+                />
+                <TablerHelp
+                    v-if='help'
+                    :label='label || placeholder'
+                    :description='description'
+                    @click='help = false'
+                />
+            </span>
+            <div
+                class='align-self-center px-2'
+                :class='{ "required": required }'
+                v-text='label'
+            />
+            <div class='ms-auto align-self-center'>
+                <slot />
             </div>
         </div>
-    </template>
-</div>
+
+        <TablerLoading
+            v-if='loading.iconset'
+            desc='Loading Iconsets'
+        />
+        <template v-else>
+            <div class='d-flex'>
+                <template v-if='selected.name'>
+                    <div class='d-flex align-items-center'>
+                        <img
+                            :src='iconurl(selected)'
+                            style='width: 25px; height: auto; margin-right: 5px;'
+                        >
+                        <span
+                            class='mt-2 mx-2'
+                            v-text='selected.name'
+                        />
+                    </div>
+                </template>
+                <template v-else>
+                    <span class='text-center my-2 mx-2'>No Icon Selected</span>
+                </template>
+
+                <div
+                    v-if='!disabled'
+                    class='btn-list ms-auto'
+                >
+                    <IconTrash
+                        v-if='selected.name'
+                        v-tooltip='"Remove Icon"'
+                        size='32'
+                        class='cursor-pointer'
+                        @click='removeIcon'
+                    />
+
+                    <TablerDropdown>
+                        <template #default>
+                            <IconSettings
+                                v-tooltip='"Select Icon"'
+                                size='32'
+                                class='cursor-pointer'
+                            />
+                        </template>
+                        <template #dropdown>
+                            <label class='w-100 subheader d-flex'>
+                                <span class='mx-2 d-flex justify-content-center align-items-center'>Iconsets</span>
+                                <IconSearch
+                                    size='32'
+                                    class='ms-auto cursor-pointer mx-2'
+                                    @click.stop.prevent='params.showFilter = !params.showFilter'
+                                />
+                            </label>
+                            <TablerEnum
+                                v-model='params.iconset'
+                                :options='setsName'
+                            />
+                            <TablerInput
+                                v-if='params.showFilter'
+                                v-model='params.filter'
+                                placeholder='Icon Search'
+                            />
+                            <TablerLoading
+                                v-if='loading.icons'
+                                desc='Loading Icons'
+                            />
+                            <div
+                                v-else
+                                class='row mx-2 my-2'
+                            >
+                                <div
+                                    v-for='icon of list.items'
+                                    :key='icon.id'
+                                    class='col-auto cursor-pointer'
+                                    @click='selected = icon'
+                                >
+                                    <img
+                                        v-tooltip='icon.name'
+                                        :src='iconurl(icon)'
+                                        style='width: 25px; height: 25px; margin-right: 5px;'
+                                    >
+                                </div>
+                            </div>
+                        </template>
+                    </TablerDropdown>
+                </div>
+            </div>
+        </template>
+    </div>
 </template>
 
 <script>
@@ -77,6 +137,17 @@ import {
 
 export default {
     name: 'IconSelect',
+    components: {
+        TablerHelp,
+        TablerInput,
+        TablerDropdown,
+        IconInfoSquare,
+        IconSearch,
+        IconTrash,
+        IconSettings,
+        TablerEnum,
+        TablerLoading
+    },
     props: {
         modelValue: {
             type: String,
@@ -97,11 +168,6 @@ export default {
         label: {
             type: String,
             default: 'Icon Select'
-        }
-    },
-    computed: {
-        setsName: function() {
-            return this.sets.map((set) => { return set.name });
         }
     },
     data: function() {
@@ -126,6 +192,11 @@ export default {
                 total: 0,
                 items: []
             }
+        }
+    },
+    computed: {
+        setsName: function() {
+            return this.sets.map((set) => { return set.name });
         }
     },
     watch: {
@@ -193,17 +264,6 @@ export default {
             this.list = await std(url)
             this.loading.icons = false;
         },
-    },
-    components: {
-        TablerHelp,
-        TablerInput,
-        TablerDropdown,
-        IconInfoSquare,
-        IconSearch,
-        IconTrash,
-        IconSettings,
-        TablerEnum,
-        TablerLoading
     }
 };
 </script>

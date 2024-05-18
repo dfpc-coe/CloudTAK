@@ -1,21 +1,52 @@
 <template>
     <TablerModal>
-        <button type="button" class="btn-close" @click='$emit("close")' aria-label="Close"></button>
-        <div class="modal-status bg-yellow"></div>
-        <div class="modal-header">
+        <button
+            type='button'
+            class='btn-close'
+            aria-label='Close'
+            @click='$emit("close")'
+        />
+        <div class='modal-status bg-yellow' />
+        <div class='modal-header'>
             <span class='modal-title'>Create Field</span>
         </div>
-        <div class="modal-body py-4">
-            <TablerInput label='Field Name' :error='errors.name' v-model='field.name' class='py-1'/>
-            <TablerEnum label='Type' v-model='field.type' :options='[
-                "string",
-                "number",
-                "integer",
-                "object"
-            ]' class='py-1'/>
-            <TablerToggle label='Required' v-model='field.required' class='py-1'/>
-            <button v-if='edit' @click='done' class='btn btn-primary w-100 mt-4'>Update</button>
-            <button v-else @click='done' class='btn btn-primary w-100 mt-4'>Create</button>
+        <div class='modal-body py-4'>
+            <TablerInput
+                v-model='field.name'
+                label='Field Name'
+                :error='errors.name'
+                class='py-1'
+            />
+            <TablerEnum
+                v-model='field.type'
+                label='Type'
+                :options='[
+                    "string",
+                    "number",
+                    "integer",
+                    "object"
+                ]'
+                class='py-1'
+            />
+            <TablerToggle
+                v-model='field.required'
+                label='Required'
+                class='py-1'
+            />
+            <button
+                v-if='edit'
+                class='btn btn-primary w-100 mt-4'
+                @click='done'
+            >
+                Update
+            </button>
+            <button
+                v-else
+                class='btn btn-primary w-100 mt-4'
+                @click='done'
+            >
+                Create
+            </button>
         </div>
     </TablerModal>
 </template>
@@ -31,6 +62,12 @@ import {
 
 export default {
     name: 'LayerSchemaModal',
+    components: {
+        TablerModal,
+        TablerInput,
+        TablerToggle,
+        TablerEnum
+    },
     props: {
         edit: {
             type: Object,
@@ -71,12 +108,6 @@ export default {
 
             this.$emit('done', this.field);
         }
-    },
-    components: {
-        TablerModal,
-        TablerInput,
-        TablerToggle,
-        TablerEnum
     }
 }
 </script>

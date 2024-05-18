@@ -1,50 +1,109 @@
 <template>
-<div>
-    <OverlayLayers v-if='isEditing' :overlay='isEditing' @close='isEditing = false'/>
+    <div>
+        <OverlayLayers
+            v-if='isEditing'
+            :overlay='isEditing'
+            @close='isEditing = false'
+        />
 
-    <MenuTemplate v-else name='Overlays'>
-        <template #buttons>
-            <IconPlus @click='$router.push("/menu/datas")' class='cursor-pointer' size='32' v-tooltip='"Add Overlay"'/>
-        </template>
-        <template #default>
-            <TablerLoading v-if='loading'/>
-            <template v-else>
-                <div :key='layer.url' v-for='layer in layers' class="col-lg py-2 px-3 hover-dark">
-                    <div class='py-2 px-2 hover-dark'>
-                        <div class='col-12 d-flex align-items-center'>
-                            <IconEye v-if='layer.visible === "visible"' @click.stop.prevent='flipVisible(layer)' size='32' class='cursor-pointer' v-tooltip='"Hide Layer"'/>
-                            <IconEyeOff v-else @click.stop.prevent='flipVisible(layer)' size='32' class='cursor-pointer' v-tooltip='"Show Layer"'/>
+        <MenuTemplate
+            v-else
+            name='Overlays'
+        >
+            <template #buttons>
+                <IconPlus
+                    v-tooltip='"Add Overlay"'
+                    class='cursor-pointer'
+                    size='32'
+                    @click='$router.push("/menu/datas")'
+                />
+            </template>
+            <template #default>
+                <TablerLoading v-if='loading' />
+                <template v-else>
+                    <div
+                        v-for='layer in layers'
+                        :key='layer.url'
+                        class='col-lg py-2 px-3 hover-dark'
+                    >
+                        <div class='py-2 px-2 hover-dark'>
+                            <div class='col-12 d-flex align-items-center'>
+                                <IconEye
+                                    v-if='layer.visible === "visible"'
+                                    v-tooltip='"Hide Layer"'
+                                    size='32'
+                                    class='cursor-pointer'
+                                    @click.stop.prevent='flipVisible(layer)'
+                                />
+                                <IconEyeOff
+                                    v-else
+                                    v-tooltip='"Show Layer"'
+                                    size='32'
+                                    class='cursor-pointer'
+                                    @click.stop.prevent='flipVisible(layer)'
+                                />
 
-                            <span class='mx-2'>
-                                <IconMap v-if='layer.type === "raster"' v-tooltip='"Raster"' size='32'/>
-                                <IconVector v-else v-tooltip='"Vector"' size='32'/>
-                            </span>
+                                <span class='mx-2'>
+                                    <IconMap
+                                        v-if='layer.type === "raster"'
+                                        v-tooltip='"Raster"'
+                                        size='32'
+                                    />
+                                    <IconVector
+                                        v-else
+                                        v-tooltip='"Vector"'
+                                        size='32'
+                                    />
+                                </span>
 
-                            <span @click='editor(layer)' class='mx-2 user-select-none' v-text='layer.name' :class='{
-                                "cursor-pointer": ["data", "profile"].includes(layer.mode) && layer.type === "vector"
-                            }'/>
+                                <span
+                                    class='mx-2 user-select-none'
+                                    :class='{
+                                        "cursor-pointer": ["data", "profile"].includes(layer.mode) && layer.type === "vector"
+                                    }'
+                                    @click='editor(layer)'
+                                    v-text='layer.name'
+                                />
 
-                            <div class='ms-auto btn-list'>
-                                <IconMaximize v-if='getSource(layer).bounds' @click.stop.prevent='zoomTo(getSource(layer).bounds)' size='32' class='cursor-pointer' v-tooltip='"Zoom To Overlay"'/>
-                                <TablerDelete
-                                    :key='layer.id'
-                                    v-if='layer.mode === "mission" || layer.name.startsWith("data-") || layer.name.startsWith("profile-")'
-                                    displaytype='icon'
-                                    @delete='removeLayer(layer)'
-                                    v-tooltip='"Delete Overlay"'
+                                <div class='ms-auto btn-list'>
+                                    <IconMaximize
+                                        v-if='getSource(layer).bounds'
+                                        v-tooltip='"Zoom To Overlay"'
+                                        size='32'
+                                        class='cursor-pointer'
+                                        @click.stop.prevent='zoomTo(getSource(layer).bounds)'
+                                    />
+                                    <TablerDelete
+                                        v-if='layer.mode === "mission" || layer.name.startsWith("data-") || layer.name.startsWith("profile-")'
+                                        :key='layer.id'
+                                        v-tooltip='"Delete Overlay"'
+                                        displaytype='icon'
+                                        @delete='removeLayer(layer)'
+                                    />
+                                </div>
+                            </div>
+
+                            <div
+                                v-if='layer.type === "raster"'
+                                class='col-12'
+                                style='margin-left: 30px; padding-right: 40px;'
+                                step=''
+                            >
+                                <TablerRange
+                                    v-model='layer.opacity'
+                                    label='Opacity'
+                                    :min='0'
+                                    :max='1'
+                                    :step='0.1'
+                                    @change='updateOpacity(layer)'
                                 />
                             </div>
                         </div>
-
-                        <div v-if='layer.type === "raster"' class='col-12' style='margin-left: 30px; padding-right: 40px;' step=''>
-                            <TablerRange label='Opacity' v-model='layer.opacity' @change='updateOpacity(layer)' :min='0' :max='1' :step='0.1'/>
-                        </div>
                     </div>
-                </div>
+                </template>
             </template>
-        </template>
-    </MenuTemplate>
-</div>
+        </MenuTemplate>
+    </div>
 </template>
 
 <script>

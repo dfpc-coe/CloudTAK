@@ -1,28 +1,61 @@
 <template>
     <TablerModal size='xl'>
-        <button type="button" class="btn-close" @click='$emit("close")' aria-label="Close"></button>
-        <div class="modal-status bg-yellow"></div>
+        <button
+            type='button'
+            class='btn-close'
+            aria-label='Close'
+            @click='$emit("close")'
+        />
+        <div class='modal-status bg-yellow' />
         <div class='modal-header'>
-            <div class='modal-title'>ESRI Layer Filter</div>
+            <div class='modal-title'>
+                ESRI Layer Filter
+            </div>
         </div>
-        <div class="modal-body row g-2">
-            <TablerInput label='SQL Query' :disabled='disabled' v-model='filter.query'/>
+        <div class='modal-body row g-2'>
+            <TablerInput
+                v-model='filter.query'
+                label='SQL Query'
+                :disabled='disabled'
+            />
 
             <div class='d-flex px-4'>
                 <div class='ms-auto'>
-                    <button @click='fetch' class='btn btn-secondary'>Test Query</button>
+                    <button
+                        class='btn btn-secondary'
+                        @click='fetch'
+                    >
+                        Test Query
+                    </button>
                 </div>
             </div>
 
-            <TablerAlert v-if='err' :err='err' title='Query Error'/>
-            <TablerLoading v-if='loading.count' desc='Loading Features'/>
+            <TablerAlert
+                v-if='err'
+                :err='err'
+                title='Query Error'
+            />
+            <TablerLoading
+                v-if='loading.count'
+                desc='Loading Features'
+            />
             <template v-else-if='list.features.features'>
-                <pre v-text='features'/>
+                <pre v-text='features' />
             </template>
         </div>
-        <div class="modal-footer">
-            <button @click='$emit("close")' class="btn me-auto">Close</button>
-            <button @click='save' class="btn btn-primary">Save Filter</button>
+        <div class='modal-footer'>
+            <button
+                class='btn me-auto'
+                @click='$emit("close")'
+            >
+                Close
+            </button>
+            <button
+                class='btn btn-primary'
+                @click='save'
+            >
+                Save Filter
+            </button>
         </div>
     </TablerModal>
 </template>
@@ -38,6 +71,12 @@ import {
 
 export default {
     name: 'EsriFilter',
+    components: {
+        TablerModal,
+        TablerAlert,
+        TablerInput,
+        TablerLoading
+    },
     props: {
         disabled: {
             type: Boolean,
@@ -54,13 +93,6 @@ export default {
             type: String
         }
     },
-    computed: {
-        features: function() {
-            return this.list.features.features.map((feat) => {
-                return JSON.stringify(feat);
-            }).join('\n');
-        }
-    },
     data: function() {
         return {
             err: null,
@@ -74,6 +106,13 @@ export default {
                 count: 0,
                 features: {}
             }
+        }
+    },
+    computed: {
+        features: function() {
+            return this.list.features.features.map((feat) => {
+                return JSON.stringify(feat);
+            }).join('\n');
         }
     },
     methods: {
@@ -101,12 +140,6 @@ export default {
 
             this.loading.count = false;
         },
-    },
-    components: {
-        TablerModal,
-        TablerAlert,
-        TablerInput,
-        TablerLoading
     }
 }
 </script>

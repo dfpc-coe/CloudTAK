@@ -1,48 +1,76 @@
 <template>
-<div class='col-12'>
-    <div class='col-12 d-flex align-items-center'>
-        <label v-text='label'></label>
+    <div class='col-12'>
+        <div class='col-12 d-flex align-items-center'>
+            <label v-text='label' />
 
-        <div v-if='!disabled' class='ms-auto btn-list'>
-            <IconPlus v-tooltip='"Add Link"' @click='create = true' size='20' class='cursor-pointer'/>
+            <div
+                v-if='!disabled'
+                class='ms-auto btn-list'
+            >
+                <IconPlus
+                    v-tooltip='"Add Link"'
+                    size='20'
+                    class='cursor-pointer'
+                    @click='create = true'
+                />
+            </div>
+        </div>
+
+        <TablerNone
+            v-if='!links.length'
+            :create='false'
+            :compact='true'
+            label='Link Overrides'
+        />
+        <div
+            v-else
+            class='table-responsive'
+        >
+            <table
+                class='table card-table table-vcenter'
+                :class='{
+                    "cursor-pointer": !disabled
+                }'
+            >
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Link</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr
+                        v-for='(link, it) in links'
+                        :key='link.name'
+                        @click='edit(link)'
+                    >
+                        <td v-text='link.remarks' />
+                        <td>
+                            <div class='d-flex align-items-center'>
+                                <span v-text='link.url' />
+                                <div class='ms-auto'>
+                                    <IconTrash
+                                        v-if='!disabled'
+                                        size='32'
+                                        class='cursor-pointer'
+                                        @click.stop='links.splice(it, 1)'
+                                    />
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
     </div>
 
-    <TablerNone v-if='!links.length' :create='false' :compact='true' label='Link Overrides'/>
-    <div v-else class='table-responsive'>
-        <table class="table card-table table-vcenter" :class='{
-            "cursor-pointer": !disabled
-        }'>
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Link</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr @click='edit(link)' :key='link.name' v-for='(link, it) in links'>
-                    <td v-text='link.remarks'/>
-                    <td>
-                        <div class='d-flex align-items-center'>
-                            <span v-text='link.url'/>
-                            <div class='ms-auto'>
-                                <IconTrash v-if='!disabled' @click.stop='links.splice(it, 1)' size='32' class='cursor-pointer'/>
-                            </div>
-                        </div>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-</div>
-
-<StyleLinkModal
-    v-if='create'
-    :edit='editLink'
-    :schema='schema'
-    @done='push($event)'
-    @close='create = false'
-/>
+    <StyleLinkModal
+        v-if='create'
+        :edit='editLink'
+        :schema='schema'
+        @done='push($event)'
+        @close='create = false'
+    />
 </template>
 
 <script>
@@ -57,6 +85,12 @@ import StyleLinkModal from './StyleLinkModal.vue';
 
 export default {
     name: 'StyleLinks',
+    components: {
+        IconPlus,
+        IconTrash,
+        TablerNone,
+        StyleLinkModal,
+    },
     props: {
         modelValue: {
             type: Array,
@@ -75,19 +109,19 @@ export default {
             default: 'Link Override'
         }
     },
+    data: function() {
+        return {
+            create: false,
+            editLink: false,
+            links: this.modelValue
+        }
+    },
     watch: {
         modelValue: {
             deep: true,
             handler: function() {
                 this.links = this.modelValue;
             }
-        }
-    },
-    data: function() {
-        return {
-            create: false,
-            editLink: false,
-            links: this.modelValue
         }
     },
     methods: {
@@ -109,12 +143,6 @@ export default {
 
             this.editLink = null;
         },
-    },
-    components: {
-        IconPlus,
-        IconTrash,
-        TablerNone,
-        StyleLinkModal,
     }
 }
 </script>

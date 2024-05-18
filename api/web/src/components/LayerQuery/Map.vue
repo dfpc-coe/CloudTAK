@@ -1,11 +1,14 @@
 <template>
-<div class="card">
-    <div class="card-body">
-        <div class="row">
-            <div id="map" style='height: 350px;'></div>
+    <div class='card'>
+        <div class='card-body'>
+            <div class='row'>
+                <div
+                    id='map'
+                    style='height: 350px;'
+                />
+            </div>
         </div>
     </div>
-</div>
 </template>
 
 <script>

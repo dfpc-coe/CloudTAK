@@ -1,47 +1,78 @@
 <template>
-<div>
-    <div class='card-header d-flex'>
-        <h3 class='card-title'>Asset Transforms</h3>
-        <div class='ms-auto btn-list'>
-            <IconRefresh @click='fetchList' size='32' class='cursor-pointer'/>
+    <div>
+        <div class='card-header d-flex'>
+            <h3 class='card-title'>
+                Asset Transforms
+            </h3>
+            <div class='ms-auto btn-list'>
+                <IconRefresh
+                    size='32'
+                    class='cursor-pointer'
+                    @click='fetchList'
+                />
+            </div>
+        </div>
+
+        <div
+            v-if='!loading.list && list.items.length'
+            class='table-responsive'
+        >
+            <table class='table table-vcenter card-table table-hover'>
+                <thead>
+                    <tr>
+                        <th>Asset</th>
+                        <th>Created</th>
+                        <th>Updated</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr
+                        v-for='job in list.items'
+                        :key='job.created'
+                        class='cursor-pointer'
+                        @click='$router.push(`/profile/job/${job.id}`)'
+                    >
+                        <td>
+                            <div class='d-flex align-items-center'>
+                                <Status :status='job.status' />
+                                <span
+                                    class='mx-2'
+                                    v-text='job.asset'
+                                />
+                            </div>
+                        </td>
+                        <td>
+                            <TablerEpoch :date='job.created' />
+                        </td>
+                        <td>
+                            <TablerEpoch
+                                v-if='job.updated'
+                                :date='job.updated'
+                            />
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div
+            v-else
+            class='card-body'
+        >
+            <template v-if='err'>
+                <TablerAlert
+                    title='Transforms Error'
+                    :err='err'
+                    :compact='true'
+                />
+            </template>
+            <TablerLoading v-else-if='loading.list' />
+            <TablerNone
+                v-else-if='!list.items.length'
+                :create='false'
+                :compact='true'
+            />
         </div>
     </div>
-
-    <div v-if='!loading.list && list.items.length' class='table-responsive'>
-        <table class="table table-vcenter card-table table-hover">
-            <thead>
-                <tr>
-                    <th>Asset</th>
-                    <th>Created</th>
-                    <th>Updated</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr @click='$router.push(`/profile/job/${job.id}`)' :key='job.created' v-for='job in list.items' class='cursor-pointer'>
-                    <td>
-                        <div class='d-flex align-items-center'>
-                            <Status :status='job.status'/>
-                            <span v-text='job.asset' class='mx-2'/>
-                        </div>
-                    </td>
-                    <td>
-                        <TablerEpoch :date='job.created'/>
-                    </td>
-                    <td>
-                        <TablerEpoch v-if='job.updated' :date='job.updated'/>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-    <div v-else class='card-body'>
-        <template v-if='err'>
-            <TablerAlert title='Transforms Error' :err='err' :compact='true'/>
-        </template>
-        <TablerLoading v-else-if='loading.list'/>
-        <TablerNone v-else-if='!list.items.length' :create='false' :compact='true'/>
-    </div>
-</div>
 </template>
 
 <script>
@@ -59,6 +90,14 @@ import {
 
 export default {
     name: 'ProfileJobs',
+    components: {
+        TablerNone,
+        Status,
+        TablerAlert,
+        IconRefresh,
+        TablerLoading,
+        TablerEpoch,
+    },
     data: function() {
         return {
             err: null,
@@ -97,14 +136,6 @@ export default {
                 this.err = err;
             }
         }
-    },
-    components: {
-        TablerNone,
-        Status,
-        TablerAlert,
-        IconRefresh,
-        TablerLoading,
-        TablerEpoch,
     }
 }
 </script>

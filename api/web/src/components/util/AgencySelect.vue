@@ -1,59 +1,86 @@
 <template>
-<div class='w-100'>
-    <template v-if='loading'>
-        <TablerLoading :inline='true'/>
-    </template>
-    <template v-else>
-        <div class='col-12 pb-2'>
-            <label>Connection Agency</label>
-        </div>
-        <div class='d-flex align-items-center'>
-            <IconTrash
-                v-if='selected.id'
-                size='32'
-                @click='selected.id = null'
-                class='cursor-pointer'
-            />
-            <div v-if='selected.id' v-text='selected.name' class='mx-2'></div>
-            <div v-else>No Agency Selected</div>
-
-            <div v-if='!disabled' class='ms-auto btn-list'>
-                <TablerDropdown>
-                    <IconSettings
-                        size='32'
-                        v-tooltip='"Select Agency"'
-                        class='cursor-pointer dropdown-toggle'
-                    />
-                    <template #dropdown>
-                        <div class='m-1'>
-                            <TablerInput v-model='filter' placeholder='Filter...'/>
-
-                            <TablerNone v-if='data.total === 0' :create='false' label='Agencies'/>
-                            <div v-else class='table-resposive'>
-                                <table class='table table-hover'>
-                                    <thead>
-                                        <tr>
-                                            <th>Agency Name</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody class='table-tbody'>
-                                        <tr @click='selected = data' :key='data.id' v-for='data of data.items' class='cursor-pointer'>
-                                            <td>
-                                                <div class='d-flex align-items-center'>
-                                                    <span class='mt-2' v-text='data.name'/>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </template>
-                </TablerDropdown>
+    <div class='w-100'>
+        <template v-if='loading'>
+            <TablerLoading :inline='true' />
+        </template>
+        <template v-else>
+            <div class='col-12 pb-2'>
+                <label>Connection Agency</label>
             </div>
-        </div>
-    </template>
-</div>
+            <div class='d-flex align-items-center'>
+                <IconTrash
+                    v-if='selected.id'
+                    size='32'
+                    class='cursor-pointer'
+                    @click='selected.id = null'
+                />
+                <div
+                    v-if='selected.id'
+                    class='mx-2'
+                    v-text='selected.name'
+                />
+                <div v-else>
+                    No Agency Selected
+                </div>
+
+                <div
+                    v-if='!disabled'
+                    class='ms-auto btn-list'
+                >
+                    <TablerDropdown>
+                        <IconSettings
+                            v-tooltip='"Select Agency"'
+                            size='32'
+                            class='cursor-pointer dropdown-toggle'
+                        />
+                        <template #dropdown>
+                            <div class='m-1'>
+                                <TablerInput
+                                    v-model='filter'
+                                    placeholder='Filter...'
+                                />
+
+                                <TablerNone
+                                    v-if='data.total === 0'
+                                    :create='false'
+                                    label='Agencies'
+                                />
+                                <div
+                                    v-else
+                                    class='table-resposive'
+                                >
+                                    <table class='table table-hover'>
+                                        <thead>
+                                            <tr>
+                                                <th>Agency Name</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class='table-tbody'>
+                                            <tr
+                                                v-for='data of data.items'
+                                                :key='data.id'
+                                                class='cursor-pointer'
+                                                @click='selected = data'
+                                            >
+                                                <td>
+                                                    <div class='d-flex align-items-center'>
+                                                        <span
+                                                            class='mt-2'
+                                                            v-text='data.name'
+                                                        />
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </template>
+                    </TablerDropdown>
+                </div>
+            </div>
+        </template>
+    </div>
 </template>
 
 <script>
@@ -71,6 +98,14 @@ import {
 
 export default {
     name: 'Agency',
+    components: {
+        IconTrash,
+        IconSettings,
+        TablerDropdown,
+        TablerInput,
+        TablerNone,
+        TablerLoading
+    },
     props: {
         modelValue: Number,
         disabled: {
@@ -120,14 +155,6 @@ export default {
             url.searchParams.append('filter', this.filter);
             this.data = await std(url);
         },
-    },
-    components: {
-        IconTrash,
-        IconSettings,
-        TablerDropdown,
-        TablerInput,
-        TablerNone,
-        TablerLoading
     }
 };
 </script>

@@ -1,128 +1,197 @@
 <template>
-<div class='row col-12'>
-    <template v-if='err'>
-        <TablerAlert title='ESRI Connection Error' :err='err' :compact='true'/>
-        <div class="col-md-12 mt-3 pb-2 px-3">
-            <div class='d-flex'>
-                <div class='ms-auto'>
-                    <a v-if='pane' @click='$emit("close")' class="cursor-pointer btn btn-primary">Close Viewer</a>
+    <div class='row col-12'>
+        <template v-if='err'>
+            <TablerAlert
+                title='ESRI Connection Error'
+                :err='err'
+                :compact='true'
+            />
+            <div class='col-md-12 mt-3 pb-2 px-3'>
+                <div class='d-flex'>
+                    <div class='ms-auto'>
+                        <a
+                            v-if='pane'
+                            class='cursor-pointer btn btn-primary'
+                            @click='$emit("close")'
+                        >Close Viewer</a>
+                    </div>
                 </div>
             </div>
-        </div>
-    </template>
-    <template v-else-if='loading.main'>
-        <TablerLoading desc='Connecting to ESRI Portal'/>
-    </template>
-    <template v-else-if='!url'> <!-- If no url is given assume auth is directly with a Server-->
-        <EsriServer
-            :disabled='disabled'
-            :server='server.url'
-            :readonly='readonly'
-            :token='token'
-            @layer='$emit("layer", $event)'
-            @close='server = null'
-        />
-    </template>
-    <template v-else>
-        <div class='py-2' :class='{
-            "border": pane
-        }'>
-            <div class='d-flex'>
-                <h1 class='subheader px-3'>
-                    ESRI Portal Explorer
-                    <span v-if='portal && portal.name' v-text='" - " + portal.name'/>
-                </h1>
+        </template>
+        <template v-else-if='loading.main'>
+            <TablerLoading desc='Connecting to ESRI Portal' />
+        </template>
+        <template v-else-if='!url'>
+            <!-- If no url is given assume auth is directly with a Server-->
+            <EsriServer
+                :disabled='disabled'
+                :server='server.url'
+                :readonly='readonly'
+                :token='token'
+                @layer='$emit("layer", $event)'
+                @close='server = null'
+            />
+        </template>
+        <template v-else>
+            <div
+                class='py-2'
+                :class='{
+                    "border": pane
+                }'
+            >
+                <div class='d-flex'>
+                    <h1 class='subheader px-3'>
+                        ESRI Portal Explorer
+                        <span
+                            v-if='portal && portal.name'
+                            v-text='" - " + portal.name'
+                        />
+                    </h1>
 
-                <div class='ms-auto btn-list mx-3'>
-                    <IconRefresh v-if='!disabled && !err && !loading.main' @click='generateToken' v-tooltip='"Refresh"' size='32' class='cursor-pointer'/>
+                    <div class='ms-auto btn-list mx-3'>
+                        <IconRefresh
+                            v-if='!disabled && !err && !loading.main'
+                            v-tooltip='"Refresh"'
+                            size='32'
+                            class='cursor-pointer'
+                            @click='generateToken'
+                        />
 
-                    <IconPlus v-if='!readonly && !disabled && !err && !loading.main' @click='createModal = true' v-tooltip='"Create Hosted Service"' size='32' class='cursor-pointer'/>
-                    <IconX v-if='pane && !disabled' @click='$emit("close")' v-tooltip='"Close Explorer"' size='32' class='cursor-pointer'/>
+                        <IconPlus
+                            v-if='!readonly && !disabled && !err && !loading.main'
+                            v-tooltip='"Create Hosted Service"'
+                            size='32'
+                            class='cursor-pointer'
+                            @click='createModal = true'
+                        />
+                        <IconX
+                            v-if='pane && !disabled'
+                            v-tooltip='"Close Explorer"'
+                            size='32'
+                            class='cursor-pointer'
+                            @click='$emit("close")'
+                        />
+                    </div>
                 </div>
-            </div>
 
-            <template v-if='type === "PORTAL" || server'>
-                <template v-if='!server'>
-                    <template v-if='servers.length === 0'>
-                        <TablerNone :compact='true' :create='false' label='ArcGIS Servers'/>
-                    </template>
-                    <template v-else>
-                        <div class='table-responsive'>
-                            <table class="table table-hover card-table table-vcenter cursor-pointer">
-                                <thead><tr><th>ID</th><th>Name</th><th>Url</th></tr></thead>
-                                <tbody><tr @click='server = serv' :key='serv.id' v-for='serv in servers'>
-                                    <td v-text='serv.id'></td>
-                                    <td v-text='serv.name'></td>
-                                    <td v-text='serv.url'></td>
-                                </tr></tbody>
-                            </table>
-                        </div>
-                    </template>
-                </template>
-                <template v-else>
-                    <div class='datagrid'>
-                        <template v-for='ele in ["id", "name", "adminUrl"]'>
-                            <div v-if='server[ele]' class='datagrid-item'>
-                                <div class="datagrid-title" v-text='ele'></div>
-                                <div class="datagrid-content" v-text='server[ele]'></div>
+                <template v-if='type === "PORTAL" || server'>
+                    <template v-if='!server'>
+                        <template v-if='servers.length === 0'>
+                            <TablerNone
+                                :compact='true'
+                                :create='false'
+                                label='ArcGIS Servers'
+                            />
+                        </template>
+                        <template v-else>
+                            <div class='table-responsive'>
+                                <table class='table table-hover card-table table-vcenter cursor-pointer'>
+                                    <thead><tr><th>ID</th><th>Name</th><th>Url</th></tr></thead>
+                                    <tbody>
+                                        <tr
+                                            v-for='serv in servers'
+                                            :key='serv.id'
+                                            @click='server = serv'
+                                        >
+                                            <td v-text='serv.id' />
+                                            <td v-text='serv.name' />
+                                            <td v-text='serv.url' />
+                                        </tr>
+                                    </tbody>
+                                </table>
                             </div>
                         </template>
-                    </div>
+                    </template>
+                    <template v-else>
+                        <div class='datagrid'>
+                            <template v-for='ele in ["id", "name", "adminUrl"]'>
+                                <div
+                                    v-if='server[ele]'
+                                    class='datagrid-item'
+                                >
+                                    <div
+                                        class='datagrid-title'
+                                        v-text='ele'
+                                    />
+                                    <div
+                                        class='datagrid-content'
+                                        v-text='server[ele]'
+                                    />
+                                </div>
+                            </template>
+                        </div>
 
-                    <EsriServer
-                        :disabled='disabled'
-                        :server='server.url'
-                        :readonly='readonly'
-                        :portal='url'
-                        :token='token'
-                        @layer='$emit("layer", $event)'
-                        @close='server = null'
+                        <EsriServer
+                            :disabled='disabled'
+                            :server='server.url'
+                            :readonly='readonly'
+                            :portal='url'
+                            :token='token'
+                            @layer='$emit("layer", $event)'
+                            @close='server = null'
+                        />
+                    </template>
+                </template>
+                <template v-else-if='type === &apos;AGOL&apos;'>
+                    <TablerInput
+                        v-model='contentFilter.title'
+                        placeholder='Filter by Title'
                     />
-                </template>
-            </template>
-            <template v-else-if="type === 'AGOL'">
-                <TablerInput placeholder='Filter by Title' v-model='contentFilter.title'/>
 
-                <template v-if='loading.content'>
-                    <TablerLoading desc='Searching Content'/>
+                    <template v-if='loading.content'>
+                        <TablerLoading desc='Searching Content' />
+                    </template>
+                    <div
+                        v-else
+                        class='table-responsive'
+                    >
+                        <table class='table table-hover card-table table-vcenter cursor-pointer'>
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Attributes</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr
+                                    v-for='res in content.results'
+                                    :key='res.id'
+                                    @click='fmtserver(res)'
+                                >
+                                    <td>
+                                        <IconMap size='32' />
+                                        <span
+                                            class='mx-1'
+                                            v-text='res.title'
+                                        />
+                                    </td>
+                                    <td>
+                                        <span
+                                            class='badge mx-1 mb-1'
+                                            :class='{
+                                                "bg-green text-white": res.access === "public",
+                                                "bg-yellow text-white": res.access === "org",
+                                                "bg-red text-white": res.access === "private"
+                                            }'
+                                            v-text='res.access'
+                                        />
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </template>
-                <div v-else class='table-responsive'>
-                    <table class="table table-hover card-table table-vcenter cursor-pointer">
-                        <thead>
-                            <tr>
-                                <th>Name</th>
-                                <th>Attributes</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr @click='fmtserver(res)' :key='res.id' v-for='res in content.results'>
-                                <td>
-                                    <IconMap size='32'/>
-                                    <span v-text='res.title' class='mx-1'/>
-                                </td>
-                                <td>
-                                    <span v-text='res.access' class='badge mx-1 mb-1' :class='{
-                                         "bg-green text-white": res.access === "public",
-                                         "bg-yellow text-white": res.access === "org",
-                                         "bg-red text-white": res.access === "private"
-                                    }'/>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </template>
 
-            <EsriPortalCreate
-                v-if='createModal'
-                :portal='url'
-                :token='token'
-                @close='createModal = false'
-                @create='createService($event)'
-            />
-        </div>
-    </template>
-</div>
+                <EsriPortalCreate
+                    v-if='createModal'
+                    :portal='url'
+                    :token='token'
+                    @close='createModal = false'
+                    @create='createService($event)'
+                />
+            </div>
+        </template>
+    </div>
 </template>
 
 <script>
@@ -144,6 +213,18 @@ import EsriPortalCreate from './EsriPortalCreate.vue';
 
 export default {
     name: 'EsriProxy',
+    components: {
+        TablerAlert,
+        IconX,
+        IconPlus,
+        TablerNone,
+        IconMap,
+        IconRefresh,
+        TablerLoading,
+        TablerInput,
+        EsriServer,
+        EsriPortalCreate
+    },
     props: {
         disabled: {
             type: Boolean,
@@ -331,18 +412,6 @@ export default {
             this.loading.main = false;
         },
 
-    },
-    components: {
-        TablerAlert,
-        IconX,
-        IconPlus,
-        TablerNone,
-        IconMap,
-        IconRefresh,
-        TablerLoading,
-        TablerInput,
-        EsriServer,
-        EsriPortalCreate
     }
 }
 </script>

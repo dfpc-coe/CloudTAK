@@ -1,52 +1,100 @@
 <template>
-<div>
-    <MenuTemplate name='Basemaps'>
-        <template #buttons>
-            <IconPlus @click='editModal = {}' size='32' class='cursor-pointer' v-tooltip='"Create Basemap"'/>
-            <IconSearch @click='query = !query' v-tooltip='"Search"' size='32' class='cursor-pointer'/>
-            <IconRefresh v-if='!loading' @click='fetchList' size='32' class='cursor-pointer' v-tooltip='"Refresh"'/>
-        </template>
+    <div>
+        <MenuTemplate name='Basemaps'>
+            <template #buttons>
+                <IconPlus
+                    v-tooltip='"Create Basemap"'
+                    size='32'
+                    class='cursor-pointer'
+                    @click='editModal = {}'
+                />
+                <IconSearch
+                    v-tooltip='"Search"'
+                    size='32'
+                    class='cursor-pointer'
+                    @click='query = !query'
+                />
+                <IconRefresh
+                    v-if='!loading'
+                    v-tooltip='"Refresh"'
+                    size='32'
+                    class='cursor-pointer'
+                    @click='fetchList'
+                />
+            </template>
 
-        <template #default>
-            <div v-if='query' class='col-12 px-3 pb-3'>
-                <TablerInput v-model='paging.filter' placeholder='Filter'/>
-            </div>
+            <template #default>
+                <div
+                    v-if='query'
+                    class='col-12 px-3 pb-3'
+                >
+                    <TablerInput
+                        v-model='paging.filter'
+                        placeholder='Filter'
+                    />
+                </div>
 
-            <TablerLoading v-if='loading'/>
-            <TablerNone
-                v-else-if='!list.items.length'
-                label='Basemaps'
-                @create='$router.push("/basemap/new")'
-            />
-            <template v-else>
-                <div @click='setBasemap(basemap)' :key='basemap.id' v-for='basemap in list.items' class="col-12 hover-dark cursor-pointer py-2 px-3">
-                    <div class="d-flex align-items-center my-2">
-                        <span class='mx-2 text-truncate' style='font-size: 18px;' v-text='basemap.name'/>
-
-                        <div class='ms-auto d-flex align-items-center'>
-                            <span v-if='!basemap.username' class='mx-3 ms-auto badge border bg-blue text-white'>Public</span>
-                            <span v-else='!basemap.username' class='mx-3 ms-auto badge border bg-red text-white'>Private</span>
-
-                            <IconSettings
-                                v-if='(!basemap.username && profile.system_admin) || basemap.username'
-                                v-tooltip='"Edit Basemap"'
-                                size='32'
-                                class='cursor-pointer'
-                                @click.stop.prevent='editModal = basemap'
+                <TablerLoading v-if='loading' />
+                <TablerNone
+                    v-else-if='!list.items.length'
+                    label='Basemaps'
+                    @create='$router.push("/basemap/new")'
+                />
+                <template v-else>
+                    <div
+                        v-for='basemap in list.items'
+                        :key='basemap.id'
+                        class='col-12 hover-dark cursor-pointer py-2 px-3'
+                        @click='setBasemap(basemap)'
+                    >
+                        <div class='d-flex align-items-center my-2'>
+                            <span
+                                class='mx-2 text-truncate'
+                                style='font-size: 18px;'
+                                v-text='basemap.name'
                             />
+
+                            <div class='ms-auto d-flex align-items-center'>
+                                <span
+                                    v-if='!basemap.username'
+                                    class='mx-3 ms-auto badge border bg-blue text-white'
+                                >Public</span>
+                                <span
+                                    v-else
+                                    class='mx-3 ms-auto badge border bg-red text-white'
+                                >Private</span>
+
+                                <IconSettings
+                                    v-if='(!basemap.username && profile.system_admin) || basemap.username'
+                                    v-tooltip='"Edit Basemap"'
+                                    size='32'
+                                    class='cursor-pointer'
+                                    @click.stop.prevent='editModal = basemap'
+                                />
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <div class="col-lg-12">
-                    <TablerPager v-if='list.total > paging.limit' @page='paging.page = $event' :page='paging.page'  :total='list.total' :limit='paging.limit'/>
-                </div>
+                    <div class='col-lg-12'>
+                        <TablerPager
+                            v-if='list.total > paging.limit'
+                            :page='paging.page'
+                            :total='list.total'
+                            :limit='paging.limit'
+                            @page='paging.page = $event'
+                        />
+                    </div>
+                </template>
             </template>
-        </template>
-    </MenuTemplate>
+        </MenuTemplate>
 
-    <BasemapEditModal v-if='editModal' size='xl' :basemap='editModal' @close='editModal = false' />
-</div>
+        <BasemapEditModal
+            v-if='editModal'
+            size='xl'
+            :basemap='editModal'
+            @close='editModal = false'
+        />
+    </div>
 </template>
 
 <script>

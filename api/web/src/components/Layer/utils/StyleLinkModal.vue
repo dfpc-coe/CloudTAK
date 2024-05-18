@@ -1,16 +1,43 @@
 <template>
     <TablerModal>
-        <button type="button" class="btn-close" @click='$emit("close")' aria-label="Close"></button>
-        <div class="modal-status bg-yellow"></div>
-        <div class="modal-header">
+        <button
+            type='button'
+            class='btn-close'
+            aria-label='Close'
+            @click='$emit("close")'
+        />
+        <div class='modal-status bg-yellow' />
+        <div class='modal-header'>
             <span class='modal-title'>Edit Link</span>
         </div>
-        <div class="modal-body py-4">
-            <StyleTemplate label='Link Name' :schema='schema' v-model='link.remarks' class='py-1'/>
-            <StyleTemplate label='Link URL' :schema='schema' v-model='link.url' class='py-1'/>
+        <div class='modal-body py-4'>
+            <StyleTemplate
+                v-model='link.remarks'
+                label='Link Name'
+                :schema='schema'
+                class='py-1'
+            />
+            <StyleTemplate
+                v-model='link.url'
+                label='Link URL'
+                :schema='schema'
+                class='py-1'
+            />
 
-            <button v-if='edit' @click='done' class='btn btn-primary w-100 mt-4'>Update</button>
-            <button v-else @click='done' class='btn btn-primary w-100 mt-4'>Create</button>
+            <button
+                v-if='edit'
+                class='btn btn-primary w-100 mt-4'
+                @click='done'
+            >
+                Update
+            </button>
+            <button
+                v-else
+                class='btn btn-primary w-100 mt-4'
+                @click='done'
+            >
+                Create
+            </button>
         </div>
     </TablerModal>
 </template>
@@ -23,6 +50,10 @@ import {
 
 export default {
     name: 'LayerSchemaModal',
+    components: {
+        TablerModal,
+        StyleTemplate,
+    },
     props: {
         edit: {
             type: Object,
@@ -49,10 +80,6 @@ export default {
         done: function() {
             this.$emit('done', this.link);
         }
-    },
-    components: {
-        TablerModal,
-        StyleTemplate,
     }
 }
 </script>

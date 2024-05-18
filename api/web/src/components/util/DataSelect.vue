@@ -41,9 +41,8 @@
                     </template>
                 </TablerDropdown>
             </div>
-        </div>
-    </template>
-</div>
+        </template>
+    </div>
 </template>
 
 <script>
@@ -60,6 +59,12 @@ import {
 export default {
     name: 'DataSelect',
     emits: ['update:modelValue'],
+    components: {
+        IconTrash,
+        IconSettings,
+        TablerLoading,
+        TablerDropdown
+    },
     props: {
         connection: Number,
         modelValue: Number,
@@ -115,11 +120,5 @@ export default {
             this.data = await std(`/api/connection/${this.connection}/data`);
         },
     },
-    components: {
-        IconTrash,
-        IconSettings,
-        TablerLoading,
-        TablerDropdown
-    }
 };
 </script>

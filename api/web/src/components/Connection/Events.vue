@@ -1,19 +1,38 @@
 <template>
-<div>
-    <div class='card-header'>
-        <h3 class='card-title'>Connection Events</h3>
+    <div>
+        <div class='card-header'>
+            <h3 class='card-title'>
+                Connection Events
+            </h3>
 
-        <div class='ms-auto'>
-            <div class='btn-list'>
-                <IconTrash v-tooltip='"Clear Events"'  @click='events = []' size='32' class='cursor-pointer'/>
+            <div class='ms-auto'>
+                <div class='btn-list'>
+                    <IconTrash
+                        v-tooltip='"Clear Events"'
+                        size='32'
+                        class='cursor-pointer'
+                        @click='events = []'
+                    />
 
-                <IconPlayerPlay v-tooltip='"Play Events"' @click='paused = false' size='32' class='cursor-pointer' v-if='paused'/>
-                <IconPlayerPause v-tooltip='"Pause Events"' @click='paused = true' size='32' class='cursor-pointer' v-else/>
+                    <IconPlayerPlay
+                        v-if='paused'
+                        v-tooltip='"Play Events"'
+                        size='32'
+                        class='cursor-pointer'
+                        @click='paused = false'
+                    />
+                    <IconPlayerPause
+                        v-else
+                        v-tooltip='"Pause Events"'
+                        size='32'
+                        class='cursor-pointer'
+                        @click='paused = true'
+                    />
+                </div>
             </div>
         </div>
+        <pre v-text='eventStr' />
     </div>
-    <pre v-text='eventStr'/>
-</div>
 </template>
 
 <script>
@@ -26,6 +45,11 @@ import {
 
 export default {
     name: 'ConnectionEvents',
+    components: {
+        IconTrash,
+        IconPlayerPause,
+        IconPlayerPlay
+    },
     data: function() {
         return {
             ws: null,
@@ -62,11 +86,6 @@ export default {
             if (this.events.length > 200) this.events.pop();
             this.events.unshift(JSON.stringify(msg.data));
         });
-    },
-    components: {
-        IconTrash,
-        IconPlayerPause,
-        IconPlayerPlay
     }
 }
 </script>

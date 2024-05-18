@@ -1,138 +1,162 @@
 <template>
-<div>
-    <TablerLoading v-if='loading'/>
-    <template v-else>
-        <div class="card-header">
-            <h3 class='card-title'>TAK Server Configuration</h3>
-            <div class='ms-auto'>
-                <div class='btn-list'>
-                    <IconSettings
-                        v-tooltip='"Configure Server"'
+    <div>
+        <TablerLoading v-if='loading' />
+        <template v-else>
+            <div class='card-header'>
+                <h3 class='card-title'>
+                    TAK Server Configuration
+                </h3>
+                <div class='ms-auto'>
+                    <div class='btn-list'>
+                        <IconSettings
+                            v-tooltip='"Configure Server"'
+                            size='32'
+                            class='cursor-pointer'
+                            @click='edit = true'
+                        />
+                    </div>
+                </div>
+            </div>
+            <div class='card-body row'>
+                <div class='col-lg-12 py-2'>
+                    <TablerInput
+                        v-model='server.name'
+                        :disabled='!edit'
+                        label='TAK Server Name'
+                        placeholder='ssl://'
+                        :error='errors.name'
+                    />
+                </div>
+
+                <div class='col-lg-12 py-2'>
+                    <TablerInput
+                        v-model='server.url'
+                        :disabled='!edit'
+                        label='TAK Server Streaming CoT'
+                        placeholder='ssl://'
+                        :error='errors.url'
+                    />
+                </div>
+                <div class='col-lg-12 py-2'>
+                    <TablerInput
+                        v-model='server.api'
+                        :disabled='!edit'
+                        label='TAK Server API'
+                        placeholder='https://'
+                        :error='errors.api'
+                    />
+                </div>
+                <div class='col-lg-12 py-2'>
+                    <TablerInput
+                        v-model='server.provider_url'
+                        :disabled='!edit'
+                        label='OAuth Authentication API'
+                        placeholder='https://'
+                        :error='errors.provider_url'
+                    />
+                </div>
+                <div class='col-lg-6 py-2'>
+                    <TablerInput
+                        v-model='server.provider_client'
+                        :disabled='!edit'
+                        label='OAuth Client ID'
+                        placeholder='https://'
+                        :error='errors.provider_client'
+                    />
+                </div>
+                <div class='col-lg-6 py-2'>
+                    <TablerInput
+                        v-model='server.provider_secret'
+                        :disabled='!edit'
+                        label='OAuth Client Secret'
+                        placeholder='https://'
+                        :error='errors.provider_secret'
+                    />
+                </div>
+            </div>
+            <div class='card-header'>
+                <h3 class='card-title'>
+                    Admin Certificate
+                </h3>
+                <div
+                    v-if='regen && edit'
+                    class='ms-auto btn-list'
+                >
+                    <IconPlus
+                        v-tooltip='"Upload P12"'
                         size='32'
                         class='cursor-pointer'
-                        @click='edit = true'
+                        @click='modal.upload = true'
                     />
                 </div>
             </div>
-        </div>
-        <div class="card-body row">
-            <div class='col-lg-12 py-2'>
-                <TablerInput
-                    v-model='server.name'
-                    :disabled='!edit'
-                    label='TAK Server Name'
-                    placeholder='ssl://'
-                    :error='errors.name'
-                />
-            </div>
-
-            <div class='col-lg-12 py-2'>
-                <TablerInput
-                    v-model='server.url'
-                    :disabled='!edit'
-                    label='TAK Server Streaming CoT'
-                    placeholder='ssl://'
-                    :error='errors.url'
-                />
-            </div>
-            <div class='col-lg-12 py-2'>
-                <TablerInput
-                    v-model='server.api'
-                    :disabled='!edit'
-                    label='TAK Server API'
-                    placeholder='https://'
-                    :error='errors.api'
-                />
-            </div>
-            <div class='col-lg-12 py-2'>
-                <TablerInput
-                    v-model='server.provider_url'
-                    :disabled='!edit'
-                    label='OAuth Authentication API'
-                    placeholder='https://'
-                    :error='errors.provider_url'
-                />
-            </div>
-            <div class='col-lg-6 py-2'>
-                <TablerInput
-                    v-model='server.provider_client'
-                    :disabled='!edit'
-                    label='OAuth Client ID'
-                    placeholder='https://'
-                    :error='errors.provider_client'
-                />
-            </div>
-            <div class='col-lg-6 py-2'>
-                <TablerInput
-                    v-model='server.provider_secret'
-                    :disabled='!edit'
-                    label='OAuth Client Secret'
-                    placeholder='https://'
-                    :error='errors.provider_secret'
-                />
-            </div>
-        </div>
-        <div class='card-header'>
-            <h3 class='card-title'>Admin Certificate</h3>
-            <div v-if='regen && edit' class='ms-auto btn-list'>
-                <IconPlus
-                    @click='modal.upload = true'
-                    size='32'
-                    class='cursor-pointer'
-                    v-tooltip='"Upload P12"'
-                />
-            </div>
-        </div>
-        <div class='card-body row'>
-            <template v-if='regen && edit'>
-                <div class="col-md-6">
-                    <TablerInput
-                        label='Connection Cert'
-                        v-model='auth.cert'
-                        :error='errors.cert'
-                        :rows='6'
-                    />
-                </div>
-                <div class="col-md-6">
-                    <TablerInput
-                        label='Connection Key'
-                        v-model='auth.key'
-                        :error='errors.key'
-                        :rows='6'
-                    />
-                </div>
-            </template>
-            <template v-else>
+            <div class='card-body row'>
+                <template v-if='regen && edit'>
+                    <div class='col-md-6'>
+                        <TablerInput
+                            v-model='auth.cert'
+                            label='Connection Cert'
+                            :error='errors.cert'
+                            :rows='6'
+                        />
+                    </div>
+                    <div class='col-md-6'>
+                        <TablerInput
+                            v-model='auth.key'
+                            label='Connection Key'
+                            :error='errors.key'
+                            :rows='6'
+                        />
+                    </div>
+                </template>
+                <template v-else>
                     <div class='col-auto'>
-                        <IconLock size='50'/>
+                        <IconLock size='50' />
                     </div>
                     <div class='col-auto d-flex align-items-center'>
                         Once Certificates are uploaded they cannot be viewed
                     </div>
-                    <div v-if='edit' class='col-auto ms-auto'>
-                        <button @click='regen=true' class='btn btn-secondary'>Replace Certificate</button>
+                    <div
+                        v-if='edit'
+                        class='col-auto ms-auto'
+                    >
+                        <button
+                            class='btn btn-secondary'
+                            @click='regen=true'
+                        >
+                            Replace Certificate
+                        </button>
                     </div>
-            </template>
+                </template>
 
-            <div v-if='edit' class='col-lg-12 d-flex py-2'>
-                <div class='ms-auto'>
-                    <div @click='postServer' class='btn btn-primary'>
-                        Save Server
+                <div
+                    v-if='edit'
+                    class='col-lg-12 d-flex py-2'
+                >
+                    <div class='ms-auto'>
+                        <div
+                            class='btn btn-primary'
+                            @click='postServer'
+                        >
+                            Save Server
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-        <div v-if='server.updated' class="card-footer">
-            <span v-text='`Last Updated: ${timeDiff(server.updated)}`'/>
-        </div>
-    </template>
-    <Upload
-        v-if='modal.upload'
-        @certs='p12upload($event)'
-        @close='modal.upload = false'
-        @err='err = $event'
-    />
-</div>
+            <div
+                v-if='server.updated'
+                class='card-footer'
+            >
+                <span v-text='`Last Updated: ${timeDiff(server.updated)}`' />
+            </div>
+        </template>
+        <Upload
+            v-if='modal.upload'
+            @certs='p12upload($event)'
+            @close='modal.upload = false'
+            @err='err = $event'
+        />
+    </div>
 </template>
 
 <script>
@@ -151,6 +175,14 @@ import timeDiff from '../../timediff.js';
 
 export default {
     name: 'AdminServer',
+    components: {
+        IconSettings,
+        TablerLoading,
+        TablerInput,
+        IconLock,
+        IconPlus,
+        Upload
+    },
     data: function() {
         return {
             edit: false,
@@ -258,14 +290,6 @@ export default {
             this.edit = false;
             this.loading = false;
         }
-    },
-    components: {
-        IconSettings,
-        TablerLoading,
-        TablerInput,
-        IconLock,
-        IconPlus,
-        Upload
     }
 }
 </script>
