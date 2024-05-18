@@ -1,37 +1,68 @@
 <template>
-<div>
-    <div class="card-header">
-        <h3 class="card-title">User Groups</h3>
+    <div>
+        <div class='card-header'>
+            <h3 class='card-title'>
+                User Groups
+            </h3>
 
-        <div class='ms-auto btn-list'>
-            <IconRefresh @click='fetch' size='32' class='cursor-pointer' v-tooltip='"Refresh"'/>
+            <div class='ms-auto btn-list'>
+                <IconRefresh
+                    v-tooltip='"Refresh"'
+                    size='32'
+                    class='cursor-pointer'
+                    @click='fetch'
+                />
+            </div>
+        </div>
+        <TablerLoading v-if='loading' />
+        <TablerNone
+            v-else-if='!rawChannels.length'
+            :create='false'
+        />
+        <div
+            v-else
+            class='table-responsive'
+        >
+            <table class='table card-table table-hover table-vcenter'>
+                <thead>
+                    <tr>
+                        <th>Group Name</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr
+                        v-for='group in processChannels'
+                        :key='group.name'
+                    >
+                        <td>
+                            <div class='d-flex align-items-center'>
+                                <IconEye
+                                    v-if='group.active'
+                                    v-tooltip='"Disable"'
+                                    size='32'
+                                    class='cursor-pointer'
+                                    @click='setStatus(group, false)'
+                                />
+                                <IconEyeOff
+                                    v-else
+                                    v-tooltip='"Enable"'
+                                    size='32'
+                                    class='cursor-pointer'
+                                    @click='setStatus(group, true)'
+                                />
+                                <span
+                                    class='mx-2'
+                                    v-text='group.name'
+                                />
+                            </div>
+                        </td>
+                        <td v-text='group.description' />
+                    </tr>
+                </tbody>
+            </table>
         </div>
     </div>
-    <TablerLoading v-if='loading'/>
-    <TablerNone v-else-if='!rawChannels.length' :create='false'/>
-    <div v-else class='table-responsive'>
-        <table class="table card-table table-hover table-vcenter">
-            <thead>
-                <tr>
-                    <th>Group Name</th>
-                    <th>Description</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr :key='group.name' v-for='group in processChannels'>
-                    <td>
-                        <div class='d-flex align-items-center'>
-                            <IconEye v-if='group.active' @click='setStatus(group, false)' v-tooltip='"Disable"' size='32' class='cursor-pointer'/>
-                            <IconEyeOff v-else @click='setStatus(group, true)' v-tooltip='"Enable"' size='32' class='cursor-pointer'/>
-                            <span class='mx-2' v-text='group.name'/>
-                        </div>
-                    </td>
-                    <td v-text='group.description'></td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-</div>
 </template>
 
 <script>
@@ -48,14 +79,18 @@ import {
 
 export default {
     name: 'ConnectionGroups',
+    components: {
+        IconEye,
+        IconEyeOff,
+        IconRefresh,
+        TablerNone,
+        TablerLoading
+    },
     data: function() {
         return {
             loading: true,
             rawChannels: []
         }
-    },
-    mounted: async function() {
-        await this.fetch();
     },
     computed: {
         processChannels: function() {
@@ -74,6 +109,9 @@ export default {
 
             return channels;
         }
+    },
+    mounted: async function() {
+        await this.fetch();
     },
     methods: {
         fetch: async function() {
@@ -96,13 +134,6 @@ export default {
 
             this.$emit('reset');
         },
-    },
-    components: {
-        IconEye,
-        IconEyeOff,
-        IconRefresh,
-        TablerNone,
-        TablerLoading
     }
 }
 </script>

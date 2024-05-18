@@ -1,43 +1,78 @@
 <template>
-<MenuTemplate :name='data ? data.name : "Data Sync Explorer"'>
-    <TablerLoading v-if='loading'/>
-    <template v-else-if='data'>
-        <TablerNone
-            v-if='!assetList.total'
-            label='Files'
-            :create='false'
-        />
-        <div class='modal-body my-2'>
-            <div :key='a.id' v-for='a in assetList.assets' class='cursor-pointer col-12 py-2 px-3 hover-dark'>
-                <div class='col-12 py-2 px-2 d-flex align-items-center'>
-                    <IconEyeX v-if='!a.visualized' v-tooltip='"No Viz Layer"' size='32'/>
-                    <IconEye v-else-if='a.visible' @click='flipVisible(a)' size='32' class='cursor-pointer'/>
-                    <IconEyeOff v-else @click='flipVisible(a)' size='32' class='cursor-pointer'/>
-                    <span class="mx-2 cursor-pointer" v-text='a.name'></span>
-                </div>
-            </div>
-        </div>
-    </template>
-    <template v-else>
-        <TablerNone
-            v-if='!list.items.length'
-            label='Data'
-            @create='$router.push("/data/new")'
-        />
-        <template v-else>
+    <MenuTemplate :name='data ? data.name : "Data Sync Explorer"'>
+        <TablerLoading v-if='loading' />
+        <template v-else-if='data'>
+            <TablerNone
+                v-if='!assetList.total'
+                label='Files'
+                :create='false'
+            />
             <div class='modal-body my-2'>
-                <div @click='data = d' :key='d.id' v-for='d in list.items' class='cursor-pointer col-12 py-2 px-3 hover-dark'>
+                <div
+                    v-for='a in assetList.assets'
+                    :key='a.id'
+                    class='cursor-pointer col-12 py-2 px-3 hover-dark'
+                >
                     <div class='col-12 py-2 px-2 d-flex align-items-center'>
-                        <IconFolder size='32'/><span class="mx-2" v-text='d.name'></span>
+                        <IconEyeX
+                            v-if='!a.visualized'
+                            v-tooltip='"No Viz Layer"'
+                            size='32'
+                        />
+                        <IconEye
+                            v-else-if='a.visible'
+                            size='32'
+                            class='cursor-pointer'
+                            @click='flipVisible(a)'
+                        />
+                        <IconEyeOff
+                            v-else
+                            size='32'
+                            class='cursor-pointer'
+                            @click='flipVisible(a)'
+                        />
+                        <span
+                            class='mx-2 cursor-pointer'
+                            v-text='a.name'
+                        />
                     </div>
-                </div>
-                <div class="col-lg-12">
-                    <TablerPager v-if='list.total > paging.limit' @page='paging.page = $event' :page='paging.page'  :total='list.total' :limit='paging.limit'/>
                 </div>
             </div>
         </template>
-    </template>
-</MenuTemplate>
+        <template v-else>
+            <TablerNone
+                v-if='!list.items.length'
+                label='Data'
+                @create='$router.push("/data/new")'
+            />
+            <template v-else>
+                <div class='modal-body my-2'>
+                    <div
+                        v-for='d in list.items'
+                        :key='d.id'
+                        class='cursor-pointer col-12 py-2 px-3 hover-dark'
+                        @click='data = d'
+                    >
+                        <div class='col-12 py-2 px-2 d-flex align-items-center'>
+                            <IconFolder size='32' /><span
+                                class='mx-2'
+                                v-text='d.name'
+                            />
+                        </div>
+                    </div>
+                    <div class='col-lg-12'>
+                        <TablerPager
+                            v-if='list.total > paging.limit'
+                            :page='paging.page'
+                            :total='list.total'
+                            :limit='paging.limit'
+                            @page='paging.page = $event'
+                        />
+                    </div>
+                </div>
+            </template>
+        </template>
+    </MenuTemplate>
 </template>
 
 <script>
@@ -59,6 +94,16 @@ import {
 
 export default {
     name: 'CloudTAKDatas',
+    components: {
+        IconFolder,
+        IconEye,
+        IconEyeX,
+        IconEyeOff,
+        TablerNone,
+        TablerPager,
+        TablerLoading,
+        MenuTemplate
+    },
     data: function() {
         return {
             err: false,
@@ -80,9 +125,6 @@ export default {
             }
         }
     },
-    mounted: async function() {
-        await this.fetchDataList();
-    },
     watch: {
         data: async function() {
             if (this.data) {
@@ -97,6 +139,9 @@ export default {
                 await this.fethList();
             }
        }
+    },
+    mounted: async function() {
+        await this.fetchDataList();
     },
     methods: {
         flipVisible: async function(a) {
@@ -181,16 +226,6 @@ export default {
             this.assetList = assetList;
             this.loading = false;
         }
-    },
-    components: {
-        IconFolder,
-        IconEye,
-        IconEyeX,
-        IconEyeOff,
-        TablerNone,
-        TablerPager,
-        TablerLoading,
-        MenuTemplate
     }
 }
 </script>

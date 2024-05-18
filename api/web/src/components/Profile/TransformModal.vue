@@ -1,11 +1,21 @@
 <template>
     <TablerModal>
-        <button type="button" class="btn-close" @click='$emit("close")' aria-label="Close"></button>
-        <div class="modal-status bg-yellow"></div>
-        <div class="modal-body py-4">
-            <h3 class='subtitle-header'>Asset Transform:</h3>
+        <button
+            type='button'
+            class='btn-close'
+            aria-label='Close'
+            @click='$emit("close")'
+        />
+        <div class='modal-status bg-yellow' />
+        <div class='modal-body py-4'>
+            <h3 class='subtitle-header'>
+                Asset Transform:
+            </h3>
 
-            <TablerLoading v-if='loading' desc='Creating Transform Job'/>
+            <TablerLoading
+                v-if='loading'
+                desc='Creating Transform Job'
+            />
             <template v-else>
                 <div class='modal-body'>
                     Submit the for conversion into a TAK &amp; Cloud Native Format
@@ -13,7 +23,12 @@
 
                 <div class='col-12 d-flex'>
                     <div class='ms-auto'>
-                        <button @click='submit' class='btn btn-primary'>Submit</button>
+                        <button
+                            class='btn btn-primary'
+                            @click='submit'
+                        >
+                            Submit
+                        </button>
                     </div>
                 </div>
             </template>
@@ -30,6 +45,10 @@ import {
 
 export default {
     name: 'TransformModal',
+    components: {
+        TablerModal,
+        TablerLoading,
+    },
     props: {
         asset: {
             type: Object,
@@ -51,10 +70,6 @@ export default {
             this.$emit('done');
             this.$emit('close');
         },
-    },
-    components: {
-        TablerModal,
-        TablerLoading,
     }
 }
 </script>

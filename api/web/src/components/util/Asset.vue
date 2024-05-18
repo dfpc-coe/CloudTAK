@@ -1,15 +1,23 @@
 <template>
-<div class='row'>
-    <div class='col-12 d-flex'>
-        <div class='py-2'>
-            <IconFolder size='32'/><span class='px-2' v-text='asset.name'/>
-        </div>
+    <div class='row'>
+        <div class='col-12 d-flex'>
+            <div class='py-2'>
+                <IconFolder size='32' /><span
+                    class='px-2'
+                    v-text='asset.name'
+                />
+            </div>
 
-        <div class='ms-auto'>
-            <div @click='download' class='btn btn-sm'><IconDownload size='32'/></div>
+            <div class='ms-auto'>
+                <div
+                    class='btn btn-sm'
+                    @click='download'
+                >
+                    <IconDownload size='32' />
+                </div>
+            </div>
         </div>
     </div>
-</div>
 </template>
 
 <script>
@@ -21,6 +29,10 @@ import {
 
 export default {
     name: 'GenericAsset',
+    components: {
+        IconFolder,
+        IconDownload
+    },
     props: {
         asset_id: {
             type: Number,
@@ -42,10 +54,6 @@ export default {
         download: function() {
             window.open(stdurl(`/api/asset/${this.asset_id}/raw`), "_blank")
         }
-    },
-    components: {
-        IconFolder,
-        IconDownload
     }
 }
 </script>

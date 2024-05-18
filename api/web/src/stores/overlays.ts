@@ -11,12 +11,10 @@ export const useOverlayStore = defineStore('overlays', {
     state: (): {
         initialized: boolean;
         overlays: ProfileOverlay[],
-        subscriptions: Map<string, ProfileOverlay>
     } => {
         return {
             initialized: false,
             overlays: [],
-            subscriptions: new Map() // By GUID
         }
     },
     actions: {
@@ -50,16 +48,6 @@ export const useOverlayStore = defineStore('overlays', {
         list: async function() {
             // @ts-ignore Eventually Type API reqs
             this.overlays = (await std(`/api/profile/overlay`)).items;
-
-            this.subscriptions.clear();
-            for (const overlay of this.overlays) {
-                if (overlay.mode === 'mission' && overlay.mode_id) {
-                    // mode_id is GUID for mission type
-                    this.subscriptions.set(overlay.mode_id, overlay);
-                    await cotStore.loadMission(overlay.mode_id);
-                }
-            }
-
             this.initialized = true;
         }
     },

@@ -1,18 +1,35 @@
 <template>
-<MenuTemplate name='Videos'>
-    <template #buttons>
-        <IconRefresh @click='refresh' size='32' class='cursor-pointer' v-tooltip='"Refresh"'/>
-    </template>
-    <template #default>
-        <TablerNone v-if='!videos.length' label='Videos' :create='false'/>
-        <template v-else>
-            <div :key='video.id' v-for='video of videos' class='col-12 py-2 px-3 d-flex align-items-center hover-dark'>
-                <IconVideo size='32'/>
-                <span class='mx-2' style='font-size: 18px;' v-text='video.properties.callsign'></span>
-            </div>
+    <MenuTemplate name='Videos'>
+        <template #buttons>
+            <IconRefresh
+                v-tooltip='"Refresh"'
+                size='32'
+                class='cursor-pointer'
+                @click='refresh'
+            />
         </template>
-    </template>
-</MenuTemplate>
+        <template #default>
+            <TablerNone
+                v-if='!videos.length'
+                label='Videos'
+                :create='false'
+            />
+            <template v-else>
+                <div
+                    v-for='video of videos'
+                    :key='video.id'
+                    class='col-12 py-2 px-3 d-flex align-items-center hover-dark'
+                >
+                    <IconVideo size='32' />
+                    <span
+                        class='mx-2'
+                        style='font-size: 18px;'
+                        v-text='video.properties.callsign'
+                    />
+                </div>
+            </template>
+        </template>
+    </MenuTemplate>
 </template>
 
 <script>
@@ -30,6 +47,12 @@ const cotStore = useCOTStore();
 
 export default {
     name: 'CloudTAKSettings',
+    components: {
+        IconVideo,
+        IconRefresh,
+        MenuTemplate,
+        TablerNone
+    },
     data: function() {
         return {
             videos: cotStore.videos()
@@ -39,12 +62,6 @@ export default {
         refresh: function() {
             this.videos = cotStore.videos();
         }
-    },
-    components: {
-        IconVideo,
-        IconRefresh,
-        MenuTemplate,
-        TablerNone
     }
 }
 </script>

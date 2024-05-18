@@ -5,9 +5,17 @@
         @mission='mission = $event'
         @close='$router.back()'
     />
-    <TablerModal size='xl' v-if='mode !== "list"'>
-        <div class="modal-status bg-red"></div>
-        <button type="button" class="btn-close" @click='mode = "list"' aria-label="Close"></button>
+    <TablerModal
+        v-if='mode !== "list"'
+        size='xl'
+    >
+        <div class='modal-status bg-red' />
+        <button
+            type='button'
+            class='btn-close'
+            aria-label='Close'
+            @click='mode = "list"'
+        />
         <MissionCreate
             v-if='mode === "create"'
             @mission='mode = "list"'
@@ -32,6 +40,12 @@ import {
 
 export default {
     name: 'CloudTAKMissions',
+    components: {
+        TablerModal,
+        MissionCreate,
+        Mission,
+        MissionList,
+    },
     data: function() {
         return {
             mode: 'list',
@@ -51,12 +65,6 @@ export default {
                 this.mode = 'list';
             }
         }
-    },
-    components: {
-        TablerModal,
-        MissionCreate,
-        Mission,
-        MissionList,
     }
 }
 </script>

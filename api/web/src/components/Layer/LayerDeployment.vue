@@ -1,67 +1,92 @@
 <template>
-<div>
-    <div class='card-header'>
-        <h3 class='card-title'>Layer Deployment</h3>
-        <div class='ms-auto'>
-            <div class='btn-list'>
-                <IconPlayerPlay
-                    @click='invoke'
-                    v-tooltip='"Manually Run"'
-                    size='24'
-                    class='cursor-pointer'
-                />
+    <div>
+        <div class='card-header'>
+            <h3 class='card-title'>
+                Layer Deployment
+            </h3>
+            <div class='ms-auto'>
+                <div class='btn-list'>
+                    <IconPlayerPlay
+                        v-tooltip='"Manually Run"'
+                        size='24'
+                        class='cursor-pointer'
+                        @click='invoke'
+                    />
 
-                <IconCloudUpload
-                    @click='redeploy'
-                    v-tooltip='"Redeploy"'
-                    size='24'
-                    class='cursor-pointer'
-                />
+                    <IconCloudUpload
+                        v-tooltip='"Redeploy"'
+                        size='24'
+                        class='cursor-pointer'
+                        @click='redeploy'
+                    />
 
-                <IconRefresh
-                    @click='$emit("stack")'
-                    v-tooltip='"Refresh"'
-                    size='24'
-                    class='cursor-pointer'
-                />
+                    <IconRefresh
+                        v-tooltip='"Refresh"'
+                        size='24'
+                        class='cursor-pointer'
+                        @click='$emit("stack")'
+                    />
+                </div>
             </div>
         </div>
+
+        <div class='card-body'>
+            <template v-if='loading.full'>
+                <TablerLoading />
+            </template>
+            <template v-else-if='errors.cloudformation'>
+                <TablerAlert
+                    title='AWS CloudFormation Error'
+                    :err='new Error(errors.cloudformation.message)'
+                    :compact='true'
+                />
+
+                <div class='d-flex justify-content-center my-3'>
+                    <div
+                        class='btn btn-secondary'
+                        @click='refresh'
+                    >
+                        Refresh
+                    </div>
+                </div>
+            </template>
+            <template v-else-if='errors.cloudwatch'>
+                <TablerAlert
+                    title='AWS CloudWatch Error'
+                    :err='new Error(errors.cloudwatch.message)'
+                    :compact='true'
+                />
+
+                <div class='d-flex justify-content-center my-3'>
+                    <div
+                        class='btn btn-secondary'
+                        @click='refresh'
+                    >
+                        Refresh
+                    </div>
+                </div>
+            </template>
+            <template v-else-if='stack.status === "DOES_NOT_EXIST_COMPLETE"'>
+                <div class='d-flex justify-content-center mb-4'>
+                    Stack Hasn't Deployed
+                </div>
+                <div class='d-flex justify-content-center mb-4'>
+                    <div
+                        class='btn btn-primary'
+                        @click='postStack'
+                    >
+                        Deploy Stack
+                    </div>
+                </div>
+            </template>
+            <template v-else>
+                <label class='subheader'>Stack Status</label>
+                <pre v-text='stack.status' />
+                <label class='subheader'>Layer Runtime Logs</label>
+                <pre v-text='logs' />
+            </template>
+        </div>
     </div>
-
-    <div class='card-body'>
-        <template v-if='loading.full'>
-            <TablerLoading/>
-        </template>
-        <template v-else-if='errors.cloudformation'>
-            <TablerAlert title='AWS CloudFormation Error' :err='new Error(errors.cloudformation.message)' :compact='true'/>
-
-            <div class="d-flex justify-content-center my-3">
-                <div @click='refresh' class='btn btn-secondary'>Refresh</div>
-            </div>
-        </template>
-        <template v-else-if='errors.cloudwatch'>
-            <TablerAlert title='AWS CloudWatch Error' :err='new Error(errors.cloudwatch.message)' :compact='true'/>
-
-            <div class="d-flex justify-content-center my-3">
-                <div @click='refresh' class='btn btn-secondary'>Refresh</div>
-            </div>
-        </template>
-        <template v-else-if='stack.status === "DOES_NOT_EXIST_COMPLETE"'>
-            <div class="d-flex justify-content-center mb-4">
-                Stack Hasn't Deployed
-            </div>
-            <div class="d-flex justify-content-center mb-4">
-                <div @click='postStack' class='btn btn-primary'>Deploy Stack</div>
-            </div>
-        </template>
-        <template v-else>
-            <label class='subheader'>Stack Status</label>
-            <pre v-text='stack.status'/>
-            <label class='subheader'>Layer Runtime Logs</label>
-            <pre v-text='logs'/>
-        </template>
-    </div>
-</div>
 </template>
 
 <script>
@@ -78,6 +103,13 @@ import {
 
 export default {
     name: 'LayerDeployment',
+    components: {
+        TablerAlert,
+        IconPlayerPlay,
+        IconRefresh,
+        TablerLoading,
+        IconCloudUpload,
+    },
     props: {
         stack: {
             type: Object,
@@ -177,13 +209,6 @@ export default {
 
             this.loading.full = false;
         }
-    },
-    components: {
-        TablerAlert,
-        IconPlayerPlay,
-        IconRefresh,
-        TablerLoading,
-        IconCloudUpload,
     }
 }
 </script>

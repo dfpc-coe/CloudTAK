@@ -1,48 +1,87 @@
 <template>
-<div>
-    <div class='card-header d-flex'>
-        <h2 class='card-title'>Outbound Sinks</h2>
+    <div>
+        <div class='card-header d-flex'>
+            <h2 class='card-title'>
+                Outbound Sinks
+            </h2>
 
-        <div class='ms-auto btn-list'>
-            <div class='dropdown'>
-                <div type="button" id="connectionSinkButton" data-bs-toggle="dropdown" aria-expanded="false">
-                    <IconPlus v-tooltip='"Create Sink"' size='32' class='cursor-pointer'/>
+            <div class='ms-auto btn-list'>
+                <div class='dropdown'>
+                    <div
+                        id='connectionSinkButton'
+                        type='button'
+                        data-bs-toggle='dropdown'
+                        aria-expanded='false'
+                    >
+                        <IconPlus
+                            v-tooltip='"Create Sink"'
+                            size='32'
+                            class='cursor-pointer'
+                        />
                     </div>
-                        <ul class="dropdown-menu" aria-labelledby='connectionSinkButton'>
-                            <div @click='$router.push(`/connection/${$route.params.connectionid}/sink/new`)' class='d-flex mx-2 my-2 cursor-pointer'>
-                                ArcGIS Server
-                            </div>
-                        </ul>
-                    </div>
-                <div>
+                    <ul
+                        class='dropdown-menu'
+                        aria-labelledby='connectionSinkButton'
+                    >
+                        <div
+                            class='d-flex mx-2 my-2 cursor-pointer'
+                            @click='$router.push(`/connection/${$route.params.connectionid}/sink/new`)'
+                        >
+                            ArcGIS Server
+                        </div>
+                    </ul>
+                </div>
+                <div />
+            </div>
+        </div>
+
+        <div style='min-height: 20vh; margin-bottom: 61px'>
+            <TablerAlert
+                v-if='err'
+                title='ETL Server Error'
+                :err='err'
+                :compact='true'
+            />
+            <TablerLoading v-else-if='loading' />
+            <TablerNone
+                v-else-if='!list.items.length'
+                :create='false'
+                label='Sinks'
+            />
+            <div
+                v-else
+                class='table-resposive'
+            >
+                <table class='table card-table table-vcenter datatable table-hover'>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                        </tr>
+                    </thead>
+                    <tbody class='table-tbody'>
+                        <tr
+                            v-for='sink of list.items'
+                            :key='sink.id'
+                            class='cursor-pointer'
+                            @click='$router.push(`/connection/${connection.id}/sink/${sink.id}`)'
+                        >
+                            <td v-text='sink.name' />
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div
+                class='position-absolute bottom-0 w-100'
+                style='height: 61px;'
+            >
+                <TableFooter
+                    :limit='paging.limit'
+                    :total='list.total'
+                    @page='paging.page = $event'
+                />
             </div>
         </div>
     </div>
-
-    <div style='min-height: 20vh; margin-bottom: 61px'>
-        <TablerAlert v-if='err' title='ETL Server Error' :err='err' :compact='true'/>
-        <TablerLoading v-else-if='loading'/>
-        <TablerNone v-else-if='!list.items.length' :create='false' label='Sinks'/>
-        <div v-else class='table-resposive'>
-            <table class='table card-table table-vcenter datatable table-hover'>
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                    </tr>
-                </thead>
-                <tbody class='table-tbody'>
-                    <tr @click='$router.push(`/connection/${connection.id}/sink/${sink.id}`)' :key='sink.id' v-for='sink of list.items' class='cursor-pointer'>
-                        <td v-text='sink.name'></td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-        <div class='position-absolute bottom-0 w-100' style='height: 61px;'>
-            <TableFooter :limit='paging.limit' :total='list.total' @page='paging.page = $event'/>
-        </div>
-    </div>
-</div>
-
 </template>
 
 <script>
@@ -59,6 +98,13 @@ import {
 
 export default {
     name: 'ConnectionSinks',
+    components: {
+        TablerNone,
+        TablerAlert,
+        IconPlus,
+        TablerLoading,
+        TableFooter,
+    },
     props: {
         connection: {
             type: Object,
@@ -80,9 +126,6 @@ export default {
             },
         }
     },
-    mounted: async function() {
-        await this.listSinks();
-    },
     watch: {
         paging: {
             deep: true,
@@ -90,6 +133,9 @@ export default {
                 await this.listSinks();
             },
         }
+    },
+    mounted: async function() {
+        await this.listSinks();
     },
     methods: {
         listSinks: async function() {
@@ -105,13 +151,6 @@ export default {
             }
             this.loading = false;
         }
-    },
-    components: {
-        TablerNone,
-        TablerAlert,
-        IconPlus,
-        TablerLoading,
-        TableFooter,
     }
 }
 </script>

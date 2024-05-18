@@ -1,55 +1,100 @@
 <template>
-<div>
-    <div class='card-header d-flex'>
-        <h3 class='card-title'>Environment</h3>
-        <div class='ms-auto btn-list'>
-            <template v-if='!raw && disabled'>
-                <IconCode @click='raw = true' v-tooltip='"Raw View"' size='32' class='cursor-pointer'/>
-                <IconSettings @click='disabled = false' size='32' class='cursor-pointer'/>
-            </template>
-            <template v-else-if='raw'>
-                <IconX @click='raw = false' v-tooltip='"Close View"' size='32' class='cursor-pointer'/>
-            </template>
-        </div>
-    </div>
-
-    <TablerLoading v-if='loading.schema' desc='Loading Environment'/>
-    <TablerLoading v-else-if='loading.save' desc='Saving Environment'/>
-    <div v-else class="col">
-        <template v-if='raw'>
-            <pre v-text='environment'/>
-        </template>
-        <template v-else-if='schema.display === "arcgis"'>
-            <LayerEnvironmentArcGIS v-model='environment' :disabled='disabled'/>
-        </template>
-        <template v-else-if='schema.type !== "object"'>
-            <div class="d-flex justify-content-center my-4">
-                Only Object Schemas are Supported.
+    <div>
+        <div class='card-header d-flex'>
+            <h3 class='card-title'>
+                Environment
+            </h3>
+            <div class='ms-auto btn-list'>
+                <template v-if='!raw && disabled'>
+                    <IconCode
+                        v-tooltip='"Raw View"'
+                        size='32'
+                        class='cursor-pointer'
+                        @click='raw = true'
+                    />
+                    <IconSettings
+                        size='32'
+                        class='cursor-pointer'
+                        @click='disabled = false'
+                    />
+                </template>
+                <template v-else-if='raw'>
+                    <IconX
+                        v-tooltip='"Close View"'
+                        size='32'
+                        class='cursor-pointer'
+                        @click='raw = false'
+                    />
+                </template>
             </div>
-        </template>
-        <template v-else>
-            <Schema :schema='schema' :disabled='disabled' v-model='environment'/>
-        </template>
+        </div>
 
-        <div class='px-2 pb-3'>
-            <!-- AutoSuggested Filters -->
-            <template v-if='config.timezone'>
-                <TablerTimeZone
-                    label='Date TimeZone Override'
+        <TablerLoading
+            v-if='loading.schema'
+            desc='Loading Environment'
+        />
+        <TablerLoading
+            v-else-if='loading.save'
+            desc='Saving Environment'
+        />
+        <div
+            v-else
+            class='col'
+        >
+            <template v-if='raw'>
+                <pre v-text='environment' />
+            </template>
+            <template v-else-if='schema.display === "arcgis"'>
+                <LayerEnvironmentArcGIS
+                    v-model='environment'
                     :disabled='disabled'
-                    v-model='config.timezone.timezone'
                 />
             </template>
-        </div>
+            <template v-else-if='schema.type !== "object"'>
+                <div class='d-flex justify-content-center my-4'>
+                    Only Object Schemas are Supported.
+                </div>
+            </template>
+            <template v-else>
+                <Schema
+                    v-model='environment'
+                    :schema='schema'
+                    :disabled='disabled'
+                />
+            </template>
 
-        <div v-if='!disabled' class="col-12 px-2 py-2 d-flex">
-            <button @click='reload' class='btn'>Cancel</button>
-            <div class='ms-auto'>
-                <button @click='saveLayer' class='btn btn-primary'>Save</button>
+            <div class='px-2 pb-3'>
+                <!-- AutoSuggested Filters -->
+                <template v-if='config.timezone'>
+                    <TablerTimeZone
+                        v-model='config.timezone.timezone'
+                        label='Date TimeZone Override'
+                        :disabled='disabled'
+                    />
+                </template>
+            </div>
+
+            <div
+                v-if='!disabled'
+                class='col-12 px-2 py-2 d-flex'
+            >
+                <button
+                    class='btn'
+                    @click='reload'
+                >
+                    Cancel
+                </button>
+                <div class='ms-auto'>
+                    <button
+                        class='btn btn-primary'
+                        @click='saveLayer'
+                    >
+                        Save
+                    </button>
+                </div>
             </div>
         </div>
     </div>
-</div>
 </template>
 
 <script>
@@ -68,6 +113,15 @@ import {
 
 export default {
     name: 'LayerEnvironment',
+    components: {
+        Schema,
+        IconCode,
+        IconX,
+        IconSettings,
+        TablerTimeZone,
+        TablerLoading,
+        LayerEnvironmentArcGIS
+    },
     props: {
         layer: {
             type: Object,
@@ -154,15 +208,6 @@ export default {
 
             this.$emit('layer', layer);
         },
-    },
-    components: {
-        Schema,
-        IconCode,
-        IconX,
-        IconSettings,
-        TablerTimeZone,
-        TablerLoading,
-        LayerEnvironmentArcGIS
     }
 }
 </script>
