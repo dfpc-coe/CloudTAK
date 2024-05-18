@@ -42,14 +42,16 @@
                 >
                     <div class='col-auto d-flex align-items-center'>
                         <button
-                            v-if='subscribed === true'
+                            v-if='subscribed === false'
+                            @click='subscribe(true)'
                             class='btn btn-green'
                             style='height: 32px;'
                         >
                             Subscribe
                         </button>
                         <button
-                            v-else-if='subscribed === false'
+                            v-else-if='subscribed === true'
+                            @click='subscribe(false)'
                             class='btn btn-danger'
                             style='height: 32px;'
                         >
@@ -484,7 +486,6 @@ import {
 } from '@tak-ps/vue-tabler';
 import { useOverlayStore } from '/src/stores/overlays.ts';
 import { useMapStore } from '/src/stores/map.ts';
-const overlayStore = useOverlayStore();
 const mapStore = useMapStore();
 
 export default {
@@ -549,8 +550,20 @@ export default {
         }
     },
     watch: {
-        subscribed: async function() {
-            if (this.subscribed === true && !overlayStore.subscriptions.has(this.mission.guid)) {
+        upload: async function() {
+            if (!this.upload) await this.refresh();
+        }
+    },
+    mounted: async function() {
+        if (!this.mission.passwordProtected) {
+            await this.refresh();
+        }
+    },
+    methods: {
+        subscribe: async function(subscribed) {
+            const layer = mapStore.getLayerByMode('mission', this.mission.guid);
+
+            if (subscribed === true && !layer) {
                 await mapStore.addDefaultLayer({
                     id: this.mission.guid,
                     url: `/mission/${encodeURIComponent(this.mission.name)}`,
@@ -567,23 +580,15 @@ export default {
                         { id: this.mission.guid, type: 'feat' }
                     ]
                 });
-            } else if (this.subscribed === false && overlayStore.subscriptions.has(this.mission.guid)) {
+            } else if (subscribed === false && layer) {
                 await mapStore.removeLayer(this.mission.name);
             }
+
+            this.subscribed = !!mapStore.getLayerByMode('mission', this.mission.guid);
         },
-        upload: async function() {
-            if (!this.upload) await this.refresh();
-        }
-    },
-    mounted: async function() {
-        if (!this.mission.passwordProtected) {
-            await this.refresh();
-        }
-    },
-    methods: {
         refresh: async function() {
             await this.fetchMission();
-            this.subscribed = overlayStore.subscriptions.has(this.mission.guid);
+            this.subscribed = !!mapStore.getLayerByMode('mission', this.mission.guid);
 
             await Promise.all([
                 this.fetchSubscriptions(),
