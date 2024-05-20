@@ -89,7 +89,7 @@
                         <IconDatabase size='32'/>
                         <DataSelect
                             :disabled='disabled'
-                            :connection='$route.params.connectionid'
+                            :connection='layer.connection'
                             v-model='config.data'
                         />
                     </div>
@@ -149,7 +149,6 @@ export default {
                 version: false,
                 save: false
             },
-            destination: 'connection',
             config: {
                 connection: null,
                 priority: 'off',
@@ -161,16 +160,6 @@ export default {
                 stale: 60 * 1000,
             }
         };
-    },
-    watch: {
-        config: {
-            deep: true,
-            handler: function() {
-                if (this.destination === 'connection') {
-                    this.config.data = undefined;
-                }
-            }
-        }
     },
     computed: {
         humanstr: function() {
@@ -199,9 +188,6 @@ export default {
             this.config.cron = this.layer.cron;
             this.config.stale = this.layer.stale;
             this.config.priority = this.layer.priority;
-
-            if (this.layer.data) this.destination = 'data';
-            else this.destination = 'connection';
 
             this.disabled = true;
         },

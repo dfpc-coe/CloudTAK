@@ -14,36 +14,34 @@
 
             <div v-if='!disabled' class='btn-list ms-auto'>
                 <IconTrash v-if='selected.id' @click='update' size='32' class='cursor-pointer'/>
-                <div class="dropdown">
-                    <div class="dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+                <TablerDropdown>
+                    <template #default>
                         <IconSettings
                             size='32'
                             class='cursor-pointer dropdown-toggle'
                         />
-                    </div>
-                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                        <div class='m-1'>
-                            <div class='table-resposive'>
-                                <table class='table table-hover'>
-                                    <thead>
-                                        <tr>
-                                            <th>(Status) Name</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody class='table-tbody'>
-                                        <tr @click='update(data)' :key='data.id' v-for='data of data.items' class='cursor-pointer'>
-                                            <td>
-                                                <div class='d-flex align-items-center'>
-                                                    <span class='mt-2' v-text='data.name'/>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
+                    </template>
+                    <template #dropdown>
+                        <div class='table-resposive'>
+                            <table class='table table-hover'>
+                                <thead>
+                                    <tr>
+                                        <th>(Status) Name</th>
+                                    </tr>
+                                </thead>
+                                <tbody class='table-tbody'>
+                                    <tr @click='update(data)' :key='data.id' v-for='data of data.items' class='cursor-pointer'>
+                                        <td>
+                                            <div class='d-flex align-items-center'>
+                                                <span class='mt-2' v-text='data.name'/>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
-                    </ul>
-                </div>
+                    </template>
+                </TablerDropdown>
             </div>
         </div>
     </template>
@@ -57,7 +55,8 @@ import {
     IconSettings
 } from '@tabler/icons-vue';
 import {
-    TablerLoading
+    TablerLoading,
+    TablerDropdown
 } from '@tak-ps/vue-tabler';
 
 export default {
@@ -120,7 +119,8 @@ export default {
     components: {
         IconTrash,
         IconSettings,
-        TablerLoading
+        TablerLoading,
+        TablerDropdown
     }
 };
 </script>
