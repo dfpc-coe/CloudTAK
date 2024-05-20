@@ -99,6 +99,10 @@ const router = new VueRouter.createRouter({
                     name: 'home-menu-missions',
                     component: () => import('./components/CloudTAK/Menu/Missions.vue')
                 },{
+                    path: 'missions/:mission',
+                    name: 'home-menu-mission',
+                    component: () => import('./components/CloudTAK/Menu/Mission.vue')
+                },{
                     path: 'channels',
                     name: 'home-menu-channels',
                     component: () => import('./components/CloudTAK/Menu/Channels.vue')
