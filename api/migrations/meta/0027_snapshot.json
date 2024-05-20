@@ -1,10 +1,8 @@
 {
-  "id": "3dbd017f-ccb5-46be-ba87-ecadf9f98b7a",
-  "prevId": "5a92068f-7fe5-4fb0-89a6-96a445b10c79",
-  "version": "5",
-  "dialect": "pg",
+  "version": "6",
+  "dialect": "postgresql",
   "tables": {
-    "basemaps": {
+    "public.basemaps": {
       "name": "basemaps",
       "schema": "",
       "columns": {
@@ -99,21 +97,21 @@
         "basemaps_username_profile_username_fk": {
           "name": "basemaps_username_profile_username_fk",
           "tableFrom": "basemaps",
-          "tableTo": "profile",
           "columnsFrom": [
             "username"
           ],
+          "tableTo": "profile",
           "columnsTo": [
             "username"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "connections": {
+    "public.connections": {
       "name": "connections",
       "schema": "",
       "columns": {
@@ -169,7 +167,7 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "connection_sinks": {
+    "public.connection_sinks": {
       "name": "connection_sinks",
       "schema": "",
       "columns": {
@@ -238,21 +236,21 @@
         "connection_sinks_connection_connections_id_fk": {
           "name": "connection_sinks_connection_connections_id_fk",
           "tableFrom": "connection_sinks",
-          "tableTo": "connections",
           "columnsFrom": [
             "connection"
           ],
+          "tableTo": "connections",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "connection_tokens": {
+    "public.connection_tokens": {
       "name": "connection_tokens",
       "schema": "",
       "columns": {
@@ -300,21 +298,21 @@
         "connection_tokens_connection_connections_id_fk": {
           "name": "connection_tokens_connection_connections_id_fk",
           "tableFrom": "connection_tokens",
-          "tableTo": "connections",
           "columnsFrom": [
             "connection"
           ],
+          "tableTo": "connections",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "data": {
+    "public.data": {
       "name": "data",
       "schema": "",
       "columns": {
@@ -411,21 +409,21 @@
         "data_connection_connections_id_fk": {
           "name": "data_connection_connections_id_fk",
           "tableFrom": "data",
-          "tableTo": "connections",
           "columnsFrom": [
             "connection"
           ],
+          "tableTo": "connections",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "icons": {
+    "public.icons": {
       "name": "icons",
       "schema": "",
       "columns": {
@@ -485,21 +483,21 @@
         "icons_iconset_iconsets_uid_fk": {
           "name": "icons_iconset_iconsets_uid_fk",
           "tableFrom": "icons",
-          "tableTo": "iconsets",
           "columnsFrom": [
             "iconset"
           ],
+          "tableTo": "iconsets",
           "columnsTo": [
             "uid"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "iconsets": {
+    "public.iconsets": {
       "name": "iconsets",
       "schema": "",
       "columns": {
@@ -584,21 +582,21 @@
         "iconsets_username_profile_username_fk": {
           "name": "iconsets_username_profile_username_fk",
           "tableFrom": "iconsets",
-          "tableTo": "profile",
           "columnsFrom": [
             "username"
           ],
+          "tableTo": "profile",
           "columnsTo": [
             "username"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "imports": {
+    "public.imports": {
       "name": "imports",
       "schema": "",
       "columns": {
@@ -680,21 +678,21 @@
         "imports_username_profile_username_fk": {
           "name": "imports_username_profile_username_fk",
           "tableFrom": "imports",
-          "tableTo": "profile",
           "columnsFrom": [
             "username"
           ],
+          "tableTo": "profile",
           "columnsTo": [
             "username"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "layers": {
+    "public.layers": {
       "name": "layers",
       "schema": "",
       "columns": {
@@ -831,34 +829,34 @@
         "layers_connection_connections_id_fk": {
           "name": "layers_connection_connections_id_fk",
           "tableFrom": "layers",
-          "tableTo": "connections",
           "columnsFrom": [
             "connection"
           ],
+          "tableTo": "connections",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         },
         "layers_data_data_id_fk": {
           "name": "layers_data_data_id_fk",
           "tableFrom": "layers",
-          "tableTo": "data",
           "columnsFrom": [
             "data"
           ],
+          "tableTo": "data",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "layer_alerts": {
+    "public.layer_alerts": {
       "name": "layer_alerts",
       "schema": "",
       "columns": {
@@ -928,21 +926,21 @@
         "layer_alerts_layer_layers_id_fk": {
           "name": "layer_alerts_layer_layers_id_fk",
           "tableFrom": "layer_alerts",
-          "tableTo": "layers",
           "columnsFrom": [
             "layer"
           ],
+          "tableTo": "layers",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "profile": {
+    "public.profile": {
       "name": "profile",
       "schema": "",
       "columns": {
@@ -1033,7 +1031,7 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "profile_chats": {
+    "public.profile_chats": {
       "name": "profile_chats",
       "schema": "",
       "columns": {
@@ -1093,7 +1091,7 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "profile_missions": {
+    "public.profile_missions": {
       "name": "profile_missions",
       "schema": "",
       "columns": {
@@ -1141,7 +1139,7 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "profile_overlays": {
+    "public.profile_overlays": {
       "name": "profile_overlays",
       "schema": "",
       "columns": {
@@ -1235,30 +1233,30 @@
         "profile_overlays_username_profile_username_fk": {
           "name": "profile_overlays_username_profile_username_fk",
           "tableFrom": "profile_overlays",
-          "tableTo": "profile",
           "columnsFrom": [
             "username"
           ],
+          "tableTo": "profile",
           "columnsTo": [
             "username"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "profile_overlays_username_url_unique": {
           "name": "profile_overlays_username_url_unique",
-          "nullsNotDistinct": false,
           "columns": [
             "username",
             "url"
-          ]
+          ],
+          "nullsNotDistinct": false
         }
       }
     },
-    "server": {
+    "public.server": {
       "name": "server",
       "schema": "",
       "columns": {
@@ -1336,7 +1334,7 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "spatial_ref_sys": {
+    "public.spatial_ref_sys": {
       "name": "spatial_ref_sys",
       "schema": "",
       "columns": {
@@ -1376,7 +1374,7 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "tokens": {
+    "public.tokens": {
       "name": "tokens",
       "schema": "",
       "columns": {
@@ -1428,8 +1426,10 @@
   "enums": {},
   "schemas": {},
   "_meta": {
-    "columns": {},
     "schemas": {},
-    "tables": {}
-  }
+    "tables": {},
+    "columns": {}
+  },
+  "id": "3dbd017f-ccb5-46be-ba87-ecadf9f98b7a",
+  "prevId": "5a92068f-7fe5-4fb0-89a6-96a445b10c79"
 }
