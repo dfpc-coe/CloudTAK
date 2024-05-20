@@ -288,6 +288,13 @@
       "when": 1715804689503,
       "tag": "0040_empty_bruce_banner",
       "breakpoints": true
+    },
+    {
+      "idx": 41,
+      "version": "6",
+      "when": 1716222832084,
+      "tag": "0041_optimal_black_knight",
+      "breakpoints": true
     }
   ]
 }
