@@ -12,6 +12,12 @@
 
 ### Pending Release
 
+### v2.20.0 - 2024-05-20
+
+- :rocket: `UI` Allow adding and removing Data Syncs from a given Layer
+- :rocket: `UI` Remove ability to change layer connection in UI as the backend will reject these changes
+- :bug: `API` Ensure Data Sync rules when `mission_diff` mode is enabled are followed by Layer Patch
+
 ### v2.19.0 - 2024-05-17
 
 - :rocket: `UI` Significant improvements to ESRI Environment Editor
