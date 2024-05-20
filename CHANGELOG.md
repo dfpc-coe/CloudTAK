@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v2.21.0 - 2024-05-20
+
+- Add support for validating handlebar templates
+
 ### v2.20.0 - 2024-05-20
 
 - :rocket: `UI` Allow adding and removing Data Syncs from a given Layer
