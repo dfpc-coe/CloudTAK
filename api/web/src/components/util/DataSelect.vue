@@ -1,8 +1,6 @@
 <template>
 <div class='w-100'>
-    <template v-if='loading'>
-        <TablerLoading :inline='true'/>
-    </template>
+    <TablerLoading v-if='loading' :inline='true'/>
     <template v-else>
         <div class='d-flex align-items-center mx-2'>
             <template v-if='selected.id'>
@@ -61,6 +59,7 @@ import {
 
 export default {
     name: 'DataSelect',
+    emits: ['update:modelValue'],
     props: {
         connection: Number,
         modelValue: Number,
@@ -83,7 +82,7 @@ export default {
         }
     },
     watch: {
-        selected: function() {
+        'selected.id': function() {
             if (this.selected.id) {
                 this.$emit('update:modelValue', this.selected.id);
             } else {
