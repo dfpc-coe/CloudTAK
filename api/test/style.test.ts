@@ -326,7 +326,7 @@ test('Style: Lowest Level Remarks', async () => {
     });
 });
 
-test('Style: Invalid Templates', async (t) => {
+test('Style: Invalid Templates', async () => {
     assert.throws(() => {
         Style.validate({
             remarks: '{{{test}'
