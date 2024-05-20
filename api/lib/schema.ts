@@ -174,7 +174,9 @@ export const Layer = pgTable('layers', {
     timeout: integer('timeout').notNull().default(128),
     data: integer('data').references(() => Data.id),
     schema: json('schema').notNull().default({ type: 'object', required: [], properties: {} })
-});
+}, (t) => ({
+    unq: unique().on(t.connection, t.name)
+}));
 
 export const LayerAlert = pgTable('layer_alerts', {
     id: serial('id').primaryKey(),

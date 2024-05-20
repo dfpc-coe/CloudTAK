@@ -223,7 +223,7 @@ export default async function router(schema: Schema, config: Config) {
             styles: Type.Optional(StyleContainer),
             logging: Type.Optional(Type.Boolean()),
             stale: Type.Optional(Type.Integer()),
-            data: Type.Optional(Type.Integer()),
+            data: Type.Optional(Type.Union([Type.Null(), Type.Integer()])),
             environment: Type.Optional(Type.Any()),
             config: Type.Optional(Layer_Config),
             schema: Type.Optional(Type.Any())
@@ -237,6 +237,19 @@ export default async function router(schema: Schema, config: Config) {
                     { access: AuthResourceAccess.LAYER, id: req.params.layerid }
                 ]
             }, req.params.connectionid);
+
+            if (req.body.data) {
+                const data = await config.models.Data.from(req.body.data);
+                if (data.mission_diff && await config.models.Layer.count({
+                    where: sql`data = ${req.body.data}`
+                }) > 1) {
+                    throw new Err(400, null, 'Only a single layer can be added to a DataSync with Mission Diff Enabled')
+                }
+
+                if (data.connection !== req.params.connectionid) {
+                    throw new Err(400, null, 'Layer cannot reference a Data Sync that is not part of the current connection');
+                }
+            }
 
             if (req.body.styles) {
                 await Style.validate(req.body.styles);
