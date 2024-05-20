@@ -223,7 +223,7 @@ export default async function router(schema: Schema, config: Config) {
             styles: Type.Optional(StyleContainer),
             logging: Type.Optional(Type.Boolean()),
             stale: Type.Optional(Type.Integer()),
-            data: Type.Optional(Type.Union([Type.Integer(), Type.Null()])),
+            data: Type.Optional(Type.Union([Type.Null(), Type.Integer()])),
             environment: Type.Optional(Type.Any()),
             config: Type.Optional(Layer_Config),
             schema: Type.Optional(Type.Any())
