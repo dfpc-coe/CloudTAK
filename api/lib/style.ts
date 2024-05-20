@@ -4,6 +4,15 @@ import { Feature } from 'geojson';
 import handlebars from 'handlebars';
 import Err from '@openaddresses/batch-error';
 
+interface ValidateStyle {
+    callsign?: string;
+    remarks?: string;
+    links?: Array<Static<typeof StyleLink>>;
+    point?: { callsign?: string; remarks?: string; links?: Array<Static<typeof StyleLink>> };
+    line?: { callsign?: string; remarks?: string; links?: Array<Static<typeof StyleLink>> };
+    polygon?: { callsign?: string; remarks?: string; links?: Array<Static<typeof StyleLink>> };
+}
+
 export const StyleLink = Type.Object({
     remarks: Type.String(),
     url: Type.String()
@@ -88,18 +97,85 @@ export default class Style {
 
     static validate(styles: Static<typeof StyleContainer>) {
         try {
+            this.#validateTemplate(styles);
+
             if (styles.queries) {
                 for (const q of styles.queries) {
                     jsonata(q.query);
+
+                    this.#validateTemplate(q.styles);
                 }
             }
 
             return true;
         } catch (err) {
-            if (err instanceof Error) {
+            if (err instanceof Err) {
+                throw err;
+            } else if (err instanceof Error) {
                 throw new Err(400, err, err.message);
             } else {
                 throw new Err(400, new Error(String(err)), String(err));
+            }
+        }
+    }
+
+    static #validateTemplate(style: ValidateStyle) {
+        if (style.callsign) {
+            try {
+                handlebars.compile(style.callsign)({});
+            } catch (err) {
+                throw new Err(400, err, `Invalid Callsign Template: ${style.callsign}`)
+            }
+        }
+
+    
+        if (style.remarks) {
+            try {
+                handlebars.compile(style.remarks)({});
+            } catch (err) {
+                throw new Err(400, err, `Invalid Remarks Template: ${style.remarks}`)
+            }
+        }
+
+        if (style.links) {
+            this.#validateLinks(style.links);
+        }
+
+        for (const type of ['point', 'polygon', 'line']) {
+            if (type in style) {
+                if (style[type].links) this.#validateLinks(style[type].links);
+
+                if (style[type].callsign) {
+                    try {
+                        handlebars.compile(style[type].callsign)({});
+                    } catch (err) {
+                        throw new Err(400, err, `Invalid (${type}) Callsign Template: ${style[type].callsign}`)
+                    }
+                }
+
+                if (style[type].remarks) {
+                    try {
+                        handlebars.compile(style[type].remarks)({});
+                    } catch (err) {
+                        throw new Err(400, err, `Invalid (${type}) Remarks Template: ${style[type].remarks}`)
+                    }
+                }
+            }
+        }
+    }
+
+    static #validateLinks(links: Array<Static<typeof StyleLink>>): void {
+        for (const link of links) {
+            try {
+                handlebars.compile(link.url)({});
+            } catch (err) {
+                throw new Err(400, err, `Invalid Link URL: ${link.url}`)
+            }
+
+            try {
+                handlebars.compile(link.remarks)({});
+            } catch (err) {
+                throw new Err(400, err, `Invalid Link Remarks: ${link.remarks}`)
             }
         }
     }
