@@ -1,5 +1,5 @@
 import test from 'node:test';
-import assert from 'assert';
+import assert from 'node:assert';
 import Style from '../lib/style.js';
 
 test('Style: Basic Point', async () => {
@@ -324,4 +324,376 @@ test('Style: Lowest Level Remarks', async () => {
             override_query_point_callsign: 'LOWEST_CALLSIGN'
         }
     });
+});
+
+test('Style: Invalid Templates', async () => {
+    assert.throws(() => {
+        Style.validate({
+            remarks: '{{{test}'
+        })
+    }, /Expecting/);
+
+    assert.throws(() => {
+        Style.validate({
+            callsign: '{{{test}'
+        })
+    }, /Expecting/);
+
+    assert.throws(() => {
+        Style.validate({
+            links: [{
+                remarks: 'TEST',
+                url: '{{{test}'
+            }]
+        })
+    }, /Expecting/);
+
+    assert.throws(() => {
+        Style.validate({
+            links: [{
+                url: 'TEST',
+                remarks: '{{{test}'
+            }]
+        })
+    }, /Expecting/);
+
+    assert.throws(() => {
+        Style.validate({
+            point: {
+                remarks: '{{{test}'
+            }
+        })
+    }, /Expecting/);
+
+    assert.throws(() => {
+        Style.validate({
+            point: {
+                callsign: '{{{test}'
+            }
+        })
+    }, /Expecting/);
+
+    assert.throws(() => {
+        Style.validate({
+            line: {
+                remarks: '{{{test}'
+            }
+        })
+    }, /Expecting/);
+
+    assert.throws(() => {
+        Style.validate({
+            line: {
+                callsign: '{{{test}'
+            }
+        })
+    }, /Expecting/);
+
+    assert.throws(() => {
+        Style.validate({
+            polygon: {
+                remarks: '{{{test}'
+            }
+        })
+    }, /Expecting/);
+
+    assert.throws(() => {
+        Style.validate({
+            polygon: {
+                callsign: '{{{test}'
+            }
+        })
+    }, /Expecting/);
+
+    assert.throws(() => {
+        Style.validate({
+            polygon: {
+                links: [{
+                    url: 'TEST',
+                    remarks: '{{{test}'
+                }]
+            }
+        })
+    }, /Expecting/);
+
+    assert.throws(() => {
+        Style.validate({
+            polygon: {
+                links: [{
+                    remarks: 'TEST',
+                    url: '{{{test}'
+                }]
+            }
+        })
+    }, /Expecting/);
+
+    assert.throws(() => {
+        Style.validate({
+            point: {
+                links: [{
+                    url: 'TEST',
+                    remarks: '{{{test}'
+                }]
+            }
+        })
+    }, /Expecting/);
+
+    assert.throws(() => {
+        Style.validate({
+            point: {
+                links: [{
+                    remarks: 'TEST',
+                    url: '{{{test}'
+                }]
+            }
+        })
+    }, /Expecting/);
+
+    assert.throws(() => {
+        Style.validate({
+            line: {
+                links: [{
+                    url: 'TEST',
+                    remarks: '{{{test}'
+                }]
+            }
+        })
+    }, /Expecting/);
+
+    assert.throws(() => {
+        Style.validate({
+            line: {
+                links: [{
+                    remarks: 'TEST',
+                    url: '{{{test}'
+                }]
+            }
+        })
+    }, /Expecting/);
+
+    // Query Templates
+
+    assert.throws(() => {
+        Style.validate({
+            queries: [{
+                query: '1 = 1',
+                styles: {
+                    remarks: '{{{test}'
+                }
+            }]
+        })
+    }, /Expecting/);
+
+    assert.throws(() => {
+        Style.validate({
+            queries: [{
+                query: '1 = 1',
+                styles: {
+                    callsign: '{{{test}'
+                }
+            }]
+        })
+    }, /Expecting/);
+
+    assert.throws(() => {
+        Style.validate({
+            queries: [{
+                query: '1 = 1',
+                styles: {
+                    links: [{
+                        remarks: 'TEST',
+                        url: '{{{test}'
+                    }]
+                }
+            }]
+        })
+    }, /Expecting/);
+
+    assert.throws(() => {
+        Style.validate({
+            queries: [{
+                query: '1 = 1',
+                styles: {
+                    links: [{
+                        url: 'TEST',
+                        remarks: '{{{test}'
+                    }]
+                }
+            }]
+        })
+    }, /Expecting/);
+
+    assert.throws(() => {
+        Style.validate({
+            queries: [{
+                query: '1 = 1',
+                styles: {
+                    point: {
+                        remarks: '{{{test}'
+                    }
+                }
+            }]
+        })
+    }, /Expecting/);
+
+    assert.throws(() => {
+        Style.validate({
+            queries: [{
+                query: '1 = 1',
+                styles: {
+                    point: {
+                        callsign: '{{{test}'
+                    }
+                }
+            }]
+        })
+    }, /Expecting/);
+
+    assert.throws(() => {
+        Style.validate({
+            queries: [{
+                query: '1 = 1',
+                styles: {
+                    line: {
+                        remarks: '{{{test}'
+                    }
+                }
+            }]
+        })
+    }, /Expecting/);
+
+    assert.throws(() => {
+        Style.validate({
+            queries: [{
+                query: '1 = 1',
+                styles: {
+                    line: {
+                        callsign: '{{{test}'
+                    }
+                }
+            }]
+        })
+    }, /Expecting/);
+
+    assert.throws(() => {
+        Style.validate({
+            queries: [{
+                query: '1 = 1',
+                styles: {
+                    polygon: {
+                        remarks: '{{{test}'
+                    }
+                }
+            }]
+        })
+    }, /Expecting/);
+
+    assert.throws(() => {
+        Style.validate({
+            queries: [{
+                query: '1 = 1',
+                styles: {
+                    polygon: {
+                        callsign: '{{{test}'
+                    }
+                }
+            }]
+        })
+    }, /Expecting/);
+
+    assert.throws(() => {
+        Style.validate({
+            queries: [{
+                query: '1 = 1',
+                styles: {
+                    polygon: {
+                        links: [{
+                            url: 'TEST',
+                            remarks: '{{{test}'
+                        }]
+                    }
+                }
+            }]
+        })
+    }, /Expecting/);
+
+    assert.throws(() => {
+        Style.validate({
+            queries: [{
+                query: '1 = 1',
+                styles: {
+                    polygon: {
+                        links: [{
+                            remarks: 'TEST',
+                            url: '{{{test}'
+                        }]
+                    }
+                }
+            }]
+        })
+    }, /Expecting/);
+
+    assert.throws(() => {
+        Style.validate({
+            queries: [{
+                query: '1 = 1',
+                styles: {
+                    point: {
+                        links: [{
+                            url: 'TEST',
+                            remarks: '{{{test}'
+                        }]
+                    }
+                }
+            }]
+        })
+    }, /Expecting/);
+
+    assert.throws(() => {
+        Style.validate({
+            queries: [{
+                query: '1 = 1',
+                styles: {
+                    point: {
+                        links: [{
+                            remarks: 'TEST',
+                            url: '{{{test}'
+                        }]
+                    }
+                }
+            }]
+        })
+    }, /Expecting/);
+
+    assert.throws(() => {
+        Style.validate({
+            queries: [{
+                query: '1 = 1',
+                styles: {
+                    line: {
+                        links: [{
+                            url: 'TEST',
+                            remarks: '{{{test}'
+                        }]
+                    }
+                }
+            }]
+        })
+    }, /Expecting/);
+
+    assert.throws(() => {
+        Style.validate({
+            queries: [{
+                query: '1 = 1',
+                styles: {
+                    line: {
+                        links: [{
+                            remarks: 'TEST',
+                            url: '{{{test}'
+                        }]
+                    }
+                }
+            }]
+        })
+    }, /Expecting/);
 });
