@@ -84,7 +84,7 @@ export default async function router(schema: Schema, config: Config) {
         query: Type.Object({
             portal: Type.String(),
             token: Type.Optional(Type.String()),
-            expires: Type.Optional(Type.String())
+            expires: Type.Optional(Type.Integer())
         }),
         res: Type.Any()
     }, async (req, res) => {
@@ -119,7 +119,7 @@ export default async function router(schema: Schema, config: Config) {
         query: Type.Object({
             portal: Type.String(),
             token: Type.Optional(Type.String()),
-            expires: Type.Optional(Type.String()),
+            expires: Type.Optional(Type.Integer()),
             title: Type.Optional(Type.String())
         }),
         res: Type.Any()
