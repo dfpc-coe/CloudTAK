@@ -9,10 +9,11 @@
                 <span @click='$router.push(`/connection/${selected.connection}/data/${selected.id}`)' class='cursor-pointer' v-text='selected.name'/>
             </template>
             <template v-else>
-                <span>No Data Repo Selected</span>
+                <span>No Data Sync Selected - Data will output as CoTs directly to the Connection</span>
             </template>
 
-            <div v-if='!disabled' class='ms-auto'>
+            <div v-if='!disabled' class='btn-list ms-auto'>
+                <IconTrash v-if='selected.id' @click='update' size='32' class='cursor-pointer'/>
                 <div class="dropdown">
                     <div class="dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
                         <IconSettings
@@ -30,7 +31,7 @@
                                         </tr>
                                     </thead>
                                     <tbody class='table-tbody'>
-                                        <tr @click='selected = data' :key='data.id' v-for='data of data.items' class='cursor-pointer'>
+                                        <tr @click='update(data)' :key='data.id' v-for='data of data.items' class='cursor-pointer'>
                                             <td>
                                                 <div class='d-flex align-items-center'>
                                                     <span class='mt-2' v-text='data.name'/>
@@ -52,6 +53,7 @@
 <script>
 import { std } from '/src/std.ts';
 import {
+    IconTrash,
     IconSettings
 } from '@tabler/icons-vue';
 import {
@@ -83,7 +85,11 @@ export default {
     },
     watch: {
         selected: function() {
-            this.$emit('update:modelValue', this.selected.id);
+            if (this.selected.id) {
+                this.$emit('update:modelValue', this.selected.id);
+            } else {
+                this.$emit('update:modelValue', null);
+            }
         },
         modelValue: function() {
             if (this.modelValue) this.fetch();
@@ -95,6 +101,15 @@ export default {
         this.loading = false;
     },
     methods: {
+        update: function(data) {
+            if (data) {
+                this.selected.id = data.id;
+                this.selected.name = data.name;
+            } else {
+                this.selected.id = '';
+                this.selected.name = '';
+            }
+        },
         fetch: async function() {
             this.selected = await std(`/api/connection/${this.connection}/data/${this.modelValue}`);
         },
@@ -103,6 +118,7 @@ export default {
         },
     },
     components: {
+        IconTrash,
         IconSettings,
         TablerLoading
     }

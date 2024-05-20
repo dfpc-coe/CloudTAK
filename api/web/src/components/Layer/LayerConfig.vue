@@ -83,25 +83,11 @@
             <div class="col-md-12">
                 <div class='row'>
                     <div class='col-12'>
-                        <label>Data Destination</label>
+                        <label>Optional Data Sync</label>
                     </div>
-                    <div class='col-12 d-flex align-items-center'>
-                        <div class='btn-group' role="group">
-                            <input :disabled='disabled' v-model='destination' value='connection' type="radio" class="btn-check" name="connection-toolbar" id="connection-toolbar-connection" autocomplete="off">
-                            <label for="connection-toolbar-connection" class="btn btn-icon"><IconBuildingBroadcastTower size='32'/></label>
-
-                            <input :disabled='disabled' v-model='destination' value='data' type="radio" class="btn-check" name="connection-toolbar" id="connection-toolbar-data" autocomplete="off">
-                            <label for="connection-toolbar-data" class="btn btn-icon"><IconDatabase size='32'/></label>
-                        </div>
-                        <ConnectionSelect
-                            v-if='destination === "connection"'
-                            class='mx-2'
-                            :disabled='disabled'
-                            v-model='config.connection'
-                        />
+                    <div class='col-12 d-flex align-items-center my-1'>
+                        <IconDatabase size='32'/>
                         <DataSelect
-                            v-else
-                            class='mx-2'
                             :disabled='disabled'
                             :connection='$route.params.connectionid'
                             v-model='config.data'
@@ -124,7 +110,6 @@
 
 <script>
 import { std } from '/src/std.ts';
-import ConnectionSelect from '../util/ConnectionSelect.vue';
 import DataSelect from '../util/DataSelect.vue';
 import cronstrue from 'cronstrue';
 import TaskModal from './utils/TaskModal.vue';
@@ -268,7 +253,6 @@ export default {
         IconRefresh,
         IconSettings,
         DataSelect,
-        ConnectionSelect,
         IconBuildingBroadcastTower,
         IconDatabase,
         TaskModal,
