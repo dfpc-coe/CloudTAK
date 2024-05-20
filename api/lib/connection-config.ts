@@ -66,7 +66,16 @@ export class ProfileConnConfig implements ConnectionConfig {
     }
 
     async subscriptions(): Promise<Array<string>> {
-        return [];
+        const missions = await this.config.models.ProfileOverlay.list({
+            where: sql`
+                mode = 'mission'
+                AND username = ${this.id}
+            `
+        });
+
+        return missions.items.map((m) => {
+            return m.name;
+        })
     }
 }
 
