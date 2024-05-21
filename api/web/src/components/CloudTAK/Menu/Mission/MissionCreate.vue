@@ -135,6 +135,7 @@
 </template>
 
 <script>
+import MenuTemplate from '../../util/MenuTemplate.vue';
 import { std, stdurl } from '/src/std.ts';
 import {
     IconLock,
@@ -155,6 +156,7 @@ import {
 export default {
     name: 'MissionCreate',
     components: {
+        MenuTemplate,
         IconSquareChevronRight,
         IconChevronDown,
         GroupSelect,

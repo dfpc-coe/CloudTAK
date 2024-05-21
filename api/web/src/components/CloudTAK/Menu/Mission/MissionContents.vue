@@ -1,66 +1,72 @@
 <template>
-<TablerAlert v-if='err' :err='err'/>
-<UploadImport
-    v-if='upload'
-    mode='Mission'
-    :modeid='mission.guid'
-    :config='genConfig()'
-    @cancel='upload = false'
-    @done='upload = false'
-/>
-<TablerNone
-    v-else-if='!mission.contents.length'
-    :create='false'
-/>
-<template v-else>
-    <div
-        v-for='content in mission.contents'
-        :key='content.data.uid'
-        class='col-12 d-flex px-2 py-2 hover-dark'
-    >
-        <div>
-            <span v-text='content.data.name' class='txt-truncate'/>
-            <div class='col-12'>
-                <span
-                    class='subheader'
-                    v-text='content.data.submitter'
-                /> - <span
-                    class='subheader'
-                    v-text='content.data.submissionTime'
+<MenuTemplate
+    name='Mission Contents'
+    :back='false'
+    :border='false'
+>
+    <TablerAlert v-if='err' :err='err'/>
+    <UploadImport
+        v-if='upload'
+        mode='Mission'
+        :modeid='mission.guid'
+        :config='genConfig()'
+        @cancel='upload = false'
+        @done='upload = false'
+    />
+    <TablerNone
+        v-else-if='!mission.contents.length'
+        :create='false'
+    />
+    <template v-else>
+        <div
+            v-for='content in mission.contents'
+            :key='content.data.uid'
+            class='col-12 d-flex px-2 py-2 hover-dark'
+        >
+            <div>
+                <span v-text='content.data.name' class='txt-truncate'/>
+                <div class='col-12'>
+                    <span
+                        class='subheader'
+                        v-text='content.data.submitter'
+                    /> - <span
+                        class='subheader'
+                        v-text='content.data.submissionTime'
+                    />
+                </div>
+            </div>
+            <div class='col-auto ms-auto btn-list'>
+                <TablerDelete
+                    displaytype='icon'
+                    @delete='deleteFile(content.data)'
                 />
+                <a
+                    v-tooltip='"Download Asset"'
+                    :href='downloadFile(content.data)'
+                ><IconDownload
+                    size='32'
+                    class='cursor-pointer'
+                /></a>
             </div>
         </div>
-        <div class='col-auto ms-auto btn-list'>
-            <TablerDelete
-                displaytype='icon'
-                @delete='deleteFile(content.data)'
+    </template>
+
+    <template v-if='imports.length'>
+        <label class='subheader'>Imports</label>
+
+        <div
+            v-for='imp in imports'
+            :key='imp.id'
+            class='col-12 d-flex align-items-center hover-dark cursor-pointer rounded'
+            @click='$router.push(`/import/${imp.id}`)'
+        >
+            <Status :status='imp.status' /><span
+                class='mx-2'
+                v-text='imp.name'
             />
-            <a
-                v-tooltip='"Download Asset"'
-                :href='downloadFile(content.data)'
-            ><IconDownload
-                size='32'
-                class='cursor-pointer'
-            /></a>
         </div>
-    </div>
-</template>
-
-<template v-if='imports.length'>
-    <label class='subheader'>Imports</label>
-
-    <div
-        v-for='imp in imports'
-        :key='imp.id'
-        class='col-12 d-flex align-items-center hover-dark cursor-pointer rounded'
-        @click='$router.push(`/import/${imp.id}`)'
-    >
-        <Status :status='imp.status' /><span
-            class='mx-2'
-            v-text='imp.name'
-        />
-    </div>
-</template>
+    </template>
+</MenuTemplate>
 </template>
 
 <script>
@@ -92,6 +98,7 @@ import {
 } from '@tak-ps/vue-tabler';
 import { useMapStore } from '/src/stores/map.ts';
 const mapStore = useMapStore();
+import MenuTemplate from '../../util/MenuTemplate.vue';
 
 export default {
     name: 'MissionContents',
@@ -100,6 +107,7 @@ export default {
     },
     components: {
         Status,
+        MenuTemplate,
         TablerNone,
         UploadImport,
         TablerAlert,

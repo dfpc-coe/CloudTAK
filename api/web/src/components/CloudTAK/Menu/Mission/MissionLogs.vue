@@ -1,68 +1,68 @@
 <template>
-<TablerLoading v-if='loading.logs' />
-<template v-else-if='createLog !== false'>
-    <TablerInput
-        v-model='createLog'
-        label='Create Log'
-        :rows='4'
-    />
-
-    <div class='d-flex my-2'>
-        <div class='ms-auto'>
-            <button
-                class='btn btn-primary'
-                @click='submitLog'
-            >
-                Save Log
-            </button>
-        </div>
-    </div>
-</template>
-
-
-            <template v-else-if='mode === "logs"'>
-                <IconPlus
-                    v-tooltip='"Create Log"'
-                    size='32'
-                    class='cursor-pointer'
-                    @click='createLog = ""'
-                />
-            </template>
-
-
-<TablerNone
-    v-else-if='!mission.logs.length'
-    :create='false'
-/>
-<div
-    v-else
-    class='rows'
+<MenuTemplate
+    name='Mission Logs'
+    :back='false'
+    :border='false'
+    :loading='loading.logs'
+    :none='!mission.logs.length'
 >
-    <div
-        v-for='log in mission.logs'
-        :key='log.id'
-        class='col-12'
-    >
-        <div class='d-flex'>
-            <label
-                class='subheader'
-                v-text='log.creatorUid'
-            />
-            <label
-                class='subheader ms-auto'
-                v-text='log.created'
-            />
+    <template #buttons>
+        <IconPlus
+            v-tooltip='"Create Log"'
+            size='32'
+            class='cursor-pointer'
+            @click='createLog = ""'
+        />
+    </template>
+    <template v-if='createLog !== false'>
+        <TablerInput
+            v-model='createLog'
+            label='Create Log'
+            :rows='4'
+        />
+
+        <div class='d-flex my-2'>
+            <div class='ms-auto'>
+                <button
+                    class='btn btn-primary'
+                    @click='submitLog'
+                >
+                    Save Log
+                </button>
+            </div>
         </div>
-        <div class='col-12 position-relative'>
-            <IconTrash
-                size='32'
-                class='position-absolute cursor-pointer end-0 mx-2 my-2'
-                @click='deleteLog(log)'
-            />
-            <pre v-text='log.content || "None"' />
+    </template>
+
+    <div
+        v-else
+        class='rows'
+    >
+        <div
+            v-for='log in mission.logs'
+            :key='log.id'
+            class='col-12'
+        >
+            <div class='d-flex'>
+                <label
+                    class='subheader'
+                    v-text='log.creatorUid'
+                />
+                <label
+                    class='subheader ms-auto'
+                    v-text='log.created'
+                />
+            </div>
+            <div class='col-12 position-relative'>
+                <IconTrash
+                    size='32'
+                    class='position-absolute cursor-pointer end-0 mx-2 my-2'
+                    @click='deleteLog(log)'
+                />
+                <pre v-text='log.content || "None"' />
+            </div>
         </div>
     </div>
-</div>
+</MenuTemplate>
 </template>
 
 <script>
@@ -77,12 +77,14 @@ import {
     TablerInput,
     TablerLoading
 } from '@tak-ps/vue-tabler';
+import MenuTemplate from '../../util/MenuTemplate.vue';
 import { useMapStore } from '/src/stores/map.ts';
 const mapStore = useMapStore();
 
 export default {
     name: 'MissionLogs',
     components: {
+        MenuTemplate,
         TablerNone,
         TablerAlert,
         TablerLoading,
