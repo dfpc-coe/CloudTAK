@@ -227,11 +227,9 @@ export default {
             password: '',
             upload: false,
             createLog: false,
-            changes: [],
             loading: {
                 initial: !this.$route.query.passwordProtected,
                 mission: !this.$route.query.passwordProtected,
-                changes: true,
                 users: true,
                 delete: false
             },
@@ -256,11 +254,6 @@ export default {
         refresh: async function() {
             await this.fetchMission();
             this.subscribed = !!mapStore.getLayerByMode('mission', this.mission.guid);
-
-            await Promise.all([
-                this.fetchChanges(),
-                this.fetchImports()
-            ]);
         },
         downloadFile: function(file) {
             const url = stdurl(`/api/marti/api/files/${file.hash}`)
@@ -277,29 +270,6 @@ export default {
         },
         genConfig: function() {
             return { id: this.mission.name }
-        },
-        fetchImports: async function() {
-            try {
-                const url = await stdurl(`/api/import`);
-                url.searchParams.append('mode', 'Mission');
-                url.searchParams.append('mode_id', this.mission.guid);
-                this.imports = (await std(url)).items.filter((i) => {
-                    return !['Success'].includes(i.status);
-                });
-            } catch (err) {
-                this.err = err;
-            }
-            this.loading.users = false;
-        },
-        fetchChanges: async function() {
-            this.loading.changes = true;
-            try {
-                const url = await stdurl(`/api/marti/missions/${this.mission.name}/changes`);
-                this.changes = (await std(url)).data;
-            } catch (err) {
-                this.err = err;
-            }
-            this.loading.changes = false;
         },
         deleteMission: async function() {
             try {

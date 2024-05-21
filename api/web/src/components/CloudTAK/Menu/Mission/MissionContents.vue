@@ -16,10 +16,10 @@
     <div
         v-for='content in mission.contents'
         :key='content.data.uid'
-        class='col-12 d-flex'
+        class='col-12 d-flex px-2 py-2 hover-dark'
     >
         <div>
-            <span v-text='content.data.name' />
+            <span v-text='content.data.name' class='txt-truncate'/>
             <div class='col-12'>
                 <span
                     class='subheader'
@@ -30,7 +30,7 @@
                 />
             </div>
         </div>
-        <div class='ms-auto btn-list'>
+        <div class='col-auto ms-auto btn-list'>
             <TablerDelete
                 displaytype='icon'
                 @delete='deleteFile(content.data)'
@@ -95,6 +95,9 @@ const mapStore = useMapStore();
 
 export default {
     name: 'MissionContents',
+    props: {
+        mission: Object
+    },
     components: {
         Status,
         TablerNone,
@@ -132,29 +135,17 @@ export default {
             createLog: false,
             changes: [],
             loading: {
-                initial: !this.$route.query.passwordProtected,
-                mission: !this.$route.query.passwordProtected,
                 logs: false,
                 changes: true,
                 users: true,
                 delete: false
             },
-            mission: {
-                guid: this.$route.params.guid,
-                passwordProtected: this.$route.query.passwordProtected,
-            },
             imports: [],
-            subscriptions: []
         }
     },
     watch: {
         upload: async function() {
             if (!this.upload) await this.refresh();
-        }
-    },
-    mounted: async function() {
-        if (!this.mission.passwordProtected) {
-            await this.refresh();
         }
     },
     methods: {
@@ -184,41 +175,11 @@ export default {
 
             this.subscribed = !!mapStore.getLayerByMode('mission', this.mission.guid);
         },
-        refresh: async function() {
-            await this.fetchMission();
-            this.subscribed = !!mapStore.getLayerByMode('mission', this.mission.guid);
-
-            await Promise.all([
-                this.fetchSubscriptions(),
-                this.fetchChanges(),
-                this.fetchImports()
-            ]);
-        },
         downloadFile: function(file) {
             const url = stdurl(`/api/marti/api/files/${file.hash}`)
             url.searchParams.append('token', localStorage.token);
             url.searchParams.append('name', file.name);
             return url;
-        },
-        deleteLog: async function(log) {
-            this.loading.logs = true;
-            await std(`/api/marti/missions/${this.mission.name}/log/${log.id}`, {
-                method: 'DELETE',
-            });
-            this.loading.logs = false;
-            this.fetchMission();
-        },
-        submitLog: async function() {
-            this.loading.logs = true;
-            await std(`/api/marti/missions/${this.mission.name}/log`, {
-                method: 'POST',
-                body: {
-                    content: this.createLog
-                }
-            });
-            this.createLog = false;
-            this.loading.logs = false;
-            this.fetchMission();
         },
         deleteFile: async function(file) {
             await std(`/api/marti/missions/${this.mission.name}/upload/${file.hash}`, {
@@ -252,42 +213,6 @@ export default {
                 this.err = err;
             }
             this.loading.changes = false;
-        },
-        fetchSubscriptions: async function() {
-            try {
-                const url = await stdurl(`/api/marti/missions/${this.mission.name}/subscriptions/roles`);
-                this.subscriptions = (await std(url)).data;
-            } catch (err) {
-                this.err = err;
-            }
-            this.loading.users = false;
-        },
-        deleteMission: async function() {
-            try {
-                this.loading.delete = true;
-                const url = stdurl(`/api/marti/missions/${this.mission.name}`);
-                const list = await std(url, {
-                    method: 'DELETE'
-                });
-                if (list.data.length !== 1) throw new Error('Mission Error');
-                this.$emit('close');
-            } catch (err) {
-                this.err = err;
-            }
-            this.loading.delete = false;
-        },
-        fetchMission: async function() {
-            try {
-                this.loading.mission = true;
-                const url = stdurl(`/api/marti/missions/${this.$route.params.mission}`);
-                url.searchParams.append('changes', 'false');
-                url.searchParams.append('logs', 'true');
-                this.mission = await std(url);
-            } catch (err) {
-                this.err = err;
-            }
-            this.loading.initial = false;
-            this.loading.mission = false;
         }
     }
 }
