@@ -62,34 +62,6 @@
                             Unsubscribe
                         </button>
                     </div>
-                    <div class='datagrid d-flex'>
-                        <div class='datagrid-item'>
-                            <div class='datagrid-title'>
-                                Created
-                            </div>
-                            <div
-                                class='datagrid-content'
-                                v-text='mission.createTime ? mission.createTime.replace(/T.*/, "") : "Unknown"'
-                            />
-                        </div>
-
-                        <div class='datagrid-item'>
-                            <div class='datagrid-title'>
-                                Contents
-                            </div>
-                            <div
-                                class='datagrid-content'
-                                v-text='Array.isArray(mission.content) ? mission.contents.length : 0 + " Items"'
-                            />
-                        </div>
-
-                        <div class='datagrid-item'>
-                            <div class='datagrid-title'>
-                                Subscription
-                            </div>
-                            <div class='datagrid-content' />
-                        </div>
-                    </div>
                 </div>
                 <div
                     class='btn-group w-100'
@@ -182,7 +154,12 @@
                 </div>
             </template>
 
-            <router-view :mission='mission'/>
+            <div class='mx-2 my-2'>
+                <router-view
+                    :mission='mission'
+                    :subscriptions='subscriptions'
+                />
+            </div>
         </template>
     </MenuTemplate>
 
