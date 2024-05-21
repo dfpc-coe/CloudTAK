@@ -61,7 +61,7 @@ export default {
             type: Boolean,
             default: false,
         },
-        empty: {
+        none: {
             type: Boolean,
             default: false,
         }

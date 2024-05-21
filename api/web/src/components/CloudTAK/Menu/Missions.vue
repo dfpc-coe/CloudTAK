@@ -28,7 +28,7 @@
                     v-for='(mission, mission_it) in list.data'
                     :key='mission_it'
                     class='cursor-pointer col-12 py-2 hover-dark'
-                    @click='$router.push(`/menu/missions/${mission.name}`)'
+                    @click='$router.push(`/menu/missions/${mission.guid}`)'
                 >
                     <div class='px-3 d-flex'>
                         <div class='d-flex justify-content-center align-items-center'>

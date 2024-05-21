@@ -119,7 +119,7 @@ export const DeleteInput = Type.Object({
 })
 
 export const GetInput = Type.Object({
-    password: Type.Optional(Type.String()),
+    password: Type.Optional(Type.Boolean()),
     changes: Type.Optional(Type.Boolean()),
     logs: Type.Optional(Type.Boolean()),
     secago: Type.Optional(Type.Integer()),
@@ -458,7 +458,7 @@ export default class {
     ): Promise<Static<typeof Mission>> {
         const url = new URL(`/Marti/api/missions/${this.#encodeName(name)}`, this.api.url);
 
-        if (this.#isGUID(name)) name = (await this.getGuid(name, {})).name;
+        if (this.#isGUID(name)) return await this.getGuid(name, query, opts);
 
         for (const q in query) url.searchParams.append(q, String(query[q]));
 

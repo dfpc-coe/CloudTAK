@@ -20,8 +20,8 @@ export default async function router(schema: Schema, config: Config) {
         query: Type.Object({
             password: Type.Optional(Type.Boolean()),
             changes: Type.Optional(Type.Boolean()),
-            logs: Type.Optional(Type.String()),
-            secago: Type.Optional(Type.String()),
+            logs: Type.Optional(Type.Boolean()),
+            secago: Type.Optional(Type.Integer()),
             start: Type.Optional(Type.String()),
             end: Type.Optional(Type.String())
         }),
@@ -32,9 +32,7 @@ export default async function router(schema: Schema, config: Config) {
             const auth = (await config.models.Profile.from(user.email)).auth;
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
-            const query: Record<string, string> = {};
-            for (const q in req.query) query[q] = String(req.query[q]);
-            const mission = await api.Mission.get(req.params.name, query);
+            const mission = await api.Mission.get(req.params.name, req.query);
 
             return res.json(mission);
         } catch (err) {
