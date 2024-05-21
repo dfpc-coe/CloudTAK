@@ -124,6 +124,10 @@ export default {
             default: '100%'
         }
     },
+    emits: [
+        'cancel',
+        'done'
+    ],
     data: function() {
         return {
             err: false,

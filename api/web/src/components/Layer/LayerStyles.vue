@@ -191,6 +191,9 @@ export default {
             required: true
         },
     },
+    emits: [
+        'layer'
+    ],
     data: function() {
         return {
             disabled: true,

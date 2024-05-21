@@ -81,6 +81,9 @@ export default {
         TablerLoading,
         TablerModal
     },
+    emits: [
+        'login'
+    ],
     data: function() {
         return {
             loading: false,

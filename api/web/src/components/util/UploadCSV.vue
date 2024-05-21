@@ -38,6 +38,10 @@ export default {
         TablerModal,
         TablerInput
     },
+    emits: [
+        'import',
+        'close'
+    ],
     data: function() {
         return {
             csv: ''

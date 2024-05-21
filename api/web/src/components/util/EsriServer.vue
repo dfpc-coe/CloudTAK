@@ -216,6 +216,10 @@ export default {
             required: true
         },
     },
+    emits: [
+        'close',
+        'layer'
+    ],
     data: function() {
         return {
             base: this.server,

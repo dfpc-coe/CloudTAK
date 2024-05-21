@@ -88,6 +88,9 @@ export default {
     components: {
         TablerLoading
     },
+    emits: [
+        'login'
+    ],
     data: function() {
         return {
             loading: false,

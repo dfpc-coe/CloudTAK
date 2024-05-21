@@ -64,6 +64,11 @@ export default {
             required: true
         },
     },
+    emits: [
+        'close',
+        'remove',
+        'done'
+    ],
     data: function() {
         return {
             loading: true,

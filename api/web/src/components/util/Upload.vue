@@ -82,6 +82,10 @@ export default {
             default: '*'
         }
     },
+    emits: [
+        'cancel',
+        'done'
+    ],
     data: function() {
         return {
             name: '',

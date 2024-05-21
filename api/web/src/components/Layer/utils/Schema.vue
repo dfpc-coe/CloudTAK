@@ -210,6 +210,9 @@ export default {
             default: false
         }
     },
+    emits: [
+        'update:modelValue'
+    ],
     data: function() {
         return {
             data: false,

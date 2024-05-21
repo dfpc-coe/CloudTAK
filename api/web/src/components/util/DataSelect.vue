@@ -1,45 +1,69 @@
 <template>
-<div class='w-100'>
-    <TablerLoading v-if='loading' :inline='true'/>
-    <template v-else>
-        <div class='d-flex align-items-center mx-2'>
-            <template v-if='selected.id'>
-                <span @click='$router.push(`/connection/${selected.connection}/data/${selected.id}`)' class='cursor-pointer' v-text='selected.name'/>
-            </template>
-            <template v-else>
-                <span>No Data Sync Selected - Data will output as CoTs directly to the Connection</span>
-            </template>
+    <div class='w-100'>
+        <TablerLoading
+            v-if='loading'
+            :inline='true'
+        />
+        <template v-else>
+            <div class='d-flex align-items-center mx-2'>
+                <template v-if='selected.id'>
+                    <span
+                        class='cursor-pointer'
+                        @click='$router.push(`/connection/${selected.connection}/data/${selected.id}`)'
+                        v-text='selected.name'
+                    />
+                </template>
+                <template v-else>
+                    <span>No Data Sync Selected - Data will output as CoTs directly to the Connection</span>
+                </template>
 
-            <div v-if='!disabled' class='btn-list ms-auto'>
-                <IconTrash v-if='selected.id' @click='update' size='32' class='cursor-pointer'/>
-                <TablerDropdown>
-                    <template #default>
-                        <IconSettings
-                            size='32'
-                            class='cursor-pointer dropdown-toggle'
-                        />
-                    </template>
-                    <template #dropdown>
-                        <div class='table-resposive'>
-                            <table class='table table-hover'>
-                                <thead>
-                                    <tr>
-                                        <th>(Status) Name</th>
-                                    </tr>
-                                </thead>
-                                <tbody class='table-tbody'>
-                                    <tr @click='update(data)' :key='data.id' v-for='data of data.items' class='cursor-pointer'>
-                                        <td>
-                                            <div class='d-flex align-items-center'>
-                                                <span class='mt-2' v-text='data.name'/>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </template>
-                </TablerDropdown>
+                <div
+                    v-if='!disabled'
+                    class='btn-list ms-auto'
+                >
+                    <IconTrash
+                        v-if='selected.id'
+                        size='32'
+                        class='cursor-pointer'
+                        @click='update'
+                    />
+                    <TablerDropdown>
+                        <template #default>
+                            <IconSettings
+                                size='32'
+                                class='cursor-pointer dropdown-toggle'
+                            />
+                        </template>
+                        <template #dropdown>
+                            <div class='table-resposive'>
+                                <table class='table table-hover'>
+                                    <thead>
+                                        <tr>
+                                            <th>(Status) Name</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class='table-tbody'>
+                                        <tr
+                                            v-for='d of data.items'
+                                            :key='d.id'
+                                            class='cursor-pointer'
+                                            @click='update(d)'
+                                        >
+                                            <td>
+                                                <div class='d-flex align-items-center'>
+                                                    <span
+                                                        class='mt-2'
+                                                        v-text='d.name'
+                                                    />
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </template>
+                    </TablerDropdown>
+                </div>
             </div>
         </template>
     </div>
@@ -58,7 +82,6 @@ import {
 
 export default {
     name: 'DataSelect',
-    emits: ['update:modelValue'],
     components: {
         IconTrash,
         IconSettings,
@@ -73,6 +96,7 @@ export default {
             default: false
         }
     },
+    emits: ['update:modelValue'],
     data: function() {
         return {
             loading: true,

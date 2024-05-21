@@ -183,6 +183,9 @@ export default {
             required: true
         }
     },
+    emits: [
+        'assets'
+    ],
     data: function() {
         return {
             err: null,

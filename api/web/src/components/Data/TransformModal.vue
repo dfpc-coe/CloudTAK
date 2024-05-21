@@ -55,6 +55,10 @@ export default {
             required: true
         }
     },
+    emits: [
+        'close',
+        'done'
+    ],
     data: function() {
         return {
             loading: false,

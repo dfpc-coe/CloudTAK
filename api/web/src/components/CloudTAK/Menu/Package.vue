@@ -75,6 +75,13 @@ import { useProfileStore } from '/src/stores/profile.ts';
 
 export default {
     name: 'CloudTAKPackage',
+    components: {
+        IconDownload,
+        IconFileImport,
+        TablerDelete,
+        TablerLoading,
+        MenuTemplate,
+    },
     data: function() {
         return {
             loading: true,
@@ -120,12 +127,5 @@ export default {
 
         },
     },
-    components: {
-        IconDownload,
-        IconFileImport,
-        TablerDelete,
-        TablerLoading,
-        MenuTemplate,
-    }
 }
 </script>

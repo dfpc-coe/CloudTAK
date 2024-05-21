@@ -50,6 +50,9 @@ export default {
             required: true
         }
     },
+    emits: [
+        'page'
+    ],
     data: function() {
         return {
             page: 0

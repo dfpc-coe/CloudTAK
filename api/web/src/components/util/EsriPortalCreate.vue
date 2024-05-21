@@ -54,6 +54,10 @@ export default {
             required: true
         }
     },
+    emits: [
+        'create',
+        'close'
+    ],
     data: function() {
         return {
             data: {

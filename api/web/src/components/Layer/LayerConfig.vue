@@ -98,35 +98,75 @@
                         v-text='cronstr(config.cron)'
                     />
                 </div>
-                <input :disabled='disabled' v-model='config.task' :class='{
-                    "is-invalid": errors.task
-                }' class="form-control" placeholder='Schedule Task'/>
-                <div v-if='errors.task' v-text='errors.task' class="invalid-feedback"></div>
+                <input
+                    v-model='config.task'
+                    :disabled='disabled'
+                    :class='{
+                        "is-invalid": errors.task
+                    }'
+                    class='form-control'
+                    placeholder='Schedule Task'
+                >
+                <div
+                    v-if='errors.task'
+                    class='invalid-feedback'
+                    v-text='errors.task'
+                />
             </div>
-            <div class="col-md-4">
-                <TablerEnum v-model='config.priority' label='Alarm Urgency' :disabled='disabled' class='w-100' :options='["off", "high", "low"]' />
+            <div class='col-md-4'>
+                <TablerEnum
+                    v-model='config.priority'
+                    label='Alarm Urgency'
+                    :disabled='disabled'
+                    class='w-100'
+                    :options='["off", "high", "low"]'
+                />
             </div>
-            <div class="col-md-4">
-                <TablerInput v-model='config.stale' label='Stale Value (ms)' :disabled='disabled' type='number' min='1' step='1'/>
-                <label v-if='config.stale' v-text='humanstr'/>
+            <div class='col-md-4'>
+                <TablerInput
+                    v-model='config.stale'
+                    label='Stale Value (ms)'
+                    :disabled='disabled'
+                    type='number'
+                    min='1'
+                    step='1'
+                />
+                <label
+                    v-if='config.stale'
+                    v-text='humanstr'
+                />
             </div>
-            <div class="col-md-4">
-                <TablerInput v-model='config.memory' label='Memory (Mb)' :disabled='disabled' type='number' min='1' step='1'/>
+            <div class='col-md-4'>
+                <TablerInput
+                    v-model='config.memory'
+                    label='Memory (Mb)'
+                    :disabled='disabled'
+                    type='number'
+                    min='1'
+                    step='1'
+                />
             </div>
-            <div class="col-md-4">
-                <TablerInput v-model='config.timeout' label='Timeout (s)' :disabled='disabled' type='number' min='1' step='1'/>
+            <div class='col-md-4'>
+                <TablerInput
+                    v-model='config.timeout'
+                    label='Timeout (s)'
+                    :disabled='disabled'
+                    type='number'
+                    min='1'
+                    step='1'
+                />
             </div>
-            <div class="col-md-12">
+            <div class='col-md-12'>
                 <div class='row'>
                     <div class='col-12'>
                         <label>Optional Data Sync</label>
                     </div>
                     <div class='col-12 d-flex align-items-center my-1'>
-                        <IconDatabase size='32'/>
+                        <IconDatabase size='32' />
                         <DataSelect
+                            v-model='config.data'
                             :disabled='disabled'
                             :connection='layer.connection'
-                            v-model='config.data'
                         />
                     </div>
                 </div>
@@ -172,14 +212,21 @@ import {
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import {
-    IconRefresh,
     IconSettings,
-    IconBuildingBroadcastTower,
     IconDatabase,
 } from '@tabler/icons-vue'
 
 export default {
     name: 'LayerConfig',
+    components: {
+        TablerLoading,
+        IconSettings,
+        DataSelect,
+        IconDatabase,
+        TaskModal,
+        TablerInput,
+        TablerEnum,
+    },
     props: {
         layer: {
             type: Object,
@@ -192,6 +239,10 @@ export default {
             }
         },
     },
+    emits: [
+        'layer',
+        'stack'
+    ],
     data: function() {
         return {
             disabled: true,
@@ -296,17 +347,6 @@ export default {
             }
             this.loading.version = false;
         }
-    },
-    components: {
-        TablerLoading,
-        IconRefresh,
-        IconSettings,
-        DataSelect,
-        IconBuildingBroadcastTower,
-        IconDatabase,
-        TaskModal,
-        TablerInput,
-        TablerEnum,
     }
 }
 </script>

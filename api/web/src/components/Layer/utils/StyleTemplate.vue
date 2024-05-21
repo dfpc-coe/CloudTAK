@@ -61,6 +61,9 @@ export default {
             type: String,
         }
     },
+    emits: [
+        'update:modelValue'
+    ],
     data: function() {
         return {
             template: this.modelValue

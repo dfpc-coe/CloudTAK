@@ -247,6 +247,9 @@ export default {
             default: true
         }
     },
+    emits: [
+        'update:modelValue'
+    ],
     data: function() {
         let type = 'agol';
         console.error(JSON.stringify(this.modelValue))

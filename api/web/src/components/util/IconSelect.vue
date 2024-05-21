@@ -170,6 +170,9 @@ export default {
             default: 'Icon Select'
         }
     },
+    emits: [
+        'update:modelValue'
+    ],
     data: function() {
         return {
             help: false,

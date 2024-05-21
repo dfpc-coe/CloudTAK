@@ -63,6 +63,9 @@ export default {
             required: true
         }
     },
+    emits: [
+        'close'
+    ],
     data: function() {
         return {
             loading: {

@@ -90,6 +90,10 @@ export default {
             }
         }
     },
+    emits: [
+        'close',
+        'update:modelValue'
+    ],
     data: function() {
         return {
             loading: {

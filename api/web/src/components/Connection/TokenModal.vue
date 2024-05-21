@@ -68,6 +68,10 @@ import {
 
 export default {
     name: 'TokenModal',
+    emits: [
+        'close',
+        'refresh'
+    ],
     components: {
         TablerModal,
         TablerInput,

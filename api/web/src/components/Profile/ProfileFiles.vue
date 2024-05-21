@@ -162,6 +162,9 @@ export default {
         TablerEpoch,
         TransformModal
     },
+    emits: [
+        'assets'
+    ],
     data: function() {
         return {
             err: null,
