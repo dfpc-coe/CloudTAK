@@ -1,13 +1,13 @@
 <template>
-<template v-if='upload'>
-    <UploadImport
-        mode='Mission'
-        :modeid='mission.guid'
-        :config='genConfig()'
-        @cancel='upload = false'
-        @done='upload = false'
-    />
-</template>
+<TablerAlert v-if='err' :err='err'/>
+<UploadImport
+    v-if='upload'
+    mode='Mission'
+    :modeid='mission.guid'
+    :config='genConfig()'
+    @cancel='upload = false'
+    @done='upload = false'
+/>
 <TablerNone
     v-else-if='!mission.contents.length'
     :create='false'
@@ -61,6 +61,7 @@
         />
     </div>
 </template>
+</template>
 
 <script>
 import { std, stdurl } from '/src/std.ts';
@@ -80,8 +81,8 @@ import {
     IconRefresh,
     IconTrash,
 } from '@tabler/icons-vue';
-import UploadImport from '../util/UploadImport.vue';
-import Status from '../../util/Status.vue';
+import UploadImport from '../../util/UploadImport.vue';
+import Status from '../../../util/Status.vue';
 import {
     TablerAlert,
     TablerNone,
@@ -89,14 +90,12 @@ import {
     TablerInput,
     TablerLoading
 } from '@tak-ps/vue-tabler';
-import MenuTemplate from '../util/MenuTemplate.vue';
 import { useMapStore } from '/src/stores/map.ts';
 const mapStore = useMapStore();
 
 export default {
-    name: 'MissionSync',
+    name: 'MissionContents',
     components: {
-        MenuTemplate,
         Status,
         TablerNone,
         UploadImport,
