@@ -515,9 +515,6 @@ export default {
         IconTimeline
     },
     props: {
-        initial: {
-            type: Object
-        },
         selectable: {
             type: Boolean,
             default: false
@@ -533,17 +530,17 @@ export default {
             createLog: false,
             changes: [],
             loading: {
-                initial: !this.initial.passwordProtected,
-                mission: !this.initial.passwordProtected,
+                initial: !this.$route.query.passwordProtected,
+                mission: !this.$route.query.passwordProtected,
                 logs: false,
                 changes: true,
                 users: true,
                 delete: false
             },
             mission: {
-                name: this.initial.name || 'Unknown',
-                guid: null,
-                passwordProtected: this.initial.passwordProtected,
+                name: 'Loading',
+                guid: this.$route.params.guid,
+                passwordProtected: this.$route.query.passwordProtected,
             },
             imports: [],
             subscriptions: []
@@ -681,7 +678,7 @@ export default {
         fetchMission: async function() {
             try {
                 this.loading.mission = true;
-                const url = stdurl(`/api/marti/missions/${this.mission.name}`);
+                const url = stdurl(`/api/marti/missions/${this.$route.params.mission}`);
                 url.searchParams.append('changes', 'false');
                 url.searchParams.append('logs', 'true');
                 this.mission = await std(url);
