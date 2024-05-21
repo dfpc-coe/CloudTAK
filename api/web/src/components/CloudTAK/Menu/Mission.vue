@@ -44,22 +44,24 @@
             />
             <template v-else>
                 <div class='mx-2 my-2'>
-                    <button
-                        v-if='subscribed === false'
-                        class='btn btn-green'
-                        style='height: 32px;'
-                        @click='subscribe(true)'
-                    >
-                        Subscribe
-                    </button>
-                    <button
-                        v-else-if='subscribed === true'
-                        class='btn btn-danger'
-                        style='height: 32px;'
-                        @click='subscribe(false)'
-                    >
-                        Unsubscribe
-                    </button>
+                    <div class='d-flex align-items-center'>
+                        <button
+                            v-if='subscribed === false'
+                            class='btn btn-green'
+                            style='height: 32px;'
+                            @click='subscribe(true)'
+                        >
+                            Subscribe
+                        </button>
+                        <button
+                            v-else-if='subscribed === true'
+                            class='btn btn-danger'
+                            style='height: 32px;'
+                            @click='subscribe(false)'
+                        >
+                            Unsubscribe
+                        </button>
+                    </div>
                     <div class='datagrid d-flex'>
                         <div class='datagrid-item'>
                             <div class='datagrid-title'>
@@ -206,248 +208,6 @@
                         Unlock Mission
                     </button>
                 </div>
-            </div>
-        </div>
-    </template>
-    <template v-else-if='false'>
-        <div class='d-flex'>
-            <div
-                class='mx-2 my-2'
-                style='width: calc(100% - 40px);'
-            >
-                <template v-if='mode === "info"'>
-                    <div class='datagrid'>
-                        <div class='datagrid-item pb-2'>
-                            <div class='datagrid-title'>
-                                Created
-                            </div>
-                            <div
-                                class='datagrid-content'
-                                v-text='mission.createTime'
-                            />
-                        </div>
-                        <div class='datagrid-item pb-2'>
-                            <div class='datagrid-title'>
-                                Subscribers
-                            </div>
-                            <div
-                                class='datagrid-content'
-                                v-text='subscriptions.length'
-                            />
-                        </div>
-                        <div class='datagrid-item pb-2'>
-                            <div class='datagrid-title'>
-                                Groups (Channels)
-                            </div>
-                            <div
-                                class='datagrid-content'
-                                v-text='mission.groups.join(", ")'
-                            />
-                        </div>
-                    </div>
-                    <div class='datagrid'>
-                        <div class='datagrid-item pb-2'>
-                            <div class='datagrid-title'>
-                                Description
-                            </div>
-                            <div
-                                class='datagrid-content'
-                                v-text='mission.description || "No Feed Description"'
-                            />
-                        </div>
-                    </div>
-                </template>
-                <template v-else-if='mode === "users"'>
-                    <div v-for='sub of subscriptions'>
-                        <div class='col-12 py-2 d-flex hover-dark'>
-                            <div class='row col-12 align-items-center'>
-                                <div class='col-auto mx-2'>
-                                    <div v-text='sub.username' />
-                                    <div
-                                        class='subheader'
-                                        v-text='sub.username'
-                                    />
-                                </div>
-                                <div class='col-auto ms-auto btn-list'>
-                                    <span v-text='sub.role.type' />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </template>
-                <template v-else-if='mode === "contents"'>
-                    <template v-if='upload'>
-                        <UploadImport
-                            mode='Mission'
-                            :modeid='mission.guid'
-                            :config='genConfig()'
-                            @cancel='upload = false'
-                            @done='upload = false'
-                        />
-                    </template>
-                    <TablerNone
-                        v-else-if='!mission.contents.length'
-                        :create='false'
-                    />
-                    <template v-else>
-                        <div
-                            v-for='content in mission.contents'
-                            :key='content.data.uid'
-                            class='col-12 d-flex'
-                        >
-                            <div>
-                                <span v-text='content.data.name' />
-                                <div class='col-12'>
-                                    <span
-                                        class='subheader'
-                                        v-text='content.data.submitter'
-                                    /> - <span
-                                        class='subheader'
-                                        v-text='content.data.submissionTime'
-                                    />
-                                </div>
-                            </div>
-                            <div class='ms-auto btn-list'>
-                                <TablerDelete
-                                    displaytype='icon'
-                                    @delete='deleteFile(content.data)'
-                                />
-                                <a
-                                    v-tooltip='"Download Asset"'
-                                    :href='downloadFile(content.data)'
-                                ><IconDownload
-                                    size='32'
-                                    class='cursor-pointer'
-                                /></a>
-                            </div>
-                        </div>
-                    </template>
-
-                    <template v-if='imports.length'>
-                        <label class='subheader'>Imports</label>
-
-                        <div
-                            v-for='imp in imports'
-                            :key='imp.id'
-                            class='col-12 d-flex align-items-center hover-dark cursor-pointer rounded'
-                            @click='$router.push(`/import/${imp.id}`)'
-                        >
-                            <Status :status='imp.status' /><span
-                                class='mx-2'
-                                v-text='imp.name'
-                            />
-                        </div>
-                    </template>
-                </template>
-                <template v-else-if='mode === "timeline"'>
-                    <TablerNone
-                        v-if='!changes.length'
-                        :create='false'
-                    />
-                    <div
-                        v-else
-                        class='rows overflow-auto'
-                        style='height: 50vh;'
-                    >
-                        <div
-                            v-for='change in changes'
-                            :key='change'
-                            class='col-12 hover-dark px-2 py-1'
-                        >
-                            <template v-if='change.type === "CREATE_MISSION"'>
-                                <IconVolcano size='32' /><span
-                                    class='mx-2'
-                                    v-text='`Mission Created: ${change.missionName}`'
-                                />
-                            </template>
-                            <template v-else-if='change.type === "ADD_CONTENT" && change.contentResource'>
-                                <IconFile size='32' /><span
-                                    class='mx-2'
-                                    v-text='change.contentResource.name'
-                                />
-                            </template>
-                            <template v-else-if='change.type === "ADD_CONTENT" && change.details'>
-                                <IconPolygon size='32' /><span
-                                    class='mx-2'
-                                    v-text='`${change.details.callsign} (${change.details.type})`'
-                                />
-                            </template>
-                            <template v-else-if='change.type === "REMOVE_CONTENT" && change.contentResource'>
-                                <IconFileX size='32' /><span
-                                    class='mx-2'
-                                    v-text='change.contentResource.name'
-                                />
-                            </template>
-                            <template v-else>
-                                <span v-text='change' />
-                            </template>
-                            <div class='col-12 d-flex'>
-                                <label
-                                    class='subheader'
-                                    v-text='change.type'
-                                />
-                                <label
-                                    class='subheader ms-auto'
-                                    v-text='change.timestamp'
-                                />
-                            </div>
-                        </div>
-                    </div>
-                </template>
-                <template v-else-if='mode === "logs"'>
-                    <TablerLoading v-if='loading.logs' />
-                    <template v-else-if='createLog !== false'>
-                        <TablerInput
-                            v-model='createLog'
-                            label='Create Log'
-                            :rows='4'
-                        />
-
-                        <div class='d-flex my-2'>
-                            <div class='ms-auto'>
-                                <button
-                                    class='btn btn-primary'
-                                    @click='submitLog'
-                                >
-                                    Save Log
-                                </button>
-                            </div>
-                        </div>
-                    </template>
-                    <TablerNone
-                        v-else-if='!mission.logs.length'
-                        :create='false'
-                    />
-                    <div
-                        v-else
-                        class='rows'
-                    >
-                        <div
-                            v-for='log in mission.logs'
-                            :key='log.id'
-                            class='col-12'
-                        >
-                            <div class='d-flex'>
-                                <label
-                                    class='subheader'
-                                    v-text='log.creatorUid'
-                                />
-                                <label
-                                    class='subheader ms-auto'
-                                    v-text='log.created'
-                                />
-                            </div>
-                            <div class='col-12 position-relative'>
-                                <IconTrash
-                                    size='32'
-                                    class='position-absolute cursor-pointer end-0 mx-2 my-2'
-                                    @click='deleteLog(log)'
-                                />
-                                <pre v-text='log.content || "None"' />
-                            </div>
-                        </div>
-                    </div>
-                </template>
             </div>
         </div>
     </template>
