@@ -1,55 +1,61 @@
 <template>
-<TablerAlert v-if='err'/>
-<TablerNone v-else-if='!changes.length' :create='false'/>
-<div
-    v-else
-    class='rows overflow-auto'
-    style='height: 50vh;'
+<MenuTemplate
+    name='Mission Timeline'
+    :back='false'
+    :border='false'
 >
+    <TablerAlert v-if='err'/>
+    <TablerNone v-else-if='!changes.length' :create='false'/>
     <div
-        v-for='change in changes'
-        :key='change'
-        class='col-12 hover-dark px-2 py-1'
+        v-else
+        class='rows overflow-auto'
+        style='height: 50vh;'
     >
-        <template v-if='change.type === "CREATE_MISSION"'>
-            <IconVolcano size='32' /><span
-                class='mx-2'
-                v-text='`Mission Created: ${change.missionName}`'
-            />
-        </template>
-        <template v-else-if='change.type === "ADD_CONTENT" && change.contentResource'>
-            <IconFile size='32' /><span
-                class='mx-2'
-                v-text='change.contentResource.name'
-            />
-        </template>
-        <template v-else-if='change.type === "ADD_CONTENT" && change.details'>
-            <IconPolygon size='32' /><span
-                class='mx-2'
-                v-text='`${change.details.callsign} (${change.details.type})`'
-            />
-        </template>
-        <template v-else-if='change.type === "REMOVE_CONTENT" && change.contentResource'>
-            <IconFileX size='32' /><span
-                class='mx-2'
-                v-text='change.contentResource.name'
-            />
-        </template>
-        <template v-else>
-            <span v-text='change' />
-        </template>
-        <div class='col-12 d-flex'>
-            <label
-                class='subheader'
-                v-text='change.type'
-            />
-            <label
-                class='subheader ms-auto'
-                v-text='change.timestamp'
-            />
+        <div
+            v-for='change in changes'
+            :key='change'
+            class='col-12 hover-dark px-2 py-1'
+        >
+            <template v-if='change.type === "CREATE_MISSION"'>
+                <IconVolcano size='32' /><span
+                    class='mx-2'
+                    v-text='`Mission Created: ${change.missionName}`'
+                />
+            </template>
+            <template v-else-if='change.type === "ADD_CONTENT" && change.contentResource'>
+                <IconFile size='32' /><span
+                    class='mx-2'
+                    v-text='change.contentResource.name'
+                />
+            </template>
+            <template v-else-if='change.type === "ADD_CONTENT" && change.details'>
+                <IconPolygon size='32' /><span
+                    class='mx-2'
+                    v-text='`${change.details.callsign} (${change.details.type})`'
+                />
+            </template>
+            <template v-else-if='change.type === "REMOVE_CONTENT" && change.contentResource'>
+                <IconFileX size='32' /><span
+                    class='mx-2'
+                    v-text='change.contentResource.name'
+                />
+            </template>
+            <template v-else>
+                <span v-text='change' />
+            </template>
+            <div class='col-12 d-flex'>
+                <label
+                    class='subheader'
+                    v-text='change.type'
+                />
+                <label
+                    class='subheader ms-auto'
+                    v-text='change.timestamp'
+                />
+            </div>
         </div>
     </div>
-</div>
+</MenuTemplate>
 </template>
 
 <script>
@@ -69,12 +75,14 @@ import {
     TablerInput,
     TablerLoading
 } from '@tak-ps/vue-tabler';
+import MenuTemplate from '../../util/MenuTemplate.vue';
 import { useMapStore } from '/src/stores/map.ts';
 const mapStore = useMapStore();
 
 export default {
     name: 'MissionSync',
     components: {
+        MenuTemplate,
         TablerNone,
         TablerAlert,
         TablerLoading,

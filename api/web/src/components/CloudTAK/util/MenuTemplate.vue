@@ -1,12 +1,16 @@
 <template>
     <div class='container px-0'>
-        <div class='sticky-top col-12 border-bottom border-light bg-dark'>
+        <div class='sticky-top col-12 bg-dark' :class='{
+            "border-bottom border-light": border
+        }'>
             <div class='modal-header px-0 mx-2'>
                 <IconCircleArrowLeft
+                    v-if='back'
                     size='32'
                     class='cursor-pointer'
                     @click='$router.back()'
                 />
+                <div v-else></div>
 
                 <div
                     class='modal-title'
@@ -56,6 +60,14 @@ export default {
         name: {
             type: String,
             required: true
+        },
+        border: {
+            type: Boolean,
+            default: true
+        },
+        back: {
+            type: Boolean,
+            default: true
         },
         loading: {
             type: Boolean,
