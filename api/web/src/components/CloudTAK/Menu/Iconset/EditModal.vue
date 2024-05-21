@@ -54,6 +54,14 @@ import {
 
 export default {
     name: 'IconsetEdit',
+    components: {
+        TablerModal,
+        TablerLoading,
+        TablerSchema,
+    },
+    emits: [
+        'close'
+    ],
     data: function() {
         return {
             loading: {
@@ -110,10 +118,5 @@ export default {
             this.schema = (await std(url)).body;
         },
     },
-    components: {
-        TablerModal,
-        TablerLoading,
-        TablerSchema,
-    }
 }
 </script>

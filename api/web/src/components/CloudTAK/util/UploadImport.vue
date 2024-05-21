@@ -95,6 +95,10 @@ export default {
             }
         }
     },
+    emits: [
+        'cancel',
+        'done'
+    ],
     data: function() {
         return {
             name: '',

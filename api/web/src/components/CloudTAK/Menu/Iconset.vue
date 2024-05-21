@@ -72,6 +72,17 @@ import { useProfileStore } from '/src/stores/profile.ts';
 
 export default {
     name: 'CloudTAKIconset',
+    components: {
+        IconPlus,
+        IconSettings,
+        IconDownload,
+        IconEditModal,
+        IconsetEditModal,
+        MenuTemplate,
+        CombinedIcons,
+        TablerDelete,
+        TablerLoading
+    },
     data: function() {
         return {
             loading: true,
@@ -82,11 +93,11 @@ export default {
             }
         }
     },
-    mounted: async function() {
-        await this.refresh();
-    },
     computed: {
         ...mapState(useProfileStore, ['profile'])
+    },
+    mounted: async function() {
+        await this.refresh();
     },
     methods: {
         refresh: async function() {
@@ -114,16 +125,5 @@ export default {
             this.$router.push('/menu/iconset');
         }
     },
-    components: {
-        IconPlus,
-        IconSettings,
-        IconDownload,
-        IconEditModal,
-        IconsetEditModal,
-        MenuTemplate,
-        CombinedIcons,
-        TablerDelete,
-        TablerLoading
-    }
 }
 </script>

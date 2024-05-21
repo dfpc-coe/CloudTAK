@@ -258,6 +258,11 @@ export default {
             default: true
         }
     },
+    emits: [
+        'close',
+        'token',
+        'layer'
+    ],
     data: function() {
         return {
             loading: {

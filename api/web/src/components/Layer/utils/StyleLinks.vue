@@ -109,6 +109,9 @@ export default {
             default: 'Link Override'
         }
     },
+    emits: [
+        'update:modelValue'
+    ],
     data: function() {
         return {
             create: false,

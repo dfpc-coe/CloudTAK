@@ -97,6 +97,11 @@ export default {
             description: 'Field to sort by'
         },
     },
+    emits: [
+        'update:order',
+        'update:sort',
+        'update:header'
+    ],
     computed: {
         shown: function() {
            return this.header.filter((h) => {

@@ -61,6 +61,10 @@ export default {
         TablerInput,
         TablerLoading
     },
+    emits: [
+        'certs',
+        'close'
+    ],
     data: function() {
         return {
             loading: {

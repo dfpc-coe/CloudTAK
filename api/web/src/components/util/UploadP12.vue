@@ -62,6 +62,10 @@ export default {
         TablerModal,
         TablerInput
     },
+    emits: [
+        'close',
+        'certs'
+    ],
     data: function() {
         return {
             dropzone: null,

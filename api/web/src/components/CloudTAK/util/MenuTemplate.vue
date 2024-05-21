@@ -7,6 +7,7 @@
                     class='cursor-pointer'
                     @click='$router.back()'
                 />
+
                 <div
                     class='modal-title'
                     v-text='name'
@@ -21,7 +22,16 @@
             class='col-12 overflow-auto'
             style='height: calc(100vh - 114px)'
         >
-            <slot />
+            <TablerLoading
+                v-if='loading'
+                :desc='`Loading ${name}`'
+            />
+            <TablerNone
+                v-else-if='none'
+                :label='name'
+                :create='false'
+            />
+            <slot v-else />
         </div>
     </div>
 </template>
@@ -30,16 +40,30 @@
 import {
     IconCircleArrowLeft,
 } from '@tabler/icons-vue'
+import {
+    TablerNone,
+    TablerLoading,
+} from '@tak-ps/vue-tabler';
 
 export default {
     name: 'MenuTemplate',
     components: {
+        TablerNone,
+        TablerLoading,
         IconCircleArrowLeft,
     },
     props: {
         name: {
             type: String,
             required: true
+        },
+        loading: {
+            type: Boolean,
+            default: false,
+        },
+        empty: {
+            type: Boolean,
+            default: false,
         }
     }
 }

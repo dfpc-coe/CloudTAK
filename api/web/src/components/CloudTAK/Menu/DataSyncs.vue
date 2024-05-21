@@ -104,6 +104,9 @@ export default {
         TablerLoading,
         MenuTemplate
     },
+    emits: [
+        'mode'
+    ],
     data: function() {
         return {
             err: false,

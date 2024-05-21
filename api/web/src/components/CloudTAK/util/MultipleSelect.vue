@@ -51,16 +51,16 @@ import { mapState, mapActions } from 'pinia'
 
 export default {
     name: 'MultipleSelect',
+    components: {
+        IconPoint,
+        IconLine,
+        IconPolygon
+    },
     computed: {
         ...mapState(useMapStore, ['select']),
     },
     methods: {
         ...mapActions(useMapStore, ['radialClick']),
     },
-    components: {
-        IconPoint,
-        IconLine,
-        IconPolygon
-    }
 }
 </script>

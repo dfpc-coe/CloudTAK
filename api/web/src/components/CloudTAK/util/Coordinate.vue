@@ -64,6 +64,9 @@ import {
 
 export default {
     name: 'COTCoordinate',
+    emits: [
+        'update:modelValue'
+    ],
     components: {
         TablerInput
     },

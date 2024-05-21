@@ -102,6 +102,9 @@ export default {
             menu: null
         }
     },
+    computed: {
+        ...mapState(useMapStore, ['radial']),
+    },
     mounted: function() {
         this.genMenuItems();
 
@@ -120,9 +123,6 @@ export default {
             });
             this.menu.open();
         })
-    },
-    computed: {
-        ...mapState(useMapStore, ['radial']),
     },
     methods: {
         ...mapActions(useMapStore, ['radialClick']),

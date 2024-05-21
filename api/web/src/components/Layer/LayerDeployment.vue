@@ -116,6 +116,9 @@ export default {
             required: true
         }
     },
+    emits: [
+        'stack'
+    ],
     data: function() {
         return {
             looping: false,

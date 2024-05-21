@@ -81,6 +81,9 @@ const mapStore = useMapStore();
 
 export default {
     name: 'TAKContact',
+    emits: [
+        'chat'
+    ],
     components: {
         IconCheck,
         IconMessage,

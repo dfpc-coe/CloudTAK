@@ -93,6 +93,10 @@ export default {
             type: String
         }
     },
+    emits: [
+        'close',
+        'update:modelValue'
+    ],
     data: function() {
         return {
             err: null,

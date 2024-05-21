@@ -99,6 +99,10 @@ export default {
             default: ''
         }
     },
+    emits: [
+        'task',
+        'close'
+    ],
     data: function() {
         return {
             loading: true,
