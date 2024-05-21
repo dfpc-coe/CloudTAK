@@ -20,15 +20,6 @@
                     @click='upload = true'
                 />
             </template>
-            <template v-else-if='mode === "logs"'>
-                <IconPlus
-                    v-tooltip='"Create Log"'
-                    size='32'
-                    class='cursor-pointer'
-                    @click='createLog = ""'
-                />
-            </template>
-
             <IconRefresh
                 v-if='!loading.initial'
                 v-tooltip='"Refresh"'
@@ -43,28 +34,8 @@
                 :err='err'
             />
             <template v-else>
-                <div class='mx-2 my-2'>
-                    <div class='d-flex align-items-center'>
-                        <button
-                            v-if='subscribed === false'
-                            class='btn btn-green'
-                            style='height: 32px;'
-                            @click='subscribe(true)'
-                        >
-                            Subscribe
-                        </button>
-                        <button
-                            v-else-if='subscribed === true'
-                            class='btn btn-danger'
-                            style='height: 32px;'
-                            @click='subscribe(false)'
-                        >
-                            Unsubscribe
-                        </button>
-                    </div>
-                </div>
                 <div
-                    class='btn-group w-100'
+                    class='px-2 py-2 round btn-group w-100'
                     role='group'
                 >
                     <input
@@ -72,7 +43,7 @@
                         type='radio'
                         class='btn-check'
                         autocomplete='off'
-                        :checked='$router.name === "home-menu-mission-info"'
+                        :checked='$route.name === "home-menu-mission-info"'
                         @click='$router.push(`/menu/missions/${$route.params.mission}/info`)'
                     >
                     <label
@@ -89,7 +60,7 @@
                         type='radio'
                         class='btn-check'
                         autocomplete='off'
-                        :checked='$router.name === "home-menu-mission-users"'
+                        :checked='$route.name === "home-menu-mission-users"'
                         @click='$router.push(`/menu/missions/${$route.params.mission}/users`)'
                     >
                     <label
@@ -106,11 +77,11 @@
                         type='radio'
                         class='btn-check'
                         autocomplete='off'
-                        :checked='$router.name === "home-menu-mission-timeline"'
+                        :checked='$route.name === "home-menu-mission-timeline"'
                         @click='$router.push(`/menu/missions/${$route.params.mission}/timeline`)'
                     >
                     <label
-                        for='users'
+                        for='timeline'
                         type='button'
                         class='btn btn-sm'
                     ><IconTimeline
@@ -123,11 +94,11 @@
                         type='radio'
                         class='btn-check'
                         autocomplete='off'
-                        :checked='$router.name === "home-menu-mission-logs"'
+                        :checked='$route.name === "home-menu-mission-logs"'
                         @click='$router.push(`/menu/missions/${$route.params.mission}/logs`)'
                     >
                     <label
-                        for='users'
+                        for='logs'
                         type='button'
                         class='btn btn-sm'
                     ><IconArticle
@@ -140,11 +111,11 @@
                         type='radio'
                         class='btn-check'
                         autocomplete='off'
-                        :checked='$router.name === "home-menu-mission-contents"'
+                        :checked='$route.name === "home-menu-mission-contents"'
                         @click='$router.push(`/menu/missions/${$route.params.mission}/contents`)'
                     >
                     <label
-                        for='users'
+                        for='contents'
                         type='button'
                         class='btn btn-sm'
                     ><IconFiles
@@ -156,7 +127,6 @@
 
             <router-view
                 :mission='mission'
-                :subscriptions='subscriptions'
             />
         </template>
     </MenuTemplate>
@@ -261,7 +231,6 @@ export default {
             loading: {
                 initial: !this.$route.query.passwordProtected,
                 mission: !this.$route.query.passwordProtected,
-                logs: false,
                 changes: true,
                 users: true,
                 delete: false
@@ -271,7 +240,6 @@ export default {
                 passwordProtected: this.$route.query.passwordProtected,
             },
             imports: [],
-            subscriptions: []
         }
     },
     watch: {
@@ -285,38 +253,11 @@ export default {
         }
     },
     methods: {
-        subscribe: async function(subscribed) {
-            const layer = mapStore.getLayerByMode('mission', this.mission.guid);
-
-            if (subscribed === true && !layer) {
-                await mapStore.addDefaultLayer({
-                    id: this.mission.guid,
-                    url: `/mission/${encodeURIComponent(this.mission.name)}`,
-                    name: this.mission.name,
-                    source: this.mission.guid,
-                    type: 'geojson',
-                    before: 'CoT Icons',
-                    mode: 'mission',
-                    mode_id: this.mission.guid,
-                    clickable: [
-                        { id: `${this.mission.guid}-poly`, type: 'feat' },
-                        { id: `${this.mission.guid}-polyline`, type: 'feat' },
-                        { id: `${this.mission.guid}-line`, type: 'feat' },
-                        { id: this.mission.guid, type: 'feat' }
-                    ]
-                });
-            } else if (subscribed === false && layer) {
-                await mapStore.removeLayer(this.mission.name);
-            }
-
-            this.subscribed = !!mapStore.getLayerByMode('mission', this.mission.guid);
-        },
         refresh: async function() {
             await this.fetchMission();
             this.subscribed = !!mapStore.getLayerByMode('mission', this.mission.guid);
 
             await Promise.all([
-                this.fetchSubscriptions(),
                 this.fetchChanges(),
                 this.fetchImports()
             ]);
@@ -326,26 +267,6 @@ export default {
             url.searchParams.append('token', localStorage.token);
             url.searchParams.append('name', file.name);
             return url;
-        },
-        deleteLog: async function(log) {
-            this.loading.logs = true;
-            await std(`/api/marti/missions/${this.mission.name}/log/${log.id}`, {
-                method: 'DELETE',
-            });
-            this.loading.logs = false;
-            this.fetchMission();
-        },
-        submitLog: async function() {
-            this.loading.logs = true;
-            await std(`/api/marti/missions/${this.mission.name}/log`, {
-                method: 'POST',
-                body: {
-                    content: this.createLog
-                }
-            });
-            this.createLog = false;
-            this.loading.logs = false;
-            this.fetchMission();
         },
         deleteFile: async function(file) {
             await std(`/api/marti/missions/${this.mission.name}/upload/${file.hash}`, {
@@ -379,15 +300,6 @@ export default {
                 this.err = err;
             }
             this.loading.changes = false;
-        },
-        fetchSubscriptions: async function() {
-            try {
-                const url = await stdurl(`/api/marti/missions/${this.mission.name}/subscriptions/roles`);
-                this.subscriptions = (await std(url)).data;
-            } catch (err) {
-                this.err = err;
-            }
-            this.loading.users = false;
         },
         deleteMission: async function() {
             try {
