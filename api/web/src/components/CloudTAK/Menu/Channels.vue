@@ -89,6 +89,9 @@ const profileStore = useProfileStore();
 
 export default {
     name: 'CloudTAKChannels',
+    emits: [
+        'reset'
+    ],
     data: function() {
         return {
             err: false,

@@ -1,6 +1,6 @@
 <template>
     <MenuTemplate
-        :name='mission.name || Mission'
+        :name='mission.name || "Mission"'
         :loading='loading.initial || loading.mission'
     >
         <template #buttons>
@@ -180,7 +180,7 @@
                 </div>
             </template>
 
-            <router-view />
+            <router-view :mission='mission'/>
         </template>
     </MenuTemplate>
 
@@ -209,7 +209,7 @@
             </div>
         </div>
     </template>
-    <template v-else>
+    <template v-else-if='false'>
         <div class='d-flex'>
             <div
                 class='mx-2 my-2'
@@ -450,17 +450,6 @@
                 </template>
             </div>
         </div>
-        <div
-            v-if='selectable'
-            class='modal-footer'
-        >
-            <button
-                class='btn btn-primary'
-                @click='$emit("select", mission)'
-            >
-                Select
-            </button>
-        </div>
     </template>
 </template>
 
@@ -520,12 +509,6 @@ export default {
         IconLock,
         IconFileX,
         IconTimeline
-    },
-    props: {
-        selectable: {
-            type: Boolean,
-            default: false
-        }
     },
     emits: [
         'close',
