@@ -63,6 +63,12 @@ export const MissionChange = Type.Object({
     contentResource: Type.Optional(Type.Any())
 });
 
+export enum MissionSubscriberRole {
+    MISSION_OWNER = 'MISSION_OWNER',
+    MISSION_SUBSCRIBER = 'MISSION_SUBSCRIBER',
+    MISSION_READONLY_SUBSCRIBER = 'MISSION_READONLY_SUBSCRIBER'
+}
+
 export const MissionSubscriber = Type.Object({
     token: Type.Optional(Type.String()),
     clientUid: Type.String(),
@@ -71,7 +77,7 @@ export const MissionSubscriber = Type.Object({
     role: Type.Object({
         permissions: Type.Array(Type.String()),
         hibernateLazyInitializer: Type.Any(),
-        type: Type.String()
+        type: Type.Enum(MissionSubscriberRole)
     })
 })
 

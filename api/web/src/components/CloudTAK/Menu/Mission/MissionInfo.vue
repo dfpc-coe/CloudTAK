@@ -1,4 +1,5 @@
 <template>
+<div class='mx-2 my-2'>
     <div class='datagrid'>
         <div class='datagrid-item'>
             <div class='datagrid-title'>
@@ -46,6 +47,7 @@
             />
         </div>
     </div>
+</div>
 </template>
 
 <script>

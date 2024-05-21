@@ -72,7 +72,7 @@
                         type='radio'
                         class='btn-check'
                         autocomplete='off'
-                        :checked='$router.name === "menu-mission-info"'
+                        :checked='$router.name === "home-menu-mission-info"'
                         @click='$router.push(`/menu/missions/${$route.params.mission}/info`)'
                     >
                     <label
@@ -89,7 +89,7 @@
                         type='radio'
                         class='btn-check'
                         autocomplete='off'
-                        :checked='$router.name === "menu-mission-users"'
+                        :checked='$router.name === "home-menu-mission-users"'
                         @click='$router.push(`/menu/missions/${$route.params.mission}/users`)'
                     >
                     <label
@@ -106,7 +106,7 @@
                         type='radio'
                         class='btn-check'
                         autocomplete='off'
-                        :checked='$router.name === "menu-mission-timeline"'
+                        :checked='$router.name === "home-menu-mission-timeline"'
                         @click='$router.push(`/menu/missions/${$route.params.mission}/timeline`)'
                     >
                     <label
@@ -123,7 +123,7 @@
                         type='radio'
                         class='btn-check'
                         autocomplete='off'
-                        :checked='$router.name === "menu-mission-logs"'
+                        :checked='$router.name === "home-menu-mission-logs"'
                         @click='$router.push(`/menu/missions/${$route.params.mission}/logs`)'
                     >
                     <label
@@ -140,7 +140,7 @@
                         type='radio'
                         class='btn-check'
                         autocomplete='off'
-                        :checked='$router.name === "menu-mission-contents"'
+                        :checked='$router.name === "home-menu-mission-contents"'
                         @click='$router.push(`/menu/missions/${$route.params.mission}/contents`)'
                     >
                     <label
@@ -154,12 +154,10 @@
                 </div>
             </template>
 
-            <div class='mx-2 my-2'>
-                <router-view
-                    :mission='mission'
-                    :subscriptions='subscriptions'
-                />
-            </div>
+            <router-view
+                :mission='mission'
+                :subscriptions='subscriptions'
+            />
         </template>
     </MenuTemplate>
 
