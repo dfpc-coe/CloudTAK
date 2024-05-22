@@ -3,6 +3,7 @@
         name='Mission Timeline'
         :back='false'
         :border='false'
+        :loading='loading'
     >
         <TablerAlert v-if='err' />
         <TablerNone
@@ -20,25 +21,25 @@
                 class='col-12 hover-dark px-2 py-1'
             >
                 <template v-if='change.type === "CREATE_MISSION"'>
-                    <IconVolcano size='32' /><span
+                    <IconSquarePlus size='24' /><span
                         class='mx-2'
                         v-text='`Mission Created: ${change.missionName}`'
                     />
                 </template>
                 <template v-else-if='change.type === "ADD_CONTENT" && change.contentResource'>
-                    <IconFile size='32' /><span
+                    <IconFile size='24' /><span
                         class='mx-2'
                         v-text='change.contentResource.name'
                     />
                 </template>
                 <template v-else-if='change.type === "ADD_CONTENT" && change.details'>
-                    <IconPolygon size='32' /><span
+                    <IconPolygon size='24' /><span
                         class='mx-2'
                         v-text='`${change.details.callsign} (${change.details.type})`'
                     />
                 </template>
                 <template v-else-if='change.type === "REMOVE_CONTENT" && change.contentResource'>
-                    <IconFileX size='32' /><span
+                    <IconFileX size='24' /><span
                         class='mx-2'
                         v-text='change.contentResource.name'
                     />
@@ -65,7 +66,7 @@
 import { std, stdurl } from '/src/std.ts';
 import {
     IconPlus,
-    IconVolcano,
+    IconSquarePlus,
     IconFileX,
     IconTimeline,
     IconFile,
@@ -84,6 +85,9 @@ const mapStore = useMapStore();
 
 export default {
     name: 'MissionTimeline',
+    props: {
+        mission: Object
+    },
     components: {
         MenuTemplate,
         TablerNone,
@@ -91,7 +95,7 @@ export default {
         TablerLoading,
         TablerDelete,
         TablerInput,
-        IconVolcano,
+        IconSquarePlus,
         IconPlus,
         IconFile,
         IconPolygon,
@@ -107,19 +111,22 @@ export default {
     ],
     data: function() {
         return {
-            err: null,
+            loading: true,
             changes: [],
         }
+    },
+    mounted: async function() {
+        await this.fetchChanges();
     },
     methods: {
         genConfig: function() {
             return { id: this.mission.name }
         },
         fetchChanges: async function() {
-            this.loading.changes = true;
+            this.loading = true;
             const url = await stdurl(`/api/marti/missions/${this.mission.name}/changes`);
             this.changes = (await std(url)).data;
-            this.loading.changes = false;
+            this.loading = false;
         },
     }
 }
