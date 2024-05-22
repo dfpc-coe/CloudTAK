@@ -279,6 +279,10 @@ export default {
         }
     },
     watch: {
+        '$route.params.uid': function() {
+            const feat = cotStore.get(this.$route.params.uid)
+            this.feat = feat;
+        },
         feat: {
             deep: true,
             handler: async function() {
