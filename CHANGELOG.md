@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v2.23.0 - 2024-05-22
+
+- :rocket: `UI` Show server connection status
+
 ### v2.22.0 - 2024-05-22
 
 - :rocket: Significant improvements to Mission View modal => Menu
