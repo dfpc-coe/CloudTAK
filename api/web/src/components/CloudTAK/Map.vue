@@ -24,6 +24,22 @@
                 @click='closeAllMenu'
             />
         </div>
+        
+        <div
+            class='position-absolute bottom-0 end-0 text-white'
+            style='
+            z-index: 1;
+            width: 100px;
+            height: 40px;
+            border-radius: 6px 0px 0px 0px;
+            background-color: rgba(0, 0, 0, 0.5);
+        '
+        >
+            <div class='d-flex align-items-center' v-tooltip='open ? "Connected" : "No Connection"'>
+                <Status :status='open ? "success" : "fail"' :dark='true'/>
+                Server
+            </div>
+        </div>
 
         <div
             v-if='profile'
@@ -318,6 +334,7 @@
 <script>
 import { std, stdurl } from '/src/std.ts';
 import CloudTAKFeatView from './FeatView.vue';
+import Status from '../util/Status.vue';
 import {
     IconSearch,
     IconMessage,
@@ -374,6 +391,7 @@ export default {
     computed: {
         ...mapState(useMapStore, ['bearing', 'select', 'radial', 'isLoaded', 'selected']),
         ...mapState(useProfileStore, ['profile', 'notifications']),
+        ...mapState(useConnectionStore, ['open']),
         humanBearing: function() {
             if (this.bearing < 0) {
                 return Math.round(this.bearing * -1) + '°'
@@ -772,6 +790,7 @@ export default {
         CloudTAKFeatView,
         IconCursorText,
         IconCircleArrowUp,
+        Status,
         IconX,
     }
 }
