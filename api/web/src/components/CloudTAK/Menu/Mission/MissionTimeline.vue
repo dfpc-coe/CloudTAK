@@ -10,7 +10,10 @@
             v-else-if='!changes.length'
             :create='false'
         />
-        <div v-else class='rows'>
+        <div
+            v-else
+            class='rows'
+        >
             <div
                 v-for='change in changes'
                 :key='change'
@@ -35,7 +38,10 @@
                     />
                 </template>
                 <template v-else-if='change.type === "ADD_CONTENT"'>
-                    <IconSquarePlus size='24' /><span class='mx-2' v-tooltip='change.contentUid'>Content Added</span>
+                    <IconSquarePlus size='24' /><span
+                        v-tooltip='change.contentUid'
+                        class='mx-2'
+                    >Content Added</span>
                 </template>
                 <template v-else-if='change.type === "REMOVE_CONTENT" && change.contentResource'>
                     <IconFileX size='24' /><span
@@ -44,7 +50,10 @@
                     />
                 </template>
                 <template v-else-if='change.type === "REMOVE_CONTENT"'>
-                    <IconSquareX size='24' /><span class='mx-2' v-tooltip='change.contentUid'>Content Removed</span>
+                    <IconSquareX size='24' /><span
+                        v-tooltip='change.contentUid'
+                        class='mx-2'
+                    >Content Removed</span>
                 </template>
                 <template v-else>
                     <span v-text='change' />
@@ -67,44 +76,29 @@
 <script>
 import { std, stdurl } from '/src/std.ts';
 import {
-    IconMinus,
     IconSquarePlus,
     IconSquareX,
     IconFileX,
-    IconTimeline,
     IconFile,
     IconPolygon,
 } from '@tabler/icons-vue';
 import {
     TablerAlert,
     TablerNone,
-    TablerDelete,
-    TablerInput,
-    TablerLoading
 } from '@tak-ps/vue-tabler';
 import MenuTemplate from '../../util/MenuTemplate.vue';
-import { useMapStore } from '/src/stores/map.ts';
-const mapStore = useMapStore();
 
 export default {
     name: 'MissionTimeline',
-    props: {
-        mission: Object
-    },
     components: {
         MenuTemplate,
         TablerNone,
         TablerAlert,
-        TablerLoading,
-        TablerDelete,
-        TablerInput,
         IconSquareX,
         IconSquarePlus,
-        IconMinus,
         IconFile,
         IconPolygon,
         IconFileX,
-        IconTimeline
     },
     props: {
         mission: Object

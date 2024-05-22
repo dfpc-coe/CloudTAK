@@ -69,30 +69,20 @@
 </template>
 
 <script>
-import { std, stdurl } from '/src/std.ts';
+import { std } from '/src/std.ts';
 import {
     IconPlus,
     IconTrash,
 } from '@tabler/icons-vue';
 import {
-    TablerAlert,
-    TablerNone,
-    TablerDelete,
     TablerInput,
-    TablerLoading
 } from '@tak-ps/vue-tabler';
 import MenuTemplate from '../../util/MenuTemplate.vue';
-import { useMapStore } from '/src/stores/map.ts';
-const mapStore = useMapStore();
 
 export default {
     name: 'MissionLogs',
     components: {
         MenuTemplate,
-        TablerNone,
-        TablerAlert,
-        TablerLoading,
-        TablerDelete,
         TablerInput,
         IconPlus,
         IconTrash,

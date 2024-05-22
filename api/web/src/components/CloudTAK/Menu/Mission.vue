@@ -151,29 +151,18 @@
 <script>
 import { std, stdurl } from '/src/std.ts';
 import {
-    IconPlus,
-    IconVolcano,
-    IconFileX,
     IconArticle,
     IconTimeline,
-    IconDownload,
     IconFiles,
-    IconFile,
-    IconPolygon,
     IconLock,
     IconInfoSquare,
     IconUsers,
     IconRefresh,
-    IconTrash,
 } from '@tabler/icons-vue';
-import UploadImport from '../util/UploadImport.vue';
-import Status from '../../util/Status.vue';
 import {
     TablerAlert,
-    TablerNone,
     TablerDelete,
     TablerInput,
-    TablerLoading
 } from '@tak-ps/vue-tabler';
 import MenuTemplate from '../util/MenuTemplate.vue';
 
@@ -181,26 +170,15 @@ export default {
     name: 'MissionSync',
     components: {
         MenuTemplate,
-        Status,
-        TablerNone,
-        UploadImport,
         TablerAlert,
-        TablerLoading,
         TablerDelete,
         TablerInput,
-        IconVolcano,
-        IconPlus,
         IconArticle,
-        IconDownload,
         IconFiles,
-        IconFile,
-        IconPolygon,
         IconInfoSquare,
         IconUsers,
-        IconTrash,
         IconRefresh,
         IconLock,
-        IconFileX,
         IconTimeline
     },
     emits: [
