@@ -117,12 +117,8 @@ export default {
         },
         fetchChanges: async function() {
             this.loading.changes = true;
-            try {
-                const url = await stdurl(`/api/marti/missions/${this.mission.name}/changes`);
-                this.changes = (await std(url)).data;
-            } catch (err) {
-                this.err = err;
-            }
+            const url = await stdurl(`/api/marti/missions/${this.mission.name}/changes`);
+            this.changes = (await std(url)).data;
             this.loading.changes = false;
         },
     }

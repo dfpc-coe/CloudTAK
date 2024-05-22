@@ -154,7 +154,6 @@ export default {
     ],
     data: function() {
         return {
-            err: null,
             subscribed: undefined,
             mode: 'info',
             password: '',
@@ -219,26 +218,18 @@ export default {
             return { id: this.mission.name }
         },
         fetchImports: async function() {
-            try {
-                const url = await stdurl(`/api/import`);
-                url.searchParams.append('mode', 'Mission');
-                url.searchParams.append('mode_id', this.mission.guid);
-                this.imports = (await std(url)).items.filter((i) => {
-                    return !['Success'].includes(i.status);
-                });
-            } catch (err) {
-                this.err = err;
-            }
+            const url = await stdurl(`/api/import`);
+            url.searchParams.append('mode', 'Mission');
+            url.searchParams.append('mode_id', this.mission.guid);
+            this.imports = (await std(url)).items.filter((i) => {
+                return !['Success'].includes(i.status);
+            });
             this.loading.users = false;
         },
         fetchChanges: async function() {
             this.loading.changes = true;
-            try {
-                const url = await stdurl(`/api/marti/missions/${this.mission.name}/changes`);
-                this.changes = (await std(url)).data;
-            } catch (err) {
-                this.err = err;
-            }
+            const url = await stdurl(`/api/marti/missions/${this.mission.name}/changes`);
+            this.changes = (await std(url)).data;
             this.loading.changes = false;
         }
     }

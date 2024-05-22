@@ -111,12 +111,8 @@ export default {
     },
     methods: {
         fetchSubscriptions: async function() {
-            try {
-                const url = await stdurl(`/api/marti/missions/${this.mission.name}/subscriptions/roles`);
-                this.subscriptions = (await std(url)).data;
-            } catch (err) {
-                this.err = err;
-            }
+            const url = await stdurl(`/api/marti/missions/${this.mission.name}/subscriptions/roles`);
+            this.subscriptions = (await std(url)).data;
             this.loading.users = false;
         },
         subscribe: async function(subscribed) {
