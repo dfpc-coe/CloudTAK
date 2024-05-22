@@ -35,7 +35,7 @@
                         class='btn-check'
                         autocomplete='off'
                         :checked='$route.name === "home-menu-mission-info"'
-                        @click='$router.push(`/menu/missions/${$route.params.mission}/info`)'
+                        @click='$router.replace(`/menu/missions/${$route.params.mission}/info`)'
                     >
                     <label
                         for='info'
@@ -52,7 +52,7 @@
                         class='btn-check'
                         autocomplete='off'
                         :checked='$route.name === "home-menu-mission-users"'
-                        @click='$router.push(`/menu/missions/${$route.params.mission}/users`)'
+                        @click='$router.replace(`/menu/missions/${$route.params.mission}/users`)'
                     >
                     <label
                         for='users'
@@ -69,7 +69,7 @@
                         class='btn-check'
                         autocomplete='off'
                         :checked='$route.name === "home-menu-mission-timeline"'
-                        @click='$router.push(`/menu/missions/${$route.params.mission}/timeline`)'
+                        @click='$router.replace(`/menu/missions/${$route.params.mission}/timeline`)'
                     >
                     <label
                         for='timeline'
@@ -86,7 +86,7 @@
                         class='btn-check'
                         autocomplete='off'
                         :checked='$route.name === "home-menu-mission-logs"'
-                        @click='$router.push(`/menu/missions/${$route.params.mission}/logs`)'
+                        @click='$router.replace(`/menu/missions/${$route.params.mission}/logs`)'
                     >
                     <label
                         for='logs'
@@ -103,7 +103,7 @@
                         class='btn-check'
                         autocomplete='off'
                         :checked='$route.name === "home-menu-mission-contents"'
-                        @click='$router.push(`/menu/missions/${$route.params.mission}/contents`)'
+                        @click='$router.replace(`/menu/missions/${$route.params.mission}/contents`)'
                     >
                     <label
                         for='contents'
