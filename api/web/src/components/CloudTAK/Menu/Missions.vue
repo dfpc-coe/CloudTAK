@@ -83,7 +83,7 @@
             @click='create = false'
         />
         <MissionCreate
-            @mission='create = false'
+            @mission='$router.push(`/menu/missions/${$event.guid}`)'
             @chat='$emit("chat", $event)'
             @close='create = false'
         />
