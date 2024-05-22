@@ -5,27 +5,6 @@
     :border='false'
 >
     <div class='mx-2 my-2'>
-        <div class='mx-2 my-2'>
-            <div class='d-flex align-items-center'>
-                <button
-                    v-if='subscribed === false'
-                    class='btn btn-green'
-                    style='height: 32px;'
-                    @click='subscribe(true)'
-                >
-                    Subscribe
-                </button>
-                <button
-                    v-else-if='subscribed === true'
-                    class='btn btn-danger'
-                    style='height: 32px;'
-                    @click='subscribe(false)'
-                >
-                    Unsubscribe
-                </button>
-            </div>
-        </div>
-
         <div class='row g-2'>
             <div class='col-6'>
                 <div class='datagrid-title'>
@@ -74,6 +53,27 @@
                     v-text='mission.description || "No Feed Description"'
                 />
             </div>
+        <div class='mx-2 my-2'>
+            <div class='d-flex align-items-center'>
+                <button
+                    v-if='subscribed === false'
+                    class='btn btn-green'
+                    style='height: 32px;'
+                    @click='subscribe(true)'
+                >
+                    Subscribe
+                </button>
+                <button
+                    v-else-if='subscribed === true'
+                    class='btn btn-danger'
+                    style='height: 32px;'
+                    @click='subscribe(false)'
+                >
+                    Unsubscribe
+                </button>
+            </div>
+        </div>
+
         </div>
     </div>
 </MenuTemplate>
@@ -96,6 +96,7 @@ export default {
     },
     data: function() {
         return {
+            subscribed: false,
             loading: {
                 users: false
             },
