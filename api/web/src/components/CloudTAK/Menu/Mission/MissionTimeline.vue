@@ -39,7 +39,7 @@
                     />
                 </template>
                 <template v-else-if='change.type === "ADD_CONTENT"'>
-                    <IconsquarePlus size='24' /><span class='mx-2' v-tooltip='change.contentUid'>Content Added</span>
+                    <IconSquarePlus size='24' /><span class='mx-2' v-tooltip='change.contentUid'>Content Added</span>
                 </template>
                 <template v-else-if='change.type === "REMOVE_CONTENT" && change.contentResource'>
                     <IconFileX size='24' /><span
