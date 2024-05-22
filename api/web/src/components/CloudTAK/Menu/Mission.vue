@@ -4,13 +4,11 @@
         :loading='loading.initial || loading.mission'
     >
         <template #buttons>
-            <template v-if='mode === "info"'>
-                <TablerDelete
-                    v-tooltip='"Delete"'
-                    displaytype='icon'
-                    @delete='deleteMission'
-                />
-            </template>
+            <TablerDelete
+                v-tooltip='"Delete"'
+                displaytype='icon'
+                @delete='deleteMission'
+            />
             <IconRefresh
                 v-if='!loading.initial'
                 v-tooltip='"Refresh"'
