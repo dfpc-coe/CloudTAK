@@ -6,7 +6,7 @@
     >
         <div class='mx-2 my-2'>
             <div class='row g-2'>
-                <div class='col-6'>
+                <div class='col-12'>
                     <div class='datagrid-title'>
                         Created
                     </div>
@@ -38,14 +38,13 @@
                         v-text='Array.isArray(mission.content) ? mission.contents.length : 0 + " Items"'
                     />
                 </div>
-                <div class='col-6'>
+                <div class='col-12'>
                     <div class='datagrid-title'>
                         Groups (Channels)
                     </div>
-                    <div
-                        class='datagrid-content'
-                        v-text='mission.groups.join(", ")'
-                    />
+                    <div v-for='group of mission.groups' class='datagrid-content'>
+                        <span v-text='group'/>
+                    </div>
                 </div>
                 <div class='col-12'>
                     <div class='datagrid-title'>
