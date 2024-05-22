@@ -124,6 +124,7 @@ export default {
     data: function() {
         return {
             err: false,
+            create: false,
             loading: true,
             subscribed: new Set(),
             list: {
