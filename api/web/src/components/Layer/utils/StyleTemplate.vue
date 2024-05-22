@@ -1,6 +1,6 @@
 <template>
     <Mentionable
-        :keys='[&apos;{&apos;]'
+        :keys='["{"]'
         :items='schemalist'
     >
         <TablerInput
