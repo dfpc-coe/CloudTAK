@@ -64,9 +64,6 @@ import {
 
 export default {
     name: 'COTCoordinate',
-    emits: [
-        'update:modelValue'
-    ],
     components: {
         TablerInput
     },
@@ -86,7 +83,10 @@ export default {
             required: true
         }
     },
-    emits: ['submit'],
+    emits: [
+        'update:modelValue',
+        'submit'
+    ],
     data: function() {
         return {
             mode: 'dd',

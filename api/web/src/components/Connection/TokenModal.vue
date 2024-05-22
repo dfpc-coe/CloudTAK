@@ -68,10 +68,6 @@ import {
 
 export default {
     name: 'TokenModal',
-    emits: [
-        'close',
-        'refresh'
-    ],
     components: {
         TablerModal,
         TablerInput,
@@ -83,6 +79,10 @@ export default {
             required: true
         }
     },
+    emits: [
+        'close',
+        'refresh'
+    ],
     data: function() {
         if (this.token.id) {
             return {

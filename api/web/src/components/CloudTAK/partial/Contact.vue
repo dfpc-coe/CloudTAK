@@ -81,9 +81,6 @@ const mapStore = useMapStore();
 
 export default {
     name: 'TAKContact',
-    emits: [
-        'chat'
-    ],
     components: {
         IconCheck,
         IconMessage,
@@ -112,6 +109,9 @@ export default {
             default: false
         }
     },
+    emits: [
+        'chat'
+    ],
     methods: {
         isZoomable: function(contact) {
             return cotStore.cots.has(contact.uid);
