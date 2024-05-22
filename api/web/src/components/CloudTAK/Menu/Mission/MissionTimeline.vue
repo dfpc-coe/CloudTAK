@@ -38,11 +38,17 @@
                         v-text='`${change.details.callsign} (${change.details.type})`'
                     />
                 </template>
+                <template v-else-if='change.type === "ADD_CONTENT"'>
+                    <IconsquarePlus size='24' /><span class='mx-2' v-tooltip='change.contentUid'>Content Added</span>
+                </template>
                 <template v-else-if='change.type === "REMOVE_CONTENT" && change.contentResource'>
                     <IconFileX size='24' /><span
                         class='mx-2'
                         v-text='change.contentResource.name'
                     />
+                </template>
+                <template v-else-if='change.type === "REMOVE_CONTENT"'>
+                    <IconSquareX size='24' /><span class='mx-2' v-tooltip='change.contentUid'>Content Removed</span>
                 </template>
                 <template v-else>
                     <span v-text='change' />
@@ -65,8 +71,9 @@
 <script>
 import { std, stdurl } from '/src/std.ts';
 import {
-    IconPlus,
+    IconMinus,
     IconSquarePlus,
+    IconSquareX,
     IconFileX,
     IconTimeline,
     IconFile,
@@ -95,8 +102,9 @@ export default {
         TablerLoading,
         TablerDelete,
         TablerInput,
+        IconSquareX,
         IconSquarePlus,
-        IconPlus,
+        IconMinus,
         IconFile,
         IconPolygon,
         IconFileX,
