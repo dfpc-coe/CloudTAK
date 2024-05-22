@@ -118,6 +118,7 @@
 
             <router-view
                 :mission='mission'
+                @refresh='refresh'
             />
         </template>
     </MenuTemplate>

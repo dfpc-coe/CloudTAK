@@ -150,6 +150,7 @@ export default {
     },
     emits: [
         'close',
+        'refresh',
         'select'
     ],
     data: function() {
@@ -171,7 +172,7 @@ export default {
     },
     watch: {
         upload: async function() {
-            if (!this.upload) await this.refresh();
+            if (!this.upload) await this.$emit('refresh');
         }
     },
     methods: {
@@ -212,7 +213,7 @@ export default {
                 method: 'DELETE'
             });
 
-            this.fetchMission();
+            this.$emit("refresh");
         },
         genConfig: function() {
             return { id: this.mission.name }
