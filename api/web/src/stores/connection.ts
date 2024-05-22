@@ -17,6 +17,7 @@ export const useConnectionStore = defineStore('connection', {
         ws?: WebSocket
     } => {
         return {
+            open: false,
             ws: undefined
         }
     },
@@ -34,6 +35,9 @@ export const useConnectionStore = defineStore('connection', {
             }
 
             this.ws = new WebSocket(url);
+            this.ws.addEventListener('open', (err) => {
+                this.open = true;
+            });
             this.ws.addEventListener('error', (err) => {
                 console.error(err);
             });
@@ -41,6 +45,8 @@ export const useConnectionStore = defineStore('connection', {
             this.ws.addEventListener('close', () => {
                 // Otherwise the user is probably logged out
                 if (localStorage.token) this.connectSocket(connection);
+
+                this.open = false;
             });
             this.ws.addEventListener('message', async (msg) => {
                 const body = JSON.parse(msg.data) as {
