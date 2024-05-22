@@ -1,161 +1,152 @@
 <template>
-<MenuTemplate
-    :name='mission.name || "Mission"'
-    :loading='loading.initial || loading.mission'
->
-    <template #buttons>
-        <template v-if='mode === "info"'>
-            <TablerDelete
-                v-tooltip='"Delete"'
-                displaytype='icon'
-                @delete='deleteMission'
-            />
-        </template>
-        <template v-else-if='mode === "contents"'>
-            <IconPlus
-                v-if='!upload'
-                v-tooltip='"Upload File"'
+    <MenuTemplate
+        :name='mission.name || "Mission"'
+        :loading='loading.initial || loading.mission'
+    >
+        <template #buttons>
+            <template v-if='mode === "info"'>
+                <TablerDelete
+                    v-tooltip='"Delete"'
+                    displaytype='icon'
+                    @delete='deleteMission'
+                />
+            </template>
+            <IconRefresh
+                v-if='!loading.initial'
+                v-tooltip='"Refresh"'
                 size='32'
                 class='cursor-pointer'
-                @click='upload = true'
+                @click='refresh'
             />
         </template>
-        <IconRefresh
-            v-if='!loading.initial'
-            v-tooltip='"Refresh"'
-            size='32'
-            class='cursor-pointer'
-            @click='refresh'
-        />
-    </template>
-    <template #default>
-        <TablerAlert
-            v-if='err'
-            :err='err'
-        />
-        <template v-else>
-            <div
-                class='px-2 py-2 round btn-group w-100'
-                role='group'
-            >
-                <input
-                    id='info'
-                    type='radio'
-                    class='btn-check'
-                    autocomplete='off'
-                    :checked='$route.name === "home-menu-mission-info"'
-                    @click='$router.push(`/menu/missions/${$route.params.mission}/info`)'
-                >
-                <label
-                    for='info'
-                    type='button'
-                    class='btn btn-sm'
-                ><IconInfoSquare
-                    v-tooltip='"Metadata"'
-                    size='32'
-                /></label>
-
-                <input
-                    id='users'
-                    type='radio'
-                    class='btn-check'
-                    autocomplete='off'
-                    :checked='$route.name === "home-menu-mission-users"'
-                    @click='$router.push(`/menu/missions/${$route.params.mission}/users`)'
-                >
-                <label
-                    for='users'
-                    type='button'
-                    class='btn btn-sm'
-                ><IconUsers
-                    v-tooltip='"Users"'
-                    size='32'
-                /></label>
-
-                <input
-                    id='timeline'
-                    type='radio'
-                    class='btn-check'
-                    autocomplete='off'
-                    :checked='$route.name === "home-menu-mission-timeline"'
-                    @click='$router.push(`/menu/missions/${$route.params.mission}/timeline`)'
-                >
-                <label
-                    for='timeline'
-                    type='button'
-                    class='btn btn-sm'
-                ><IconTimeline
-                    v-tooltip='"Timeline"'
-                    size='32'
-                /></label>
-
-                <input
-                    id='logs'
-                    type='radio'
-                    class='btn-check'
-                    autocomplete='off'
-                    :checked='$route.name === "home-menu-mission-logs"'
-                    @click='$router.push(`/menu/missions/${$route.params.mission}/logs`)'
-                >
-                <label
-                    for='logs'
-                    type='button'
-                    class='btn btn-sm'
-                ><IconArticle
-                    v-tooltip='"Logs"'
-                    size='32'
-                /></label>
-
-                <input
-                    id='contents'
-                    type='radio'
-                    class='btn-check'
-                    autocomplete='off'
-                    :checked='$route.name === "home-menu-mission-contents"'
-                    @click='$router.push(`/menu/missions/${$route.params.mission}/contents`)'
-                >
-                <label
-                    for='contents'
-                    type='button'
-                    class='btn btn-sm'
-                ><IconFiles
-                    v-tooltip='"Contents"'
-                    size='32'
-                /></label>
-            </div>
-        </template>
-
-        <router-view
-            :mission='mission'
-        />
-    </template>
-</MenuTemplate>
-
-<template v-if='mission.passwordProtected && !password'>
-    <div class='modal-body'>
-        <div class='d-flex justify-content-center py-3'>
-            <IconLock size='32' />
-        </div>
-        <h3 class='text-center'>
-            Mission Locked
-        </h3>
-        <div class='col-12 d-flex pt-2'>
-            <TablerInput
-                v-model='password'
-                label='Mission Password'
-                class='w-100'
+        <template #default>
+            <TablerAlert
+                v-if='err'
+                :err='err'
             />
-            <div
-                class='ms-auto'
-                style='padding-top: 28px; padding-left: 10px;'
-            >
-                <button class='btn btn-primary'>
-                    Unlock Mission
-                </button>
+            <template v-else>
+                <div
+                    class='px-2 py-2 round btn-group w-100'
+                    role='group'
+                >
+                    <input
+                        id='info'
+                        type='radio'
+                        class='btn-check'
+                        autocomplete='off'
+                        :checked='$route.name === "home-menu-mission-info"'
+                        @click='$router.push(`/menu/missions/${$route.params.mission}/info`)'
+                    >
+                    <label
+                        for='info'
+                        type='button'
+                        class='btn btn-sm'
+                    ><IconInfoSquare
+                        v-tooltip='"Metadata"'
+                        size='32'
+                    /></label>
+
+                    <input
+                        id='users'
+                        type='radio'
+                        class='btn-check'
+                        autocomplete='off'
+                        :checked='$route.name === "home-menu-mission-users"'
+                        @click='$router.push(`/menu/missions/${$route.params.mission}/users`)'
+                    >
+                    <label
+                        for='users'
+                        type='button'
+                        class='btn btn-sm'
+                    ><IconUsers
+                        v-tooltip='"Users"'
+                        size='32'
+                    /></label>
+
+                    <input
+                        id='timeline'
+                        type='radio'
+                        class='btn-check'
+                        autocomplete='off'
+                        :checked='$route.name === "home-menu-mission-timeline"'
+                        @click='$router.push(`/menu/missions/${$route.params.mission}/timeline`)'
+                    >
+                    <label
+                        for='timeline'
+                        type='button'
+                        class='btn btn-sm'
+                    ><IconTimeline
+                        v-tooltip='"Timeline"'
+                        size='32'
+                    /></label>
+
+                    <input
+                        id='logs'
+                        type='radio'
+                        class='btn-check'
+                        autocomplete='off'
+                        :checked='$route.name === "home-menu-mission-logs"'
+                        @click='$router.push(`/menu/missions/${$route.params.mission}/logs`)'
+                    >
+                    <label
+                        for='logs'
+                        type='button'
+                        class='btn btn-sm'
+                    ><IconArticle
+                        v-tooltip='"Logs"'
+                        size='32'
+                    /></label>
+
+                    <input
+                        id='contents'
+                        type='radio'
+                        class='btn-check'
+                        autocomplete='off'
+                        :checked='$route.name === "home-menu-mission-contents"'
+                        @click='$router.push(`/menu/missions/${$route.params.mission}/contents`)'
+                    >
+                    <label
+                        for='contents'
+                        type='button'
+                        class='btn btn-sm'
+                    ><IconFiles
+                        v-tooltip='"Contents"'
+                        size='32'
+                    /></label>
+                </div>
+            </template>
+
+            <router-view
+                :mission='mission'
+            />
+        </template>
+    </MenuTemplate>
+
+    <template v-if='mission.passwordProtected && !password'>
+        <div class='modal-body'>
+            <div class='d-flex justify-content-center py-3'>
+                <IconLock size='32' />
+            </div>
+            <h3 class='text-center'>
+                Mission Locked
+            </h3>
+            <div class='col-12 d-flex pt-2'>
+                <TablerInput
+                    v-model='password'
+                    label='Mission Password'
+                    class='w-100'
+                />
+                <div
+                    class='ms-auto'
+                    style='padding-top: 28px; padding-left: 10px;'
+                >
+                    <button class='btn btn-primary'>
+                        Unlock Mission
+                    </button>
+                </div>
             </div>
         </div>
-    </div>
-</template>
+    </template>
 </template>
 
 <script>
@@ -186,8 +177,6 @@ import {
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import MenuTemplate from '../util/MenuTemplate.vue';
-import { useMapStore } from '/src/stores/map.ts';
-const mapStore = useMapStore();
 
 export default {
     name: 'MissionSync',
@@ -253,7 +242,6 @@ export default {
     methods: {
         refresh: async function() {
             await this.fetchMission();
-            this.subscribed = !!mapStore.getLayerByMode('mission', this.mission.guid);
         },
         downloadFile: function(file) {
             const url = stdurl(`/api/marti/api/files/${file.hash}`)

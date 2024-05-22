@@ -1,82 +1,84 @@
 <template>
-<MenuTemplate
-    name='Mission Info'
-    :back='false'
-    :border='false'
->
-    <div class='mx-2 my-2'>
-        <div class='row g-2'>
-            <div class='col-6'>
-                <div class='datagrid-title'>
-                    Created
-                </div>
-                <div
-                    class='datagrid-content'
-                    v-text='mission.createTime.replace(/T/, " ").replace(/:[0-9]+\..*/, "") + " UTC"'
-                />
-            </div>
-            <div class='col-6'>
-                <div class='datagrid-title'>
-                    Subscribers
-                </div>
-
-                <TablerLoading v-if='loading.users' :inline='true'/>
-                <div
-                    class='datagrid-content'
-                    v-text='subscriptions.length'
-                />
-            </div>
-            <div class='col-6'>
-                <div class='datagrid-title'>
-                    Contents
-                </div>
-                <div
-                    class='datagrid-content'
-                    v-text='Array.isArray(mission.content) ? mission.contents.length : 0 + " Items"'
-                />
-            </div>
-            <div class='col-6'>
-                <div class='datagrid-title'>
-                    Groups (Channels)
-                </div>
-                <div
-                    class='datagrid-content'
-                    v-text='mission.groups.join(", ")'
-                />
-            </div>
-            <div class='col-12'>
-                <div class='datagrid-title'>
-                    Description
-                </div>
-                <div
-                    class='datagrid-content'
-                    v-text='mission.description || "No Feed Description"'
-                />
-            </div>
+    <MenuTemplate
+        name='Mission Info'
+        :back='false'
+        :border='false'
+    >
         <div class='mx-2 my-2'>
-            <div class='d-flex align-items-center'>
-                <button
-                    v-if='subscribed === false'
-                    class='btn btn-green'
-                    style='height: 32px;'
-                    @click='subscribe(true)'
-                >
-                    Subscribe
-                </button>
-                <button
-                    v-else-if='subscribed === true'
-                    class='btn btn-danger'
-                    style='height: 32px;'
-                    @click='subscribe(false)'
-                >
-                    Unsubscribe
-                </button>
+            <div class='row g-2'>
+                <div class='col-6'>
+                    <div class='datagrid-title'>
+                        Created
+                    </div>
+                    <div
+                        class='datagrid-content'
+                        v-text='mission.createTime.replace(/T/, " ").replace(/:[0-9]+\..*/, "") + " UTC"'
+                    />
+                </div>
+                <div class='col-6'>
+                    <div class='datagrid-title'>
+                        Subscribers
+                    </div>
+
+                    <TablerLoading
+                        v-if='loading.users'
+                        :inline='true'
+                    />
+                    <div
+                        class='datagrid-content'
+                        v-text='subscriptions.length'
+                    />
+                </div>
+                <div class='col-6'>
+                    <div class='datagrid-title'>
+                        Contents
+                    </div>
+                    <div
+                        class='datagrid-content'
+                        v-text='Array.isArray(mission.content) ? mission.contents.length : 0 + " Items"'
+                    />
+                </div>
+                <div class='col-6'>
+                    <div class='datagrid-title'>
+                        Groups (Channels)
+                    </div>
+                    <div
+                        class='datagrid-content'
+                        v-text='mission.groups.join(", ")'
+                    />
+                </div>
+                <div class='col-12'>
+                    <div class='datagrid-title'>
+                        Description
+                    </div>
+                    <div
+                        class='datagrid-content'
+                        v-text='mission.description || "No Feed Description"'
+                    />
+                </div>
+                <div class='mx-2 my-2'>
+                    <div class='d-flex align-items-center'>
+                        <button
+                            v-if='subscribed === false'
+                            class='btn btn-green'
+                            style='height: 32px;'
+                            @click='subscribe(true)'
+                        >
+                            Subscribe
+                        </button>
+                        <button
+                            v-else-if='subscribed === true'
+                            class='btn btn-danger'
+                            style='height: 32px;'
+                            @click='subscribe(false)'
+                        >
+                            Unsubscribe
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
-
-        </div>
-    </div>
-</MenuTemplate>
+    </MenuTemplate>
 </template>
 
 <script>
@@ -84,19 +86,21 @@ import {
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import MenuTemplate from '../../util/MenuTemplate.vue';
+import { useMapStore } from '/src/stores/map.ts';
+const mapStore = useMapStore();
 
 export default {
     name: 'MissionInfo',
-    props: {
-        mission: Object,
-    },
     components: {
         MenuTemplate,
         TablerLoading
     },
+    props: {
+        mission: Object,
+    },
     data: function() {
         return {
-            subscribed: false,
+            subscribed: !!mapStore.getLayerByMode('mission', this.mission.guid),
             loading: {
                 users: false
             },
