@@ -12,9 +12,13 @@
 
 ### Pending Release
 
+### v2.22.0 - 2024-05-22
+
+- :rocket: Significant improvements to Mission View modal => Menu
+
 ### v2.21.0 - 2024-05-20
 
-- Add support for validating handlebar templates
+- :rocket: Add support for validating handlebar templates
 
 ### v2.20.0 - 2024-05-20
 
