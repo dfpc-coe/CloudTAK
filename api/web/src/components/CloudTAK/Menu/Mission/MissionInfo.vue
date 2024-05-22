@@ -42,8 +42,11 @@
                     <div class='datagrid-title'>
                         Groups (Channels)
                     </div>
-                    <div v-for='group of mission.groups' class='datagrid-content'>
-                        <span v-text='group'/>
+                    <div
+                        v-for='group of mission.groups'
+                        class='datagrid-content'
+                    >
+                        <span v-text='group' />
                     </div>
                 </div>
                 <div class='col-12'>
@@ -75,7 +78,11 @@
                     >
                         Unsubscribe
                     </button>
-                    <TablerLoading v-else :inline='true' desc='Updating Subscription...'/>
+                    <TablerLoading
+                        v-else
+                        :inline='true'
+                        desc='Updating Subscription...'
+                    />
                 </div>
             </div>
         </div>
@@ -83,6 +90,7 @@
 </template>
 
 <script>
+import { std, stdurl } from '/src/std.ts';
 import {
     TablerLoading
 } from '@tak-ps/vue-tabler';
@@ -107,6 +115,9 @@ export default {
             },
             subscriptions: []
         }
+    },
+    mounted: async function() {
+        await this.fetchSubscriptions();
     },
     methods: {
         fetchSubscriptions: async function() {

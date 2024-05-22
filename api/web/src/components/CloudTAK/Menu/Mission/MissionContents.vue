@@ -19,7 +19,10 @@
             :err='err'
         />
 
-        <div v-if='upload' class='mx-2'>
+        <div
+            v-if='upload'
+            class='mx-2'
+        >
             <UploadImport
                 mode='Mission'
                 :modeid='mission.guid'
@@ -92,19 +95,7 @@
 import { std, stdurl } from '/src/std.ts';
 import {
     IconPlus,
-    IconVolcano,
-    IconFileX,
-    IconArticle,
-    IconTimeline,
     IconDownload,
-    IconFiles,
-    IconFile,
-    IconPolygon,
-    IconLock,
-    IconInfoSquare,
-    IconUsers,
-    IconRefresh,
-    IconTrash,
 } from '@tabler/icons-vue';
 import UploadImport from '../../util/UploadImport.vue';
 import Status from '../../../util/Status.vue';
@@ -112,8 +103,6 @@ import {
     TablerAlert,
     TablerNone,
     TablerDelete,
-    TablerInput,
-    TablerLoading
 } from '@tak-ps/vue-tabler';
 import { useMapStore } from '/src/stores/map.ts';
 const mapStore = useMapStore();
@@ -127,23 +116,9 @@ export default {
         TablerNone,
         UploadImport,
         TablerAlert,
-        TablerLoading,
         TablerDelete,
-        TablerInput,
-        IconVolcano,
         IconPlus,
-        IconArticle,
         IconDownload,
-        IconFiles,
-        IconFile,
-        IconPolygon,
-        IconInfoSquare,
-        IconUsers,
-        IconTrash,
-        IconRefresh,
-        IconLock,
-        IconFileX,
-        IconTimeline
     },
     props: {
         mission: Object
