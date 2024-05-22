@@ -9,7 +9,7 @@ export enum MissionLayerType {
     CONTENTS = 'CONTENTS',
     MAPLAYER = 'MAPLAYER',
     ITEM = 'ITEM'
-};
+}
 
 export const MissionLayer = Type.Object({
     name: Type.String(),
