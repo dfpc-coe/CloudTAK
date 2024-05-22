@@ -1,6 +1,6 @@
 <template>
     <Mentionable
-        :keys='["{"]'
+        :keys='keys'
         :items='schemalist'
     >
         <TablerInput
@@ -66,6 +66,7 @@ export default {
     ],
     data: function() {
         return {
+            keys: ["{"],
             template: this.modelValue
         }
     },
