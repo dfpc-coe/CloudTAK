@@ -10,11 +10,7 @@
             v-else-if='!changes.length'
             :create='false'
         />
-        <div
-            v-else
-            class='rows overflow-auto'
-            style='height: 50vh;'
-        >
+        <div v-else class='rows'>
             <div
                 v-for='change in changes'
                 :key='change'
