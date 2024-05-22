@@ -105,7 +105,7 @@ export default {
                 method: 'DELETE',
             });
             this.loading.logs = false;
-            this.fetchMission();
+            this.$emit('refresh');
         },
         submitLog: async function() {
             this.loading.logs = true;
@@ -117,7 +117,7 @@ export default {
             });
             this.createLog = false;
             this.loading.logs = false;
-            this.fetchMission();
+            this.$emit('refresh');
         }
     }
 }
