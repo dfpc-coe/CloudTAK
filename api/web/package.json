@@ -8,7 +8,7 @@
         "typegen": "openapi-typescript http://localhost:5001/api/swagger --output src/derived-types.d.ts",
         "check": "vue-tsc",
         "build": "vite build",
-        "lint": "eslint ./src/**/*.vue ./src/**/*.js"
+        "lint": "eslint ./src/"
     },
     "dependencies": {
         "@sinclair/typebox": "^0.32.15",

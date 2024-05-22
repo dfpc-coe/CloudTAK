@@ -1,67 +1,126 @@
 <template>
-<div>
-    <div class='card-header'>
-        <h3 class='card-title'>User Assets</h3>
+    <div>
+        <div class='card-header'>
+            <h3 class='card-title'>
+                User Assets
+            </h3>
 
-        <div class='ms-auto btn-list'>
-            <IconPlus @click='upload = true' size='32' class='cursor-pointer' v-tooltip='"Upload"'/>
-            <IconRefresh @click='fetchList' size='32' class='cursor-pointer' v-tooltip='"Refresh"'/>
+            <div class='ms-auto btn-list'>
+                <IconPlus
+                    v-tooltip='"Upload"'
+                    size='32'
+                    class='cursor-pointer'
+                    @click='upload = true'
+                />
+                <IconRefresh
+                    v-tooltip='"Refresh"'
+                    size='32'
+                    class='cursor-pointer'
+                    @click='fetchList'
+                />
+            </div>
         </div>
-    </div>
 
-    <div v-if='!err && !upload && !loading.list && list.assets.length' class='table-responsive'>
-        <table class="table table-hover table-vcenter card-table">
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Size</th>
-                    <th>Updated</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr :key='asset.name' v-for='asset in list.assets'>
-                    <td>
-                        <div class='d-flex align-items-center'>
-                            <div class='btn-list'>
-                                <IconMap v-if='asset.visualized' v-tooltip='"Visualizable"' size='32'/>
-                                <IconMapOff v-else v-tooltip='"Not Cloud Optimized"' size='32'/>
+        <div
+            v-if='!err && !upload && !loading.list && list.assets.length'
+            class='table-responsive'
+        >
+            <table class='table table-hover table-vcenter card-table'>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Size</th>
+                        <th>Updated</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr
+                        v-for='asset in list.assets'
+                        :key='asset.name'
+                    >
+                        <td>
+                            <div class='d-flex align-items-center'>
+                                <div class='btn-list'>
+                                    <IconMap
+                                        v-if='asset.visualized'
+                                        v-tooltip='"Visualizable"'
+                                        size='32'
+                                    />
+                                    <IconMapOff
+                                        v-else
+                                        v-tooltip='"Not Cloud Optimized"'
+                                        size='32'
+                                    />
+                                </div>
+
+                                <span
+                                    class='mx-2'
+                                    v-text='asset.name'
+                                />
                             </div>
+                        </td>
+                        <td>
+                            <TablerBytes :bytes='asset.size' />
+                        </td>
+                        <td class='d-flex align-items-center'>
+                            <TablerEpoch :date='asset.updated' />
+                            <div class='ms-auto btn-list'>
+                                <TablerDelete
+                                    v-tooltip='"Delete Asset"'
+                                    displaytype='icon'
+                                    @delete='deleteAsset(asset)'
+                                />
+                                <IconTransform
+                                    v-if='!asset.visualized'
+                                    v-tooltip='"Convert Asset"'
+                                    size='32'
+                                    class='cursor-pointer'
+                                    @click='initTransform(asset)'
+                                />
+                                <IconDownload
+                                    v-tooltip='"Download Asset"'
+                                    size='32'
+                                    class='cursor-pointer'
+                                    @click='downloadAsset(asset)'
+                                />
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div
+            v-else
+            class='card-body'
+        >
+            <template v-if='err'>
+                <TablerAlert
+                    title='Asset Error'
+                    :err='err'
+                    :compact='true'
+                />
+            </template>
+            <TablerLoading v-else-if='loading.list' />
+            <Upload
+                v-else-if='upload'
+                :url='uploadURL()'
+                :headers='uploadHeaders()'
+                @cancel='upload = false'
+                @done='fetchList'
+            />
+            <TablerNone
+                v-else-if='!list.assets.length'
+                :create='false'
+                :compact='true'
+            />
+        </div>
 
-                            <span v-text='asset.name' class='mx-2'/>
-                        </div>
-                    </td>
-                    <td>
-                        <TablerBytes :bytes='asset.size'/>
-                    </td>
-                    <td class='d-flex align-items-center'>
-                        <TablerEpoch :date='asset.updated'/>
-                        <div class='ms-auto btn-list'>
-                            <TablerDelete displaytype='icon' @delete='deleteAsset(asset)' v-tooltip='"Delete Asset"'/>
-                            <IconTransform v-if='!asset.visualized' @click='initTransform(asset)' v-tooltip='"Convert Asset"' size='32' class='cursor-pointer'/>
-                            <IconDownload @click='downloadAsset(asset)' size='32' class='cursor-pointer' v-tooltip='"Download Asset"'/>
-                        </div>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-    <div v-else class='card-body'>
-        <template v-if='err'>
-            <TablerAlert title='Asset Error' :err='err' :compact='true'/>
-        </template>
-        <TablerLoading v-else-if='loading.list'/>
-        <Upload
-            v-else-if='upload'
-            :url='uploadURL()'
-            :headers='uploadHeaders()'
-            @cancel='upload = false'
-            @done='fetchList'
+        <TransformModal
+            v-if='transform.shown'
+            :asset='transform.asset'
+            @close='initTransform'
         />
-        <TablerNone v-else-if='!list.assets.length' :create='false' :compact='true'/>
     </div>
-
-    <TransformModal v-if='transform.shown' :asset='transform.asset' @close='initTransform'/>
-</div>
 </template>
 
 <script>
@@ -87,6 +146,25 @@ import {
 
 export default {
     name: 'ProfileFiles',
+    components: {
+        TablerNone,
+        Upload,
+        TablerAlert,
+        IconPlus,
+        IconMap,
+        IconMapOff,
+        IconRefresh,
+        IconTransform,
+        IconDownload,
+        TablerDelete,
+        TablerLoading,
+        TablerBytes,
+        TablerEpoch,
+        TransformModal
+    },
+    emits: [
+        'assets'
+    ],
     data: function() {
         return {
             err: null,
@@ -151,22 +229,6 @@ export default {
                 this.err = err;
             }
         }
-    },
-    components: {
-        TablerNone,
-        Upload,
-        TablerAlert,
-        IconPlus,
-        IconMap,
-        IconMapOff,
-        IconRefresh,
-        IconTransform,
-        IconDownload,
-        TablerDelete,
-        TablerLoading,
-        TablerBytes,
-        TablerEpoch,
-        TransformModal
     }
 }
 </script>

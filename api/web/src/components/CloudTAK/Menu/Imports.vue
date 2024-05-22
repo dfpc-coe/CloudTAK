@@ -1,27 +1,59 @@
 <template>
-<MenuTemplate name='Data Imports'>
-    <template #buttons>
-        <IconRefresh v-if='!loading' @click='fetchList' size='32' class='cursor-pointer' v-tooltip='"Refresh"'/>
-    </template>
-    <template #default>
-        <TablerLoading v-if='loading'/>
-        <TablerNone v-else-if='!list.items.length' label='Imports' :create='false'/>
-        <template v-else>
-            <div @click='$router.push(`/menu/imports/${imported.id}`)' :key='imported.id' v-for='imported in list.items'>
-                <div class='cursor-pointer col-12 py-2 px-3 d-flex align-items-center hover-dark'>
-                    <div class='col-auto'>
-                        <Status :dark='true' :status='imported.status'/>
-                    </div>
-                    <div class='mx-2 col-auto row' style='width: 300px;'>
-                        <div class='text-truncate' v-text='imported.name'></div>
-                        <div class='subheader' v-text='timeDiff(imported.created)'></div>
+    <MenuTemplate name='Data Imports'>
+        <template #buttons>
+            <IconRefresh
+                v-if='!loading'
+                v-tooltip='"Refresh"'
+                size='32'
+                class='cursor-pointer'
+                @click='fetchList'
+            />
+        </template>
+        <template #default>
+            <TablerLoading v-if='loading' />
+            <TablerNone
+                v-else-if='!list.items.length'
+                label='Imports'
+                :create='false'
+            />
+            <template v-else>
+                <div
+                    v-for='imported in list.items'
+                    :key='imported.id'
+                    @click='$router.push(`/menu/imports/${imported.id}`)'
+                >
+                    <div class='cursor-pointer col-12 py-2 px-3 d-flex align-items-center hover-dark'>
+                        <div class='col-auto'>
+                            <Status
+                                :dark='true'
+                                :status='imported.status'
+                            />
+                        </div>
+                        <div
+                            class='mx-2 col-auto row'
+                            style='width: 300px;'
+                        >
+                            <div
+                                class='text-truncate'
+                                v-text='imported.name'
+                            />
+                            <div
+                                class='subheader'
+                                v-text='timeDiff(imported.created)'
+                            />
+                        </div>
                     </div>
                 </div>
-            </div>
+            </template>
+            <TablerPager
+                v-if='list.total > paging.limit'
+                :page='paging.page'
+                :total='list.total'
+                :limit='paging.limit'
+                @page='paging.page = $event'
+            />
         </template>
-        <TablerPager v-if='list.total > paging.limit' @page='paging.page = $event' :page='paging.page'  :total='list.total' :limit='paging.limit'/>
-    </template>
-</MenuTemplate>
+    </MenuTemplate>
 </template>
 
 <script>
@@ -40,6 +72,14 @@ import timeDiff from '../../../timediff.js';
 
 export default {
     name: 'CloudTAKImports',
+    components: {
+        Status,
+        TablerNone,
+        TablerPager,
+        TablerLoading,
+        IconRefresh,
+        MenuTemplate,
+    },
     data: function() {
         return {
             err: false,
@@ -76,14 +116,6 @@ export default {
             this.list = await std(url);
             this.loading = false;
         },
-    },
-    components: {
-        Status,
-        TablerNone,
-        TablerPager,
-        TablerLoading,
-        IconRefresh,
-        MenuTemplate,
     }
 }
 </script>

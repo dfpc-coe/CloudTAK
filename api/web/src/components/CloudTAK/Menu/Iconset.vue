@@ -1,20 +1,55 @@
 <template>
-<MenuTemplate :name='iconset.name'>
-    <template #buttons>
-        <IconPlus v-if='iconset.username || profile.system_admin' v-tooltip='"Create Icon"' @click='editIconModal = {}' size='32' class='cursor-pointer'/> <IconSettings v-if='iconset.username || profile.system_admin' @click='editIconsetModal = iconset' class='cursor-pointer' size='32'/>
-        <IconDownload v-tooltip='"Download TAK Zip"' size='32' class='cursor-pointer' @click.stop='download'/>
-        <TablerDelete v-if='iconset.username || profile.system_admin' displaytype='icon' @delete='deleteIconset'/>
-    </template>
-    <template #default>
-        <TablerLoading v-if='loading'/>
-        <div v-else class="col-lg-12">
-            <CombinedIcons v-if='!loading' :iconset='iconset.uid' :labels='false'/>
-        </div>
-    </template>
-</MenuTemplate>
+    <MenuTemplate :name='iconset.name'>
+        <template #buttons>
+            <IconPlus
+                v-if='iconset.username || profile.system_admin'
+                v-tooltip='"Create Icon"'
+                size='32'
+                class='cursor-pointer'
+                @click='editIconModal = {}'
+            /> <IconSettings
+                v-if='iconset.username || profile.system_admin'
+                class='cursor-pointer'
+                size='32'
+                @click='editIconsetModal = iconset'
+            />
+            <IconDownload
+                v-tooltip='"Download TAK Zip"'
+                size='32'
+                class='cursor-pointer'
+                @click.stop='download'
+            />
+            <TablerDelete
+                v-if='iconset.username || profile.system_admin'
+                displaytype='icon'
+                @delete='deleteIconset'
+            />
+        </template>
+        <template #default>
+            <TablerLoading v-if='loading' />
+            <div
+                v-else
+                class='col-lg-12'
+            >
+                <CombinedIcons
+                    v-if='!loading'
+                    :iconset='iconset.uid'
+                    :labels='false'
+                />
+            </div>
+        </template>
+    </MenuTemplate>
 
-<IconsetEditModal v-if='editIconsetModal' :icon='editIconsetModal' @close='refresh'/>
-<IconEditModal v-if='editIconModal' :icon='editIconModal' @close='refresh'/>
+    <IconsetEditModal
+        v-if='editIconsetModal'
+        :icon='editIconsetModal'
+        @close='refresh'
+    />
+    <IconEditModal
+        v-if='editIconModal'
+        :icon='editIconModal'
+        @close='refresh'
+    />
 </template>
 
 <script>
@@ -37,6 +72,17 @@ import { useProfileStore } from '/src/stores/profile.ts';
 
 export default {
     name: 'CloudTAKIconset',
+    components: {
+        IconPlus,
+        IconSettings,
+        IconDownload,
+        IconEditModal,
+        IconsetEditModal,
+        MenuTemplate,
+        CombinedIcons,
+        TablerDelete,
+        TablerLoading
+    },
     data: function() {
         return {
             loading: true,
@@ -47,11 +93,11 @@ export default {
             }
         }
     },
-    mounted: async function() {
-        await this.refresh();
-    },
     computed: {
         ...mapState(useProfileStore, ['profile'])
+    },
+    mounted: async function() {
+        await this.refresh();
     },
     methods: {
         refresh: async function() {
@@ -79,16 +125,5 @@ export default {
             this.$router.push('/menu/iconset');
         }
     },
-    components: {
-        IconPlus,
-        IconSettings,
-        IconDownload,
-        IconEditModal,
-        IconsetEditModal,
-        MenuTemplate,
-        CombinedIcons,
-        TablerDelete,
-        TablerLoading
-    }
 }
 </script>

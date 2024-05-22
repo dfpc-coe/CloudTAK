@@ -1,79 +1,113 @@
 <template>
-<div class='page h-100'>
-    <header v-if='navShown' class='navbar navbar-expand-md d-print-none' data-bs-theme="dark">
-        <div class="container-xl">
-            <div class="col-auto">
-                <img @click='$router.push("/")' class='cursor-pointer' height='50' width='50' src='/logo.png'>
-            </div>
-            <div class="col mx-2">
-                <div class="page-pretitle">Colorado - DFPC - CoE</div>
-                <h2 class="page-title">CloudTAK</h2>
-            </div>
+    <div class='page h-100'>
+        <header
+            v-if='navShown'
+            class='navbar navbar-expand-md d-print-none'
+            data-bs-theme='dark'
+        >
+            <div class='container-xl'>
+                <div class='col-auto'>
+                    <img
+                        class='cursor-pointer'
+                        height='50'
+                        width='50'
+                        src='/logo.png'
+                        @click='$router.push("/")'
+                    >
+                </div>
+                <div class='col mx-2'>
+                    <div class='page-pretitle'>
+                        Colorado - DFPC - CoE
+                    </div>
+                    <h2 class='page-title'>
+                        CloudTAK
+                    </h2>
+                </div>
 
-            <div v-if='user' class='ms-auto'>
-                <div class='btn-list'>
-                    <a :href="docsURL" class="btn btn-dark" target="_blank" rel="noreferrer">
-                        <IconCode size='32'/>Docs
-                    </a>
-                    <div class='dropdown'>
-                        <div type="button" id="userProfileButton" data-bs-toggle="dropdown" aria-expanded="false" class='btn btn-dark'>
-                            <IconUser size='32'/>
+                <div
+                    v-if='user'
+                    class='ms-auto'
+                >
+                    <div class='btn-list'>
+                        <a
+                            :href='docsURL'
+                            class='btn btn-dark'
+                            target='_blank'
+                            rel='noreferrer'
+                        >
+                            <IconCode size='32' />Docs
+                        </a>
+                        <div class='dropdown'>
+                            <div
+                                id='userProfileButton'
+                                type='button'
+                                data-bs-toggle='dropdown'
+                                aria-expanded='false'
+                                class='btn btn-dark'
+                            >
+                                <IconUser size='32' />
                             </div>
-                                <ul class="dropdown-menu" aria-labelledby='userProfileButton'>
-                                    <div @click='$router.push("/profile")' class='d-flex dropdown-item cursor-pointer hover-dark'>
-                                        <IconUser size='32'/>
-                                        <span class="mx-2">Profile</span>
-                                    </div>
-                                    <div @click='$router.push("/connection")' class='d-flex dropdown-item cursor-pointer hover-dark'>
-                                        <IconNetwork size='32'/>
-                                        <span class="mx-2">Connections</span>
-                                    </div>
-                                    <div @click='$router.push("/admin")' class='d-flex dropdown-item cursor-pointer hover-dark'>
-                                        <IconSettings size='32'/>
-                                        <span class='mx-2'>Server</span>
-                                        <span class='ms-auto badge border border-red bg-red text-white'>Admin</span>
-                                    </div>
-                                    <div @click='logout' class='d-flex dropdown-item cursor-pointer hover-dark'>
-                                        <IconLogout size='32'/>
-                                        <span class="mx-2">Logout</span>
-                                    </div>
-
-                                </ul>
-                            </div>
-                        <div>
+                            <ul
+                                class='dropdown-menu'
+                                aria-labelledby='userProfileButton'
+                            >
+                                <div
+                                    class='d-flex dropdown-item cursor-pointer hover-dark'
+                                    @click='$router.push("/profile")'
+                                >
+                                    <IconUser size='32' />
+                                    <span class='mx-2'>Profile</span>
+                                </div>
+                                <div
+                                    class='d-flex dropdown-item cursor-pointer hover-dark'
+                                    @click='$router.push("/connection")'
+                                >
+                                    <IconNetwork size='32' />
+                                    <span class='mx-2'>Connections</span>
+                                </div>
+                                <div
+                                    class='d-flex dropdown-item cursor-pointer hover-dark'
+                                    @click='$router.push("/admin")'
+                                >
+                                    <IconSettings size='32' />
+                                    <span class='mx-2'>Server</span>
+                                    <span class='ms-auto badge border border-red bg-red text-white'>Admin</span>
+                                </div>
+                                <div
+                                    class='d-flex dropdown-item cursor-pointer hover-dark'
+                                    @click='logout'
+                                >
+                                    <IconLogout size='32' />
+                                    <span class='mx-2'>Logout</span>
+                                </div>
+                            </ul>
+                        </div>
+                        <div />
                     </div>
                 </div>
             </div>
-        </div>
-    </header>
+        </header>
 
-    <Loading v-if='loading && !$route.path.includes("login")'/>
-    <router-view
-        v-else
-        @err='err = $event'
-        @login='getLogin'
-        :user='user'
-    />
+        <Loading v-if='loading && !$route.path.includes("login")' />
+        <router-view
+            v-else
+            :user='user'
+            @err='err = $event'
+            @login='getLogin'
+        />
 
-    <TablerError v-if='err' :err='err' @close='err = null'/>
-    <LoginModal v-if='login' @close='login = null' @login='login=null'/>
-</div>
+        <TablerError
+            v-if='err'
+            :err='err'
+            @close='err = null'
+        />
+        <LoginModal
+            v-if='login'
+            @close='login = null'
+            @login='login=null'
+        />
+    </div>
 </template>
-
-<style>
-.hover-light:hover {
-    background: #f5f5f5;
-}
-
-.hover-button:hover {
-    border-radius: 6px;
-    background-color: rgba(0, 0, 0, 0.3);
-}
-
-.hover-dark:hover {
-    background: #0f172a;
-}
-</style>
 
 <script>
 import '@tabler/core/dist/js/tabler.min.js';
@@ -93,7 +127,17 @@ import {
 import { std, stdurl } from '/src/std.ts';
 
 export default {
-    name: 'Tak-PS-ETL',
+    name: 'TakPSETL',
+    components: {
+        LoginModal,
+        IconCode,
+        IconSettings,
+        IconLogout,
+        IconUser,
+        IconNetwork,
+        TablerError,
+        Loading,
+    },
     data: function() {
         return {
             loading: true,
@@ -102,6 +146,18 @@ export default {
             user: null,
             err: null,
             server: null,
+        }
+    },
+    computed: {
+        docsURL: function() {
+            return stdurl('/docs')
+        },
+        navShown: function() {
+            if (!this.$route || !this.$route.name) {
+                return false;
+            } else {
+                return (!this.$route.name.startsWith("home") && !["login"].includes(this.$route.name))
+            }
         }
     },
     errorCaptured: function(err) {
@@ -126,18 +182,6 @@ export default {
         }
 
         this.mounted = true;
-    },
-    computed: {
-        docsURL: function() {
-            return stdurl('/docs')
-        },
-        navShown: function() {
-            if (!this.$route || !this.$route.name) {
-                return false;
-            } else {
-                return (!this.$route.name.startsWith("home") && !["login"].includes(this.$route.name))
-            }
-        }
     },
     methods: {
         logout: function() {
@@ -167,16 +211,21 @@ export default {
                 this.$router.push("/admin");
             }
         }
-    },
-    components: {
-        LoginModal,
-        IconCode,
-        IconSettings,
-        IconLogout,
-        IconUser,
-        IconNetwork,
-        TablerError,
-        Loading,
     }
 }
 </script>
+
+<style>
+.hover-light:hover {
+    background: #f5f5f5;
+}
+
+.hover-button:hover {
+    border-radius: 6px;
+    background-color: rgba(0, 0, 0, 0.3);
+}
+
+.hover-dark:hover {
+    background: #0f172a;
+}
+</style>

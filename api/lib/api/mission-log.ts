@@ -7,7 +7,7 @@ export const MissionLog = Type.Object({
     creatorUid: Type.String(),
     missionNames: Type.Array(Type.String()),
     servertime: Type.String(),
-    dtg: Type.String(),
+    dtg: Type.Optional(Type.String()),
     created: Type.String(),
     contentHashes: Type.Array(Type.Unknown()),
     keywords: Type.Array(Type.Unknown())

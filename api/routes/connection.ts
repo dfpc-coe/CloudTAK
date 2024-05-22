@@ -19,11 +19,11 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Connection',
         description: 'List Connections',
         query: Type.Object({
-            limit: Type.Integer({ default: 10 }),
-            page: Type.Integer({ default: 0 }),
+            limit: Type.Integer({ default: 10, minimum: 1, maximum: 100 }),
+            page: Type.Integer({ default: 0, minimum: 0 }),
             order: Type.Enum(GenericListOrder, { default: GenericListOrder.ASC }),
-            sort: Type.Optional(Type.String({default: 'created', enum: Object.keys(Connection)})),
-            filter: Type.Optional(Type.String({default: ''}))
+            sort: Type.Optional(Type.String({ default: 'created', enum: Object.keys(Connection) })),
+            filter: Type.Optional(Type.String({ default: '', minLength: 0, maxLength: 64 }))
         }),
         res: Type.Object({
             total: Type.Integer(),
@@ -88,13 +88,13 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Connection',
         description: 'Register a new connection',
         body: Type.Object({
-            name: Type.String(),
-            description: Type.String(),
+            name: Type.String({ minLength: 8, maxLength: 64 }),
+            description: Type.String({ minLength: 8, maxLength: 1024 }),
             enabled: Type.Optional(Type.Boolean()),
-            agency: Type.Optional(Type.Integer()),
+            agency: Type.Optional(Type.Integer({ minimum: 1 })),
             auth: Type.Object({
-                key: Type.String(),
-                cert: Type.String()
+                key: Type.String({ minLength: 1, maxLength: 4096 }),
+                cert: Type.String({ minLength: 1, maxLength: 4096 })
             })
         }),
         res: ConnectionResponse
@@ -138,14 +138,14 @@ export default async function router(schema: Schema, config: Config) {
             connectionid: Type.Integer()
         }),
         body: Type.Object({
-            name: Type.Optional(Type.String()),
-            description: Type.Optional(Type.String()),
+            name: Type.String({ minLength: 8, maxLength: 64 }),
+            description: Type.String({ minLength: 8, maxLength: 1024 }),
             enabled: Type.Optional(Type.Boolean()),
-            agency: Type.Optional(Type.Integer()),
-            auth: Type.Optional(Type.Object({
-                key: Type.String(),
-                cert: Type.String()
-            }))
+            agency: Type.Optional(Type.Integer({ minimum: 1 })),
+            auth: Type.Object({
+                key: Type.String({ minLength: 1, maxLength: 4096 }),
+                cert: Type.String({ minLength: 1, maxLength: 4096 })
+            })
         }),
         res: ConnectionResponse
     }, async (req, res) => {
@@ -188,7 +188,7 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Connection',
         description: 'Get a connection',
         params: Type.Object({
-            connectionid: Type.Integer()
+            connectionid: Type.Integer({ minimum: 1 })
         }),
         res: ConnectionResponse
     }, async (req, res) => {
@@ -215,7 +215,7 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Connection',
         description: 'Refresh a connection',
         params: Type.Object({
-            connectionid: Type.Integer()
+            connectionid: Type.Integer({ minimum: 1 })
         }),
         res: ConnectionResponse
     }, async (req, res) => {
@@ -252,7 +252,7 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Connection',
         description: 'Delete a connection',
         params: Type.Object({
-            connectionid: Type.Integer()
+            connectionid: Type.Integer({ minimum: 1 })
         }),
         res: StandardResponse
     }, async (req, res) => {
@@ -289,7 +289,7 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Connection',
         description: 'Return Conn Success/Failure Stats',
         params: Type.Object({
-            connectionid: Type.Integer()
+            connectionid: Type.Integer({ minimum: 1 })
         }),
         res: Type.Object({
             stats: Type.Array(Type.Object({

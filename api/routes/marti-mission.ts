@@ -20,8 +20,8 @@ export default async function router(schema: Schema, config: Config) {
         query: Type.Object({
             password: Type.Optional(Type.Boolean()),
             changes: Type.Optional(Type.Boolean()),
-            logs: Type.Optional(Type.String()),
-            secago: Type.Optional(Type.String()),
+            logs: Type.Optional(Type.Boolean()),
+            secago: Type.Optional(Type.Integer()),
             start: Type.Optional(Type.String()),
             end: Type.Optional(Type.String())
         }),
@@ -32,9 +32,7 @@ export default async function router(schema: Schema, config: Config) {
             const auth = (await config.models.Profile.from(user.email)).auth;
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
-            const query: Record<string, string> = {};
-            for (const q in req.query) query[q] = String(req.query[q]);
-            const mission = await api.Mission.get(req.params.name, query);
+            const mission = await api.Mission.get(req.params.name, req.query);
 
             return res.json(mission);
         } catch (err) {
@@ -124,12 +122,12 @@ export default async function router(schema: Schema, config: Config) {
         description: 'Helper API to create a mission',
         query: Type.Object({
             creatorUid: Type.Optional(Type.String()),
-            group: Type.Optional(Type.Array(Type.String())),
+            group: Type.Optional(Type.String()),
             description: Type.Optional(Type.String()),
             chatRoom: Type.Optional(Type.String()),
             baseLayer: Type.Optional(Type.String()),
             bbox: Type.Optional(Type.String()),
-            boundingPolygon: Type.Optional(Type.Array(Type.String())),
+            boundingPolygon: Type.Optional(Type.String()),
             path: Type.Optional(Type.String()),
             classification: Type.Optional(Type.String()),
             tool: Type.Optional(Type.String()),
@@ -148,6 +146,9 @@ export default async function router(schema: Schema, config: Config) {
 
             const mission = await api.Mission.create(req.params.name, {
                 ...req.query,
+                group: req.query.group ? req.query.group.split(',') : req.query.group,
+                // @ts-expect-error Handle string or string[]
+                bbox: req.query.bbox ? req.query.bbox.split(',') : req.query.bbox,
                 creatorUid: user.email
             });
             return res.json(mission);

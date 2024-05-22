@@ -1,30 +1,45 @@
 <template>
     <TablerModal>
-        <button type="button" class="btn-close" @click='close' aria-label="Close"></button>
-        <div class="modal-status bg-yellow"></div>
+        <button
+            type='button'
+            class='btn-close'
+            aria-label='Close'
+            @click='close'
+        />
+        <div class='modal-status bg-yellow' />
         <div class='modal-header'>
-            <div class='modal-title'>Connection Login</div>
+            <div class='modal-title'>
+                Connection Login
+            </div>
         </div>
-        <div class="modal-body row">
-            <TablerLoading v-if='loading.generate'  desc='Generating Certificate'/>
+        <div class='modal-body row'>
+            <TablerLoading
+                v-if='loading.generate'
+                desc='Generating Certificate'
+            />
             <template v-else>
                 <div class='col-12'>
                     <TablerInput
-                        label='Connection Username'
                         v-model='body.username'
-                        v-on:keyup.enter='generate'
+                        label='Connection Username'
+                        @keyup.enter='generate'
                     />
                 </div>
                 <div class='col-12 mt-3'>
                     <TablerInput
+                        v-model='body.password'
                         label='Connection Password'
                         type='password'
-                        v-model='body.password'
-                        v-on:keyup.enter='generate'
+                        @keyup.enter='generate'
                     />
                 </div>
-                <div class="col-12 mt-3">
-                    <div class="col"><a @click='generate' class="cursor-pointer btn w-100">Generate Certificate</a></div>
+                <div class='col-12 mt-3'>
+                    <div class='col'>
+                        <a
+                            class='cursor-pointer btn w-100'
+                            @click='generate'
+                        >Generate Certificate</a>
+                    </div>
                 </div>
             </template>
         </div>
@@ -41,6 +56,15 @@ import {
 
 export default {
     name: 'LoginCertModal',
+    components: {
+        TablerModal,
+        TablerInput,
+        TablerLoading
+    },
+    emits: [
+        'certs',
+        'close'
+    ],
     data: function() {
         return {
             loading: {
@@ -71,11 +95,6 @@ export default {
         close: function() {
             this.$emit('close');
         },
-    },
-    components: {
-        TablerModal,
-        TablerInput,
-        TablerLoading
     }
 }
 </script>

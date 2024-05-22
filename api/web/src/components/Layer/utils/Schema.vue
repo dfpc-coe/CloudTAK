@@ -1,110 +1,171 @@
 <template>
-<div v-if='data' class='px-2 py-2'>
-    <div :key='key' v-for='key in Object.keys(schema.properties)' class='py-2 floating-input'>
-        <template v-if='schema.properties[key].enum'>
-            <TablerEnum
-                :label='key'
-                :disabled='disabled'
-                v-model='data[key]'
-                :options='schema.properties[key].enum'
-                :default='schema.properties[key].default'
-            />
-        </template>
-        <template v-else-if='schema.properties[key].type === "string"'>
-            <TablerInput
-                :label='key'
-                :disabled='disabled'
-                v-model='data[key]'
-                :default='schema.properties[key].default'
-            />
-        </template>
-        <template v-else-if='schema.properties[key].type === "boolean"'>
-            <TablerToggle
-                :label='key'
-                :disabled='disabled'
-                v-model='data[key]'
-                :default='schema.properties[key].default'
-            />
-        </template>
-        <template
-            v-else-if='
-                schema.properties[key].type === "array"
-                && schema.properties[key].items.type === "object"
-                && schema.properties[key].items.properties
-            '
+    <div
+        v-if='data'
+        class='px-2 py-2'
+    >
+        <div
+            v-for='key in Object.keys(schema.properties)'
+            :key='key'
+            class='py-2 floating-input'
         >
-            <div class='d-flex'>
-                <label class='form-label' v-text='key'/>
-                <div class='ms-auto' v-if='!disabled'>
-                    <IconTrash v-tooltip='"Clear Table"' @click='this.data[key].splice(0, this.data[key].length)' size='32' class='cursor-pointer'/>
-                    <IconDatabaseImport v-tooltip='"Import CSV"' @click='importModal(Object.keys(schema.properties[key].items.properties), data[key])' size='32' class='cursor-pointer'/>
-                    <IconPlus v-tooltip='"Add Row"' @click='editModal(schema.properties[key].items, {}, key)' size='32' class='cursor-pointer'/>
+            <template v-if='schema.properties[key].enum'>
+                <TablerEnum
+                    v-model='data[key]'
+                    :label='key'
+                    :disabled='disabled'
+                    :options='schema.properties[key].enum'
+                    :default='schema.properties[key].default'
+                />
+            </template>
+            <template v-else-if='schema.properties[key].type === "string"'>
+                <TablerInput
+                    v-model='data[key]'
+                    :label='key'
+                    :disabled='disabled'
+                    :default='schema.properties[key].default'
+                />
+            </template>
+            <template v-else-if='schema.properties[key].type === "boolean"'>
+                <TablerToggle
+                    v-model='data[key]'
+                    :label='key'
+                    :disabled='disabled'
+                    :default='schema.properties[key].default'
+                />
+            </template>
+            <template
+                v-else-if='
+                    schema.properties[key].type === "array"
+                        && schema.properties[key].items.type === "object"
+                        && schema.properties[key].items.properties
+                '
+            >
+                <div class='d-flex'>
+                    <label
+                        class='form-label'
+                        v-text='key'
+                    />
+                    <div
+                        v-if='!disabled'
+                        class='ms-auto'
+                    >
+                        <IconTrash
+                            v-tooltip='"Clear Table"'
+                            size='32'
+                            class='cursor-pointer'
+                            @click='data[key].splice(0, data[key].length)'
+                        />
+                        <IconDatabaseImport
+                            v-tooltip='"Import CSV"'
+                            size='32'
+                            class='cursor-pointer'
+                            @click='importModal(Object.keys(schema.properties[key].items.properties), data[key])'
+                        />
+                        <IconPlus
+                            v-tooltip='"Add Row"'
+                            size='32'
+                            class='cursor-pointer'
+                            @click='editModal(schema.properties[key].items, {}, key)'
+                        />
+                    </div>
                 </div>
-            </div>
-            <template v-if='schema.properties[key].items.type === "object" && schema.properties[key].items.properties'>
-                <div class='table-responsive'>
-                    <table class="table table-hover card-table table-vcenter border rounded cursor-pointer">
-                        <thead>
-                            <tr>
-                                <th :key='prop' v-for='prop in Object.keys(schema.properties[key].items.properties)'>
-                                    <span v-text='prop'/>
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr @click='editModal(schema.properties[key].items, arr, key, i)' :key='i' v-for='(arr, i) in data[key]'>
-                                <template v-if='disabled'>
-                                    <td :key='prop' v-for='prop in Object.keys(schema.properties[key].items.properties)'>
-                                        <span v-text='arr[prop]'/>
-                                    </td>
-                                </template>
-                                <template v-else>
-                                    <td :key='prop' v-for='(prop, prop_it) in Object.keys(schema.properties[key].items.properties)'>
-                                        <span v-text='arr[prop]'/>
-                                    </td>
-                                </template>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+                <template v-if='schema.properties[key].items.type === "object" && schema.properties[key].items.properties'>
+                    <div class='table-responsive'>
+                        <table class='table table-hover card-table table-vcenter border rounded cursor-pointer'>
+                            <thead>
+                                <tr>
+                                    <th
+                                        v-for='prop in Object.keys(schema.properties[key].items.properties)'
+                                        :key='prop'
+                                    >
+                                        <span v-text='prop' />
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr
+                                    v-for='(arr, i) in data[key]'
+                                    :key='i'
+                                    @click='editModal(schema.properties[key].items, arr, key, i)'
+                                >
+                                    <template v-if='disabled'>
+                                        <td
+                                            v-for='prop in Object.keys(schema.properties[key].items.properties)'
+                                            :key='prop'
+                                        >
+                                            <span v-text='arr[prop]' />
+                                        </td>
+                                    </template>
+                                    <template v-else>
+                                        <td
+                                            v-for='prop in Object.keys(schema.properties[key].items.properties)'
+                                            :key='prop'
+                                        >
+                                            <span v-text='arr[prop]' />
+                                        </td>
+                                    </template>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </template>
+                <template v-else>
+                    <div
+                        v-for='(arr, i) of data[key]'
+                        :key='i'
+                        class='border rounded my-2 py-2 mx-2 px-2'
+                    >
+                        <div class='d-flex'>
+                            <div class='mx-2 my-2'>
+                                Entry <span v-text='i + 1' />
+                            </div>
+                            <div class='ms-auto mx-2 my-2'>
+                                <IconTrash
+                                    v-if='!disabled'
+                                    size='32'
+                                    class='cursor-pointer'
+                                    @click='data[key].splice(i, 1)'
+                                />
+                            </div>
+                        </div>
+
+                        <TablerSchema
+                            v-model='data[key][i]'
+                            :schema='schema.properties[key].items'
+                            :disabled='disabled'
+                        />
+                    </div>
+                </template>
             </template>
             <template v-else>
-                <div :key='i' v-for='(arr, i) of data[key]' class='border rounded my-2 py-2 mx-2 px-2'>
-                    <div class='d-flex'>
-                        <div class='mx-2 my-2'>Entry <span v-text='i + 1'/></div>
-                        <div class='ms-auto mx-2 my-2'>
-                            <IconTrash v-if='!disabled' @click='data[key].splice(i, 1)' size='32' class='cursor-pointer'/>
-                        </div>
-                    </div>
-
-                    <TablerSchema
-                        :schema='schema.properties[key].items'
+                <div class='row'>
+                    <TablerInput
+                        v-model='data[key]'
+                        :label='key'
+                        :rows='3'
                         :disabled='disabled'
-                        v-model='data[key][i]'
                     />
                 </div>
             </template>
-        </template>
-        <template v-else>
-            <div class='row'>
-                <TablerInput :label='key' :rows='3' :disabled='disabled' v-model='data[key]'/>
-            </div>
-        </template>
+        </div>
+
+        <UploadCSV
+            v-if='upload.shown'
+            @close='upload.shown = false'
+            @import='importCSV($event)'
+        />
+
+        <SchemaModal
+            v-if='edit.shown !== false'
+            :allow-delete='!isNaN(edit.i) && !disabled'
+            :edit='edit.row'
+            :disabled='disabled'
+            :schema='edit.schema'
+            @remove='editModalRemove'
+            @done='editModalDone($event)'
+            @close='edit.shown = false'
+        />
     </div>
-
-    <UploadCSV v-if='upload.shown' @close='upload.shown = false' @import='importCSV($event)'/>
-
-    <SchemaModal
-        v-if='edit.shown !== false'
-        :allowDelete='!isNaN(edit.i) && !disabled'
-        :edit='edit.row'
-        :disabled='disabled'
-        :schema='edit.schema'
-        @remove='editModalRemove'
-        @done='editModalDone($event)'
-        @close='edit.shown = false'
-    />
-</div>
 </template>
 
 <script>
@@ -119,13 +180,22 @@ import SchemaModal from './SchemaModal.vue';
 import {
     IconPlus,
     IconTrash,
-    IconCheck,
-    IconPencil,
     IconDatabaseImport,
 } from '@tabler/icons-vue'
 
 export default {
     name: 'LayerSchema',
+    components: {
+        IconPlus,
+        IconDatabaseImport,
+        IconTrash,
+        TablerInput,
+        TablerToggle,
+        TablerEnum,
+        TablerSchema,
+        UploadCSV,
+        SchemaModal,
+    },
     props: {
         modelValue: {
             type: Object,
@@ -140,6 +210,9 @@ export default {
             default: false
         }
     },
+    emits: [
+        'update:modelValue'
+    ],
     data: function() {
         return {
             data: false,
@@ -235,19 +308,6 @@ export default {
                 this.data[key].push('');
             }
         }
-    },
-    components: {
-        IconPlus,
-        IconPencil,
-        IconDatabaseImport,
-        IconTrash,
-        IconCheck,
-        TablerInput,
-        TablerToggle,
-        TablerEnum,
-        TablerSchema,
-        UploadCSV,
-        SchemaModal,
     }
 }
 </script>

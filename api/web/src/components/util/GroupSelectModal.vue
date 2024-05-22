@@ -1,20 +1,52 @@
 <template>
     <TablerModal>
-        <button type="button" class="btn-close" @click='close' aria-label="Close"></button>
-        <div class="modal-status bg-yellow"></div>
+        <button
+            type='button'
+            class='btn-close'
+            aria-label='Close'
+            @click='close'
+        />
+        <div class='modal-status bg-yellow' />
         <div class='modal-header'>
-            <div class='modal-title'>Channel Selection</div>
+            <div class='modal-title'>
+                Channel Selection
+            </div>
         </div>
-        <div class="modal-body row">
-            <TablerLoading v-if='loading.groups'  desc='Loading Channels'/>
+        <div class='modal-body row'>
+            <TablerLoading
+                v-if='loading.groups'
+                desc='Loading Channels'
+            />
             <template v-else>
-                <div @click='updateGroup(group)' :key='group.name' v-for='group in groups' class='col-12 cursor-pointer'>
-                    <IconCircleFilled  v-if='selected.has(group.name)' size='32' class='cursor-pointer'/>
-                    <IconCircle v-else size='32' class='cursor-pointer'/>
-                    <span v-text='group.name' class='mx-2'/>
+                <div
+                    v-for='group in groups'
+                    :key='group.name'
+                    class='col-12 cursor-pointer'
+                    @click='updateGroup(group)'
+                >
+                    <IconCircleFilled
+                        v-if='selected.has(group.name)'
+                        size='32'
+                        class='cursor-pointer'
+                    />
+                    <IconCircle
+                        v-else
+                        size='32'
+                        class='cursor-pointer'
+                    />
+                    <span
+                        class='mx-2'
+                        v-text='group.name'
+                    />
                 </div>
-                <div class="col-12 mt-3">
-                    <button :disabled='disabled' @click='$emit("close")' class="cursor-pointer btn w-100">Done</button>
+                <div class='col-12 mt-3'>
+                    <button
+                        :disabled='disabled'
+                        class='cursor-pointer btn w-100'
+                        @click='$emit("close")'
+                    >
+                        Done
+                    </button>
                 </div>
             </template>
         </div>
@@ -34,6 +66,12 @@ import {
 
 export default {
     name: 'GroupSelectModal',
+    components: {
+        IconCircle,
+        IconCircleFilled,
+        TablerModal,
+        TablerLoading
+    },
     props: {
         disabled: {
             type: Boolean
@@ -52,6 +90,10 @@ export default {
             }
         }
     },
+    emits: [
+        'close',
+        'update:modelValue'
+    ],
     data: function() {
         return {
             loading: {
@@ -102,12 +144,6 @@ export default {
         close: function() {
             this.$emit('close');
         },
-    },
-    components: {
-        IconCircle,
-        IconCircleFilled,
-        TablerModal,
-        TablerLoading
     }
 }
 </script>

@@ -1,23 +1,45 @@
 <template>
-<TablerModal size='xl'>
-    <div class="modal-status bg-red"></div>
-    <button type="button" class="btn-close" @click='$emit("close")' aria-label="Close"></button>
+    <TablerModal size='xl'>
+        <div class='modal-status bg-red' />
+        <button
+            type='button'
+            class='btn-close'
+            aria-label='Close'
+            @click='$emit("close")'
+        />
 
-    <div class='modal-header'>
-        <div class='strong d-flex align-items-center' v-text='iconset.name || "Unnamed"'></div>
-    </div>
+        <div class='modal-header'>
+            <div
+                class='strong d-flex align-items-center'
+                v-text='iconset.name || "Unnamed"'
+            />
+        </div>
 
-    <TablerLoading v-if='loading.iconset' desc='Loading Iconset'/>
-    <div v-else class='mx-4 my-4'>
-        <TablerSchema :schema='schema' v-model='iconset'/>
+        <TablerLoading
+            v-if='loading.iconset'
+            desc='Loading Iconset'
+        />
+        <div
+            v-else
+            class='mx-4 my-4'
+        >
+            <TablerSchema
+                v-model='iconset'
+                :schema='schema'
+            />
 
-        <div class='d-flex'>
-            <div class='ms-auto'>
-                <div @click='submit' class='btn btn-primary'>Submit</div>
+            <div class='d-flex'>
+                <div class='ms-auto'>
+                    <div
+                        class='btn btn-primary'
+                        @click='submit'
+                    >
+                        Submit
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
-</TablerModal>
+    </TablerModal>
 </template>
 
 <script>
@@ -32,6 +54,14 @@ import {
 
 export default {
     name: 'IconsetEdit',
+    components: {
+        TablerModal,
+        TablerLoading,
+        TablerSchema,
+    },
+    emits: [
+        'close'
+    ],
     data: function() {
         return {
             loading: {
@@ -88,10 +118,5 @@ export default {
             this.schema = (await std(url)).body;
         },
     },
-    components: {
-        TablerModal,
-        TablerLoading,
-        TablerSchema,
-    }
 }
 </script>

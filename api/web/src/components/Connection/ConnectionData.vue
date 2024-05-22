@@ -1,47 +1,93 @@
 <template>
-<div>
-    <div class='card-header d-flex'>
-        Data Stores
+    <div>
+        <div class='card-header d-flex'>
+            Data Stores
 
-        <div class='ms-auto btn-list'>
-            <IconPlus @click='$router.push(`/connection/${connection.id}/data/new`)' v-tooltip='"Create Store"' size='32' class='cursor-pointer'/>
-            <IconRefresh @click='listData' v-tooltip='"Refresh"' size='32' class='cursor-pointer'/>
+            <div class='ms-auto btn-list'>
+                <IconPlus
+                    v-tooltip='"Create Store"'
+                    size='32'
+                    class='cursor-pointer'
+                    @click='$router.push(`/connection/${connection.id}/data/new`)'
+                />
+                <IconRefresh
+                    v-tooltip='"Refresh"'
+                    size='32'
+                    class='cursor-pointer'
+                    @click='listData'
+                />
+            </div>
         </div>
-    </div>
 
-    <div style='min-height: 20vh; margin-bottom: 61px'>
-        <TablerAlert v-if='err' title='ETL Server Error' :err='err' :compact='true'/>
-        <TablerLoading v-else-if='loading'/>
-        <TablerNone v-else-if='!list.items.length' :create='false' label='Data'/>
-        <div v-else class='table-resposive'>
-            <table class='table card-table table-vcenter datatable table-hover'>
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                    </tr>
-                </thead>
-                <tbody class='table-tbody'>
-                    <tr @click='$router.push(`/connection/${connection.id}/data/${data.id}`)' :key='data.id' v-for='data of list.items' class='cursor-pointer'>
-                        <td>
-                            <div class='d-flex'>
-                                <span class='mt-2' v-text='data.name'/>
-                                <div class='ms-auto'>
-                                    <IconAccessPoint v-if='data.mission_sync' size='32' class='cursor-pointer text-green' v-tooltip='"Mission Sync On"'/>
-                                    <IconAccessPointOff v-else size='32' class='cursor-pointer text-red' v-tooltip='"Mission Sync Off"'/>
+        <div style='min-height: 20vh; margin-bottom: 61px'>
+            <TablerAlert
+                v-if='err'
+                title='ETL Server Error'
+                :err='err'
+                :compact='true'
+            />
+            <TablerLoading v-else-if='loading' />
+            <TablerNone
+                v-else-if='!list.items.length'
+                :create='false'
+                label='Data'
+            />
+            <div
+                v-else
+                class='table-resposive'
+            >
+                <table class='table card-table table-vcenter datatable table-hover'>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                        </tr>
+                    </thead>
+                    <tbody class='table-tbody'>
+                        <tr
+                            v-for='data of list.items'
+                            :key='data.id'
+                            class='cursor-pointer'
+                            @click='$router.push(`/connection/${connection.id}/data/${data.id}`)'
+                        >
+                            <td>
+                                <div class='d-flex'>
+                                    <span
+                                        class='mt-2'
+                                        v-text='data.name'
+                                    />
+                                    <div class='ms-auto'>
+                                        <IconAccessPoint
+                                            v-if='data.mission_sync'
+                                            v-tooltip='"Mission Sync On"'
+                                            size='32'
+                                            class='cursor-pointer text-green'
+                                        />
+                                        <IconAccessPointOff
+                                            v-else
+                                            v-tooltip='"Mission Sync Off"'
+                                            size='32'
+                                            class='cursor-pointer text-red'
+                                        />
+                                    </div>
                                 </div>
-                            </div>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div
+            class='position-absolute bottom-0 w-100'
+            style='height: 61px;'
+        >
+            <TableFooter
+                :limit='paging.limit'
+                :total='list.total'
+                @page='paging.page = $event'
+            />
         </div>
     </div>
-
-    <div class='position-absolute bottom-0 w-100' style='height: 61px;'>
-        <TableFooter :limit='paging.limit' :total='list.total' @page='paging.page = $event'/>
-    </div>
-</div>
-
 </template>
 
 <script>
@@ -61,6 +107,16 @@ import {
 
 export default {
     name: 'ConnectionSinks',
+    components: {
+        IconAccessPoint,
+        IconAccessPointOff,
+        IconRefresh,
+        IconPlus,
+        TablerNone,
+        TablerAlert,
+        TablerLoading,
+        TableFooter,
+    },
     props: {
         connection: {
             type: Object,
@@ -82,9 +138,6 @@ export default {
             },
         }
     },
-    mounted: async function() {
-        await this.listData();
-    },
     watch: {
         paging: {
             deep: true,
@@ -92,6 +145,9 @@ export default {
                 await this.listData();
             },
         }
+    },
+    mounted: async function() {
+        await this.listData();
     },
     methods: {
         listData: async function() {
@@ -108,16 +164,6 @@ export default {
             }
             this.loading = false;
         }
-    },
-    components: {
-        IconAccessPoint,
-        IconAccessPointOff,
-        IconRefresh,
-        IconPlus,
-        TablerNone,
-        TablerAlert,
-        TablerLoading,
-        TableFooter,
     }
 }
 </script>

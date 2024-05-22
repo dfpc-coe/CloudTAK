@@ -1,94 +1,164 @@
 <template>
-<div>
-    <div class='card-header bg-white sticky-top'>
-        <h3 class='card-title'>Style Overrides</h3>
-        <div class='ms-auto btn-list'>
-            <IconSettings v-if='disabled' @click='disabled = false' size='32' class='cursor-pointer' v-tooltip='"Edit Style"'/>
-            <template v-else-if='!loading.save'>
-                <div class='btn-list d-flex align-items-center'>
-                    <TablerToggle label='Styling Enabled' v-model='enabled'/>
-
-                    <div @click='saveLayer' class="btn btn-primary btn-icon px-2">
-                        <IconDeviceFloppy size='32' v-tooltip='"Save Style"'/>
-                    </div>
-                </div>
-            </template>
-        </div>
-    </div>
-
-    <TablerLoading v-if='loading.save' desc='Saving Styles'/>
-    <TablerLoading v-else-if='loading.init' desc='Loading Styles'/>
-    <TablerNone v-else-if='!enabled' label='Style Overrides' :create='false'/>
-    <template v-else>
-        <div class='card-body'>
-            <StyleSingle :schema='layer.schema' :disabled='disabled' v-model='style'/>
-        </div>
-
-        <div class='col-12 d-flex align-items-center card-header'>
+    <div>
+        <div class='card-header bg-white sticky-top'>
             <h3 class='card-title'>
-                Query Mode
+                Style Overrides
             </h3>
             <div class='ms-auto btn-list'>
-                <button @click='help("query")' class='btn'>
-                    <IconHelp size='32' v-tooltip='"JSONata Help"'/>
-                </button>
-                <button v-if='query !== null' @click='query = null' class='btn'>
-                    <IconX size='32' v-tooltip='"Return to list"'/>
-                </button>
-                <template v-if='!disabled'>
-                    <button v-if='query === null' @click='newQuery' class='btn'>
-                        <IconPlus size='32' v-tooltip='"New Query"'/>
-                    </button>
+                <IconSettings
+                    v-if='disabled'
+                    v-tooltip='"Edit Style"'
+                    size='32'
+                    class='cursor-pointer'
+                    @click='disabled = false'
+                />
+                <template v-else-if='!loading.save'>
+                    <div class='btn-list d-flex align-items-center'>
+                        <TablerToggle
+                            v-model='enabled'
+                            label='Styling Enabled'
+                        />
+
+                        <div
+                            class='btn btn-primary btn-icon px-2'
+                            @click='saveLayer'
+                        >
+                            <IconDeviceFloppy
+                                v-tooltip='"Save Style"'
+                                size='32'
+                            />
+                        </div>
+                    </div>
                 </template>
             </div>
         </div>
-        <template v-if='query === null && !queries.length'>
-            <TablerNone label='Queries' :create='false' @create='newQuery'/>
-        </template>
-        <template v-if='query === null && queries'>
-            <div class="list-group list-group-flush px-2 py-2">
-                <div :key='q_idx' v-for='(q, q_idx) in queries' class='my-1'>
-                    <div @click='openQuery(q_idx)' class="cursor-pointer hover-light list-group-item list-group-item-action">
-                        <div class='d-flex'>
-                            <div class='align-self-center' v-text='q.query'></div>
-                            <div class='ms-auto'>
-                                <IconTrash v-if='!disabled' @click.stop='queries.splice(q_idx, 1)' size='32'/>
+
+        <TablerLoading
+            v-if='loading.save'
+            desc='Saving Styles'
+        />
+        <TablerLoading
+            v-else-if='loading.init'
+            desc='Loading Styles'
+        />
+        <TablerNone
+            v-else-if='!enabled'
+            label='Style Overrides'
+            :create='false'
+        />
+        <template v-else>
+            <div class='card-body'>
+                <StyleSingle
+                    v-model='style'
+                    :schema='layer.schema'
+                    :disabled='disabled'
+                />
+            </div>
+
+            <div class='col-12 d-flex align-items-center card-header'>
+                <h3 class='card-title'>
+                    Query Mode
+                </h3>
+                <div class='ms-auto btn-list'>
+                    <button
+                        class='btn'
+                        @click='help("query")'
+                    >
+                        <IconHelp
+                            v-tooltip='"JSONata Help"'
+                            size='32'
+                        />
+                    </button>
+                    <button
+                        v-if='query !== null'
+                        class='btn'
+                        @click='query = null'
+                    >
+                        <IconX
+                            v-tooltip='"Return to list"'
+                            size='32'
+                        />
+                    </button>
+                    <template v-if='!disabled'>
+                        <button
+                            v-if='query === null'
+                            class='btn'
+                            @click='newQuery'
+                        >
+                            <IconPlus
+                                v-tooltip='"New Query"'
+                                size='32'
+                            />
+                        </button>
+                    </template>
+                </div>
+            </div>
+            <template v-if='query === null && !queries.length'>
+                <TablerNone
+                    label='Queries'
+                    :create='false'
+                    @create='newQuery'
+                />
+            </template>
+            <template v-if='query === null && queries'>
+                <div class='list-group list-group-flush px-2 py-2'>
+                    <div
+                        v-for='(q, q_idx) in queries'
+                        :key='q_idx'
+                        class='my-1'
+                    >
+                        <div
+                            class='cursor-pointer hover-light list-group-item list-group-item-action'
+                            @click='openQuery(q_idx)'
+                        >
+                            <div class='d-flex'>
+                                <div
+                                    class='align-self-center'
+                                    v-text='q.query'
+                                />
+                                <div class='ms-auto'>
+                                    <IconTrash
+                                        v-if='!disabled'
+                                        size='32'
+                                        @click.stop='queries.splice(q_idx, 1)'
+                                    />
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        </template>
-        <template v-else-if='query !== null'>
-            <div class='card-body'>
-                <div class='col-md-12 hover-light rounded px-2 py-2'>
-                    <TablerInput
+            </template>
+            <template v-else-if='query !== null'>
+                <div class='card-body'>
+                    <div class='col-md-12 hover-light rounded px-2 py-2'>
+                        <TablerInput
+                            v-model='queries[query].query'
+                            :disabled='disabled'
+                            placeholder='JSONata Query'
+                            label='JSONata Query'
+                            :error='error_query'
+                        />
+                    </div>
+
+                    <StyleSingle
+                        v-model='queries[query].styles'
+                        :schema='layer.schema'
                         :disabled='disabled'
-                        v-model='queries[query].query'
-                        placeholder='JSONata Query'
-                        label='JSONata Query'
-                        :error='error_query'
                     />
                 </div>
-
-                <StyleSingle :schema='layer.schema' :disabled='disabled' v-model='queries[query].styles'/>
-            </div>
+            </template>
         </template>
-    </template>
-</div>
+    </div>
 </template>
 
 <script>
 import { std } from '/src/std.ts';
-import StyleTemplate from './utils/StyleTemplate.vue';
 import {
     IconX,
-    IconCode,
     IconPlus,
     IconHelp,
     IconTrash,
     IconSettings,
-    IconBrushOff,
     IconDeviceFloppy
 } from '@tabler/icons-vue'
 import jsonata from 'jsonata';
@@ -102,12 +172,28 @@ import StyleSingle from './utils/StyleSingle.vue';
 
 export default {
     name: 'LayerStyles',
+    components: {
+        IconX,
+        IconPlus,
+        IconHelp,
+        StyleSingle,
+        TablerInput,
+        IconTrash,
+        TablerLoading,
+        TablerToggle,
+        TablerNone,
+        IconSettings,
+        IconDeviceFloppy
+    },
     props: {
         layer: {
             type: Object,
             required: true
         },
     },
+    emits: [
+        'layer'
+    ],
     data: function() {
         return {
             disabled: true,
@@ -171,7 +257,7 @@ export default {
             })
             this.query = this.queries.length - 1;
         },
-        saveLayer: async function(query = null) {
+        saveLayer: async function() {
             this.loading.save = true;
 
             try {
@@ -199,22 +285,6 @@ export default {
         openQuery: function(idx) {
             this.query = idx
         }
-    },
-    components: {
-        IconX,
-        IconCode,
-        IconPlus,
-        IconHelp,
-        StyleTemplate,
-        StyleSingle,
-        TablerInput,
-        IconTrash,
-        TablerLoading,
-        TablerToggle,
-        TablerNone,
-        IconSettings,
-        IconBrushOff,
-        IconDeviceFloppy
     }
 }
 </script>

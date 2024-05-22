@@ -1,57 +1,80 @@
 <template>
-<div>
-    <div class="card-header d-flex">
-        <h1 class='card-title'>Connection Admin</h1>
+    <div>
+        <div class='card-header d-flex'>
+            <h1 class='card-title'>
+                Connection Admin
+            </h1>
 
-        <div class='ms-auto btn-list'>
-            <IconRefresh
-                @click='fetchList'
-                v-tooltip='"Refresh"'
-                size='32'
-                class='cursor-pointer'
-            />
-        </div>
-    </div>
-
-    <div style='min-height: 20vh; margin-bottom: 61px'>
-        <TablerLoading v-if='loading' desc='Loading Connections'/>
-        <TablerNone v-else-if='!list.items.length' label='Layers' :create='false'/>
-        <div v-else class='table-responsive'>
-            <table class="table card-table table-hover table-vcenter datatable">
-                <TableHeader
-                    v-model:sort='paging.sort'
-                    v-model:order='paging.order'
-                    v-model:header='header'
+            <div class='ms-auto btn-list'>
+                <IconRefresh
+                    v-tooltip='"Refresh"'
+                    size='32'
+                    class='cursor-pointer'
+                    @click='fetchList'
                 />
-                <tbody>
-                    <tr @click='stdclick($router, $event, `/connection/${connection.id}`)' :key='connection.id' v-for='connection in list.items' class='cursor-pointer'>
-                        <template v-for='h in header'>
-                            <template v-if='h.display && h.name === "name"'>
-                                <td>
-                                    <div class='d-flex align-items-center'>
-                                        <Status :connection='connection'/><span class='mx-2' v-text='connection[h.name]'/>
-                                    </div>
-                                </td>
-                            </template>
-                            <template v-else-if='h.display'>
-                                <td>
-                                    <span v-text='connection[h.name]'/>
-                                </td>
-                            </template>
-                        </template>
-                    </tr>
-                </tbody>
-            </table>
+            </div>
         </div>
-        <div class='position-absolute bottom-0 w-100' style='height: 61px;'>
-            <TableFooter
-                :limit='paging.limit'
-                :total='list.total'
-                @page='paging.page = $event'
+
+        <div style='min-height: 20vh; margin-bottom: 61px'>
+            <TablerLoading
+                v-if='loading'
+                desc='Loading Connections'
             />
+            <TablerNone
+                v-else-if='!list.items.length'
+                label='Layers'
+                :create='false'
+            />
+            <div
+                v-else
+                class='table-responsive'
+            >
+                <table class='table card-table table-hover table-vcenter datatable'>
+                    <TableHeader
+                        v-model:sort='paging.sort'
+                        v-model:order='paging.order'
+                        v-model:header='header'
+                    />
+                    <tbody>
+                        <tr
+                            v-for='connection in list.items'
+                            :key='connection.id'
+                            class='cursor-pointer'
+                            @click='stdclick($router, $event, `/connection/${connection.id}`)'
+                        >
+                            <template v-for='h in header'>
+                                <template v-if='h.display && h.name === "name"'>
+                                    <td>
+                                        <div class='d-flex align-items-center'>
+                                            <Status :connection='connection' /><span
+                                                class='mx-2'
+                                                v-text='connection[h.name]'
+                                            />
+                                        </div>
+                                    </td>
+                                </template>
+                                <template v-else-if='h.display'>
+                                    <td>
+                                        <span v-text='connection[h.name]' />
+                                    </td>
+                                </template>
+                            </template>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div
+                class='position-absolute bottom-0 w-100'
+                style='height: 61px;'
+            >
+                <TableFooter
+                    :limit='paging.limit'
+                    :total='list.total'
+                    @page='paging.page = $event'
+                />
+            </div>
         </div>
     </div>
-</div>
 </template>
 
 <script>
@@ -64,12 +87,19 @@ import {
 } from '@tak-ps/vue-tabler';
 import {
     IconRefresh,
-    IconCloudUpload,
 } from '@tabler/icons-vue'
 import Status from '../Connection/Status.vue';
 
 export default {
     name: 'LayerAdmin',
+    components: {
+        Status,
+        TablerNone,
+        IconRefresh,
+        TablerLoading,
+        TableHeader,
+        TableFooter,
+    },
     data: function() {
         return {
             err: false,
@@ -129,15 +159,6 @@ export default {
             this.list = await std(url);
             this.loading = false;
         }
-    },
-    components: {
-        Status,
-        TablerNone,
-        IconRefresh,
-        IconCloudUpload,
-        TablerLoading,
-        TableHeader,
-        TableFooter,
     }
 }
 </script>

@@ -1,47 +1,89 @@
 <template>
-<MenuTemplate name='Import'>
-    <template #buttons>
-        <TablerLoading v-if='loading.main'/>
-        <IconRefresh @click='fetch' size='32' class='cursor-pointer' v-tooltip='"Refresh"'/>
-    </template>
-    <template #default>
-        <TablerLoading v-if='loading.initial'/>
-        <div v-else class='mx-4 my-4'>
-            <div class='datagrid'>
-                <div class="datagrid-item">
-                    <div class="datagrid-title">Import Name</div>
-                    <div class="datagrid-content d-flex align-items-center">
-                        <Status :dark='true' :status='imported.status'/><span class='mx-2' v-text='imported.name'/>
+    <MenuTemplate name='Import'>
+        <template #buttons>
+            <TablerLoading v-if='loading.main' />
+            <IconRefresh
+                v-tooltip='"Refresh"'
+                size='32'
+                class='cursor-pointer'
+                @click='fetch'
+            />
+        </template>
+        <template #default>
+            <TablerLoading v-if='loading.initial' />
+            <div
+                v-else
+                class='mx-4 my-4'
+            >
+                <div class='datagrid'>
+                    <div class='datagrid-item'>
+                        <div class='datagrid-title'>
+                            Import Name
+                        </div>
+                        <div class='datagrid-content d-flex align-items-center'>
+                            <Status
+                                :dark='true'
+                                :status='imported.status'
+                            /><span
+                                class='mx-2'
+                                v-text='imported.name'
+                            />
+                        </div>
+                    </div>
+                    <div class='datagrid-item'>
+                        <div class='datagrid-title'>
+                            Import Type
+                        </div>
+                        <div
+                            class='datagrid-content'
+                            v-text='imported.mode + ": " + imported.mode_id'
+                        />
                     </div>
                 </div>
-                <div class="datagrid-item">
-                    <div class="datagrid-title">Import Type</div>
-                    <div class="datagrid-content" v-text='imported.mode + ": " + imported.mode_id'></div>
+                <div class='py-2'>
+                    <TablerNone
+                        v-if='imported.status === "Empty"'
+                        :create='false'
+                    />
+                    <TablerLoading
+                        v-else-if='loading.run'
+                        desc='Running Import'
+                    />
+                    <template v-else-if='imported.status === "Fail"'>
+                        <div class='datagrid-item'>
+                            <div class='datagrid-title'>
+                                Import Error
+                            </div>
+                            <div
+                                class='datagrid-content'
+                                v-text='imported.error'
+                            />
+                        </div>
+                    </template>
                 </div>
-            </div>
-            <div class='py-2'>
-                <TablerNone v-if='imported.status === "Empty"' :create='false'/>
-                <TablerLoading v-else-if='loading.run' desc='Running Import'/>
-                <template v-else-if='imported.status === "Fail"'>
-                    <div class="datagrid-item">
-                        <div class="datagrid-title">Import Error</div>
-                        <div class="datagrid-content" v-text='imported.error'></div>
+                <div class='datagrid d-flex'>
+                    <div class='datagrid-item'>
+                        <div class='datagrid-title'>
+                            Created
+                        </div>
+                        <div
+                            class='datagrid-content'
+                            v-text='timeDiff(imported.created)'
+                        />
                     </div>
-                </template>
-            </div>
-            <div class='datagrid d-flex'>
-                <div class="datagrid-item">
-                    <div class="datagrid-title">Created</div>
-                    <div class="datagrid-content" v-text='timeDiff(imported.created)'></div>
+                    <div class='datagrid-item ms-auto'>
+                        <div class='datagrid-title'>
+                            Updated
+                        </div>
+                        <div
+                            class='datagrid-content'
+                            v-text='timeDiff(imported.updated)'
+                        />
+                    </div>
                 </div>
-                <div class="datagrid-item ms-auto">
-                    <div class="datagrid-title">Updated</div>
-                    <div class="datagrid-content" v-text='timeDiff(imported.updated)'></div>
-                </div>
             </div>
-        </div>
-    </template>
-</MenuTemplate>
+        </template>
+    </MenuTemplate>
 </template>
 
 <script>
@@ -59,6 +101,13 @@ import {
 
 export default {
     name: 'CloudTAKImport',
+    components: {
+        Status,
+        IconRefresh,
+        TablerNone,
+        TablerLoading,
+        MenuTemplate,
+    },
     data: function() {
         return {
             loading: {
@@ -97,13 +146,6 @@ export default {
             this.loading.initial = false;
             this.loading.main = false;
         },
-    },
-    components: {
-        Status,
-        IconRefresh,
-        TablerNone,
-        TablerLoading,
-        MenuTemplate,
     }
 }
 </script>

@@ -1,62 +1,87 @@
 <template>
-<div class='position-relative mb-2'>
-    <div class='sticky-top col-12 d-flex align-items-center user-select-none'>
-        <div class='subheader mx-2 my-2'>Share</div>
-        <div v-if='compact' class='ms-auto'>
-            <IconX @click='$emit("cancel")' class='cursor-pointer mx-2 my-2' size='20' v-tooltip='"Cancel Share"'/>
+    <div class='position-relative mb-2'>
+        <div class='sticky-top col-12 d-flex align-items-center user-select-none'>
+            <div class='subheader mx-2 my-2'>
+                Share
+            </div>
+            <div
+                v-if='compact'
+                class='ms-auto'
+            >
+                <IconX
+                    v-tooltip='"Cancel Share"'
+                    class='cursor-pointer mx-2 my-2'
+                    size='20'
+                    @click='$emit("cancel")'
+                />
+            </div>
         </div>
-    </div>
 
-    <TablerLoading v-if='loading'/>
-    <TablerNone v-else-if='!visibleContacts.length' :create='false'/>
-    <template v-else>
-        <div
-            class='overflow-auto'
-            :style='`
+        <TablerLoading v-if='loading' />
+        <TablerNone
+            v-else-if='!visibleContacts.length'
+            :create='false'
+        />
+        <template v-else>
+            <div
+                class='overflow-auto'
+                :style='`
                 height: calc(100% - 36px - ${compact ? "30px" : "100px"});
                 margin-bottom: ${compact ? "30px" : "100px"};
             `'
-        >
-            <Contact
-                :key='a.id'
-                v-for='a of visibleContacts'
-                :compact='compact'
-                :contact='a'
-                :buttonChat='false'
-                :buttonZoom='false'
-                :selected='selected.has(a)'
-                @click='selected.has(a) ? selected.delete(a) : selected.add(a)'
-            />
-        </div>
-        <div class='position-absolute row g-0 bottom-0 start-0 end-0'>
-            <div class='col-6 px-2'>
-                <button
-                    @click='share'
-                    class='w-100 btn btn-primary'
-                    :style='compact ? "height: 30px" : ""'
-                    v-tooltip='"Share to Selected"'
+            >
+                <Contact
+                    v-for='a of visibleContacts'
+                    :key='a.id'
+                    :compact='compact'
+                    :contact='a'
+                    :button-chat='false'
+                    :button-zoom='false'
+                    :selected='selected.has(a)'
+                    @click='selected.has(a) ? selected.delete(a) : selected.add(a)'
+                />
+            </div>
+            <div class='position-absolute row g-0 bottom-0 start-0 end-0'>
+                <div class='col-6 px-2'>
+                    <button
+                        v-tooltip='"Share to Selected"'
+                        class='w-100 btn btn-primary'
+                        :style='compact ? "height: 30px" : ""'
+                        @click='share'
+                    >
+                        <IconShare2
+                            v-if='compact'
+                            size='20'
+                        />
+                        <span v-else>Share to Selected</span>
+                    </button>
+                </div>
+                <div class='col-6 px-2'>
+                    <button
+                        v-tooltip='"Broadcast to All"'
+                        class='w-100 btn btn-secondary'
+                        :style='compact ? "height: 30px" : ""'
+                        @click='broadcast'
+                    >
+                        <IconBroadcast
+                            v-if='compact'
+                            size='20'
+                        />
+                        <span v-else>Broadcast to All</span>
+                    </button>
+                </div>
+                <div
+                    v-if='!compact'
+                    class='col-12 px-2 pt-2'
+                    @click='$emit("cancel")'
                 >
-                    <IconShare2 v-if='compact' size='20'/>
-                    <span v-else>Share to Selected</span>
-                </button>
+                    <button class='w-100 btn btn-secondary'>
+                        Cancel
+                    </button>
+                </div>
             </div>
-            <div class='col-6 px-2'>
-                <button
-                    @click='broadcast'
-                    class='w-100 btn btn-secondary'
-                    :style='compact ? "height: 30px" : ""'
-                    v-tooltip='"Broadcast to All"'
-                >
-                    <IconBroadcast v-if='compact' size='20'/>
-                    <span v-else>Broadcast to All</span>
-                </button>
-            </div>
-            <div v-if='!compact' @click='$emit("cancel")' class='col-12 px-2 pt-2'>
-                <button class='w-100 btn btn-secondary'>Cancel</button>
-            </div>
-        </div>
-    </template>
-</div>
+        </template>
+    </div>
 </template>
 
 <script>
@@ -77,6 +102,14 @@ const connectionStore = useConnectionStore();
 
 export default {
     name: 'COTShare',
+    components: {
+        Contact,
+        IconX,
+        IconBroadcast,
+        IconShare2,
+        TablerNone,
+        TablerLoading,
+    },
     props: {
         feats: {
             type: Array,
@@ -91,6 +124,10 @@ export default {
             default: '100%'
         }
     },
+    emits: [
+        'cancel',
+        'done'
+    ],
     data: function() {
         return {
             err: false,
@@ -99,15 +136,15 @@ export default {
             contacts: [],
         }
     },
-    mounted: async function() {
-        await this.fetchList();
-    },
     computed: {
         visibleContacts: function() {
             return this.contacts.filter((contact) => {
                 return contact.callsign;
             })
         }
+    },
+    mounted: async function() {
+        await this.fetchList();
     },
     methods: {
         share: async function() {
@@ -160,14 +197,6 @@ export default {
             this.contacts = await std(url);
             this.loading = false;
         },
-    },
-    components: {
-        Contact,
-        IconX,
-        IconBroadcast,
-        IconShare2,
-        TablerNone,
-        TablerLoading,
     }
 }
 </script>

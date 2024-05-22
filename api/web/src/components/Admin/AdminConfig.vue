@@ -1,48 +1,59 @@
 <template>
-<div>
-    <TablerLoading v-if='loading'/>
-    <template v-else>
-        <div class="card-header">
-            <h3 class='card-title'>CloudTAK Settings</h3>
-            <div class='ms-auto'>
-                <div class='btn-list'>
-                    <IconSettings
-                        v-if='!edit'
-                        v-tooltip='"Configure Server"'
-                        size='32'
-                        class='cursor-pointer'
-                        @click='edit = true'
-                    />
-                </div>
-            </div>
-        </div>
-        <div class="card-body row">
-            <div class='col-lg-12 py-2'>
-                <TablerToggle
-                    v-model='config["agol::enabled"]'
-                    :disabled='!edit'
-                    label='ArcGIS Online Enabled'
-                />
-                <TablerInput
-                    v-model='config["agol::token"]'
-                    :disabled='!edit'
-                    label='ArcGIS Online API Token'
-                />
-            </div>
-
-            <div v-if='edit' class='col-lg-12 d-flex py-2'>
-                <div @click='fetch' class='btn'>
-                    Cancel
-                </div>
+    <div>
+        <TablerLoading v-if='loading' />
+        <template v-else>
+            <div class='card-header'>
+                <h3 class='card-title'>
+                    CloudTAK Settings
+                </h3>
                 <div class='ms-auto'>
-                    <div @click='postConfig' class='btn btn-primary'>
-                        Save Settings
+                    <div class='btn-list'>
+                        <IconSettings
+                            v-if='!edit'
+                            v-tooltip='"Configure Server"'
+                            size='32'
+                            class='cursor-pointer'
+                            @click='edit = true'
+                        />
                     </div>
                 </div>
             </div>
-        </div>
-    </template>
-</div>
+            <div class='card-body row'>
+                <div class='col-lg-12 py-2'>
+                    <TablerToggle
+                        v-model='config["agol::enabled"]'
+                        :disabled='!edit'
+                        label='ArcGIS Online Enabled'
+                    />
+                    <TablerInput
+                        v-model='config["agol::token"]'
+                        :disabled='!edit'
+                        label='ArcGIS Online API Token'
+                    />
+                </div>
+
+                <div
+                    v-if='edit'
+                    class='col-lg-12 d-flex py-2'
+                >
+                    <div
+                        class='btn'
+                        @click='fetch'
+                    >
+                        Cancel
+                    </div>
+                    <div class='ms-auto'>
+                        <div
+                            class='btn btn-primary'
+                            @click='postConfig'
+                        >
+                            Save Settings
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </template>
+    </div>
 </template>
 
 <script>
@@ -53,14 +64,18 @@ import {
     TablerInput
 } from '@tak-ps/vue-tabler';
 import {
-    IconPlus,
-    IconLock,
     IconSettings
 } from '@tabler/icons-vue';
 import timeDiff from '../../timediff.js';
 
 export default {
     name: 'AdminConfig',
+    components: {
+        IconSettings,
+        TablerLoading,
+        TablerToggle,
+        TablerInput,
+    },
     data: function() {
         return {
             edit: false,
@@ -101,14 +116,6 @@ export default {
             this.edit = false;
             this.loading = false;
         }
-    },
-    components: {
-        IconSettings,
-        TablerLoading,
-        TablerToggle,
-        TablerInput,
-        IconLock,
-        IconPlus,
     }
 }
 </script>

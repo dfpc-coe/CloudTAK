@@ -1,25 +1,49 @@
 <template>
-<MenuTemplate name='User Files'>
-    <TablerLoading v-if='loading'/>
-    <TablerNone
-        v-else-if='!assetList.assets.length'
-        label='User Uploads'
-        @create='$router.push("/profile/files")'
-    />
-    <template v-else>
-        <div :key='a.id' v-for='a in assetList.assets' class="cursor-pointer col-12 py-2 px-3 hover-dark">
-            <div class='col-12 py-2 px-2 d-flex align-items-center'>
-                <IconEyeX v-if='!a.visualized' v-tooltip='"No Viz Layer"' size='32'/>
-                <IconEye v-else-if='a.visible' @click='flipVisible(a)' size='32' class='cursor-pointer'/>
-                <IconEyeOff v-else @click='flipVisible(a)' size='32' class='cursor-pointer'/>
-                <span class="mx-2 cursor-pointer" v-text='a.name'></span>
-                <div class='ms-auto btn-list'>
-                    <TablerDelete displaytype='icon' @delete='deleteProfileAsset(a)'/>
+    <MenuTemplate name='User Files'>
+        <TablerLoading v-if='loading' />
+        <TablerNone
+            v-else-if='!assetList.assets.length'
+            label='User Uploads'
+            @create='$router.push("/profile/files")'
+        />
+        <template v-else>
+            <div
+                v-for='a in assetList.assets'
+                :key='a.id'
+                class='cursor-pointer col-12 py-2 px-3 hover-dark'
+            >
+                <div class='col-12 py-2 px-2 d-flex align-items-center'>
+                    <IconEyeX
+                        v-if='!a.visualized'
+                        v-tooltip='"No Viz Layer"'
+                        size='32'
+                    />
+                    <IconEye
+                        v-else-if='a.visible'
+                        size='32'
+                        class='cursor-pointer'
+                        @click='flipVisible(a)'
+                    />
+                    <IconEyeOff
+                        v-else
+                        size='32'
+                        class='cursor-pointer'
+                        @click='flipVisible(a)'
+                    />
+                    <span
+                        class='mx-2 cursor-pointer'
+                        v-text='a.name'
+                    />
+                    <div class='ms-auto btn-list'>
+                        <TablerDelete
+                            displaytype='icon'
+                            @delete='deleteProfileAsset(a)'
+                        />
+                    </div>
                 </div>
             </div>
-        </div>
-    </template>
-</MenuTemplate>
+        </template>
+    </MenuTemplate>
 </template>
 
 <script>
@@ -40,6 +64,15 @@ import {
 
 export default {
     name: 'CloudTAKDatas',
+    components: {
+        IconEye,
+        IconEyeX,
+        IconEyeOff,
+        TablerNone,
+        TablerLoading,
+        TablerDelete,
+        MenuTemplate
+    },
     data: function() {
         return {
             err: false,
@@ -56,9 +89,6 @@ export default {
             },
         }
     },
-    mounted: async function() {
-        await this.fetchUserAssetList();
-    },
     watch: {
        paging: {
             deep: true,
@@ -66,6 +96,9 @@ export default {
                 await this.fethList();
             }
        }
+    },
+    mounted: async function() {
+        await this.fetchUserAssetList();
     },
     methods: {
         flipVisible: async function(a) {
@@ -149,15 +182,6 @@ export default {
             this.assetList = assetList;
             this.loading = false;
         },
-    },
-    components: {
-        IconEye,
-        IconEyeX,
-        IconEyeOff,
-        TablerNone,
-        TablerLoading,
-        TablerDelete,
-        MenuTemplate
     }
 }
 </script>

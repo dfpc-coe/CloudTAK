@@ -1,31 +1,71 @@
 <template>
-<MenuTemplate name='Channels'>
-    <template #buttons>
-        <IconSearch v-if='channels.length' @click='search.shown = !search.shown' v-tooltip='"Search"' size='32' class='cursor-pointer'/>
-        <IconRefresh v-if='!loading' @click='loadChannels' size='32' class='cursor-pointer' v-tooltip='"Refresh"'/>
-    </template>
-    <template #default>
-        <div v-if='search.shown' class='col-12 px-3'>
-            <TablerInput v-model='search.filter' placeholder='Filter'/>
-        </div>
+    <MenuTemplate name='Channels'>
+        <template #buttons>
+            <IconSearch
+                v-if='channels.length'
+                v-tooltip='"Search"'
+                size='32'
+                class='cursor-pointer'
+                @click='search.shown = !search.shown'
+            />
+            <IconRefresh
+                v-if='!loading'
+                v-tooltip='"Refresh"'
+                size='32'
+                class='cursor-pointer'
+                @click='loadChannels'
+            />
+        </template>
+        <template #default>
+            <div
+                v-if='search.shown'
+                class='col-12 px-3'
+            >
+                <TablerInput
+                    v-model='search.filter'
+                    placeholder='Filter'
+                />
+            </div>
 
-        <TablerLoading v-if='loading'/>
-        <TablerNone v-else-if='!Object.keys(processChannels).length' :create='false'/>
-        <template v-else>
-            <div :key='ch.name' v-for='ch in processChannels' class="col-lg-12 hover-dark">
-                <div class='hover-dark'>
-                    <div class='px-2'>
-                        <div class='col-12 py-2 px-2 d-flex align-items-center'>
-                            <IconEye v-if='ch.active' @click='setStatus(ch, false)' v-tooltip='"Disable"' size='32' class='cursor-pointer'/>
-                            <IconEyeOff v-else @click='setStatus(ch, true)' v-tooltip='"Enable"' size='32' class='cursor-pointer'/>
-                            <span class="mx-2" v-text='ch.name'></span>
+            <TablerLoading v-if='loading' />
+            <TablerNone
+                v-else-if='!Object.keys(processChannels).length'
+                :create='false'
+            />
+            <template v-else>
+                <div
+                    v-for='ch in processChannels'
+                    :key='ch.name'
+                    class='col-lg-12 hover-dark'
+                >
+                    <div class='hover-dark'>
+                        <div class='px-2'>
+                            <div class='col-12 py-2 px-2 d-flex align-items-center'>
+                                <IconEye
+                                    v-if='ch.active'
+                                    v-tooltip='"Disable"'
+                                    size='32'
+                                    class='cursor-pointer'
+                                    @click='setStatus(ch, false)'
+                                />
+                                <IconEyeOff
+                                    v-else
+                                    v-tooltip='"Enable"'
+                                    size='32'
+                                    class='cursor-pointer'
+                                    @click='setStatus(ch, true)'
+                                />
+                                <span
+                                    class='mx-2'
+                                    v-text='ch.name'
+                                />
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            </template>
         </template>
-    </template>
-</MenuTemplate>
+    </MenuTemplate>
 </template>
 
 <script>
@@ -49,6 +89,9 @@ const profileStore = useProfileStore();
 
 export default {
     name: 'CloudTAKChannels',
+    emits: [
+        'reset'
+    ],
     data: function() {
         return {
             err: false,
@@ -59,13 +102,13 @@ export default {
             },
         }
     },
-    mounted: async function() {
-        await this.refresh();
-    },
     watch: {
         'search.shown': function() {
             if (!this.search.shown) this.search.filter = '';
         }
+    },
+    mounted: async function() {
+        await this.refresh();
     },
     computed: {
         ...mapState(useProfileStore, ['channels']),

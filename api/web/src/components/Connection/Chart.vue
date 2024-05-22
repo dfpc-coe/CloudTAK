@@ -1,17 +1,27 @@
 <template>
-<div>
-    <div class='card-header'>
-        <h2 class='card-title'>Connection Throughput</h2>
+    <div>
+        <div class='card-header'>
+            <h2 class='card-title'>
+                Connection Throughput
+            </h2>
 
-        <div class='ms-auto btn-list'>
-            <IconRefresh @click='fetchData' size='32' class='cursor-pointer'/>
+            <div class='ms-auto btn-list'>
+                <IconRefresh
+                    size='32'
+                    class='cursor-pointer'
+                    @click='fetchData'
+                />
+            </div>
+        </div>
+        <div class='card-body'>
+            <TablerLoading v-if='loading' />
+            <div
+                v-else
+                id='chart'
+                class='chart-lg'
+            />
         </div>
     </div>
-    <div class='card-body'>
-        <TablerLoading v-if='loading'/>
-        <div v-else id="chart" class="chart-lg"></div>
-    </div>
-</div>
 </template>
 
 <script>
@@ -26,6 +36,10 @@ import {
 
 export default {
     name: 'ConnectionChart',
+    components: {
+        IconRefresh,
+        TablerLoading
+    },
     data: function() {
         return {
             loading: true,
@@ -100,10 +114,6 @@ export default {
             this.loading = false;
             this.mountChart();
         }
-    },
-    components: {
-        IconRefresh,
-        TablerLoading
     }
 }
 </script>

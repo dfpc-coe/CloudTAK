@@ -1,58 +1,106 @@
 <template>
-<MenuTemplate name='Iconsets'>
-    <template #buttons>
-        <IconPlus @click='editModal = {}' size='32' class='cursor-pointer' v-tooltip='"Create Iconset"'/>
-        <IconFileUpload v-if='!upload' @click='upload = true' v-tooltip='"Zip Upload"' size='32' class='cursor-pointer'/>
-        <IconRefresh v-if='!loading' @click='fetchList' size='32' class='cursor-pointer' v-tooltip='"Refresh"'/>
-    </template>
-    <template #default>
-        <template v-if='upload'>
-            <div class='mx-4 my-4'>
-                <Upload
-                    method='PUT'
-                    :url='uploadURL()'
-                    :headers='uploadHeaders()'
-                    @done='processUpload($event)'
-                    @cancel='upload = false'
-                    @err='throws($event)'
-                />
-            </div>
-        </template>
-        <template v-else>
-            <TablerLoading v-if='loading' desc='Loading Iconsets'/>
-            <TablerNone
-                v-else-if='!list.items.length'
-                label='Iconsets'
-                :create='false'
+    <MenuTemplate name='Iconsets'>
+        <template #buttons>
+            <IconPlus
+                v-tooltip='"Create Iconset"'
+                size='32'
+                class='cursor-pointer'
+                @click='editModal = {}'
             />
-            <div v-else class='table-responsive'>
-                <table class="table table-hover card-table table-vcenter cursor-pointer">
-                    <thead><tr>
-                        <th>Name</th>
-                    </tr></thead>
-                    <tbody><tr @click='$router.push(`/menu/iconset/${iconset.uid}`)' :key='iconset.uid' v-for='iconset in list.items'>
-                        <td>
-                            <div class='d-flex align-items-center'>
-                                <span v-text='iconset.name'/>
-                                <div class='ms-auto d-flex align-items-center'>
-                                    <span v-if='!iconset.username' class='mx-3 ms-auto badge border bg-blue text-white'>Public</span>
-                                    <span v-else='!iconset.username' class='mx-3 ms-auto badge border bg-red text-white'>Private</span>
-                                    <IconDownload v-tooltip='"Download TAK Zip"' size='32' class='cursor-pointer' @click.stop='download(iconset)'/>
-                                </div>
-                            </div>
-                        </td>
-                    </tr></tbody>
-                </table>
-            </div>
-
-            <div class="col-lg-12">
-                <IconCombineds v-if='list.items.length' :labels='false'/>
-            </div>
+            <IconFileUpload
+                v-if='!upload'
+                v-tooltip='"Zip Upload"'
+                size='32'
+                class='cursor-pointer'
+                @click='upload = true'
+            />
+            <IconRefresh
+                v-if='!loading'
+                v-tooltip='"Refresh"'
+                size='32'
+                class='cursor-pointer'
+                @click='fetchList'
+            />
         </template>
-    </template>
-</MenuTemplate>
+        <template #default>
+            <template v-if='upload'>
+                <div class='mx-4 my-4'>
+                    <Upload
+                        method='PUT'
+                        :url='uploadURL()'
+                        :headers='uploadHeaders()'
+                        @done='processUpload($event)'
+                        @cancel='upload = false'
+                        @err='throws($event)'
+                    />
+                </div>
+            </template>
+            <template v-else>
+                <TablerLoading
+                    v-if='loading'
+                    desc='Loading Iconsets'
+                />
+                <TablerNone
+                    v-else-if='!list.items.length'
+                    label='Iconsets'
+                    :create='false'
+                />
+                <div
+                    v-else
+                    class='table-responsive'
+                >
+                    <table class='table table-hover card-table table-vcenter cursor-pointer'>
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr
+                                v-for='iconset in list.items'
+                                :key='iconset.uid'
+                                @click='$router.push(`/menu/iconset/${iconset.uid}`)'
+                            >
+                                <td>
+                                    <div class='d-flex align-items-center'>
+                                        <span v-text='iconset.name' />
+                                        <div class='ms-auto d-flex align-items-center'>
+                                            <span
+                                                v-if='!iconset.username'
+                                                class='mx-3 ms-auto badge border bg-blue text-white'
+                                            >Public</span>
+                                            <span
+                                                v-else
+                                                class='mx-3 ms-auto badge border bg-red text-white'
+                                            >Private</span>
+                                            <IconDownload
+                                                v-tooltip='"Download TAK Zip"'
+                                                size='32'
+                                                class='cursor-pointer'
+                                                @click.stop='download(iconset)'
+                                            />
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
 
-<IconsetEditModal v-if='editModal' @close='editModal = false'/>
+                <div class='col-lg-12'>
+                    <IconCombineds
+                        v-if='list.items.length'
+                        :labels='false'
+                    />
+                </div>
+            </template>
+        </template>
+    </MenuTemplate>
+
+    <IconsetEditModal
+        v-if='editModal'
+        @close='editModal = false'
+    />
 </template>
 
 <script>
@@ -74,6 +122,18 @@ import {
 
 export default {
     name: 'CloudTAKIconsets',
+    components: {
+        Upload,
+        IconPlus,
+        IconDownload,
+        MenuTemplate,
+        IconsetEditModal,
+        IconFileUpload,
+        IconCombineds,
+        TablerNone,
+        TablerLoading,
+        IconRefresh,
+    },
     data: function() {
         return {
             err: false,
@@ -114,18 +174,6 @@ export default {
             this.list = await std(url);
             this.loading = false;
         }
-    },
-    components: {
-        Upload,
-        IconPlus,
-        IconDownload,
-        MenuTemplate,
-        IconsetEditModal,
-        IconFileUpload,
-        IconCombineds,
-        TablerNone,
-        TablerLoading,
-        IconRefresh,
     }
 }
 </script>
