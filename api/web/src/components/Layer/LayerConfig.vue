@@ -1,111 +1,204 @@
 <template>
-<div>
-    <div class='card-header'>
-        <h3 class='card-title'>Layer Config</h3>
-        <div class='ms-auto btn-list'>
-            <IconSettings v-if='disabled' @click='disabled = false' size='32' class='cursor-pointer'/>
+    <div>
+        <div class='card-header'>
+            <h3 class='card-title'>
+                Layer Config
+            </h3>
+            <div class='ms-auto btn-list'>
+                <IconSettings
+                    v-if='disabled'
+                    size='32'
+                    class='cursor-pointer'
+                    @click='disabled = false'
+                />
+            </div>
         </div>
-    </div>
 
-    <TablerLoading v-if='loading.save' desc='Saving Config'/>
-    <TablerLoading v-else-if='loading.init' desc='Loading Config'/>
-    <div v-else class='card-body'>
-        <div class='row g-4'>
-            <div class="col-md-4">
-                <div class='d-flex'>
-                    <label class='form-label'>Cron Expression</label>
-                    <div v-if='!disabled' class='ms-auto'>
-                        <div class='dropdown'>
-                            <div class="dropdown-toggle" type="button" id="dropdownCron" data-bs-toggle="dropdown" aria-expanded="false">
-                                <IconSettings size='16' class='cursor-pointer dropdown-toggle'/>
-                            </div>
-                            <ul class="dropdown-menu px-1 py-1" aria-labelledby="dropdownCron">
-                                <li class='py-1' @click='config.cron = "rate(1 minute)"'>rate(1 minute)</li>
-                                <li class='py-1' @click='config.cron = "rate(5 minutes)"'>rate(5 minutes)</li>
-                                <li class='py-1' @click='config.cron = "cron(15 10 * * ? *)"'>cron(15 10 * * ? *)</li>
-                                <li class='py-1' @click='config.cron = "cron(0/5 8-17 ? * MON-FRI *)"'>cron(0/5 8-17 ? * MON-FRI *)</li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-                <input :disabled='disabled' v-model='config.cron' :class='{
-                    "is-invalid": errors.cron
-                }' class="form-control" placeholder='Cron Expression'/>
-                <div v-if='errors.cron' v-text='errors.cron' class="invalid-feedback"></div>
-                <label v-if='config.cron' v-text='cronstr(config.cron)'/>
-            </div>
-            <div class="col-md-4">
-                <div class='d-flex'>
-                    <label class='form-label'>Schedule Task</label>
-                    <div class='ms-auto'>
-                        <div class='btn-list'>
-                            <div>
-                                <IconRefresh
-                                    v-if='!newTaskVersion && !loading.version'
-                                    @click='latestVersion'
-                                    v-tooltip='"Check for new version"'
-                                    size='16'
-                                    class='cursor-pointer'
-                                />
-                                <div v-else-if='loading.version' class='d-flex justify-content-center'>
-                                    <div class="spinner-border" role="status"></div>
+        <TablerLoading
+            v-if='loading.save'
+            desc='Saving Config'
+        />
+        <TablerLoading
+            v-else-if='loading.init'
+            desc='Loading Config'
+        />
+        <div
+            v-else
+            class='card-body'
+        >
+            <div class='row g-4'>
+                <div class='col-md-4'>
+                    <div class='d-flex'>
+                        <label class='form-label'>Cron Expression</label>
+                        <div
+                            v-if='!disabled'
+                            class='ms-auto'
+                        >
+                            <div class='dropdown'>
+                                <div
+                                    id='dropdownCron'
+                                    class='dropdown-toggle'
+                                    type='button'
+                                    data-bs-toggle='dropdown'
+                                    aria-expanded='false'
+                                >
+                                    <IconSettings
+                                        size='16'
+                                        class='cursor-pointer dropdown-toggle'
+                                    />
                                 </div>
-                                <span v-else>
-                                    New Task Version
-                                    <span v-if='disabled' v-text='newTaskVersion'/>
-                                    <span v-else @click='updateTask' class='cursor-pointer text-blue' v-text='newTaskVersion'/>
-                                </span>
-                            </div>
-                            <div v-if='!disabled'>
-                                <IconSettings @click='taskmodal = true' size='16' class='cursor-pointer'/>
+                                <ul
+                                    class='dropdown-menu px-1 py-1'
+                                    aria-labelledby='dropdownCron'
+                                >
+                                    <li
+                                        class='py-1'
+                                        @click='config.cron = "rate(1 minute)"'
+                                    >
+                                        rate(1 minute)
+                                    </li>
+                                    <li
+                                        class='py-1'
+                                        @click='config.cron = "rate(5 minutes)"'
+                                    >
+                                        rate(5 minutes)
+                                    </li>
+                                    <li
+                                        class='py-1'
+                                        @click='config.cron = "cron(15 10 * * ? *)"'
+                                    >
+                                        cron(15 10 * * ? *)
+                                    </li>
+                                    <li
+                                        class='py-1'
+                                        @click='config.cron = "cron(0/5 8-17 ? * MON-FRI *)"'
+                                    >
+                                        cron(0/5 8-17 ? * MON-FRI *)
+                                    </li>
+                                </ul>
                             </div>
                         </div>
                     </div>
+                    <input
+                        v-model='config.cron'
+                        :disabled='disabled'
+                        :class='{
+                            "is-invalid": errors.cron
+                        }'
+                        class='form-control'
+                        placeholder='Cron Expression'
+                    >
+                    <div
+                        v-if='errors.cron'
+                        class='invalid-feedback'
+                        v-text='errors.cron'
+                    />
+                    <label
+                        v-if='config.cron'
+                        v-text='cronstr(config.cron)'
+                    />
                 </div>
-                <input :disabled='disabled' v-model='config.task' :class='{
-                    "is-invalid": errors.task
-                }' class="form-control" placeholder='Schedule Task'/>
-                <div v-if='errors.task' v-text='errors.task' class="invalid-feedback"></div>
+                <input
+                    v-model='config.task'
+                    :disabled='disabled'
+                    :class='{
+                        "is-invalid": errors.task
+                    }'
+                    class='form-control'
+                    placeholder='Schedule Task'
+                >
+                <div
+                    v-if='errors.task'
+                    class='invalid-feedback'
+                    v-text='errors.task'
+                />
             </div>
-            <div class="col-md-4">
-                <TablerEnum v-model='config.priority' label='Alarm Urgency' :disabled='disabled' class='w-100' :options='["off", "high", "low"]' />
+            <div class='col-md-4'>
+                <TablerEnum
+                    v-model='config.priority'
+                    label='Alarm Urgency'
+                    :disabled='disabled'
+                    class='w-100'
+                    :options='["off", "high", "low"]'
+                />
             </div>
-            <div class="col-md-4">
-                <TablerInput v-model='config.stale' label='Stale Value (ms)' :disabled='disabled' type='number' min='1' step='1'/>
-                <label v-if='config.stale' v-text='humanstr'/>
+            <div class='col-md-4'>
+                <TablerInput
+                    v-model='config.stale'
+                    label='Stale Value (ms)'
+                    :disabled='disabled'
+                    type='number'
+                    min='1'
+                    step='1'
+                />
+                <label
+                    v-if='config.stale'
+                    v-text='humanstr'
+                />
             </div>
-            <div class="col-md-4">
-                <TablerInput v-model='config.memory' label='Memory (Mb)' :disabled='disabled' type='number' min='1' step='1'/>
+            <div class='col-md-4'>
+                <TablerInput
+                    v-model='config.memory'
+                    label='Memory (Mb)'
+                    :disabled='disabled'
+                    type='number'
+                    min='1'
+                    step='1'
+                />
             </div>
-            <div class="col-md-4">
-                <TablerInput v-model='config.timeout' label='Timeout (s)' :disabled='disabled' type='number' min='1' step='1'/>
+            <div class='col-md-4'>
+                <TablerInput
+                    v-model='config.timeout'
+                    label='Timeout (s)'
+                    :disabled='disabled'
+                    type='number'
+                    min='1'
+                    step='1'
+                />
             </div>
-            <div class="col-md-12">
+            <div class='col-md-12'>
                 <div class='row'>
                     <div class='col-12'>
                         <label>Optional Data Sync</label>
                     </div>
                     <div class='col-12 d-flex align-items-center my-1'>
-                        <IconDatabase size='32'/>
+                        <IconDatabase size='32' />
                         <DataSelect
+                            v-model='config.data'
                             :disabled='disabled'
                             :connection='layer.connection'
-                            v-model='config.data'
                         />
                     </div>
                 </div>
-            </div>
-            <div v-if='!disabled' class="col-12 d-flex">
-                <button @click='reload' class='btn'>Cancel</button>
-                <div class='ms-auto'>
-                    <button @click='saveLayer' class='btn btn-primary'>Save</button>
+                <div
+                    v-if='!disabled'
+                    class='col-12 d-flex'
+                >
+                    <button
+                        class='btn'
+                        @click='reload'
+                    >
+                        Cancel
+                    </button>
+                    <div class='ms-auto'>
+                        <button
+                            class='btn btn-primary'
+                            @click='saveLayer'
+                        >
+                            Save
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <TaskModal v-if='taskmodal' :task='config.task' @close='taskmodal = false' @task='taskmodal = false; config.task = $event'/>
-</div>
+        <TaskModal
+            v-if='taskmodal'
+            :task='config.task'
+            @close='taskmodal = false'
+            @task='taskmodal = false; config.task = $event'
+        />
+    </div>
 </template>
 
 <script>
@@ -119,14 +212,21 @@ import {
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import {
-    IconRefresh,
     IconSettings,
-    IconBuildingBroadcastTower,
     IconDatabase,
 } from '@tabler/icons-vue'
 
 export default {
     name: 'LayerConfig',
+    components: {
+        TablerLoading,
+        IconSettings,
+        DataSelect,
+        IconDatabase,
+        TaskModal,
+        TablerInput,
+        TablerEnum,
+    },
     props: {
         layer: {
             type: Object,
@@ -139,6 +239,10 @@ export default {
             }
         },
     },
+    emits: [
+        'layer',
+        'stack'
+    ],
     data: function() {
         return {
             disabled: true,
@@ -172,6 +276,16 @@ export default {
             if (date.getUTCSeconds() !== 0) str.push(date.getUTCSeconds() + " secs");
             if (date.getUTCMilliseconds() !== 0) str.push(date.getUTCMilliseconds() + " ms");
             return str.join(', ');
+        }
+    },
+    watch: {
+        config: {
+            deep: true,
+            handler: function() {
+                if (this.destination === 'connection') {
+                    this.config.data = undefined;
+                }
+            }
         }
     },
     mounted: function() {
@@ -233,17 +347,6 @@ export default {
             }
             this.loading.version = false;
         }
-    },
-    components: {
-        TablerLoading,
-        IconRefresh,
-        IconSettings,
-        DataSelect,
-        IconBuildingBroadcastTower,
-        IconDatabase,
-        TaskModal,
-        TablerInput,
-        TablerEnum,
     }
 }
 </script>

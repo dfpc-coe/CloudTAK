@@ -1,188 +1,300 @@
 <template>
-<div class='row g-2'>
-    <div class='col-md-12 hover-light rounded px-2 py-2'>
-        <StyleTemplate
-            label='Global Callsign'
-            description='Global Callsign will apply to all CoT markers unless they are overriden by a callsign field on a given query'
-            :disabled='disabled'
-            :schema='schema'
-            v-model='filters.callsign'
-        />
-    </div>
-
-    <div class='col-md-12 hover-light rounded px-2 py-2'>
-        <StyleTemplate
-            label='Global Remarks'
-            description='Global Remarks will apply to all CoT markers unless they are overriden by a remarks field on a given query'
-            :disabled='disabled'
-            :schema='schema'
-            v-model='filters.remarks'
-        />
-    </div>
-
-    <div class='col-md-12 hover-light rounded px-2 py-2'>
-        <StyleLinks
-            :disabled='disabled'
-            :schema='schema'
-            v-model='filters.links'
-        />
-    </div>
-
-    <div class="d-flex justify-content-center">
-        <div class="btn-list">
-            <div class="btn-group" role="group">
-                <input v-model='mode' type="radio" class="btn-check" name="geom-toolbar" value='point'>
-                <label @click='mode="point"' class="btn btn-icon px-3">
-                    <IconPoint size='32'/> Points
-                </label>
-                <input v-model='mode' type="radio" class="btn-check" name="geom-toolbar" value='line'>
-                <label @click='mode="line"' class="btn btn-icon px-3">
-                    <IconLine size='32'/> Lines
-                </label>
-                <input v-model='mode' type="radio" class="btn-check" name="geom-toolbar" value='polygon'>
-                <label @click='mode="polygon"' class="btn btn-icon px-3">
-                    <IconPolygon size='32'/> Polygons
-                </label>
-            </div>
-        </div>
-    </div>
-
-    <div class='col-md-12 hover-light rounded px-2 py-2'>
-        <div class='col-12 d-flex align-items-center'>
-            <label><IconBlockquote size='20'/> Callsign Override</label>
-            <div class='ms-auto'>
-                <TablerToggle v-model='filters[mode].enabled.callsign' :disabled='disabled' label='Enabled'/>
-            </div>
-        </div>
-
-        <StyleTemplate
-            v-if='filters[mode].enabled.callsign'
-            placeholder='Callsign Override'
-            :disabled='disabled'
-            :schema='schema'
-            v-model='filters[mode].properties.callsign'
-        />
-    </div>
-
-    <div class='col-md-12 hover-light rounded px-2 py-2'>
-        <div class='col-12 d-flex align-items-center'>
-            <label><IconBlockquote size='20'/> Remarks Override</label>
-            <div class='ms-auto'>
-                <TablerToggle v-model='filters[mode].enabled.remarks' :disabled='disabled' label='Enabled'/>
-            </div>
-        </div>
-
-        <StyleTemplate
-            v-if='filters[mode].enabled.remarks'
-            placeholder='Remarks Override'
-            :disabled='disabled'
-            :schema='schema'
-            v-model='filters[mode].properties.remarks'
-        />
-    </div>
-
-    <div class='col-md-12 hover-light rounded px-2 py-2'>
-        <div class='col-12 d-flex align-items-center'>
-            <label><IconLink size='20'/> Links Override</label>
-            <div class='ms-auto'>
-                <TablerToggle v-model='filters[mode].enabled.links' :disabled='disabled' label='Enabled'/>
-            </div>
-        </div>
-
-        <StyleLinks
-            v-if='filters[mode].enabled.links'
-            :label='""'
-            :disabled='disabled'
-            :schema='schema'
-            v-model='filters[mode].properties.links'
-        />
-    </div>
-
-    <template v-if='mode === "point"'>
+    <div class='row g-2'>
         <div class='col-md-12 hover-light rounded px-2 py-2'>
-            <div class='col-12 d-flex align-items-center'>
-                <label><IconPhoto size='20'/> Point Icon</label>
-                <div class='ms-auto'>
-                    <TablerToggle v-model='filters[mode].enabled.icon' :disabled='disabled' label='Enabled'/>
-                </div>
-            </div>
-            <IconSelect
-                v-if='filters[mode].enabled.icon'
-                v-model='filters[mode].properties.icon'
-                label=''
-                :disabled='disabled || !filters[mode].enabled.icon'
+            <StyleTemplate
+                v-model='filters.callsign'
+                label='Global Callsign'
+                description='Global Callsign will apply to all CoT markers unless they are overriden by a callsign field on a given query'
+                :disabled='disabled'
+                :schema='schema'
             />
         </div>
+
         <div class='col-md-12 hover-light rounded px-2 py-2'>
-            <div class='col-12 d-flex align-items-center'>
-                <label><IconPaint size='20'/> Point Color</label>
-                <div class='ms-auto'>
-                    <TablerToggle v-model='filters[mode].enabled.color' :disabled='disabled' label='Enabled'/>
-                </div>
-            </div>
-            <TablerColour v-if='filters[mode].enabled.color' v-model='filters[mode].properties.color' :disabled='disabled || !filters[mode].enabled.color'/>
+            <StyleTemplate
+                v-model='filters.remarks'
+                label='Global Remarks'
+                description='Global Remarks will apply to all CoT markers unless they are overriden by a remarks field on a given query'
+                :disabled='disabled'
+                :schema='schema'
+            />
         </div>
-    </template>
-    <template v-else-if='mode !== "point"'>
+
         <div class='col-md-12 hover-light rounded px-2 py-2'>
-            <div class='col-12 d-flex align-items-center'>
-                <div><IconPaint size='20'/> Line Color</div>
-                <div class='ms-auto'>
-                    <TablerToggle v-model='filters[mode].enabled.stroke' :disabled='disabled' label='Enabled'/>
+            <StyleLinks
+                v-model='filters.links'
+                :disabled='disabled'
+                :schema='schema'
+            />
+        </div>
+
+        <div class='d-flex justify-content-center'>
+            <div class='btn-list'>
+                <div
+                    class='btn-group'
+                    role='group'
+                >
+                    <input
+                        v-model='mode'
+                        type='radio'
+                        class='btn-check'
+                        name='geom-toolbar'
+                        value='point'
+                    >
+                    <label
+                        class='btn btn-icon px-3'
+                        @click='mode="point"'
+                    >
+                        <IconPoint size='32' /> Points
+                    </label>
+                    <input
+                        v-model='mode'
+                        type='radio'
+                        class='btn-check'
+                        name='geom-toolbar'
+                        value='line'
+                    >
+                    <label
+                        class='btn btn-icon px-3'
+                        @click='mode="line"'
+                    >
+                        <IconLine size='32' /> Lines
+                    </label>
+                    <input
+                        v-model='mode'
+                        type='radio'
+                        class='btn-check'
+                        name='geom-toolbar'
+                        value='polygon'
+                    >
+                    <label
+                        class='btn btn-icon px-3'
+                        @click='mode="polygon"'
+                    >
+                        <IconPolygon size='32' /> Polygons
+                    </label>
                 </div>
             </div>
-            <TablerColour v-if='filters[mode].enabled.stroke' v-model='filters[mode].properties.stroke' :disabled='disabled || !filters[mode].enabled.stroke'/>
         </div>
 
         <div class='col-md-12 hover-light rounded px-2 py-2'>
             <div class='col-12 d-flex align-items-center'>
-                <label><IconBorderStyle2 size='20'/> Line Style</label>
+                <label><IconBlockquote size='20' /> Callsign Override</label>
                 <div class='ms-auto'>
-                    <TablerToggle v-model='filters[mode].enabled["stroke-style"]' :disabled='disabled' label='Enabled'/>
+                    <TablerToggle
+                        v-model='filters[mode].enabled.callsign'
+                        :disabled='disabled'
+                        label='Enabled'
+                    />
                 </div>
             </div>
-            <TablerEnum v-if='filters[mode].enabled["stroke-style"]' :disabled='disabled || !filters[mode].enabled["stroke-style"]' v-model='filters[mode].properties["stroke-style"]' :options='["Solid", "Dashed", "Dotted", "Outlined"]'/>
+
+            <StyleTemplate
+                v-if='filters[mode].enabled.callsign'
+                v-model='filters[mode].properties.callsign'
+                placeholder='Callsign Override'
+                :disabled='disabled'
+                :schema='schema'
+            />
         </div>
+
         <div class='col-md-12 hover-light rounded px-2 py-2'>
             <div class='col-12 d-flex align-items-center'>
-                <label><IconRuler2 size='20'/> Line Width</label>
+                <label><IconBlockquote size='20' /> Remarks Override</label>
                 <div class='ms-auto'>
-                    <TablerToggle v-model='filters[mode].enabled["stroke-width"]' :disabled='disabled' label='Enabled'/>
+                    <TablerToggle
+                        v-model='filters[mode].enabled.remarks'
+                        :disabled='disabled'
+                        label='Enabled'
+                    />
                 </div>
             </div>
-            <TablerRange v-if='filters[mode].enabled["stroke-width"]' :disabled='disabled || !filters[mode].enabled["stroke-width"]' v-model='filters[mode].properties["stroke-width"]' :min="1" :max="6" :step="1"/>
+
+            <StyleTemplate
+                v-if='filters[mode].enabled.remarks'
+                v-model='filters[mode].properties.remarks'
+                placeholder='Remarks Override'
+                :disabled='disabled'
+                :schema='schema'
+            />
         </div>
+
         <div class='col-md-12 hover-light rounded px-2 py-2'>
             <div class='col-12 d-flex align-items-center'>
-                <label><IconGhost size='20'/> Line Opacity</label>
+                <label><IconLink size='20' /> Links Override</label>
                 <div class='ms-auto'>
-                    <TablerToggle v-model='filters[mode].enabled["stroke-opacity"]' :disabled='disabled' label='Enabled'/>
+                    <TablerToggle
+                        v-model='filters[mode].enabled.links'
+                        :disabled='disabled'
+                        label='Enabled'
+                    />
                 </div>
             </div>
-            <TablerRange v-if='filters[mode].enabled["stroke-opacity"]' :disabled='disabled || !filters[mode].enabled["stroke-opacity"]' v-model='filters[mode].properties["stroke-opacity"]' :min="0" :max="256" :step="1"/>
+
+            <StyleLinks
+                v-if='filters[mode].enabled.links'
+                v-model='filters[mode].properties.links'
+                :label='""'
+                :disabled='disabled'
+                :schema='schema'
+            />
         </div>
-    </template>
-    <template v-if='mode === "polygon"'>
-        <div class='col-md-12 hover-light rounded px-2 py-2'>
-            <div class='col-12 d-flex align-items-center'>
-                <label><IconPaint size='20'/> Fill Color</label>
-                <div class='ms-auto'>
-                    <TablerToggle v-model='filters[mode].enabled.fill' :disabled='disabled' label='Enabled'/>
+
+        <template v-if='mode === "point"'>
+            <div class='col-md-12 hover-light rounded px-2 py-2'>
+                <div class='col-12 d-flex align-items-center'>
+                    <label><IconPhoto size='20' /> Point Icon</label>
+                    <div class='ms-auto'>
+                        <TablerToggle
+                            v-model='filters[mode].enabled.icon'
+                            :disabled='disabled'
+                            label='Enabled'
+                        />
+                    </div>
                 </div>
+                <IconSelect
+                    v-if='filters[mode].enabled.icon'
+                    v-model='filters[mode].properties.icon'
+                    label=''
+                    :disabled='disabled || !filters[mode].enabled.icon'
+                />
             </div>
-            <TablerColour v-if='filters[mode].enabled.fill' v-model='filters[mode].properties.fill' :disabled='disabled || !filters[mode].enabled.fill'/>
-        </div>
-        <div class='col-md-12 hover-light rounded px-2 py-2'>
-            <div class='col-12 d-flex align-items-center'>
-                <label><IconGhost size='20'/> Fill Opacity</label>
-                <div class='ms-auto'>
-                    <TablerToggle v-model='filters[mode].enabled["fill-opacity"]' :disabled='disabled' label='Enabled'/>
+            <div class='col-md-12 hover-light rounded px-2 py-2'>
+                <div class='col-12 d-flex align-items-center'>
+                    <label><IconPaint size='20' /> Point Color</label>
+                    <div class='ms-auto'>
+                        <TablerToggle
+                            v-model='filters[mode].enabled.color'
+                            :disabled='disabled'
+                            label='Enabled'
+                        />
+                    </div>
                 </div>
+                <TablerColour
+                    v-if='filters[mode].enabled.color'
+                    v-model='filters[mode].properties.color'
+                    :disabled='disabled || !filters[mode].enabled.color'
+                />
             </div>
-            <TablerRange v-if='filters[mode].enabled["fill-opacity"]' :disabled='disabled' v-model='filters[mode].properties["fill-opacity"]' :min="0" :max="256" :step="1"/>
-        </div>
-    </template>
-</div>
+        </template>
+        <template v-else-if='mode !== "point"'>
+            <div class='col-md-12 hover-light rounded px-2 py-2'>
+                <div class='col-12 d-flex align-items-center'>
+                    <div><IconPaint size='20' /> Line Color</div>
+                    <div class='ms-auto'>
+                        <TablerToggle
+                            v-model='filters[mode].enabled.stroke'
+                            :disabled='disabled'
+                            label='Enabled'
+                        />
+                    </div>
+                </div>
+                <TablerColour
+                    v-if='filters[mode].enabled.stroke'
+                    v-model='filters[mode].properties.stroke'
+                    :disabled='disabled || !filters[mode].enabled.stroke'
+                />
+            </div>
+
+            <div class='col-md-12 hover-light rounded px-2 py-2'>
+                <div class='col-12 d-flex align-items-center'>
+                    <label><IconBorderStyle2 size='20' /> Line Style</label>
+                    <div class='ms-auto'>
+                        <TablerToggle
+                            v-model='filters[mode].enabled["stroke-style"]'
+                            :disabled='disabled'
+                            label='Enabled'
+                        />
+                    </div>
+                </div>
+                <TablerEnum
+                    v-if='filters[mode].enabled["stroke-style"]'
+                    v-model='filters[mode].properties["stroke-style"]'
+                    :disabled='disabled || !filters[mode].enabled["stroke-style"]'
+                    :options='["Solid", "Dashed", "Dotted", "Outlined"]'
+                />
+            </div>
+            <div class='col-md-12 hover-light rounded px-2 py-2'>
+                <div class='col-12 d-flex align-items-center'>
+                    <label><IconRuler2 size='20' /> Line Width</label>
+                    <div class='ms-auto'>
+                        <TablerToggle
+                            v-model='filters[mode].enabled["stroke-width"]'
+                            :disabled='disabled'
+                            label='Enabled'
+                        />
+                    </div>
+                </div>
+                <TablerRange
+                    v-if='filters[mode].enabled["stroke-width"]'
+                    v-model='filters[mode].properties["stroke-width"]'
+                    :disabled='disabled || !filters[mode].enabled["stroke-width"]'
+                    :min='1'
+                    :max='6'
+                    :step='1'
+                />
+            </div>
+            <div class='col-md-12 hover-light rounded px-2 py-2'>
+                <div class='col-12 d-flex align-items-center'>
+                    <label><IconGhost size='20' /> Line Opacity</label>
+                    <div class='ms-auto'>
+                        <TablerToggle
+                            v-model='filters[mode].enabled["stroke-opacity"]'
+                            :disabled='disabled'
+                            label='Enabled'
+                        />
+                    </div>
+                </div>
+                <TablerRange
+                    v-if='filters[mode].enabled["stroke-opacity"]'
+                    v-model='filters[mode].properties["stroke-opacity"]'
+                    :disabled='disabled || !filters[mode].enabled["stroke-opacity"]'
+                    :min='0'
+                    :max='256'
+                    :step='1'
+                />
+            </div>
+        </template>
+        <template v-if='mode === "polygon"'>
+            <div class='col-md-12 hover-light rounded px-2 py-2'>
+                <div class='col-12 d-flex align-items-center'>
+                    <label><IconPaint size='20' /> Fill Color</label>
+                    <div class='ms-auto'>
+                        <TablerToggle
+                            v-model='filters[mode].enabled.fill'
+                            :disabled='disabled'
+                            label='Enabled'
+                        />
+                    </div>
+                </div>
+                <TablerColour
+                    v-if='filters[mode].enabled.fill'
+                    v-model='filters[mode].properties.fill'
+                    :disabled='disabled || !filters[mode].enabled.fill'
+                />
+            </div>
+            <div class='col-md-12 hover-light rounded px-2 py-2'>
+                <div class='col-12 d-flex align-items-center'>
+                    <label><IconGhost size='20' /> Fill Opacity</label>
+                    <div class='ms-auto'>
+                        <TablerToggle
+                            v-model='filters[mode].enabled["fill-opacity"]'
+                            :disabled='disabled'
+                            label='Enabled'
+                        />
+                    </div>
+                </div>
+                <TablerRange
+                    v-if='filters[mode].enabled["fill-opacity"]'
+                    v-model='filters[mode].properties["fill-opacity"]'
+                    :disabled='disabled'
+                    :min='0'
+                    :max='256'
+                    :step='1'
+                />
+            </div>
+        </template>
+    </div>
 </template>
 
 <script>
@@ -210,6 +322,25 @@ import {
 
 export default {
     name: 'StyleSingle',
+    components: {
+        IconRuler2,
+        IconGhost,
+        IconPaint,
+        IconPoint,
+        IconLine,
+        IconPolygon,
+        IconPhoto,
+        IconLink,
+        IconBlockquote,
+        IconBorderStyle2,
+        TablerToggle,
+        TablerRange,
+        TablerEnum,
+        TablerColour,
+        StyleTemplate,
+        StyleLinks,
+        IconSelect,
+    },
     props: {
         modelValue: {
             type: Object,
@@ -227,6 +358,9 @@ export default {
             default: false
         }
     },
+    emits: [
+        'update:modelValue'
+    ],
     data: function() {
         return {
             mode: 'point',
@@ -353,25 +487,6 @@ export default {
 
             this.$emit('update:modelValue', res);
         }
-    },
-    components: {
-        IconRuler2,
-        IconGhost,
-        IconPaint,
-        IconPoint,
-        IconLine,
-        IconPolygon,
-        IconPhoto,
-        IconLink,
-        IconBlockquote,
-        IconBorderStyle2,
-        TablerToggle,
-        TablerRange,
-        TablerEnum,
-        TablerColour,
-        StyleTemplate,
-        StyleLinks,
-        IconSelect,
     }
 }
 </script>

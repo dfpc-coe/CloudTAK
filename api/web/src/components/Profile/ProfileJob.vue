@@ -1,23 +1,41 @@
 <template>
-<div>
-    <div class="card-header">
-        <IconCircleArrowLeft @click='$router.push("/profile/jobs")' size='32' class='cursor-pointer' v-tooltip='"Back"'/>
-        <Status :status='job.status'/>
-        <h2 class='card-title mx-2'>Job Logs</h2>
-        <div class='ms-auto'>
-            <div class='btn-list'>
-                <IconRefresh @click='fetchLogs' size='32' class='cursor-pointer'/>
+    <div>
+        <div class='card-header'>
+            <IconCircleArrowLeft
+                v-tooltip='"Back"'
+                size='32'
+                class='cursor-pointer'
+                @click='$router.push("/profile/jobs")'
+            />
+            <Status :status='job.status' />
+            <h2 class='card-title mx-2'>
+                Job Logs
+            </h2>
+            <div class='ms-auto'>
+                <div class='btn-list'>
+                    <IconRefresh
+                        size='32'
+                        class='cursor-pointer'
+                        @click='fetchLogs'
+                    />
+                </div>
             </div>
         </div>
+        <div class='card-body'>
+            <TablerLoading
+                v-if='loading.logs || loading.job'
+                desc='Loading Job Logs'
+            />
+            <TablerNone
+                v-else-if='!logs.length'
+                label='Logs'
+                :create='false'
+            />
+            <template v-else>
+                <pre v-text='logs' />
+            </template>
+        </div>
     </div>
-    <div class="card-body">
-        <TablerLoading v-if='loading.logs || loading.job' desc='Loading Job Logs'/>
-        <TablerNone v-else-if='!logs.length' label='Logs' :create='false'/>
-        <template v-else>
-            <pre v-text='logs'></pre>
-        </template>
-    </div>
-</div>
 </template>
 
 <script>
@@ -34,6 +52,13 @@ import {
 
 export default {
     name: 'ProfileJob',
+    components: {
+        Status,
+        IconRefresh,
+        IconCircleArrowLeft,
+        TablerLoading,
+        TablerNone
+    },
     data: function() {
         return {
             err: false,
@@ -73,13 +98,6 @@ export default {
 
             this.loading.logs = false;
         }
-    },
-    components: {
-        Status,
-        IconRefresh,
-        IconCircleArrowLeft,
-        TablerLoading,
-        TablerNone
     }
 }
 </script>

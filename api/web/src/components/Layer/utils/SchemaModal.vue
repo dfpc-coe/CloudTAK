@@ -1,19 +1,37 @@
 <template>
     <TablerModal>
-        <button type="button" class="btn-close" @click='$emit("close")' aria-label="Close"></button>
-        <div class="modal-status bg-yellow"></div>
-        <div class="modal-header">
+        <button
+            type='button'
+            class='btn-close'
+            aria-label='Close'
+            @click='$emit("close")'
+        />
+        <div class='modal-status bg-yellow' />
+        <div class='modal-header'>
             <span class='modal-title'>Row Editor</span>
-            <TablerDelete v-if='!disabled' displaytype='icon' @delete='$emit("remove")'/>
+            <TablerDelete
+                v-if='!disabled'
+                displaytype='icon'
+                @delete='$emit("remove")'
+            />
         </div>
-        <div v-if='!loading' class="modal-body py-4">
+        <div
+            v-if='!loading'
+            class='modal-body py-4'
+        >
             <TablerSchema
+                v-model='row'
                 :schema='schema'
                 :disabled='disabled'
-                v-model='row'
             />
 
-            <button v-if='!disabled' @click='$emit("done", this.row)' class='btn btn-primary w-100 mt-4'>Done</button>
+            <button
+                v-if='!disabled'
+                class='btn btn-primary w-100 mt-4'
+                @click='$emit("done", row)'
+            >
+                Done
+            </button>
         </div>
     </TablerModal>
 </template>
@@ -27,6 +45,11 @@ import {
 
 export default {
     name: 'LayerEnvironmentModal',
+    components: {
+        TablerModal,
+        TablerDelete,
+        TablerSchema
+    },
     props: {
         edit: {
             type: Object,
@@ -41,6 +64,11 @@ export default {
             required: true
         },
     },
+    emits: [
+        'close',
+        'remove',
+        'done'
+    ],
     data: function() {
         return {
             loading: true,
@@ -50,11 +78,6 @@ export default {
     mounted: function() {
         this.row = Object.assign(this.row, JSON.parse(JSON.stringify(this.edit)));
         this.loading = false;
-    },
-    components: {
-        TablerModal,
-        TablerDelete,
-        TablerSchema
     }
 }
 </script>

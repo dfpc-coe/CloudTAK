@@ -1,49 +1,65 @@
 <template>
-<div>
-    <div class="card-header">
-        <h1 class='card-title'>Users</h1>
+    <div>
+        <div class='card-header'>
+            <h1 class='card-title'>
+                Users
+            </h1>
 
-        <div class='ms-auto btn-list'>
-            <IconRefresh
-                @click='fetchList'
-                v-tooltip='"Refresh"'
-                size='32'
-                class='cursor-pointer'
-            />
-        </div>
-    </div>
-    <div style='min-height: 20vh; margin-bottom: 61px'>
-        <TablerLoading v-if='loading'/>
-        <TablerNone v-else-if='!list.items.length' label='Users' :create='false' />
-        <div v-else class='table-responsive'>
-            <table class="table card-table table-hover table-vcenter datatable">
-                <TableHeader
-                    v-model:sort='paging.sort'
-                    v-model:order='paging.order'
-                    v-model:header='header'
+            <div class='ms-auto btn-list'>
+                <IconRefresh
+                    v-tooltip='"Refresh"'
+                    size='32'
+                    class='cursor-pointer'
+                    @click='fetchList'
                 />
-                <tbody>
-                    <tr  :key='user.id' v-for='user in list.items' class='cursor-pointer'>
-                        <template v-for='h in header'>
-                            <template v-if='h.display'>
-                                <td>
-                                    <span v-text='user[h.name]'/>
-                                </td>
-                            </template>
-                        </template>
-                    </tr>
-                </tbody>
-            </table>
+            </div>
         </div>
-        <div class='position-absolute bottom-0 w-100' style='height: 61px;'>
-            <TableFooter
-                :limit='paging.limit'
-                :total='list.total'
-                @page='paging.page = $event'
+        <div style='min-height: 20vh; margin-bottom: 61px'>
+            <TablerLoading v-if='loading' />
+            <TablerNone
+                v-else-if='!list.items.length'
+                label='Users'
+                :create='false'
             />
+            <div
+                v-else
+                class='table-responsive'
+            >
+                <table class='table card-table table-hover table-vcenter datatable'>
+                    <TableHeader
+                        v-model:sort='paging.sort'
+                        v-model:order='paging.order'
+                        v-model:header='header'
+                    />
+                    <tbody>
+                        <tr
+                            v-for='user in list.items'
+                            :key='user.id'
+                            class='cursor-pointer'
+                        >
+                            <template v-for='h in header'>
+                                <template v-if='h.display'>
+                                    <td>
+                                        <span v-text='user[h.name]' />
+                                    </td>
+                                </template>
+                            </template>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div
+                class='position-absolute bottom-0 w-100'
+                style='height: 61px;'
+            >
+                <TableFooter
+                    :limit='paging.limit'
+                    :total='list.total'
+                    @page='paging.page = $event'
+                />
+            </div>
         </div>
     </div>
-</div>
 </template>
 
 <script>
@@ -60,6 +76,13 @@ import {
 
 export default {
     name: 'UserAdmin',
+    components: {
+        TablerNone,
+        IconRefresh,
+        TablerLoading,
+        TableHeader,
+        TableFooter,
+    },
     data: function() {
         return {
             err: false,
@@ -118,13 +141,6 @@ export default {
             this.list = await std(url);
             this.loading = false;
         }
-    },
-    components: {
-        TablerNone,
-        IconRefresh,
-        TablerLoading,
-        TableHeader,
-        TableFooter,
     }
 }
 </script>

@@ -1,91 +1,167 @@
 <template>
-<div class='border py-2 mx-2'>
-    <div class='d-flex'>
-        <h1 class='subheader px-3 col-9 text-truncate' v-text='server'></h1>
+    <div class='border py-2 mx-2'>
+        <div class='d-flex'>
+            <h1
+                class='subheader px-3 col-9 text-truncate'
+                v-text='server'
+            />
 
-        <div class='ms-auto btn-list mx-3'>
-            <IconRefresh v-if='!disabled && !err && !loading' @click='getList' v-tooltip='"Refresh"' size='32' class='cursor-pointer'/>
+            <div class='ms-auto btn-list mx-3'>
+                <IconRefresh
+                    v-if='!disabled && !err && !loading'
+                    v-tooltip='"Refresh"'
+                    size='32'
+                    class='cursor-pointer'
+                    @click='getList'
+                />
 
-            <IconArrowBack v-if='!disabled && !err && !loading' @click='back' v-tooltip='"Back"' size='32' class='cursor-pointer'/>
-            <IconX v-if='!disabled' @click='$emit("close")' v-tooltip='"Close Explorer"' size='32' class='cursor-pointer'/>
-        </div>
-    </div>
-
-    <template v-if='err'>
-        <TablerAlert title='ESRI Connection Error' :err='err' :compact='true'/>
-    </template>
-    <template v-else-if='loading'>
-        <TablerLoading desc='Connecting to ESRI Server'/>
-    </template>
-    <template v-else-if='!container'>
-        <template v-if='list.length === 0'>
-            <TablerNone :compact='true' :create='false' label='Services'/>
-        </template>
-        <template v-else>
-            <div class='table-responsive'>
-                <table class="table table-hover card-table table-vcenter cursor-pointer">
-                    <thead><tr><th>Name</th></tr></thead>
-                    <tbody><tr @click='listpath.push(l)' :key='l.id' v-for='l in list'>
-                        <td>
-                            <div class='d-flex align-items-center'>
-                                <template v-if='l.type === "folder"'>
-                                    <IconFolder size='32'/>
-                                    <span v-text='l.name' class='mx-3'/>
-                                </template>
-                                <template v-else>
-                                    <IconMap size='32'/>
-                                    <span v-text='l.name' class='mx-3'/>
-                                    <span class='ms-auto badge' v-text='l.type'/>
-                                </template>
-                            </div>
-                        </td>
-                    </tr></tbody>
-                </table>
+                <IconArrowBack
+                    v-if='!disabled && !err && !loading'
+                    v-tooltip='"Back"'
+                    size='32'
+                    class='cursor-pointer'
+                    @click='back'
+                />
+                <IconX
+                    v-if='!disabled'
+                    v-tooltip='"Close Explorer"'
+                    size='32'
+                    class='cursor-pointer'
+                    @click='$emit("close")'
+                />
             </div>
+        </div>
+
+        <template v-if='err'>
+            <TablerAlert
+                title='ESRI Connection Error'
+                :err='err'
+                :compact='true'
+            />
         </template>
-    </template>
-    <template v-else>
-        <div class='datagrid mx-4'>
-            <template v-for='ele in ["description", "currentVersion", "spatialReference"]'>
-                <div class='datagrid-item'>
-                    <div class="datagrid-title" v-text='ele'></div>
-                    <template v-if='ele === "spatialReference"'>
-                        <div class="datagrid-content"
-                            v-text='`${container[ele].wkid} ${container[ele].latestWkid ? "(" + container[ele].latestWkid + ")" : ""}`'
-                        ></div>
-                    </template>
-                    <template v-else>
-                        <div class="datagrid-content" v-text='container[ele] || "Unknown"'></div>
-                    </template>
+        <template v-else-if='loading'>
+            <TablerLoading desc='Connecting to ESRI Server' />
+        </template>
+        <template v-else-if='!container'>
+            <template v-if='list.length === 0'>
+                <TablerNone
+                    :compact='true'
+                    :create='false'
+                    label='Services'
+                />
+            </template>
+            <template v-else>
+                <div class='table-responsive'>
+                    <table class='table table-hover card-table table-vcenter cursor-pointer'>
+                        <thead><tr><th>Name</th></tr></thead>
+                        <tbody>
+                            <tr
+                                v-for='l in list'
+                                :key='l.id'
+                                @click='listpath.push(l)'
+                            >
+                                <td>
+                                    <div class='d-flex align-items-center'>
+                                        <template v-if='l.type === "folder"'>
+                                            <IconFolder size='32' />
+                                            <span
+                                                class='mx-3'
+                                                v-text='l.name'
+                                            />
+                                        </template>
+                                        <template v-else>
+                                            <IconMap size='32' />
+                                            <span
+                                                class='mx-3'
+                                                v-text='l.name'
+                                            />
+                                            <span
+                                                class='ms-auto badge'
+                                                v-text='l.type'
+                                            />
+                                        </template>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </template>
-        </div>
-
-        <template v-if='container.layers.length === 0'>
-            <TablerNone @create='createLayer' :compact='true' :create='!disabled' label='Layers'/>
         </template>
         <template v-else>
-            <div class='table-responsive'>
-                <table class="table card-table table-vcenter" :class='{
-                    "table-hover cursor-pointer": !disabled
-                }'>
-                    <thead><tr><th>Name</th></tr></thead>
-                    <tbody><tr @click='!disabled && (layer && layer.id === lyr.id) ? layer = nulll : layer = lyr' :key='lyr.id' v-for='lyr in container.layers'>
-                        <td>
-                            <div class='d-flex align-items-center'>
-                                <IconMap size='32'/><span v-text='lyr.name' class='mx-3'/>
-                                <div class='ms-auto btn-list'>
-                                    <IconCheck v-if='layer && layer.id === lyr.id' size='32'/>
-                                    <TablerDelete v-if='!readonly && !disabled' @delete='deleteLayer(lyr)' displaytype='icon' label='Delete Layer'/>
-                                </div>
-                            </div>
-                        </td>
-                    </tr></tbody>
-                </table>
+            <div class='datagrid mx-4'>
+                <template v-for='ele in ["description", "currentVersion", "spatialReference"]'>
+                    <div class='datagrid-item'>
+                        <div
+                            class='datagrid-title'
+                            v-text='ele'
+                        />
+                        <template v-if='ele === "spatialReference"'>
+                            <div
+                                class='datagrid-content'
+                                v-text='`${container[ele].wkid} ${container[ele].latestWkid ? "(" + container[ele].latestWkid + ")" : ""}`'
+                            />
+                        </template>
+                        <template v-else>
+                            <div
+                                class='datagrid-content'
+                                v-text='container[ele] || "Unknown"'
+                            />
+                        </template>
+                    </div>
+                </template>
             </div>
+
+            <template v-if='container.layers.length === 0'>
+                <TablerNone
+                    :compact='true'
+                    :create='!disabled'
+                    label='Layers'
+                    @create='createLayer'
+                />
+            </template>
+            <template v-else>
+                <div class='table-responsive'>
+                    <table
+                        class='table card-table table-vcenter'
+                        :class='{
+                            "table-hover cursor-pointer": !disabled
+                        }'
+                    >
+                        <thead><tr><th>Name</th></tr></thead>
+                        <tbody>
+                            <tr
+                                v-for='lyr in container.layers'
+                                :key='lyr.id'
+                                @click='!disabled && (layer && layer.id === lyr.id) ? layer = nulll : layer = lyr'
+                            >
+                                <td>
+                                    <div class='d-flex align-items-center'>
+                                        <IconMap size='32' /><span
+                                            class='mx-3'
+                                            v-text='lyr.name'
+                                        />
+                                        <div class='ms-auto btn-list'>
+                                            <IconCheck
+                                                v-if='layer && layer.id === lyr.id'
+                                                size='32'
+                                            />
+                                            <TablerDelete
+                                                v-if='!readonly && !disabled'
+                                                displaytype='icon'
+                                                label='Delete Layer'
+                                                @delete='deleteLayer(lyr)'
+                                            />
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </template>
         </template>
-    </template>
-</div>
+    </div>
 </template>
 
 <script>
@@ -107,6 +183,18 @@ import {
 
 export default {
     name: 'EsriServer',
+    components: {
+        TablerAlert,
+        IconX,
+        TablerNone,
+        IconMap,
+        IconFolder,
+        IconRefresh,
+        IconCheck,
+        IconArrowBack,
+        TablerLoading,
+        TablerDelete,
+    },
     props: {
         disabled: {
             type: Boolean,
@@ -128,6 +216,10 @@ export default {
             required: true
         },
     },
+    emits: [
+        'close',
+        'layer'
+    ],
     data: function() {
         return {
             base: this.server,
@@ -273,18 +365,6 @@ export default {
             }
             this.loading = false;
         },
-    },
-    components: {
-        TablerAlert,
-        IconX,
-        TablerNone,
-        IconMap,
-        IconFolder,
-        IconRefresh,
-        IconCheck,
-        IconArrowBack,
-        TablerLoading,
-        TablerDelete,
     }
 }
 </script>

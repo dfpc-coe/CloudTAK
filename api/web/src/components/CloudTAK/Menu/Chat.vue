@@ -1,39 +1,67 @@
 <template>
-<div>
-    <div class='col-12 border-bottom border-light'>
-        <div class='modal-header px-0 mx-2'>
-            <IconCircleArrowLeft @click='$router.back()' size='32' class='cursor-pointer'/>
-            <div class='modal-title' v-text='$route.params.chatroom'></div>
-            <div class='btn-list'>
-                <IconRefresh @click='fetchChats' size='32' class='cursor-pointer'/>
+    <div>
+        <div class='col-12 border-bottom border-light'>
+            <div class='modal-header px-0 mx-2'>
+                <IconCircleArrowLeft
+                    size='32'
+                    class='cursor-pointer'
+                    @click='$router.back()'
+                />
+                <div
+                    class='modal-title'
+                    v-text='$route.params.chatroom'
+                />
+                <div class='btn-list'>
+                    <IconRefresh
+                        size='32'
+                        class='cursor-pointer'
+                        @click='fetchChats'
+                    />
+                </div>
             </div>
         </div>
-    </div>
-    <div class='px-2 py-2'>
-        <TablerLoading v-if='loading'/>
-        <template v-else>
-            <div v-for='chat in chats.items' class='col-12 d-flex my-2'>
-                <div v-if='chat.sender_uid !== id' class='bg-blue px-2 py-2 rounded'>
-                    <span v-text='chat.message'/>
+        <div class='px-2 py-2'>
+            <TablerLoading v-if='loading' />
+            <template v-else>
+                <div
+                    v-for='chat in chats.items'
+                    class='col-12 d-flex my-2'
+                >
+                    <div
+                        v-if='chat.sender_uid !== id'
+                        class='bg-blue px-2 py-2 rounded'
+                    >
+                        <span v-text='chat.message' />
+                    </div>
+                    <div
+                        v-else
+                        class='ms-auto bg-gray-400 px-2 py-2 rounded'
+                    >
+                        <span v-text='chat.message' />
+                    </div>
                 </div>
-                <div v-else class='ms-auto bg-gray-400 px-2 py-2 rounded'>
-                    <span v-text='chat.message'/>
-                </div>
-            </div>
 
-            <div class='border-top border-blue position-absolute start-0 bottom-0 end-0'>
-                <div class='row mx-2'>
-                    <div class='col-12'>
-                        <TablerInput v-on:keyup.enter='sendMessage' v-model='message'/>
-                    </div>
-                    <div class='col-12 my-2'>
-                        <button @click='sendMessage' class='w-100 btn btn-primary'>Send</button>
+                <div class='border-top border-blue position-absolute start-0 bottom-0 end-0'>
+                    <div class='row mx-2'>
+                        <div class='col-12'>
+                            <TablerInput
+                                v-model='message'
+                                @keyup.enter='sendMessage'
+                            />
+                        </div>
+                        <div class='col-12 my-2'>
+                            <button
+                                class='w-100 btn btn-primary'
+                                @click='sendMessage'
+                            >
+                                Send
+                            </button>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </template>
+            </template>
+        </div>
     </div>
-</div>
 </template>
 
 <script>
@@ -53,6 +81,12 @@ const profileStore = useProfileStore();
 
 export default {
     name: 'CloudTAKChat',
+    components: {
+        TablerInput,
+        TablerLoading,
+        IconRefresh,
+        IconCircleArrowLeft
+    },
     data: function() {
         return {
             id: `ANDROID-CloudTAK-${profileStore.profile.username}`,
@@ -101,12 +135,6 @@ export default {
             this.chats = await std(`/api/profile/chat/${encodeURIComponent(this.$route.params.chatroom)}`);
             this.loading = false;
         }
-    },
-    components: {
-        TablerInput,
-        TablerLoading,
-        IconRefresh,
-        IconCircleArrowLeft
     }
 }
 </script>

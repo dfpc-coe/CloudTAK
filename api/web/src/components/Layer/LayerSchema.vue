@@ -1,80 +1,140 @@
 <template>
-<div>
-    <div class='card-header'>
-        <h3 class='card-title'>Layer Schema</h3>
+    <div>
+        <div class='card-header'>
+            <h3 class='card-title'>
+                Layer Schema
+            </h3>
 
-        <div class='ms-auto btn-list'>
-            <IconPlus v-if='!disabled' v-tooltip='"Manual Addition"' @click='create = true' size='32' class='cursor-pointer'/>
-            <IconWorldDownload v-if='!disabled' v-tooltip='"Automated Schema"' @click='fetchSchema' size='32' class='cursor-pointer'/>
-            <IconSettings @click='disabled = false' size='32' class='cursor-pointer'/>
-        </div>
-    </div>
-
-    <TablerLoading v-if='loading.schema' desc='Retrieving Schema'/>
-    <TablerLoading v-else-if='loading.save' desc='Saving Schema'/>
-    <TablerNone v-else-if='!schema.length && disabled' label='Schema' :create='false'/>
-    <div v-else class='table-responsive'>
-        <table class="table table-hover card-table table-vcenter" :class='{
-            "cursor-pointer": !disabled
-        }'>
-            <thead>
-                <tr>
-                    <th>Property Name</th>
-                    <th>Type</th>
-                    <th>Format</th>
-                    <th>Attributes</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr @click='edit(field)' :key='field.name' v-for='(field, field_it) in schema'>
-                    <td>
-                        <div class='d-flex align-items-center'>
-                            <span class='mx-3'>
-                                <template v-if='field.type === "string"'>
-                                    <IconAlphabetLatin size='32'/>
-                                </template>
-                                <template v-else-if='field.type === "number"'>
-                                    <IconDecimal size='32'/>
-                                </template>
-                                <template v-else-if='field.type === "integer"'>
-                                    <IconSort09 size='32'/>
-                                </template>
-                                <template v-else>
-                                    <IconBinary size='32'/>
-                                </template>
-                            </span>
-                            <span v-text='field.name'/>
-                        </div>
-                    </td>
-                    <td v-text='field.type'></td>
-                    <td v-text='field.format'></td>
-                    <td>
-                        <div class='d-flex align-items-center'>
-                            <span v-if='field.required' style='height: 20px;' class='badge mx-1 mb-1 bg-red text-white'>Required</span>
-                            <div class='ms-auto'>
-                                <IconTrash v-if='!disabled' @click.stop='schema.splice(field_it, 1)' size='32' class='cursor-pointer'/>
-                            </div>
-                        </div>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-        <div v-if='!disabled' class="col-12 px-2 py-2 d-flex">
-            <button @click='processModelValue(layer.schema, true)' class='btn'>Cancel</button>
-            <div class='ms-auto'>
-                <button @click='saveLayer' class='btn btn-primary'>Save</button>
+            <div class='ms-auto btn-list'>
+                <IconPlus
+                    v-if='!disabled'
+                    v-tooltip='"Manual Addition"'
+                    size='32'
+                    class='cursor-pointer'
+                    @click='create = true'
+                />
+                <IconWorldDownload
+                    v-if='!disabled'
+                    v-tooltip='"Automated Schema"'
+                    size='32'
+                    class='cursor-pointer'
+                    @click='fetchSchema'
+                />
+                <IconSettings
+                    size='32'
+                    class='cursor-pointer'
+                    @click='disabled = false'
+                />
             </div>
         </div>
-    </div>
 
-    <LayerSchemaModal
-        v-if='create'
-        :edit='editField'
-        :schema='schema'
-        @done='push($event)'
-        @close='create = false'
-    />
-</div>
+        <TablerLoading
+            v-if='loading.schema'
+            desc='Retrieving Schema'
+        />
+        <TablerLoading
+            v-else-if='loading.save'
+            desc='Saving Schema'
+        />
+        <TablerNone
+            v-else-if='!schema.length && disabled'
+            label='Schema'
+            :create='false'
+        />
+        <div
+            v-else
+            class='table-responsive'
+        >
+            <table
+                class='table table-hover card-table table-vcenter'
+                :class='{
+                    "cursor-pointer": !disabled
+                }'
+            >
+                <thead>
+                    <tr>
+                        <th>Property Name</th>
+                        <th>Type</th>
+                        <th>Format</th>
+                        <th>Attributes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr
+                        v-for='(field, field_it) in schema'
+                        :key='field.name'
+                        @click='edit(field)'
+                    >
+                        <td>
+                            <div class='d-flex align-items-center'>
+                                <span class='mx-3'>
+                                    <template v-if='field.type === "string"'>
+                                        <IconAlphabetLatin size='32' />
+                                    </template>
+                                    <template v-else-if='field.type === "number"'>
+                                        <IconDecimal size='32' />
+                                    </template>
+                                    <template v-else-if='field.type === "integer"'>
+                                        <IconSort09 size='32' />
+                                    </template>
+                                    <template v-else>
+                                        <IconBinary size='32' />
+                                    </template>
+                                </span>
+                                <span v-text='field.name' />
+                            </div>
+                        </td>
+                        <td v-text='field.type' />
+                        <td v-text='field.format' />
+                        <td>
+                            <div class='d-flex align-items-center'>
+                                <span
+                                    v-if='field.required'
+                                    style='height: 20px;'
+                                    class='badge mx-1 mb-1 bg-red text-white'
+                                >Required</span>
+                                <div class='ms-auto'>
+                                    <IconTrash
+                                        v-if='!disabled'
+                                        size='32'
+                                        class='cursor-pointer'
+                                        @click.stop='schema.splice(field_it, 1)'
+                                    />
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <div
+                v-if='!disabled'
+                class='col-12 px-2 py-2 d-flex'
+            >
+                <button
+                    class='btn'
+                    @click='processModelValue(layer.schema, true)'
+                >
+                    Cancel
+                </button>
+                <div class='ms-auto'>
+                    <button
+                        class='btn btn-primary'
+                        @click='saveLayer'
+                    >
+                        Save
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <LayerSchemaModal
+            v-if='create'
+            :edit='editField'
+            :schema='schema'
+            @done='push($event)'
+            @close='create = false'
+        />
+    </div>
 </template>
 
 <script>
@@ -97,6 +157,19 @@ import {
 
 export default {
     name: 'LayerSchema',
+    components: {
+        TablerNone,
+        IconAlphabetLatin,
+        IconSort09,
+        IconDecimal,
+        TablerLoading,
+        IconPlus,
+        IconSettings,
+        IconBinary,
+        LayerSchemaModal,
+        IconTrash,
+        IconWorldDownload,
+    },
     props: {
         layer: {
             type: Object,
@@ -196,19 +269,6 @@ export default {
 
             if (disable) this.disabled = true;
         }
-    },
-    components: {
-        TablerNone,
-        IconAlphabetLatin,
-        IconSort09,
-        IconDecimal,
-        TablerLoading,
-        IconPlus,
-        IconSettings,
-        IconBinary,
-        LayerSchemaModal,
-        IconTrash,
-        IconWorldDownload,
     }
 }
 </script>

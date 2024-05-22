@@ -1,22 +1,43 @@
 <template>
-<div>
-    <OverlayLayer v-if='layer' :layer='layer' @close='layer = false'/>
-    <template v-else>
-        <MenuTemplate :name='overlay.name'>
-            <div @click='layer = l' :key='l' v-for='l of overlay.layers' class="col-lg py-2 px-3 hover-dark">
-                <div class='py-2 px-2 hover-dark cursor-pointer d-flex align-items-center'>
-                    <span>
-                        <IconPaint v-if='l.type === "fill"' size='24'/>
-                        <IconLine v-else-if='l.type === "line"' size='24'/>
-                        <IconCircle v-else-if='l.type === "circle"' size='24'/>
-                    </span>
+    <div>
+        <OverlayLayer
+            v-if='layer'
+            :layer='layer'
+            @close='layer = false'
+        />
+        <template v-else>
+            <MenuTemplate :name='overlay.name'>
+                <div
+                    v-for='l of overlay.layers'
+                    :key='l'
+                    class='col-lg py-2 px-3 hover-dark'
+                    @click='layer = l'
+                >
+                    <div class='py-2 px-2 hover-dark cursor-pointer d-flex align-items-center'>
+                        <span>
+                            <IconPaint
+                                v-if='l.type === "fill"'
+                                size='24'
+                            />
+                            <IconLine
+                                v-else-if='l.type === "line"'
+                                size='24'
+                            />
+                            <IconCircle
+                                v-else-if='l.type === "circle"'
+                                size='24'
+                            />
+                        </span>
 
-                    <div class='user-select-none mx-2' v-text='l.id || l.name'/>
+                        <div
+                            class='user-select-none mx-2'
+                            v-text='l.id || l.name'
+                        />
+                    </div>
                 </div>
-            </div>
-        </MenuTemplate>
-    </template>
-</div>
+            </MenuTemplate>
+        </template>
+    </div>
 </template>
 
 <script>

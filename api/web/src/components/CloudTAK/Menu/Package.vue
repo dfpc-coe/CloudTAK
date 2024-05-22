@@ -1,32 +1,61 @@
 <template>
-<MenuTemplate :name='pkg.Name'>
-    <template #buttons>
-        <TablerDelete v-if='profile.username === pkg.SubmissionUser' @delete='deleteFile(pkg.Hash)' displaytype='icon'/>
-        <a :href='downloadFile()' v-tooltip='"Download Asset"'><IconDownload size='32' class='cursor-pointer'/></a>
-    </template>
-    <template #default>
-        <TablerLoading v-if='loading'/>
-        <div v-else class='mx-4 my-4'>
-            <div class='datagrid'>
-                <div class="datagrid-item">
-                    <div class="datagrid-title">Created By</div>
-                    <div class="datagrid-content" v-text='pkg.SubmissionUser'></div>
+    <MenuTemplate :name='pkg.Name'>
+        <template #buttons>
+            <TablerDelete
+                v-if='profile.username === pkg.SubmissionUser'
+                displaytype='icon'
+                @delete='deleteFile(pkg.Hash)'
+            />
+            <a
+                v-tooltip='"Download Asset"'
+                :href='downloadFile()'
+            ><IconDownload
+                size='32'
+                class='cursor-pointer'
+            /></a>
+        </template>
+        <template #default>
+            <TablerLoading v-if='loading' />
+            <div
+                v-else
+                class='mx-4 my-4'
+            >
+                <div class='datagrid'>
+                    <div class='datagrid-item'>
+                        <div class='datagrid-title'>
+                            Created By
+                        </div>
+                        <div
+                            class='datagrid-content'
+                            v-text='pkg.SubmissionUser'
+                        />
+                    </div>
+
+                    <div class='datagrid-item'>
+                        <div class='datagrid-title'>
+                            Created
+                        </div>
+                        <div
+                            class='datagrid-content'
+                            v-text='timeDiff(pkg.SubmissionDateTime)'
+                        />
+                    </div>
                 </div>
 
-                <div class="datagrid-item">
-                    <div class="datagrid-title">Created</div>
-                    <div class="datagrid-content" v-text='timeDiff(pkg.SubmissionDateTime)'></div>
+                <div class='col-12 py-3'>
+                    <button
+                        class='btn btn-primary w-100'
+                        @click='createImport'
+                    >
+                        <IconFileImport
+                            size='20'
+                            class='mx-1'
+                        />Import
+                    </button>
                 </div>
             </div>
-
-            <div class='col-12 py-3'>
-                <button @click='createImport' class='btn btn-primary w-100'>
-                    <IconFileImport size='20' class='mx-1'/>Import
-                </button>
-            </div>
-        </div>
-    </template>
-</MenuTemplate>
+        </template>
+    </MenuTemplate>
 </template>
 
 <script>
@@ -46,6 +75,13 @@ import { useProfileStore } from '/src/stores/profile.ts';
 
 export default {
     name: 'CloudTAKPackage',
+    components: {
+        IconDownload,
+        IconFileImport,
+        TablerDelete,
+        TablerLoading,
+        MenuTemplate,
+    },
     data: function() {
         return {
             loading: true,
@@ -78,7 +114,6 @@ export default {
         },
         createImport: async function() {
             this.loading = true;
-            const url = stdurl(`/api/import`);
             const imp = await std('/api/import', {
                 method: 'POST',
                 body: {
@@ -92,12 +127,5 @@ export default {
 
         },
     },
-    components: {
-        IconDownload,
-        IconFileImport,
-        TablerDelete,
-        TablerLoading,
-        MenuTemplate,
-    }
 }
 </script>

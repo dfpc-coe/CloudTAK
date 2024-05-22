@@ -156,6 +156,15 @@ export const useMapStore = defineStore('cloudtak', {
                 });
             }
         },
+        getLayerByMode(mode: string, mode_id: string): OverlayContainer | null {
+            for (let i = 0; i < this.layers.length; i++) {
+                if (this.layers[i].mode === mode && this.layers[i].mode_id === mode_id) {
+                    return this.layers[i];
+                }
+            }
+
+            return null;
+        },
         updateLayer: async function(newLayer: OverlayContainer) {
             if (!this.map) throw new Error('Cannot updateLayer before map has loaded');
 

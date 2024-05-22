@@ -99,6 +99,37 @@ const router = new VueRouter.createRouter({
                     name: 'home-menu-missions',
                     component: () => import('./components/CloudTAK/Menu/Missions.vue')
                 },{
+                    path: 'missions/:mission',
+                    name: 'home-menu-mission',
+                    component: () => import('./components/CloudTAK/Menu/Mission.vue'),
+                    children: [{
+                        path: '',
+                        name: 'home-menu-mission-default',
+                        redirect: () => {
+                            return { name: 'home-menu-mission-info' };
+                        }
+                    },{
+                        path: 'info',
+                        name: 'home-menu-mission-info',
+                        component: () => import('./components/CloudTAK/Menu/Mission/MissionInfo.vue')
+                    },{
+                        path: 'users',
+                        name: 'home-menu-mission-users',
+                        component: () => import('./components/CloudTAK/Menu/Mission/MissionUsers.vue')
+                    },{
+                        path: 'contents',
+                        name: 'home-menu-mission-contents',
+                        component: () => import('./components/CloudTAK/Menu/Mission/MissionContents.vue')
+                    },{
+                        path: 'timeline',
+                        name: 'home-menu-mission-timeline',
+                        component: () => import('./components/CloudTAK/Menu/Mission/MissionTimeline.vue')
+                    },{
+                        path: 'logs',
+                        name: 'home-menu-mission-logs',
+                        component: () => import('./components/CloudTAK/Menu/Mission/MissionLogs.vue')
+                    }]
+                },{
                     path: 'channels',
                     name: 'home-menu-channels',
                     component: () => import('./components/CloudTAK/Menu/Channels.vue')

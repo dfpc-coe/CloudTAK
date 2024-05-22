@@ -1,28 +1,48 @@
 <template>
     <TablerModal>
-        <button type="button" class="btn-close" @click='close' aria-label="Close"></button>
-            <div class="modal-status bg-yellow"></div>
-            <div class="modal-body text-center py-4">
-                <template v-if='!file'>
-                    <form class="dropzone dz-clickable" id="dropzone-default" action="./" autocomplete="off" novalidate="">
-                        <div class="dz-default dz-message">
-                            <button class="dz-button" type="button">Drop .p12 here<br>click to upload</button>
-                        </div>
-                    </form>
-                </template>
-                <template v-else>
-
-                    <TablerInput
-                        label='P12 Password'
-                        v-model='password'
-                        v-on:keyup.enter='extract'
-                    />
-
-                    <div class="row mt-3">
-                        <div class="col"><a @click='extract' class="cursor-pointer btn w-100">OK</a></div>
+        <button
+            type='button'
+            class='btn-close'
+            aria-label='Close'
+            @click='close'
+        />
+        <div class='modal-status bg-yellow' />
+        <div class='modal-body text-center py-4'>
+            <template v-if='!file'>
+                <form
+                    id='dropzone-default'
+                    class='dropzone dz-clickable'
+                    action='./'
+                    autocomplete='off'
+                    novalidate=''
+                >
+                    <div class='dz-default dz-message'>
+                        <button
+                            class='dz-button'
+                            type='button'
+                        >
+                            Drop .p12 here<br>click to upload
+                        </button>
                     </div>
-                </template>
-            </div>
+                </form>
+            </template>
+            <template v-else>
+                <TablerInput
+                    v-model='password'
+                    label='P12 Password'
+                    @keyup.enter='extract'
+                />
+
+                <div class='row mt-3'>
+                    <div class='col'>
+                        <a
+                            class='cursor-pointer btn w-100'
+                            @click='extract'
+                        >OK</a>
+                    </div>
+                </div>
+            </template>
+        </div>
     </TablerModal>
 </template>
 
@@ -38,6 +58,14 @@ import { convertToPem } from 'p12-pem/lib/lib/p12.js';
 
 export default {
     name: 'UploadP12Modal',
+    components: {
+        TablerModal,
+        TablerInput
+    },
+    emits: [
+        'close',
+        'certs'
+    ],
     data: function() {
         return {
             dropzone: null,
@@ -68,10 +96,6 @@ export default {
             const certs = convertToPem(atob(this.file.split('base64,')[1]), this.password);
             this.$emit('certs', certs);
         }
-    },
-    components: {
-        TablerModal,
-        TablerInput
     }
 }
 </script>

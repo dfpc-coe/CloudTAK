@@ -1,45 +1,73 @@
 <template>
-<div>
-    <div class='card-header d-flex'>
-        <h3 class='card-title'>Data Transforms</h3>
-        <div class='ms-auto btn-list'>
-            <IconRefresh @click='fetchList' size='32' class='cursor-pointer'/>
+    <div>
+        <div class='card-header d-flex'>
+            <h3 class='card-title'>
+                Data Transforms
+            </h3>
+            <div class='ms-auto btn-list'>
+                <IconRefresh
+                    size='32'
+                    class='cursor-pointer'
+                    @click='fetchList'
+                />
+            </div>
+        </div>
+
+        <div
+            v-if='!loading.list && list.items.length'
+            class='table-responsive'
+        >
+            <table class='table table-vcenter card-table table-hover'>
+                <thead>
+                    <tr>
+                        <th>Asset</th>
+                        <th>Status</th>
+                        <th>Created</th>
+                        <th>Updated</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr
+                        v-for='job in list.items'
+                        :key='job.created'
+                        class='cursor-pointer'
+                        @click='$router.push(`/connection/${$route.params.connectionid}/data/${$route.params.dataid}/job/${job.id}`)'
+                    >
+                        <td v-text='job.asset' />
+                        <td v-text='job.status' />
+                        <td>
+                            <TablerEpoch :date='job.created' />
+                        </td>
+                        <td class='d-flex'>
+                            <TablerEpoch
+                                v-if='job.updated'
+                                :date='job.updated'
+                            />
+                            <span v-else>-</span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div
+            v-else
+            class='card-body'
+        >
+            <template v-if='err'>
+                <TablerAlert
+                    title='Transforms Error'
+                    :err='err'
+                    :compact='true'
+                />
+            </template>
+            <TablerLoading v-else-if='loading.list' />
+            <TablerNone
+                v-else-if='!list.items.length'
+                :create='false'
+                :compact='true'
+            />
         </div>
     </div>
-
-    <div v-if='!loading.list && list.items.length' class='table-responsive'>
-        <table class="table table-vcenter card-table table-hover">
-            <thead>
-                <tr>
-                    <th>Asset</th>
-                    <th>Status</th>
-                    <th>Created</th>
-                    <th>Updated</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr @click='$router.push(`/connection/${$route.params.connectionid}/data/${$route.params.dataid}/job/${job.id}`)' :key='job.created' v-for='job in list.items' class='cursor-pointer'>
-                    <td v-text='job.asset'></td>
-                    <td v-text='job.status'></td>
-                    <td>
-                        <TablerEpoch :date='job.created'/>
-                    </td>
-                    <td class='d-flex'>
-                        <TablerEpoch v-if='job.updated' :date='job.updated'/>
-                        <span v-else>-</span>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-    <div v-else class='card-body'>
-        <template v-if='err'>
-            <TablerAlert title='Transforms Error' :err='err' :compact='true'/>
-        </template>
-        <TablerLoading v-else-if='loading.list'/>
-        <TablerNone v-else-if='!list.items.length' :create='false' :compact='true'/>
-    </div>
-</div>
 </template>
 
 <script>
@@ -56,6 +84,13 @@ import {
 
 export default {
     name: 'DataJobs',
+    components: {
+        TablerNone,
+        TablerAlert,
+        IconRefresh,
+        TablerLoading,
+        TablerEpoch,
+    },
     data: function() {
         return {
             err: null,
@@ -94,13 +129,6 @@ export default {
                 this.err = err;
             }
         }
-    },
-    components: {
-        TablerNone,
-        TablerAlert,
-        IconRefresh,
-        TablerLoading,
-        TablerEpoch,
     }
 }
 </script>

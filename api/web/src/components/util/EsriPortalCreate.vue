@@ -1,20 +1,32 @@
 <template>
     <TablerModal>
-        <button type="button" class="btn-close" @click='close' aria-label="Close"></button>
-        <div class="modal-status bg-yellow"></div>
+        <button
+            type='button'
+            class='btn-close'
+            aria-label='Close'
+            @click='close'
+        />
+        <div class='modal-status bg-yellow' />
         <div class='modal-header'>
-            <div class='modal-title'>Create Feature Service</div>
+            <div class='modal-title'>
+                Create Feature Service
+            </div>
         </div>
-        <div class="modal-body row">
+        <div class='modal-body row'>
             <div class='col-12'>
                 <TablerInput
-                    label='Service Name'
                     v-model='data.name'
-                    v-on:keyup.enter='create'
+                    label='Service Name'
+                    @keyup.enter='create'
                 />
             </div>
-            <div class="col-12 mt-3">
-                <div class="col"><a @click='create' class="cursor-pointer btn w-100">Create</a></div>
+            <div class='col-12 mt-3'>
+                <div class='col'>
+                    <a
+                        class='cursor-pointer btn w-100'
+                        @click='create'
+                    >Create</a>
+                </div>
             </div>
         </div>
     </TablerModal>
@@ -28,6 +40,10 @@ import {
 
 export default {
     name: 'EsriPortalCreate',
+    components: {
+        TablerModal,
+        TablerInput
+    },
     props: {
         token: {
             type: String,
@@ -38,6 +54,10 @@ export default {
             required: true
         }
     },
+    emits: [
+        'create',
+        'close'
+    ],
     data: function() {
         return {
             data: {
@@ -55,10 +75,6 @@ export default {
         close: function() {
             this.$emit('close');
         },
-    },
-    components: {
-        TablerModal,
-        TablerInput
     }
 }
 </script>

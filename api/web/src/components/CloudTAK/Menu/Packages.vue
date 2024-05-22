@@ -1,24 +1,46 @@
 <template>
-<MenuTemplate name='Data Packages'>
-    <template #buttons>
-        <IconRefresh v-if='!loading' @click='fetchList' size='32' class='cursor-pointer' v-tooltip='"Refresh"'/>
-    </template>
-    <template #default>
-        <TablerLoading v-if='loading'/>
-        <TablerNone v-else-if='!list.items.length' label='Packages' :create='false'/>
-        <template v-else>
-            <div :key='pkg.Hash' v-for='pkg in list.items'>
-                <div @click='$router.push(`/menu/packages/${pkg.Hash}`)' class='col-12 py-2 px-3 align-items-center hover-dark cursor-pointer'>
-                    <div class='col-12' v-text='pkg.Name'></div>
-                    <div class='col-12 subheader d-flex'>
-                        <div v-text='timeDiff(pkg.SubmissionDateTime)'></div>
-                        <div class='ms-auto' v-text='pkg.SubmissionUser'></div>
+    <MenuTemplate name='Data Packages'>
+        <template #buttons>
+            <IconRefresh
+                v-if='!loading'
+                v-tooltip='"Refresh"'
+                size='32'
+                class='cursor-pointer'
+                @click='fetchList'
+            />
+        </template>
+        <template #default>
+            <TablerLoading v-if='loading' />
+            <TablerNone
+                v-else-if='!list.items.length'
+                label='Packages'
+                :create='false'
+            />
+            <template v-else>
+                <div
+                    v-for='pkg in list.items'
+                    :key='pkg.Hash'
+                >
+                    <div
+                        class='col-12 py-2 px-3 align-items-center hover-dark cursor-pointer'
+                        @click='$router.push(`/menu/packages/${pkg.Hash}`)'
+                    >
+                        <div
+                            class='col-12'
+                            v-text='pkg.Name'
+                        />
+                        <div class='col-12 subheader d-flex'>
+                            <div v-text='timeDiff(pkg.SubmissionDateTime)' />
+                            <div
+                                class='ms-auto'
+                                v-text='pkg.SubmissionUser'
+                            />
+                        </div>
                     </div>
                 </div>
-            </div>
+            </template>
         </template>
-    </template>
-</MenuTemplate>
+    </MenuTemplate>
 </template>
 
 <script>
@@ -35,6 +57,12 @@ import timeDiff from '../../../timediff.js';
 
 export default {
     name: 'CloudTAKPackages',
+    components: {
+        TablerNone,
+        TablerLoading,
+        IconRefresh,
+        MenuTemplate
+    },
     data: function() {
         return {
             err: false,
@@ -65,12 +93,6 @@ export default {
             this.list = await std(url);
             this.loading = false;
         },
-    },
-    components: {
-        TablerNone,
-        TablerLoading,
-        IconRefresh,
-        MenuTemplate
     }
 }
 </script>

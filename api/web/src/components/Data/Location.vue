@@ -1,19 +1,34 @@
 <template>
-<div v-if='pmtiles.length' class="card">
-    <TablerLoading v-if='loading'/>
-    <div v-else class="card-body">
-        <div class="row">
-            <div id="map" style='height: 350px;'></div>
-        </div>
+    <div
+        v-if='pmtiles.length'
+        class='card'
+    >
+        <TablerLoading v-if='loading' />
+        <div
+            v-else
+            class='card-body'
+        >
+            <div class='row'>
+                <div
+                    id='map'
+                    style='height: 350px;'
+                />
+            </div>
 
-        <div v-if='geocode.loading' class="row">
-            <TablerLoading desc='Geocoding Feature...'/>
-        </div>
-        <div v-else-if='geocode.result' class="row py-2">
-            <pre v-text='geocode.result'/>
+            <div
+                v-if='geocode.loading'
+                class='row'
+            >
+                <TablerLoading desc='Geocoding Feature...' />
+            </div>
+            <div
+                v-else-if='geocode.result'
+                class='row py-2'
+            >
+                <pre v-text='geocode.result' />
+            </div>
         </div>
     </div>
-</div>
 </template>
 
 <script>
@@ -29,6 +44,9 @@ let map;
 
 export default {
     name: 'DataLocationCard',
+    components: {
+        TablerLoading
+    },
     props: {
         assets: {
             type: Object,
@@ -215,9 +233,6 @@ export default {
                 });
             })
         }
-    },
-    components: {
-        TablerLoading
     }
 }
 </script>

@@ -1,22 +1,44 @@
 <template>
-<MenuTemplate name='Chats'>
-    <template #buttons>
-        <IconPlus @click='$router.push("/menu/contacts")' size='32' class='cursor-pointer' v-tooltip='"New Chat"'/>
-        <IconRefresh v-if='!loading' @click='fetchList' size='32' class='cursor-pointer' v-tooltip='"Refresh"'/>
-    </template>
-    <template #default>
-        <TablerLoading v-if='loading'/>
-        <TablerNone v-else-if='!chats.items.length' :create='false'/>
-        <template v-else>
-            <div class='col-12'>
-                <div @click='$router.push(`/menu/chats/${chat.chatroom}`)' v-for='chat in chats.items' class='cursor-pointer col-12 py-2 px-3 d-flex align-items-center hover-dark'>
-                    <IconUser size='32'/>
-                    <span class='mx-2' style='font-size: 18px;' v-text='chat.chatroom'/>
-                </div>
-            </div>
+    <MenuTemplate name='Chats'>
+        <template #buttons>
+            <IconPlus
+                v-tooltip='"New Chat"'
+                size='32'
+                class='cursor-pointer'
+                @click='$router.push("/menu/contacts")'
+            />
+            <IconRefresh
+                v-if='!loading'
+                v-tooltip='"Refresh"'
+                size='32'
+                class='cursor-pointer'
+                @click='fetchList'
+            />
         </template>
-    </template>
-</MenuTemplate>
+        <template #default>
+            <TablerLoading v-if='loading' />
+            <TablerNone
+                v-else-if='!chats.items.length'
+                :create='false'
+            />
+            <template v-else>
+                <div class='col-12'>
+                    <div
+                        v-for='chat in chats.items'
+                        class='cursor-pointer col-12 py-2 px-3 d-flex align-items-center hover-dark'
+                        @click='$router.push(`/menu/chats/${chat.chatroom}`)'
+                    >
+                        <IconUser size='32' />
+                        <span
+                            class='mx-2'
+                            style='font-size: 18px;'
+                            v-text='chat.chatroom'
+                        />
+                    </div>
+                </div>
+            </template>
+        </template>
+    </MenuTemplate>
 </template>
 
 <script>
@@ -34,6 +56,14 @@ import {
 
 export default {
     name: 'CloudTAKChats',
+    components: {
+        IconPlus,
+        IconRefresh,
+        IconUser,
+        TablerNone,
+        TablerLoading,
+        MenuTemplate
+    },
     data: function() {
         return {
             err: false,
@@ -54,14 +84,6 @@ export default {
             this.chats = await std(url);
             this.loading = false;
         },
-    },
-    components: {
-        IconPlus,
-        IconRefresh,
-        IconUser,
-        TablerNone,
-        TablerLoading,
-        MenuTemplate
     }
 }
 </script>

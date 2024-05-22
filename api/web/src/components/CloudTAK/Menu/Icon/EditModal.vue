@@ -1,23 +1,45 @@
 <template>
-<TablerModal size='xl'>
-    <div class="modal-status bg-red"></div>
-    <button type="button" class="btn-close" @click='$emit("close")' aria-label="Close"></button>
+    <TablerModal size='xl'>
+        <div class='modal-status bg-red' />
+        <button
+            type='button'
+            class='btn-close'
+            aria-label='Close'
+            @click='$emit("close")'
+        />
 
-    <div class='modal-header'>
-        <div class='strong d-flex align-items-center' v-text='editing.name || "Unnamed"'></div>
-    </div>
+        <div class='modal-header'>
+            <div
+                class='strong d-flex align-items-center'
+                v-text='editing.name || "Unnamed"'
+            />
+        </div>
 
-    <TablerLoading v-if='loading.icon' desc='Loading Icon'/>
-    <div v-else class='mx-4 my-4'>
-        <TablerSchema :schema='schema' v-model='editing'/>
+        <TablerLoading
+            v-if='loading.icon'
+            desc='Loading Icon'
+        />
+        <div
+            v-else
+            class='mx-4 my-4'
+        >
+            <TablerSchema
+                v-model='editing'
+                :schema='schema'
+            />
 
-        <div class='d-flex'>
-            <div class='ms-auto'>
-                <div @click='submit' class='btn btn-primary'>Submit</div>
+            <div class='d-flex'>
+                <div class='ms-auto'>
+                    <div
+                        class='btn btn-primary'
+                        @click='submit'
+                    >
+                        Submit
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
-</TablerModal>
+    </TablerModal>
 </template>
 
 <script>
@@ -30,12 +52,20 @@ import {
 
 export default {
     name: 'IconEdit',
+    components: {
+        TablerModal,
+        TablerLoading,
+        TablerSchema,
+    },
     props: {
         icon: {
             type: Object,
             required: true
         }
     },
+    emits: [
+        'close'
+    ],
     data: function() {
         return {
             loading: {
@@ -76,11 +106,6 @@ export default {
             url.searchParams.append('url', this.icon.id ? '/iconset/:iconset/icon/:icon' : '/iconset/:iconset/icon');
             this.schema = (await std(url)).body;
         },
-    },
-    components: {
-        TablerModal,
-        TablerLoading,
-        TablerSchema,
     }
 }
 </script>

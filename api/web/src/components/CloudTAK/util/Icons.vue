@@ -1,53 +1,95 @@
 <template>
-<div class="card">
-    <div class="card-header">
-        <h3 class='card-title'>Icon Search</h3>
+    <div class='card'>
+        <div class='card-header'>
+            <h3 class='card-title'>
+                Icon Search
+            </h3>
 
-        <div class='ms-auto btn-list'>
-            <IconSearch @click='search = !search' size='32' class='cursor-pointer'/>
+            <div class='ms-auto btn-list'>
+                <IconSearch
+                    size='32'
+                    class='cursor-pointer'
+                    @click='search = !search'
+                />
+            </div>
+        </div>
+
+        <div
+            v-if='search'
+            class='col-12 px-2'
+        >
+            <TablerInput
+                v-model='paging.filter'
+                placeholder='Filter'
+            />
+        </div>
+
+        <div class='card-body'>
+            <TablerLoading
+                v-if='loading'
+                desc='Loading Icons'
+            />
+            <TablerNone
+                v-else-if='!list.items.length'
+                label='Icons'
+                :create='false'
+            />
+            <template v-else>
+                <div class='row g-1'>
+                    <div
+                        v-for='icon in list.items'
+                        :key='icon.name'
+                        class='col-sm-2'
+                        @click='$router.push(`/menu/iconset/${icon.iconset}/${encodeURIComponent(icon.name)}`)'
+                    >
+                        <div class='card card-sm hover-dark cursor-pointer'>
+                            <div class='col-12'>
+                                <div
+                                    class='d-flex justify-content-center mt-3'
+                                    :class='{
+                                        "mt-3": labels,
+                                        "my-3": !labels
+                                    }'
+                                >
+                                    <img
+                                        :src='iconurl(icon)'
+                                        height='32'
+                                        width='32'
+                                    >
+                                </div>
+                            </div>
+                            <div
+                                v-if='labels'
+                                class='card-body'
+                            >
+                                <div class='row'>
+                                    <div
+                                        class='d-inline-block text-truncate'
+                                        v-text='icon.name'
+                                    />
+                                    <div
+                                        class='d-inline-block text-truncate text-muted'
+                                        v-text='icon.type2525b || "None"'
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class='col-lg-12 d-flex my-4'>
+                        <div class='ms-auto'>
+                            <TablerPager
+                                v-if='list.total > paging.limit'
+                                :page='paging.page'
+                                :total='list.total'
+                                :limit='paging.limit'
+                                @page='paging.page = $event'
+                            />
+                        </div>
+                    </div>
+                </div>
+            </template>
         </div>
     </div>
-
-    <div v-if='search' class="col-12 px-2">
-        <TablerInput v-model='paging.filter' placeholder='Filter'/>
-    </div>
-
-    <div class="card-body">
-        <TablerLoading v-if='loading' desc='Loading Icons'/>
-        <TablerNone
-            v-else-if='!list.items.length'
-            label='Icons'
-            :create='false'
-        />
-        <template v-else>
-            <div class='row g-1'>
-                <div @click='$router.push(`/menu/iconset/${icon.iconset}/${encodeURIComponent(icon.name)}`)' :key='icon.name' v-for='icon in list.items' class="col-sm-2">
-                    <div class="card card-sm hover-dark cursor-pointer">
-                        <div class='col-12'>
-                            <div class='d-flex justify-content-center mt-3' :class='{
-                                "mt-3": labels,
-                                "my-3": !labels
-                            }'>
-                                <img :src='iconurl(icon)' height='32' width='32'>
-                            </div>
-                        </div>
-                        <div v-if='labels' class="card-body">
-                            <div class='row'>
-                                <div class='d-inline-block text-truncate' v-text='icon.name'></div>
-                                <div class="d-inline-block text-truncate text-muted" v-text='icon.type2525b || "None"'></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-12 d-flex my-4">
-                    <div class='ms-auto'>
-                        <TablerPager v-if='list.total > paging.limit' @page='paging.page = $event' :page='paging.page'  :total='list.total' :limit='paging.limit'/>
-                    </div>
-                </div>
-            </div>
-        </template>
-    </div>
-</div>
 </template>
 
 <script>
@@ -64,6 +106,13 @@ import {
 
 export default {
     name: 'IconCombineds',
+    components: {
+        TablerNone,
+        TablerPager,
+        TablerInput,
+        IconSearch,
+        TablerLoading
+    },
     props: {
         iconset: {
             type: String
@@ -119,13 +168,6 @@ export default {
             this.list = await std(url);
             this.loading = false;
         }
-    },
-    components: {
-        TablerNone,
-        TablerPager,
-        TablerInput,
-        IconSearch,
-        TablerLoading
     }
 }
 </script>

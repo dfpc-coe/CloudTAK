@@ -1,24 +1,29 @@
 <template>
-<Mentionable
-  :keys="['{']"
-  :items="schemalist"
->
-    <TablerInput
-        :label='label'
-        :disabled='disabled'
-        :description='description'
-        :placeholder='placeholder'
-        v-model='template'
-    ></TablerInput>
+    <Mentionable
+        :keys='keys'
+        :items='schemalist'
+    >
+        <TablerInput
+            v-model='template'
+            :label='label'
+            :disabled='disabled'
+            :description='description'
+            :placeholder='placeholder'
+        />
 
-    <template #no-result>
-        <div class="subheader mx-2 my-2 text-center">No Results</div>
-    </template>
+        <template #no-result>
+            <div class='subheader mx-2 my-2 text-center'>
+                No Results
+            </div>
+        </template>
 
-      <template #item-{="{ item }">
-        <div class="subheader mx-2 my-2 text-center cursor-pointer" v-text='item.label'></div>
-      </template>
-</Mentionable>
+        <template #item-{='{ item }'>
+            <div
+                class='subheader mx-2 my-2 text-center cursor-pointer'
+                v-text='item.label'
+            />
+        </template>
+    </Mentionable>
 </template>
 
 <script>
@@ -29,6 +34,10 @@ import {
 
 export default {
     name: 'StyleTemplate',
+    components: {
+        TablerInput,
+        Mentionable
+    },
     props: {
         modelValue: {
             type: String,
@@ -52,6 +61,15 @@ export default {
             type: String,
         }
     },
+    emits: [
+        'update:modelValue'
+    ],
+    data: function() {
+        return {
+            keys: ["{"],
+            template: this.modelValue
+        }
+    },
     computed: {
         schemalist: function() {
             return Object.keys(this.schema.properties).map((ele) => {
@@ -69,15 +87,6 @@ export default {
         template: function() {
             this.$emit('update:modelValue', this.template);
         }
-    },
-    data: function() {
-        return {
-            template: this.modelValue
-        }
-    },
-    components: {
-        TablerInput,
-        Mentionable
     }
 }
 </script>
