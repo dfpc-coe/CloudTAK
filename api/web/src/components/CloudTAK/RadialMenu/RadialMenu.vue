@@ -105,6 +105,9 @@ export default {
     computed: {
         ...mapState(useMapStore, ['radial']),
     },
+    unmounted: function() {
+        this.$emit('close')
+    },
     mounted: function() {
         this.genMenuItems();
 
@@ -117,9 +120,6 @@ export default {
                 onClick: (item) => {
                     this.$emit('click', `${this.radial.mode}:${item.id}`);
                 },
-                onClose: () => {
-                    this.$emit('close')
-                }
             });
             this.menu.open();
         })
