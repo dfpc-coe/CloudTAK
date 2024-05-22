@@ -56,25 +56,27 @@
                         v-text='mission.description || "No Feed Description"'
                     />
                 </div>
-                <div class='mx-2 my-2'>
-                    <div class='d-flex align-items-center'>
-                        <button
-                            v-if='subscribed === false'
-                            class='btn btn-green'
-                            style='height: 32px;'
-                            @click='subscribe(true)'
-                        >
-                            Subscribe
-                        </button>
-                        <button
-                            v-else-if='subscribed === true'
-                            class='btn btn-danger'
-                            style='height: 32px;'
-                            @click='subscribe(false)'
-                        >
-                            Unsubscribe
-                        </button>
+                <div class='col-12'>
+                    <div class='datagrid-title'>
+                        Subscription
                     </div>
+                    <button
+                        v-if='subscribed === false'
+                        class='btn btn-green'
+                        style='height: 32px;'
+                        @click='subscribe(true)'
+                    >
+                        Subscribe
+                    </button>
+                    <button
+                        v-else-if='subscribed === true'
+                        class='btn btn-danger'
+                        style='height: 32px;'
+                        @click='subscribe(false)'
+                    >
+                        Unsubscribe
+                    </button>
+                    <TablerLoading v-else :inline='true' desc='Updating Subscription...'/>
                 </div>
             </div>
         </div>
@@ -118,6 +120,8 @@ export default {
             this.loading.users = false;
         },
         subscribe: async function(subscribed) {
+            this.subscribed = null;
+
             const layer = mapStore.getLayerByMode('mission', this.mission.guid);
 
             if (subscribed === true && !layer) {
