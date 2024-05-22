@@ -42,6 +42,7 @@
 </template>
 
 <script>
+import { std, stdurl } from '/src/std.ts';
 import {
     IconUserBolt,
     IconUserEdit,
@@ -51,6 +52,9 @@ import MenuTemplate from '../../util/MenuTemplate.vue';
 
 export default {
     name: 'MissionUsers',
+    props: {
+        mission: Object
+    },
     components: {
         MenuTemplate,
         IconUserBolt,
@@ -70,12 +74,9 @@ export default {
         fetchSubscriptions: async function() {
             this.loading = true;
 
-            try {
-                const url = await stdurl(`/api/marti/missions/${this.mission.name}/subscriptions/roles`);
-                this.subscriptions = (await std(url)).data;
-            } catch (err) {
-                this.err = err;
-            }
+            const url = await stdurl(`/api/marti/missions/${this.mission.name}/subscriptions/roles`);
+            this.subscriptions = (await std(url)).data;
+
             this.loading = false;
         },
     }
