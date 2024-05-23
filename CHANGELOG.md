@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v2.27.3 - 2024-05-23
+
+- :bug: `API` Ensure Hook failure doesn't result in API restart
+
 ### v2.27.2 - 2024-05-23
 
 - :bug: `UI` Fix Config Page style 
