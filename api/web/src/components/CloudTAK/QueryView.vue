@@ -33,6 +33,11 @@
                     desc='Querying...'
                 />
                 <template v-else>
+                    <QueryReverse
+                        :reverse='query.reverse'
+                        class='py-2'
+                    />
+
                     <QueryWeather
                         :weather='query.weather'
                         class='py-2'
@@ -49,6 +54,7 @@ import {
 } from '@tabler/icons-vue';
 import { std } from '/src/std.ts';
 import QueryWeather from './Query/Weather.vue';
+import QueryReverse from './Query/Reverse.vue';
 import {
     TablerLoading
 } from '@tak-ps/vue-tabler';
@@ -60,6 +66,7 @@ export default {
         Coordinate,
         IconRefresh,
         QueryWeather,
+        QueryReverse,
         TablerLoading
     },
     data: function() {
