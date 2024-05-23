@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v2.24.0 - 2024-05-23
+
+- :rocket: `API` Preliminary introduction of MissionLayers API
+
 ### v2.23.1 - 2024-05-23
 
 - :rocket: `UI` When a mission is deleted send the user back to the Mission List page
