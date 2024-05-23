@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v2.27.1 - 2024-05-23
+
+- :bug: `API` Check for undefined in AGOL Token/Enabled
+
 ### v2.27.0 - 2024-05-23
 
 - :rocket: `UI` Support entry of MultiLine Remarks fields

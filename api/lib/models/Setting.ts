@@ -22,7 +22,7 @@ export default class SettingModel extends Modeler<typeof Setting> {
         .limit(1);
 
         if (pgres.length !== 1) {
-            if (defaultValue) {
+            if (defaultValue !== undefined) {
                 return defaultValue;
             } else {
                 throw new Err(404, null, `Item Not Found`);
