@@ -1,9 +1,8 @@
-import Modeler, { GenericList, GenericListInput } from '@openaddresses/batch-generic';
+import Modeler from '@openaddresses/batch-generic';
 import Err from '@openaddresses/batch-error';
-import { Static, Type, TSchema } from '@sinclair/typebox'
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import { Setting } from '../schema.js';
-import { SQL, sql, is, eq, asc, desc } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 
 export default class SettingModel extends Modeler<typeof Setting> {
     constructor(
