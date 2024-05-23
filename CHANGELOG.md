@@ -12,6 +12,14 @@
 
 ### Pending Release
 
+### v2.27.2 - 2024-05-23
+
+- :bug: `UI` Fix Config Page style 
+
+### v2.27.1 - 2024-05-23
+
+- :bug: `API` Check for undefined in AGOL Token/Enabled
+
 ### v2.27.1 - 2024-05-23
 
 - :bug: `API` Check for undefined in AGOL Token/Enabled
