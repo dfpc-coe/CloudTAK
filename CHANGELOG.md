@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v2.25.0 - 2024-05-23
+
+- :rocket: `UI` Mission Subscriptions are now shown immediately
+
 ### v2.24.0 - 2024-05-23
 
 - :rocket: `API` Preliminary introduction of MissionLayers API
