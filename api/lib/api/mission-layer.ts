@@ -79,6 +79,19 @@ export default class {
         });
     }
 
+    async get(
+        name: string,
+        layerUid: string,
+        opts?: Static<typeof MissionOptions>
+    ): Promise<TAKList<Static<typeof MissionLayer>>> {
+        const url = new URL(`/Marti/api/missions/${this.#encodeName(name)}/layers/${layerUid}`, this.api.url);
+
+        return await this.api.fetch(url, {
+            method: 'GET',
+            headers: this.#headers(opts),
+        });
+    }
+
     async create(
         name: string,
         query: Static<typeof CreateInput>,
