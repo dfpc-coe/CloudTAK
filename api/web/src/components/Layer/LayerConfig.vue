@@ -98,38 +98,66 @@
                         v-text='cronstr(config.cron)'
                     />
                 </div>
-                <div class="col-md-4">
+                <div class='col-md-4'>
                     <div class='d-flex'>
                         <label class='form-label'>Schedule Task</label>
                         <div class='ms-auto'>
                             <div class='btn-list'>
                                 <div>
                                     <IconRefresh
-                                            v-if='!newTaskVersion && !loading.version'
-                                            @click='latestVersion'
-                                            v-tooltip='"Check for new version"'
-                                            size='16'
-                                            class='cursor-pointer'
-                                            />
-                                    <div v-else-if='loading.version' class='d-flex justify-content-center'>
-                                        <div class="spinner-border" role="status"></div>
+                                        v-if='!newTaskVersion && !loading.version'
+                                        v-tooltip='"Check for new version"'
+                                        size='16'
+                                        class='cursor-pointer'
+                                        @click='latestVersion'
+                                    />
+                                    <div
+                                        v-else-if='loading.version'
+                                        class='d-flex justify-content-center'
+                                    >
+                                        <div
+                                            class='spinner-border'
+                                            role='status'
+                                        />
                                     </div>
                                     <span v-else>
                                         New Task Version
-                                        <span v-if='disabled' v-text='newTaskVersion'/>
-                                            <span v-else @click='updateTask' class='cursor-pointer text-blue' v-text='newTaskVersion'/>
-                                            </span>
+                                        <span
+                                            v-if='disabled'
+                                            v-text='newTaskVersion'
+                                        />
+                                        <span
+                                            v-else
+                                            class='cursor-pointer text-blue'
+                                            @click='updateTask'
+                                            v-text='newTaskVersion'
+                                        />
+                                    </span>
                                 </div>
                                 <div v-if='!disabled'>
-                                    <IconSettings @click='taskmodal = true' size='16' class='cursor-pointer'/>
+                                    <IconSettings
+                                        size='16'
+                                        class='cursor-pointer'
+                                        @click='taskmodal = true'
+                                    />
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <input :disabled='disabled' v-model='config.task' :class='{
-                        "is-invalid": errors.task
-                    }' class="form-control" placeholder='Schedule Task'/>
-                    <div v-if='errors.task' v-text='errors.task' class="invalid-feedback"></div>
+                    <input
+                        v-model='config.task'
+                        :disabled='disabled'
+                        :class='{
+                            "is-invalid": errors.task
+                        }'
+                        class='form-control'
+                        placeholder='Schedule Task'
+                    >
+                    <div
+                        v-if='errors.task'
+                        class='invalid-feedback'
+                        v-text='errors.task'
+                    />
                 </div>
                 <div class='col-md-4'>
                     <TablerEnum
@@ -231,6 +259,7 @@ import {
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import {
+    IconRefresh,
     IconSettings,
     IconDatabase,
 } from '@tabler/icons-vue'
@@ -239,6 +268,7 @@ export default {
     name: 'LayerConfig',
     components: {
         TablerLoading,
+        IconRefresh,
         IconSettings,
         DataSelect,
         IconDatabase,
