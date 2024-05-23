@@ -5,6 +5,7 @@ import TAKAPI, {
     APIAuthCertificate,
 } from './tak-api.js';
 import Config from './config.js';
+import { sql } from 'drizzle-orm';
 import { Mission } from './api/mission.js';
 
 export default class DataMission {
@@ -13,7 +14,7 @@ export default class DataMission {
 
         const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(connection.auth.cert, connection.auth.key));
 
-        // All groups should be active for data-sync api to work properly
+        // All groups for the connection be active for data-sync api to work properly
         const groups = await api.Group.list({ useCache: 'true' });
         if (groups.data.some((g) => { return !g.active })) {
             await api.Group.update(groups.data.map((group) => {
@@ -58,6 +59,23 @@ export default class DataMission {
             });
 
         }
+
+        return this.syncLayers(api, config, data, mission);
+    }
+
+    static async syncLayers(
+        api: TAKAPI,
+        config: Config,
+        data: InferSelectModel<typeof Data>,
+        mission: Static<typeof Mission>
+    ): Promise<Static<typeof Mission>> {
+        const missionLayers = await api.MissionLayer.list(data.name);
+
+        const layers = await config.models.Layer.list({
+            where: sql`${data.id}::BIGINT = layers.data`
+        });
+
+        console.error(missionLayers.data, layers)
 
         return mission;
     }

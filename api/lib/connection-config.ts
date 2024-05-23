@@ -1,4 +1,5 @@
 import { Connection } from './schema.js';
+import DataMission from './data-mission.js';
 import { InferSelectModel, sql } from 'drizzle-orm';
 import Config from './config.js';
 
@@ -39,6 +40,14 @@ export class MachineConnConfig implements ConnectionConfig {
                 AND mission_sync IS True
             `
         });
+
+        for (const data of missions.items) {
+            try {
+                await DataMission.sync(this.config, data);
+            } catch (err) {
+                console.error('Failed DataMission.sync:', err);
+            }
+        }
 
         return missions.items.map((m) => {
             return m.name;
