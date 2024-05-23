@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v2.26.0 - 2024-05-23
+
+- :rocket: `UI` Add support for reverse geocoding in Query Panel
+
 ### v2.25.0 - 2024-05-23
 
 - :rocket: `UI` Mission Subscriptions are now shown immediately
