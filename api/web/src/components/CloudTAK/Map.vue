@@ -35,8 +35,14 @@
             background-color: rgba(0, 0, 0, 0.5);
         '
         >
-            <div class='d-flex align-items-center' v-tooltip='open ? "Connected" : "No Connection"'>
-                <Status :status='open ? "success" : "fail"' :dark='true'/>
+            <div
+                v-tooltip='open ? "Connected" : "No Connection"'
+                class='d-flex align-items-center'
+            >
+                <Status
+                    :status='open ? "success" : "fail"'
+                    :dark='true'
+                />
                 Server
             </div>
         </div>
