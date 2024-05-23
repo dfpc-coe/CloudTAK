@@ -1,6 +1,7 @@
 import Package from './api/package.js';
 import Mission from './api/mission.js';
 import MissionLog from './api/mission-log.js';
+import MissionLayer from './api/mission-layer.js';
 import Credentials from './api/credentials.js';
 import Contacts from './api/contacts.js';
 import Files from './api/files.js';
@@ -19,6 +20,7 @@ export default class TAKAPI {
     Package: Package;
     Mission: Mission;
     MissionLog: MissionLog;
+    MissionLayer: MissionLayer;
     Credentials: Credentials;
     Contacts: Contacts;
     Group: Group;
@@ -31,6 +33,7 @@ export default class TAKAPI {
         this.Package = new Package(this);
         this.Mission = new Mission(this);
         this.MissionLog = new MissionLog(this);
+        this.MissionLayer = new MissionLayer(this);
         this.Credentials = new Credentials(this);
         this.Contacts = new Contacts(this);
         this.Group = new Group(this);
