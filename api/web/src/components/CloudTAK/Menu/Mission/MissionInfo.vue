@@ -5,7 +5,7 @@
         :border='false'
     >
         <div class='mx-2 my-2'>
-            <div class='row g-2'>
+            <div class='row g-3'>
                 <div class='col-12'>
                     <div class='datagrid-title'>
                         Created
@@ -84,6 +84,22 @@
                         desc='Updating Subscription...'
                     />
                 </div>
+                <div class='col-12'>
+                    <div class='datagrid-title'>
+                        Mission Layers
+                    </div>
+                    <TablerLoading
+                        v-if='loading.layers'
+                        :inline='true'
+                        desc='Loading Layers...'
+                    />
+                    <TablerNone v-else-if='!layers.length' :create='false' :compact='true' label='Layers'/>
+                    <template v-else>
+                        <div class='col-12' v-for='layer in layers'>
+                            <span v-text='layer.name'/>
+                        </div>
+                    </template>
+                </div>
             </div>
         </div>
     </MenuTemplate>
@@ -92,6 +108,7 @@
 <script>
 import { std, stdurl } from '/src/std.ts';
 import {
+    TablerNone,
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import MenuTemplate from '../../util/MenuTemplate.vue';
@@ -102,6 +119,7 @@ export default {
     name: 'MissionInfo',
     components: {
         MenuTemplate,
+        TablerNone,
         TablerLoading
     },
     props: {
@@ -111,19 +129,28 @@ export default {
         return {
             subscribed: !!mapStore.getLayerByMode('mission', this.mission.guid),
             loading: {
-                users: false
+                users: false,
+                layers: true
             },
+            layers: [],
             subscriptions: []
         }
     },
     mounted: async function() {
         await this.fetchSubscriptions();
+        await this.fetchLayers();
     },
     methods: {
         fetchSubscriptions: async function() {
             const url = await stdurl(`/api/marti/missions/${this.mission.name}/subscriptions/roles`);
             this.subscriptions = (await std(url)).data;
             this.loading.users = false;
+        },
+        fetchLayers: async function() {
+            this.loading.layers = true;
+            const url = await stdurl(`/api/marti/missions/${this.mission.name}/layer`);
+            this.layers = (await std(url)).data;
+            this.loading.layers = false;
         },
         subscribe: async function(subscribed) {
             this.subscribed = null;

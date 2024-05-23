@@ -24,7 +24,7 @@
                 @click='closeAllMenu'
             />
         </div>
-        
+
         <div
             class='position-absolute bottom-0 end-0 text-white'
             style='
@@ -652,7 +652,7 @@ export default {
                 }
 
                 for (const sub of cotStore.subscriptions.keys()) {
-                    const overlay = mapStore.getLayerByMode.get('mission', sub)
+                    const overlay = mapStore.getLayerByMode('mission', sub)
                     if (!overlay) continue;
 
                     const oStore = mapStore.map.getSource(`${overlay.mode}-${overlay.mode_id}-${overlay.id}`);
