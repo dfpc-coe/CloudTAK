@@ -7,7 +7,7 @@ import type { GeoJSONSourceDiff } from 'maplibre-gl';
 import pointOnFeature from '@turf/point-on-feature';
 import { std, stdurl } from '../std.ts';
 import moment from 'moment';
-import type { Feature } from 'geojson';
+import type { FeatureCollection, Feature } from 'geojson';
 import { useProfileStore } from './profile.ts';
 const profileStore = useProfileStore();
 
@@ -58,13 +58,13 @@ export const useCOTStore = defineStore('cots', {
         /**
          * Load Latest CoTs from Mission Sync
          */
-        loadMission: async function(guid: string): Promise<void> {
-             try {
-                 const fc = await std(`/api/marti/missions/${encodeURIComponent(guid)}/cot`);
-                 for (const feat of fc.features) this.add(feat, guid);
-             } catch (err) {
-                console.error(err);
-            }
+        loadMission: async function(guid: string): Promise<FeatureCollection> {
+            const fc = await std(`/api/marti/missions/${encodeURIComponent(guid)}/cot`);
+            for (const feat of fc.features) this.add(feat, guid);
+
+            const sub = this.subscriptions.get(guid)
+            if (!sub) throw new Error('Mission Subscription not created properly (Internal Error)');
+            return this.collection(sub)
         },
 
         /**
@@ -131,7 +131,7 @@ export const useCOTStore = defineStore('cots', {
         /**
          * Return a FeatureCollection of a non-default CoT Store
          */
-        collection(store: Map<string, Feature>) {
+        collection(store: Map<string, Feature>): FeatureCollection {
             return {
                 type: 'FeatureCollection',
                 features: Array.from(store.values())

@@ -6,7 +6,7 @@ import * as terraDraw from 'terra-draw';
 import pointOnFeature from '@turf/point-on-feature';
 import { useOverlayStore } from './overlays.js'
 import type { Basemap, ProfileOverlay } from '../types.ts';
-import type { Feature } from 'geojson';
+import type { FeatureCollection, Feature } from 'geojson';
 import type {
     LngLat,
     Point,
@@ -19,6 +19,8 @@ import type {
     MapGeoJSONFeature
 } from 'maplibre-gl';
 const overlayStore = useOverlayStore();
+import { useCOTStore } from './cots.js'
+const cotStore = useCOTStore();
 
 export type OverlayContainer = {
     id: string;
@@ -294,6 +296,7 @@ export const useMapStore = defineStore('cloudtak', {
 
             this.map = new mapgl.Map(init);
         },
+
         addDefaultLayer: async function(layer: {
             id: string;
             url?: string;
@@ -320,11 +323,12 @@ export const useMapStore = defineStore('cloudtak', {
                 });
             } else if (layer.type === 'geojson') {
                 if (!this.map.getSource(layer.id)) {
-                    this.map.addSource(layer.id, {
-                        type: 'geojson',
-                        cluster: false,
-                        data: { type: 'FeatureCollection', features: [] }
-                    })
+                    let data: FeatureCollection = { type: 'FeatureCollection', features: [] };
+                    if (layer.mode === 'mission' && layer.mode_id) {
+                        data = await cotStore.loadMission(layer.mode_id);
+                    }
+
+                    this.map.addSource(layer.id, { type: 'geojson', cluster: false, data })
                 }
             }
 
