@@ -8,6 +8,7 @@
             :label='label'
             :disabled='disabled'
             :description='description'
+            :rows='templateRows'
             :placeholder='placeholder'
         />
 
@@ -71,6 +72,11 @@ export default {
         }
     },
     computed: {
+        templateRows: function() {
+            const rows = this.template.split('\n').length;
+            if (rows < 2) return 2
+            return rows;
+        },
         schemalist: function() {
             return Object.keys(this.schema.properties).map((ele) => {
                 return {
