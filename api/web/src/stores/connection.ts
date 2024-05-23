@@ -14,6 +14,7 @@ const cotStore = useCOTStore();
 
 export const useConnectionStore = defineStore('connection', {
     state: (): {
+        open: boolean
         ws?: WebSocket
     } => {
         return {

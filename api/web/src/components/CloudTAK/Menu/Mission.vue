@@ -244,7 +244,8 @@ export default {
                     method: 'DELETE'
                 });
                 if (list.data.length !== 1) throw new Error('Mission Error');
-                this.$emit('close');
+
+                this.$router.replace('/menu/missions');
             } catch (err) {
                 this.err = err;
             }
