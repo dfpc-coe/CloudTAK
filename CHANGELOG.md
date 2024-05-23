@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v2.28.0 - 2024-05-23
+
+- :rocket: `API` Add support for listing Mission Layers
+
 ### v2.27.3 - 2024-05-23
 
 - :bug: `API` Ensure Hook failure doesn't result in API restart
