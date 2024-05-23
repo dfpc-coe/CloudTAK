@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v2.27.0 - 2024-05-23
+
+- :rocket: `UI` Support entry of MultiLine Remarks fields
+
 ### v2.26.0 - 2024-05-23
 
 - :rocket: `UI` Add support for reverse geocoding in Query Panel
