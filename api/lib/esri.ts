@@ -55,6 +55,7 @@ export class EsriBase {
     static async from(base: string | URL, auth?: EsriAuth): Promise<EsriBase> {
         const esri = new EsriBase(base, auth);
         await esri.fetchVersion();
+
         if (auth) await esri.generateToken();
         return esri;
     }
@@ -89,7 +90,7 @@ export class EsriBase {
 
             if (json.error) {
                 // @ts-expect-error
-                throw new Err(400, null, 'ESRI Server Error: ' + json.error.message);
+                throw new Err(400, null, `ESRI Server Error: ${json.error.message} - ${json.error.details.join(', ')}`);
             }
 
             if (!('token' in json) && typeof json.token === 'string') throw new Err(400, null, 'ESRI Server did not provide token');
