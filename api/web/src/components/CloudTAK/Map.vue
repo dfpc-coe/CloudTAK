@@ -28,12 +28,12 @@
         <div
             class='position-absolute bottom-0 end-0 text-white'
             style='
-            z-index: 1;
-            width: 100px;
-            height: 40px;
-            border-radius: 6px 0px 0px 0px;
-            background-color: rgba(0, 0, 0, 0.5);
-        '
+                z-index: 1;
+                width: 100px;
+                height: 40px;
+                border-radius: 6px 0px 0px 0px;
+                background-color: rgba(0, 0, 0, 0.5);
+            '
         >
             <div
                 v-tooltip='open ? "Connected" : "No Connection"'
@@ -51,12 +51,12 @@
             v-if='profile'
             class='position-absolute bottom-0 begin-0 text-white'
             style='
-            z-index: 1;
-            width: 200px;
-            height: 40px;
-            border-radius: 0px 6px 0px 0px;
-            background-color: rgba(0, 0, 0, 0.5);
-        '
+                z-index: 1;
+                width: 200px;
+                height: 40px;
+                border-radius: 0px 6px 0px 0px;
+                background-color: rgba(0, 0, 0, 0.5);
+            '
         >
             <div class='d-flex align-items-center h-100'>
                 <div
@@ -88,10 +88,10 @@
             v-if='selected.size'
             class='position-absolute begin-0 text-white bg-dark'
             style='
-            z-index: 1;
-            bottom: 40px;
-            width: 200px;
-        '
+                z-index: 1;
+                bottom: 40px;
+                width: 200px;
+            '
         >
             <SelectFeats :selected='selected' />
         </div>
@@ -100,11 +100,11 @@
             v-if='mode === "Default"'
             class='position-absolute top-0 beginning-0 text-white py-2 px-2'
             style='
-            z-index: 1;
-            width: 60px;
-            background-color: rgba(0, 0, 0, 0.5);
-            border-radius: 0px 0px 6px 0px;
-        '
+                z-index: 1;
+                width: 60px;
+                background-color: rgba(0, 0, 0, 0.5);
+                border-radius: 0px 0px 6px 0px;
+            '
         >
             <IconSearch
                 v-if='false'
@@ -163,12 +163,12 @@
             v-if='isLoaded && mode === "Default"'
             class='d-flex position-absolute top-0 text-white py-2'
             style='
-            z-index: 1;
-            width: 120px;
-            right: 60px;
-            background-color: rgba(0, 0, 0, 0.5);
-            border-radius: 0px 0px 0px 6px;
-        '
+                z-index: 1;
+                width: 120px;
+                right: 60px;
+                background-color: rgba(0, 0, 0, 0.5);
+                border-radius: 0px 0px 0px 6px;
+            '
         >
             <TablerDropdown>
                 <template #default>
@@ -267,11 +267,11 @@
             v-if='pointInput.shown'
             class='position-absolute end-0 text-white bg-dark'
             style='
-            top: 56px;
-            z-index: 1;
-            width: 300px;
-            border-radius: 0px 6px 0px 0px;
-        '
+                top: 56px;
+                z-index: 1;
+                width: 300px;
+                border-radius: 0px 6px 0px 0px;
+            '
         >
             <div class='mx-2 my-2'>
                 <TablerInput
@@ -425,13 +425,6 @@ export default {
                 this.locked.pop();
             }
         },
-        edit: function() {
-            if (this.edit) {
-                mapStore.draw._store.create([mapStore.radial.cot]);
-                mapStore.draw.start();
-                mapStore.draw.setMode('polygon');
-            }
-        },
         'pointInput.shown': function() {
             this.pointInput.name = '';
             const center = mapStore.map.getCenter()
@@ -494,7 +487,7 @@ export default {
             feat: null,         // Show the Feat Viewer sidebar
             locked: [],         // Lock the map view to a given CoT - The last element is the currently locked value
                                 //   this is an array so that things like the radial menu can temporarily lock state but remember the previous lock value when they are closed
-            edit: false,        // If a radial.cot is set and edit is true then load the cot into terra-draw
+            edit: false,        // If edit is a CoT then load the cot into terra-draw
             upload: {
                 shown: false,
                 dragging: false
@@ -595,7 +588,8 @@ export default {
                 this.closeRadial()
                 await this.deleteCOT(cot);
             } else if (event === 'cot:edit') {
-                //this.edit = true;
+                this.editGeometry(mapStore.radial.cot);
+                this.closeRadial()
             } else if (event === 'feat:view') {
                 this.feat = this.radial.cot;
                 this.closeRadial()
@@ -610,6 +604,22 @@ export default {
                 this.closeRadial()
                 throw new Error(`Unimplemented Radial Action: ${event}`);
             }
+        },
+        editGeometry: function(cot) {
+            mapStore.draw.start();
+            mapStore.draw.setMode('select');
+            const feat = cotStore.get(cot.id, { clone: true });
+
+            if (feat.geometry.type === 'Polygon') {
+                feat.properties.mode = 'polygon';
+            } else if (feat.geometry.type === 'LineString') {
+                feat.properties.mode = 'linestring';
+            } else if (feat.geometry.type === 'Point') {
+                feat.properties.mode = 'point';
+            }
+
+            mapStore.draw.addFeatures([feat]);
+            mapStore.draw.selectFeature(feat.id);
         },
         deleteCOT: async function(cot) {
             if (cot) {
