@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v2.29.1 - 2024-05-28
+
+- :rocket: `API` Include additional details on ESRI Server Errors
+
 ### v2.29.0 - 2024-05-28
 
 - :rocket: `API` Add the ability for a Server Admin to export KML/KMZs
