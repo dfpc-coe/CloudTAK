@@ -70,7 +70,7 @@ export default {
         postExport: async function() {
             this.loading = true;
             try {
-                await std(`/api/marti/export`, {
+                await std(`/api/marti/export?download=true`, {
                     method: 'POST',
                     body: this.data
                 });

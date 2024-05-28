@@ -54,7 +54,12 @@ export async function std(url: string | URL, opts: any = {}): Promise<any> {
         throw new Error('401');
     }
 
-    return await res.json();
+    const ContentType = res.headers.get('Content-Type');
+    if (ContentType && ContentType.includes('application/json')) {
+        return await res.json();
+    } else {
+        return res;
+    }
 }
 
 export function stdclick($router: Router, event: KeyboardEvent, path: string) {
