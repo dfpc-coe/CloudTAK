@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v2.29.0 - 2024-05-28
+
+- :rocket: `API` Add the ability for a Server Admin to export KML/KMZs
+
 ### v2.28.0 - 2024-05-23
 
 - :rocket: `API` Add support for listing Mission Layers
@@ -22,7 +26,7 @@
 
 ### v2.27.2 - 2024-05-23
 
-- :bug: `UI` Fix Config Page style 
+- :bug: `UI` Fix Config Page style
 
 ### v2.27.1 - 2024-05-23
 
