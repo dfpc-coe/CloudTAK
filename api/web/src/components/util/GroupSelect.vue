@@ -19,12 +19,12 @@
         <div class='my-2'>
             <div
                 v-for='group in filtered'
-                :key='group.name'
+                :key='group'
                 class='col-12 cursor-pointer'
                 @click='updateGroup(group)'
             >
                 <IconCircleFilled
-                    v-if='selected.has(group.name)'
+                    v-if='selected.has(group)'
                     size='32'
                     class='cursor-pointer'
                 />
@@ -35,7 +35,7 @@
                 />
                 <span
                     class='mx-2'
-                    v-text='group.name'
+                    v-text='group'
                 />
             </div>
         </div>
@@ -87,8 +87,8 @@ export default {
     ],
     computed: {
         filtered: function() {
-            return this.groups.filter((g) => {
-                return g.includes(this.prefix);
+            return Object.keys(this.groups).filter((g) => {
+                return g.includes(this.filter);
             });
         }
     },
