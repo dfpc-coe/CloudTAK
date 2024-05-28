@@ -22,17 +22,20 @@ export default class {
         this.api = api;
     }
 
-    async export(query: Static<typeof ExportInput>): Promise<Buffer> {
+    async export(query: Static<typeof ExportInput>): Promise<Readable> {
         const url = new URL(`/Marti/ExportMissionKML`, this.api.url);
 
         const params = new URLSearchParams();
-        for (const q in query) params.append(q, String(query[q]));
+        for (const q in query) {
+            if (Array.isArray(query[q])) query[q] = query[q].join(',');
+            params.append(q, String(query[q]));
+        }
 
         const res = await this.api.fetch(url, {
             method: 'POST',
             body: params
-        });
+        }, true);
 
-        return await res.body();
+        return res.body;
     }
 }

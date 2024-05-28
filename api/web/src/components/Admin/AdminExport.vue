@@ -6,7 +6,7 @@
         </h3>
     </div>
     <TablerLoading v-if='loading'/>
-    <div class='card-body row g-2'>
+    <div v-else class='card-body row g-2'>
         <div class='col-6'>
             <TablerInput label='Start Time' v-model='data.startTime' type='datetime-local'/>
         </div>
@@ -49,11 +49,14 @@ export default {
         TablerInput,
     },
     data: function() {
+        let today = new Date();
+        today.setMinutes(today.getMinutes() - today.getTimezoneOffset());
         return {
             loading: false,
             data: {
-                startTime: '',
-                endTime: '',
+                startTime: today.toISOString().slice(0, -1).replace(/\.\d+$/, ''),
+                endTime: today.toISOString().slice(0, -1).replace(/\.\d+$/, ''),
+                groups: [],
                 format: 'kmz',
                 optimizeExport: true
             }
@@ -62,11 +65,18 @@ export default {
     methods: {
         postExport: async function() {
             this.loading = true;
-            await std(`/api/marti/export`, {
-                method: 'POST',
-                body: this.data
-            });
-            this.loading = false;
+            try {
+                await std(`/api/marti/export`, {
+                    method: 'POST',
+                    body: this.data
+                });
+
+                this.loading = false;
+            } catch (err) {
+                this.loading = false;
+                throw err;
+            }
+
         }
     }
 }
