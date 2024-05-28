@@ -107,7 +107,7 @@ export default {
     },
     methods: {
         updateGroup: function(group) {
-            this.selected.has(group.name) ? this.selected.delete(group.name) : this.selected.add(group.name)
+            this.selected.has(group) ? this.selected.delete(group) : this.selected.add(group)
             this.$emit('update:modelValue', Array.from(this.selected));
         },
         fetch: async function() {

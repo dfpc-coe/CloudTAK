@@ -13,15 +13,21 @@ export default async function router(schema: Schema, config: Config) {
         name: 'KML Export',
         group: 'MartiExport',
         description: 'Helper API to export Timeseries KML data from TAK',
+        query: Type.Object({
+            download: Type.Optional(Type.Boolean()),
+        }),
         body: ExportInput
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req, { admin: true });
 
-            console.error(config.server);
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(config.server.auth.cert, config.server.auth.key));
 
             const exp = await api.Export.export(req.body);
+
+            if (req.query.download) {
+                res.setHeader('Content-Disposition', `attachment; filename="export.${req.body.format}"`);
+            }
 
             exp.pipe(res);
         } catch (err) {

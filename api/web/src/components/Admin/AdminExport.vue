@@ -61,7 +61,8 @@ export default {
                 endTime: today.toISOString().slice(0, -1).replace(/\.\d+$/, ''),
                 groups: [],
                 format: 'kmz',
-                optimizeExport: true
+                optimizeExport: true,
+                extendedData: false
             }
         }
     },
