@@ -342,6 +342,10 @@ const router = new VueRouter.createRouter({
                 path: 'config',
                 name: 'admin-config',
                 component: () => import('./components/Admin/AdminConfig.vue')
+            },{
+                path: 'export',
+                name: 'admin-export',
+                component: () => import('./components/Admin/AdminExport.vue')
             }]
         },
 

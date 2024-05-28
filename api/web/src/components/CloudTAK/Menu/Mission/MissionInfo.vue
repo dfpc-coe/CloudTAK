@@ -93,10 +93,18 @@
                         :inline='true'
                         desc='Loading Layers...'
                     />
-                    <TablerNone v-else-if='!layers.length' :create='false' :compact='true' label='Layers'/>
+                    <TablerNone
+                        v-else-if='!layers.length'
+                        :create='false'
+                        :compact='true'
+                        label='Layers'
+                    />
                     <template v-else>
-                        <div class='col-12' v-for='layer in layers'>
-                            <span v-text='layer.name'/>
+                        <div
+                            v-for='layer in layers'
+                            class='col-12'
+                        >
+                            <span v-text='layer.name' />
                         </div>
                     </template>
                 </div>

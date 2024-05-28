@@ -20,8 +20,17 @@ export function stdurl(url: string | URL): URL {
  * @param {URL|String} url      - Full URL or API fragment to request
  * @param {Object} [opts={}]    - Options
  */
-export async function std(url: string | URL, opts: any = {}): Promise<any> {
+export async function std(
+    url: string | URL,
+    opts: {
+        download?: boolean | string;
+        headers?: Record<string, string>;
+        body?: any;
+        method?: string;
+    } = {}
+): Promise<any> {
     url = stdurl(url)
+    if (!opts) opts = {};
 
     if (!opts.headers) opts.headers = {};
 
@@ -54,7 +63,18 @@ export async function std(url: string | URL, opts: any = {}): Promise<any> {
         throw new Error('401');
     }
 
-    return await res.json();
+    const ContentType = res.headers.get('Content-Type');
+
+    if (opts.download) {
+        const object = new File([await res.blob()], typeof opts.download === 'string' ? opts.download : 'download');
+        const file = window.URL.createObjectURL(object);
+        window.location.assign(file);
+        return res;
+    } else if (ContentType && ContentType.includes('application/json')) {
+        return await res.json();
+    } else {
+        return res;
+    }
 }
 
 export function stdclick($router: Router, event: KeyboardEvent, path: string) {

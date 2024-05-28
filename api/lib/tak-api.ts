@@ -6,6 +6,7 @@ import Credentials from './api/credentials.js';
 import Contacts from './api/contacts.js';
 import Files from './api/files.js';
 import Group from './api/groups.js';
+import Export from './api/export.js';
 import Err from '@openaddresses/batch-error';
 import * as auth from './tak-auth.js';
 export * from './tak-auth.js';
@@ -24,6 +25,7 @@ export default class TAKAPI {
     Credentials: Credentials;
     Contacts: Contacts;
     Group: Group;
+    Export: Export;
     Files: Files;
 
     constructor(url: URL, auth: auth.APIAuth) {
@@ -31,6 +33,7 @@ export default class TAKAPI {
         this.auth = auth;
 
         this.Package = new Package(this);
+        this.Export = new Export(this);
         this.Mission = new Mission(this);
         this.MissionLog = new MissionLog(this);
         this.MissionLayer = new MissionLayer(this);
@@ -79,6 +82,9 @@ export default class TAKAPI {
             ) {
                 opts.body = JSON.stringify(opts.body);
                 opts.headers['Content-Type'] = 'application/json';
+            } else if (opts.body instanceof URLSearchParams) {
+                opts.headers['Content-Type'] = 'application/x-www-form-urlencoded'
+                opts.body = String(opts.body);
             }
 
             const res = await this.auth.fetch(this, url, opts)
