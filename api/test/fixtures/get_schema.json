@@ -349,6 +349,91 @@
         "query": true,
         "res": true
     },
+    "POST /import": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "PUT /import/:import": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "PUT /import": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /import/:import": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "PATCH /import/:import": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "GET /import": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "GET /layer": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "GET /data/:dataid": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /layer/:layerid": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "POST /login": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "GET /login": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "POST /marti/export": {
+        "body": true,
+        "query": true,
+        "res": false
+    },
+    "DELETE /marti/api/files/:hash": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "GET /marti/api/files/:hash": {
+        "body": false,
+        "query": true,
+        "res": false
+    },
+    "GET /marti/missions/:name/layer": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "POST /marti/missions/:name/log": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "DELETE /marti/missions/:name/log/:log": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
     "GET /iconset": {
         "body": false,
         "query": true,
@@ -413,81 +498,6 @@
         "body": false,
         "query": true,
         "res": false
-    },
-    "POST /import": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "PUT /import/:import": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "PUT /import": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /import/:import": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "PATCH /import/:import": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "GET /import": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "GET /layer": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "GET /data/:dataid": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /layer/:layerid": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "POST /login": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "GET /login": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "DELETE /marti/api/files/:hash": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "GET /marti/api/files/:hash": {
-        "body": false,
-        "query": true,
-        "res": false
-    },
-    "POST /marti/missions/:name/log": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "DELETE /marti/missions/:name/log/:log": {
-        "body": false,
-        "query": false,
-        "res": true
     },
     "GET /marti/missions/:name": {
         "body": false,
@@ -694,11 +704,6 @@
         "query": false,
         "res": true
     },
-    "GET /search/reverse/:longitude/:latitude": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
     "GET /server": {
         "body": false,
         "query": false,
@@ -710,6 +715,11 @@
         "res": true
     },
     "GET /swagger": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /search/reverse/:longitude/:latitude": {
         "body": false,
         "query": false,
         "res": true
