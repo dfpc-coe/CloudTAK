@@ -1,46 +1,46 @@
 <template>
-<div class='modal-body'>
-    <TablerInput
-        label='Channel Selection'
-        placeholder='Filter Channels...'
-        v-model='filter'
-    />
+    <div class='modal-body'>
+        <TablerInput
+            v-model='filter'
+            label='Channel Selection'
+            placeholder='Filter Channels...'
+        />
 
-    <TablerLoading
-        v-if='loading.groups'
-        desc='Loading Channels'
-    />
-    <TablerNone
-        v-else-if='!filtered.length'
-        label='Groups'
-        :create='false'
-    />
-    <template v-else>
-        <div class='my-2'>
-            <div
-                v-for='group in filtered'
-                :key='group'
-                class='col-12 cursor-pointer'
-                @click='updateGroup(group)'
-            >
-                <IconCircleFilled
-                    v-if='selected.has(group)'
-                    size='32'
-                    class='cursor-pointer'
-                />
-                <IconCircle
-                    v-else
-                    size='32'
-                    class='cursor-pointer'
-                />
-                <span
-                    class='mx-2'
-                    v-text='group'
-                />
+        <TablerLoading
+            v-if='loading.groups'
+            desc='Loading Channels'
+        />
+        <TablerNone
+            v-else-if='!filtered.length'
+            label='Groups'
+            :create='false'
+        />
+        <template v-else>
+            <div class='my-2'>
+                <div
+                    v-for='group in filtered'
+                    :key='group'
+                    class='col-12 cursor-pointer'
+                    @click='updateGroup(group)'
+                >
+                    <IconCircleFilled
+                        v-if='selected.has(group)'
+                        size='32'
+                        class='cursor-pointer'
+                    />
+                    <IconCircle
+                        v-else
+                        size='32'
+                        class='cursor-pointer'
+                    />
+                    <span
+                        class='mx-2'
+                        v-text='group'
+                    />
+                </div>
             </div>
-        </div>
-    </template>
-</div>
+        </template>
+    </div>
 </template>
 
 <script>
@@ -85,13 +85,6 @@ export default {
     emits: [
         'update:modelValue'
     ],
-    computed: {
-        filtered: function() {
-            return Object.keys(this.groups).filter((g) => {
-                return g.includes(this.filter);
-            });
-        }
-    },
     data: function() {
         return {
             filter: '',
@@ -100,6 +93,13 @@ export default {
             },
             selected: new Set(this.modelValue),
             groups: []
+        }
+    },
+    computed: {
+        filtered: function() {
+            return Object.keys(this.groups).filter((g) => {
+                return g.includes(this.filter);
+            });
         }
     },
     mounted: async function() {
