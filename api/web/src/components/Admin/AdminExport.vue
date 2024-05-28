@@ -13,6 +13,7 @@
         <div class='col-6'>
             <TablerInput label='End Time' v-model='data.endTime' type='datetime-local'/>
         </div>
+        <GroupSelect v-model='data.groups'/>
         <div class='col-12'>
             <TablerEnum label='Export Format' v-model='data.format' :options='["kmz", "kml"]'/>
         </div>
@@ -33,6 +34,7 @@
 
 <script>
 import { std, stdurl } from '/src/std.ts';
+import GroupSelect from '../util/GroupSelect.vue';
 import {
     TablerLoading,
     TablerToggle,
@@ -43,6 +45,7 @@ import {
 export default {
     name: 'AdminExport',
     components: {
+        GroupSelect,
         TablerLoading,
         TablerToggle,
         TablerEnum,
