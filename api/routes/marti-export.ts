@@ -19,7 +19,10 @@ export default async function router(schema: Schema, config: Config) {
         body: ExportInput
     }, async (req, res) => {
         try {
-            const user = await Auth.as_user(config, req, { admin: true });
+            const user = await Auth.as_user(config, req, {
+                admin: true,
+                token: true
+            });
 
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(config.server.auth.cert, config.server.auth.key));
 
