@@ -1,35 +1,62 @@
 <template>
-<div>
-    <div class='card-header'>
-        <h3 class='card-title'>
-            Data Export
-        </h3>
-    </div>
-    <TablerLoading v-if='loading'/>
-    <div v-else class='card-body row g-2'>
-        <div class='col-6'>
-            <TablerInput label='Start Time' v-model='data.startTime' type='datetime-local'/>
+    <div>
+        <div class='card-header'>
+            <h3 class='card-title'>
+                Data Export
+            </h3>
         </div>
-        <div class='col-6'>
-            <TablerInput label='End Time' v-model='data.endTime' type='datetime-local'/>
-        </div>
-        <GroupSelect v-model='data.groups'/>
-        <div class='col-12'>
-            <TablerEnum label='Export Format' v-model='data.format' :options='["kmz", "kml"]'/>
-        </div>
-        <div class='col-12'>
-            <TablerToggle label='Extended Data (Disabled)' disabled v-model='data.extendedData'/>
-        </div>
-        <div class='col-12'>
-            <TablerToggle label='Optimize Export' v-model='data.optimizeExport'/>
-        </div>
-        <div class='col-12 d-flex py-2'>
-            <div class='ms-auto'>
-                <button @click='postExport' class='btn btn-primary'>Export</button>
+        <TablerLoading v-if='loading' />
+        <div
+            v-else
+            class='card-body row g-2'
+        >
+            <div class='col-6'>
+                <TablerInput
+                    v-model='data.startTime'
+                    label='Start Time'
+                    type='datetime-local'
+                />
+            </div>
+            <div class='col-6'>
+                <TablerInput
+                    v-model='data.endTime'
+                    label='End Time'
+                    type='datetime-local'
+                />
+            </div>
+            <GroupSelect v-model='data.groups' />
+            <div class='col-12'>
+                <TablerEnum
+                    v-model='data.format'
+                    label='Export Format'
+                    :options='["kmz", "kml"]'
+                />
+            </div>
+            <div class='col-12'>
+                <TablerToggle
+                    v-model='data.extendedData'
+                    label='Extended Data (Disabled)'
+                    disabled
+                />
+            </div>
+            <div class='col-12'>
+                <TablerToggle
+                    v-model='data.optimizeExport'
+                    label='Optimize Export'
+                />
+            </div>
+            <div class='col-12 d-flex py-2'>
+                <div class='ms-auto'>
+                    <button
+                        class='btn btn-primary'
+                        @click='postExport'
+                    >
+                        Export
+                    </button>
+                </div>
             </div>
         </div>
     </div>
-</div>
 </template>
 
 <script>
@@ -70,9 +97,16 @@ export default {
         postExport: async function() {
             this.loading = true;
             try {
-                await std(`/api/marti/export?download=true`, {
+                const url = stdurl('/api/marti/export');
+                url.searchParams.append('download', 'true');
+                await std(url, {
                     method: 'POST',
-                    body: this.data
+                    download: `export.${this.data.format}`,
+                    body: {
+                        ...this.data,
+                        startTime: (new Date(this.data.startTime)).toISOString(),
+                        endTime: (new Date(this.data.endTime)).toISOString(),
+                    }
                 });
 
                 this.loading = false;
