@@ -141,8 +141,14 @@ export const useCOTStore = defineStore('cots', {
         /**
          * Return a CoT by ID if it exists
          */
-        get: function(id: string): Feature | undefined {
-            return this.cots.get(id);
+        get: function(id: string, opts?: {
+            clone: boolean
+        }): Feature | undefined {
+            if (opts && opts.clone) {
+                return JSON.parse(JSON.stringify(this.cots.get(id)));
+            } else {
+                return this.cots.get(id);
+            }
         },
         /**
          * Returns if the CoT is present in the store given the ID
