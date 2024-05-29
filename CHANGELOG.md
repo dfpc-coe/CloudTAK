@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v2.30.0 - 2024-05-29
+
+- :rocket: `UI` Basic support for editing CoT geometries
+
 ### v2.29.1 - 2024-05-28
 
 - :rocket: `API` Include additional details on ESRI Server Errors
