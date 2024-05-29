@@ -581,6 +581,7 @@ export const useMapStore = defineStore('cloudtak', {
                                 feature: {
                                     draggable: true,
                                     coordinates: {
+                                        deletable: true,
                                         midpoints: true,
                                         draggable: true,
                                     }
@@ -590,6 +591,7 @@ export const useMapStore = defineStore('cloudtak', {
                                 feature: {
                                     draggable: true,
                                     coordinates: {
+                                        deletable: true,
                                         midpoints: true,
                                         draggable: true,
                                     }
