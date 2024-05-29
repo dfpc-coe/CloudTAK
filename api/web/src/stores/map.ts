@@ -46,6 +46,7 @@ export const useMapStore = defineStore('cloudtak', {
     state: (): {
         map?: mapgl.Map;
         draw?: terraDraw.TerraDraw;
+        edit: null | MapGeoJSONFeature;
         container?: HTMLElement;
         isLoaded: boolean;
         bearing: number;
@@ -71,6 +72,7 @@ export const useMapStore = defineStore('cloudtak', {
         return {
             isLoaded: false,
             bearing: 0,
+            edit: null,
             select: {
                 mode: undefined,
                 feats: [],
@@ -492,6 +494,8 @@ export const useMapStore = defineStore('cloudtak', {
             });
 
             map.on('contextmenu', (e) => {
+                if (this.edit) return;
+
                 this.radialClick({
                     id: window.crypto.randomUUID(),
                     type: 'Feature',
