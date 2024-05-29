@@ -618,6 +618,8 @@ export default {
                 feat.properties.mode = 'point';
             }
 
+            cotStore.hidden.add(feat.id);
+            this.updateCOT();
             mapStore.draw.addFeatures([feat]);
             mapStore.draw.selectFeature(feat.id);
         },
