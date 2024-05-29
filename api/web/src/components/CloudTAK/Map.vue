@@ -736,6 +736,10 @@ export default {
                 this.setYou();
 
                 mapStore.draw.on('finish', async (id) => {
+                    if (mapStore.draw.getMode() === 'select') {
+                        return;
+                    }
+
                     const geometry = mapStore.draw._store.store[id].geometry;
 
                     const feat = {
