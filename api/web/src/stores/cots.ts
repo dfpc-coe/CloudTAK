@@ -15,6 +15,7 @@ export const useCOTStore = defineStore('cots', {
     state: (): {
         archive: Map<string, Feature>;
         cots: Map<string, Feature>;
+        hidden: Set<string>;
 
         // COTs are submitted to pending and picked up by the partial update code every .5s
         pending: Map<string, Feature>;
@@ -24,6 +25,7 @@ export const useCOTStore = defineStore('cots', {
         return {
             archive: new Map(),         // Store all archived CoT messages
             cots: new Map(),            // Store all on-screen CoT messages
+            hidden: new Set(),          // Store CoTs that should be hidden
             pending: new Map(),         // Store yet to be rendered on-screen CoT Messages
             pendingDelete: new Set(),   // Store yet to be deleted on-screen CoT Messages
             subscriptions: new Map()    // Store All Mission CoT messages by GUID
@@ -82,7 +84,9 @@ export const useCOTStore = defineStore('cots', {
             for (const cot of this.cots.values()) {
                 if (!cot.properties) cot.properties = {};
 
-                if (
+                if (this.hidden.has(cot.id)) {
+                    diff.remove.push(String(cot.id))
+                } else if (
                     display_stale === 'Immediate'
                     && !cot.properties.archived
                     && now.isAfter(cot.properties.stale)
