@@ -487,7 +487,6 @@ export default {
             feat: null,         // Show the Feat Viewer sidebar
             locked: [],         // Lock the map view to a given CoT - The last element is the currently locked value
                                 //   this is an array so that things like the radial menu can temporarily lock state but remember the previous lock value when they are closed
-            edit: false,        // If edit is a CoT then load the cot into terra-draw
             upload: {
                 shown: false,
                 dragging: false
@@ -607,6 +606,7 @@ export default {
             }
         },
         editGeometry: function(cot) {
+            mapStore.edit = cot;
             mapStore.draw.start();
             mapStore.draw.setMode('select');
             const feat = cotStore.get(cot.id, { clone: true });
@@ -738,19 +738,26 @@ export default {
                 mapStore.initDraw();
                 this.setYou();
 
-                mapStore.draw.on('deselect', async () => {
-                    if (!this.edit) return;
-                    mapStore.draw._store.delete([this.edit.id]);
+                mapStore.draw.on('deselect', async (id) => {
+                    if (!mapStore.edit) return;
+
+                    const feat = mapStore.draw._store.store[mapStore.edit.id];
+                    delete feat.properties.center;
+
+                    cotStore.hidden.delete(mapStore.edit.id);
+
+                    mapStore.edit = null
+
                     mapStore.draw.setMode('static');
-
-                    cotStore.hidden.delete(this.edit.id);
-                    await this.updateCOT();
-
                     mapStore.draw.stop();
+
+                    cotStore.cots.delete(feat.id);
+                    cotStore.add(feat);
+                    await this.updateCOT();
                 })
 
                 mapStore.draw.on('finish', async (id) => {
-                    if (mapStore.draw.getMode() === 'select') {
+                    if (mapStore.draw.getMode() === 'select' || mapStore.edit) {
                         return;
                     }
 

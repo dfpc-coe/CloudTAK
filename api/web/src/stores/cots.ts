@@ -51,10 +51,7 @@ export const useCOTStore = defineStore('cots', {
          */
         loadArchive: async function(): Promise<void> {
             const archive = await std('/api/profile/feature');
-            for (const a of archive.items) {
-                this.archive.set(a.id, a);
-                this.pending.set(a.id, a);
-            }
+            for (const a of archive.items) this.add(a);
         },
 
         /**
