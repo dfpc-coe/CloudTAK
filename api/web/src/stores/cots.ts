@@ -203,6 +203,12 @@ export const useCOTStore = defineStore('cots', {
                 feat.properties.remarks = 'None';
             }
 
+            if (!feat.properties.how && feat.properties.type.startsWith('u-')) {
+                feat.properties.how = 'h-g-i-g-o';
+            } else if (!feat.properties.how) {
+                feat.properties.how = 'm-p';
+            }
+
             if (feat.geometry.type.includes('Point')) {
                 if (feat.properties.group) {
                     feat.properties['icon-opacity'] = 0;

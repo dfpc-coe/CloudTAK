@@ -7,6 +7,7 @@ import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import { StandardResponse, ProfileFeatureResponse } from '../lib/types.js'
 import { sql } from 'drizzle-orm';
+import { Feature } from '@tak-ps/node-cot';
 
 export default async function router(schema: Schema, config: Config) {
     await schema.get('/profile/feature', {
@@ -66,15 +67,7 @@ export default async function router(schema: Schema, config: Config) {
         description: `
             Create or modify a feature
         `,
-        body: Type.Object({
-            id: Type.String(),
-            type: Type.String({ const: 'Feature' }),
-            properties: Type.Any(),
-            geometry: Type.Object({
-                type: Type.String({ enum: ['Point', 'LineString', 'Polygon'] }),
-                coordinates: Type.Array(Type.Any())
-            })
-        }),
+        body: Feature,
         res: ProfileFeatureResponse
     }, async (req, res) => {
         try {
