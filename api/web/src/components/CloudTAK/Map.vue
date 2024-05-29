@@ -523,6 +523,7 @@ export default {
                 type: 'Feature',
                 properties: {
                     type: 'u-d-p',
+                    how: 'h-g-i-g-o',
                     color: '#00FF00',
                     archived: true,
                     callsign: this.pointInput.name || 'New Feature'
@@ -737,6 +738,17 @@ export default {
                 mapStore.initDraw();
                 this.setYou();
 
+                mapStore.draw.on('deselect', async () => {
+                    if (!this.edit) return;
+                    mapStore.draw._store.delete([this.edit.id]);
+                    mapStore.draw.setMode('static');
+
+                    cotStore.hidden.delete(this.edit.id);
+                    await this.updateCOT();
+
+                    mapStore.draw.stop();
+                })
+
                 mapStore.draw.on('finish', async (id) => {
                     if (mapStore.draw.getMode() === 'select') {
                         return;
@@ -747,6 +759,7 @@ export default {
                     const feat = {
                         id: id,
                         type: 'Feature',
+                        how: 'h-g-i-g-o',
                         properties: {
                             archived: true,
                             callsign: 'New Feature'
