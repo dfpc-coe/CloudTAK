@@ -12,6 +12,8 @@
 
 ### Pending Release
 
+- :bug: Respect `visibility` property from ProfileOverlay on initial load
+
 ### v2.31.1 - 2024-05-30
 
 - :rocket: `API` Update timeout value to allow TAK Exports
