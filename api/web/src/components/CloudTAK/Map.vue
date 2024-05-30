@@ -738,7 +738,7 @@ export default {
                 mapStore.initDraw();
                 this.setYou();
 
-                mapStore.draw.on('deselect', async (id) => {
+                mapStore.draw.on('deselect', async () => {
                     if (!mapStore.edit) return;
 
                     const feat = mapStore.draw._store.store[mapStore.edit.id];
