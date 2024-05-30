@@ -12,23 +12,31 @@ export async function handler(
 ): Promise<boolean> {
     const meta: Map<string, Meta> = new Map();
 
+    const pool: Array<Promise<unknown>> = [];
+
     for (const record of event.Records) {
-        try {
-            const req = JSON.parse(record.body);
+        pool.push(
+            (async () => {
+                try {
+                    const req = JSON.parse(record.body);
 
-            meta.set(record.messageId, { Timestamp: new Date() });
-            if (req.type === 'ArcGIS') {
-                await ArcGIS(req);
-            } else {
-                throw new Error('Unknown Event Type');
-            }
+                    meta.set(record.messageId, { Timestamp: new Date() });
+                    if (req.type === 'ArcGIS') {
+                        await ArcGIS(req);
+                    } else {
+                        throw new Error('Unknown Event Type');
+                    }
 
-        } catch (err) {
-            console.error(err);
-            const m = meta.get(record.messageId);
-            if (m) m.Error = new Error(String(err));
-        }
+                } catch (err) {
+                    console.error(err);
+                    const m = meta.get(record.messageId);
+                    if (m) m.Error = new Error(String(err));
+                }
+            })()
+        )
     }
+
+    await Promise.all(pool);
 
     if (process.env.StackName) {
         const MetricData = event.Records.filter((record: Lambda.SQSRecord) => {
