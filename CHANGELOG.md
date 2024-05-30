@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v2.31.0 - 2024-05-30
+
+- :rocket: `API` Run Hooks posts concurrently for increased throughput
+
 ### v2.30.0 - 2024-05-29
 
 - :rocket: `UI` Basic support for editing CoT geometries
