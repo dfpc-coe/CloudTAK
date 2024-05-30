@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v2.31.1 - 2024-05-30
+
+- :rocket: `API` Update timeout value to allow TAK Exports
+
 ### v2.31.0 - 2024-05-30
 
 - :rocket: `API` Run Hooks posts concurrently for increased throughput
