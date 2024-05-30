@@ -34,9 +34,15 @@ struct Data {
     options: DataOptions
 }
 
+
 async fn function_handler(event: LambdaEvent<SqsEventObj<Data>>) -> Result<(), Error> {
     for record in event.payload.records.iter() {
-        println!("{:?}", &record);
+        let resp = reqwest::get(format!("{}/{:?}?f=geojson", &record.body.body.layer, record.body.feat.id.as_ref().unwrap()))
+            .await?
+            .json::<Feature>()
+            .await?;
+
+        println!("{resp:#?}");
     }
     Ok(())
 }
