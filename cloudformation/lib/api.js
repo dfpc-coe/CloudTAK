@@ -15,6 +15,10 @@ export default {
                 Name: cf.stackName,
                 Type: 'application',
                 SecurityGroups: [cf.ref('ELBSecurityGroup')],
+                LoadBalancerAttributes: [{
+                    Key: 'idle_timeout.timeout_seconds',
+                    Value: 4000
+                }],
                 Subnets:  [
                     cf.importValue(cf.join(['coe-vpc-', cf.ref('Environment'), '-subnet-public-a'])),
                     cf.importValue(cf.join(['coe-vpc-', cf.ref('Environment'), '-subnet-public-b']))

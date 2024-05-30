@@ -1,3 +1,4 @@
+import { Point } from 'arcgis-rest-api';
 import { geojsonToArcGIS } from '@terraformer/arcgis'
 import proj4 from 'proj4';
 
@@ -23,7 +24,7 @@ export default async function arcgis(data: any): Promise<boolean> {
 
     if (query.error) throw new Error(query.error.message);
 
-    let geometry = geojsonToArcGIS(data.feat.geometry);
+    let geometry = geojsonToArcGIS(data.feat.geometry) as Point;
     if (!geometry.x || !geometry.y) throw new Error('Incompatible Geometry');
 
     const proj = proj4('EPSG:4326', 'EPSG:3857', [ geometry.x, geometry.y ]);

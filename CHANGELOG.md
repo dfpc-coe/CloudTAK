@@ -12,6 +12,26 @@
 
 ### Pending Release
 
+### v2.31.1 - 2024-05-30
+
+- :rocket: `API` Update timeout value to allow TAK Exports
+
+### v2.31.0 - 2024-05-30
+
+- :rocket: `API` Run Hooks posts concurrently for increased throughput
+
+### v2.30.0 - 2024-05-29
+
+- :rocket: `UI` Basic support for editing CoT geometries
+
+### v2.29.1 - 2024-05-28
+
+- :rocket: `API` Include additional details on ESRI Server Errors
+
+### v2.29.0 - 2024-05-28
+
+- :rocket: `API` Add the ability for a Server Admin to export KML/KMZs
+
 ### v2.28.0 - 2024-05-23
 
 - :rocket: `API` Add support for listing Mission Layers
@@ -22,7 +42,7 @@
 
 ### v2.27.2 - 2024-05-23
 
-- :bug: `UI` Fix Config Page style 
+- :bug: `UI` Fix Config Page style
 
 ### v2.27.1 - 2024-05-23
 

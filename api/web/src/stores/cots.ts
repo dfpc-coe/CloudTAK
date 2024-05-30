@@ -15,6 +15,7 @@ export const useCOTStore = defineStore('cots', {
     state: (): {
         archive: Map<string, Feature>;
         cots: Map<string, Feature>;
+        hidden: Set<string>;
 
         // COTs are submitted to pending and picked up by the partial update code every .5s
         pending: Map<string, Feature>;
@@ -24,6 +25,7 @@ export const useCOTStore = defineStore('cots', {
         return {
             archive: new Map(),         // Store all archived CoT messages
             cots: new Map(),            // Store all on-screen CoT messages
+            hidden: new Set(),          // Store CoTs that should be hidden
             pending: new Map(),         // Store yet to be rendered on-screen CoT Messages
             pendingDelete: new Set(),   // Store yet to be deleted on-screen CoT Messages
             subscriptions: new Map()    // Store All Mission CoT messages by GUID
@@ -49,10 +51,7 @@ export const useCOTStore = defineStore('cots', {
          */
         loadArchive: async function(): Promise<void> {
             const archive = await std('/api/profile/feature');
-            for (const a of archive.items) {
-                this.archive.set(a.id, a);
-                this.pending.set(a.id, a);
-            }
+            for (const a of archive.items) this.add(a);
         },
 
         /**
@@ -82,7 +81,9 @@ export const useCOTStore = defineStore('cots', {
             for (const cot of this.cots.values()) {
                 if (!cot.properties) cot.properties = {};
 
-                if (
+                if (this.hidden.has(String(cot.id))) {
+                    diff.remove.push(String(cot.id))
+                } else if (
                     display_stale === 'Immediate'
                     && !cot.properties.archived
                     && now.isAfter(cot.properties.stale)
@@ -141,8 +142,14 @@ export const useCOTStore = defineStore('cots', {
         /**
          * Return a CoT by ID if it exists
          */
-        get: function(id: string): Feature | undefined {
-            return this.cots.get(id);
+        get: function(id: string, opts?: {
+            clone: boolean
+        }): Feature | undefined {
+            if (opts && opts.clone) {
+                return JSON.parse(JSON.stringify(this.cots.get(id)));
+            } else {
+                return this.cots.get(id);
+            }
         },
         /**
          * Returns if the CoT is present in the store given the ID
@@ -191,6 +198,12 @@ export const useCOTStore = defineStore('cots', {
 
             if (!feat.properties.remarks) {
                 feat.properties.remarks = 'None';
+            }
+
+            if (!feat.properties.how && feat.properties.type.startsWith('u-')) {
+                feat.properties.how = 'h-g-i-g-o';
+            } else if (!feat.properties.how) {
+                feat.properties.how = 'm-p';
             }
 
             if (feat.geometry.type.includes('Point')) {

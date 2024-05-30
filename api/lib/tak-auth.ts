@@ -1,4 +1,4 @@
-import { fetch } from 'undici';
+import fetch from './fetch.js';
 import { CookieJar, Cookie } from 'tough-cookie';
 import { CookieAgent } from 'http-cookie-agent/undici';
 import Err from '@openaddresses/batch-error';
