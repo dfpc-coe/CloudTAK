@@ -5,10 +5,10 @@ import Config from '../lib/config.js';
 import { Param } from '@openaddresses/batch-generic';
 import { sql } from 'drizzle-orm';
 import { Type } from '@sinclair/typebox'
-import { GenericListOrder } from '@openaddresses/batch-generic';
 import { StandardResponse, ConnectionSinkResponse } from '../lib/types.js';
 import { ConnectionSink } from '../lib/schema.js';
 import Schema from '@openaddresses/batch-schema';
+import * as Default from '../lib/limits.js';
 
 export default async function router(schema: Schema, config: Config) {
     const cw = new CW(config.StackName);
@@ -18,14 +18,14 @@ export default async function router(schema: Schema, config: Config) {
         group: 'ConnectionSink',
         description: 'List Sinks',
         params: Type.Object({
-            connectionid: Type.Integer(),
+            connectionid: Type.Integer({ minimum: 1 }),
         }),
         query: Type.Object({
-            limit: Type.Integer({ default: 10 }),
-            page: Type.Integer({ default: 0 }),
-            order: Type.Enum(GenericListOrder, { default: GenericListOrder.ASC }),
+            limit: Default.Limit,
+            page: Default.Page,
+            order: Default.Order,
             sort: Type.Optional(Type.String({default: 'created', enum: Object.keys(ConnectionSink)})),
-            filter: Type.Optional(Type.String({default: ''})),
+            filter: Default.Filter,
             enabled: Type.Optional(Type.Boolean())
         }),
         res: Type.Object({
@@ -61,10 +61,10 @@ export default async function router(schema: Schema, config: Config) {
         group: 'ConnectionSink',
         description: 'Register a new connection sink',
         params: Type.Object({
-            connectionid: Type.Integer(),
+            connectionid: Type.Integer({ minimum: 1 }),
         }),
         body: Type.Object({
-            name: Type.String(),
+            name: Default.NameField,
             type: Type.String(),
             logging: Type.Boolean(),
             enabled: Type.Boolean(),
@@ -100,11 +100,11 @@ export default async function router(schema: Schema, config: Config) {
         group: 'ConnectionSink',
         description: 'Update a connection sink',
         params: Type.Object({
-            connectionid: Type.Integer(),
-            sinkid: Type.Integer()
+            connectionid: Type.Integer({ minimum: 1 }),
+            sinkid: Type.Integer({ minimum: 1 })
         }),
         body: Type.Object({
-            name: Type.Optional(Type.String()),
+            name: Type.Optional(Default.NameField),
             type: Type.Optional(Type.String()),
             logging: Type.Optional(Type.Boolean()),
         }),
@@ -134,8 +134,8 @@ export default async function router(schema: Schema, config: Config) {
         group: 'ConnectionSink',
         description: 'Get a connection sink',
         params: Type.Object({
-            connectionid: Type.Integer(),
-            sinkid: Type.Integer()
+            connectionid: Type.Integer({ minimum: 1 }),
+            sinkid: Type.Integer({ minimum: 1 })
         }),
         res: ConnectionSinkResponse
     }, async (req, res) => {
@@ -158,8 +158,8 @@ export default async function router(schema: Schema, config: Config) {
         group: 'ConnectionSink',
         description: 'Return Sink Success/Failure Stats',
         params: Type.Object({
-            connectionid: Type.Integer(),
-            sinkid: Type.Integer()
+            connectionid: Type.Integer({ minimum: 1 }),
+            sinkid: Type.Integer({ minimum: 1 })
         }),
         res: Type.Object({
             stats: Type.Array(Type.Object({
@@ -231,8 +231,8 @@ export default async function router(schema: Schema, config: Config) {
         group: 'ConnectionSink',
         description: 'Delete a connection sink',
         params: Type.Object({
-            connectionid: Type.Integer(),
-            sinkid: Type.Integer()
+            connectionid: Type.Integer({ minimum: 1 }),
+            sinkid: Type.Integer({ minimum: 1 })
         }),
         res: StandardResponse
     }, async (req, res) => {

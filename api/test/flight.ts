@@ -19,13 +19,13 @@ const ajv = addFormats(new Ajv({ allErrors: true }));
  * @class
  */
 class FlightResponse {
-    res: any;
+    res: Response;
     ok: boolean;
-    headers: Map<string, string>;
+    headers: Headers;
     status: number;
     body: any;
 
-    constructor(res: any, body: any) {
+    constructor(res: Response, body: any) {
         this.res = res;
 
         this.ok = res.ok;
@@ -120,7 +120,7 @@ export default class Flight {
      * @param {boolean} [t.verify] Verify Schema Validation
      * @param {boolean} [t.json=true] Expect JSON in response
      */
-    async fetch(url: string, req: any, t: boolean | {
+    async fetch(url: string | URL, req: any, t: boolean | {
         verify: boolean;
         json: true;
     }): Promise<any> {
