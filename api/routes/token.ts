@@ -4,10 +4,10 @@ import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
 import jwt from 'jsonwebtoken';
-import { GenericListOrder } from '@openaddresses/batch-generic';
 import { sql } from 'drizzle-orm';
 import { Token } from '../lib/schema.js';
 import { StandardResponse, CreateProfileTokenResponse, ProfileTokenResponse } from '../lib/types.js';
+import * as Default from '../lib/limits.js';
 
 export default async function router(schema: Schema, config: Config) {
     await schema.get('/token', {
@@ -15,11 +15,11 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Token',
         description: 'List all tokens associated with the requester\'s account',
         query: Type.Object({
-            limit: Type.Integer({ default: 10 }),
-            page: Type.Integer({ default: 0 }),
-            order: Type.Enum(GenericListOrder, { default: GenericListOrder.ASC }),
+            limit: Default.Limit,
+            page: Default.Page,
+            order: Default.Order,
             sort: Type.Optional(Type.String({default: 'created', enum: Object.keys(Token) })),
-            filter: Type.Optional(Type.String({default: ''}))
+            filter: Default.Filter
         }),
         res: Type.Object({
             total: Type.Integer(),

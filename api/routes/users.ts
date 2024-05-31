@@ -1,12 +1,12 @@
 import { Type } from '@sinclair/typebox'
 import { sql } from 'drizzle-orm';
 import Schema from '@openaddresses/batch-schema';
-import { GenericListOrder } from '@openaddresses/batch-generic';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import { ProfileResponse } from '../lib/types.js'
 import Config from '../lib/config.js';
 import { Profile } from '../lib/schema.js';
+import * as Default from '../lib/limits.js';
 
 export default async function router(schema: Schema, config: Config) {
     await schema.get('/user', {
@@ -14,11 +14,11 @@ export default async function router(schema: Schema, config: Config) {
         group: 'User',
         description: 'Let Admins see users of the system',
         query: Type.Object({
-            limit: Type.Integer({ default: 10 }),
-            page: Type.Integer({ default: 0 }),
-            order: Type.Enum(GenericListOrder, { default: GenericListOrder.ASC }),
+            limit: Default.Limit,
+            page: Default.Page,
+            order: Default.Order,
             sort: Type.Optional(Type.String({default: 'last_login', enum: Object.keys(Profile)})),
-            filter: Type.Optional(Type.String({default: ''}))
+            filter: Default.Filter
         }),
         res: Type.Object({
             total: Type.Integer(),

@@ -1,6 +1,5 @@
 import { Type } from '@sinclair/typebox'
 import Schema from '@openaddresses/batch-schema';
-import { GenericListOrder } from '@openaddresses/batch-generic';
 import path from 'node:path';
 import Err from '@openaddresses/batch-error';
 import busboy from 'busboy';
@@ -12,6 +11,7 @@ import { sql } from 'drizzle-orm';
 import Auth, { AuthResourceAccess } from '../lib/auth.js';
 import { ImportResponse } from '../lib/types.js';
 import { Import } from '../lib/schema.js';
+import * as Default from '../lib/limits.js';
 
 export enum ImportModeEnum {
     UNKNOWN = 'Unknown',
@@ -25,7 +25,7 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Import',
         description: 'Import an unknown asset into the imports manager',
         body: Type.Object({
-            name: Type.String(),
+            name: Default.NameField,
             mode: Type.Optional(Type.Enum(ImportModeEnum)),
             mode_id: Type.Optional(Type.String()),
             config: Type.Optional(Type.Any()),
@@ -226,11 +226,11 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Import',
         description: 'List Imports',
         query: Type.Object({
-            limit: Type.Integer({ default: 10 }),
-            page: Type.Integer({ default: 0 }),
-            order: Type.Enum(GenericListOrder, { default: GenericListOrder.ASC }),
+            limit: Default.Limit,
+            page: Default.Page,
+            order: Default.Order,
             sort: Type.Optional(Type.String({default: 'created', enum: Object.keys(Import) })),
-            mode: Type.Optional(Type.String()),
+            mode: Type.Optional(Type.Enum(ImportModeEnum)),
             mode_id: Type.Optional(Type.String())
         }),
         res: Type.Object({

@@ -1,6 +1,5 @@
 import { Type } from '@sinclair/typebox'
 import sleep from '../lib/sleep.js';
-import { GenericListOrder } from '@openaddresses/batch-generic';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Cacher from '../lib/cacher.js';
@@ -17,6 +16,7 @@ import { StandardResponse, LayerResponse } from '../lib/types.js';
 import { Layer_Config } from '../lib/models/Layer.js';
 import { Layer_Priority } from '../lib/enums.js';
 import { Layer } from '../lib/schema.js';
+import * as Default from '../lib/limits.js';
 
 export default async function router(schema: Schema, config: Config) {
     const alarm = new Alarm(config.StackName);
@@ -25,7 +25,7 @@ export default async function router(schema: Schema, config: Config) {
         name: 'Redeploy Layers',
         group: 'LayerAdmin',
         params: Type.Object({
-            connectionid: Type.Integer()
+            connectionid: Type.Integer({ minimum: 1 })
         }),
         description: 'Redeploy all Layers with latest CloudFormation output',
         res: StandardResponse
@@ -70,15 +70,15 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Layer',
         description: 'List layers',
         params: Type.Object({
-            connectionid: Type.Integer()
+            connectionid: Type.Integer({ minimum: 1 })
         }),
         query: Type.Object({
-            limit: Type.Integer({ default: 10 }),
-            page: Type.Integer({ default: 0 }),
-            order: Type.Enum(GenericListOrder, { default: GenericListOrder.ASC }),
+            limit: Default.Limit,
+            page: Default.Page,
+            order: Default.Order,
             sort: Type.Optional(Type.String({default: 'created', enum: Object.keys(Layer)})),
-            filter: Type.Optional(Type.String({default: ''})),
-            data: Type.Optional(Type.Integer()),
+            filter: Default.Filter,
+            data: Type.Optional(Type.Integer({ minimum: 1 })),
         }),
         res: Type.Object({
             total: Type.Integer(),
@@ -133,12 +133,12 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Layer',
         description: 'Register a new layer',
         params: Type.Object({
-            connectionid: Type.Integer()
+            connectionid: Type.Integer({ minimum: 1 })
         }),
         body: Type.Object({
-            name: Type.String(),
+            name: Default.NameField,
             priority: Type.Optional(Type.Enum(Layer_Priority)),
-            description: Type.String(),
+            description: Default.DescriptionField,
             enabled: Type.Boolean(),
             task: Type.String(),
             cron: Type.String(),
@@ -207,13 +207,13 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Layer',
         description: 'Update a layer',
         params: Type.Object({
-            layerid: Type.Integer(),
-            connectionid: Type.Integer()
+            connectionid: Type.Integer({ minimum: 1 }),
+            layerid: Type.Integer({ minimum: 1 }),
         }),
         body: Type.Object({
-            name: Type.Optional(Type.String()),
+            name: Type.Optional(Default.NameField),
             priority: Type.Optional(Type.Enum(Layer_Priority)),
-            description: Type.Optional(Type.String()),
+            description: Type.Optional(Default.DescriptionField),
             cron: Type.Optional(Type.String()),
             memory: Type.Optional(Type.Integer()),
             timeout: Type.Optional(Type.Integer()),
@@ -313,8 +313,8 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Layer',
         description: 'Get a layer',
         params: Type.Object({
-            connectionid: Type.Integer(),
-            layerid: Type.Integer(),
+            connectionid: Type.Integer({ minimum: 1 }),
+            layerid: Type.Integer({ minimum: 1 }),
         }),
         res: LayerResponse
     }, async (req, res) => {
@@ -348,8 +348,8 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Layer',
         description: 'Redeploy a specific Layer with latest CloudFormation output',
         params: Type.Object({
-            connectionid: Type.Integer(),
-            layerid: Type.Integer()
+            connectionid: Type.Integer({ minimum: 1 }),
+            layerid: Type.Integer({ minimum: 1 }),
         }),
         res: StandardResponse
     }, async (req, res) => {
@@ -394,8 +394,8 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Layer',
         description: 'Delete a layer',
         params: Type.Object({
-            connectionid: Type.Integer(),
-            layerid: Type.Integer()
+            connectionid: Type.Integer({ minimum: 1 }),
+            layerid: Type.Integer({ minimum: 1 }),
         }),
         res: StandardResponse
     }, async (req, res) => {
