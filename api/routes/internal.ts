@@ -1,5 +1,4 @@
 import { Type } from '@sinclair/typebox'
-import { GenericListOrder } from '@openaddresses/batch-generic';
 import { sql } from 'drizzle-orm';
 import { Param } from '@openaddresses/batch-generic';
 import Alarm from '../lib/aws/alarm.js';
@@ -11,6 +10,7 @@ import Config from '../lib/config.js';
 import DataMission from '../lib/data-mission.js';
 import { DataResponse, LayerResponse } from '../lib/types.js';
 import { Layer } from '../lib/schema.js'
+import * as Default from '../lib/limits.js';
 
 export default async function router(schema: Schema, config: Config) {
     const alarm = new Alarm(config.StackName);
@@ -20,13 +20,13 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Internal',
         description: 'Allow admins to list all layers on the server',
         query: Type.Object({
-            limit: Type.Integer({ default: 10 }),
-            page: Type.Integer({ default: 0 }),
-            order: Type.Enum(GenericListOrder, { default: GenericListOrder.ASC }),
+            limit: Default.Limit,
+            page: Default.Page,
+            order: Default.Order,
             sort: Type.Optional(Type.String({default: 'created', enum: Object.keys(Layer)})),
-            filter: Type.Optional(Type.String({default: ''})),
-            data: Type.Optional(Type.Integer()),
-            connection: Type.Optional(Type.Integer()),
+            filter: Default.Filter,
+            data: Type.Optional(Type.Integer({ minimum: 1 })),
+            connection: Type.Optional(Type.Integer({ minimum: 1 })),
         }),
         res: Type.Object({
             total: Type.Integer(),
@@ -84,7 +84,7 @@ export default async function router(schema: Schema, config: Config) {
             connection ID for subsequent calls
         `,
         params: Type.Object({
-            dataid: Type.Integer()
+            dataid: Type.Integer({ minimum: 1 })
         }),
         res: DataResponse
     }, async (req, res) => {
@@ -125,7 +125,7 @@ export default async function router(schema: Schema, config: Config) {
             connection ID for subsequent calls
         `,
         params: Type.Object({
-            layerid: Type.Integer(),
+            layerid: Type.Integer({ minimum: 1 }),
         }),
         res: LayerResponse
     }, async (req, res) => {

@@ -22,7 +22,7 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Internal',
         description: 'Post CoT data to a given layer',
         params: Type.Object({
-            layerid: Type.Integer()
+            layerid: Type.Integer({ minimum: 1 })
         }),
         query: Type.Object({
             logging: Type.Optional(Type.Boolean({ "description": "If logging is enabled for the layer, allow callers to skip logging for a particular CoT payload" }))

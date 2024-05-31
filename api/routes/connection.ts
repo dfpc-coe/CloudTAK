@@ -5,11 +5,11 @@ import CW from '../lib/aws/metric.js';
 import Auth, { AuthResourceAccess } from '../lib/auth.js';
 import { X509Certificate } from 'crypto';
 import { Type } from '@sinclair/typebox'
-import { GenericListOrder } from '@openaddresses/batch-generic';
 import { StandardResponse, ConnectionResponse } from '../lib/types.js';
 import { Connection } from '../lib/schema.js';
 import { MachineConnConfig } from '../lib/connection-config.js';
 import Schema from '@openaddresses/batch-schema';
+import * as Default from '../lib/limits.js';
 
 export default async function router(schema: Schema, config: Config) {
     const cw = new CW(config.StackName);
@@ -19,11 +19,11 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Connection',
         description: 'List Connections',
         query: Type.Object({
-            limit: Type.Integer({ default: 10, minimum: 1, maximum: 100 }),
-            page: Type.Integer({ default: 0, minimum: 0 }),
-            order: Type.Enum(GenericListOrder, { default: GenericListOrder.ASC }),
+            limit: Default.Limit,
+            page: Default.Page,
+            order: Default.Order,
             sort: Type.Optional(Type.String({ default: 'created', enum: Object.keys(Connection) })),
-            filter: Type.Optional(Type.String({ default: '', minLength: 0, maxLength: 64 }))
+            filter: Default.Filter
         }),
         res: Type.Object({
             total: Type.Integer(),
@@ -88,9 +88,9 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Connection',
         description: 'Register a new connection',
         body: Type.Object({
-            name: Type.String({ minLength: 8, maxLength: 64 }),
-            description: Type.String({ minLength: 8, maxLength: 1024 }),
-            enabled: Type.Optional(Type.Boolean()),
+            name: Default.NameField,
+            description: Default.DescriptionField,
+            enabled: Type.Optional(Type.Boolean({ default: true })),
             agency: Type.Optional(Type.Integer({ minimum: 1 })),
             auth: Type.Object({
                 key: Type.String({ minLength: 1, maxLength: 4096 }),
@@ -135,11 +135,11 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Connection',
         description: 'Update a connection',
         params: Type.Object({
-            connectionid: Type.Integer()
+            connectionid: Type.Integer({ minimum: 1 })
         }),
         body: Type.Object({
-            name: Type.String({ minLength: 8, maxLength: 64 }),
-            description: Type.String({ minLength: 8, maxLength: 1024 }),
+            name: Type.Optional(Default.NameField),
+            description: Type.Optional(Default.DescriptionField),
             enabled: Type.Optional(Type.Boolean()),
             agency: Type.Optional(Type.Integer({ minimum: 1 })),
             auth: Type.Object({

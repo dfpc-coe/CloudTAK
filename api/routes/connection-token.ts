@@ -4,10 +4,10 @@ import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
 import jwt from 'jsonwebtoken';
 import { sql } from 'drizzle-orm';
-import { GenericListOrder } from '@openaddresses/batch-generic';
 import { ConnectionToken } from '../lib/schema.js';
 import Schema from '@openaddresses/batch-schema';
 import { StandardResponse, CreateConnectionTokenResponse, ConnectionTokenResponse } from '../lib/types.js';
+import * as Default from '../lib/limits.js';
 
 export default async function router(schema: Schema, config: Config) {
     await schema.get('/connection/:connectionid/token', {
@@ -15,14 +15,14 @@ export default async function router(schema: Schema, config: Config) {
         group: 'ConnectionToken',
         description: 'List all tokens associated with a given connection',
         params: Type.Object({
-            connectionid: Type.Integer()
+            connectionid: Type.Integer({ minimum: 1 })
         }),
         query: Type.Object({
-            limit: Type.Integer({ default: 10 }),
-            page: Type.Integer({ default: 0 }),
-            order: Type.Enum(GenericListOrder, { default: GenericListOrder.ASC }),
+            limit: Default.Limit,
+            page: Default.Page,
+            order: Default.Order,
             sort: Type.Optional(Type.String({default: 'created', enum: Object.keys(ConnectionToken)})),
-            filter: Type.Optional(Type.String({default: ''}))
+            filter: Default.Filter
         }),
         res: Type.Object({
             total: Type.Integer(),
@@ -56,10 +56,10 @@ export default async function router(schema: Schema, config: Config) {
         group: 'ConnectionToken',
         description: 'Create a new API token for programatic access',
         params: Type.Object({
-            connectionid: Type.Integer()
+            connectionid: Type.Integer({ minimum: 1 })
         }),
         body: Type.Object({
-            name: Type.String()
+            name: Default.NameField
         }),
         res: CreateConnectionTokenResponse
     }, async (req, res) => {
@@ -84,12 +84,12 @@ export default async function router(schema: Schema, config: Config) {
         name: 'Update Token',
         group: 'ConnectionToken',
         params: Type.Object({
-            connectionid: Type.Integer(),
-            id: Type.Integer()
+            connectionid: Type.Integer({ minimum: 1 }),
+            id: Type.Integer({ minimum: 1 })
         }),
         description: 'Update properties of a Token',
         body: Type.Object({
-            name: Type.Optional(Type.String())
+            name: Type.Optional(Default.NameField)
         }),
         res: StandardResponse
     }, async (req, res) => {
@@ -117,8 +117,8 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Token',
         description: 'Delete a user\'s API Token',
         params: Type.Object({
-            connectionid: Type.Integer(),
-            id: Type.Integer()
+            connectionid: Type.Integer({ minimum: 1 }),
+            id: Type.Integer({ minimum: 1 })
         }),
         res: StandardResponse
     }, async (req, res) => {

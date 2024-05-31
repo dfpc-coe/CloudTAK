@@ -9,13 +9,14 @@ import xml2js from 'xml2js';
 import { Readable } from 'node:stream';
 import stream2buffer from '../lib/stream.js';
 import bboxPolygon from '@turf/bbox-polygon';
-import { Param, GenericListOrder } from '@openaddresses/batch-generic'
+import { Param } from '@openaddresses/batch-generic'
 import { sql } from 'drizzle-orm';
 import Schema from '@openaddresses/batch-schema';
 import { Geometry, BBox } from 'geojson';
 import { Type } from '@sinclair/typebox'
 import { StandardResponse, BasemapResponse } from '../lib/types.js';
 import { Basemap } from '../lib/schema.js';
+import * as Default from '../lib/limits.js';
 
 enum BasemapType {
     vector = 'vector',
@@ -140,12 +141,12 @@ export default async function router(schema: Schema, config: Config) {
         description: 'List BaseMaps',
         query: Type.Object({
             scope: Type.Optional(Type.Enum(ResourceCreationScope)),
-            limit: Type.Integer({ default: 10 }),
-            page: Type.Integer({ default: 0 }),
-            order: Type.Enum(GenericListOrder, { default: GenericListOrder.ASC }),
+            limit: Default.Limit,
+            page: Default.Page,
+            order: Default.Order,
             type: Type.Optional(Type.Enum(BasemapType)),
-            sort: Type.Optional(Type.String({ default: 'created', enum: Object.keys(Basemap) })),
-            filter: Type.Optional(Type.String({ default: '' }))
+            sort: Type.String({ default: 'created', enum: Object.keys(Basemap) }),
+            filter: Default.Filter
         }),
         res: Type.Object({
             total: Type.Integer(),
@@ -183,7 +184,7 @@ export default async function router(schema: Schema, config: Config) {
         group: 'BaseMap',
         description: 'Register a new basemap',
         body: Type.Object({
-            name: Type.String(),
+            name: Default.NameField,
             scope: Type.Enum(ResourceCreationScope, { default: ResourceCreationScope.USER }),
             url: Type.String(),
             minzoom: Type.Optional(Type.Integer()),
@@ -235,10 +236,10 @@ export default async function router(schema: Schema, config: Config) {
         group: 'BaseMap',
         description: 'Update a basemap',
         params: Type.Object({
-            basemapid: Type.Integer()
+            basemapid: Type.Integer({ minimum: 1 })
         }),
         body: Type.Object({
-            name: Type.Optional(Type.String()),
+            name: Type.Optional(Default.NameField),
             url: Type.Optional(Type.String()),
             minzoom: Type.Optional(Type.Integer()),
             maxzoom: Type.Optional(Type.Integer()),
@@ -287,7 +288,7 @@ export default async function router(schema: Schema, config: Config) {
         group: 'BaseMap',
         description: 'Get a basemap',
         params: Type.Object({
-            basemapid: Type.Integer()
+            basemapid: Type.Integer({ minimum: 1 })
         }),
         query: Type.Object({
             download: Type.Optional(Type.Boolean()),
@@ -342,10 +343,10 @@ export default async function router(schema: Schema, config: Config) {
         group: 'BaseMap',
         description: 'Get a basemap tile',
         params: Type.Object({
-            basemapid: Type.Integer(),
-            z: Type.Integer(),
-            x: Type.Integer(),
-            y: Type.Integer(),
+            basemapid: Type.Integer({ minimum: 1 }),
+            z: Type.Integer({ minimum: 0 }),
+            x: Type.Integer({ minimum: 0 }),
+            y: Type.Integer({ minimum: 0 }),
         }),
         query: Type.Object({
             token: Type.Optional(Type.String()),
@@ -389,7 +390,7 @@ export default async function router(schema: Schema, config: Config) {
         group: 'BaseMap',
         description: 'Delete a basemap',
         params: Type.Object({
-            basemapid: Type.Integer()
+            basemapid: Type.Integer({ minimum: 1 })
         }),
         res: StandardResponse
     }, async (req, res: Response) => {
