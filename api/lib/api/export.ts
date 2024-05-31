@@ -1,5 +1,6 @@
 import TAKAPI from '../tak-api.js';
 import { Type, Static } from '@sinclair/typebox';
+import { Readable } from 'node:stream';
 
 export const ExportInput = Type.Object({
     startTime: Type.String(),

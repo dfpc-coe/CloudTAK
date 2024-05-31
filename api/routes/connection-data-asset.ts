@@ -24,8 +24,8 @@ export default async function router(schema: Schema, config: Config) {
         group: 'DataAssets',
         description: 'List Assets',
         params: Type.Object({
-            connectionid: Type.Integer(),
-            dataid: Type.Integer()
+            connectionid: Type.Integer({ minimum: 1 }),
+            dataid: Type.Integer({ minimum: 1 })
         }),
         res: Type.Object({
             total: Type.Integer(),
@@ -66,8 +66,8 @@ export default async function router(schema: Schema, config: Config) {
         name: 'Internal Upload',
         group: 'DataAssets',
         params: Type.Object({
-            connectionid: Type.Integer(),
-            dataid: Type.Integer()
+            connectionid: Type.Integer({ minimum: 1 }),
+            dataid: Type.Integer({ minimum: 1 })
         }),
         description: 'Create an upload after the file as been processed by Event Lambda',
         query: Type.Object({
@@ -125,8 +125,8 @@ export default async function router(schema: Schema, config: Config) {
         group: 'DataAssets',
         description: 'Create a new asset',
         params: Type.Object({
-            connectionid: Type.Integer(),
-            dataid: Type.Integer()
+            connectionid: Type.Integer({ minimum: 1 }),
+            dataid: Type.Integer({ minimum: 1 })
         }),
         res: StandardResponse
     }, async (req, res) => {
@@ -189,8 +189,8 @@ export default async function router(schema: Schema, config: Config) {
         group: 'DataAssets',
         description: 'Convert Asset into a cloud native or TAK Native format automatically',
         params: Type.Object({
-            connectionid: Type.Integer(),
-            dataid: Type.Integer(),
+            connectionid: Type.Integer({ minimum: 1 }),
+            dataid: Type.Integer({ minimum: 1 }),
             asset: Type.String(),
             ext: Type.String()
         }),
@@ -223,8 +223,8 @@ export default async function router(schema: Schema, config: Config) {
         group: 'DataAssets',
         description: 'Delete Asset',
         params: Type.Object({
-            connectionid: Type.Integer(),
-            dataid: Type.Integer(),
+            connectionid: Type.Integer({ minimum: 1 }),
+            dataid: Type.Integer({ minimum: 1 }),
             asset: Type.String(),
             ext: Type.String()
         }),
@@ -286,8 +286,8 @@ export default async function router(schema: Schema, config: Config) {
         group: 'DataAssets',
         description: 'Get single raw asset',
         params: Type.Object({
-            connectionid: Type.Integer(),
-            dataid: Type.Integer(),
+            connectionid: Type.Integer({ minimum: 1 }),
+            dataid: Type.Integer({ minimum: 1 }),
             asset: Type.String(),
             ext: Type.String()
         }),
@@ -317,8 +317,8 @@ export default async function router(schema: Schema, config: Config) {
         group: 'DataAssets',
         description: 'Get TileJSON ',
         params: Type.Object({
-            connectionid: Type.Integer(),
-            dataid: Type.Integer(),
+            connectionid: Type.Integer({ minimum: 1 }),
+            dataid: Type.Integer({ minimum: 1 }),
             asset: Type.String(),
         }),
     }, async (req, res) => {

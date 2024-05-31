@@ -7,8 +7,8 @@ import Config from '../lib/config.js';
 import S3 from '../lib/aws/s3.js';
 import { sql, inArray, and } from 'drizzle-orm';
 import DataMission from '../lib/data-mission.js';
-import { GenericListOrder } from '@openaddresses/batch-generic';
 import { StandardResponse, DataResponse, DataListResponse } from '../lib/types.js';
+import * as Default from '../lib/limits.js';
 
 export default async function router(schema: Schema, config: Config) {
     await schema.get('/data', {
@@ -19,11 +19,11 @@ export default async function router(schema: Schema, config: Config) {
             Used by the frontend UI to list data packages that the user can visualize
         `,
         query: Type.Object({
-            limit: Type.Optional(Type.Integer()),
-            page: Type.Optional(Type.Integer()),
-            order: Type.Optional(Type.Enum(GenericListOrder)),
+            limit: Default.Limit,
+            page: Default.Page,
+            order: Default.Order,
             sort: Type.Optional(Type.String({default: 'created', enum: Object.keys(Data)})),
-            filter: Type.Optional(Type.String({default: ''}))
+            filter: Default.Filter
         }),
         res: Type.Object({
             total: Type.Integer(),
@@ -63,15 +63,15 @@ export default async function router(schema: Schema, config: Config) {
         name: 'List Data',
         group: 'Data',
         params: Type.Object({
-            connectionid: Type.Integer()
+            connectionid: Type.Integer({ minimum: 1 })
         }),
         description: 'List data',
         query: Type.Object({
-            limit: Type.Integer({ default: 10 }),
-            page: Type.Integer({ default: 0 }),
-            order: Type.Enum(GenericListOrder, { default: GenericListOrder.ASC }),
+            limit: Default.Limit,
+            page: Default.Page,
+            order: Default.Order,
             sort: Type.Optional(Type.String({default: 'created', enum: Object.keys(Data)})),
-            filter: Type.Optional(Type.String({default: ''}))
+            filter: Default.Filter
         }),
         res: Type.Object({
             total: Type.Integer(),
@@ -105,11 +105,11 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Data',
         description: 'Register a new data source',
         params: Type.Object({
-            connectionid: Type.Integer()
+            connectionid: Type.Integer({ minimum: 1 })
         }),
         body: Type.Object({
-            name: Type.String(),
-            description: Type.String(),
+            name: Default.NameField,
+            description: Default.DescriptionField,
             auto_transform: Type.Optional(Type.Boolean()),
             mission_diff: Type.Optional(Type.Boolean()),
             mission_sync: Type.Optional(Type.Boolean()),
@@ -156,8 +156,8 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Data',
         description: 'Update a data source',
         params: Type.Object({
-            connectionid: Type.Integer(),
-            dataid: Type.Integer()
+            connectionid: Type.Integer({ minimum: 1 }),
+            dataid: Type.Integer({ minimum: 1 }),
         }),
         body: Type.Object({
             name: Type.String(),
@@ -214,8 +214,8 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Data',
         description: 'Get a data source',
         params: Type.Object({
-            connectionid: Type.Integer(),
-            dataid: Type.Integer()
+            connectionid: Type.Integer({ minimum: 1 }),
+            dataid: Type.Integer({ minimum: 1 }),
         }),
         res: DataResponse
     }, async (req, res) => {
@@ -254,8 +254,8 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Data',
         description: 'Delete a data source',
         params: Type.Object({
-            connectionid: Type.Integer(),
-            dataid: Type.Integer()
+            connectionid: Type.Integer({ minimum: 1 }),
+            dataid: Type.Integer({ minimum: 1 }),
         }),
         res: StandardResponse
     }, async (req, res) => {

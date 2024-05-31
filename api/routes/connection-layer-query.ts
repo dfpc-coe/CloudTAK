@@ -14,8 +14,8 @@ export default async function router(schema: Schema, config: Config) {
         group: 'LayerQuery',
         description: 'Get the latest feature from a layer',
         params: Type.Object({
-            connectionid: Type.Integer(),
-            layerid: Type.Integer(),
+            connectionid: Type.Integer({ minimum: 1 }),
+            layerid: Type.Integer({ minimum: 1 }),
         }),
         query: Type.Object({
             filter: Type.Optional(Type.String({ "description": "Filter by Id prefix" }))
@@ -66,8 +66,8 @@ export default async function router(schema: Schema, config: Config) {
         group: 'LayerQuery',
         description: 'Get the latest feature from a layer',
         params: Type.Object({
-            connectionid: Type.Integer(),
-            layerid: Type.Integer(),
+            connectionid: Type.Integer({ minimum: 1 }),
+            layerid: Type.Integer({ minimum: 1 }),
             featid: Type.String()
         }),
         res: Type.Object({
