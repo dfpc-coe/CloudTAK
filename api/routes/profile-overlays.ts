@@ -1,5 +1,4 @@
 import { Type } from '@sinclair/typebox'
-import { GenericListOrder } from '@openaddresses/batch-generic';
 import { validate } from '@maplibre/maplibre-gl-style-spec';
 import path from 'node:path';
 import Config from '../lib/config.js';
@@ -12,6 +11,7 @@ import { sql } from 'drizzle-orm';
 import TAKAPI, {
     APIAuthCertificate,
 } from '../lib/tak-api.js';
+import * as Default from '../lib/limits.js';
 
 export default async function router(schema: Schema, config: Config) {
     await schema.get('/profile/overlay', {
@@ -24,9 +24,9 @@ export default async function router(schema: Schema, config: Config) {
             before being returned.
         `,
         query: Type.Object({
-            limit: Type.Integer({ default: 10 }),
-            page: Type.Integer({ default: 0 }),
-            order: Type.Enum(GenericListOrder, { default: GenericListOrder.ASC }),
+            limit: Default.Limit,
+            page: Default.Page,
+            order: Default.Order
         }),
         res: Type.Object({
             total: Type.Integer(),

@@ -1,5 +1,4 @@
 import { Type } from '@sinclair/typebox'
-import { GenericListOrder } from '@openaddresses/batch-generic';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Cacher from '../lib/cacher.js';
@@ -8,6 +7,7 @@ import { LayerAlert } from '../lib/schema.js';
 import Config from '../lib/config.js';
 import { sql, eq, InferSelectModel } from 'drizzle-orm';
 import { StandardResponse, LayerAlertResponse } from '../lib/types.js';
+import * as Default from '../lib/limits.js';
 
 export enum LayerAlertPriority {
     GREEN = 'green',
@@ -21,15 +21,15 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Layer Alerts',
         description: 'List layer alerts',
         params: Type.Object({
-            connectionid: Type.Integer(),
-            layerid: Type.Integer()
+            connectionid: Type.Integer({ minimum: 1 }),
+            layerid: Type.Integer({ minimum: 1 }),
         }),
         query: Type.Object({
-            limit: Type.Integer({ default: 10 }),
-            page: Type.Integer({ default: 0 }),
-            order: Type.Enum(GenericListOrder, { default: GenericListOrder.ASC }),
+            limit: Default.Limit,
+            page: Default.Page,
+            order: Default.Order,
             sort: Type.Optional(Type.String({default: 'created', enum: Object.keys(LayerAlert) })),
-            filter: Type.Optional(Type.String({default: ''}))
+            filter: Default.Filter
         }),
         res: Type.Object({
             total: Type.Integer(),
@@ -74,12 +74,12 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Layer Alerts',
         description: 'Create a new layer alert',
         params: Type.Object({
-            connectionid: Type.Integer(),
-            layerid: Type.Integer()
+            connectionid: Type.Integer({ minimum: 1 }),
+            layerid: Type.Integer({ minimum: 1 }),
         }),
         body: Type.Object({
-            title: Type.String(),
-            description: Type.Optional(Type.String()),
+            title: Default.NameField,
+            description: Type.Optional(Default.DescriptionField),
             icon: Type.Optional(Type.String()),
             priority: Type.Optional(Type.Enum(LayerAlertPriority)),
         }),
@@ -125,8 +125,8 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Layer Alerts',
         description: 'Delete all alerts for the layer',
         params: Type.Object({
-            connectionid: Type.Integer(),
-            layerid: Type.Integer()
+            connectionid: Type.Integer({ minimum: 1 }),
+            layerid: Type.Integer({ minimum: 1 }),
         }),
         res: StandardResponse
     }, async (req, res) => {
@@ -162,9 +162,9 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Layer Alerts',
         description: 'Delete all alerts for the layer',
         params: Type.Object({
-            connectionid: Type.Integer(),
-            layerid: Type.Integer(),
-            alertid: Type.Integer()
+            connectionid: Type.Integer({ minimum: 1 }),
+            layerid: Type.Integer({ minimum: 1 }),
+            alertid: Type.Integer({ minimum: 1 })
         }),
         res: StandardResponse
     }, async (req, res) => {
