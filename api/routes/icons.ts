@@ -12,8 +12,8 @@ import xml2js from 'xml2js';
 import { Param } from '@openaddresses/batch-generic';
 import { sql } from 'drizzle-orm';
 import { StandardResponse, IconResponse, IconsetResponse } from '../lib/types.js';
-import { GenericListOrder } from '@openaddresses/batch-generic';
-import{ Icon, Iconset } from '../lib/schema.js'
+import { Icon, Iconset } from '../lib/schema.js'
+import * as Default from '../lib/limits.js';
 
 export type SpriteRecord = {
     json: object;
@@ -40,11 +40,11 @@ export default async function router(schema: Schema, config: Config) {
         description: 'List Iconsets',
         query: Type.Object({
             scope: Type.Optional(Type.Enum(ResourceCreationScope)),
-            limit: Type.Integer({ default: 10 }),
-            page: Type.Integer({ default: 0 }),
-            order: Type.Enum(GenericListOrder, { default: GenericListOrder.ASC }),
+            limit: Default.Limit,
+            page: Default.Page,
+            order: Default.Order,
             sort: Type.Optional(Type.String({default: 'created', enum: Object.keys(Iconset) })),
-            filter: Type.Optional(Type.String({default: ''}))
+            filter: Default.Filter
         }),
         res: Type.Object({
             total: Type.Integer(),
@@ -83,7 +83,7 @@ export default async function router(schema: Schema, config: Config) {
         body: Type.Object({
             uid: Type.String(),
             version: Type.Integer(),
-            name: Type.String(),
+            name: Default.NameField,
             scope: Type.Optional(Type.Enum(ResourceCreationScope)),
             default_group: Type.Optional(Type.String()),
             default_friendly: Type.Optional(Type.String()),
@@ -284,7 +284,7 @@ export default async function router(schema: Schema, config: Config) {
             iconset: Type.String()
         }),
         body: Type.Object({
-            name: Type.String(),
+            name: Default.NameField,
             data: Type.String(),
             type2525b: Type.Optional(Type.Union([Type.String(), Type.Null()]))
         }),
@@ -322,11 +322,11 @@ export default async function router(schema: Schema, config: Config) {
         query: Type.Object({
             scope: Type.Optional(Type.Enum(ResourceCreationScope)),
             limit: Type.Optional(Type.Integer({ default: 100 })),
-            page: Type.Optional(Type.Integer()),
-            order: Type.Optional(Type.Enum(GenericListOrder)),
+            page: Default.Page,
+            order: Default.Order,
             sort: Type.Optional(Type.String({default: 'created', enum: Object.keys(Icon) })),
             iconset: Type.Optional(Type.String()),
-            filter: Type.Optional(Type.String({default: ''}))
+            filter: Default.Filter
         }),
         res: Type.Object({
             total: Type.Integer(),

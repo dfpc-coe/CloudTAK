@@ -3,6 +3,7 @@ import Config from '../lib/config.js';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
+import * as Default from '../lib/limits.js';
 
 export const AgencyResponse = Type.Object({
     id: Type.Integer(),
@@ -15,7 +16,7 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Agency',
         description: 'Return a list Agencies',
         query: Type.Object({
-            filter: Type.String({ default: '' })
+            filter: Default.Filter
         }),
         res: Type.Object({
             total: Type.Integer(),

@@ -14,8 +14,8 @@ export default async function router(schema: Schema, config: Config) {
         group: 'DataJobs',
         description: 'List Data Jobs',
         params: Type.Object({
-            connectionid: Type.Integer(),
-            dataid: Type.Integer()
+            connectionid: Type.Integer({ minimum: 1 }),
+            dataid: Type.Integer({ minimum: 1 })
         }),
         res: Type.Object({
             total: Type.Integer(),
@@ -57,8 +57,8 @@ export default async function router(schema: Schema, config: Config) {
         group: 'DataJobs',
         description: 'Get Data Jobs',
         params: Type.Object({
-            connectionid: Type.Integer(),
-            dataid: Type.Integer(),
+            connectionid: Type.Integer({ minimum: 1 }),
+            dataid: Type.Integer({ minimum: 1 }),
             jobid: Type.String()
         }),
         res: JobResponse
@@ -93,8 +93,8 @@ export default async function router(schema: Schema, config: Config) {
         group: 'DataJobLogs',
         description: 'List Data Job Logs',
         params: Type.Object({
-            connectionid: Type.Integer(),
-            dataid: Type.Integer(),
+            connectionid: Type.Integer({ minimum: 1 }),
+            dataid: Type.Integer({ minimum: 1 }),
             jobid: Type.String()
         }),
         res: Type.Object({

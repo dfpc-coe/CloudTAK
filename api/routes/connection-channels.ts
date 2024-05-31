@@ -12,7 +12,7 @@ export default async function router(schema: Schema, config: Config) {
         group: 'Connection',
         description: 'List channels that a given connection is broadcasting to',
         params: Type.Object({
-            connectionid: Type.Integer()
+            connectionid: Type.Integer({ minimum: 1 })
         }),
         res: GenericMartiResponse
     }, async (req, res) => {
