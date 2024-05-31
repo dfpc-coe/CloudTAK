@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v2.32.0 - 2024-05-31
+
+- :rocket: `API` Add sensible API limits to common fields
+
 ### v2.31.1 - 2024-05-30
 
 - :rocket: `API` Update timeout value to allow TAK Exports
