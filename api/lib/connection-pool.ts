@@ -160,10 +160,10 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
         }).on('secureConnect', async () => {
             for (const sub of await connConfig.subscriptions()) {
                 try {
-                    await api.Mission.subscribe(sub, { uid: String(connConfig.id) });
-                    console.log(`Connection: ${connConfig.id} - Sync: ${sub}: Subscribed!`);
+                    await api.Mission.subscribe(sub.name, { uid: String(connConfig.id) });
+                    console.log(`Connection: ${connConfig.id} - Sync: ${sub.name}: Subscribed!`);
                 } catch (err) {
-                    console.warn(`Connection: ${connConfig.id} - Sync: ${sub}: ${err.message}`);
+                    console.warn(`Connection: ${connConfig.id} - Sync: ${sub.name}: ${err.message}`);
                 }
             }
         }).on('end', async () => {
