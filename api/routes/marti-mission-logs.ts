@@ -28,10 +28,15 @@ export default async function router(schema: Schema, config: Config) {
             const creatorUid = user.email;
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
-            const mission = await api.MissionLog.create(req.params.name, {
-                creatorUid: creatorUid,
-                content: req.body.content
-            });
+            const mission = await api.MissionLog.create(
+                req.params.name,
+                {
+                    creatorUid: creatorUid,
+                    content: req.body.content
+                },
+                await config.conns.subscription(user.email, req.params.name)
+            );
+
             return res.json(mission);
         } catch (err) {
             return Err.respond(err, res);
@@ -54,7 +59,10 @@ export default async function router(schema: Schema, config: Config) {
             const auth = (await config.models.Profile.from(user.email)).auth;
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
-            await api.MissionLog.delete(req.params.log);
+            await api.MissionLog.delete(
+                req.params.log,
+                await config.conns.subscription(user.email, req.params.name)
+            );
 
             return res.json({
                 status: 200,
