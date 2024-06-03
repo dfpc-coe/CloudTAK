@@ -12,7 +12,13 @@
 
 ### Pending Release
 
+### v2.33.0 - 2024-06-03
+
 - :bug: Respect `visibility` property from ProfileOverlay on initial load
+- :rocket: Add preliminary support for Mission CreateLayer
+- :bug: Fix connection rename caused by mandatory `auth` that shouldn't be mandatory
+- :arrow_up: Update Drizzle to latest versions
+- :arrow_up: Update to bi-directional DataPackage library
 
 ### v2.32.0 - 2024-05-31
 
