@@ -19,6 +19,7 @@ export default interface ConnectionConfig {
     auth: ConnectionAuth;
     config: Config;
 
+    subscription: (name: string) => Promise<null | MissionSub>;
     subscriptions: () => Promise<Array<MissionSub>>;
 }
 
@@ -35,6 +36,19 @@ export class MachineConnConfig implements ConnectionConfig {
         this.name = connection.name;
         this.enabled = connection.enabled;
         this.auth = connection.auth;
+    }
+
+    async subscription(name: string): Promise<MissionSub> {
+        const mission = await this.config.models.Data.from(sql`
+            name = ${name}
+            AND connection = ${this.id}::INT
+            AND mission_sync IS True
+        `);
+
+        return {
+            name: mission.name,
+            token: mission.mission_token
+        };
     }
 
     async subscriptions(): Promise<Array<MissionSub>> {
@@ -68,6 +82,19 @@ export class ProfileConnConfig implements ConnectionConfig {
         this.name = email;
         this.enabled = true;
         this.auth = auth;
+    }
+
+    async subscription(name: string): Promise<MissionSub> {
+        const mission = await this.config.models.Data.from(sql`
+            name = ${name}
+            AND mode = 'mission'
+            AND username = ${this.id}
+        `);
+
+        return {
+            name: mission.name,
+            token: mission.mission_token
+        };
     }
 
     async subscriptions(): Promise<Array<MissionSub>> {
