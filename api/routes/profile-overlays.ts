@@ -160,7 +160,7 @@ export default async function router(schema: Schema, config: Config) {
                 const sub = await api.Mission.subscribe(mission.name, { uid: user.email });
 
                 if (sub.data.length && sub.data[0].token) {
-                    await config.models.ProfileOverlay.commit({
+                    await config.models.ProfileOverlay.commit(overlay.id, {
                         token: sub.data[0].token
                     })
                 }
