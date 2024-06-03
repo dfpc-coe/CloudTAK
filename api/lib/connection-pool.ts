@@ -50,6 +50,17 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
         this.sinks = new Sinks(config);
     }
 
+    async subscription(connection: number | string, name: string): Promise<{
+        name: string;
+        token?: string;
+    }> {
+        const conn = this.get(connection);
+        if (!conn) return { name: name };
+        const sub = await conn.config.subscription(name);
+        if (!sub) return { name: name };
+        return sub;
+    }
+
     async refresh() {
         for (const conn of this.keys()) {
             this.delete(conn);
