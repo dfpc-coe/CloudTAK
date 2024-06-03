@@ -1,0 +1,13 @@
+if [[ -z $1 ]]; then
+    Stack="cotak-prod"
+else
+    Stack=$1
+fi
+
+echo "Loading $Stack"
+
+ssh "$Stack-bastion" -t './etl/dump; exit'
+scp "$Stack-bastion:~/etl/$Stack-latest.dump" .
+npm run loaddb $Stack-latest.dump
+
+npm run dev -- --env $Stack

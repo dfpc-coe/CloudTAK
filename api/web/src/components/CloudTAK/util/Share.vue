@@ -97,7 +97,9 @@ import {
 } from '@tabler/icons-vue';
 import Contact from '../partial/Contact.vue';
 import { useConnectionStore } from '/src/stores/connection.ts';
+import { useCOTStore } from '/src/stores/cots.ts';
 
+const cotStore = useCOTStore();
 const connectionStore = useConnectionStore();
 
 export default {
@@ -147,14 +149,24 @@ export default {
         await this.fetchList();
     },
     methods: {
+        /** Feats often come from Vector Tiles which don't contain the full feature */
+        currentFeats: function() {
+            return this.feats.map((f) => {
+                return cotStore.get(f.id);
+            }).filter((f) => {
+                return !!f;
+            });
+        },
         share: async function() {
             if (!this.selected.size) {
                 throw new Error('No Users Selected to Share With');
             }
 
-            if (this.feats.length === 1) {
+            const feats = this.currentFeats();
+
+            if (feats.length === 1) {
                 for (const contact of this.selected) {
-                    const feat = JSON.parse(JSON.stringify(this.feats[0]));
+                    const feat = JSON.parse(JSON.stringify(feats[0]));
                     feat.properties.dest = [{ uid: contact.uid }];
                     connectionStore.sendCOT(feat);
                 }
@@ -164,7 +176,7 @@ export default {
                     body: {
                         type: 'FeatureCollection',
                         uids: Array.from(this.selected).map((contact) => { return contact.uid }),
-                        features: this.feats.map((f) => {
+                        features: feats.map((f) => {
                             f = JSON.parse(JSON.stringify(f));
                             return { id: f.id || f.properties.id, type: f.type, properties: f.properties, geometry: f.geometry }
                         })
@@ -175,15 +187,17 @@ export default {
             this.$emit('done');
         },
         broadcast: async function() {
-            if (this.feats.length === 1) {
-                connectionStore.sendCOT(JSON.parse(JSON.stringify(this.feats[0])));
+            const feats = this.currentFeats();
+
+            if (feats.length === 1) {
+                connectionStore.sendCOT(JSON.parse(JSON.stringify(feats[0])));
                 this.$emit('done');
             } else {
                 await std('/api/marti/package', {
                     method: 'PUT',
                     body: {
                         type: 'FeatureCollection',
-                        features: this.feats.map((f) => {
+                        features: feats.map((f) => {
                             f = JSON.parse(JSON.stringify(f));
                             return { id: f.id || f.properties.id, type: f.type, properties: f.properties, geometry: f.geometry }
                         })

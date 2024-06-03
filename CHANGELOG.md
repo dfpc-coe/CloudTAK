@@ -12,6 +12,8 @@
 
 ### Pending Release
 
+- :bug: Respect `visibility` property from ProfileOverlay on initial load
+
 ### v2.32.0 - 2024-05-31
 
 - :rocket: `API` Add sensible API limits to common fields

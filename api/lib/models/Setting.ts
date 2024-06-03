@@ -6,7 +6,7 @@ import { eq } from 'drizzle-orm';
 
 export default class SettingModel extends Modeler<typeof Setting> {
     constructor(
-        pool: PostgresJsDatabase<any>,
+        pool: PostgresJsDatabase<Record<string, unknown>>,
     ) {
         super(pool, Setting);
     }

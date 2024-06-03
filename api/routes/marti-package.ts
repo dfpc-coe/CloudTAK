@@ -1,4 +1,6 @@
 import crypto from 'node:crypto';
+import fs from 'node:fs';
+import fsp from 'node:fs/promises';
 import { Type } from '@sinclair/typebox'
 import CoT, { FileShare, DataPackage } from '@tak-ps/node-cot';
 import Schema from '@openaddresses/batch-schema';
@@ -24,7 +26,9 @@ export default async function router(schema: Schema, config: Config) {
                 type: Type.Literal('Feature'),
                 properties: Type.Any(),
                 geometry: Type.Any()
-            }))
+            }), {
+                minItems: 1
+            })
         }),
         res: Content
     }, async (req, res) => {
@@ -37,51 +41,49 @@ export default async function router(schema: Schema, config: Config) {
 
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
-            const pkg = new DataPackage();
-            const name = crypto.randomUUID();
+            const id = crypto.randomUUID();
 
-            const buffs = [];
-            pkg.archive.on('data', (d) => { buffs.push(d); });
-            pkg.archive.on('end', async () => {
-                const buff = Buffer.concat(buffs);
-                const size = Buffer.byteLength(buff);
-                const content = await api.Files.upload({
-                    name: name,
-                    contentLength: size,
-                    keywords: [],
-                    creatorUid: creatorUid,
-                }, buff);
-
-                const client = config.conns.get(profile.username);
-                const cot = new FileShare({
-                    filename: name,
-                    name: name,
-                    senderCallsign: profile.tak_callsign,
-                    senderUid: `ANDROID-CloudTAK-${profile.username}`,
-                    senderUrl: `${config.server.api}/Marti/sync/content?hash=${content.Hash}`,
-                    sha256: content.Hash,
-                    sizeInBytes: size
-                });
-
-                if (client && req.body.uids) {
-                    cot.raw.event.detail.marti = {
-                        dest: req.body.uids.map((uid) => {
-                            return { _attributes: { uid: uid } };
-                        })
-                    }
-                }
-
-                client.tak.write([cot]);
-
-                return res.json(content)
-            })
-
+            const pkg = new DataPackage(id, id);
+            pkg.setEphemeral();
             for (const feat of req.body.features) {
-                pkg.addCoT(CoT.from_geojson(feat))
+                await pkg.addCoT(CoT.from_geojson(feat))
             }
 
-            pkg.finalize(name, name)
+            const out = await pkg.finalize()
 
+            const { size } = await fsp.stat(out);
+
+            const content = await api.Files.upload({
+                name: id,
+                contentLength: size,
+                keywords: [],
+                creatorUid: creatorUid,
+            }, fs.createReadStream(out));
+
+            await pkg.destroy();
+
+            const client = config.conns.get(profile.username);
+            const cot = new FileShare({
+                filename: id,
+                name: id,
+                senderCallsign: profile.tak_callsign,
+                senderUid: `ANDROID-CloudTAK-${profile.username}`,
+                senderUrl: `${config.server.api}/Marti/sync/content?hash=${content.Hash}`,
+                sha256: content.Hash,
+                sizeInBytes: size
+            });
+
+            if (client && req.body.uids) {
+                cot.raw.event.detail.marti = {
+                    dest: req.body.uids.map((uid) => {
+                        return { _attributes: { uid: uid } };
+                    })
+                }
+            }
+
+            client.tak.write([cot]);
+
+            return res.json(content)
         } catch (err) {
             return Err.respond(err, res);
         }
