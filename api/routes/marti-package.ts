@@ -57,6 +57,8 @@ export default async function router(schema: Schema, config: Config) {
                 creatorUid: creatorUid,
             }, fs.createReadStream(out));
 
+            await pkg.destroy();
+
             const client = config.conns.get(profile.username);
             const cot = new FileShare({
                 filename: id,
