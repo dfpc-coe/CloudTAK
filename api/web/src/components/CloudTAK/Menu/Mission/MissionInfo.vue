@@ -103,11 +103,23 @@
                     />
                 </div>
                 <div class='col-12'>
-                    <div class='datagrid-title'>
-                        Mission Layers
+                    <div class='d-flex'>
+                        <div class='datagrid-title'>
+                            Mission Layers
+                        </div>
+                        <div class='ms-auto btn-list'>
+                            <IconPlus v-if='!createLayer' @click='createLayer = true' size='24' class='cursor-pointer'/>
+                            <IconRefresh @click='fetchLayers' size='24' class='cursor-pointer'/>
+                        </div>
                     </div>
+                    <MissionLayerCreate
+                        v-if='createLayer'
+                        :mission='mission'
+                        @layer='fetchLayers'
+                        @cancel='createLayer = false'
+                    />
                     <TablerLoading
-                        v-if='loading.layers'
+                        v-else-if='loading.layers'
                         :inline='true'
                         desc='Loading Layers...'
                     />
@@ -134,17 +146,25 @@
 <script>
 import { std, stdurl } from '/src/std.ts';
 import {
+    IconPlus,
+    IconRefresh
+} from '@tabler/icons-vue';
+import {
     TablerNone,
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import MenuTemplate from '../../util/MenuTemplate.vue';
+import MissionLayerCreate from './MissionLayerCreate.vue';
 import { useMapStore } from '/src/stores/map.ts';
 const mapStore = useMapStore();
 
 export default {
     name: 'MissionInfo',
     components: {
+        IconPlus,
+        IconRefresh,
         MenuTemplate,
+        MissionLayerCreate,
         TablerNone,
         TablerLoading
     },
@@ -153,6 +173,7 @@ export default {
     },
     data: function() {
         return {
+            createLayer: false,
             subscribed: !!mapStore.getLayerByMode('mission', this.mission.guid),
             loading: {
                 users: false,
@@ -173,6 +194,7 @@ export default {
             this.loading.users = false;
         },
         fetchLayers: async function() {
+            this.createLayer = false;
             this.loading.layers = true;
             const url = await stdurl(`/api/marti/missions/${this.mission.name}/layer`);
             this.layers = (await std(url)).data;

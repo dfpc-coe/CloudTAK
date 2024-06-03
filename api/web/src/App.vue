@@ -220,12 +220,21 @@ export default {
     background: #f5f5f5;
 }
 
+.border-light {
+    border-radius: 6px;
+    background-color: rgba(0, 0, 0, 0.3);
+}
+
 .hover-button:hover {
     border-radius: 6px;
     background-color: rgba(0, 0, 0, 0.3);
 }
 
 .hover-dark:hover {
+    background: #0f172a;
+}
+
+.border-dark {
     background: #0f172a;
 }
 </style>
