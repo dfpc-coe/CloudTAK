@@ -1,74 +1,71 @@
 <template>
-<div class='col-12 border rounded my-2'>
-    <TablerAlert
-        v-if='err'
-        :err='err'
-    />
-    <TablerLoading v-else-if='loading.layer'/>
-    <template v-else>
-        <div class='modal-body row g-2'>
-            <TablerInput
-                v-model='layer.name'
-                label='Name'
-            />
-
-            <label
-                class='subheader mt-3 cursor-pointer'
-                @click='advanced = !advanced'
-            >
-                <IconSquareChevronRight
-                    v-if='!advanced'
-                    size='32'
+    <div class='col-12 border rounded my-2'>
+        <TablerAlert
+            v-if='err'
+            :err='err'
+        />
+        <TablerLoading v-else-if='loading.layer' />
+        <template v-else>
+            <div class='modal-body row g-2'>
+                <TablerInput
+                    v-model='layer.name'
+                    label='Name'
                 />
-                <IconChevronDown
-                    v-else
-                    size='32'
-                />
-                Advanced Options
-            </label>
 
-            <div
-                v-if='advanced'
-                class='col-12'
-            >
-                <div class='row g-2'>
-                    <div class='col-12'>
-                        <TablerEnum
-                            v-model='layer.type'
-                            label='Layer Type'
-                            :options='["GROUP", "UID", "CONTENTS", "MAPLAYER", "ITEM"]'
-                        />
+                <label
+                    class='subheader mt-3 cursor-pointer'
+                    @click='advanced = !advanced'
+                >
+                    <IconSquareChevronRight
+                        v-if='!advanced'
+                        size='32'
+                    />
+                    <IconChevronDown
+                        v-else
+                        size='32'
+                    />
+                    Advanced Options
+                </label>
+
+                <div
+                    v-if='advanced'
+                    class='col-12'
+                >
+                    <div class='row g-2'>
+                        <div class='col-12'>
+                            <TablerEnum
+                                v-model='layer.type'
+                                label='Layer Type'
+                                :options='["GROUP", "UID", "CONTENTS", "MAPLAYER", "ITEM"]'
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                <div class='col-12 d-flex'>
+                    <button
+                        class='btn btn-secondary'
+                        @click='$emit("cancel")'
+                    >
+                        Cancel
+                    </button>
+                    <div class='ms-auto'>
+                        <button
+                            class='btn btn-primary'
+                            @click='createLayer'
+                        >
+                            Create Layer
+                        </button>
                     </div>
                 </div>
             </div>
-
-            <div class='col-12 d-flex'>
-                <button
-                    class='btn btn-secondary'
-                    @click='$emit("cancel")'
-                >
-                    Cancel
-                </button>
-                <div class='ms-auto'>
-                    <button
-                        class='btn btn-primary'
-                        @click='createLayer'
-                    >
-                        Create Layer
-                    </button>
-                </div>
-            </div>
-        </div>
-    </template>
-</div>
+        </template>
+    </div>
 </template>
 
 <script>
 import { std, stdurl } from '/src/std.ts';
 import {
-    IconLock,
-    IconLockOpen,
-    IconListSearch,
     IconSquareChevronRight,
     IconChevronDown,
 } from '@tabler/icons-vue';
@@ -76,13 +73,11 @@ import {
     TablerAlert,
     TablerInput,
     TablerEnum,
-    TablerToggle,
     TablerLoading
 } from '@tak-ps/vue-tabler';
 
 export default {
     name: 'MissionLayerCreate',
-    emits: ['layer', 'cancel'],
     components: {
         IconSquareChevronRight,
         IconChevronDown,
@@ -90,16 +85,13 @@ export default {
         TablerLoading,
         TablerInput,
         TablerEnum,
-        TablerToggle,
-        IconListSearch,
-        IconLock,
-        IconLockOpen
     },
     props: {
         connection: {
             type: Number
         }
     },
+    emits: ['layer', 'cancel'],
     data: function() {
         return {
             err: null,
