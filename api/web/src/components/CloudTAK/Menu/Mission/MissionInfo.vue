@@ -54,90 +54,97 @@
                         Keywords
                     </div>
                     <div
-                        v-if='mission.keywords.length'
-                        v-for='keyword of mission.keywords'
                         class='datagrid-content'
                     >
-                        <span v-text='keyword' />
-                    </div>
-                    <div
-                        v-else
-                        class='datagrid-content'
-                    >
-                        None
+                        <template v-if='mission.keywords.length'>
+                            <span
+                                v-for='keyword of mission.keywords'
+                                v-text='keyword'
+                            />
+                        </template>
+                        <span v-else>None</span>
                     </div>
                 </div>
-                <div class='col-12'>
+            </div>
+            <div class='col-12'>
+                <div class='datagrid-title'>
+                    Description
+                </div>
+                <div
+                    class='datagrid-content'
+                    v-text='mission.description || "No Feed Description"'
+                />
+            </div>
+            <div class='col-12'>
+                <div class='datagrid-title'>
+                    Subscription
+                </div>
+                <button
+                    v-if='subscribed === false'
+                    class='btn btn-green'
+                    style='height: 32px;'
+                    @click='subscribe(true)'
+                >
+                    Subscribe
+                </button>
+                <button
+                    v-else-if='subscribed === true'
+                    class='btn btn-danger'
+                    style='height: 32px;'
+                    @click='subscribe(false)'
+                >
+                    Unsubscribe
+                </button>
+                <TablerLoading
+                    v-else
+                    :inline='true'
+                    desc='Updating Subscription...'
+                />
+            </div>
+            <div class='col-12'>
+                <div class='d-flex'>
                     <div class='datagrid-title'>
-                        Description
+                        Mission Layers
                     </div>
+                    <div class='ms-auto btn-list'>
+                        <IconPlus
+                            v-if='!createLayer'
+                            size='24'
+                            class='cursor-pointer'
+                            @click='createLayer = true'
+                        />
+                        <IconRefresh
+                            size='24'
+                            class='cursor-pointer'
+                            @click='fetchLayers'
+                        />
+                    </div>
+                </div>
+                <MissionLayerCreate
+                    v-if='createLayer'
+                    :mission='mission'
+                    @layer='fetchLayers'
+                    @cancel='createLayer = false'
+                />
+                <TablerLoading
+                    v-else-if='loading.layers'
+                    :inline='true'
+                    desc='Loading Layers...'
+                />
+                <TablerNone
+                    v-else-if='!layers.length'
+                    :create='false'
+                    :compact='true'
+                    label='Layers'
+                />
+                <template v-else>
                     <div
-                        class='datagrid-content'
-                        v-text='mission.description || "No Feed Description"'
-                    />
-                </div>
-                <div class='col-12'>
-                    <div class='datagrid-title'>
-                        Subscription
-                    </div>
-                    <button
-                        v-if='subscribed === false'
-                        class='btn btn-green'
-                        style='height: 32px;'
-                        @click='subscribe(true)'
+                        v-for='layer in layers'
+                        class='col-12'
                     >
-                        Subscribe
-                    </button>
-                    <button
-                        v-else-if='subscribed === true'
-                        class='btn btn-danger'
-                        style='height: 32px;'
-                        @click='subscribe(false)'
-                    >
-                        Unsubscribe
-                    </button>
-                    <TablerLoading
-                        v-else
-                        :inline='true'
-                        desc='Updating Subscription...'
-                    />
-                </div>
-                <div class='col-12'>
-                    <div class='d-flex'>
-                        <div class='datagrid-title'>
-                            Mission Layers
-                        </div>
-                        <div class='ms-auto btn-list'>
-                            <IconPlus v-if='!createLayer' @click='createLayer = true' size='24' class='cursor-pointer'/>
-                            <IconRefresh @click='fetchLayers' size='24' class='cursor-pointer'/>
-                        </div>
+                        <span v-text='layer.name' />
                     </div>
-                    <MissionLayerCreate
-                        v-if='createLayer'
-                        :mission='mission'
-                        @layer='fetchLayers'
-                        @cancel='createLayer = false'
-                    />
-                    <TablerLoading
-                        v-else-if='loading.layers'
-                        :inline='true'
-                        desc='Loading Layers...'
-                    />
-                    <TablerNone
-                        v-else-if='!layers.length'
-                        :create='false'
-                        :compact='true'
-                        label='Layers'
-                    />
-                    <template v-else>
-                        <div
-                            v-for='layer in layers'
-                            class='col-12'
-                        >
-                            <span v-text='layer.name' />
-                        </div>
-                    </template>
-                </div>
+                </template>
             </div>
         </div>
     </MenuTemplate>
