@@ -26,7 +26,9 @@ export default async function router(schema: Schema, config: Config) {
                 type: Type.Literal('Feature'),
                 properties: Type.Any(),
                 geometry: Type.Any()
-            }))
+            }), {
+                minItems: 1
+            })
         }),
         res: Content
     }, async (req, res) => {

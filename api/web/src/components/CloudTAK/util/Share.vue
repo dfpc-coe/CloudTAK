@@ -152,7 +152,7 @@ export default {
         /** Feats often come from Vector Tiles which don't contain the full feature */
         currentFeats: function() {
             return this.feats.map((f) => {
-                cotStore.get(f.id);
+                return cotStore.get(f.id);
             }).filter((f) => {
                 return !!f;
             });
