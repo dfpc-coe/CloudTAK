@@ -135,7 +135,16 @@ export const useMapStore = defineStore('cloudtak', {
             }
 
             for (const l of overlay.layers) {
-                map.addLayer(l, layer.before);
+                map.addLayer({
+                    ...l,
+                }, layer.before);
+
+                // TODO: Not sure why "visibility: overlay.visible"  above isn't respected
+                if (overlay.visible === 'none') {
+                    this.map.setLayoutProperty(l.id, 'visibility', 'none');
+                } else if (overlay.visible === 'visible') {
+                    this.map.setLayoutProperty(l.id, 'visibility', 'visible');
+                }
             }
 
             for (const click of layer.clickable) {

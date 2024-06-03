@@ -12,7 +12,7 @@ export type ChatList = {
 
 export default class ProfileChatModel extends Modeler<typeof ProfileChat> {
     constructor(
-        pool: PostgresJsDatabase<any>,
+        pool: PostgresJsDatabase<Record<string, unknown>>,
     ) {
         super(pool, ProfileChat);
     }

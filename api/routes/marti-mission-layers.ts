@@ -4,6 +4,7 @@ import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
+import { CreateInput } from '../lib/api/mission-layer.js';
 import TAKAPI, {
     APIAuthCertificate,
 } from '../lib/tak-api.js';
@@ -27,6 +28,30 @@ export default async function router(schema: Schema, config: Config) {
             const list = await api.MissionLayer.list(req.params.name);
 
             return res.json(list);
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
+
+    await schema.post('/marti/missions/:name/layer', {
+        name: 'Create Layer',
+        group: 'MartiMissionLayer',
+        params: Type.Object({
+            name: Type.String()
+        }),
+        body: CreateInput,
+        description: 'Helper API to create mission layers',
+        res: GenericMartiResponse
+    }, async (req, res) => {
+        try {
+            const user = await Auth.as_user(config, req);
+
+            const auth = (await config.models.Profile.from(user.email)).auth;
+            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
+
+            const create = await api.MissionLayer.create(req.params.name, req.body);
+
+            return res.json(create);
         } catch (err) {
             return Err.respond(err, res);
         }

@@ -142,10 +142,10 @@ export default async function router(schema: Schema, config: Config) {
             description: Type.Optional(Default.DescriptionField),
             enabled: Type.Optional(Type.Boolean()),
             agency: Type.Optional(Type.Integer({ minimum: 1 })),
-            auth: Type.Object({
+            auth: Type.Optional(Type.Object({
                 key: Type.String({ minLength: 1, maxLength: 4096 }),
                 cert: Type.String({ minLength: 1, maxLength: 4096 })
-            })
+            }))
         }),
         res: ConnectionResponse
     }, async (req, res) => {

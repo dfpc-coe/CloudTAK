@@ -90,6 +90,7 @@ export default {
     props: {
         mission: Object
     },
+    emits: ['refresh'],
     data: function() {
         return {
             createLog: false,

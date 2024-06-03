@@ -22,7 +22,7 @@ export type IconList = {
 
 export default class IconModel extends Modeler<typeof pgschema.Icon> {
     constructor(
-        pool: PostgresJsDatabase<any>,
+        pool: PostgresJsDatabase<Record<string, unknown>>,
     ) {
         super(pool, pgschema.Icon);
     }
