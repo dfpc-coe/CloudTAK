@@ -51,6 +51,24 @@
                 </div>
                 <div class='col-12'>
                     <div class='datagrid-title'>
+                        Keywords
+                    </div>
+                    <div
+                        v-if='mission.keywords.length'
+                        v-for='keyword of mission.keywords'
+                        class='datagrid-content'
+                    >
+                        <span v-text='keyword' />
+                    </div>
+                    <div
+                        v-else
+                        class='datagrid-content'
+                    >
+                        None
+                    </div>
+                </div>
+                <div class='col-12'>
+                    <div class='datagrid-title'>
                         Description
                     </div>
                     <div
