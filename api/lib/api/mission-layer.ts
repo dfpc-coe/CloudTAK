@@ -12,7 +12,7 @@ export enum MissionLayerType {
 }
 
 export const MissionLayer = Type.Object({
-    name: Type.String(),
+    name: Type.String({ minLength: 1 }),
     type: Type.Enum(MissionLayerType),
     parentUid: Type.String(),
     uid: Type.String(),
@@ -83,7 +83,7 @@ export default class {
         name: string,
         query: Static<typeof CreateInput>,
         opts?: Static<typeof MissionOptions>
-    ) {
+    ): Promise<TAKList<Static<typeof MissionLayer>>> {
         const url = new URL(`/Marti/api/missions/${this.#encodeName(name)}/layers`, this.api.url);
 
         for (const q in query) url.searchParams.append(q, String(query[q]));
