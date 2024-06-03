@@ -7,6 +7,11 @@ export type ConnectionAuth = {
     key: string;
 }
 
+export type MissionSub = {
+    name: string;
+    token?: string;
+}
+
 export default interface ConnectionConfig {
     id: string | number;
     name: string;
@@ -14,7 +19,7 @@ export default interface ConnectionConfig {
     auth: ConnectionAuth;
     config: Config;
 
-    subscriptions: () => Promise<Array<string>>;
+    subscriptions: () => Promise<Array<MissionSub>>;
 }
 
 export class MachineConnConfig implements ConnectionConfig {
@@ -32,7 +37,7 @@ export class MachineConnConfig implements ConnectionConfig {
         this.auth = connection.auth;
     }
 
-    async subscriptions(): Promise<Array<string>> {
+    async subscriptions(): Promise<Array<MissionSub>> {
         const missions = await this.config.models.Data.list({
             where: sql`
                 connection = ${this.id}::INT
@@ -41,8 +46,8 @@ export class MachineConnConfig implements ConnectionConfig {
         });
 
         return missions.items.map((m) => {
-            return m.name;
-        })
+            return { name: m.name, token: m.mission_token }
+        });
     }
 }
 
@@ -65,7 +70,7 @@ export class ProfileConnConfig implements ConnectionConfig {
         this.auth = auth;
     }
 
-    async subscriptions(): Promise<Array<string>> {
+    async subscriptions(): Promise<Array<MissionSub>> {
         const missions = await this.config.models.ProfileOverlay.list({
             where: sql`
                 mode = 'mission'
@@ -74,7 +79,7 @@ export class ProfileConnConfig implements ConnectionConfig {
         });
 
         return missions.items.map((m) => {
-            return m.name;
+            return { name: m.name, token: m.token }
         })
     }
 }
