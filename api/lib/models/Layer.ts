@@ -38,7 +38,7 @@ export const AugmentedLayer = Type.Object({
 
 export default class LayerModel extends Modeler<typeof Layer> {
     constructor(
-        pool: PostgresJsDatabase<any>,
+        pool: PostgresJsDatabase<Record<string, unknown>>,
     ) {
         super(pool, Layer);
     }

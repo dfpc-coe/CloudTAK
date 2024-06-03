@@ -44,6 +44,7 @@ export default async function router(schema: Schema, config: Config) {
             const id = crypto.randomUUID();
 
             const pkg = new DataPackage(id, id);
+            pkg.setEphemeral();
             for (const feat of req.body.features) {
                 await pkg.addCoT(CoT.from_geojson(feat))
             }

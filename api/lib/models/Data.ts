@@ -23,7 +23,7 @@ export const AugmentedData = Type.Object({
 
 export default class DataModel extends Modeler<typeof Data> {
     constructor(
-        pool: PostgresJsDatabase<any>,
+        pool: PostgresJsDatabase<Record<string, unknown>>,
     ) {
         super(pool, Data);
     }
