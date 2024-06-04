@@ -87,8 +87,8 @@ export default {
         TablerEnum,
     },
     props: {
-        connection: {
-            type: Number
+        mission: {
+            type: Object
         }
     },
     emits: ['layer', 'cancel'],
@@ -97,9 +97,6 @@ export default {
             err: null,
             loading: {
                 layer: false,
-            },
-            modal: {
-                groups: false
             },
             advanced: false,
             layer: {
@@ -113,7 +110,7 @@ export default {
             try {
                 this.loading.layer = true;
 
-                const url = stdurl(`/api/marti/missions/${this.layer.name}/layer`);
+                const url = stdurl(`/api/marti/missions/${this.mission.name}/layer`);
 
                 const res = await std(url, {
                     method: 'POST',

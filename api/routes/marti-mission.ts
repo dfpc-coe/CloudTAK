@@ -4,7 +4,7 @@ import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
 import { GenericMartiResponse } from '../lib/types.js';
-import { MissionSubscriber, Mission, ChangesInput, ListInput } from '../lib/api/mission.js';
+import { MissionSubscriber, Mission, ChangesInput, ListInput, DeleteInput } from '../lib/api/mission.js';
 import TAKAPI, {
     APIAuthCertificate,
 } from '../lib/tak-api.js';
@@ -32,7 +32,11 @@ export default async function router(schema: Schema, config: Config) {
             const auth = (await config.models.Profile.from(user.email)).auth;
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
-            const mission = await api.Mission.get(req.params.name, req.query);
+            const mission = await api.Mission.get(
+                req.params.name,
+                req.query,
+                await config.conns.subscription(user.email, req.params.name)
+            );
 
             return res.json(mission);
         } catch (err) {
@@ -56,7 +60,11 @@ export default async function router(schema: Schema, config: Config) {
             const user = await Auth.as_user(config, req);
             const auth = (await config.models.Profile.from(user.email)).auth;
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
-            const features = await api.Mission.latestFeats(req.params.name);
+
+            const features = await api.Mission.latestFeats(
+                req.params.name,
+                await config.conns.subscription(user.email, req.params.name)
+            );
             return res.json({ type: 'FeatureCollection', features });
         } catch (err) {
             return Err.respond(err, res);
@@ -78,7 +86,11 @@ export default async function router(schema: Schema, config: Config) {
             const auth = (await config.models.Profile.from(user.email)).auth;
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
-            const changes = await api.Mission.changes(req.params.name, req.query);
+            const changes = await api.Mission.changes(
+                req.params.name,
+                req.query,
+                await config.conns.subscription(user.email, req.params.name)
+            );
 
             return res.json(changes);
         } catch (err) {
@@ -93,10 +105,7 @@ export default async function router(schema: Schema, config: Config) {
             name: Type.String(),
         }),
         description: 'Helper API to delete a single mission',
-        query: Type.Object({
-            creatorUid: Type.Optional(Type.String()),
-            deepDelete: Type.Optional(Type.Boolean())
-        }),
+        query: DeleteInput,
         res: GenericMartiResponse
     }, async (req, res) => {
         try {
@@ -104,9 +113,11 @@ export default async function router(schema: Schema, config: Config) {
             const auth = (await config.models.Profile.from(user.email)).auth;
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
-            const query: Record<string, string> = {};
-            for (const q in req.query) query[q] = String(req.query[q]);
-            const mission = await api.Mission.delete(req.params.name, query);
+            const mission = await api.Mission.delete(
+                req.params.name,
+                req.query,
+                await config.conns.subscription(user.email, req.params.name)
+            );
             return res.json(mission);
         } catch (err) {
             return Err.respond(err, res);
@@ -191,7 +202,10 @@ export default async function router(schema: Schema, config: Config) {
             const auth = (await config.models.Profile.from(user.email)).auth;
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
-            const sub = await api.Mission.subscription(String(req.params.name));
+            const sub = await api.Mission.subscription(
+                req.params.name,
+                await config.conns.subscription(user.email, req.params.name)
+            );
 
             return res.json(sub);
         } catch (err) {
@@ -213,7 +227,10 @@ export default async function router(schema: Schema, config: Config) {
             const auth = (await config.models.Profile.from(user.email)).auth;
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
-            const subs = await api.Mission.subscriptions(String(req.params.name));
+            const subs = await api.Mission.subscriptions(
+                req.params.name,
+                await config.conns.subscription(user.email, req.params.name)
+            );
 
             return res.json(subs);
         } catch (err) {
@@ -235,7 +252,10 @@ export default async function router(schema: Schema, config: Config) {
             const auth = (await config.models.Profile.from(user.email)).auth;
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
-            const roles = await api.Mission.subscriptionRoles(String(req.params.name));
+            const roles = await api.Mission.subscriptionRoles(
+                req.params.name,
+                await config.conns.subscription(user.email, req.params.name)
+            );
 
             return res.json(roles);
         } catch (err) {
@@ -265,7 +285,10 @@ export default async function router(schema: Schema, config: Config) {
             const auth = (await config.models.Profile.from(user.email)).auth;
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
-            const missions = await api.Mission.contacts(String(req.params.name));
+            const missions = await api.Mission.contacts(
+                req.params.name,
+                await config.conns.subscription(user.email, req.params.name)
+            );
 
             return res.json(missions);
         } catch (err) {
@@ -308,9 +331,13 @@ export default async function router(schema: Schema, config: Config) {
                 remoteAddress: req._remoteAddress
             }
 
-            const missionContent = await api.Mission.attachContents(req.params.name, {
-                hashes: [content.Hash]
-            });
+            const missionContent = await api.Mission.attachContents(
+                req.params.name,
+                {
+                    hashes: [content.Hash]
+                },
+                await config.conns.subscription(user.email, req.params.name)
+            );
 
             return res.json(missionContent);
         } catch (err) {
@@ -335,9 +362,13 @@ export default async function router(schema: Schema, config: Config) {
 
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
-            const missionContent = await api.Mission.detachContents(req.params.name, {
-                hash: req.params.hash
-            });
+            const missionContent = await api.Mission.detachContents(
+                req.params.name,
+                {
+                    hash: req.params.hash
+                },
+                await config.conns.subscription(user.email, req.params.name)
+            );
 
             return res.json(missionContent);
         } catch (err) {

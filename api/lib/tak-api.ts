@@ -92,6 +92,7 @@ export default class TAKAPI {
             if (raw) return res;
 
             let bdy: any = {};
+
             if ((res.status < 200 || res.status >= 400)) {
                 try {
                     bdy = await res.text();

@@ -7,6 +7,11 @@ export type ConnectionAuth = {
     key: string;
 }
 
+export type MissionSub = {
+    name: string;
+    token?: string;
+}
+
 export default interface ConnectionConfig {
     id: string | number;
     name: string;
@@ -14,7 +19,8 @@ export default interface ConnectionConfig {
     auth: ConnectionAuth;
     config: Config;
 
-    subscriptions: () => Promise<Array<string>>;
+    subscription: (name: string) => Promise<null | MissionSub>;
+    subscriptions: () => Promise<Array<MissionSub>>;
 }
 
 export class MachineConnConfig implements ConnectionConfig {
@@ -32,7 +38,26 @@ export class MachineConnConfig implements ConnectionConfig {
         this.auth = connection.auth;
     }
 
-    async subscriptions(): Promise<Array<string>> {
+    async subscription(name: string): Promise<null | MissionSub> {
+        const missions = await this.config.models.Data.list({
+            where: sql`
+                name = ${name}
+                AND connection = ${this.id}::INT
+                AND mission_sync IS True
+            `
+        });
+
+        if (missions.items.length === 0) {
+            return null;
+        }
+
+        return {
+            name: missions.items[0].name,
+            token: missions.items[0].mission_token
+        };
+    }
+
+    async subscriptions(): Promise<Array<MissionSub>> {
         const missions = await this.config.models.Data.list({
             where: sql`
                 connection = ${this.id}::INT
@@ -41,8 +66,8 @@ export class MachineConnConfig implements ConnectionConfig {
         });
 
         return missions.items.map((m) => {
-            return m.name;
-        })
+            return { name: m.name, token: m.mission_token }
+        });
     }
 }
 
@@ -65,7 +90,26 @@ export class ProfileConnConfig implements ConnectionConfig {
         this.auth = auth;
     }
 
-    async subscriptions(): Promise<Array<string>> {
+    async subscription(name: string): Promise<null | MissionSub> {
+        const missions = await this.config.models.ProfileOverlay.list({
+            where: sql`
+                name = ${name}
+                AND mode = 'mission'
+                AND username = ${this.id}
+            `
+        });
+
+        if (missions.items.length === 0) {
+            return null;
+        }
+
+        return {
+            name: missions.items[0].name,
+            token: missions.items[0].token
+        };
+    }
+
+    async subscriptions(): Promise<Array<MissionSub>> {
         const missions = await this.config.models.ProfileOverlay.list({
             where: sql`
                 mode = 'mission'
@@ -74,7 +118,7 @@ export class ProfileConnConfig implements ConnectionConfig {
         });
 
         return missions.items.map((m) => {
-            return m.name;
+            return { name: m.name, token: m.token }
         })
     }
 }

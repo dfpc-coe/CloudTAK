@@ -1,5 +1,6 @@
 import TAKAPI from '../tak-api.js';
-import { Type } from '@sinclair/typebox';
+import { Type, Static } from '@sinclair/typebox';
+import { MissionOptions } from './mission.js';
 
 export const MissionLog = Type.Object({
     id: Type.String(),
@@ -21,26 +22,44 @@ export default class {
         this.api = api;
     }
 
-    async delete(log: string) {
+    #headers(opts?: Static<typeof MissionOptions>): object {
+        if (opts && opts.token) {
+            return {
+                MissionAuthorization: `Bearer ${opts.token}`
+            }
+        } else {
+            return {};
+        }
+    }
+
+    async delete(
+        log: string,
+        opts?: Static<typeof MissionOptions>
+    ) {
         const url = new URL(`/Marti/api/missions/logs/entries/${log}`, this.api.url);
 
         return await this.api.fetch(url, {
             method: 'DELETE',
+            headers: this.#headers(opts),
         });
     }
 
-    async create(mission: string, opts: {
-        content: string;
-        creatorUid: string;
-
-    }) {
+    async create(
+        mission: string,
+        body: {
+            content: string;
+            creatorUid: string;
+        },
+        opts?: Static<typeof MissionOptions>
+    ) {
         const url = new URL(`/Marti/api/missions/logs/entries`, this.api.url);
 
         return await this.api.fetch(url, {
             method: 'POST',
+            headers: this.#headers(opts),
             body: {
-                content: opts.content,
-                creatorUid: opts.creatorUid,
+                content: body.content,
+                creatorUid: body.creatorUid,
                 missionNames: [ mission ],
             }
         });
