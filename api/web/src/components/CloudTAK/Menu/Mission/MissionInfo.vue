@@ -102,7 +102,7 @@
                 />
             </div>
             <div class='col-12'>
-                <div class='d-flex'>
+                <div class='d-flex py-2 align-items-center'>
                     <div class='datagrid-title'>
                         Mission Layers
                     </div>
@@ -140,9 +140,17 @@
                 <template v-else>
                     <div
                         v-for='layer in layers'
-                        class='col-12'
+                        class='col-12 hover-dark d-flex align-items-center py-2'
                     >
                         <span v-text='layer.name' />
+
+                        <div class='ms-auto btn-list'>
+                            <TablerDelete
+                                displaytype='icon'
+                                size='24'
+                                @delete='deleteLayer(layer)'
+                            />
+                        </div>
                     </div>
                 </template>
             </div>
@@ -158,6 +166,7 @@ import {
 } from '@tabler/icons-vue';
 import {
     TablerNone,
+    TablerDelete,
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import MenuTemplate from '../../util/MenuTemplate.vue';
@@ -170,6 +179,7 @@ export default {
     components: {
         IconPlus,
         IconRefresh,
+        TablerDelete,
         MenuTemplate,
         MissionLayerCreate,
         TablerNone,
@@ -181,7 +191,6 @@ export default {
     data: function() {
         return {
             createLayer: false,
-            subscribed: !!mapStore.getLayerByMode('mission', this.mission.guid),
             loading: {
                 users: false,
                 layers: true
@@ -190,20 +199,34 @@ export default {
             subscriptions: []
         }
     },
+    computed: {
+        subscribed: function() {
+            if (!mapStore.initialized) return;
+            return !!mapStore.getLayerByMode('mission', this.mission.guid);
+        }
+    },
     mounted: async function() {
         await this.fetchSubscriptions();
         await this.fetchLayers();
     },
     methods: {
         fetchSubscriptions: async function() {
-            const url = await stdurl(`/api/marti/missions/${this.mission.name}/subscriptions/roles`);
+            const url = stdurl(`/api/marti/missions/${this.mission.name}/subscriptions/roles`);
             this.subscriptions = (await std(url)).data;
             this.loading.users = false;
+        },
+        deleteLayer: async function(layer) {
+            this.loading.layers = true;
+            const url = stdurl(`/api/marti/missions/${this.mission.name}/layer/${layer.uid}`);
+
+            await std(url, { method: 'DELETE' })
+
+            await this.fetchLayers();
         },
         fetchLayers: async function() {
             this.createLayer = false;
             this.loading.layers = true;
-            const url = await stdurl(`/api/marti/missions/${this.mission.name}/layer`);
+            const url = stdurl(`/api/marti/missions/${this.mission.name}/layer`);
             this.layers = (await std(url)).data;
             this.loading.layers = false;
         },

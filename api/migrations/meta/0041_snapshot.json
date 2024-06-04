@@ -1,7 +1,5 @@
 {
-  "id": "016b39d5-ae59-4cb5-91b5-19656749a0a8",
-  "prevId": "08d2d049-6792-47ec-b279-991e30b2e085",
-  "version": "6",
+  "version": "7",
   "dialect": "postgresql",
   "tables": {
     "public.basemaps": {
@@ -99,15 +97,15 @@
         "basemaps_username_profile_username_fk": {
           "name": "basemaps_username_profile_username_fk",
           "tableFrom": "basemaps",
-          "tableTo": "profile",
           "columnsFrom": [
             "username"
           ],
+          "tableTo": "profile",
           "columnsTo": [
             "username"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -244,15 +242,15 @@
         "connection_sinks_connection_connections_id_fk": {
           "name": "connection_sinks_connection_connections_id_fk",
           "tableFrom": "connection_sinks",
-          "tableTo": "connections",
           "columnsFrom": [
             "connection"
           ],
+          "tableTo": "connections",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -306,15 +304,15 @@
         "connection_tokens_connection_connections_id_fk": {
           "name": "connection_tokens_connection_connections_id_fk",
           "tableFrom": "connection_tokens",
-          "tableTo": "connections",
           "columnsFrom": [
             "connection"
           ],
+          "tableTo": "connections",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -417,15 +415,15 @@
         "data_connection_connections_id_fk": {
           "name": "data_connection_connections_id_fk",
           "tableFrom": "data",
-          "tableTo": "connections",
           "columnsFrom": [
             "connection"
           ],
+          "tableTo": "connections",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -491,15 +489,15 @@
         "icons_iconset_iconsets_uid_fk": {
           "name": "icons_iconset_iconsets_uid_fk",
           "tableFrom": "icons",
-          "tableTo": "iconsets",
           "columnsFrom": [
             "iconset"
           ],
+          "tableTo": "iconsets",
           "columnsTo": [
             "uid"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -590,15 +588,15 @@
         "iconsets_username_profile_username_fk": {
           "name": "iconsets_username_profile_username_fk",
           "tableFrom": "iconsets",
-          "tableTo": "profile",
           "columnsFrom": [
             "username"
           ],
+          "tableTo": "profile",
           "columnsTo": [
             "username"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -686,15 +684,15 @@
         "imports_username_profile_username_fk": {
           "name": "imports_username_profile_username_fk",
           "tableFrom": "imports",
-          "tableTo": "profile",
           "columnsFrom": [
             "username"
           ],
+          "tableTo": "profile",
           "columnsTo": [
             "username"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -844,39 +842,39 @@
         "layers_connection_connections_id_fk": {
           "name": "layers_connection_connections_id_fk",
           "tableFrom": "layers",
-          "tableTo": "connections",
           "columnsFrom": [
             "connection"
           ],
+          "tableTo": "connections",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         },
         "layers_data_data_id_fk": {
           "name": "layers_data_data_id_fk",
           "tableFrom": "layers",
-          "tableTo": "data",
           "columnsFrom": [
             "data"
           ],
+          "tableTo": "data",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "layers_connection_name_unique": {
           "name": "layers_connection_name_unique",
-          "nullsNotDistinct": false,
           "columns": [
             "connection",
             "name"
-          ]
+          ],
+          "nullsNotDistinct": false
         }
       }
     },
@@ -950,15 +948,15 @@
         "layer_alerts_layer_layers_id_fk": {
           "name": "layer_alerts_layer_layers_id_fk",
           "tableFrom": "layer_alerts",
-          "tableTo": "layers",
           "columnsFrom": [
             "layer"
           ],
+          "tableTo": "layers",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -1217,15 +1215,15 @@
         "profile_chats_username_profile_username_fk": {
           "name": "profile_chats_username_profile_username_fk",
           "tableFrom": "profile_chats",
-          "tableTo": "profile",
           "columnsFrom": [
             "username"
           ],
+          "tableTo": "profile",
           "columnsTo": [
             "username"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -1266,15 +1264,15 @@
         "profile_features_username_profile_username_fk": {
           "name": "profile_features_username_profile_username_fk",
           "tableFrom": "profile_features",
-          "tableTo": "profile",
           "columnsFrom": [
             "username"
           ],
+          "tableTo": "profile",
           "columnsTo": [
             "username"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -1422,26 +1420,26 @@
         "profile_overlays_username_profile_username_fk": {
           "name": "profile_overlays_username_profile_username_fk",
           "tableFrom": "profile_overlays",
-          "tableTo": "profile",
           "columnsFrom": [
             "username"
           ],
+          "tableTo": "profile",
           "columnsTo": [
             "username"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "profile_overlays_username_url_unique": {
           "name": "profile_overlays_username_url_unique",
-          "nullsNotDistinct": false,
           "columns": [
             "username",
             "url"
-          ]
+          ],
+          "nullsNotDistinct": false
         }
       }
     },
@@ -1638,8 +1636,10 @@
   "enums": {},
   "schemas": {},
   "_meta": {
-    "columns": {},
     "schemas": {},
-    "tables": {}
-  }
+    "tables": {},
+    "columns": {}
+  },
+  "id": "016b39d5-ae59-4cb5-91b5-19656749a0a8",
+  "prevId": "08d2d049-6792-47ec-b279-991e30b2e085"
 }

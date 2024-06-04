@@ -5,6 +5,13 @@ export type TAKList<T> = {
     nodeId: string;
 }
 
+export type TAKItem<T> = {
+    version: string;
+    type: string;
+    data: T;
+    nodeId: string;
+}
+
 export enum TAKGroup {
     WHITE = "White",
     YELLOW = "Yellow",

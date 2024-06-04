@@ -321,7 +321,7 @@ export default class {
     async subscriptions(
         name: string,
         opts?: Static<typeof MissionOptions>
-    ): Promise<TAKList<Static<typeof MissionSubscriber>>> {
+    ): Promise<TAKItem<Static<typeof MissionSubscriber>>> {
         if (this.#isGUID(name)) name = (await this.getGuid(name, {})).name;
 
         const url = new URL(`/Marti/api/missions/${this.#encodeName(name)}/subscriptions`, this.api.url);
@@ -372,7 +372,7 @@ export default class {
         name: string,
         query: Static<typeof SubscribeInput>,
         opts?: Static<typeof MissionOptions>
-    ) {
+    ): Promise<TAKList<Static<typeof MissionSubscriber>>> {
         const url = new URL(`/Marti/api/missions/${this.#encodeName(name)}/subscription`, this.api.url);
 
         if (this.#isGUID(name)) name = (await this.getGuid(name, {})).name;

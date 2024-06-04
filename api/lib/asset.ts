@@ -2,7 +2,6 @@ import Err from '@openaddresses/batch-error';
 import path from 'path';
 import S3 from '../lib/aws/s3.js';
 import { _Object } from '@aws-sdk/client-s3';
-
 import Config from '../lib/config.js';
 
 export type AssetListOutput = {

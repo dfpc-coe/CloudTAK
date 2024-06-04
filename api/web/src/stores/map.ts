@@ -64,6 +64,7 @@ export const useMapStore = defineStore('cloudtak', {
             x: number;
             y: number;
         },
+        initialized: boolean;
         layers: OverlayContainer[]
     } => {
         const protocol = new pmtiles.Protocol();
@@ -82,6 +83,9 @@ export const useMapStore = defineStore('cloudtak', {
                 x: 0, y: 0,
             },
             layers: [],
+
+            // Set to true once all Overlays are loaded
+            initialized: false,
             selected: new Map()
         }
     },
@@ -322,6 +326,10 @@ export const useMapStore = defineStore('cloudtak', {
             before?: string;
         }, initial=false) {
             if (!this.map) throw new Error('Cannot addDefaultLayer before map has loaded');
+
+            if (layer.visible === undefined) {
+                layer.visible = true;
+            }
 
             if (this.map.getSource(layer.id)) {
                 this.map.removeSource(layer.id);
@@ -577,6 +585,8 @@ export const useMapStore = defineStore('cloudtak', {
                     overlay: overlay.id,
                 }, true)
             }
+
+            this.initialized = true;
         },
         initDraw: function() {
             this.draw = new terraDraw.TerraDraw({
