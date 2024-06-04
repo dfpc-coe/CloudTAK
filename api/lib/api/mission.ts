@@ -4,7 +4,7 @@ import { CoT } from '@tak-ps/node-tak';
 import { Type, Static } from '@sinclair/typebox';
 import Err from '@openaddresses/batch-error';
 import { Readable } from 'node:stream'
-import { TAKList } from './types.js';
+import { TAKItem, TAKList } from './types.js';
 import { MissionLog } from './mission-log.js';
 import { Feature } from '@tak-ps/node-cot';
 
@@ -136,6 +136,12 @@ export const GetInput = Type.Object({
 
 });
 
+export const SetRoleInput = Type.Object({
+    clientUid: Type.String(),
+    username: Type.String(),
+    role: MissionRole
+});
+
 export const ListInput = Type.Object({
     passwordProtected: Type.Optional(Type.Boolean()),
     defaultRole: Type.Optional(Type.Boolean()),
@@ -190,6 +196,11 @@ export default class {
         }
     }
 
+    /**
+     * Return Mission Sync changes in a given time range
+     *
+     * {@link https://docs.tak.gov/api/takserver/redoc#tag/mission-api/operation/getMissionChanges TAK Server Docs}.
+     */
     async changes(
         name: string,
         query: Static<typeof ChangesInput>,
@@ -206,6 +217,9 @@ export default class {
         });
     }
 
+    /**
+     * Return all current features in the Data Sync as CoT GeoJSON Features
+     */
     async latestFeats(
         name: string,
         opts?: Static<typeof MissionOptions>
@@ -226,6 +240,11 @@ export default class {
         return feats;
     }
 
+    /**
+     * Return all current features in the Data Sync as CoT GeoJSON Features
+     *
+     * {@link https://docs.tak.gov/api/takserver/redoc#tag/mission-api/operation/getLatestMissionCotEvents TAK Server Docs}.
+     */
     async latestCots(
         name: string,
         opts?: Static<typeof MissionOptions>
@@ -242,6 +261,8 @@ export default class {
 
     /**
      * Return users associated with this mission
+     *
+     * {@link https://docs.tak.gov/api/takserver/redoc#tag/mission-api/operation/results TAK Server Docs}.
      */
     async contacts(
         name: string,
@@ -259,6 +280,8 @@ export default class {
 
     /**
      * Remove a file from the mission
+     *
+     * {@link https://docs.tak.gov/api/takserver/redoc#tag/mission-api/operation/removeMissionContent TAK Server Docs}.
      */
     async detachContents(
         name: string,
@@ -279,6 +302,8 @@ export default class {
 
     /**
      * Attach a file resource by hash from the TAK Server file manager
+     *
+     * {@link https://docs.tak.gov/api/takserver/redoc#tag/mission-api/operation/addMissionContent TAK Server Docs}.
      */
     async attachContents(
         name: string,
@@ -298,6 +323,8 @@ export default class {
 
     /**
      * Upload a Mission Package
+     *
+     * {@link https://docs.tak.gov/api/takserver/redoc#tag/mission-api/operation/addMissionPackage TAK Server Docs}.
      */
     async upload(
         name: string,
@@ -319,6 +346,8 @@ export default class {
 
     /**
      * Return UIDs associated with any subscribed users
+     *
+     * {@link https://docs.tak.gov/api/takserver/redoc#tag/mission-api/operation/getMissionSubscriptions TAK Server Docs}.
      */
     async subscriptions(
         name: string,
@@ -335,6 +364,8 @@ export default class {
 
     /**
      * Return permissions associated with any subscribed users
+     *
+     * {@link https://docs.tak.gov/api/takserver/redoc#tag/mission-api/operation/getMissionSubscriptionRoles TAK Server Docs}.
      */
     async subscriptionRoles(
         name: string,
@@ -351,6 +382,31 @@ export default class {
 
     /**
      * Return Role associated with a given mission if subscribed
+     *
+     * {@link https://docs.tak.gov/api/takserver/redoc#tag/mission-api/operation/setMissionRole TAK Server Docs}.
+     */
+    async setRole(
+        name: string,
+        query: Static<typeof SetRoleInput>,
+        opts?: Static<typeof MissionOptions>
+    ): Promise<Static<typeof MissionRole>> {
+        if (this.#isGUID(name)) name = (await this.getGuid(name, {})).name;
+
+        const url = new URL(`/Marti/api/missions/${this.#encodeName(name)}/role`, this.api.url);
+
+        for (const q in query) url.searchParams.append(q, String(query[q]));
+        const res = await this.api.fetch(url, {
+            method: 'PUT',
+            headers: this.#headers(opts),
+        });
+
+        return res.data;
+    }
+
+    /**
+     * Return Role associated with a given mission if subscribed
+     *
+     * {@link https://docs.tak.gov/api/takserver/redoc#tag/mission-api/operation/getMissionRoleFromToken TAK Server Docs}.
      */
     async role(
         name: string,
@@ -370,6 +426,8 @@ export default class {
 
     /**
      * Return subscription associated with a given mission if subscribed
+     *
+     * {@link https://docs.tak.gov/api/takserver/redoc#tag/mission-api/operation/getSubscriptionForUser TAK Server Docs}.
      */
     async subscription(
         name: string,
@@ -389,12 +447,14 @@ export default class {
 
     /**
      * Subscribe to a mission
+     *
+     * {@link https://docs.tak.gov/api/takserver/redoc#tag/mission-api/operation/createMissionSubscription TAK Server Docs}.
      */
     async subscribe(
         name: string,
         query: Static<typeof SubscribeInput>,
         opts?: Static<typeof MissionOptions>
-    ): Promise<TAKList<Static<typeof MissionSubscriber>>> {
+    ): Promise<TAKItem<Static<typeof MissionSubscriber>>> {
         const url = new URL(`/Marti/api/missions/${this.#encodeName(name)}/subscription`, this.api.url);
 
         if (this.#isGUID(name)) name = (await this.getGuid(name, {})).name;
@@ -407,26 +467,9 @@ export default class {
     }
 
     /**
-     * Get current subscription status
-     */
-    async subscribed(
-        name: string,
-        query: Static<typeof SubscribedInput>,
-        opts?: Static<typeof MissionOptions>
-    ) {
-        const url = new URL(`/Marti/api/missions/${this.#encodeName(name)}/subscription`, this.api.url);
-
-        if (this.#isGUID(name)) name = (await this.getGuid(name, {})).name;
-
-        for (const q in query) url.searchParams.append(q, String(query[q]));
-        return await this.api.fetch(url, {
-            method: 'GET',
-            headers: this.#headers(opts),
-        });
-    }
-
-    /**
      * Unsubscribe from a mission
+     *
+     * {@link https://docs.tak.gov/api/takserver/redoc#tag/mission-api/operation/deleteMissionSubscription TAK Server Docs}.
      */
     async unsubscribe(
         name: string,
@@ -446,6 +489,8 @@ export default class {
 
     /**
      * List missions in currently active channels
+     *
+     * {@link https://docs.tak.gov/api/takserver/redoc#tag/mission-api/operation/getAllMissions_1 TAK Server Docs}.
      */
     async list(query: Static<typeof ListInput>) {
         const url = new URL('/Marti/api/missions', this.api.url);
@@ -458,6 +503,8 @@ export default class {
 
     /**
      * Get mission by its GUID
+     *
+     * {@link https://docs.tak.gov/api/takserver/redoc#tag/mission-api/operation/getMissionByGuid TAK Server Docs}.
      */
     async getGuid(
         guid: string,
@@ -478,6 +525,8 @@ export default class {
 
     /**
      * Get mission by its Name
+     *
+     * {@link https://docs.tak.gov/api/takserver/redoc#tag/mission-api/operation/getMission TAK Server Docs}.
      */
     async get(
         name: string,
@@ -501,6 +550,8 @@ export default class {
 
     /**
      * Create a new mission
+     *
+     * {@link https://docs.tak.gov/api/takserver/redoc#tag/mission-api/operation/createMission TAK Server Docs}.
      */
     async create(
         name: string,
@@ -517,6 +568,8 @@ export default class {
 
     /**
      * Delete a mission
+     *
+     * {@link https://docs.tak.gov/api/takserver/redoc#tag/mission-api/operation/deleteMission TAK Server Docs}.
      */
     async delete(
         name: string,
