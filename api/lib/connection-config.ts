@@ -38,12 +38,16 @@ export class MachineConnConfig implements ConnectionConfig {
         this.auth = connection.auth;
     }
 
-    async subscription(name: string): Promise<MissionSub> {
-        const mission = await this.config.models.Data.from(sql`
+    async subscription(name: string): Promise<null | MissionSub> {
+        const mission = await this.config.models.Data.list(sql`
             name = ${name}
             AND connection = ${this.id}::INT
             AND mission_sync IS True
         `);
+
+        if (!missions.length > 0) {
+            return null;
+        }
 
         return {
             name: mission.name,
@@ -84,12 +88,16 @@ export class ProfileConnConfig implements ConnectionConfig {
         this.auth = auth;
     }
 
-    async subscription(name: string): Promise<MissionSub> {
-        const mission = await this.config.models.Data.from(sql`
+    async subscription(name: string): Promise<null | MissionSub> {
+        const missions = await this.config.models.ProfileOverlay.list(sql`
             name = ${name}
             AND mode = 'mission'
             AND username = ${this.id}
         `);
+
+        if (!missions.length > 0) {
+            return null;
+        }
 
         return {
             name: mission.name,

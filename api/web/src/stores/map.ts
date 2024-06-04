@@ -323,6 +323,10 @@ export const useMapStore = defineStore('cloudtak', {
         }, initial=false) {
             if (!this.map) throw new Error('Cannot addDefaultLayer before map has loaded');
 
+            if (layer.visible === undefined) {
+                layer.visible = true;
+            }
+
             if (this.map.getSource(layer.id)) {
                 this.map.removeSource(layer.id);
             }
