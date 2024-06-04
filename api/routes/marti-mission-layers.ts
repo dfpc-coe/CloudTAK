@@ -1,5 +1,5 @@
 import { Type } from '@sinclair/typebox'
-import { GenericMartiResponse } from '../lib/types.js';
+import { StandardResponse, GenericMartiResponse } from '../lib/types.js';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
@@ -81,7 +81,7 @@ export default async function router(schema: Schema, config: Config) {
             uid: Type.String()
         }),
         description: 'Helper API to delete mission layers',
-        res: GenericMartiResponse
+        res: StandardResponse
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
@@ -89,7 +89,7 @@ export default async function router(schema: Schema, config: Config) {
             const auth = (await config.models.Profile.from(user.email)).auth;
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
-            const create = await api.MissionLayer.delete(
+            await api.MissionLayer.delete(
                 req.params.name,
                 {
                     uid: [ req.params.uid ],
@@ -98,7 +98,10 @@ export default async function router(schema: Schema, config: Config) {
                 await config.conns.subscription(user.email, req.params.name)
             );
 
-            return res.json(create);
+            return res.json({
+                status: 200,
+                message: 'Layer Deleted'
+            });
         } catch (err) {
             return Err.respond(err, res);
         }
