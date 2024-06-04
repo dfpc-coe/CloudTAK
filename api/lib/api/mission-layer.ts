@@ -43,7 +43,7 @@ export const CreateInput = Type.Object({
     uid: Type.Optional(Type.String()),
     parentUid: Type.Optional(Type.String()),
     afterUid: Type.Optional(Type.String()),
-    creatorUid: Type.Optional(Type.String())
+    creatorUid: Type.String()
 })
 
 export default class {

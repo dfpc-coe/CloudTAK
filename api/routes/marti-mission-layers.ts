@@ -4,7 +4,7 @@ import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
-import { CreateInput } from '../lib/api/mission-layer.js';
+import { CreateInput, MissionLayerType } from '../lib/api/mission-layer.js';
 import TAKAPI, {
     APIAuthCertificate,
 } from '../lib/tak-api.js';
@@ -42,7 +42,13 @@ export default async function router(schema: Schema, config: Config) {
         params: Type.Object({
             name: Type.String()
         }),
-        body: CreateInput,
+        body: Type.Object({
+            name: Type.String(),
+            type: Type.Enum(MissionLayerType),
+            uid: Type.Optional(Type.String()),
+            parentUid: Type.Optional(Type.String()),
+            afterUid: Type.Optional(Type.String()),
+        }),
         description: 'Helper API to create mission layers',
         res: GenericMartiResponse
     }, async (req, res) => {
@@ -54,7 +60,10 @@ export default async function router(schema: Schema, config: Config) {
 
             const create = await api.MissionLayer.create(
                 req.params.name,
-                req.body,
+                {
+                    ...req.body,
+                    creatorUid: user.email
+                },
                 await config.conns.subscription(user.email, req.params.name)
             );
 
