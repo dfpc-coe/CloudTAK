@@ -71,7 +71,7 @@ export enum MissionSubscriberRole {
 
 export const MissionRole = Type.Object({
     permissions: Type.Array(Type.String()),
-    hibernateLazyInitializer: Type.Any(),
+    hibernateLazyInitializer: Type.Optional(Type.Any()),
     type: Type.Enum(MissionSubscriberRole)
 })
 
@@ -352,7 +352,7 @@ export default class {
     /**
      * Return Role associated with a given mission if subscribed
      */
-    async subscription(
+    async role(
         name: string,
         opts?: Static<typeof MissionOptions>
     ): Promise<Static<typeof MissionRole>> {

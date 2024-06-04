@@ -193,7 +193,8 @@ export default {
             createLayer: false,
             loading: {
                 users: false,
-                layers: true
+                layers: true,
+                subscribe: false,
             },
             layers: [],
             subscriptions: []
@@ -201,7 +202,7 @@ export default {
     },
     computed: {
         subscribed: function() {
-            if (!mapStore.initialized) return;
+            if (!mapStore.initialized || this.loading.subscribe) return;
             return !!mapStore.getLayerByMode('mission', this.mission.guid);
         }
     },
@@ -231,8 +232,7 @@ export default {
             this.loading.layers = false;
         },
         subscribe: async function(subscribed) {
-            this.subscribed = null;
-
+            this.loading.subscribe = true;
             const layer = mapStore.getLayerByMode('mission', this.mission.guid);
 
             if (subscribed === true && !layer) {
@@ -256,7 +256,7 @@ export default {
                 await mapStore.removeLayer(this.mission.name);
             }
 
-            this.subscribed = !!mapStore.getLayerByMode('mission', this.mission.guid);
+            this.loading.subscribe = false;
         },
     }
 }
