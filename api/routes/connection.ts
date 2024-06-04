@@ -91,7 +91,7 @@ export default async function router(schema: Schema, config: Config) {
             name: Default.NameField,
             description: Default.DescriptionField,
             enabled: Type.Optional(Type.Boolean({ default: true })),
-            agency: Type.Optional(Type.Integer({ minimum: 1 })),
+            agency: Type.Union([Type.Null(), Type.Optional(Type.Integer({ minimum: 1 }))]),
             auth: Type.Object({
                 key: Type.String({ minLength: 1, maxLength: 4096 }),
                 cert: Type.String({ minLength: 1, maxLength: 4096 })
@@ -141,7 +141,7 @@ export default async function router(schema: Schema, config: Config) {
             name: Type.Optional(Default.NameField),
             description: Type.Optional(Default.DescriptionField),
             enabled: Type.Optional(Type.Boolean()),
-            agency: Type.Optional(Type.Integer({ minimum: 1 })),
+            agency: Type.Union([Type.Null(), Type.Optional(Type.Integer({ minimum: 1 }))]),
             auth: Type.Optional(Type.Object({
                 key: Type.String({ minLength: 1, maxLength: 4096 }),
                 cert: Type.String({ minLength: 1, maxLength: 4096 })
