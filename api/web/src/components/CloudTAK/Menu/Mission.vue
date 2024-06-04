@@ -5,6 +5,7 @@
     >
         <template #buttons>
             <TablerDelete
+                v-if='role.permissions.includes("MISSION_WRITE")'
                 v-tooltip='"Delete"'
                 displaytype='icon'
                 @delete='deleteMission'
@@ -200,7 +201,10 @@ export default {
                 users: true,
                 delete: false
             },
-            role: null,
+            role: {
+                type: 'MISSION_SUBSCRIBER',
+                permissions: ['MISSION_READ']
+            },
             mission: {
                 guid: this.$route.params.guid,
                 passwordProtected: this.$route.query.passwordProtected,

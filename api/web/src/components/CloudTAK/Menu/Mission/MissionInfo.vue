@@ -108,7 +108,7 @@
                     </div>
                     <div class='ms-auto btn-list'>
                         <IconPlus
-                            v-if='!createLayer'
+                            v-if='!createLayer && role.permissions.includes("MISSION_WRITE")'
                             size='24'
                             class='cursor-pointer'
                             @click='createLayer = true'
@@ -146,6 +146,7 @@
 
                         <div class='ms-auto btn-list'>
                             <TablerDelete
+                                v-if='role.permissions.includes("MISSION_WRITE")'
                                 displaytype='icon'
                                 size='24'
                                 @delete='deleteLayer(layer)'
@@ -187,6 +188,7 @@ export default {
     },
     props: {
         mission: Object,
+        role: Object,
     },
     data: function() {
         return {
