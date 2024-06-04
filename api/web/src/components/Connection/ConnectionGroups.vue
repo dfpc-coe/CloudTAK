@@ -28,6 +28,7 @@
                     <tr>
                         <th>Group Name</th>
                         <th>Description</th>
+                        <th>Attributes</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -58,6 +59,13 @@
                             </div>
                         </td>
                         <td v-text='group.description' />
+                        <td class='d-flex align-items-center'>
+                            <div class='ms-auto'>
+                                <IconLocation v-if='group.direction.length === 2' size='32' v-tooltip='"Bi-Directional"'/>
+                                <IconLocation v-else-if='group.direction.includes("IN")' size='32' v-tooltip='"Location Sharing"'/>
+                                <IconLocationOff v-else-if='group.direction.includes("OUT")' size='32' v-tooltip='"No Location Sharing"'/>
+                            </div>
+                        </td>
                     </tr>
                 </tbody>
             </table>
@@ -70,7 +78,9 @@ import { std, stdurl } from '/src/std.ts';
 import {
     IconEye,
     IconEyeOff,
-    IconRefresh
+    IconRefresh,
+    IconLocation,
+    IconLocationOff,
 } from '@tabler/icons-vue';
 import {
     TablerNone,
@@ -84,7 +94,9 @@ export default {
         IconEyeOff,
         IconRefresh,
         TablerNone,
-        TablerLoading
+        TablerLoading,
+        IconLocation,
+        IconLocationOff,
     },
     data: function() {
         return {
