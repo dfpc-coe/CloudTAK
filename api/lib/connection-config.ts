@@ -39,19 +39,21 @@ export class MachineConnConfig implements ConnectionConfig {
     }
 
     async subscription(name: string): Promise<null | MissionSub> {
-        const mission = await this.config.models.Data.list(sql`
-            name = ${name}
-            AND connection = ${this.id}::INT
-            AND mission_sync IS True
-        `);
+        const missions = await this.config.models.Data.list({
+            where: sql`
+                name = ${name}
+                AND connection = ${this.id}::INT
+                AND mission_sync IS True
+            `
+        });
 
-        if (!missions.length > 0) {
+        if (missions.items.length === 0) {
             return null;
         }
 
         return {
-            name: mission.name,
-            token: mission.mission_token
+            name: missions.items[0].name,
+            token: missions.items[0].mission_token
         };
     }
 
@@ -89,19 +91,21 @@ export class ProfileConnConfig implements ConnectionConfig {
     }
 
     async subscription(name: string): Promise<null | MissionSub> {
-        const missions = await this.config.models.ProfileOverlay.list(sql`
-            name = ${name}
-            AND mode = 'mission'
-            AND username = ${this.id}
-        `);
+        const missions = await this.config.models.ProfileOverlay.list({
+            where: sql`
+                name = ${name}
+                AND mode = 'mission'
+                AND username = ${this.id}
+            `
+        });
 
-        if (!missions.length > 0) {
+        if (missions.items.length === 0) {
             return null;
         }
 
         return {
-            name: mission.name,
-            token: mission.mission_token
+            name: missions.items[0].name,
+            token: missions.items[0].token
         };
     }
 
