@@ -217,11 +217,9 @@ export default {
         },
         deleteLayer: async function(layer) {
             this.loading.layers = true;
-            const url = stdurl(`/api/marti/missions/${this.mission.name}/layer`);
+            const url = stdurl(`/api/marti/missions/${this.mission.name}/layer/${layer.uid}`);
 
-            await std(url, {
-                method: 'DELETE'
-            })
+            await std(url, { method: 'DELETE' })
 
             await this.fetchLayers();
         },

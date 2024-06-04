@@ -92,7 +92,7 @@ export default async function router(schema: Schema, config: Config) {
             const create = await api.MissionLayer.delete(
                 req.params.name,
                 {
-                    uids: [ req.params.uid ],
+                    uid: [ req.params.uid ],
                     creatorUid: user.email
                 },
                 await config.conns.subscription(user.email, req.params.name)
