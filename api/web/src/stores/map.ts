@@ -64,6 +64,7 @@ export const useMapStore = defineStore('cloudtak', {
             x: number;
             y: number;
         },
+        initialized: boolean;
         layers: OverlayContainer[]
     } => {
         const protocol = new pmtiles.Protocol();
@@ -82,6 +83,9 @@ export const useMapStore = defineStore('cloudtak', {
                 x: 0, y: 0,
             },
             layers: [],
+
+            // Set to true once all Overlays are loaded
+            initialized: false,
             selected: new Map()
         }
     },
@@ -581,6 +585,8 @@ export const useMapStore = defineStore('cloudtak', {
                     overlay: overlay.id,
                 }, true)
             }
+
+            this.initialized = true;
         },
         initDraw: function() {
             this.draw = new terraDraw.TerraDraw({
