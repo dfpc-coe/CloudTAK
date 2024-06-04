@@ -6,7 +6,7 @@
     >
         <template #buttons>
             <IconPlus
-                v-if='!upload'
+                v-if='!upload && role.permissions.includes("MISSION_WRITE")'
                 v-tooltip='"Upload File"'
                 size='32'
                 class='cursor-pointer'
@@ -59,6 +59,7 @@
                 </div>
                 <div class='col-auto ms-auto btn-list'>
                     <TablerDelete
+                        v-if='role.permissions.includes("MISSION_WRITE")'
                         displaytype='icon'
                         @delete='deleteFile(content.data)'
                     />
@@ -121,7 +122,8 @@ export default {
         IconDownload,
     },
     props: {
-        mission: Object
+        mission: Object,
+        role: Object
     },
     emits: [
         'close',
