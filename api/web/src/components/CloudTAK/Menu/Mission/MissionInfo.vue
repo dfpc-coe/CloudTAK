@@ -144,10 +144,13 @@
                     >
                         <span v-text='layer.name' />
 
-                        <TablerDelete
-                            displaytype='icon'
-                            size='24'
-                        />
+                        <div class='ms-auto btn-list'>
+                            <TablerDelete
+                                displaytype='icon'
+                                @delete='deleteLayer(layer)'
+                                size='24'
+                            />
+                        </div>
                     </div>
                 </template>
             </div>
@@ -208,14 +211,24 @@ export default {
     },
     methods: {
         fetchSubscriptions: async function() {
-            const url = await stdurl(`/api/marti/missions/${this.mission.name}/subscriptions/roles`);
+            const url = stdurl(`/api/marti/missions/${this.mission.name}/subscriptions/roles`);
             this.subscriptions = (await std(url)).data;
             this.loading.users = false;
+        },
+        deleteLayer: async function(layer) {
+            this.loading.layers = true;
+            const url = stdurl(`/api/marti/missions/${this.mission.name}/layer`);
+
+            await std(url, {
+                method: 'DELETE'
+            })
+
+            await this.fetchLayers();
         },
         fetchLayers: async function() {
             this.createLayer = false;
             this.loading.layers = true;
-            const url = await stdurl(`/api/marti/missions/${this.mission.name}/layer`);
+            const url = stdurl(`/api/marti/missions/${this.mission.name}/layer`);
             this.layers = (await std(url)).data;
             this.loading.layers = false;
         },

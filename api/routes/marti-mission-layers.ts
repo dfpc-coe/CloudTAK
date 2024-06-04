@@ -72,4 +72,35 @@ export default async function router(schema: Schema, config: Config) {
             return Err.respond(err, res);
         }
     });
+
+    await schema.delete('/marti/missions/:name/layer/:uid', {
+        name: 'Delete Layer',
+        group: 'MartiMissionLayer',
+        params: Type.Object({
+            name: Type.String(),
+            uid: Type.String()
+        }),
+        description: 'Helper API to delete mission layers',
+        res: GenericMartiResponse
+    }, async (req, res) => {
+        try {
+            const user = await Auth.as_user(config, req);
+
+            const auth = (await config.models.Profile.from(user.email)).auth;
+            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
+
+            const create = await api.MissionLayer.delete(
+                req.params.name,
+                {
+                    uids: [ req.params.uid ],
+                    creatorUid: user.email
+                },
+                await config.conns.subscription(user.email, req.params.name)
+            );
+
+            return res.json(create);
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
 }

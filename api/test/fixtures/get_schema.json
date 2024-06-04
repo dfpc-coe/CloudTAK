@@ -379,71 +379,6 @@
         "query": true,
         "res": true
     },
-    "GET /iconset": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "POST /iconset": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "PATCH /iconset/:iconset": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "GET /iconset/:iconset": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "DELETE /iconset/:iconset": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "POST /iconset/:iconset/icon": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "GET /icon": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "GET /iconset/:iconset/icon/:icon": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "PATCH /iconset/:iconset/icon/:icon": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "DELETE /iconset/:iconset/icon/:icon": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /iconset/:iconset/icon/:icon/raw": {
-        "body": false,
-        "query": true,
-        "res": false
-    },
-    "GET /icon/sprite:size?.json": {
-        "body": false,
-        "query": true,
-        "res": false
-    },
-    "GET /icon/sprite:size?.png": {
-        "body": false,
-        "query": true,
-        "res": false
-    },
     "GET /layer": {
         "body": false,
         "query": true,
@@ -491,6 +426,11 @@
     },
     "POST /marti/missions/:name/layer": {
         "body": true,
+        "query": false,
+        "res": true
+    },
+    "DELETE /marti/missions/:name/layer/:uid": {
+        "body": false,
         "query": false,
         "res": true
     },
@@ -598,6 +538,71 @@
         "body": true,
         "query": false,
         "res": true
+    },
+    "GET /iconset": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "POST /iconset": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "PATCH /iconset/:iconset": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "GET /iconset/:iconset": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "DELETE /iconset/:iconset": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "POST /iconset/:iconset/icon": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "GET /icon": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "GET /iconset/:iconset/icon/:icon": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "PATCH /iconset/:iconset/icon/:icon": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "DELETE /iconset/:iconset/icon/:icon": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /iconset/:iconset/icon/:icon/raw": {
+        "body": false,
+        "query": true,
+        "res": false
+    },
+    "GET /icon/sprite:size?.json": {
+        "body": false,
+        "query": true,
+        "res": false
+    },
+    "GET /icon/sprite:size?.png": {
+        "body": false,
+        "query": true,
+        "res": false
     },
     "GET /overlay": {
         "body": false,
@@ -709,11 +714,6 @@
         "query": false,
         "res": true
     },
-    "GET /search/reverse/:longitude/:latitude": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
     "GET /server": {
         "body": false,
         "query": false,
@@ -721,6 +721,11 @@
     },
     "PATCH /server": {
         "body": true,
+        "query": false,
+        "res": true
+    },
+    "GET /search/reverse/:longitude/:latitude": {
+        "body": false,
         "query": false,
         "res": true
     },
