@@ -147,8 +147,8 @@
                         <div class='ms-auto btn-list'>
                             <TablerDelete
                                 displaytype='icon'
-                                @delete='deleteLayer(layer)'
                                 size='24'
+                                @delete='deleteLayer(layer)'
                             />
                         </div>
                     </div>
@@ -199,15 +199,15 @@ export default {
             subscriptions: []
         }
     },
-    mounted: async function() {
-        await this.fetchSubscriptions();
-        await this.fetchLayers();
-    },
     computed: {
         subscribed: function() {
             if (!mapStore.initialized) return;
             return !!mapStore.getLayerByMode('mission', this.mission.guid);
         }
+    },
+    mounted: async function() {
+        await this.fetchSubscriptions();
+        await this.fetchLayers();
     },
     methods: {
         fetchSubscriptions: async function() {

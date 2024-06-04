@@ -519,26 +519,6 @@
         "query": false,
         "res": true
     },
-    "GET /marti/group": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
-    "PUT /marti/group": {
-        "body": true,
-        "query": true,
-        "res": true
-    },
-    "GET /marti/api/contacts/all": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "POST /marti/signClient": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
     "GET /iconset": {
         "body": false,
         "query": true,
@@ -603,6 +583,26 @@
         "body": false,
         "query": true,
         "res": false
+    },
+    "GET /marti/group": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "PUT /marti/group": {
+        "body": true,
+        "query": true,
+        "res": true
+    },
+    "GET /marti/api/contacts/all": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "POST /marti/signClient": {
+        "body": true,
+        "query": false,
+        "res": true
     },
     "GET /overlay": {
         "body": false,
@@ -724,12 +724,12 @@
         "query": false,
         "res": true
     },
-    "GET /search/reverse/:longitude/:latitude": {
+    "GET /swagger": {
         "body": false,
         "query": false,
         "res": true
     },
-    "GET /swagger": {
+    "GET /search/reverse/:longitude/:latitude": {
         "body": false,
         "query": false,
         "res": true
