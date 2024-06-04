@@ -37,7 +37,7 @@ export const NameField = Type.String({
 });
 
 export const DescriptionField = Type.String({
-    minLength: 8,
+    minLength: 0,
     maxLength: 1024,
     description: 'Human readable description'
 });

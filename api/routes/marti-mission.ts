@@ -4,7 +4,7 @@ import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
 import { GenericMartiResponse } from '../lib/types.js';
-import { MissionSubscriber, Mission, ChangesInput, ListInput, DeleteInput } from '../lib/api/mission.js';
+import { MissionRole, Mission, ChangesInput, ListInput, DeleteInput } from '../lib/api/mission.js';
 import TAKAPI, {
     APIAuthCertificate,
 } from '../lib/tak-api.js';
@@ -188,26 +188,26 @@ export default async function router(schema: Schema, config: Config) {
         }
     });
 
-    await schema.get('/marti/missions/:name/subscription', {
-        name: 'Mission Subscription',
+    await schema.get('/marti/missions/:name/role', {
+        name: 'Mission Role',
         group: 'MartiMissions',
         params: Type.Object({
             name: Type.String(),
         }),
-        description: 'Return subscriptions associated with your user',
-        res: MissionSubscriber
+        description: 'Return a role associated with your user',
+        res: MissionRole
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
             const auth = (await config.models.Profile.from(user.email)).auth;
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
-            const sub = await api.Mission.subscription(
+            const role = await api.Mission.role(
                 req.params.name,
                 await config.conns.subscription(user.email, req.params.name)
             );
 
-            return res.json(sub);
+            return res.json(role);
         } catch (err) {
             return Err.respond(err, res);
         }
