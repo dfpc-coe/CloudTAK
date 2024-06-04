@@ -9,11 +9,9 @@ import type { Static } from '@sinclair/typebox';
 
 export const useOverlayStore = defineStore('overlays', {
     state: (): {
-        initialized: boolean;
         overlays: ProfileOverlay[],
     } => {
         return {
-            initialized: false,
             overlays: [],
         }
     },
@@ -48,7 +46,6 @@ export const useOverlayStore = defineStore('overlays', {
         list: async function() {
             // @ts-ignore Eventually Type API reqs
             this.overlays = (await std(`/api/profile/overlay`)).items;
-            this.initialized = true;
         }
     },
 })
