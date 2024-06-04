@@ -4,7 +4,7 @@ import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
-import { CreateInput, MissionLayerType } from '../lib/api/mission-layer.js';
+import { MissionLayerType } from '../lib/api/mission-layer.js';
 import TAKAPI, {
     APIAuthCertificate,
 } from '../lib/tak-api.js';
