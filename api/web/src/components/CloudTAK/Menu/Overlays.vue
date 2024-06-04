@@ -141,7 +141,7 @@ export default {
     methods: {
         removeLayer: async function(layer) {
             this.loading = true;
-            mapStore.removeLayer(layer.name);
+            await mapStore.removeLayer(layer.name);
             this.loading = false;
         },
         editor: function(overlay) {
