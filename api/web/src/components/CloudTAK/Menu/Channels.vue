@@ -55,10 +55,13 @@
                                     class='cursor-pointer'
                                     @click='setStatus(ch, true)'
                                 />
-                                <span
-                                    class='mx-2'
-                                    v-text='ch.name'
-                                />
+                                <span class='mx-2' v-text='ch.name'/>
+
+                                <div class='ms-auto'>
+                                    <IconLocation v-if='ch.direction.length === 2' size='32' v-tooltip='"Bi-Directional"'/>
+                                    <IconLocation v-else-if='ch.direction.includes("IN")' size='32' v-tooltip='"Location Sharing"'/>
+                                    <IconLocationOff v-else-if='ch.direction.includes("OUT")' size='32' v-tooltip='"No Location Sharing"'/>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -77,6 +80,8 @@ import {
 } from '@tak-ps/vue-tabler';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import {
+    IconLocation,
+    IconLocationOff,
     IconRefresh,
     IconSearch,
     IconEye,
@@ -162,6 +167,9 @@ export default {
         IconEye,
         IconEyeOff,
         IconSearch,
+        IconLocation,
+        IconLocation,
+        IconLocationOff,
         IconRefresh,
         TablerNone,
         TablerInput,
