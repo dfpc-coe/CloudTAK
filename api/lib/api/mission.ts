@@ -357,6 +357,7 @@ export default class {
         if (this.#isGUID(name)) name = (await this.getGuid(name, {})).name;
 
         const url = new URL(`/Marti/api/missions/${this.#encodeName(name)}/subscription`, this.api.url);
+
         const res = await this.api.fetch(url, {
             method: 'GET',
             headers: this.#headers(opts),

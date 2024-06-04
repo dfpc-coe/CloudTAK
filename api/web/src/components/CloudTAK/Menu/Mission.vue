@@ -116,6 +116,7 @@
 
             <router-view
                 :mission='mission'
+                :permissions='permissions'
                 @refresh='refresh'
             />
         </template>
@@ -199,6 +200,7 @@ export default {
                 users: true,
                 delete: false
             },
+            permissions: null,
             mission: {
                 guid: this.$route.params.guid,
                 passwordProtected: this.$route.query.passwordProtected,
@@ -258,8 +260,18 @@ export default {
                 url.searchParams.append('changes', 'false');
                 url.searchParams.append('logs', 'true');
                 this.mission = await std(url);
+
             } catch (err) {
                 this.err = err;
+            }
+
+            try {
+                const suburl = stdurl(`/api/marti/missions/${this.mission.name}/subscription`);
+                this.permissions = await std(suburl);
+            } catch (err) {
+                if (!err.message.includes('NOT_FOUND')) {
+                    throw err;
+                }
             }
             this.loading.initial = false;
             this.loading.mission = false;
