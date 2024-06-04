@@ -55,12 +55,27 @@
                                     class='cursor-pointer'
                                     @click='setStatus(ch, true)'
                                 />
-                                <span class='mx-2' v-text='ch.name'/>
+                                <span
+                                    class='mx-2'
+                                    v-text='ch.name'
+                                />
 
                                 <div class='ms-auto'>
-                                    <IconLocation v-if='ch.direction.length === 2' size='32' v-tooltip='"Bi-Directional"'/>
-                                    <IconLocation v-else-if='ch.direction.includes("IN")' size='32' v-tooltip='"Location Sharing"'/>
-                                    <IconLocationOff v-else-if='ch.direction.includes("OUT")' size='32' v-tooltip='"No Location Sharing"'/>
+                                    <IconLocation
+                                        v-if='ch.direction.length === 2'
+                                        v-tooltip='"Bi-Directional"'
+                                        size='32'
+                                    />
+                                    <IconLocation
+                                        v-else-if='ch.direction.includes("IN")'
+                                        v-tooltip='"Location Sharing"'
+                                        size='32'
+                                    />
+                                    <IconLocationOff
+                                        v-else-if='ch.direction.includes("OUT")'
+                                        v-tooltip='"No Location Sharing"'
+                                        size='32'
+                                    />
                                 </div>
                             </div>
                         </div>
@@ -167,7 +182,6 @@ export default {
         IconEye,
         IconEyeOff,
         IconSearch,
-        IconLocation,
         IconLocation,
         IconLocationOff,
         IconRefresh,
