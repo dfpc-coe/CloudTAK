@@ -69,16 +69,18 @@ export enum MissionSubscriberRole {
     MISSION_READONLY_SUBSCRIBER = 'MISSION_READONLY_SUBSCRIBER'
 }
 
+export const MissionRole = Type.Object({
+    permissions: Type.Array(Type.String()),
+    hibernateLazyInitializer: Type.Any(),
+    type: Type.Enum(MissionSubscriberRole)
+})
+
 export const MissionSubscriber = Type.Object({
     token: Type.Optional(Type.String()),
     clientUid: Type.String(),
     username: Type.String(),
     createTime: Type.String(),
-    role: Type.Object({
-        permissions: Type.Array(Type.String()),
-        hibernateLazyInitializer: Type.Any(),
-        type: Type.Enum(MissionSubscriberRole)
-    })
+    role: MissionRole
 })
 
 export const MissionOptions = Type.Object({
@@ -348,7 +350,26 @@ export default class {
     }
 
     /**
-     * Return permissions associated with a given mission if subscribed
+     * Return Role associated with a given mission if subscribed
+     */
+    async subscription(
+        name: string,
+        opts?: Static<typeof MissionOptions>
+    ): Promise<Static<typeof MissionRole>> {
+        if (this.#isGUID(name)) name = (await this.getGuid(name, {})).name;
+
+        const url = new URL(`/Marti/api/missions/${this.#encodeName(name)}/role`, this.api.url);
+
+        const res = await this.api.fetch(url, {
+            method: 'GET',
+            headers: this.#headers(opts),
+        });
+
+        return res.data;
+    }
+
+    /**
+     * Return subscription associated with a given mission if subscribed
      */
     async subscription(
         name: string,
