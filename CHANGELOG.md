@@ -12,6 +12,13 @@
 
 ### Pending Release
 
+### v2.34.0 - 2024-06-03
+
+- :rocket: Store MissionToken for ProfileOverlays in new `token` column
+- :rocket: Use MissionToken when it is present for all Profile based Mission API calls
+- :tada: Add support for Creating & Deleting Mission Sync Layers
+- :bug: Much better behavior for showing and updated subscribed state in Mission UI
+
 ### v2.33.0 - 2024-06-03
 
 - :bug: Respect `visibility` property from ProfileOverlay on initial load
