@@ -61,9 +61,21 @@
                         <td v-text='group.description' />
                         <td class='d-flex align-items-center'>
                             <div class='ms-auto'>
-                                <IconLocation v-if='group.direction.length === 2' size='32' v-tooltip='"Bi-Directional"'/>
-                                <IconLocation v-else-if='group.direction.includes("IN")' size='32' v-tooltip='"Location Sharing"'/>
-                                <IconLocationOff v-else-if='group.direction.includes("OUT")' size='32' v-tooltip='"No Location Sharing"'/>
+                                <IconLocation
+                                    v-if='group.direction.length === 2'
+                                    v-tooltip='"Bi-Directional"'
+                                    size='32'
+                                />
+                                <IconLocation
+                                    v-else-if='group.direction.includes("IN")'
+                                    v-tooltip='"Location Sharing"'
+                                    size='32'
+                                />
+                                <IconLocationOff
+                                    v-else-if='group.direction.includes("OUT")'
+                                    v-tooltip='"No Location Sharing"'
+                                    size='32'
+                                />
                             </div>
                         </td>
                     </tr>

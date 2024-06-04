@@ -12,7 +12,14 @@
 
 ### Pending Release
 
-### v2.34.0 - 2024-06-03
+### v2.35.0 - 2024-06-04
+
+- :tada: `UI` Show Directional status of Groups/Channels
+- :pencil2: Add external links to TAK Docs for Mission class
+- :rocket: `UI` Use Mission Role for showing write functionality
+- :tada: `API` Add Role/Subscription Mission APIs
+
+### v2.34.0 - 2024-06-04
 
 - :rocket: Store MissionToken for ProfileOverlays in new `token` column
 - :rocket: Use MissionToken when it is present for all Profile based Mission API calls
