@@ -116,7 +116,7 @@
 
             <router-view
                 :mission='mission'
-                :permissions='permissions'
+                :role='role'
                 @refresh='refresh'
             />
         </template>
@@ -200,7 +200,7 @@ export default {
                 users: true,
                 delete: false
             },
-            permissions: null,
+            role: null,
             mission: {
                 guid: this.$route.params.guid,
                 passwordProtected: this.$route.query.passwordProtected,
@@ -266,8 +266,8 @@ export default {
             }
 
             try {
-                const suburl = stdurl(`/api/marti/missions/${this.mission.name}/subscription`);
-                this.permissions = await std(suburl);
+                const suburl = stdurl(`/api/marti/missions/${this.mission.name}/role`);
+                this.role = await std(suburl);
             } catch (err) {
                 if (!err.message.includes('NOT_FOUND')) {
                     throw err;
