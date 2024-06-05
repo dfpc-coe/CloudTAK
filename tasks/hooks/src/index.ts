@@ -22,7 +22,7 @@ export async function handler(
 
                     meta.set(record.messageId, { Timestamp: new Date() });
                     if (req.type === 'ArcGIS') {
-                        console.log('ArcGIS:', data.feat.properties.callsign);
+                        console.log('ArcGIS:', req.feat.properties.callsign);
 
                         await ArcGIS(req);
                     } else {
