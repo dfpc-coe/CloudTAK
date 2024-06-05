@@ -54,9 +54,9 @@ export default async function router(schema: Schema, config: Config) {
 
                 const file = await api.Files.download(req.params.hash);
 
-                await S3.put(`import/${imported.id}.zip`, file)
+                await S3.put(`import/${imp.id}.zip`, file)
 
-                await config.models.Import.commit(imported.id, {
+                await config.models.Import.commit(imp.id, {
                     status: 'Pending'
                 });
             }
