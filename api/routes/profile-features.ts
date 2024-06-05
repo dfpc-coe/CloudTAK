@@ -1,5 +1,4 @@
 import { Type, Static } from '@sinclair/typebox'
-import { Geometry, GeometryCollection } from 'geojson';
 import { GenerateUpsert } from '@openaddresses/batch-generic';
 import Config from '../lib/config.js';
 import Schema from '@openaddresses/batch-schema';
