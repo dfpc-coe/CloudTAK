@@ -62,6 +62,31 @@ export default class API {
         return json as any;
     }
 
+    static async putFeature(event: {
+        token: string;
+        body: object;
+    }) {
+        const url = new URL(`/api/profile/feature`, process.env.TAK_ETL_API);
+        const res = await fetch(url, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${event.token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(event.body)
+        });
+
+        const json = await res.json();
+
+        if (!res.ok) {
+            console.error(JSON.stringify(json))
+            const err = json as { message: string };
+            throw new Error(err.message);
+        }
+
+        return json as any;
+    }
+
     static async updateLayer(event: {
         connection: number;
         layer: number;

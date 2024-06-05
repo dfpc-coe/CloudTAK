@@ -1,13 +1,11 @@
-import { Type } from '@sinclair/typebox'
-import { Geometry, GeometryCollection } from 'geojson';
+import { Type, Static } from '@sinclair/typebox'
 import { GenerateUpsert } from '@openaddresses/batch-generic';
 import Config from '../lib/config.js';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
-import { StandardResponse, ProfileFeatureResponse } from '../lib/types.js'
+import { StandardResponse, ProfileFeature } from '../lib/types.js'
 import { sql } from 'drizzle-orm';
-import { Feature } from '@tak-ps/node-cot';
 import * as Default from '../lib/limits.js';
 
 export default async function router(schema: Schema, config: Config) {
@@ -24,7 +22,7 @@ export default async function router(schema: Schema, config: Config) {
         }),
         res: Type.Object({
             total: Type.Integer(),
-            items: Type.Array(ProfileFeatureResponse)
+            items: Type.Array(ProfileFeature)
         })
 
     }, async (req, res) => {
@@ -43,18 +41,13 @@ export default async function router(schema: Schema, config: Config) {
             return res.json({
                 total: list.total,
                 items: list.items.map((feat) => {
-                    if (feat.geometry.type === 'GeometryCollection') {
-                        throw new Err(500, null, 'GeometryCollection should not be present in ProfileFeature');
-                    }
-
-                    const geometry = feat.geometry as Exclude<Geometry, GeometryCollection>
-
                     return {
                         id: feat.id,
+                        path: feat.path,
                         type: 'Feature',
                         properties: feat.properties,
-                        geometry 
-                    }
+                        geometry: feat.geometry
+                    } as Static<typeof ProfileFeature>
                 })
             })
         } catch (err) {
@@ -68,8 +61,8 @@ export default async function router(schema: Schema, config: Config) {
         description: `
             Create or modify a feature
         `,
-        body: Feature,
-        res: ProfileFeatureResponse
+        body: ProfileFeature,
+        res: ProfileFeature,
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
@@ -78,21 +71,18 @@ export default async function router(schema: Schema, config: Config) {
                 id: req.body.id,
                 username: user.email,
                 properties: req.body.properties,
-                geometry: req.body.geometry as Geometry
+                geometry: req.body.geometry
             }, {
                 upsert: GenerateUpsert.UPDATE
             });
 
-            if (feat.geometry.type === 'GeometryCollection') {
-                throw new Err(500, null, 'GeometryCollection should not be present in ProfileFeature');
-            }
-
             return res.json({
                 id: feat.id,
+                path: feat.path,
                 type: 'Feature',
                 properties: feat.properties,
                 geometry: feat.geometry
-            });
+            } as Static<typeof ProfileFeature>);
         } catch (err) {
             return Err.respond(err, res);
         }

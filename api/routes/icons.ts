@@ -55,8 +55,11 @@ export default async function router(schema: Schema, config: Config) {
             const user = await Auth.as_user(config, req);
 
             let scope = sql`True`;
-            if (req.query.scope === ResourceCreationScope.SERVER) scope = sql`username IS NULL`;
-            else if (req.query.scope === ResourceCreationScope.USER) scope = sql`username IS NOT NULL`;
+            if (req.query.scope === ResourceCreationScope.SERVER) {
+                scope = sql`username IS NULL`;
+            } else if (req.query.scope === ResourceCreationScope.USER) {
+                scope = sql`username IS NOT NULL`;
+            }
 
             const list = await config.models.Iconset.list({
                 limit: req.query.limit,
@@ -151,7 +154,7 @@ export default async function router(schema: Schema, config: Config) {
                     await config.models.Iconset.commit(req.params.iconset, { username: user.email });
                 }
             }
-   
+
             delete req.body.public;
             const iconset = await config.models.Iconset.commit(req.params.iconset, req.body);
 

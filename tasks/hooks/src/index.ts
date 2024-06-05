@@ -22,13 +22,15 @@ export async function handler(
 
                     meta.set(record.messageId, { Timestamp: new Date() });
                     if (req.type === 'ArcGIS') {
+                        console.log('ArcGIS:', data.feat.properties.callsign);
+
                         await ArcGIS(req);
                     } else {
                         throw new Error('Unknown Event Type');
                     }
 
                 } catch (err) {
-                    console.error(err);
+                    console.error(err, 'Record:', record.body);
                     const m = meta.get(record.messageId);
                     if (m) m.Error = new Error(String(err));
                 }
