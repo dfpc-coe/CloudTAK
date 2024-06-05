@@ -10,13 +10,13 @@
         </template>
         <template #default>
             <TablerNone
-                v-if='!videos.length'
+                v-if='!videos.size'
                 label='Videos'
                 :create='false'
             />
             <template v-else>
                 <div
-                    v-for='video of videos'
+                    v-for='video in videos'
                     :key='video.id'
                     class='col-12 py-2 px-3 d-flex align-items-center hover-dark'
                 >

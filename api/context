@@ -4,10 +4,12 @@ else
     Stack=$1
 fi
 
+set -euo pipefail
+
 echo "Loading $Stack"
 
-ssh "$Stack-bastion" -t './etl/dump; exit'
-scp "$Stack-bastion:~/etl/$Stack-latest.dump" .
-npm run loaddb $Stack-latest.dump
+ssh "${Stack}-bastion" -t './etl/dump; exit'
+scp "${Stack}-bastion:~/etl/${Stack}-latest.dump" .
+npm run loaddb "${Stack}-latest.dump"
 
-npm run dev -- --env $Stack
+npm run dev -- --env ${Stack}

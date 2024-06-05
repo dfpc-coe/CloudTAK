@@ -36,63 +36,125 @@
                 </div>
             </template>
             <template v-else>
-                <TablerLoading
-                    v-if='loading'
-                    desc='Loading Iconsets'
-                />
-                <TablerNone
-                    v-else-if='!list.items.length'
-                    label='Iconsets'
-                    :create='false'
-                />
                 <div
-                    v-else
-                    class='table-responsive'
+                    class='px-2 py-2 round btn-group w-100'
+                    role='group'
                 >
-                    <table class='table table-hover card-table table-vcenter cursor-pointer'>
-                        <thead>
-                            <tr>
-                                <th>Name</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr
-                                v-for='iconset in list.items'
-                                :key='iconset.uid'
-                                @click='$router.push(`/menu/iconset/${iconset.uid}`)'
-                            >
-                                <td>
-                                    <div class='d-flex align-items-center'>
-                                        <span v-text='iconset.name' />
-                                        <div class='ms-auto d-flex align-items-center'>
-                                            <span
-                                                v-if='!iconset.username'
-                                                class='mx-3 ms-auto badge border bg-blue text-white'
-                                            >Public</span>
-                                            <span
-                                                v-else
-                                                class='mx-3 ms-auto badge border bg-red text-white'
-                                            >Private</span>
-                                            <IconDownload
-                                                v-tooltip='"Download TAK Zip"'
-                                                size='32'
-                                                class='cursor-pointer'
-                                                @click.stop='download(iconset)'
-                                            />
-                                        </div>
-                                    </div>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                    <input
+                        id='iconsets'
+                        type='radio'
+                        class='btn-check'
+                        autocomplete='off'
+                        :checked='mode === "iconsets"'
+                        @click='mode = "iconsets"'
+                    >
+                    <label
+                        for='iconsets'
+                        type='button'
+                        class='btn btn-sm'
+                    ><IconAlbum
+                        v-tooltip='"Iconsets"'
+                        size='32'
+                    /></label>
+
+                    <input
+                        id='icons'
+                        type='radio'
+                        class='btn-check'
+                        autocomplete='off'
+                        :checked='mode === "icons"'
+                        @click='mode = "icons"'
+                    >
+                    <label
+                        for='icons'
+                        type='button'
+                        class='btn btn-sm'
+                    ><IconPhoto
+                        v-tooltip='"Icons"'
+                        size='32'
+                    /></label>
                 </div>
 
-                <div class='col-lg-12'>
-                    <IconCombineds
-                        v-if='list.items.length'
-                        :labels='false'
+                <template v-if='mode === "iconsets"'>
+                    <div class='card'>
+                        <div class='card-header'>
+                            <h3 class='card-title'>
+                                Iconsets
+                            </h3>
+
+                            <div class='ms-auto btn-list'>
+                                <IconSearch
+                                    size='32'
+                                    class='cursor-pointer'
+                                    @click='search = !search'
+                                />
+                            </div>
+                        </div>
+
+                        <div
+                            v-if='search'
+                            class='col-12 px-2'
+                        >
+                            <TablerInput
+                                v-model='paging.filter'
+                                placeholder='Filter'
+                            />
+                        </div>
+                    </div>
+
+                    <TablerLoading
+                        v-if='loading'
+                        desc='Loading Iconsets'
                     />
-                </div>
+                    <TablerNone
+                        v-else-if='!list.items.length'
+                        label='Iconsets'
+                        :create='false'
+                    />
+                    <div
+                        v-for='iconset in list.items'
+                        :key='iconset.uid'
+                        class='col-12 hover-dark cursor-pointer py-2 px-3'
+                        @click='$router.push(`/menu/iconset/${iconset.uid}`)'
+                    >
+                        <div class='d-flex align-items-center'>
+                            <span v-text='iconset.name' />
+                            <div class='ms-auto d-flex align-items-center'>
+                                <span
+                                    v-if='!iconset.username'
+                                    class='mx-3 ms-auto badge border bg-blue text-white'
+                                >Public</span>
+                                <span
+                                    v-else
+                                    class='mx-3 ms-auto badge border bg-red text-white'
+                                >Private</span>
+                                <IconDownload
+                                    v-tooltip='"Download TAK Zip"'
+                                    size='32'
+                                    class='cursor-pointer'
+                                    @click.stop='download(iconset)'
+                                />
+                            </div>
+                        </div>
+                    </div>
+                    <div class='col-lg-12'>
+                        <TablerPager
+                            v-if='list.total > paging.limit'
+                            :page='paging.page'
+                            :total='list.total'
+                            :limit='paging.limit'
+                            @page='paging.page = $event'
+                        />
+                    </div>
+                </template>
+                <template v-else>
+                    <div class='col-lg-12'>
+                        <IconCombineds
+                            v-if='list.items.length'
+                            :labels='false'
+                        />
+                    </div>
+                </template>
             </template>
         </template>
     </MenuTemplate>
@@ -111,12 +173,17 @@ import IconCombineds from '../util/Icons.vue'
 import IconsetEditModal from './Iconset/EditModal.vue';
 import {
     TablerNone,
+    TablerPager,
+    TablerInput,
     TablerLoading,
 } from '@tak-ps/vue-tabler';
 import {
     IconRefresh,
     IconDownload,
     IconFileUpload,
+    IconSearch,
+    IconAlbum,
+    IconPhoto,
     IconPlus
 } from '@tabler/icons-vue'
 
@@ -124,6 +191,8 @@ export default {
     name: 'CloudTAKIconsets',
     components: {
         Upload,
+        IconAlbum,
+        IconPhoto,
         IconPlus,
         IconDownload,
         MenuTemplate,
@@ -131,15 +200,25 @@ export default {
         IconFileUpload,
         IconCombineds,
         TablerNone,
+        TablerPager,
+        TablerInput,
         TablerLoading,
         IconRefresh,
+        IconSearch,
     },
     data: function() {
         return {
+            mode: 'iconsets',
             err: false,
             loading: true,
             upload: false,
             editModal: false,
+            search: false,
+            paging: {
+                limit: 20,
+                filter: '',
+                page: 0
+            },
             list: {
                 total: 0,
                 items: []
@@ -148,6 +227,14 @@ export default {
     },
     mounted: async function() {
         await this.fetchList();
+    },
+    watch: {
+        paging: {
+            deep: true,
+            handler: async function() {
+                await this.fetchList();
+            }
+        }
     },
     methods: {
         throws: function(err) {
@@ -171,6 +258,9 @@ export default {
         fetchList: async function() {
             this.loading = true;
             const url = stdurl('/api/iconset');
+            url.searchParams.append('page', this.paging.page);
+            url.searchParams.append('filter', this.paging.filter);
+            url.searchParams.append('limit', this.paging.limit);
             this.list = await std(url);
             this.loading = false;
         }

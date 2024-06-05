@@ -119,10 +119,10 @@ export default {
                 body: {
                     name: this.pkg.Name,
                     mode: 'Package',
-                    mode_id: this.pkg.Name
+                    mode_id: this.pkg.Hash
                 }
             });
-           
+
             this.$router.push(`/menu/imports/${imp.id}`)
 
         },
