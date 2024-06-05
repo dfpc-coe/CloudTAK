@@ -64,6 +64,7 @@ export const OverlayResponse = createSelectSchema(schemas.Overlay, {
 export const ProfileFeatureResponse = Type.Object({
     id: Type.String(),
     type: Type.String({ const: 'Feature' }),
+    path: Type.String(),
     properties: Type.Any(),
     geometry: Type.Object({
         type: Type.String({ enum: ['Point', 'LineString', 'Polygon'] }),

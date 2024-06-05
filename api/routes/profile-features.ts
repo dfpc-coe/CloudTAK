@@ -53,7 +53,7 @@ export default async function router(schema: Schema, config: Config) {
                         id: feat.id,
                         type: 'Feature',
                         properties: feat.properties,
-                        geometry 
+                        geometry
                     }
                 })
             })
