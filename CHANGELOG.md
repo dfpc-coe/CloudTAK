@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v2.36.1 - 2024-06-05
+
+- :bug: Fix hook logging bug
+
 ### v2.36.0 - 2024-06-05
 
 - :tada: Add `Package` Import type & auto import CoTs
