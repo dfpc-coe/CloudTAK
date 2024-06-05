@@ -52,7 +52,10 @@ export default async function(md: Event) {
             for (const feat of feats) {
                 await API.putFeature({
                     token: md.UserToken,
-                    body: feat.to_geojson()
+                    body: {
+                        path: `/${pkg.settings.name.replace(/\//g, '')}/`,
+                        ...feat.to_geojson()
+                    }
                 });
             }
         } else if (imported.mode === 'Unknown') {
