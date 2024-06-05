@@ -55,8 +55,6 @@ export default async function(md: Event) {
                     body: feat.to_geojson()
                 });
             }
-
-            console.error('Package', feats);
         } else if (imported.mode === 'Unknown') {
             if (md.Ext === '.zip') {
                 const zip = new StreamZip.async({
