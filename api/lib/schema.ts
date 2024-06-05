@@ -53,6 +53,7 @@ export const ProfileChat = pgTable('profile_chats', {
 
 export const ProfileFeature = pgTable('profile_features', {
     id: text('id').primaryKey(),
+    path: text('path').notNull().default('/'),
     username: text('username').notNull().references(() => Profile.username),
     properties: json('properties').notNull().default({}),
     geometry: geometry('geometry', { type: GeometryType.Geometry, srid: 4326 }).notNull()
