@@ -2,7 +2,7 @@
     <div class='card'>
         <div class='card-header'>
             <h3 class='card-title'>
-                Icon Search
+                Icons
             </h3>
 
             <div class='ms-auto btn-list'>
