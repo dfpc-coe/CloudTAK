@@ -31,6 +31,7 @@ for (const icon of xmljs.xml2js(String(await fs.readFile(new URL('../icons/icons
 }
 
 const defaultSprites = await Sprites({
+    // @ts-ignore
     icons: iconset.map((icon) => {
         return {
             name: icon.name,
