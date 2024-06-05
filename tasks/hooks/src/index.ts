@@ -28,7 +28,7 @@ export async function handler(
                     }
 
                 } catch (err) {
-                    console.error(err);
+                    console.error(err, 'Record:', record.body);
                     const m = meta.get(record.messageId);
                     if (m) m.Error = new Error(String(err));
                 }
