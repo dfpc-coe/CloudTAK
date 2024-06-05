@@ -4,6 +4,7 @@ import * as schemas from './schema.js';
 import { TAKGroup, TAKRole } from './api/types.js';
 import { AugmentedData } from './models/Data.js';
 import { AugmentedLayer } from './models/Layer.js';
+import { Feature } from '@tak-ps/node-cot';
 
 export const LayerResponse = AugmentedLayer;
 export const DataResponse = AugmentedData;
@@ -61,16 +62,9 @@ export const OverlayResponse = createSelectSchema(schemas.Overlay, {
     id: Type.Integer(),
 });
 
-export const ProfileFeatureResponse = Type.Object({
-    id: Type.String(),
-    type: Type.String({ const: 'Feature' }),
-    path: Type.String(),
-    properties: Type.Any(),
-    geometry: Type.Object({
-        type: Type.String({ enum: ['Point', 'LineString', 'Polygon'] }),
-        coordinates: Type.Array(Type.Any())
-    })
-})
+export const ProfileFeature = Type.Composite([ Feature, Type.Object({
+    path: Type.String({ default: '/' }),
+})]);
 
 export const ProfileOverlayResponse = createSelectSchema(schemas.ProfileOverlay, {
     id: Type.Integer(),
