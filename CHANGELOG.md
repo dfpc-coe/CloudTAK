@@ -12,6 +12,9 @@
 
 ### Pending Release
 
+- :tada: Add `Package` Import type
+- :rocket: Increase logging in ArcGIS Hook
+
 ### v2.35.0 - 2024-06-04
 
 - :tada: `UI` Show Directional status of Groups/Channels
