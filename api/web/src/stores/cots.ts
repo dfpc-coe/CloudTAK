@@ -36,13 +36,14 @@ export const useCOTStore = defineStore('cots', {
          * Iterate over cot messages and return list of CoTs
          * with Video Streams
          */
-        videos: function(): Set<string> {
-            const videos: Set<string> = new Set();
+        videos: function(): Set<Feature> {
+            const videos: Set<Feature> = new Set();
             for (const cot of this.cots.values()) {
                 if (cot.properties && cot.properties.video) {
-                    videos.add(String(cot.id));
+                    videos.add(cot);
                 }
             }
+
             return videos;
         },
 
