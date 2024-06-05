@@ -12,7 +12,7 @@
 
 ### Pending Release
 
-- :tada: Add `Package` Import type
+- :tada: Add `Package` Import type & auto import CoTs
 - :rocket: Wire up Video Menu but note refresh is not automatic
 - :rocket: `UI` Add paging for Iconsets, and set default limit to 20
 - :rocket: Increase logging in ArcGIS Hook
