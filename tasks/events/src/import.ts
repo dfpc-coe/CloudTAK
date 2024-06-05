@@ -45,9 +45,12 @@ export default async function(md: Event) {
 
             console.error(JSON.stringify(res));
         } else if (imported.mode === 'Package') {
-            const pkg = new DataPackage(md.Local);
+            const pkg = await DataPackage.parse(md.Local);
 
-            console.error('Package', pkg);
+            // TODO Support Geospatial Files
+            const feats = await pkg.cots();
+
+            console.error('Package', feats);
         } else if (imported.mode === 'Unknown') {
             if (md.Ext === '.zip') {
                 const zip = new StreamZip.async({
