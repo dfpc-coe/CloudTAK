@@ -5,6 +5,7 @@
     >
         <template #buttons>
             <TablerDelete
+                v-if='role.permissions.includes("MISSION_WRITE")'
                 v-tooltip='"Delete"'
                 displaytype='icon'
                 @delete='deleteMission'
@@ -116,6 +117,7 @@
 
             <router-view
                 :mission='mission'
+                :role='role'
                 @refresh='refresh'
             />
         </template>
@@ -199,6 +201,10 @@ export default {
                 users: true,
                 delete: false
             },
+            role: {
+                type: 'MISSION_SUBSCRIBER',
+                permissions: ['MISSION_READ']
+            },
             mission: {
                 guid: this.$route.params.guid,
                 passwordProtected: this.$route.query.passwordProtected,
@@ -258,8 +264,18 @@ export default {
                 url.searchParams.append('changes', 'false');
                 url.searchParams.append('logs', 'true');
                 this.mission = await std(url);
+
             } catch (err) {
                 this.err = err;
+            }
+
+            try {
+                const suburl = stdurl(`/api/marti/missions/${this.mission.name}/role`);
+                this.role = await std(suburl);
+            } catch (err) {
+                if (!err.message.includes('NOT_FOUND')) {
+                    throw err;
+                }
             }
             this.loading.initial = false;
             this.loading.mission = false;

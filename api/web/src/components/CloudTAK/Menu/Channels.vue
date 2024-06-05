@@ -59,6 +59,24 @@
                                     class='mx-2'
                                     v-text='ch.name'
                                 />
+
+                                <div class='ms-auto'>
+                                    <IconLocation
+                                        v-if='ch.direction.length === 2'
+                                        v-tooltip='"Bi-Directional"'
+                                        size='32'
+                                    />
+                                    <IconLocation
+                                        v-else-if='ch.direction.includes("IN")'
+                                        v-tooltip='"Location Sharing"'
+                                        size='32'
+                                    />
+                                    <IconLocationOff
+                                        v-else-if='ch.direction.includes("OUT")'
+                                        v-tooltip='"No Location Sharing"'
+                                        size='32'
+                                    />
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -77,6 +95,8 @@ import {
 } from '@tak-ps/vue-tabler';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import {
+    IconLocation,
+    IconLocationOff,
     IconRefresh,
     IconSearch,
     IconEye,
@@ -162,6 +182,8 @@ export default {
         IconEye,
         IconEyeOff,
         IconSearch,
+        IconLocation,
+        IconLocationOff,
         IconRefresh,
         TablerNone,
         TablerInput,
