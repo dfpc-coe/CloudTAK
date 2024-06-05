@@ -49,6 +49,12 @@ export default async function(md: Event) {
 
             // TODO Support Geospatial Files
             const feats = await pkg.cots();
+            for (const feat of feats) {
+                await API.putFeature({
+                    token: md.UserToken,
+                    body: feat.to_geojson()
+                });
+            }
 
             console.error('Package', feats);
         } else if (imported.mode === 'Unknown') {

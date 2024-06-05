@@ -62,12 +62,13 @@ export default class API {
         return json as any;
     }
 
-    static async postFeatures(event: {
+    static async putFeature(event: {
         token: string;
         body: object;
     }) {
         const url = new URL(`/api/profile/feature`, process.env.TAK_ETL_API);
         const res = await fetch(url, {
+            method: 'PUT',
             headers: {
                 'Authorization': `Bearer ${event.token}`,
                 'Content-Type': 'application/json'
