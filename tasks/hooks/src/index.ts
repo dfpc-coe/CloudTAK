@@ -22,6 +22,8 @@ export async function handler(
 
                     meta.set(record.messageId, { Timestamp: new Date() });
                     if (req.type === 'ArcGIS') {
+                        console.log('ArcGIS:', data.feat.properties.callsign);
+
                         await ArcGIS(req);
                     } else {
                         throw new Error('Unknown Event Type');
