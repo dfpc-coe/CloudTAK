@@ -45,13 +45,16 @@
                     </div>
                 </div>
             </template>
-            <TablerPager
-                v-if='list.total > paging.limit'
-                :page='paging.page'
-                :total='list.total'
-                :limit='paging.limit'
-                @page='paging.page = $event'
-            />
+
+            <div class='px-2 py-2'>
+                <TablerPager
+                    v-if='list.total > paging.limit'
+                    :page='paging.page'
+                    :total='list.total'
+                    :limit='paging.limit'
+                    @page='paging.page = $event'
+                />
+            </div>
         </template>
     </MenuTemplate>
 </template>
