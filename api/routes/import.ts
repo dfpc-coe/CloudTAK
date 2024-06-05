@@ -12,6 +12,9 @@ import Auth, { AuthResourceAccess } from '../lib/auth.js';
 import { ImportResponse } from '../lib/types.js';
 import { Import } from '../lib/schema.js';
 import * as Default from '../lib/limits.js';
+import TAKAPI, {
+    APIAuthCertificate,
+} from '../lib/tak-api.js';
 
 export enum ImportModeEnum {
     UNKNOWN = 'Unknown',
@@ -44,6 +47,19 @@ export default async function router(schema: Schema, config: Config) {
                 mode_id: req.body.mode_id,
                 config: req.body.config
             });
+
+            if (req.body.mode === ImportModeEnum.PACKAGE) {
+                const profile = await config.models.Profile.from(user.email);
+                const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
+
+                const file = await api.Files.download(req.params.hash);
+
+                await S3.put(`import/${imported.id}.zip`, file)
+
+                await config.models.Import.commit(imported.id, {
+                    status: 'Pending'
+                });
+            }
 
             return res.json(imp)
         } catch (err) {
