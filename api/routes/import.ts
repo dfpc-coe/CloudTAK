@@ -52,7 +52,7 @@ export default async function router(schema: Schema, config: Config) {
                 const profile = await config.models.Profile.from(user.email);
                 const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
 
-                const file = await api.Files.download(req.params.hash);
+                const file = await api.Files.download(req.body.mode_id);
 
                 await S3.put(`import/${imp.id}.zip`, file)
 
