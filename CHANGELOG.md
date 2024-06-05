@@ -13,6 +13,7 @@
 ### Pending Release
 
 - :tada: Add `Package` Import type
+- :rocket: `UI` Add paging for Iconsets, and set default limit to 20
 - :rocket: Increase logging in ArcGIS Hook
 
 ### v2.35.0 - 2024-06-04
