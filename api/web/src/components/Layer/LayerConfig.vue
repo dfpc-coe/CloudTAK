@@ -171,7 +171,7 @@
                 <div class='col-md-4'>
                     <TablerInput
                         v-model='config.stale'
-                        label='Stale Value (ms)'
+                        label='Stale Value (seconds)'
                         :disabled='disabled'
                         type='number'
                         min='1'
