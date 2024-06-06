@@ -37,9 +37,15 @@ export class APIAuthPassword extends APIAuth {
             method: 'POST'
         });
 
-        if (!authres.ok) throw new Err(400, new Error(await authres.text()), 'Non-200 Response from Auth Server - Token');
+        const text = await authres.text();
 
-        const body: any = await authres.json();
+        if (authres.status === 401) {
+            throw new Err(400, new Error(text), 'TAK Server reports incorrect Username or Password');
+        } else if (!authres.ok) {
+            throw new Err(400, new Error(text), 'Non-200 Response from Auth Server - Token');
+        }
+
+        const body: any = JSON.parse(text);
         this.jwt = body.access_token
     }
 
