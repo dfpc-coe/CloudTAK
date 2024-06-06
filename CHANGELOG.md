@@ -12,6 +12,8 @@
 
 ### Pending Release
 
+### v2.37.0 - 2024-06-06
+
 - :rocket: `API/UI` Switch to seconds to Layer Stale
 - :rocket: `UI` Scaling of Icons/Text based on Zoom Level
 - :rocket: `API` Human Readable Bad Username/Pass when trying to generate TAK Cert
