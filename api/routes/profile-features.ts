@@ -1,4 +1,5 @@
 import { Type, Static } from '@sinclair/typebox'
+import { coordEach } from '@turf/meta';
 import { GenerateUpsert } from '@openaddresses/batch-generic';
 import Config from '../lib/config.js';
 import Schema from '@openaddresses/batch-schema';
@@ -66,6 +67,11 @@ export default async function router(schema: Schema, config: Config) {
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
+
+            coordEach(req.body.geometry, (coords) => {
+                if (coords.length === 2) coords.push(0);
+                return coords
+            })
 
             const feat = await config.models.ProfileFeature.generate({
                 id: req.body.id,

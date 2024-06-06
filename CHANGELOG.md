@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v2.37.1 - 2024-06-06
+
+- :bug: `API` `GeometryZ` Column type does not automatically add `Z` coordinates and throw an error, as such manually add default values
+
 ### v2.37.0 - 2024-06-06
 
 - :rocket: `API/UI` Switch to seconds to Layer Stale
