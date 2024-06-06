@@ -248,6 +248,7 @@ export default {
         Iconlistsets: async function() {
             this.loading.iconsets = true;
             const url = stdurl('/api/iconset');
+            url.searchParams.append('limit', 20);
             this.sets = (await std(url)).items;
             this.params.iconset = this.sets[0].name;
             this.loading.iconsets = false;
