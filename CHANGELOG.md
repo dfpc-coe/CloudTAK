@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+- :rocket: `API/UI` Switch to seconds to Layer Stale
+- :rocket: `UI` Scaling of Icons/Text based on Zoom Level
+- :rocket: `API` Human Readable Bad Username/Pass when trying to generate TAK Cert
+- :bug: `UI` Fix preceding whitespace in remarks causing poor markdown display
+
 ### v2.36.1 - 2024-06-05
 
 - :bug: Fix hook logging bug
