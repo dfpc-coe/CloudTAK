@@ -749,7 +749,13 @@ function cotStyles(id: string, opts: {
                 'icon-halo-width': 4
             },
             layout: {
-                'icon-size': 1,
+                'icon-size': [
+                    'interpolate',
+                    ['linear'],
+                    ['zoom'],
+                    8, 0.8,
+                    15, 1
+                ],
                 'icon-rotate': ['get', 'course'],
                 'icon-allow-overlap': true,
                 'icon-image': '{icon}',
@@ -780,8 +786,20 @@ function cotStyles(id: string, opts: {
                 'circle-color': ['get', 'color'],
                 'circle-opacity': ['/', ["number", ["get", "circle-opacity"], 255], 255],
                 'circle-stroke-color': '#ffffff',
-                'circle-stroke-width': 2,
-                'circle-radius': 10
+                'circle-stroke-width': [
+                    'interpolate',
+                    ['linear'],
+                    ['zoom'],
+                    8, 1,
+                    15, 2
+                ],
+                'circle-radius': [
+                    'interpolate',
+                    ['linear'],
+                    ['zoom'],
+                    8, 5,
+                    15, 10
+                ]
             },
         }
 
@@ -804,6 +822,13 @@ function cotStyles(id: string, opts: {
                 'text-halo-width': 2,
             },
             layout: {
+                'text-size': [
+                    'interpolate',
+                    ['linear'],
+                    ['zoom'],
+                    8, 8,
+                    15, 15
+                ],
                 'text-offset': [0, 2],
                 'text-font': ['Open Sans Bold'],
                 'text-field':  '{callsign}'

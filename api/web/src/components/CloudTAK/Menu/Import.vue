@@ -1,12 +1,11 @@
 <template>
     <MenuTemplate name='Import'>
         <template #buttons>
-            <TablerLoading v-if='loading.main' />
             <IconRefresh
                 v-tooltip='"Refresh"'
                 size='32'
                 class='cursor-pointer'
-                @click='fetch'
+                @click='fetch(true)'
             />
         </template>
         <template #default>
@@ -135,8 +134,9 @@ export default {
         timeDiff(update) {
             return timeDiff(update);
         },
-        fetch: async function() {
-            this.loading.main = true;
+        fetch: async function(init) {
+            if (init) this.loading.initial = true;
+
             const url = stdurl(`/api/import/${this.$route.params.import}`);
             this.imported = await std(url);
             if (this.imported.status === 'Fail' || this.imported.status === 'Success') {
@@ -144,7 +144,6 @@ export default {
                 this.loading.run = false;
             }
             this.loading.initial = false;
-            this.loading.main = false;
         },
     }
 }

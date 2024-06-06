@@ -165,7 +165,7 @@ export const Layer = pgTable('layers', {
     enabled_styles: boolean('enabled_styles').notNull().default(false),
     styles: json('styles').$type<Static<typeof StyleContainer>>().notNull().default({}),
     logging: boolean('logging').notNull().default(true),
-    stale: integer('stale').notNull().default(20000),
+    stale: integer('stale').notNull().default(20),
     task: text('task').notNull(),
     connection: integer('connection').notNull().references(() => Connection.id),
     cron: text('cron').notNull(),
