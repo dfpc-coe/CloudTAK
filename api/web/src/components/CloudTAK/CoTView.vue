@@ -307,6 +307,7 @@ export default {
             if (!this.feat) return '';
 
             return this.feat.properties.remarks
+                .trim()
                 .replace(/(http(s)?:\/\/.*?(\s|$))/g, '[$1]($1) ');
         }
     },
