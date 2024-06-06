@@ -317,7 +317,7 @@ export default {
     computed: {
         humanstr: function() {
             if (!this.config.stale) return '';
-            var date = new Date(this.config.stale);
+            var date = new Date(this.config.stale * 1000);
             var str = [];
             if (date.getUTCDate()-1 !== 0) str.push(date.getUTCDate()-1 + " days");
             if (date.getUTCHours() !== 0 ) str.push(date.getUTCHours() + " hrs");
