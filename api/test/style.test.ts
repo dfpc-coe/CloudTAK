@@ -27,7 +27,7 @@ test('Style: Basic Point', async () => {
             color: '#ffffff',
             remarks: 'Test Remarks',
             metadata: {},
-            stale: 123
+            stale: 123000
         },
         geometry: {
             type: 'Point',
@@ -58,7 +58,7 @@ test('Style: Basic Point: Disabled', async () => {
     }), {
         type: 'Feature',
         properties: {
-            stale: 123
+            stale: 123000
         },
         geometry: {
             type: 'Point',
@@ -123,7 +123,7 @@ test('Style: Global Remarks & Callsign', async () => {
             coordinates: [0, 0]
         }
     })).properties, {
-        stale: 123,
+        stale: 123000,
         remarks: 'OVERRIDE',
         callsign: 'OVERRIDE_CALLSIGN',
         metadata: {
@@ -162,7 +162,7 @@ test('Style: Global Remarks & Callsign - Override by Point', async () => {
             coordinates: [0, 0]
         }
     })).properties, {
-        stale: 123,
+        stale: 123000,
         remarks: 'OVERRIDE_POINT',
         callsign: 'OVERRIDE_POINT_CALLSIGN',
         metadata: {
@@ -212,7 +212,7 @@ test('Style: Global Remarks & Callsign - Override by Global Query', async () => 
             coordinates: [0, 0]
         }
     })).properties, {
-        stale: 123,
+        stale: 123000,
         remarks: 'OVERRIDE_QUERY',
         callsign: 'OVERRIDE_QUERY_CALLSIGN',
         metadata: {
@@ -270,7 +270,7 @@ test('Style: Global Remarks & Callsign - Override by Query Point', async () => {
             coordinates: [0, 0]
         }
     })).properties, {
-        stale: 123,
+        stale: 123000,
         remarks: 'OVERRIDE_QUERY_POINT',
         callsign: 'OVERRIDE_QUERY_POINT_CALLSIGN',
         metadata: {
@@ -316,7 +316,7 @@ test('Style: Lowest Level Remarks', async () => {
             coordinates: [0, 0]
         }
     })).properties, {
-        stale: 123,
+        stale: 123000,
         remarks: 'LOWEST_REMARKS',
         callsign: 'LOWEST_CALLSIGN',
         metadata: {

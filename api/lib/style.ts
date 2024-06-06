@@ -191,7 +191,7 @@ export default class Style {
             if (!feature.properties) feature.properties = {};
 
             if (this.style.stale && !feature.properties.stale) {
-                feature.properties.stale = this.style.stale;
+                feature.properties.stale = this.style.stale * 1000;
             }
 
             if (!this.style.enabled_styles) return feature;
