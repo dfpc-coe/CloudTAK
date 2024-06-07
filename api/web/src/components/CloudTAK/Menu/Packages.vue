@@ -1,5 +1,8 @@
 <template>
-    <MenuTemplate name='Data Packages'>
+    <MenuTemplate
+        name='Data Packages'
+        :loading='loading'
+    >
         <template #buttons>
             <IconRefresh
                 v-if='!loading'
@@ -10,9 +13,9 @@
             />
         </template>
         <template #default>
-            <TablerLoading v-if='loading' />
+            <ChannelInfo label='Data Packages'/>
             <TablerNone
-                v-else-if='!list.items.length'
+                v-if='!list.items.length'
                 label='Packages'
                 :create='false'
             />
@@ -48,18 +51,18 @@ import MenuTemplate from '../util/MenuTemplate.vue';
 import { std, stdurl } from '/src/std.ts';
 import {
     TablerNone,
-    TablerLoading
 } from '@tak-ps/vue-tabler';
 import {
     IconRefresh,
 } from '@tabler/icons-vue';
 import timeDiff from '../../../timediff.js';
+import ChannelInfo from '../util/ChannelInfo.vue';
 
 export default {
     name: 'CloudTAKPackages',
     components: {
+        ChannelInfo,
         TablerNone,
-        TablerLoading,
         IconRefresh,
         MenuTemplate
     },
