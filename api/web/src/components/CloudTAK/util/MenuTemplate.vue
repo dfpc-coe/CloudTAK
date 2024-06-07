@@ -2,6 +2,7 @@
     <div class='container px-0'>
         <div
             class='sticky-top col-12 bg-dark'
+            style='border-radius: 0px;'
             :class='{
                 "border-bottom border-light": border
             }'

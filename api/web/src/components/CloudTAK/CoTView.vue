@@ -1,6 +1,6 @@
 <template>
     <div
-        class='position-absolute end-0 bottom-0 text-white py-2 bg-dark'
+        class='position-absolute end-0 bottom-0 text-white bg-dark'
         style='z-index: 1; width: 400px; top: 56px;'
     >
         <div
@@ -13,7 +13,10 @@
                 label='CoT Marker'
             />
             <template v-else>
-                <div class='col-12 border-light border-bottom d-flex'>
+                <div
+                    class='col-12 border-light border-bottom d-flex'
+                    style='border-radius: 0px;'
+                >
                     <div class='col-12 card-header row mx-1 my-2 d-flex'>
                         <div class='card-title d-flex'>
                             <span
