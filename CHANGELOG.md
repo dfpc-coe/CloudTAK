@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v2.37.4 - 2024-06-07
+
+- :rocket: `UI` Show Layers that push to data syncs in Connection Layer list
+
 ### v2.37.3 - 2024-06-07
 
 - :bug: `UI` Close CoT viewer if active CoT is deleted via radial menu
