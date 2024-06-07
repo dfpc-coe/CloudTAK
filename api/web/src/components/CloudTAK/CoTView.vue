@@ -307,8 +307,9 @@ export default {
             if (!this.feat) return '';
 
             return this.feat.properties.remarks
+                .replace(/\n/g, '</br>')
+                .replace(/(http(s)?:\/\/.*?(\s|$))/g, '[$1]($1) ')
                 .trim()
-                .replace(/(http(s)?:\/\/.*?(\s|$))/g, '[$1]($1) ');
         }
     },
     methods: {
