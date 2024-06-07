@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v2.37.5 - 2024-06-07
+
+- :rocket: `API/UI` Support `remarks` field of CoT with newline characters
+
 ### v2.37.4 - 2024-06-07
 
 - :rocket: `UI` Show Layers that push to data syncs in Connection Layer list
