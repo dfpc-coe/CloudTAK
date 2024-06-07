@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v2.37.2 - 2024-06-07
+
+- :bug: `API` Check for DataSyncs on Connection Delete to avoid 5xx error
+
 ### v2.37.1 - 2024-06-06
 
 - :bug: `API` `GeometryZ` Column type does not automatically add `Z` coordinates and throw an error, as such manually add default values
