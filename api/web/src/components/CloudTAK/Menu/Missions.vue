@@ -1,99 +1,106 @@
 <template>
-    <MenuTemplate
-        name='Missions'
-        :loading='loading'
-        :none='!list.data.length'
-    >
-        <template #buttons>
-            <IconPlus
-                v-tooltip='"Create Mission"'
-                size='32'
-                class='cursor-pointer'
-                @click='create = true'
-            />
-            <IconRefresh
-                v-tooltip='"Refresh"'
-                size='32'
-                class='cursor-pointer'
-                @click='fetchMissions'
-            />
-        </template>
-        <template #default>
-            <TablerAlert
-                v-if='err'
-                :err='err'
-            />
-            <template v-else>
-                <div
-                    v-for='(mission, mission_it) in list.data'
-                    :key='mission_it'
-                    class='cursor-pointer col-12 py-2 hover-dark'
-                    @click='$router.push(`/menu/missions/${mission.guid}`)'
-                >
-                    <div class='px-3 d-flex'>
-                        <div class='d-flex justify-content-center align-items-center'>
-                            <IconLock
-                                v-if='mission.passwordProtected'
-                                size='32'
-                            />
-                            <IconLockOpen
-                                v-else
-                                size='32'
-                            />
+<MenuTemplate
+    name='Missions'
+    :loading='loading'
+>
+    <template #buttons>
+        <IconPlus
+            v-tooltip='"Create Mission"'
+            size='32'
+            class='cursor-pointer'
+            @click='create = true'
+        />
+        <IconRefresh
+            v-tooltip='"Refresh"'
+            size='32'
+            class='cursor-pointer'
+            @click='fetchMissions'
+        />
+    </template>
+    <template #default>
+        <ChannelInfo/>
+
+        <TablerNone
+            :create='false'
+            label='Mission'
+            v-if='!list.data.length'
+        />
+        <TablerAlert
+            v-else-if='err'
+            :err='err'
+        />
+        <template v-else>
+            <div
+                v-for='(mission, mission_it) in list.data'
+                :key='mission_it'
+                class='cursor-pointer col-12 py-2 hover-dark'
+                @click='$router.push(`/menu/missions/${mission.guid}`)'
+            >
+                <div class='px-3 d-flex'>
+                    <div class='d-flex justify-content-center align-items-center'>
+                        <IconLock
+                            v-if='mission.passwordProtected'
+                            size='32'
+                        />
+                        <IconLockOpen
+                            v-else
+                            size='32'
+                        />
+                    </div>
+                    <div class='mx-2'>
+                        <div class='col-12'>
+                            <span v-text='mission.name' />
                         </div>
-                        <div class='mx-2'>
-                            <div class='col-12'>
-                                <span v-text='mission.name' />
-                            </div>
-                            <div class='col-12'>
-                                <span
-                                    class='text-secondary'
-                                    v-text='mission.createTime.replace(/T.*/, "")'
-                                />
-                                &nbsp;-&nbsp;
-                                <span
-                                    class='text-secondary'
-                                    v-text='mission.contents.length + " Items"'
-                                />
-                            </div>
-                        </div>
-                        <div class='col-auto ms-auto align-items-center d-flex'>
-                            <IconAccessPoint
-                                v-if='subscribed.has(mission.guid)'
-                                v-tooltip='"Subscribed"'
-                                size='32'
-                                class='text-green'
+                        <div class='col-12'>
+                            <span
+                                class='text-secondary'
+                                v-text='mission.createTime.replace(/T.*/, "")'
+                            />
+                            &nbsp;-&nbsp;
+                            <span
+                                class='text-secondary'
+                                v-text='mission.contents.length + " Items"'
                             />
                         </div>
                     </div>
+                    <div class='col-auto ms-auto align-items-center d-flex'>
+                        <IconAccessPoint
+                            v-if='subscribed.has(mission.guid)'
+                            v-tooltip='"Subscribed"'
+                            size='32'
+                            class='text-green'
+                        />
+                    </div>
                 </div>
-            </template>
+            </div>
         </template>
-    </MenuTemplate>
+    </template>
+</MenuTemplate>
 
-    <TablerModal
-        v-if='create'
-        size='xl'
-    >
-        <div class='modal-status bg-red' />
-        <button
-            type='button'
-            class='btn-close'
-            aria-label='Close'
-            @click='create = false'
-        />
-        <MissionCreate
-            @mission='$router.push(`/menu/missions/${$event.guid}`)'
-            @chat='$emit("chat", $event)'
-            @close='create = false'
-        />
-    </TablerModal>
+<TablerModal
+    v-if='create'
+    size='xl'
+>
+    <div class='modal-status bg-red' />
+    <button
+        type='button'
+        class='btn-close'
+        aria-label='Close'
+        @click='create = false'
+    />
+    <MissionCreate
+        @mission='$router.push(`/menu/missions/${$event.guid}`)'
+        @chat='$emit("chat", $event)'
+        @close='create = false'
+    />
+</TablerModal>
 </template>
 
 <script>
 import MissionCreate from './Mission/MissionCreate.vue';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import {
+    TablerNone,
     TablerAlert,
     TablerModal
 } from '@tak-ps/vue-tabler';
@@ -105,13 +112,16 @@ import {
     IconAccessPoint,
     IconRefresh,
 } from '@tabler/icons-vue';
+import ChannelInfo from '../util/ChannelInfo.vue';
 import { useMapStore } from '/src/stores/map.ts';
 const mapStore = useMapStore();
 
 export default {
     name: 'CloudTAKMissions',
     components: {
+        ChannelInfo,
         MenuTemplate,
+        TablerNone,
         TablerAlert,
         TablerModal,
         MissionCreate,
