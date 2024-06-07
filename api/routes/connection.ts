@@ -267,6 +267,10 @@ export default async function router(schema: Schema, config: Config) {
                 where: sql`connection = ${req.params.connectionid}`
             }) > 0) throw new Err(400, null, 'Connection has active Sinks - Delete Sinks before deleting Connection');
 
+            if (await config.models.Data.count({
+                where: sql`connection = ${req.params.connectionid}`
+            }) > 0) throw new Err(400, null, 'Connection has active Data Syncs - Delete Syncs before deleting Connection');
+
             await config.models.Connection.delete(req.params.connectionid);
 
             await config.models.ConnectionToken.delete(sql`
