@@ -586,6 +586,11 @@ export default {
             } else if (event === 'cot:delete') {
                 const cot = mapStore.radial.cot;
                 this.closeRadial()
+
+                if (this.$route.name === 'home-menu-cot' && this.$route.params.uid === cot.id) {
+                    this.$router.push('/');
+                }
+
                 await this.deleteCOT(cot);
             } else if (event === 'cot:edit') {
                 this.editGeometry(mapStore.radial.cot);
