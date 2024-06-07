@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v2.37.3 - 2024-06-07
+
+- :bug: `UI` Close CoT viewer if active CoT is deleted via radial menu
+
 ### v2.37.2 - 2024-06-07
 
 - :bug: `API` Check for DataSyncs on Connection Delete to avoid 5xx error
