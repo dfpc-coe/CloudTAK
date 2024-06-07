@@ -4,7 +4,10 @@
         style='z-index: 1; width: 400px; top: 56px;'
     >
         <div class='position-relative h-100 container px-0'>
-            <div class='sticky-top col-12 border-bottom border-light bg-dark'>
+            <div
+                class='sticky-top col-12 border-bottom border-light bg-dark'
+                style='border-radius: 0px;'
+            >
                 <div class='modal-header px-0 mx-2 align-center'>
                     <div class='modal-title' />
                     <div class='modal-title'>

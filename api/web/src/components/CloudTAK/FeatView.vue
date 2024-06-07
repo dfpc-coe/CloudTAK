@@ -3,7 +3,10 @@
         class='position-absolute end-0 bottom-0 text-white py-2 bg-dark overflow-auto'
         style='z-index: 1; width: 400px; top: 56px;'
     >
-        <div class='col-12 border-light border-bottom d-flex'>
+        <div
+            class='col-12 border-light border-bottom d-flex'
+            style='border-radius: 0px;'
+        >
             <div class='col-auto card-header row mx-1 my-2'>
                 <div
                     class='card-title mx-2'
