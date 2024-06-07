@@ -50,6 +50,15 @@
                                         class='mx-2'
                                         v-text='layer.name'
                                     />
+
+                                    <div class='ms-auto btn-list'>
+                                        <IconDatabase
+                                            v-if='layer.data'
+                                            v-tooltip='`Pushing to Data Sync`'
+                                            @click.stop.prevent='$router.push(`/connection/${$route.params.connectionid}/data/${layer.data}`)'
+                                            size='32'
+                                        />                                
+                                    </div>
                                 </div>
                             </td>
                         </tr>
@@ -74,7 +83,8 @@
 import { std, stdurl } from '/src/std.ts';
 import TableFooter from '../util/TableFooter.vue';
 import {
-    IconPlus
+    IconPlus,
+    IconDatabase
 } from '@tabler/icons-vue';
 import {
     TablerNone,
@@ -89,6 +99,7 @@ export default {
         TablerNone,
         TablerAlert,
         IconPlus,
+        IconDatabase,
         TablerLoading,
         TableFooter,
         LayerStatus,

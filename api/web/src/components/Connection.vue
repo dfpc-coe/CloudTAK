@@ -116,7 +116,7 @@
                                                     "cursor-pointer": $route.name !== "connection-datas"
                                                 }'
                                                 @click='$router.push(`/connection/${$route.params.connectionid}/data`)'
-                                            ><IconDatabase size='32' /><span class='mx-3'>Data Store</span></span>
+                                            ><IconDatabase size='32' /><span class='mx-3'>Data Syncs</span></span>
                                             <span
                                                 class='list-group-item list-group-item-action d-flex align-items-center'
                                                 :class='{

@@ -1,11 +1,11 @@
 <template>
     <div>
         <div class='card-header d-flex'>
-            Data Stores
+            Data Syncs
 
             <div class='ms-auto btn-list'>
                 <IconPlus
-                    v-tooltip='"Create Store"'
+                    v-tooltip='"Create Sync"'
                     size='32'
                     class='cursor-pointer'
                     @click='$router.push(`/connection/${connection.id}/data/new`)'
