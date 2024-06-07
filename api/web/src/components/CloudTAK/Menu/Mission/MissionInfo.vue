@@ -122,11 +122,13 @@
                 </div>
                 <MissionLayerCreate
                     v-if='createLayer'
+                    class='px-2'
                     :mission='mission'
                     @layer='fetchLayers'
                     @cancel='createLayer = false'
                 />
                 <TablerLoading
+                    class='mx-2'
                     v-else-if='loading.layers'
                     :inline='true'
                     desc='Loading Layers...'
@@ -142,7 +144,13 @@
                         v-for='layer in layers'
                         class='col-12 hover-dark d-flex align-items-center px-2 py-2'
                     >
-                        <span class='' v-text='layer.name' />
+                        <IconFiles v-if='layer.type === "CONTENTS"' size='32'/>
+                        <IconMapPin v-else-if='layer.type === "UID"' size='32'/>
+                        <IconFolder v-else-if='layer.type === "GROUP"' size='32'/>
+                        <IconMap v-else-if='layer.type === "MAPLAYER"' size='32'/>
+                        <IconPin v-else-if='layer.type === "ITEM"' size='32'/>
+
+                        <span v-text='layer.name' />
 
                         <div class='ms-auto btn-list'>
                             <TablerDelete
@@ -163,7 +171,12 @@
 import { std, stdurl } from '/src/std.ts';
 import {
     IconPlus,
-    IconRefresh
+    IconRefresh,
+    IconFiles,
+    IconMapPin,
+    IconFolder,
+    IconMap,
+    IconPin,
 } from '@tabler/icons-vue';
 import {
     TablerNone,
@@ -178,6 +191,11 @@ const mapStore = useMapStore();
 export default {
     name: 'MissionInfo',
     components: {
+        IconFiles,
+        IconMapPin,
+        IconFolder,
+        IconMap,
+        IconPin,
         IconPlus,
         IconRefresh,
         TablerDelete,

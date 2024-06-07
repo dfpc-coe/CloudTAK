@@ -77,7 +77,7 @@ export default class DataMission {
         for (const l of (await api.MissionLayer.list(
             data.name,
             { token: data.mission_token }
-        )).data) existMap.add(l.uid, l);
+        )).data) existMap.set(l.uid, l);
 
         for (const l of layers.items) {
             const exists = existMap.get(`layer-${l.id}`);
@@ -87,7 +87,7 @@ export default class DataMission {
                     {
                         uid: `layer-${l.id}`,
                         name: l.name,
-                        type: MissionLayerType.CONTENTS,
+                        type: MissionLayerType.GROUP,
                         creatorUid: `connection-${data.connection}-data-${data.id}`
                     },
                     { token: data.mission_token }

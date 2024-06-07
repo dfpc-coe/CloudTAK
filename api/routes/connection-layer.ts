@@ -13,6 +13,7 @@ import Schedule from '../lib/schedule.js';
 import { Param } from '@openaddresses/batch-generic';
 import { sql } from 'drizzle-orm';
 import { StandardResponse, LayerResponse } from '../lib/types.js';
+import DataMission from '../lib/data-mission.js';
 import { MAX_LAYERS_IN_DATA_SYNC } from '../lib/data-mission.js';
 import { Layer_Config } from '../lib/models/Layer.js';
 import { Layer_Priority } from '../lib/enums.js';
@@ -171,6 +172,14 @@ export default async function router(schema: Schema, config: Config) {
                 if (data.connection !== req.params.connectionid) {
                     throw new Err(400, null, 'Layer cannot reference a Data Sync that is not part of the current connection');
                 }
+
+                try {
+                    // Handle Potential Renames
+                    await DataMission.sync(config, data);
+                } catch (err) {
+                    // Eventually do something
+                    console.error(err);
+                }
             }
 
             Schedule.is_valid(req.body.cron);
@@ -249,6 +258,14 @@ export default async function router(schema: Schema, config: Config) {
 
                 if (data.connection !== req.params.connectionid) {
                     throw new Err(400, null, 'Layer cannot reference a Data Sync that is not part of the current connection');
+                }
+
+                try {
+                    // Handle Potential Renames
+                    await DataMission.sync(config, data);
+                } catch (err) {
+                    // Eventually do something
+                    console.error(err);
                 }
             }
 
