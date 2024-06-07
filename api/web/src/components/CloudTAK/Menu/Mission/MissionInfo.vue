@@ -4,8 +4,8 @@
         :back='false'
         :border='false'
     >
-        <div class='mx-2 my-2'>
-            <div class='row g-3'>
+        <div class='my-2'>
+            <div class='row g-0 mx-2'>
                 <div class='col-12'>
                     <div class='datagrid-title'>
                         Created
@@ -65,44 +65,44 @@
                         <span v-else>None</span>
                     </div>
                 </div>
-            </div>
-            <div class='col-12'>
-                <div class='datagrid-title'>
-                    Description
+                <div class='col-12'>
+                    <div class='datagrid-title'>
+                        Description
+                    </div>
+                    <div
+                        class='datagrid-content'
+                        v-text='mission.description || "No Feed Description"'
+                    />
                 </div>
-                <div
-                    class='datagrid-content'
-                    v-text='mission.description || "No Feed Description"'
-                />
-            </div>
-            <div class='col-12'>
-                <div class='datagrid-title'>
-                    Subscription
+                <div class='col-12'>
+                    <div class='datagrid-title'>
+                        Subscription
+                    </div>
+                    <button
+                        v-if='subscribed === false'
+                        class='btn btn-green'
+                        style='height: 32px;'
+                        @click='subscribe(true)'
+                    >
+                        Subscribe
+                    </button>
+                    <button
+                        v-else-if='subscribed === true'
+                        class='btn btn-danger'
+                        style='height: 32px;'
+                        @click='subscribe(false)'
+                    >
+                        Unsubscribe
+                    </button>
+                    <TablerLoading
+                        v-else
+                        :inline='true'
+                        desc='Updating Subscription...'
+                    />
                 </div>
-                <button
-                    v-if='subscribed === false'
-                    class='btn btn-green'
-                    style='height: 32px;'
-                    @click='subscribe(true)'
-                >
-                    Subscribe
-                </button>
-                <button
-                    v-else-if='subscribed === true'
-                    class='btn btn-danger'
-                    style='height: 32px;'
-                    @click='subscribe(false)'
-                >
-                    Unsubscribe
-                </button>
-                <TablerLoading
-                    v-else
-                    :inline='true'
-                    desc='Updating Subscription...'
-                />
             </div>
             <div class='col-12'>
-                <div class='d-flex py-2 align-items-center'>
+                <div class='mx-2 d-flex py-2 align-items-center'>
                     <div class='datagrid-title'>
                         Mission Layers
                     </div>
@@ -140,9 +140,9 @@
                 <template v-else>
                     <div
                         v-for='layer in layers'
-                        class='col-12 hover-dark d-flex align-items-center py-2'
+                        class='col-12 hover-dark d-flex align-items-center px-2 py-2'
                     >
-                        <span v-text='layer.name' />
+                        <span class='' v-text='layer.name' />
 
                         <div class='ms-auto btn-list'>
                             <TablerDelete
