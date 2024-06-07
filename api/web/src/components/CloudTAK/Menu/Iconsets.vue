@@ -225,9 +225,6 @@ export default {
             }
         }
     },
-    mounted: async function() {
-        await this.fetchList();
-    },
     watch: {
         paging: {
             deep: true,
@@ -235,6 +232,9 @@ export default {
                 await this.fetchList();
             }
         }
+    },
+    mounted: async function() {
+        await this.fetchList();
     },
     methods: {
         throws: function(err) {
