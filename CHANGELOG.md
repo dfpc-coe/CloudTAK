@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v2.37.6 - 2024-06-07
+
+- :rocket: `UI` Small notification to let user's know packages & missions require their parent channel
+- :bug: `UI` Small UI improvements in Menu headers
+
 ### v2.37.5 - 2024-06-07
 
 - :rocket: `API/UI` Support `remarks` field of CoT with newline characters
