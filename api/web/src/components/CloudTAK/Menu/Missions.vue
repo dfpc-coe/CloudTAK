@@ -20,6 +20,8 @@
         <template #default>
             <ChannelInfo />
 
+            <NoChannelsInfo v-if='hasNoChannels'/>
+
             <TablerNone
                 v-if='!list.data.length'
                 :create='false'
@@ -113,12 +115,17 @@ import {
     IconRefresh,
 } from '@tabler/icons-vue';
 import ChannelInfo from '../util/ChannelInfo.vue';
+import { mapState, mapActions, mapGetters } from 'pinia'
+import { useProfileStore } from '/src/stores/profile.ts';
+import NoChannelsInfo from '../util/NoChannelsInfo.vue';
+const profileStore = useProfileStore();
 import { useMapStore } from '/src/stores/map.ts';
 const mapStore = useMapStore();
 
 export default {
     name: 'CloudTAKMissions',
     components: {
+        NoChannelsInfo,
         ChannelInfo,
         MenuTemplate,
         TablerNone,
@@ -144,6 +151,9 @@ export default {
     },
     mounted: async function() {
         await this.fetchMissions();
+    },
+    computed: {
+        ...mapGetters(useProfileStore, ['hasNoChannels']),
     },
     methods: {
         fetchMissions: async function() {

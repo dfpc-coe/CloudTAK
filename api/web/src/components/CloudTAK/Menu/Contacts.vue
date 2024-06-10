@@ -27,6 +27,8 @@
                 />
             </div>
 
+            <NoChannelsInfo v-if='hasNoChannels'/>
+
             <TablerLoading v-if='loading' />
             <TablerNone
                 v-else-if='!visibleContacts.length'
@@ -49,6 +51,9 @@
 </template>
 
 <script>
+import { mapState, mapActions, mapGetters } from 'pinia'
+import { useProfileStore } from '/src/stores/profile.ts';
+const profileStore = useProfileStore();
 import { std, stdurl } from '/src/std.ts';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import {
@@ -57,6 +62,7 @@ import {
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import Contact from '../partial/Contact.vue';
+import NoChannelsInfo from '../util/NoChannelsInfo.vue';
 import {
     IconRefresh,
     IconSearch,
@@ -67,6 +73,7 @@ export default {
     components: {
         Contact,
         TablerNone,
+        NoChannelsInfo,
         TablerInput,
         TablerLoading,
         IconRefresh,
@@ -85,6 +92,7 @@ export default {
         }
     },
     computed: {
+        ...mapGetters(useProfileStore, ['hasNoChannels']),
         visibleContacts: function() {
             return this.contacts.filter((contact) => {
                 return contact.callsign;

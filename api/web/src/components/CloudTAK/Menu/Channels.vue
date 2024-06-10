@@ -27,6 +27,8 @@
                 />
             </div>
 
+            <NoChannelsInfo v-if='hasNoChannels'/>
+
             <TablerLoading v-if='loading' />
             <TablerNone
                 v-else-if='!Object.keys(processChannels).length'
@@ -94,6 +96,7 @@ import {
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import MenuTemplate from '../util/MenuTemplate.vue';
+import NoChannelsInfo from '../util/NoChannelsInfo.vue';
 import {
     IconLocation,
     IconLocationOff,
@@ -102,9 +105,8 @@ import {
     IconEye,
     IconEyeOff,
 } from '@tabler/icons-vue';
-import { useProfileStore } from '/src/stores/profile.ts';
 import { mapState, mapActions, mapGetters } from 'pinia'
-
+import { useProfileStore } from '/src/stores/profile.ts';
 const profileStore = useProfileStore();
 
 export default {
@@ -132,6 +134,7 @@ export default {
     },
     computed: {
         ...mapState(useProfileStore, ['channels']),
+        ...mapGetters(useProfileStore, ['hasNoChannels']),
         processChannels: function() {
             const channels = {};
 
@@ -158,7 +161,6 @@ export default {
     },
     methods: {
         ...mapActions(useProfileStore, ['loadChannels']),
-        ...mapGetters(useProfileStore, ['hasNoChannels']),
         refresh: async function() {
             this.loading = true;
             this.loadChannels()
@@ -185,6 +187,7 @@ export default {
         IconSearch,
         IconLocation,
         IconLocationOff,
+        NoChannelsInfo,
         IconRefresh,
         TablerNone,
         TablerInput,
