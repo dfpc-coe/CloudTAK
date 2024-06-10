@@ -55,8 +55,8 @@
                                         <IconDatabase
                                             v-if='layer.data'
                                             v-tooltip='`Pushing to Data Sync`'
-                                            @click.stop.prevent='$router.push(`/connection/${$route.params.connectionid}/data/${layer.data}`)'
                                             size='32'
+                                            @click.stop.prevent='$router.push(`/connection/${$route.params.connectionid}/data/${layer.data}`)'
                                         />                                
                                     </div>
                                 </div>

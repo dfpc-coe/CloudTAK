@@ -13,7 +13,7 @@
             />
         </template>
         <template #default>
-            <ChannelInfo label='Data Packages'/>
+            <ChannelInfo label='Data Packages' />
             <TablerNone
                 v-if='!list.items.length'
                 label='Packages'
