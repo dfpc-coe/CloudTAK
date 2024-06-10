@@ -103,7 +103,7 @@ import {
     IconEyeOff,
 } from '@tabler/icons-vue';
 import { useProfileStore } from '/src/stores/profile.ts';
-import { mapState, mapActions } from 'pinia'
+import { mapState, mapActions, mapGetters } from 'pinia'
 
 const profileStore = useProfileStore();
 
@@ -158,6 +158,7 @@ export default {
     },
     methods: {
         ...mapActions(useProfileStore, ['loadChannels']),
+        ...mapGetters(useProfileStore, ['hasNoChannels']),
         refresh: async function() {
             this.loading = true;
             this.loadChannels()
