@@ -4,8 +4,8 @@
         :back='false'
         :border='false'
     >
-        <div class='mx-2 my-2'>
-            <div class='row g-3'>
+        <div class='my-2'>
+            <div class='row g-0 mx-2'>
                 <div class='col-12'>
                     <div class='datagrid-title'>
                         Created
@@ -65,95 +65,41 @@
                         <span v-else>None</span>
                     </div>
                 </div>
-            </div>
-            <div class='col-12'>
-                <div class='datagrid-title'>
-                    Description
-                </div>
-                <div
-                    class='datagrid-content'
-                    v-text='mission.description || "No Feed Description"'
-                />
-            </div>
-            <div class='col-12'>
-                <div class='datagrid-title'>
-                    Subscription
-                </div>
-                <button
-                    v-if='subscribed === false'
-                    class='btn btn-green'
-                    style='height: 32px;'
-                    @click='subscribe(true)'
-                >
-                    Subscribe
-                </button>
-                <button
-                    v-else-if='subscribed === true'
-                    class='btn btn-danger'
-                    style='height: 32px;'
-                    @click='subscribe(false)'
-                >
-                    Unsubscribe
-                </button>
-                <TablerLoading
-                    v-else
-                    :inline='true'
-                    desc='Updating Subscription...'
-                />
-            </div>
-            <div class='col-12'>
-                <div class='d-flex py-2 align-items-center'>
+                <div class='col-12'>
                     <div class='datagrid-title'>
-                        Mission Layers
+                        Description
                     </div>
-                    <div class='ms-auto btn-list'>
-                        <IconPlus
-                            v-if='!createLayer && role.permissions.includes("MISSION_WRITE")'
-                            size='24'
-                            class='cursor-pointer'
-                            @click='createLayer = true'
-                        />
-                        <IconRefresh
-                            size='24'
-                            class='cursor-pointer'
-                            @click='fetchLayers'
-                        />
-                    </div>
-                </div>
-                <MissionLayerCreate
-                    v-if='createLayer'
-                    :mission='mission'
-                    @layer='fetchLayers'
-                    @cancel='createLayer = false'
-                />
-                <TablerLoading
-                    v-else-if='loading.layers'
-                    :inline='true'
-                    desc='Loading Layers...'
-                />
-                <TablerNone
-                    v-else-if='!layers.length'
-                    :create='false'
-                    :compact='true'
-                    label='Layers'
-                />
-                <template v-else>
                     <div
-                        v-for='layer in layers'
-                        class='col-12 hover-dark d-flex align-items-center py-2'
-                    >
-                        <span v-text='layer.name' />
-
-                        <div class='ms-auto btn-list'>
-                            <TablerDelete
-                                v-if='role.permissions.includes("MISSION_WRITE")'
-                                displaytype='icon'
-                                size='24'
-                                @delete='deleteLayer(layer)'
-                            />
-                        </div>
+                        class='datagrid-content'
+                        v-text='mission.description || "No Feed Description"'
+                    />
+                </div>
+                <div class='col-12'>
+                    <div class='datagrid-title'>
+                        Subscription
                     </div>
-                </template>
+                    <button
+                        v-if='subscribed === false'
+                        class='btn btn-green'
+                        style='height: 32px;'
+                        @click='subscribe(true)'
+                    >
+                        Subscribe
+                    </button>
+                    <button
+                        v-else-if='subscribed === true'
+                        class='btn btn-danger'
+                        style='height: 32px;'
+                        @click='subscribe(false)'
+                    >
+                        Unsubscribe
+                    </button>
+                    <TablerLoading
+                        v-else
+                        :inline='true'
+                        desc='Updating Subscription...'
+                    />
+                </div>
             </div>
         </div>
     </MenuTemplate>
@@ -162,28 +108,16 @@
 <script>
 import { std, stdurl } from '/src/std.ts';
 import {
-    IconPlus,
-    IconRefresh
-} from '@tabler/icons-vue';
-import {
-    TablerNone,
-    TablerDelete,
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import MenuTemplate from '../../util/MenuTemplate.vue';
-import MissionLayerCreate from './MissionLayerCreate.vue';
 import { useMapStore } from '/src/stores/map.ts';
 const mapStore = useMapStore();
 
 export default {
     name: 'MissionInfo',
     components: {
-        IconPlus,
-        IconRefresh,
-        TablerDelete,
         MenuTemplate,
-        MissionLayerCreate,
-        TablerNone,
         TablerLoading
     },
     props: {
@@ -210,28 +144,12 @@ export default {
     },
     mounted: async function() {
         await this.fetchSubscriptions();
-        await this.fetchLayers();
     },
     methods: {
         fetchSubscriptions: async function() {
             const url = stdurl(`/api/marti/missions/${this.mission.name}/subscriptions/roles`);
             this.subscriptions = (await std(url)).data;
             this.loading.users = false;
-        },
-        deleteLayer: async function(layer) {
-            this.loading.layers = true;
-            const url = stdurl(`/api/marti/missions/${this.mission.name}/layer/${layer.uid}`);
-
-            await std(url, { method: 'DELETE' })
-
-            await this.fetchLayers();
-        },
-        fetchLayers: async function() {
-            this.createLayer = false;
-            this.loading.layers = true;
-            const url = stdurl(`/api/marti/missions/${this.mission.name}/layer`);
-            this.layers = (await std(url)).data;
-            this.loading.layers = false;
         },
         subscribe: async function(subscribed) {
             this.loading.subscribe = true;

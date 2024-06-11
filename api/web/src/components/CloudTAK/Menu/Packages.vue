@@ -14,6 +14,8 @@
         </template>
         <template #default>
             <ChannelInfo label='Data Packages' />
+            <NoChannelsInfo v-if='hasNoChannels' />
+
             <TablerNone
                 v-if='!list.items.length'
                 label='Packages'
@@ -57,10 +59,14 @@ import {
 } from '@tabler/icons-vue';
 import timeDiff from '../../../timediff.js';
 import ChannelInfo from '../util/ChannelInfo.vue';
+import NoChannelsInfo from '../util/NoChannelsInfo.vue';
+import { useProfileStore } from '/src/stores/profile.ts';
+import { mapGetters } from 'pinia'
 
 export default {
     name: 'CloudTAKPackages',
     components: {
+        NoChannelsInfo,
         ChannelInfo,
         TablerNone,
         IconRefresh,
@@ -85,6 +91,9 @@ export default {
     },
     mounted: async function() {
         await this.fetchList();
+    },
+    computed: {
+        ...mapGetters(useProfileStore, ['hasNoChannels']),
     },
     methods: {
         timeDiff(update) {
