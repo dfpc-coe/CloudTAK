@@ -75,7 +75,7 @@ export const Basemap = pgTable('basemaps', {
     type: text('type').notNull().default('raster')
 }, (table) => {
     return {
-        username_idx: index("iconsets_username_idx").on(table.username),
+        username_idx: index("basemaps_username_idx").on(table.username),
     }
 })
 
