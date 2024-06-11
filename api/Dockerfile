@@ -5,7 +5,7 @@ EXPOSE 5000
 ENV HOME=/home/etl
 WORKDIR $HOME
 
-RUN apk add nodejs npm memcached python3 make bash g++ openssl postgresql-client
+RUN apk add nodejs-current npm memcached python3 make bash g++ openssl postgresql-client
 
 WORKDIR $HOME/api
 
