@@ -353,7 +353,7 @@ export default {
             DependsOn: ['SigningSecret'],
             Properties: {
                 Family: cf.stackName,
-                Cpu: 1024,
+                Cpu: 1024 * 2,
                 Memory: 4096 * 2,
                 NetworkMode: 'awsvpc',
                 RequiresCompatibilities: ['FARGATE'],

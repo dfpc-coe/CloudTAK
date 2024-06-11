@@ -12,7 +12,7 @@
         "loaddb": "echo 'DROP DATABASE tak_ps_etl' | psql && echo 'CREATE DATABASE tak_ps_etl' | psql && psql tak_ps_etl < ",
         "migratedb": "npm run lint && git stash && tsc --outDir . && drizzle-kit generate && git add migrations/* && git commit -m \"DB Migration\" && git clean -f && git stash",
         "dev": "tsx watch --ignore web/ index.ts --noevents --nosinks --nometrics --unsafe",
-        "prod": "NODE_OPTIONS='--max-old-space-size=6144' forever dist/index.js"
+        "prod": "NODE_OPTIONS='--max-old-space-size=6144' nodemon dist/index.js"
     },
     "repository": {
         "type": "git",
@@ -63,7 +63,6 @@
         "express": "^4.18.2",
         "express-minify": "^1.0.0",
         "fast-xml-parser": "^4.3.5",
-        "forever": "^4.0.3",
         "handlebars": "^4.7.8",
         "http-cookie-agent": "^6.0.1",
         "jsonata": "^2.0.1",
@@ -72,6 +71,7 @@
         "mime": "^4.0.1",
         "minimist": "^1.2.7",
         "moment": "^2.29.4",
+        "nodemon": "^3.1.3",
         "pem": "^1.14.7",
         "pg": "^8.8.0",
         "semver-sort": "^1.0.0",
