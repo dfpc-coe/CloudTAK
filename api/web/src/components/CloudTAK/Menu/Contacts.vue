@@ -27,7 +27,7 @@
                 />
             </div>
 
-            <NoChannelsInfo v-if='hasNoChannels'/>
+            <NoChannelsInfo v-if='hasNoChannels' />
 
             <TablerLoading v-if='loading' />
             <TablerNone
@@ -51,9 +51,8 @@
 </template>
 
 <script>
-import { mapState, mapActions, mapGetters } from 'pinia'
+import { mapGetters } from 'pinia'
 import { useProfileStore } from '/src/stores/profile.ts';
-const profileStore = useProfileStore();
 import { std, stdurl } from '/src/std.ts';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import {

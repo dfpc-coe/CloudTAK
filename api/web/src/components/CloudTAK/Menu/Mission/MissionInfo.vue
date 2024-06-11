@@ -101,68 +101,6 @@
                     />
                 </div>
             </div>
-            <div class='col-12'>
-                <div class='mx-2 d-flex py-2 align-items-center'>
-                    <div class='datagrid-title'>
-                        Mission Layers
-                    </div>
-                    <div class='ms-auto btn-list'>
-                        <IconPlus
-                            v-if='!createLayer && role.permissions.includes("MISSION_WRITE")'
-                            size='24'
-                            class='cursor-pointer'
-                            @click='createLayer = true'
-                        />
-                        <IconRefresh
-                            size='24'
-                            class='cursor-pointer'
-                            @click='fetchLayers'
-                        />
-                    </div>
-                </div>
-                <MissionLayerCreate
-                    v-if='createLayer'
-                    class='px-2'
-                    :mission='mission'
-                    @layer='fetchLayers'
-                    @cancel='createLayer = false'
-                />
-                <TablerLoading
-                    class='mx-2'
-                    v-else-if='loading.layers'
-                    :inline='true'
-                    desc='Loading Layers...'
-                />
-                <TablerNone
-                    v-else-if='!layers.length'
-                    :create='false'
-                    :compact='true'
-                    label='Layers'
-                />
-                <template v-else>
-                    <div
-                        v-for='layer in layers'
-                        class='col-12 hover-dark d-flex align-items-center px-2 py-2'
-                    >
-                        <IconFiles v-if='layer.type === "CONTENTS"' size='32'/>
-                        <IconMapPin v-else-if='layer.type === "UID"' size='32'/>
-                        <IconFolder v-else-if='layer.type === "GROUP"' size='32'/>
-                        <IconMap v-else-if='layer.type === "MAPLAYER"' size='32'/>
-                        <IconPin v-else-if='layer.type === "ITEM"' size='32'/>
-
-                        <span v-text='layer.name' />
-
-                        <div class='ms-auto btn-list'>
-                            <TablerDelete
-                                v-if='role.permissions.includes("MISSION_WRITE")'
-                                displaytype='icon'
-                                size='24'
-                                @delete='deleteLayer(layer)'
-                            />
-                        </div>
-                    </div>
-                </template>
-            </div>
         </div>
     </MenuTemplate>
 </template>
@@ -170,38 +108,16 @@
 <script>
 import { std, stdurl } from '/src/std.ts';
 import {
-    IconPlus,
-    IconRefresh,
-    IconFiles,
-    IconMapPin,
-    IconFolder,
-    IconMap,
-    IconPin,
-} from '@tabler/icons-vue';
-import {
-    TablerNone,
-    TablerDelete,
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import MenuTemplate from '../../util/MenuTemplate.vue';
-import MissionLayerCreate from './MissionLayerCreate.vue';
 import { useMapStore } from '/src/stores/map.ts';
 const mapStore = useMapStore();
 
 export default {
     name: 'MissionInfo',
     components: {
-        IconFiles,
-        IconMapPin,
-        IconFolder,
-        IconMap,
-        IconPin,
-        IconPlus,
-        IconRefresh,
-        TablerDelete,
         MenuTemplate,
-        MissionLayerCreate,
-        TablerNone,
         TablerLoading
     },
     props: {
@@ -228,28 +144,12 @@ export default {
     },
     mounted: async function() {
         await this.fetchSubscriptions();
-        await this.fetchLayers();
     },
     methods: {
         fetchSubscriptions: async function() {
             const url = stdurl(`/api/marti/missions/${this.mission.name}/subscriptions/roles`);
             this.subscriptions = (await std(url)).data;
             this.loading.users = false;
-        },
-        deleteLayer: async function(layer) {
-            this.loading.layers = true;
-            const url = stdurl(`/api/marti/missions/${this.mission.name}/layer/${layer.uid}`);
-
-            await std(url, { method: 'DELETE' })
-
-            await this.fetchLayers();
-        },
-        fetchLayers: async function() {
-            this.createLayer = false;
-            this.loading.layers = true;
-            const url = stdurl(`/api/marti/missions/${this.mission.name}/layer`);
-            this.layers = (await std(url)).data;
-            this.loading.layers = false;
         },
         subscribe: async function(subscribed) {
             this.loading.subscribe = true;

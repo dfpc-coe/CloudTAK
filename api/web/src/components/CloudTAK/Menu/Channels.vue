@@ -27,7 +27,7 @@
                 />
             </div>
 
-            <NoChannelsInfo v-if='hasNoChannels'/>
+            <NoChannelsInfo v-if='hasNoChannels' />
 
             <TablerLoading v-if='loading' />
             <TablerNone
