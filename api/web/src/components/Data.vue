@@ -84,7 +84,7 @@
                                         </div>
                                         <div
                                             class='datagrid-content'
-                                            v-text='JSON.parse(data.mission_error).status'
+                                            v-text='mission_error.status'
                                         />
                                     </div>
                                     <div class='datagrid-item'>
@@ -93,7 +93,7 @@
                                         </div>
                                         <div
                                             class='datagrid-content'
-                                            v-text='JSON.parse(data.mission_error).code'
+                                            v-text='mission_error.code'
                                         />
                                     </div>
                                     <div class='datagrid-item'>
@@ -102,7 +102,7 @@
                                         </div>
                                         <div
                                             class='datagrid-content'
-                                            v-text='JSON.parse(data.mission_error).message'
+                                            v-text='mission_error.message'
                                         />
                                     </div>
                                 </div>
@@ -217,6 +217,19 @@ export default {
             },
             connection: {},
             data: {},
+        }
+    },
+    computed: {
+        mission_error: function() {
+            try {
+                return JSON.parse(this.data.mission_error)
+            } catch (err) {
+                return {
+                    code: 'Unknown',
+                    status: 'Unknown',
+                    message: this.data.mission_error
+                }
+            }
         }
     },
     mounted: async function() {

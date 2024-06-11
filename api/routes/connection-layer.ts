@@ -13,6 +13,8 @@ import Schedule from '../lib/schedule.js';
 import { Param } from '@openaddresses/batch-generic';
 import { sql } from 'drizzle-orm';
 import { StandardResponse, LayerResponse } from '../lib/types.js';
+import DataMission from '../lib/data-mission.js';
+import { MAX_LAYERS_IN_DATA_SYNC } from '../lib/data-mission.js';
 import { Layer_Config } from '../lib/models/Layer.js';
 import { Layer_Priority } from '../lib/enums.js';
 import { Layer } from '../lib/schema.js';
@@ -163,12 +165,20 @@ export default async function router(schema: Schema, config: Config) {
                 const data = await config.models.Data.from(req.body.data);
                 if (data.mission_diff && await config.models.Layer.count({
                     where: sql`data = ${req.body.data}`
-                }) > 1) {
+                }) > MAX_LAYERS_IN_DATA_SYNC) {
                     throw new Err(400, null, 'Only a single layer can be added to a DataSync with Mission Diff Enabled')
                 }
 
                 if (data.connection !== req.params.connectionid) {
                     throw new Err(400, null, 'Layer cannot reference a Data Sync that is not part of the current connection');
+                }
+
+                try {
+                    // Handle Potential Renames
+                    await DataMission.sync(config, data);
+                } catch (err) {
+                    // Eventually do something
+                    console.error(err);
                 }
             }
 
@@ -242,12 +252,20 @@ export default async function router(schema: Schema, config: Config) {
                 const data = await config.models.Data.from(req.body.data);
                 if (data.mission_diff && await config.models.Layer.count({
                     where: sql`data = ${req.body.data}`
-                }) > 1) {
+                }) > MAX_LAYERS_IN_DATA_SYNC) {
                     throw new Err(400, null, 'Only a single layer can be added to a DataSync with Mission Diff Enabled')
                 }
 
                 if (data.connection !== req.params.connectionid) {
                     throw new Err(400, null, 'Layer cannot reference a Data Sync that is not part of the current connection');
+                }
+
+                try {
+                    // Handle Potential Renames
+                    await DataMission.sync(config, data);
+                } catch (err) {
+                    // Eventually do something
+                    console.error(err);
                 }
             }
 

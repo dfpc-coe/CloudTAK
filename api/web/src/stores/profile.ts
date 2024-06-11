@@ -18,6 +18,15 @@ export const useProfileStore = defineStore('profile', {
             profile: null,
         }
     },
+    getters: {
+        hasNoChannels: function(): boolean {
+            for (const ch of this.channels) {
+                if (ch.active) return false
+            }
+
+            return true;
+        }
+    },
     actions: {
         clearNotifications: function(): void {
             this.notifications = [];

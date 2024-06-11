@@ -101,7 +101,7 @@ export default {
             advanced: false,
             layer: {
                 name: '',
-                type: 'UID'
+                type: 'GROUP'
             }
         }
     },

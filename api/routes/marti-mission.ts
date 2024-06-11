@@ -65,6 +65,7 @@ export default async function router(schema: Schema, config: Config) {
                 req.params.name,
                 await config.conns.subscription(user.email, req.params.name)
             );
+
             return res.json({ type: 'FeatureCollection', features });
         } catch (err) {
             return Err.respond(err, res);

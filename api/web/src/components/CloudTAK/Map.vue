@@ -334,6 +334,42 @@
                 </div>
             </TablerModal>
         </template>
+
+        <template v-if='warnChannels'>
+            <TablerModal>
+                <div class='modal-status bg-red' />
+                <button
+                    type='button'
+                    class='btn-close'
+                    aria-label='Close'
+                    @click='warnChannels = false'
+                />
+                <div class='modal-header text-white'>
+                    <div class='d-flex align-items-center'>
+                        <IconInfoSquare size='28' />
+                        <span class='mx-2'>No Channels Selected</span>
+                    </div>
+                </div>
+                <div class='modal-body text-white'>
+                    <p>Channels are the basis of who and what you are able to see in TAK</p>
+
+                    <p>At this time you do not have any active channels and as such you will not see any Users, Data Packages, or Data Syncs associated with channels.</p>
+
+                    <p>It is recommended to turn on relevant channels now</p>
+
+                    <div class='d-flex align-items-center'>
+                        <div class='ms-auto btn-list'>
+                            <button
+                                class='btn btn-primary'
+                                @click='selectChannels'
+                            >
+                                Select Channels
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </TablerModal>
+        </template>
     </div>
 </template>
 
@@ -343,6 +379,7 @@ import CloudTAKFeatView from './FeatView.vue';
 import Status from '../util/Status.vue';
 import {
     IconSearch,
+    IconInfoSquare,
     IconMessage,
     IconLocationOff,
     IconLocation,
@@ -446,6 +483,7 @@ export default {
 
         await profileStore.load();
         await profileStore.loadChannels();
+        this.warnChannels = profileStore.hasNoChannels;
 
         await cotStore.loadArchive();
         this.loading.main = false;
@@ -479,6 +517,7 @@ export default {
     data: function() {
         return {
             mode: 'Default',
+            warnChannels: false,        // Show a popup if no channels are selected on load
             pointInput: {
                 shown: false,
                 name: '',
@@ -515,6 +554,10 @@ export default {
             this.feat = false;
             this.$router.push("/");
             this.pointInput.shown = false;
+        },
+        selectChannels: function() {
+            this.warnChannels = false;
+            this.$router.push('/menu/channels');
         },
         submitPoint: async function() {
             this.pointInput.shown = false;
@@ -823,6 +866,7 @@ export default {
         IconMessage,
         IconLocationOff,
         IconLocation,
+        IconInfoSquare,
         IconMinus,
         IconBell,
         IconPlus,
