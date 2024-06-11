@@ -12,6 +12,12 @@
 
 ### Pending Release
 
+### v2.38.0 - 2024-06-11
+
+- :rocket: Add Favicon for UI
+- :rocket: Add basic Mission Sync to GROUP
+- :bug: Fix bug in node-cot which resulted in only a single feature loaded from Missions
+
 ### v2.37.7 - 2024-06-07
 
 - :rocket: `UI` Update Web Lints
