@@ -219,10 +219,6 @@ export default {
             data: {},
         }
     },
-    mounted: async function() {
-        await this.fetchConnection();
-        await this.fetch();
-    },
     computed: {
         mission_error: function() {
             try {
@@ -235,6 +231,10 @@ export default {
                 }
             }
         }
+    },
+    mounted: async function() {
+        await this.fetchConnection();
+        await this.fetch();
     },
     methods: {
         timeDiff(update) {

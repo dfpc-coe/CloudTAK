@@ -117,6 +117,10 @@ const router = new VueRouter.createRouter({
                         name: 'home-menu-mission-users',
                         component: () => import('./components/CloudTAK/Menu/Mission/MissionUsers.vue')
                     },{
+                        path: 'layers',
+                        name: 'home-menu-mission-layers',
+                        component: () => import('./components/CloudTAK/Menu/Mission/MissionLayers.vue')
+                    },{
                         path: 'contents',
                         name: 'home-menu-mission-contents',
                         component: () => import('./components/CloudTAK/Menu/Mission/MissionContents.vue')

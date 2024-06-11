@@ -346,7 +346,7 @@
                 />
                 <div class='modal-header text-white'>
                     <div class='d-flex align-items-center'>
-                        <IconInfoSquare size='28'/>
+                        <IconInfoSquare size='28' />
                         <span class='mx-2'>No Channels Selected</span>
                     </div>
                 </div>
@@ -359,7 +359,12 @@
 
                     <div class='d-flex align-items-center'>
                         <div class='ms-auto btn-list'>
-                            <button @click='selectChannels' class='btn btn-primary'>Select Channels</button>
+                            <button
+                                class='btn btn-primary'
+                                @click='selectChannels'
+                            >
+                                Select Channels
+                            </button>
                         </div>
                     </div>
                 </div>

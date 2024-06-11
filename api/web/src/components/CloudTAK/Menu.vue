@@ -9,7 +9,10 @@
                 @reset='$emit("reset")'
             />
             <template v-else>
-                <div class='sticky-top col-12 border-bottom border-light bg-dark'>
+                <div 
+                    class='sticky-top col-12 border-bottom border-light bg-dark'
+                    style='border-radius: 0px;'
+                >
                     <div class='modal-header px-0 mx-2 align-center'>
                         <div class='modal-title' />
                         <div class='modal-title'>

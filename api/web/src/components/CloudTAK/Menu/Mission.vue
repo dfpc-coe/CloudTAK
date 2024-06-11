@@ -46,6 +46,23 @@
                     /></label>
 
                     <input
+                        id='layer'
+                        type='radio'
+                        class='btn-check'
+                        autocomplete='off'
+                        :checked='$route.name === "home-menu-mission-layers"'
+                        @click='$router.replace(`/menu/missions/${$route.params.mission}/layers`)'
+                    >
+                    <label
+                        for='layer'
+                        type='button'
+                        class='btn btn-sm'
+                    ><IconBoxMultiple
+                        v-tooltip='"Layers"'
+                        size='32'
+                    /></label>
+
+                    <input
                         id='users'
                         type='radio'
                         class='btn-check'
@@ -153,6 +170,7 @@
 <script>
 import { std, stdurl } from '/src/std.ts';
 import {
+    IconBoxMultiple,
     IconArticle,
     IconTimeline,
     IconFiles,
@@ -175,6 +193,7 @@ export default {
         TablerAlert,
         TablerDelete,
         TablerInput,
+        IconBoxMultiple,
         IconArticle,
         IconFiles,
         IconInfoSquare,
