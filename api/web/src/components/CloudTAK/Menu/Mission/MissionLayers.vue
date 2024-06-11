@@ -29,7 +29,6 @@
             <TablerLoading
                 v-else-if='loading.layers'
                 class='mx-2'
-                :inline='true'
                 desc='Loading Layers...'
             />
             <TablerNone
