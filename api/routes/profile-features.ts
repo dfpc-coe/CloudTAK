@@ -166,7 +166,10 @@ export default async function router(schema: Schema, config: Config) {
                 id = ${req.params.id} AND username = ${user.email}
             `);
 
-            return res.json(feat)
+            return res.json({
+                type: 'Feature',
+                ...feat
+            } as Static<typeof ProfileFeature>)
         } catch (err) {
             return Err.respond(err, res);
         }

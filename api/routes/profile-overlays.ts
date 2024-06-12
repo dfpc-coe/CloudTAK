@@ -158,7 +158,7 @@ export default async function router(schema: Schema, config: Config) {
 
                 const mission = await api.Mission.getGuid(overlay.mode_id, {});
                 const sub = await api.Mission.subscribe(mission.name, {
-                    uid: `ANDROID-CloudTAK-${this.profile.username}`
+                    uid: `ANDROID-CloudTAK-${user.email}`
                 });
 
                 await config.models.ProfileOverlay.commit(overlay.id, {
@@ -197,7 +197,7 @@ export default async function router(schema: Schema, config: Config) {
                 const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
                 const mission = await api.Mission.getGuid(overlay.mode_id, {});
                 await api.Mission.unsubscribe(mission.name, {
-                    uid: `ANDROID-CloudTAK-${this.profile.username}`
+                    uid: `ANDROID-CloudTAK-${user.email}`
                 },{
                     token: overlay.token
                 });
