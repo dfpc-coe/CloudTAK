@@ -97,19 +97,21 @@ export default async function router(schema: Schema, config: Config) {
                     for (const feat of req.body.features) {
                         const cot = CoT.from_geojson(feat);
 
+/*
                         const exist = existMap.get(String(feat.id));
                         if (exist && data.mission_diff) {
                             const b = CoT.from_geojson(exist);
                             if (!cot.isDiff(b)) continue;
                         }
+*/
 
-                        cot.addDest({ mission: data.name, path: `layer-${l.id}` });
+                        cot.addDest({ mission: data.name, path: `layer-${layer.id}` });
                         cots.push(cot)
                     }
                 } else {
                     for (const feat of req.body.features) {
                         const cot = CoT.from_geojson(feat);
-                        cot.addDest({ mission: data.name, path: `layer-${l.id}` });
+                        cot.addDest({ mission: data.name, path: `layer-${layer.id}` });
                         cots.push(cot)
                     }
                 }
