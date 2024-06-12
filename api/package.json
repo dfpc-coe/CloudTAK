@@ -8,7 +8,7 @@
         "test": "tape test/*.test.js",
         "tstest": "test/test",
         "build": "tsc && cp .env* dist/ || true && cp ./lib/jobs dist/lib/jobs -r && cp ./icons dist/icons -r && cp package.json dist/ && cp migrations/ dist/ -r",
-        "lint": "eslint index.ts lib/**/*.ts routes/**/*.ts test/**.ts",
+        "lint": "eslint index.ts lib/ routes/ test/",
         "loaddb": "echo 'DROP DATABASE tak_ps_etl' | psql && echo 'CREATE DATABASE tak_ps_etl' | psql && psql tak_ps_etl < ",
         "migratedb": "npm run lint && git stash && tsc --outDir . && drizzle-kit generate && git add migrations/* && git commit -m \"DB Migration\" && git clean -f && git stash",
         "dev": "tsx watch --ignore web/ index.ts --noevents --nosinks --nometrics --unsafe",

@@ -12,11 +12,11 @@ export default class Alarm {
         this.stack = stack;
     }
 
-    async list() {
+    async list(): Promise<Map<number, string>> {
         const cw = new CloudWatch.CloudWatchClient({ region: process.env.AWS_DEFAULT_REGION });
 
         try {
-            const map = new Map();
+            const map: Map<number, string>  = new Map();
             const res = await cw.send(new CloudWatch.DescribeAlarmsCommand({
                 AlarmNamePrefix: `${this.stack}-layer-`
             }));
@@ -37,7 +37,7 @@ export default class Alarm {
         }
     }
 
-    async get(layer: number) {
+    async get(layer: number): Promise<string> {
         const cw = new CloudWatch.CloudWatchClient({ region: process.env.AWS_DEFAULT_REGION });
 
         try {

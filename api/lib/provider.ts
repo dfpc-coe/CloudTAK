@@ -1,5 +1,4 @@
 import Config from './config.js';
-import { Type } from '@sinclair/typebox'
 import Err from '@openaddresses/batch-error';
 import moment from 'moment';
 import fetch from './fetch.js';
