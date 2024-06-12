@@ -151,6 +151,20 @@ export const useCOTStore = defineStore('cots', {
             });
         },
 
+        async deletePath(path: string, store?: Map<string, Feature>): Promise<void> {
+            if (!store) store = this.cots;
+
+            const url = stdurl('/api/profile/feature')
+            url.searchParams.append('path', path);
+            await std(url, { method: 'DELETE' });
+
+            for (const [key, value] of store) {
+                if (value.path && value.path.startsWith(path)) {
+                    this.delete(key, true);
+                }
+            }
+        },
+
         /**
          * Return a FeatureCollection of a non-default CoT Store
          */
@@ -173,24 +187,30 @@ export const useCOTStore = defineStore('cots', {
                 return this.cots.get(id);
             }
         },
+
         /**
          * Returns if the CoT is present in the store given the ID
          */
         has: function(id: string) {
             return this.cots.has(id);
         },
+
         /**
          * Remove a given CoT from the store
          */
-        delete: async function(id: string) {
+        delete: async function(id: string, skipNetwork = false) {
             this.pendingDelete.add(id);
             if (this.archive.has(id)) {
                 this.archive.delete(id);
-                await std(`/api/profile/feature/${id}`, {
-                    method: 'DELETE'
-                });
+
+                if (!this.skipNetwork) {
+                    await std(`/api/profile/feature/${id}`, {
+                        method: 'DELETE'
+                    });
+                }
             }
         },
+
         /**
          * Empty the store
          */

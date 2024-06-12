@@ -56,6 +56,33 @@ export default async function router(schema: Schema, config: Config) {
         }
     });
 
+    await schema.delete('/profile/feature', {
+        name: 'Delete Feature',
+        group: 'ProfileFeature',
+        description: `
+            Delete features by path
+        `,
+        query: Type.Object({
+            path: Type.String()
+        }),
+        res: StandardResponse
+    }, async (req, res) => {
+        try {
+            const user = await Auth.as_user(config, req);
+
+            await config.models.ProfileFeature.delete(sql`
+                starts_with(path, ${req.query.path}) AND username = ${user.email}
+            `);
+
+            return res.json({
+                status: 200,
+                message: 'Features Deleted'
+            });
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
+
     await schema.put('/profile/feature', {
         name: 'Upsert Feature',
         group: 'ProfileFeature',

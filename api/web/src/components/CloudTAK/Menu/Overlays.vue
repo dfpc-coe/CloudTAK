@@ -100,12 +100,16 @@
                             />
                         </div>
                         <div v-else-if='layer.type === "geojson"'>
-                            <div v-for='path in paths(layer)' class='d-flex align-items-center hover-dark px-3 py-2'>
-                                <IconFolder size='32'/><span v-text='path' class='mx-2'/>
-                                <div class='ms-auto'>
-                                    <TablerDelete displaytype='icon'/>
+                            <TablerLoading v-if='loadingPaths[layer.id] === true'/>
+                            <template v-else>
+                                <div v-for='path in paths(layer)' class='d-flex align-items-center hover-dark px-3 py-2'>
+                                    <IconFolder size='32' style='margin-left: 40px;'/>
+                                    <span v-text='path.path' class='mx-2'/>
+                                    <div v-if='layer.id === "cots"' class='ms-auto'>
+                                        <TablerDelete @click='deletePath(layer, path.path)' displaytype='icon'/>
+                                    </div>
                                 </div>
-                            </div>
+                            </template>
                         </div>
                     </div>
                 </template>
@@ -115,6 +119,7 @@
 </template>
 
 <script>
+import { std, stdurl } from '/src/std.ts';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import OverlayLayers from './Overlays/Layers.vue';
 import {
@@ -144,6 +149,7 @@ export default {
             err: false,
             isEditing: false,
             loading: false,
+            loadingPaths: {}
         }
     },
     computed: {
@@ -159,6 +165,20 @@ export default {
             if (["data", "profile"].includes(overlay.mode) && overlay.type === "vector") {
                 this.isEditing = overlay;
             }
+        },
+        deletePath: async function(layer, path) {
+            if (layer.id !== 'cots') return;
+
+            this.loadingPaths[layer.id] = true;
+
+            try {
+                await cotStore.deletePath(path);
+            } catch (err) {
+                this.loadingPaths[layer.id] = false;
+                throw err;
+            }
+
+            this.loadingPaths[layer.id] = false;
         },
         paths: function(layer) {
             if (layer.type !== 'geojson') return;
