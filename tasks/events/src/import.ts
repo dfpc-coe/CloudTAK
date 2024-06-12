@@ -53,8 +53,8 @@ export default async function(md: Event) {
                 await API.putFeature({
                     token: md.UserToken,
                     body: {
+                        ...feat.to_geojson(),
                         path: `/${pkg.settings.name.replace(/\//g, '')}/`,
-                        ...feat.to_geojson()
                     }
                 });
             }
