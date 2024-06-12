@@ -1,4 +1,5 @@
 import { Connection } from './schema.js';
+import { X509Certificate } from 'crypto';
 import { InferSelectModel, sql } from 'drizzle-orm';
 import Config from './config.js';
 
@@ -21,6 +22,8 @@ export default interface ConnectionConfig {
 
     subscription: (name: string) => Promise<null | MissionSub>;
     subscriptions: () => Promise<Array<MissionSub>>;
+
+    uid(): string;
 }
 
 export class MachineConnConfig implements ConnectionConfig {
@@ -36,6 +39,17 @@ export class MachineConnConfig implements ConnectionConfig {
         this.name = connection.name;
         this.enabled = connection.enabled;
         this.auth = connection.auth;
+    }
+
+    uid(): string {
+        const cert = new X509Certificate(this.auth.cert);
+
+        const match = cert.subject.match(/CN=(.*)/);
+        if (match) {
+            return match[1];
+        } else {
+            return String(this.id)
+        }
     }
 
     async subscription(name: string): Promise<null | MissionSub> {
@@ -88,6 +102,10 @@ export class ProfileConnConfig implements ConnectionConfig {
         this.name = email;
         this.enabled = true;
         this.auth = auth;
+    }
+
+    uid(): string {
+        return `ANDROID-CloudTAK-${this.id}`;
     }
 
     async subscription(name: string): Promise<null | MissionSub> {
