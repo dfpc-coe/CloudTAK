@@ -376,31 +376,4 @@ export default async function router(schema: Schema, config: Config) {
             return Err.respond(err, res);
         }
     });
-
-    await schema.delete('/marti/missions/:name/subscription', {
-        name: 'Delete Subscription',
-        group: 'MartiMissions',
-        params: Type.Object({
-            name: Type.String(),
-        }),
-        description: 'Helper API to delete a single mission subscription',
-        query: UnsubscribeInput,
-        res: GenericMartiResponse
-    }, async (req, res) => {
-        try {
-            const user = await Auth.as_user(config, req);
-            const auth = (await config.models.Profile.from(user.email)).auth;
-            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
-
-            const mission = await api.Mission.unsubscribe(
-                req.params.name,
-                req.query,
-                await config.conns.subscription(user.email, req.params.name)
-            );
-
-            return res.json(mission);
-        } catch (err) {
-            return Err.respond(err, res);
-        }
-    });
 }
