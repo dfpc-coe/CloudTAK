@@ -11,6 +11,11 @@ import type { FeatureCollection, Feature } from 'geojson';
 import { useProfileStore } from './profile.ts';
 const profileStore = useProfileStore();
 
+type NestedArray = {
+    path: string;
+    paths: Array<NestedArray>;
+}
+
 export const useCOTStore = defineStore('cots', {
     state: (): {
         archive: Map<string, Feature>;
@@ -128,6 +133,22 @@ export const useCOTStore = defineStore('cots', {
             }
 
             return diff;
+        },
+
+        paths(store?: Map<string, Feature>): Array<NestedArray> {
+            if (!store) store = this.cots;
+
+            const paths = new Set();
+            for (const [key, value] of store) {
+                if (value.path) paths.add(value.path);
+            }
+
+            return Array.from(paths).map((path) => {
+                return {
+                    path: path,
+                    paths: []
+                }
+            });
         },
 
         /**
