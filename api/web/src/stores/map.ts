@@ -431,7 +431,7 @@ export const useMapStore = defineStore('cloudtak', {
                 id: 'cots',
                 name: 'CoT Icons',
                 source: 'cots',
-                type: 'vector',
+                type: 'geojson',
                 clickable: [
                     { id: 'cots', type: 'cot' },
                     { id: 'cots-poly', type: 'cot' },
