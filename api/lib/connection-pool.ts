@@ -171,14 +171,16 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
         }).on('secureConnect', async () => {
             for (const sub of await connConfig.subscriptions()) {
                 try {
+
                     await api.Mission.subscribe(sub.name, {
                         uid: connConfig.uid()
                     },{
                         token: sub.token
                     });
+
                     console.log(`Connection: ${connConfig.id} - Sync: ${sub.name}: Subscribed!`);
                 } catch (err) {
-                    console.warn(`Connection: ${connConfig.id} - Sync: ${sub.name}: ${err.message}`);
+                    console.warn(`Connection: ${connConfig.id} (${connConfig.uid()}) - Sync: ${sub.name}: ${err.message}`);
                 }
             }
         }).on('end', async () => {
@@ -207,13 +209,13 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
         if (connClient.initial) {
             if (connClient.retry >= 5) return; // These are considered stalled connections
             connClient.retry++
-            console.log(`not ok - ${connClient.config.id} - ${connClient.config.name} - retrying in ${connClient.retry * 1000}ms`)
+            console.log(`not ok - ${connClient.config.uid()} - ${connClient.config.name} - retrying in ${connClient.retry * 1000}ms`)
             await sleep(connClient.retry * 1000);
             await connClient.tak.reconnect();
         } else {
             // For now allow infinite retry if a client has connected once
             const retryms = Math.min(connClient.retry * 1000, 15000);
-            console.log(`not ok - ${connClient.config.id} - ${connClient.config.name} - retrying in ${retryms}ms`)
+            console.log(`not ok - ${connClient.config.uid()} - ${connClient.config.name} - retrying in ${retryms}ms`)
             await sleep(retryms);
             await connClient.tak.reconnect();
         }
