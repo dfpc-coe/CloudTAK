@@ -44,12 +44,9 @@ export class MachineConnConfig implements ConnectionConfig {
     uid(): string {
         const cert = new X509Certificate(this.auth.cert);
 
-        const match = cert.subject.match(/CN=(.*)/);
-        if (match) {
-            return match[1];
-        } else {
-            return String(this.id)
-        }
+        const subject = cert.subject.split('\n').reverse().join(',');
+        
+        return subject;
     }
 
     async subscription(name: string): Promise<null | MissionSub> {
