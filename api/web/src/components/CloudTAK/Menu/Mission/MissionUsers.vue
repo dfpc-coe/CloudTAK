@@ -10,7 +10,22 @@
             v-for='sub of subscriptions'
         >
             <div class='col-12 py-2 px-2 d-flex hover-dark'>
-                <div class='row col-12 align-items-center'>
+                <div class='col-12 d-flex align-items-center'>
+                    <IconUserBolt
+                        v-if='sub.role.type === "MISSION_OWNER"'
+                        v-tooltip='sub.role.type'
+                        size='32'
+                    />
+                    <IconUserEdit
+                        v-else-if='sub.role.type === "MISSION_SUBSCRIBER"'
+                        v-tooltip='sub.role.type'
+                        size='32'
+                    />
+                    <IconUser
+                        v-else-if='sub.role.type === "MISSION_READONLY_SUBSCRIBER"'
+                        v-tooltip='sub.role.type'
+                        size='32'
+                    />
                     <div class='col-auto mx-2'>
                         <div v-text='sub.username' />
                         <div
@@ -19,20 +34,10 @@
                         />
                     </div>
                     <div class='col-auto ms-auto btn-list'>
-                        <IconUserBolt
-                            v-if='sub.role.type === "MISSION_OWNER"'
-                            v-tooltip='sub.role.type'
-                            size='32'
-                        />
-                        <IconUserEdit
-                            v-else-if='sub.role.type === "MISSION_SUBSCRIBER"'
-                            v-tooltip='sub.role.type'
-                            size='32'
-                        />
-                        <IconUser
-                            v-else-if='sub.role.type === "MISSION_READONLY_SUBSCRIBER"'
-                            v-tooltip='sub.role.type'
-                            size='32'
+                        <TablerDelete
+                            v-if='role.permissions.includes("MISSION_WRITE")'
+                            @delete='deleteSubscription(sub)'
+                            displaytype='icon'
                         />
                     </div>
                 </div>
@@ -44,6 +49,9 @@
 <script>
 import { std, stdurl } from '/src/std.ts';
 import {
+    TablerDelete
+} from '@tak-ps/vue-tabler';
+import {
     IconUserBolt,
     IconUserEdit,
     IconUser
@@ -53,13 +61,15 @@ import MenuTemplate from '../../util/MenuTemplate.vue';
 export default {
     name: 'MissionUsers',
     components: {
+        TablerDelete,
         MenuTemplate,
         IconUserBolt,
         IconUserEdit,
         IconUser
     },
     props: {
-        mission: Object
+        mission: Object,
+        role: Object
     },
     data: function() {
         return {
@@ -71,6 +81,17 @@ export default {
         await this.fetchSubscriptions();
     },
     methods: {
+        deleteSubscription: async function(sub) {
+            this.loading = true;
+
+            const url = await stdurl(`/api/marti/missions/${this.mission.name}/subscription`);
+            url.searchParams.append('uid', sub.clientUid);
+    
+            await std(url, {
+                method: 'DELETE'
+            })
+            await this.fetchSubscription();
+        },
         fetchSubscriptions: async function() {
             this.loading = true;
 
