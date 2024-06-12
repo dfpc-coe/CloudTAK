@@ -1,6 +1,5 @@
 import fetch from './fetch.js';
 import Err from '@openaddresses/batch-error';
-import Config from './config.js';
 import { Static, Type } from "@sinclair/typebox";
 
 export const FetchReverse = Type.Object({
@@ -37,7 +36,7 @@ export default class Geocode {
         return body.address;
     }
 
-    async forward(search: string): Promise<Static<typeof FetchForward>> {
+    async forward(): Promise<Static<typeof FetchForward>> {
         throw new Err(400, null, 'Unimplemented');
     }
 }

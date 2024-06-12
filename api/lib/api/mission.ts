@@ -229,7 +229,6 @@ export default class {
         let partial = {
             event: '',
             remainder: await this.latestCots(name, opts),
-            discard: ''
         };
 
         do {
