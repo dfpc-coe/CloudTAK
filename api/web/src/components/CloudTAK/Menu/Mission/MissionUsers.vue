@@ -34,11 +34,6 @@
                         />
                     </div>
                     <div class='col-auto ms-auto btn-list'>
-                        <TablerDelete
-                            v-if='role.permissions.includes("MISSION_WRITE")'
-                            @delete='deleteSubscription(sub)'
-                            displaytype='icon'
-                        />
                     </div>
                 </div>
             </div>
@@ -49,7 +44,6 @@
 <script>
 import { std, stdurl } from '/src/std.ts';
 import {
-    TablerDelete
 } from '@tak-ps/vue-tabler';
 import {
     IconUserBolt,
@@ -61,7 +55,6 @@ import MenuTemplate from '../../util/MenuTemplate.vue';
 export default {
     name: 'MissionUsers',
     components: {
-        TablerDelete,
         MenuTemplate,
         IconUserBolt,
         IconUserEdit,
@@ -81,17 +74,6 @@ export default {
         await this.fetchSubscriptions();
     },
     methods: {
-        deleteSubscription: async function(sub) {
-            this.loading = true;
-
-            const url = await stdurl(`/api/marti/missions/${this.mission.name}/subscription`);
-            url.searchParams.append('uid', sub.clientUid);
-    
-            await std(url, {
-                method: 'DELETE'
-            })
-            await this.fetchSubscription();
-        },
         fetchSubscriptions: async function() {
             this.loading = true;
 
