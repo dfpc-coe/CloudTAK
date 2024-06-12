@@ -86,8 +86,6 @@ export const useCOTStore = defineStore('cots', {
             const display_stale = profileStore.profile ? profileStore.profile.display_stale : 'Immediate';
 
             for (const cot of this.cots.values()) {
-                if (!cot.properties) cot.properties = {};
-
                 if (this.hidden.has(String(cot.id))) {
                     diff.remove.push(String(cot.id))
                 } else if (
