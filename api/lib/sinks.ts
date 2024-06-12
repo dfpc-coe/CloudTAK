@@ -47,7 +47,7 @@ export default class Sinks extends Map<string, typeof SinkInterface> {
             };
 
             try {
-                this.queue.submit(conn.id, JSON.stringify({
+                await this.queue.submit(conn.id, JSON.stringify({
                     id: sink.id,
                     type: sink.type,
                     body: sink.body,
