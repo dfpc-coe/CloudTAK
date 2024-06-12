@@ -37,6 +37,8 @@ export default async function router(schema: Schema, config: Config) {
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
+            const auth = (await config.models.Profile.from(user.email)).auth;
+            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
             const overlays = await config.models.ProfileOverlay.list({
                 limit: req.query.limit,
@@ -52,10 +54,18 @@ export default async function router(schema: Schema, config: Config) {
             for (let i = 0; i < overlays.items.length; i++) {
                 const item = overlays.items[i];
 
-                // TODO someday surface these to the user that the underlying resources don't exist
                 if (
                     (item.mode === 'profile' && !(await S3.exists(`profile/${item.username}/${path.parse(item.url.replace(/\/tile$/, '')).name}.pmtiles`)))
                     || (item.mode === 'data' && !(await S3.exists(`data/${item.mode_id}/${path.parse(item.url.replace(/\/tile$/, '')).name}.pmtiles`)))
+                ) {
+                    await config.models.ProfileOverlay.delete(item.id);
+                    removed.push(...overlays.items.splice(i, 1));
+                    overlays.total--;
+                } else if (item.mode === 'mission' && !(await api.Mission.exists(
+                        item.mode_id,
+                        req.query,
+                        await config.conns.subscription(user.email, item.name)
+                    ))
                 ) {
                     await config.models.ProfileOverlay.delete(item.id);
                     removed.push(...overlays.items.splice(i, 1));
