@@ -68,8 +68,11 @@ export const useCOTStore = defineStore('cots', {
             const fc = await std(`/api/marti/missions/${encodeURIComponent(guid)}/cot`);
             for (const feat of fc.features) this.add(feat, guid);
 
-            const sub = this.subscriptions.get(guid)
-            if (!sub) throw new Error('Mission Subscription not created properly (Internal Error)');
+            let sub = this.subscriptions.get(guid)
+            if (!sub) {
+                sub = new Map();
+                this.subscriptions.set(guid, sub)
+            }
             return this.collection(sub)
         },
 
