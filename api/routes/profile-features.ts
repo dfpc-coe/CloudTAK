@@ -147,4 +147,28 @@ export default async function router(schema: Schema, config: Config) {
             return Err.respond(err, res);
         }
     });
+
+    await schema.get('/profile/feature/:id', {
+        name: 'Get Feature',
+        group: 'ProfileFeature',
+        description: `
+            Delete a feature
+        `,
+        params: Type.Object({
+            id: Type.String()
+        }),
+        res: ProfileFeature
+    }, async (req, res) => {
+        try {
+            const user = await Auth.as_user(config, req);
+
+            const feat = await config.models.ProfileFeature.from(sql`
+                id = ${req.params.id} AND username = ${user.email}
+            `);
+
+            return res.json(feat)
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
 }

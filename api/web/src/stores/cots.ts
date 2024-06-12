@@ -2,12 +2,13 @@
 * CotStore - Store & perform updates on all underlying CoT Features
 */
 
+import moment from 'moment';
 import { defineStore } from 'pinia'
 import type { GeoJSONSourceDiff } from 'maplibre-gl';
 import pointOnFeature from '@turf/point-on-feature';
 import { std, stdurl } from '../std.ts';
-import moment from 'moment';
-import type { FeatureCollection, Feature } from 'geojson';
+import type { Feature } from '../types.ts';
+import type { FeatureCollection } from 'geojson';
 import { useProfileStore } from './profile.ts';
 const profileStore = useProfileStore();
 
@@ -147,7 +148,7 @@ export const useCOTStore = defineStore('cots', {
                 return {
                     path: path,
                     paths: []
-                }
+                } as NestedArray
             });
         },
 
@@ -203,7 +204,7 @@ export const useCOTStore = defineStore('cots', {
             if (this.archive.has(id)) {
                 this.archive.delete(id);
 
-                if (!this.skipNetwork) {
+                if (!skipNetwork) {
                     await std(`/api/profile/feature/${id}`, {
                         method: 'DELETE'
                     });
@@ -224,11 +225,8 @@ export const useCOTStore = defineStore('cots', {
          * Consistent feature manipulation between add & update
          */
         style: function(feat: Feature): Feature {
-            if (!feat.properties) feat.properties = {};
             //Vector Tiles only support integer IDs
             feat.properties.id = feat.id;
-
-            if (!feat.properties) feat.properties = {};
 
             if (!feat.properties.center) {
                 feat.properties.center = pointOnFeature(feat.geometry).geometry.coordinates;
@@ -322,8 +320,6 @@ export const useCOTStore = defineStore('cots', {
          * Add a CoT GeoJSON to the store and modify props to meet MapLibre style requirements
          */
         add: async function(feat: Feature, mission_guid?: string) {
-            if (!feat.properties) feat.properties = {};
-
             if (!feat.id && !feat.properties.id) {
                 feat.id = self.crypto.randomUUID();
             }

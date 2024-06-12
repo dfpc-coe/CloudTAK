@@ -50,7 +50,7 @@ export interface paths {
     get: {
       parameters: {
         query: {
-          /** @description No Description */
+          /** @description Filter results by a human readable name field */
           filter: string;
         };
       };
@@ -93,18 +93,18 @@ export interface paths {
         query: {
           /** @description No Description */
           scope?: "server" | "user";
-          /** @description No Description */
+          /** @description Limit the number of responses returned */
           limit: number;
-          /** @description No Description */
+          /** @description Iterate through "pages" of items based on the "limit" query param */
           page: number;
-          /** @description No Description */
+          /** @description Order in which results are returned based on the "sort" query param */
           order: "asc" | "desc";
           /** @description No Description */
           type?: "vector" | "raster" | "terrain";
           /** @description No Description */
-          sort?: "id" | "created" | "updated" | "name" | "url" | "username" | "bounds" | "center" | "minzoom" | "maxzoom" | "format" | "style" | "type";
-          /** @description No Description */
-          filter?: string;
+          sort: "id" | "created" | "updated" | "name" | "url" | "username" | "bounds" | "center" | "minzoom" | "maxzoom" | "format" | "style" | "type";
+          /** @description Filter results by a human readable name field */
+          filter: string;
         };
       };
       responses: {
@@ -164,6 +164,7 @@ export interface paths {
       requestBody: {
         content: {
           "application/json": {
+            /** @description Human readable name */
             name: string;
             /** @default user */
             scope: "server" | "user";
@@ -257,6 +258,7 @@ export interface paths {
       requestBody: {
         content: {
           "application/json": {
+            /** @description Human readable name */
             name?: string;
             url?: string;
             minzoom?: number;
@@ -526,16 +528,16 @@ export interface paths {
     get: {
       parameters: {
         query: {
-          /** @description No Description */
+          /** @description Limit the number of responses returned */
           limit: number;
-          /** @description No Description */
+          /** @description Iterate through "pages" of items based on the "limit" query param */
           page: number;
-          /** @description No Description */
+          /** @description Order in which results are returned based on the "sort" query param */
           order: "asc" | "desc";
           /** @description No Description */
           sort?: "id" | "created" | "updated" | "name" | "description" | "auto_transform" | "mission_sync" | "mission_diff" | "mission_role" | "mission_token" | "mission_groups" | "assets" | "connection";
-          /** @description No Description */
-          filter?: string;
+          /** @description Filter results by a human readable name field */
+          filter: string;
         };
       };
       responses: {
@@ -571,7 +573,9 @@ export interface paths {
       requestBody: {
         content: {
           "application/json": {
+            /** @description Human readable name */
             name: string;
+            /** @description Human readable description */
             description: string;
             auto_transform?: boolean;
             mission_diff?: boolean;
@@ -702,16 +706,16 @@ export interface paths {
     get: {
       parameters: {
         query: {
-          /** @description No Description */
+          /** @description Limit the number of responses returned */
           limit: number;
-          /** @description No Description */
+          /** @description Iterate through "pages" of items based on the "limit" query param */
           page: number;
-          /** @description No Description */
+          /** @description Order in which results are returned based on the "sort" query param */
           order: "asc" | "desc";
           /** @description No Description */
           sort?: "id" | "created" | "updated" | "layer" | "icon" | "priority" | "title" | "description" | "hidden";
-          /** @description No Description */
-          filter?: string;
+          /** @description Filter results by a human readable name field */
+          filter: string;
         };
       };
       responses: {
@@ -741,7 +745,9 @@ export interface paths {
       requestBody: {
         content: {
           "application/json": {
+            /** @description Human readable name */
             title: string;
+            /** @description Human readable description */
             description?: string;
             icon?: string;
             priority?: "green" | "yellow" | "red";
@@ -886,16 +892,16 @@ export interface paths {
     get: {
       parameters: {
         query: {
-          /** @description No Description */
+          /** @description Limit the number of responses returned */
           limit: number;
-          /** @description No Description */
+          /** @description Iterate through "pages" of items based on the "limit" query param */
           page: number;
-          /** @description No Description */
+          /** @description Order in which results are returned based on the "sort" query param */
           order: "asc" | "desc";
           /** @description No Description */
           sort?: "id" | "created" | "updated" | "name" | "priority" | "description" | "enabled" | "enabled_styles" | "styles" | "logging" | "stale" | "task" | "connection" | "cron" | "environment" | "config" | "memory" | "timeout" | "data" | "schema";
-          /** @description No Description */
-          filter?: string;
+          /** @description Filter results by a human readable name field */
+          filter: string;
           /** @description No Description */
           data?: number;
         };
@@ -1044,8 +1050,10 @@ export interface paths {
       requestBody: {
         content: {
           "application/json": {
+            /** @description Human readable name */
             name: string;
             priority?: "high" | "low" | "off";
+            /** @description Human readable description */
             description: string;
             enabled: boolean;
             task: string;
@@ -1439,8 +1447,10 @@ export interface paths {
       requestBody: {
         content: {
           "application/json": {
+            /** @description Human readable name */
             name?: string;
             priority?: "high" | "low" | "off";
+            /** @description Human readable description */
             description?: string;
             cron?: string;
             memory?: number;
@@ -1547,7 +1557,7 @@ export interface paths {
             };
             logging?: boolean;
             stale?: number;
-            data?: number;
+            data?: null | number;
             environment?: unknown;
             config?: {
               timezone?: {
@@ -1711,16 +1721,16 @@ export interface paths {
     get: {
       parameters: {
         query: {
-          /** @description No Description */
+          /** @description Limit the number of responses returned */
           limit: number;
-          /** @description No Description */
+          /** @description Iterate through "pages" of items based on the "limit" query param */
           page: number;
-          /** @description No Description */
+          /** @description Order in which results are returned based on the "sort" query param */
           order: "asc" | "desc";
           /** @description No Description */
           sort?: "id" | "created" | "updated" | "name" | "enabled" | "connection" | "type" | "body" | "logging";
-          /** @description No Description */
-          filter?: string;
+          /** @description Filter results by a human readable name field */
+          filter: string;
           /** @description No Description */
           enabled?: boolean;
         };
@@ -1752,6 +1762,7 @@ export interface paths {
       requestBody: {
         content: {
           "application/json": {
+            /** @description Human readable name */
             name: string;
             type: string;
             logging: boolean;
@@ -1826,6 +1837,7 @@ export interface paths {
       requestBody: {
         content: {
           "application/json": {
+            /** @description Human readable name */
             name?: string;
             type?: string;
             logging?: boolean;
@@ -1876,16 +1888,16 @@ export interface paths {
     get: {
       parameters: {
         query: {
-          /** @description No Description */
+          /** @description Limit the number of responses returned */
           limit: number;
-          /** @description No Description */
+          /** @description Iterate through "pages" of items based on the "limit" query param */
           page: number;
-          /** @description No Description */
+          /** @description Order in which results are returned based on the "sort" query param */
           order: "asc" | "desc";
           /** @description No Description */
           sort?: "id" | "connection" | "name" | "token" | "created" | "updated";
-          /** @description No Description */
-          filter?: string;
+          /** @description Filter results by a human readable name field */
+          filter: string;
         };
       };
       responses: {
@@ -1911,6 +1923,7 @@ export interface paths {
       requestBody: {
         content: {
           "application/json": {
+            /** @description Human readable name */
             name: string;
           };
         };
@@ -1952,6 +1965,7 @@ export interface paths {
       requestBody: {
         content: {
           "application/json": {
+            /** @description Human readable name */
             name?: string;
           };
         };
@@ -1974,16 +1988,16 @@ export interface paths {
     get: {
       parameters: {
         query: {
-          /** @description No Description */
+          /** @description Limit the number of responses returned */
           limit: number;
-          /** @description No Description */
+          /** @description Iterate through "pages" of items based on the "limit" query param */
           page: number;
-          /** @description No Description */
+          /** @description Order in which results are returned based on the "sort" query param */
           order: "asc" | "desc";
           /** @description No Description */
           sort?: "id" | "agency" | "created" | "updated" | "name" | "description" | "enabled" | "auth";
-          /** @description No Description */
-          filter?: string;
+          /** @description Filter results by a human readable name field */
+          filter: string;
         };
       };
       responses: {
@@ -2005,6 +2019,7 @@ export interface paths {
                   status: string;
                   agency?: number | null;
                   certificate: {
+                    subject: string;
                     validFrom: string;
                     validTo: string;
                   };
@@ -2024,10 +2039,13 @@ export interface paths {
       requestBody: {
         content: {
           "application/json": {
+            /** @description Human readable name */
             name: string;
+            /** @description Human readable description */
             description: string;
+            /** @default true */
             enabled?: boolean;
-            agency?: number;
+            agency: null | number;
             auth: {
               key: string;
               cert: string;
@@ -2044,6 +2062,7 @@ export interface paths {
               status: string;
               agency?: number | null;
               certificate: {
+                subject: string;
                 validFrom: string;
                 validTo: string;
               };
@@ -2070,6 +2089,7 @@ export interface paths {
               status: string;
               agency?: number | null;
               certificate: {
+                subject: string;
                 validFrom: string;
                 validTo: string;
               };
@@ -2102,10 +2122,12 @@ export interface paths {
       requestBody: {
         content: {
           "application/json": {
+            /** @description Human readable name */
             name?: string;
+            /** @description Human readable description */
             description?: string;
             enabled?: boolean;
-            agency?: number;
+            agency: null | number;
             auth?: {
               key: string;
               cert: string;
@@ -2122,6 +2144,7 @@ export interface paths {
               status: string;
               agency?: number | null;
               certificate: {
+                subject: string;
                 validFrom: string;
                 validTo: string;
               };
@@ -2148,6 +2171,7 @@ export interface paths {
               status: string;
               agency?: number | null;
               certificate: {
+                subject: string;
                 validFrom: string;
                 validTo: string;
               };
@@ -2229,7 +2253,7 @@ export interface paths {
           /** @description No Description */
           token?: string;
           /** @description No Description */
-          expires?: string;
+          expires?: number;
         };
       };
       responses: {
@@ -2255,7 +2279,7 @@ export interface paths {
           /** @description No Description */
           token?: string;
           /** @description No Description */
-          expires?: string;
+          expires?: number;
           /** @description No Description */
           title?: string;
         };
@@ -2359,11 +2383,11 @@ export interface paths {
           /** @description No Description */
           layer: string;
           /** @description No Description */
-          token: string;
-          /** @description No Description */
-          expires: number;
-          /** @description No Description */
           query: string;
+          /** @description No Description */
+          token?: string;
+          /** @description No Description */
+          expires?: number;
         };
       };
       responses: {
@@ -2427,16 +2451,16 @@ export interface paths {
     get: {
       parameters: {
         query: {
-          /** @description No Description */
+          /** @description Limit the number of responses returned */
           limit: number;
-          /** @description No Description */
+          /** @description Iterate through "pages" of items based on the "limit" query param */
           page: number;
-          /** @description No Description */
+          /** @description Order in which results are returned based on the "sort" query param */
           order: "asc" | "desc";
           /** @description No Description */
           sort?: "id" | "created" | "updated" | "name" | "status" | "error" | "result" | "username" | "mode" | "mode_id" | "config";
           /** @description No Description */
-          mode?: string;
+          mode?: "Unknown" | "Mission" | "Package";
           /** @description No Description */
           mode_id?: string;
         };
@@ -2487,8 +2511,9 @@ export interface paths {
       requestBody: {
         content: {
           "application/json": {
+            /** @description Human readable name */
             name: string;
-            mode?: "Unknown" | "Mission";
+            mode?: "Unknown" | "Mission" | "Package";
             mode_id?: string;
             config?: unknown;
           };
@@ -2603,16 +2628,16 @@ export interface paths {
         query: {
           /** @description No Description */
           scope?: "server" | "user";
-          /** @description No Description */
+          /** @description Limit the number of responses returned */
           limit: number;
-          /** @description No Description */
+          /** @description Iterate through "pages" of items based on the "limit" query param */
           page: number;
-          /** @description No Description */
+          /** @description Order in which results are returned based on the "sort" query param */
           order: "asc" | "desc";
           /** @description No Description */
           sort?: "uid" | "created" | "updated" | "version" | "name" | "username" | "default_group" | "default_friendly" | "default_hostile" | "default_neutral" | "default_unknown" | "skip_resize";
-          /** @description No Description */
-          filter?: string;
+          /** @description Filter results by a human readable name field */
+          filter: string;
         };
       };
       responses: {
@@ -2647,6 +2672,7 @@ export interface paths {
           "application/json": {
             uid: string;
             version: number;
+            /** @description Human readable name */
             name: string;
             scope?: "server" | "user";
             default_group?: string;
@@ -2776,6 +2802,7 @@ export interface paths {
       requestBody: {
         content: {
           "application/json": {
+            /** @description Human readable name */
             name: string;
             data: string;
             type2525b?: string | null;
@@ -2805,21 +2832,21 @@ export interface paths {
     /** List Icons */
     get: {
       parameters: {
-        query?: {
+        query: {
           /** @description No Description */
           scope?: "server" | "user";
           /** @description No Description */
           limit?: number;
-          /** @description No Description */
-          page?: number;
-          /** @description No Description */
-          order?: "asc" | "desc";
+          /** @description Iterate through "pages" of items based on the "limit" query param */
+          page: number;
+          /** @description Order in which results are returned based on the "sort" query param */
+          order: "asc" | "desc";
           /** @description No Description */
           sort?: "id" | "created" | "updated" | "name" | "iconset" | "type2525b" | "data" | "path";
           /** @description No Description */
           iconset?: string;
-          /** @description No Description */
-          filter?: string;
+          /** @description Filter results by a human readable name field */
+          filter: string;
         };
       };
       responses: {
@@ -2973,16 +3000,16 @@ export interface paths {
     get: {
       parameters: {
         query: {
-          /** @description No Description */
+          /** @description Limit the number of responses returned */
           limit: number;
-          /** @description No Description */
+          /** @description Iterate through "pages" of items based on the "limit" query param */
           page: number;
-          /** @description No Description */
+          /** @description Order in which results are returned based on the "sort" query param */
           order: "asc" | "desc";
           /** @description No Description */
           sort?: "id" | "created" | "updated" | "name" | "priority" | "description" | "enabled" | "enabled_styles" | "styles" | "logging" | "stale" | "task" | "connection" | "cron" | "environment" | "config" | "memory" | "timeout" | "data" | "schema";
-          /** @description No Description */
-          filter?: string;
+          /** @description Filter results by a human readable name field */
+          filter: string;
           /** @description No Description */
           data?: number;
           /** @description No Description */
@@ -3307,6 +3334,38 @@ export interface paths {
       };
     };
   };
+  "/marti/export": {
+    /** Helper API to export Timeseries KML data from TAK */
+    post: {
+      parameters: {
+        query?: {
+          /** @description No Description */
+          download?: boolean;
+        };
+      };
+      requestBody: {
+        content: {
+          "application/json": {
+            startTime: string;
+            endTime: string;
+            groups: string[];
+            /** @enum {string} */
+            format: "kmz" | "kml";
+            interval?: number;
+            multiTrackThreshold?: string;
+            extendedData?: boolean;
+            optimizeExport?: boolean;
+          };
+        };
+      };
+      responses: {
+        /** @description Successful Response */
+        200: {
+          content: never;
+        };
+      };
+    };
+  };
   "/marti/api/files/{:hash}": {
     /** Helper API to download files by file hash */
     get: {
@@ -3333,6 +3392,69 @@ export interface paths {
           token?: string;
         };
       };
+      responses: {
+        /** @description Successful Response */
+        200: {
+          content: {
+            "application/json": {
+              status: number;
+              message: string;
+            };
+          };
+        };
+      };
+    };
+  };
+  "/marti/missions/{:name}/layer": {
+    /** Helper API list mission layers */
+    get: {
+      responses: {
+        /** @description Successful Response */
+        200: {
+          content: {
+            "application/json": {
+              version: string;
+              type: string;
+              data: unknown;
+              messages?: string[];
+              nodeId?: string;
+            };
+          };
+        };
+      };
+    };
+    /** Helper API to create mission layers */
+    post: {
+      requestBody: {
+        content: {
+          "application/json": {
+            name: string;
+            type: "GROUP" | "UID" | "CONTENTS" | "MAPLAYER" | "ITEM";
+            uid?: string;
+            parentUid?: string;
+            afterUid?: string;
+          };
+        };
+      };
+      responses: {
+        /** @description Successful Response */
+        200: {
+          content: {
+            "application/json": {
+              version: string;
+              type: string;
+              data: unknown;
+              messages?: string[];
+              nodeId?: string;
+            };
+          };
+        };
+      };
+    };
+  };
+  "/marti/missions/{:name}/layer/{:uid}": {
+    /** Helper API to delete mission layers */
+    delete: {
       responses: {
         /** @description Successful Response */
         200: {
@@ -3398,9 +3520,9 @@ export interface paths {
           /** @description No Description */
           changes?: boolean;
           /** @description No Description */
-          logs?: string;
+          logs?: boolean;
           /** @description No Description */
-          secago?: string;
+          secago?: number;
           /** @description No Description */
           start?: string;
           /** @description No Description */
@@ -3437,7 +3559,7 @@ export interface paths {
                   creatorUid: string;
                   missionNames: string[];
                   servertime: string;
-                  dtg: string;
+                  dtg?: string;
                   created: string;
                   contentHashes: unknown[];
                   keywords: unknown[];
@@ -3474,7 +3596,7 @@ export interface paths {
           /** @description No Description */
           creatorUid?: string;
           /** @description No Description */
-          group?: string[];
+          group?: string;
           /** @description No Description */
           description?: string;
           /** @description No Description */
@@ -3484,7 +3606,7 @@ export interface paths {
           /** @description No Description */
           bbox?: string;
           /** @description No Description */
-          boundingPolygon?: string[];
+          boundingPolygon?: string;
           /** @description No Description */
           path?: string;
           /** @description No Description */
@@ -3620,23 +3742,17 @@ export interface paths {
       };
     };
   };
-  "/marti/missions/{:name}/subscription": {
-    /** Return subscriptions associated with your user */
+  "/marti/missions/{:name}/role": {
+    /** Return a role associated with your user */
     get: {
       responses: {
         /** @description Successful Response */
         200: {
           content: {
             "application/json": {
-              token?: string;
-              clientUid: string;
-              username: string;
-              createTime: string;
-              role: {
-                permissions: string[];
-                hibernateLazyInitializer: unknown;
-                type: string;
-              };
+              permissions: string[];
+              hibernateLazyInitializer?: unknown;
+              type: "MISSION_OWNER" | "MISSION_SUBSCRIBER" | "MISSION_READONLY_SUBSCRIBER";
             };
           };
         };
@@ -3953,13 +4069,13 @@ export interface paths {
     get: {
       parameters: {
         query: {
-          /** @description No Description */
+          /** @description Limit the number of responses returned */
           limit: number;
-          /** @description No Description */
+          /** @description Iterate through "pages" of items based on the "limit" query param */
           page: number;
-          /** @description No Description */
+          /** @description Order in which results are returned based on the "sort" query param */
           order: "asc" | "desc";
-          /** @description No Description */
+          /** @description Filter results by a human readable name field */
           filter: string;
         };
       };
@@ -4110,11 +4226,11 @@ export interface paths {
     get: {
       parameters: {
         query: {
-          /** @description No Description */
+          /** @description Limit the number of responses returned */
           limit: number;
-          /** @description No Description */
+          /** @description Iterate through "pages" of items based on the "limit" query param */
           page: number;
-          /** @description No Description */
+          /** @description Order in which results are returned based on the "sort" query param */
           order: "asc" | "desc";
           /** @description No Description */
           sort?: "id" | "username" | "chatroom" | "sender_callsign" | "sender_uid" | "created" | "updated" | "message_id" | "message";
@@ -4140,9 +4256,9 @@ export interface paths {
         query: {
           /** @description No Description */
           limit: number;
-          /** @description No Description */
+          /** @description Iterate through "pages" of items based on the "limit" query param */
           page: number;
-          /** @description No Description */
+          /** @description Order in which results are returned based on the "sort" query param */
           order: "asc" | "desc";
         };
       };
@@ -4156,12 +4272,136 @@ export interface paths {
                   id: string;
                   /** @constant */
                   type: "Feature";
-                  properties: unknown;
-                  geometry: {
-                    /** @enum {string} */
-                    type: "Point" | "LineString" | "Polygon";
-                    coordinates: unknown[];
+                  properties: {
+                    /** @default UNKNOWN */
+                    callsign: string;
+                    /** @default a-f-g */
+                    type: string;
+                    how: string;
+                    time: string;
+                    start: string;
+                    stale: string;
+                    center: number[];
+                    course?: number;
+                    slope?: number;
+                    speed?: number;
+                    color?: string;
+                    opacity?: number;
+                    stroke?: string;
+                    "stroke-opacity"?: number;
+                    "stroke-width"?: number;
+                    "stroke-style"?: string;
+                    fill?: string;
+                    "fill-opacity"?: number;
+                    metadata?: Record<string, never>;
+                    archived?: boolean;
+                    contact?: {
+                      phone?: string;
+                      endpoint?: string;
+                    };
+                    remarks?: string;
+                    fileshare?: {
+                      filename: string;
+                      name: string;
+                      senderCallsign: string;
+                      senderUid: string;
+                      senderUrl: string;
+                      sha256: string;
+                      sizeInBytes: number;
+                    };
+                    sensor?: {
+                      elevation?: string;
+                      vfov?: string;
+                      fov?: string;
+                      type?: string;
+                      version?: string;
+                      north?: string;
+                      roll?: string;
+                      range?: string;
+                      azimuth?: string;
+                      model?: string;
+                    };
+                    video?: {
+                      sensor?: string;
+                      spi?: string;
+                      url?: string;
+                    };
+                    links?: {
+                        type?: string;
+                        point?: string;
+                        url?: string;
+                        mime?: string;
+                        remarks?: string;
+                        uid?: string;
+                        relation?: string;
+                      }[];
+                    chat?: {
+                      parent?: string;
+                      groupOwner?: string;
+                      messageId?: string;
+                      chatroom: string;
+                      id: string;
+                      senderCallsign: string;
+                      chatgrp: unknown;
+                    };
+                    track?: {
+                      speed?: string;
+                      course?: string;
+                      slope?: string;
+                      eCourse?: string;
+                      eSpeed?: string;
+                      eSlope?: string;
+                    };
+                    dest?: {
+                      uid?: string;
+                      callsign?: string;
+                      mission?: string;
+                      after?: string;
+                      path?: string;
+                    } | {
+                        uid?: string;
+                        callsign?: string;
+                        mission?: string;
+                        after?: string;
+                        path?: string;
+                      }[];
+                    icon?: string;
+                    droid?: string;
+                    takv?: {
+                      device?: string;
+                      platform?: string;
+                      os?: string;
+                      version?: string;
+                    };
+                    group?: {
+                      name: string;
+                      role: string;
+                    };
+                    status?: {
+                      battery?: string;
+                      readiness?: string;
+                    };
+                    precisionlocation?: {
+                      geopointsrc?: string;
+                      altsrc?: string;
+                    };
+                    flow?: Record<string, never>;
                   };
+                  geometry: {
+                    /** @constant */
+                    type: "Point";
+                    coordinates: number[];
+                  } | {
+                    /** @constant */
+                    type: "LineString";
+                    coordinates: number[][];
+                  } | {
+                    /** @constant */
+                    type: "Polygon";
+                    coordinates: number[][][];
+                  };
+                  /** @default / */
+                  path: string;
                 })[];
             };
           };
@@ -4176,12 +4416,136 @@ export interface paths {
             id: string;
             /** @constant */
             type: "Feature";
-            properties: unknown;
-            geometry: {
-              /** @enum {string} */
-              type: "Point" | "LineString" | "Polygon";
-              coordinates: unknown[];
+            properties: {
+              /** @default UNKNOWN */
+              callsign: string;
+              /** @default a-f-g */
+              type: string;
+              how: string;
+              time: string;
+              start: string;
+              stale: string;
+              center: number[];
+              course?: number;
+              slope?: number;
+              speed?: number;
+              color?: string;
+              opacity?: number;
+              stroke?: string;
+              "stroke-opacity"?: number;
+              "stroke-width"?: number;
+              "stroke-style"?: string;
+              fill?: string;
+              "fill-opacity"?: number;
+              metadata?: Record<string, never>;
+              archived?: boolean;
+              contact?: {
+                phone?: string;
+                endpoint?: string;
+              };
+              remarks?: string;
+              fileshare?: {
+                filename: string;
+                name: string;
+                senderCallsign: string;
+                senderUid: string;
+                senderUrl: string;
+                sha256: string;
+                sizeInBytes: number;
+              };
+              sensor?: {
+                elevation?: string;
+                vfov?: string;
+                fov?: string;
+                type?: string;
+                version?: string;
+                north?: string;
+                roll?: string;
+                range?: string;
+                azimuth?: string;
+                model?: string;
+              };
+              video?: {
+                sensor?: string;
+                spi?: string;
+                url?: string;
+              };
+              links?: {
+                  type?: string;
+                  point?: string;
+                  url?: string;
+                  mime?: string;
+                  remarks?: string;
+                  uid?: string;
+                  relation?: string;
+                }[];
+              chat?: {
+                parent?: string;
+                groupOwner?: string;
+                messageId?: string;
+                chatroom: string;
+                id: string;
+                senderCallsign: string;
+                chatgrp: unknown;
+              };
+              track?: {
+                speed?: string;
+                course?: string;
+                slope?: string;
+                eCourse?: string;
+                eSpeed?: string;
+                eSlope?: string;
+              };
+              dest?: {
+                uid?: string;
+                callsign?: string;
+                mission?: string;
+                after?: string;
+                path?: string;
+              } | {
+                  uid?: string;
+                  callsign?: string;
+                  mission?: string;
+                  after?: string;
+                  path?: string;
+                }[];
+              icon?: string;
+              droid?: string;
+              takv?: {
+                device?: string;
+                platform?: string;
+                os?: string;
+                version?: string;
+              };
+              group?: {
+                name: string;
+                role: string;
+              };
+              status?: {
+                battery?: string;
+                readiness?: string;
+              };
+              precisionlocation?: {
+                geopointsrc?: string;
+                altsrc?: string;
+              };
+              flow?: Record<string, never>;
             };
+            geometry: {
+              /** @constant */
+              type: "Point";
+              coordinates: number[];
+            } | {
+              /** @constant */
+              type: "LineString";
+              coordinates: number[][];
+            } | {
+              /** @constant */
+              type: "Polygon";
+              coordinates: number[][][];
+            };
+            /** @default / */
+            path: string;
           };
         };
       };
@@ -4193,12 +4557,156 @@ export interface paths {
               id: string;
               /** @constant */
               type: "Feature";
-              properties: unknown;
-              geometry: {
-                /** @enum {string} */
-                type: "Point" | "LineString" | "Polygon";
-                coordinates: unknown[];
+              properties: {
+                /** @default UNKNOWN */
+                callsign: string;
+                /** @default a-f-g */
+                type: string;
+                how: string;
+                time: string;
+                start: string;
+                stale: string;
+                center: number[];
+                course?: number;
+                slope?: number;
+                speed?: number;
+                color?: string;
+                opacity?: number;
+                stroke?: string;
+                "stroke-opacity"?: number;
+                "stroke-width"?: number;
+                "stroke-style"?: string;
+                fill?: string;
+                "fill-opacity"?: number;
+                metadata?: Record<string, never>;
+                archived?: boolean;
+                contact?: {
+                  phone?: string;
+                  endpoint?: string;
+                };
+                remarks?: string;
+                fileshare?: {
+                  filename: string;
+                  name: string;
+                  senderCallsign: string;
+                  senderUid: string;
+                  senderUrl: string;
+                  sha256: string;
+                  sizeInBytes: number;
+                };
+                sensor?: {
+                  elevation?: string;
+                  vfov?: string;
+                  fov?: string;
+                  type?: string;
+                  version?: string;
+                  north?: string;
+                  roll?: string;
+                  range?: string;
+                  azimuth?: string;
+                  model?: string;
+                };
+                video?: {
+                  sensor?: string;
+                  spi?: string;
+                  url?: string;
+                };
+                links?: {
+                    type?: string;
+                    point?: string;
+                    url?: string;
+                    mime?: string;
+                    remarks?: string;
+                    uid?: string;
+                    relation?: string;
+                  }[];
+                chat?: {
+                  parent?: string;
+                  groupOwner?: string;
+                  messageId?: string;
+                  chatroom: string;
+                  id: string;
+                  senderCallsign: string;
+                  chatgrp: unknown;
+                };
+                track?: {
+                  speed?: string;
+                  course?: string;
+                  slope?: string;
+                  eCourse?: string;
+                  eSpeed?: string;
+                  eSlope?: string;
+                };
+                dest?: {
+                  uid?: string;
+                  callsign?: string;
+                  mission?: string;
+                  after?: string;
+                  path?: string;
+                } | {
+                    uid?: string;
+                    callsign?: string;
+                    mission?: string;
+                    after?: string;
+                    path?: string;
+                  }[];
+                icon?: string;
+                droid?: string;
+                takv?: {
+                  device?: string;
+                  platform?: string;
+                  os?: string;
+                  version?: string;
+                };
+                group?: {
+                  name: string;
+                  role: string;
+                };
+                status?: {
+                  battery?: string;
+                  readiness?: string;
+                };
+                precisionlocation?: {
+                  geopointsrc?: string;
+                  altsrc?: string;
+                };
+                flow?: Record<string, never>;
               };
+              geometry: {
+                /** @constant */
+                type: "Point";
+                coordinates: number[];
+              } | {
+                /** @constant */
+                type: "LineString";
+                coordinates: number[][];
+              } | {
+                /** @constant */
+                type: "Polygon";
+                coordinates: number[][][];
+              };
+              /** @default / */
+              path: string;
+            };
+          };
+        };
+      };
+    };
+    /** Delete features by path */
+    delete: {
+      parameters: {
+        query: {
+          /** @description No Description */
+          path: string;
+        };
+      };
+      responses: {
+        /** @description Successful Response */
+        200: {
+          content: {
+            "application/json": {
+              status: number;
+              message: string;
             };
           };
         };
@@ -4206,6 +4714,151 @@ export interface paths {
     };
   };
   "/profile/feature/{:id}": {
+    /** Delete a feature */
+    get: {
+      responses: {
+        /** @description Successful Response */
+        200: {
+          content: {
+            "application/json": {
+              id: string;
+              /** @constant */
+              type: "Feature";
+              properties: {
+                /** @default UNKNOWN */
+                callsign: string;
+                /** @default a-f-g */
+                type: string;
+                how: string;
+                time: string;
+                start: string;
+                stale: string;
+                center: number[];
+                course?: number;
+                slope?: number;
+                speed?: number;
+                color?: string;
+                opacity?: number;
+                stroke?: string;
+                "stroke-opacity"?: number;
+                "stroke-width"?: number;
+                "stroke-style"?: string;
+                fill?: string;
+                "fill-opacity"?: number;
+                metadata?: Record<string, never>;
+                archived?: boolean;
+                contact?: {
+                  phone?: string;
+                  endpoint?: string;
+                };
+                remarks?: string;
+                fileshare?: {
+                  filename: string;
+                  name: string;
+                  senderCallsign: string;
+                  senderUid: string;
+                  senderUrl: string;
+                  sha256: string;
+                  sizeInBytes: number;
+                };
+                sensor?: {
+                  elevation?: string;
+                  vfov?: string;
+                  fov?: string;
+                  type?: string;
+                  version?: string;
+                  north?: string;
+                  roll?: string;
+                  range?: string;
+                  azimuth?: string;
+                  model?: string;
+                };
+                video?: {
+                  sensor?: string;
+                  spi?: string;
+                  url?: string;
+                };
+                links?: {
+                    type?: string;
+                    point?: string;
+                    url?: string;
+                    mime?: string;
+                    remarks?: string;
+                    uid?: string;
+                    relation?: string;
+                  }[];
+                chat?: {
+                  parent?: string;
+                  groupOwner?: string;
+                  messageId?: string;
+                  chatroom: string;
+                  id: string;
+                  senderCallsign: string;
+                  chatgrp: unknown;
+                };
+                track?: {
+                  speed?: string;
+                  course?: string;
+                  slope?: string;
+                  eCourse?: string;
+                  eSpeed?: string;
+                  eSlope?: string;
+                };
+                dest?: {
+                  uid?: string;
+                  callsign?: string;
+                  mission?: string;
+                  after?: string;
+                  path?: string;
+                } | {
+                    uid?: string;
+                    callsign?: string;
+                    mission?: string;
+                    after?: string;
+                    path?: string;
+                  }[];
+                icon?: string;
+                droid?: string;
+                takv?: {
+                  device?: string;
+                  platform?: string;
+                  os?: string;
+                  version?: string;
+                };
+                group?: {
+                  name: string;
+                  role: string;
+                };
+                status?: {
+                  battery?: string;
+                  readiness?: string;
+                };
+                precisionlocation?: {
+                  geopointsrc?: string;
+                  altsrc?: string;
+                };
+                flow?: Record<string, never>;
+              };
+              geometry: {
+                /** @constant */
+                type: "Point";
+                coordinates: number[];
+              } | {
+                /** @constant */
+                type: "LineString";
+                coordinates: number[][];
+              } | {
+                /** @constant */
+                type: "Polygon";
+                coordinates: number[][][];
+              };
+              /** @default / */
+              path: string;
+            };
+          };
+        };
+      };
+    };
     /** Delete a feature */
     delete: {
       responses: {
@@ -4290,11 +4943,11 @@ export interface paths {
     get: {
       parameters: {
         query: {
-          /** @description No Description */
+          /** @description Limit the number of responses returned */
           limit: number;
-          /** @description No Description */
+          /** @description Iterate through "pages" of items based on the "limit" query param */
           page: number;
-          /** @description No Description */
+          /** @description Order in which results are returned based on the "sort" query param */
           order: "asc" | "desc";
         };
       };
@@ -4314,6 +4967,7 @@ export interface paths {
                   type: string;
                   opacity: number;
                   visible: boolean;
+                  token: string | null;
                   styles: ((string | number | boolean | null) | unknown[] | Record<string, never>) | null;
                   mode: string;
                   mode_id: string | null;
@@ -4329,6 +4983,7 @@ export interface paths {
                   type: string;
                   opacity: number;
                   visible: boolean;
+                  token: string | null;
                   styles: ((string | number | boolean | null) | unknown[] | Record<string, never>) | null;
                   mode: string;
                   mode_id: string | null;
@@ -4369,6 +5024,7 @@ export interface paths {
               type: string;
               opacity: number;
               visible: boolean;
+              token: string | null;
               styles: ((string | number | boolean | null) | unknown[] | Record<string, never>) | null;
               mode: string;
               mode_id: string | null;
@@ -4416,6 +5072,7 @@ export interface paths {
               type: string;
               opacity: number;
               visible: boolean;
+              token: string | null;
               styles: ((string | number | boolean | null) | unknown[] | Record<string, never>) | null;
               mode: string;
               mode_id: string | null;
@@ -4452,6 +5109,7 @@ export interface paths {
               type: string;
               opacity: number;
               visible: boolean;
+              token: string | null;
               styles: ((string | number | boolean | null) | unknown[] | Record<string, never>) | null;
               mode: string;
               mode_id: string | null;
@@ -4535,66 +5193,6 @@ export interface paths {
       };
     };
   };
-  "/search/reverse/{:longitude}/{:latitude}": {
-    /** Get information about a given point */
-    get: {
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              weather: {
-                type: string;
-                properties: {
-                  updated: string;
-                  units: string;
-                  forecastGenerator: string;
-                  generatedAt: string;
-                  updateTime: string;
-                  validTimes: string;
-                  elevation: {
-                    unitCode: string;
-                    value: number;
-                  };
-                  periods: {
-                      number: number;
-                      name: string;
-                      startTime: string;
-                      endTime: string;
-                      isDaytime: boolean;
-                      temperature: number;
-                      temperatureUnit: string;
-                      temperatureTrend: unknown;
-                      probabilityOfPrecipitation: {
-                        unitCode: string;
-                        value: number;
-                      };
-                      dewpoint: {
-                        unitCode: string;
-                        value: number;
-                      };
-                      relativeHumidity: {
-                        unitCode: string;
-                        value: number;
-                      };
-                      windSpeed: string;
-                      windDirection: string;
-                      icon: string;
-                      shortForecast: string;
-                      detailedForecast: string;
-                    }[];
-                };
-                geometry: {
-                  type: string;
-                  coordinates: number[][][];
-                };
-              } | null;
-            };
-          };
-        };
-      };
-    };
-  };
   "/server": {
     /** Get Server */
     get: {
@@ -4655,6 +5253,71 @@ export interface paths {
               api: string;
               /** @description Once an admin certificate is configured it is not retrivable. This boolean refers to if a certificate is currently loaded */
               auth: boolean;
+            };
+          };
+        };
+      };
+    };
+  };
+  "/search/reverse/{:longitude}/{:latitude}": {
+    /** Get information about a given point */
+    get: {
+      responses: {
+        /** @description Successful Response */
+        200: {
+          content: {
+            "application/json": {
+              weather: {
+                type: string;
+                properties: {
+                  updated: string;
+                  units: string;
+                  forecastGenerator: string;
+                  generatedAt: string;
+                  updateTime: string;
+                  validTimes: string;
+                  elevation: {
+                    unitCode: string;
+                    value: number;
+                  };
+                  periods: {
+                      number: number;
+                      name: string;
+                      startTime: string;
+                      endTime: string;
+                      isDaytime: boolean;
+                      temperature: number;
+                      temperatureUnit: string;
+                      temperatureTrend: unknown;
+                      probabilityOfPrecipitation: {
+                        unitCode: string;
+                        value: number;
+                      };
+                      dewpoint: {
+                        unitCode: string;
+                        value: number;
+                      };
+                      relativeHumidity: {
+                        unitCode: string;
+                        value: number;
+                      };
+                      windSpeed: string;
+                      windDirection: string;
+                      icon: string;
+                      shortForecast: string;
+                      detailedForecast: string;
+                    }[];
+                };
+                geometry: {
+                  type: string;
+                  coordinates: number[][][];
+                };
+              } | null;
+              reverse: {
+                LongLabel: string;
+                ShortLabel: string;
+                Addr_type: string;
+              } | null;
             };
           };
         };
@@ -4824,16 +5487,16 @@ export interface paths {
     get: {
       parameters: {
         query: {
-          /** @description No Description */
+          /** @description Limit the number of responses returned */
           limit: number;
-          /** @description No Description */
+          /** @description Iterate through "pages" of items based on the "limit" query param */
           page: number;
-          /** @description No Description */
+          /** @description Order in which results are returned based on the "sort" query param */
           order: "asc" | "desc";
           /** @description No Description */
           sort?: "id" | "email" | "name" | "token" | "created" | "updated";
-          /** @description No Description */
-          filter?: string;
+          /** @description Filter results by a human readable name field */
+          filter: string;
         };
       };
       responses: {
@@ -4921,16 +5584,16 @@ export interface paths {
     get: {
       parameters: {
         query: {
-          /** @description No Description */
+          /** @description Limit the number of responses returned */
           limit: number;
-          /** @description No Description */
+          /** @description Iterate through "pages" of items based on the "limit" query param */
           page: number;
-          /** @description No Description */
+          /** @description Order in which results are returned based on the "sort" query param */
           order: "asc" | "desc";
           /** @description No Description */
           sort?: "id" | "name" | "username" | "last_login" | "auth" | "created" | "updated" | "phone" | "tak_callsign" | "tak_group" | "tak_role" | "tak_loc" | "display_stale" | "display_distance" | "display_elevation" | "display_speed" | "system_admin" | "agency_admin";
-          /** @description No Description */
-          filter?: string;
+          /** @description Filter results by a human readable name field */
+          filter: string;
         };
       };
       responses: {
