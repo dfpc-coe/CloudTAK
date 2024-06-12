@@ -179,6 +179,7 @@ export const ConnectionResponse = Type.Object({
     status: Type.String(),
     agency: Type.Optional(Type.Union([Type.Integer(), Type.Null()])),
     certificate: Type.Object({
+        subject: Type.String(),
         validFrom: Type.String(),
         validTo: Type.String()
     }),

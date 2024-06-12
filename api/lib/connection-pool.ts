@@ -172,7 +172,7 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
             for (const sub of await connConfig.subscriptions()) {
                 try {
                     await api.Mission.subscribe(sub.name, {
-                        uid: String(connConfig.id)
+                        uid: connConfig.uid()
                     },{
                         token: sub.token
                     });
