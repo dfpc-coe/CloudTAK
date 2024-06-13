@@ -59,16 +59,15 @@ export default class DataMission {
                 group: data.mission_groups,
             });
 
+            await config.models.Data.commit(data.id, {
+                mission_token: mission.token
+            });
+
             // The groups property isn't returned by Create
             // Make this second call to get the groups - TODO Talk to Josh
             mission = await api.Mission.get(data.name, {}, {
                 token: data.mission_token
             });
-
-            await config.models.Data.commit(data.id, {
-                mission_token: mission.token
-            });
-
         }
 
         const layers = await config.models.Layer.list({
