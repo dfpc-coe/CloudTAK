@@ -528,9 +528,9 @@ export default class {
     }
 
     /**
-     * Check if a mission exists and is accessible based on the current auth
+     * Check if you have access to a given mission
      */
-    async exists(
+    async access(
         name: string,
         opts?: Static<typeof MissionOptions>
     ): Promise<boolean> {
