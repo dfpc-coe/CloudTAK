@@ -12,6 +12,16 @@
 
 ### Pending Release
 
+### v2.39.0 - 2024-06-13
+
+- :rocket: `API` Add indexes to Iconsets & Basemaps for user based lookup
+- :rocket: `API` Update base image to Alpine 19
+- :white_check_mark: `API` Updated lint globs as some files were being missed
+- :bug: `await` on Hook Queue submission as errors were nuking the server
+- :bug: Support mission subscriptions based on certificate subject when no SA CoT is ever sent
+- :rocket: Avoid use of `attachContents` now that `<dest/>` tags are working as expected
+- :rocket: Remove mission from Profile Overlay if it no longer exists
+
 ### v2.38.0 - 2024-06-11
 
 - :rocket: Add Favicon for UI
