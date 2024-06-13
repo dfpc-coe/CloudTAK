@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v2.41.0 - 2024-06-13
+
+- :rocket: `UI` Update UI to support point color and opacity
+- :arrow_up: `API` Update node-cot for GeoJSON Point Styling
+
 ### v2.40.0 - 2024-06-13
 
 - :rocket: `API` Ensure `mission_groups` is set if `All Groups` function is used when creating Data Sync
