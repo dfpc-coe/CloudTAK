@@ -12,6 +12,8 @@
 
 ### Pending Release
 
+### v2.40.0 - 2024-06-13
+
 - :rocket: `API` Ensure `mission_groups` is set if `All Groups` function is used when creating Data Sync
 - :rocket: `UI` Disable Mission Role and set value to READONLY
 
