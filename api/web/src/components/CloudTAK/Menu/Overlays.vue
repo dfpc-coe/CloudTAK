@@ -119,7 +119,6 @@
 </template>
 
 <script>
-import { std, stdurl } from '/src/std.ts';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import OverlayLayers from './Overlays/Layers.vue';
 import {
