@@ -8,11 +8,11 @@
         "test": "tape test/*.test.js",
         "tstest": "test/test",
         "build": "tsc && cp .env* dist/ || true && cp ./lib/jobs dist/lib/jobs -r && cp ./icons dist/icons -r && cp package.json dist/ && cp migrations/ dist/ -r",
-        "lint": "eslint index.ts lib/**/*.ts routes/**/*.ts test/**.ts",
+        "lint": "eslint index.ts lib/ routes/ test/",
         "loaddb": "echo 'DROP DATABASE tak_ps_etl' | psql && echo 'CREATE DATABASE tak_ps_etl' | psql && psql tak_ps_etl < ",
         "migratedb": "npm run lint && git stash && tsc --outDir . && drizzle-kit generate && git add migrations/* && git commit -m \"DB Migration\" && git clean -f && git stash",
         "dev": "tsx watch --ignore web/ index.ts --noevents --nosinks --nometrics --unsafe",
-        "prod": "NODE_OPTIONS='--max-old-space-size=6144' forever dist/index.js"
+        "prod": "NODE_OPTIONS='--max-old-space-size=6144' forever --verbose --ignore ./ dist/index.js"
     },
     "repository": {
         "type": "git",
@@ -45,7 +45,7 @@
         "@placemarkio/check-geojson": "^0.1.12",
         "@sinclair/typebox": "^0.32.14",
         "@tak-ps/node-cot": "^8.0.0",
-        "@tak-ps/node-tak": "^4.0.0",
+        "@tak-ps/node-tak": "^4.4.0",
         "@turf/bbox-polygon": "^7.0.0",
         "@turf/meta": "^7.0.0",
         "ajv": "^8.11.2",

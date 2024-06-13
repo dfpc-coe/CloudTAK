@@ -1,5 +1,4 @@
 import { Request } from 'express';
-import { TSchema } from '@sinclair/typebox';
 import Err from '@openaddresses/batch-error';
 import jwt from 'jsonwebtoken';
 import Config from './config.js';

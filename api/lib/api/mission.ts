@@ -113,6 +113,10 @@ export const UnsubscribeInput = Type.Object({
     disconnectOnly: Type.Optional(Type.Boolean())
 })
 
+export const SubscriptionInput = Type.Object({
+    uid: Type.String(),
+});
+
 export const SubscribeInput = Type.Object({
     uid: Type.String(),
     password: Type.Optional(Type.String()),
@@ -133,7 +137,6 @@ export const GetInput = Type.Object({
     secago: Type.Optional(Type.Integer()),
     start: Type.Optional(Type.String()),
     end: Type.Optional(Type.String())
-
 });
 
 export const SetRoleInput = Type.Object({
@@ -229,7 +232,6 @@ export default class {
         let partial = {
             event: '',
             remainder: await this.latestCots(name, opts),
-            discard: ''
         };
 
         do {
@@ -431,12 +433,14 @@ export default class {
      */
     async subscription(
         name: string,
+        query: Static<typeof SubscriptionInput>,
         opts?: Static<typeof MissionOptions>
     ): Promise<Static<typeof MissionSubscriber>> {
         if (this.#isGUID(name)) name = (await this.getGuid(name, {})).name;
 
         const url = new URL(`/Marti/api/missions/${this.#encodeName(name)}/subscription`, this.api.url);
 
+        for (const q in query) url.searchParams.append(q, String(query[q]));
         const res = await this.api.fetch(url, {
             method: 'GET',
             headers: this.#headers(opts),
@@ -521,6 +525,40 @@ export default class {
 
         if (!missions.data.length) throw new Err(404, null, `No Mission for GUID: ${guid}`);
         return missions.data[0];
+    }
+
+    /**
+     * Check if you have access to a given mission
+     */
+    async access(
+        name: string,
+        opts?: Static<typeof MissionOptions>
+    ): Promise<boolean> {
+        try {
+            if (this.#isGUID(name)) {
+                const url = new URL(`/Marti/api/missions/guid/${encodeURIComponent(name)}`, this.api.url);
+
+                const missions: TAKList<Static<typeof Mission>> = await this.api.fetch(url, {
+                    method: 'GET',
+                    headers: this.#headers(opts),
+                });
+
+                if (!missions.data.length) return false;
+                return true;
+            } else {
+                const url = new URL(`/Marti/api/missions/${this.#encodeName(name)}`, this.api.url);
+
+                const missions: TAKList<Static<typeof Mission>> = await this.api.fetch(url, {
+                    method: 'GET',
+                    headers: this.#headers(opts),
+                });
+
+                if (!missions.data.length) return false;
+                return true;
+            }
+        } catch (err) {
+            return false;
+        }
     }
 
     /**

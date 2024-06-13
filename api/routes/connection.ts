@@ -62,11 +62,11 @@ export default async function router(schema: Schema, config: Config) {
                 total: list.total,
                 status: { dead: 0, live: 0, unknown: 0 },
                 items: list.items.map((conn) => {
-                    const { validFrom, validTo } = new X509Certificate(conn.auth.cert);
+                    const { validFrom, validTo, subject } = new X509Certificate(conn.auth.cert);
 
                     return {
                         status: config.conns.status(conn.id),
-                        certificate: { validFrom, validTo },
+                        certificate: { validFrom, validTo, subject },
                         ...conn
                     }
                 })
@@ -118,11 +118,11 @@ export default async function router(schema: Schema, config: Config) {
 
             if (conn.enabled) await config.conns.add(new MachineConnConfig(config, conn));
 
-            const { validFrom, validTo } = new X509Certificate(conn.auth.cert);
+            const { validFrom, validTo, subject } = new X509Certificate(conn.auth.cert);
 
             return res.json({
                 status: config.conns.status(conn.id),
-                certificate: { validFrom, validTo },
+                certificate: { validFrom, validTo, subject },
                 ...conn
             });
         } catch (err) {
@@ -171,11 +171,11 @@ export default async function router(schema: Schema, config: Config) {
                 await config.conns.add(new MachineConnConfig(config, conn));
             }
 
-            const { validFrom, validTo } = new X509Certificate(conn.auth.cert);
+            const { validFrom, validTo, subject } = new X509Certificate(conn.auth.cert);
 
             return res.json({
                 status: config.conns.status(conn.id),
-                certificate: { validFrom, validTo },
+                certificate: { validFrom, validTo, subject },
                 ...conn
             });
         } catch (err) {
@@ -198,11 +198,11 @@ export default async function router(schema: Schema, config: Config) {
             }, req.params.connectionid);
 
             const conn = await config.models.Connection.from(req.params.connectionid);
-            const { validFrom, validTo } = new X509Certificate(conn.auth.cert);
+            const { validFrom, validTo, subject } = new X509Certificate(conn.auth.cert);
 
             return res.json({
                 status: config.conns.status(conn.id),
-                certificate: { validFrom, validTo },
+                certificate: { validFrom, validTo, subject },
                 ...conn
             });
         } catch (err) {
@@ -235,11 +235,11 @@ export default async function router(schema: Schema, config: Config) {
                 await config.conns.add(new MachineConnConfig(config, conn));
             }
 
-            const { validFrom, validTo } = new X509Certificate(conn.auth.cert);
+            const { validFrom, validTo, subject } = new X509Certificate(conn.auth.cert);
 
             return res.json({
                 status: config.conns.status(conn.id),
-                certificate: { validFrom, validTo },
+                certificate: { validFrom, validTo, subject },
                 ...conn
             });
         } catch (err) {

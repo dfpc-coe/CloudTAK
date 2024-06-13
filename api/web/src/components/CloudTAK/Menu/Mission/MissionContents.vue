@@ -1,6 +1,6 @@
 <template>
     <MenuTemplate
-        name='Mission Contents'
+        name='Mission Files'
         :back='false'
         :border='false'
     >

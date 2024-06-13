@@ -15,6 +15,16 @@ export type Profile_Update = paths["/profile"]["patch"]["requestBody"]["content"
 
 export type Basemap = paths["/basemap/{:basemapid}"]["patch"]["responses"]["200"]["content"]["application/json"]
 
+export type Feature = paths["/profile/feature/{:id}"]["get"]["responses"]["200"]["content"]["application/json"] & {
+    properties: {
+        'id': string;
+        'icon-opacity'?: number;
+        'circle-opacity'?: number;
+
+        [index: string]: unknown
+    }
+}
+
 export type ProfileOverlay = paths["/profile/overlay/{:overlay}"]["get"]["responses"]["200"]["content"]["application/json"]
 export type ProfileOverlay_Create = paths["/profile/overlay"]["post"]["requestBody"]["content"]["application/json"]
 export type ProfileOverlay_Update = paths["/profile/overlay/{:overlay}"]["patch"]["requestBody"]["content"]["application/json"]

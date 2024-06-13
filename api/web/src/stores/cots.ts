@@ -2,14 +2,20 @@
 * CotStore - Store & perform updates on all underlying CoT Features
 */
 
+import moment from 'moment';
 import { defineStore } from 'pinia'
 import type { GeoJSONSourceDiff } from 'maplibre-gl';
 import pointOnFeature from '@turf/point-on-feature';
 import { std, stdurl } from '../std.ts';
-import moment from 'moment';
-import type { FeatureCollection, Feature } from 'geojson';
+import type { Feature } from '../types.ts';
+import type { FeatureCollection } from 'geojson';
 import { useProfileStore } from './profile.ts';
 const profileStore = useProfileStore();
+
+type NestedArray = {
+    path: string;
+    paths: Array<NestedArray>;
+}
 
 export const useCOTStore = defineStore('cots', {
     state: (): {
@@ -62,8 +68,11 @@ export const useCOTStore = defineStore('cots', {
             const fc = await std(`/api/marti/missions/${encodeURIComponent(guid)}/cot`);
             for (const feat of fc.features) this.add(feat, guid);
 
-            const sub = this.subscriptions.get(guid)
-            if (!sub) throw new Error('Mission Subscription not created properly (Internal Error)');
+            let sub = this.subscriptions.get(guid)
+            if (!sub) {
+                sub = new Map();
+                this.subscriptions.set(guid, sub)
+            }
             return this.collection(sub)
         },
 
@@ -80,8 +89,6 @@ export const useCOTStore = defineStore('cots', {
             const display_stale = profileStore.profile ? profileStore.profile.display_stale : 'Immediate';
 
             for (const cot of this.cots.values()) {
-                if (!cot.properties) cot.properties = {};
-
                 if (this.hidden.has(String(cot.id))) {
                     diff.remove.push(String(cot.id))
                 } else if (
@@ -130,6 +137,36 @@ export const useCOTStore = defineStore('cots', {
             return diff;
         },
 
+        paths(store?: Map<string, Feature>): Array<NestedArray> {
+            if (!store) store = this.cots;
+
+            const paths = new Set();
+            for (const [key, value] of store) {
+                if (value.path) paths.add(value.path);
+            }
+
+            return Array.from(paths).map((path) => {
+                return {
+                    path: path,
+                    paths: []
+                } as NestedArray
+            });
+        },
+
+        async deletePath(path: string, store?: Map<string, Feature>): Promise<void> {
+            if (!store) store = this.cots;
+
+            const url = stdurl('/api/profile/feature')
+            url.searchParams.append('path', path);
+            await std(url, { method: 'DELETE' });
+
+            for (const [key, value] of store) {
+                if (value.path && value.path.startsWith(path)) {
+                    this.delete(key, true);
+                }
+            }
+        },
+
         /**
          * Return a FeatureCollection of a non-default CoT Store
          */
@@ -152,24 +189,30 @@ export const useCOTStore = defineStore('cots', {
                 return this.cots.get(id);
             }
         },
+
         /**
          * Returns if the CoT is present in the store given the ID
          */
         has: function(id: string) {
             return this.cots.has(id);
         },
+
         /**
          * Remove a given CoT from the store
          */
-        delete: async function(id: string) {
+        delete: async function(id: string, skipNetwork = false) {
             this.pendingDelete.add(id);
             if (this.archive.has(id)) {
                 this.archive.delete(id);
-                await std(`/api/profile/feature/${id}`, {
-                    method: 'DELETE'
-                });
+
+                if (!skipNetwork) {
+                    await std(`/api/profile/feature/${id}`, {
+                        method: 'DELETE'
+                    });
+                }
             }
         },
+
         /**
          * Empty the store
          */
@@ -183,11 +226,8 @@ export const useCOTStore = defineStore('cots', {
          * Consistent feature manipulation between add & update
          */
         style: function(feat: Feature): Feature {
-            if (!feat.properties) feat.properties = {};
             //Vector Tiles only support integer IDs
             feat.properties.id = feat.id;
-
-            if (!feat.properties) feat.properties = {};
 
             if (!feat.properties.center) {
                 feat.properties.center = pointOnFeature(feat.geometry).geometry.coordinates;
@@ -281,8 +321,6 @@ export const useCOTStore = defineStore('cots', {
          * Add a CoT GeoJSON to the store and modify props to meet MapLibre style requirements
          */
         add: async function(feat: Feature, mission_guid?: string) {
-            if (!feat.properties) feat.properties = {};
-
             if (!feat.id && !feat.properties.id) {
                 feat.id = self.crypto.randomUUID();
             }

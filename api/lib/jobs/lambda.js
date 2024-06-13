@@ -1,3 +1,4 @@
+/* global console, Buffer, process */
 import AWSLambda from '@aws-sdk/client-lambda';
 import { workerData } from 'node:worker_threads';
 
