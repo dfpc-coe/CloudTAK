@@ -52,15 +52,18 @@ export default class DataMission {
                 data.mission_groups = groups.data.map((group) => { return group.name });
             }
 
-            const missions = await api.Mission.create(data.name, {
+            let mission = await api.Mission.create(data.name, {
                 creatorUid: `connection-${data.connection}-data-${data.id}`,
                 description: data.description,
                 defaultRole: data.mission_role,
                 group: data.mission_groups,
             });
 
-            if (!missions.data.length) throw new Error('Create Mission didn\'t return a mission or an error');
-            mission = missions.data[0];
+            // The groups property isn't returned by Create
+            // Make this second call to get the groups - TODO Talk to Josh
+            mission = await api.Mission.get(data.name, {}, {
+                token: data.mission_token
+            });
 
             await config.models.Data.commit(data.id, {
                 mission_token: mission.token

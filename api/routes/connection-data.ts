@@ -189,6 +189,8 @@ export default async function router(schema: Schema, config: Config) {
                 throw new Err(400, null, 'MissionDiff can only be enabled with a single layer')
             }
 
+            // TODO: Don't allow mission_diff to be turned on if there are non MISSION_READONLY subscribers
+
             let data = await config.models.Data.from(req.params.dataid);
             if (data.connection !== connection.id) throw new Err(400, null, 'Data Sync does not belong to given Connection');
 
