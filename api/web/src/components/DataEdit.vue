@@ -72,7 +72,7 @@
                                         <TablerEnum
                                             v-model='data.mission_role'
                                             label='Mission Default Role'
-                                            :disabled='$route.params.dataid'
+                                            :disabled='$route.params.dataid || data.mission_diff'
                                             description='The Default role assigned to subscribers to the mission'
                                             :options='["MISSION_OWNER", "MISSION_SUBSCRIBER", "MISSION_READONLY_SUBSCRIBER"]'
                                         />
@@ -192,6 +192,11 @@ export default {
             deep: true,
             handler: function() {
                 this.mission_groups = this.data.mission_groups.length === 0 ? "All Groups" : this.data.mission_groups.join(",");
+            }
+        },
+        'data.mission_diff': function() {
+            if (!this.data.id && this.data.mission_diff) {
+                this.data.mission_role = 'MISSION_READONLY_SUBSCRIBER';
             }
         }
     },

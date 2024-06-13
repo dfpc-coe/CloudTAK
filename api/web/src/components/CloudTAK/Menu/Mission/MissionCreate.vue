@@ -213,7 +213,7 @@ export default {
                     method: 'POST',
                 });
 
-                this.$emit('mission', res.data[0]);
+                this.$emit('mission', res);
             } catch (err) {
                 this.err = err;
             }

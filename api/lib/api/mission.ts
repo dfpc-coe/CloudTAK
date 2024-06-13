@@ -583,6 +583,7 @@ export default class {
         });
 
         if (!missions.data.length) throw new Err(404, null, `No Mission for Name: ${name}`);
+
         return missions.data[0];
     }
 
@@ -594,14 +595,19 @@ export default class {
     async create(
         name: string,
         query: Static<typeof CreateInput>
-    ): Promise<TAKList<Static<typeof Mission>>> {
+    ): Promise<Static<typeof Mission>> {
         const url = new URL(`/Marti/api/missions/${this.#encodeName(name)}`, this.api.url);
 
         if (query.group && Array.isArray(query.group)) query.group = query.group.join(',');
         for (const q in query) url.searchParams.append(q, String(query[q]));
-        return await this.api.fetch(url, {
+        const missions = await this.api.fetch(url, {
             method: 'POST'
         });
+
+        if (!missions.data.length) throw new Error('Create Mission didn\'t return a mission or an error');
+        const mission = missions.data[0];
+
+        return mission;
     }
 
     /**

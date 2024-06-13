@@ -149,7 +149,7 @@ export default async function router(schema: Schema, config: Config) {
             inviteOnly: Type.Optional(Type.Boolean()),
             allowDupe: Type.Optional(Type.Boolean()),
         }),
-        res: GenericMartiResponse
+        res: Mission
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
@@ -163,6 +163,7 @@ export default async function router(schema: Schema, config: Config) {
                 bbox: req.query.bbox ? req.query.bbox.split(',') : req.query.bbox,
                 creatorUid: user.email
             });
+
             return res.json(mission);
         } catch (err) {
             return Err.respond(err, res);
