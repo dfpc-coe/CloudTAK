@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v2.42.0 - 2024-06-13
+
+- :rocket: `UI` Mission CoT updates will be posted to the correct Mission Layer
+
 ### v2.41.0 - 2024-06-13
 
 - :rocket: `UI` Update UI to support point color and opacity
