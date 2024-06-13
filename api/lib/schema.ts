@@ -5,7 +5,7 @@ import { geometry, GeometryType } from '@openaddresses/batch-generic';
 import { ConnectionAuth } from './connection-config.js';
 import { TAKGroup, TAKRole } from  './api/types.js';
 import { Layer_Priority, Profile_Stale, Profile_Speed, Profile_Elevation, Profile_Distance } from  './enums.js';
-import { json, boolean, integer, timestamp, pgTable, serial, varchar, text, unique } from 'drizzle-orm/pg-core';
+import { json, boolean, integer, timestamp, pgTable, serial, varchar, text, unique, index } from 'drizzle-orm/pg-core';
 
 /** Internal Tables for Postgis for use with drizzle-kit push:pg */
 export const SpatialRefSys = pgTable('spatial_ref_sys', {
@@ -73,7 +73,11 @@ export const Basemap = pgTable('basemaps', {
     format: text('format').notNull().default('png'),
     style: text('style').notNull().default('zxy'),
     type: text('type').notNull().default('raster')
-});
+}, (table) => {
+    return {
+        username_idx: index("basemaps_username_idx").on(table.username),
+    }
+})
 
 export const Import = pgTable('imports', {
     id: text('id').primaryKey(),
@@ -102,7 +106,12 @@ export const Iconset = pgTable('iconsets', {
     default_neutral: text('default_neutral'),
     default_unknown: text('default_unknown'),
     skip_resize: boolean('skip_resize').notNull().default(false)
+}, (table) => {
+    return {
+        username_idx: index("iconsets_username_idx").on(table.username),
+    }
 });
+
 
 export const Icon = pgTable('icons', {
     id: serial('id').primaryKey(),

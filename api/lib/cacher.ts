@@ -43,12 +43,10 @@ export default class Cacher {
 
             try {
                 if (key && !this.nocache) {
-                    if (isJSON) {
-                        await this.cache.set(key, JSON.stringify(fresh), {
-                            expires: 604800
-                        });
-                    } else {
-                        await this.cache.set(key, fresh, {
+                    const buff = Buffer.from(isJSON ? JSON.stringify(fresh) : fresh);
+
+                    if (buff.length < 1000000) {
+                        await this.cache.set(key, buff, {
                             expires: 604800
                         });
                     }

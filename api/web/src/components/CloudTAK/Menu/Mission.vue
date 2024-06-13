@@ -126,7 +126,7 @@
                         type='button'
                         class='btn btn-sm'
                     ><IconFiles
-                        v-tooltip='"Contents"'
+                        v-tooltip='"Files"'
                         size='32'
                     /></label>
                 </div>

@@ -89,7 +89,7 @@ export class EsriBase {
             let json: { [k: string]: unknown; } = await res.json()
 
             if (json.error) {
-                // @ts-expect-error
+                // @ts-expect-error No Typing on JSON Body
                 throw new Err(400, null, `ESRI Server Error: ${json.error.message} - ${json.error.details.join(', ')}`);
             }
 

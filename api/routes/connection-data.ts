@@ -127,13 +127,20 @@ export default async function router(schema: Schema, config: Config) {
                 throw new Err(400, null, 'MissionDiff can only be used when role is: MISSION_READONLY_SUBSCRIBER')
             }
 
-            const data = await config.models.Data.generate({
+            let data = await config.models.Data.generate({
                 ...req.body,
                 connection: req.params.connectionid
             });
 
             try {
-                await DataMission.sync(config, data);
+                const mission = await DataMission.sync(config, data);
+
+                if (mission) {
+                    data = await config.models.Data.commit(data.id, {
+                        updated: sql`Now()`,
+                        mission_groups: Array.isArray(mission.groups) ? mission.groups : [mission.groups]
+                    });
+                }
             } catch (err) {
                 return res.json({
                     mission_exists: false,

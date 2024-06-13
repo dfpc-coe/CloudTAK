@@ -24,9 +24,9 @@
                     <div
                         v-for='layer in layers'
                         :key='layer.url'
-                        class='col-lg py-2 px-3 hover-dark'
+                        class='col-lg py-2'
                     >
-                        <div class='py-2 px-2 hover-dark'>
+                        <div class='py-2 px-3'>
                             <div class='col-12 d-flex align-items-center'>
                                 <IconEye
                                     v-if='layer.visible === "visible"'
@@ -82,22 +82,34 @@
                                     />
                                 </div>
                             </div>
+                        </div>
 
-                            <div
-                                v-if='layer.type === "raster"'
-                                class='col-12'
-                                style='margin-left: 30px; padding-right: 40px;'
-                                step=''
-                            >
-                                <TablerRange
-                                    v-model='layer.opacity'
-                                    label='Opacity'
-                                    :min='0'
-                                    :max='1'
-                                    :step='0.1'
-                                    @change='updateOpacity(layer)'
-                                />
-                            </div>
+                        <div
+                            v-if='layer.type === "raster"'
+                            class='col-12'
+                            style='margin-left: 30px; padding-right: 40px;'
+                            step=''
+                        >
+                            <TablerRange
+                                v-model='layer.opacity'
+                                label='Opacity'
+                                :min='0'
+                                :max='1'
+                                :step='0.1'
+                                @change='updateOpacity(layer)'
+                            />
+                        </div>
+                        <div v-else-if='layer.type === "geojson"'>
+                            <TablerLoading v-if='loadingPaths[layer.id] === true'/>
+                            <template v-else>
+                                <div v-for='path in paths(layer)' class='d-flex align-items-center hover-dark px-3 py-2'>
+                                    <IconFolder size='32' style='margin-left: 40px;'/>
+                                    <span v-text='path.path' class='mx-2'/>
+                                    <div v-if='layer.id === "cots"' class='ms-auto'>
+                                        <TablerDelete @click='deletePath(layer, path.path)' displaytype='icon'/>
+                                    </div>
+                                </div>
+                            </template>
                         </div>
                     </div>
                 </template>
@@ -117,14 +129,17 @@ import {
 import {
     IconMaximize,
     IconVector,
+    IconFolder,
     IconEyeOff,
     IconPlus,
     IconEye,
     IconMap
 } from '@tabler/icons-vue';
-import { useMapStore } from '/src/stores/map.ts';
 import { mapState } from 'pinia'
+import { useMapStore } from '/src/stores/map.ts';
 const mapStore = useMapStore();
+import { useCOTStore } from '/src/stores/cots.ts';
+const cotStore = useCOTStore();
 
 export default {
     name: 'CloudTAKOverlays',
@@ -133,6 +148,7 @@ export default {
             err: false,
             isEditing: false,
             loading: false,
+            loadingPaths: {}
         }
     },
     computed: {
@@ -147,6 +163,29 @@ export default {
         editor: function(overlay) {
             if (["data", "profile"].includes(overlay.mode) && overlay.type === "vector") {
                 this.isEditing = overlay;
+            }
+        },
+        deletePath: async function(layer, path) {
+            if (layer.id !== 'cots') return;
+
+            this.loadingPaths[layer.id] = true;
+
+            try {
+                await cotStore.deletePath(path);
+            } catch (err) {
+                this.loadingPaths[layer.id] = false;
+                throw err;
+            }
+
+            this.loadingPaths[layer.id] = false;
+        },
+        paths: function(layer) {
+            if (layer.type !== 'geojson') return;
+
+            if (layer.id === 'cots') {
+                return cotStore.paths();
+            } else {
+                return []
             }
         },
         getSource: function(layer) {
@@ -175,6 +214,7 @@ export default {
         TablerLoading,
         TablerDelete,
         IconMaximize,
+        IconFolder,
         IconEye,
         IconEyeOff,
         IconPlus,

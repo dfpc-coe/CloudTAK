@@ -37,6 +37,8 @@ export default async function router(schema: Schema, config: Config) {
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
+            const auth = (await config.models.Profile.from(user.email)).auth;
+            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
             const overlays = await config.models.ProfileOverlay.list({
                 limit: req.query.limit,
@@ -52,10 +54,17 @@ export default async function router(schema: Schema, config: Config) {
             for (let i = 0; i < overlays.items.length; i++) {
                 const item = overlays.items[i];
 
-                // TODO someday surface these to the user that the underlying resources don't exist
                 if (
                     (item.mode === 'profile' && !(await S3.exists(`profile/${item.username}/${path.parse(item.url.replace(/\/tile$/, '')).name}.pmtiles`)))
                     || (item.mode === 'data' && !(await S3.exists(`data/${item.mode_id}/${path.parse(item.url.replace(/\/tile$/, '')).name}.pmtiles`)))
+                ) {
+                    await config.models.ProfileOverlay.delete(item.id);
+                    removed.push(...overlays.items.splice(i, 1));
+                    overlays.total--;
+                } else if (item.mode === 'mission' && !(await api.Mission.access(
+                        item.mode_id,
+                        await config.conns.subscription(user.email, item.name)
+                    ))
                 ) {
                     await config.models.ProfileOverlay.delete(item.id);
                     removed.push(...overlays.items.splice(i, 1));
@@ -157,7 +166,9 @@ export default async function router(schema: Schema, config: Config) {
                 const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
 
                 const mission = await api.Mission.getGuid(overlay.mode_id, {});
-                const sub = await api.Mission.subscribe(mission.name, { uid: user.email });
+                const sub = await api.Mission.subscribe(mission.name, {
+                    uid: `ANDROID-CloudTAK-${user.email}`
+                });
 
                 await config.models.ProfileOverlay.commit(overlay.id, {
                     token: sub.data.token
@@ -194,7 +205,11 @@ export default async function router(schema: Schema, config: Config) {
                 const profile = await config.models.Profile.from(user.email);
                 const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
                 const mission = await api.Mission.getGuid(overlay.mode_id, {});
-                await api.Mission.unsubscribe(mission.name, { uid: user.email });
+                await api.Mission.unsubscribe(mission.name, {
+                    uid: `ANDROID-CloudTAK-${user.email}`
+                },{
+                    token: overlay.token
+                });
             }
 
             return res.json({

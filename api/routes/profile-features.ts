@@ -56,6 +56,33 @@ export default async function router(schema: Schema, config: Config) {
         }
     });
 
+    await schema.delete('/profile/feature', {
+        name: 'Delete Feature',
+        group: 'ProfileFeature',
+        description: `
+            Delete features by path
+        `,
+        query: Type.Object({
+            path: Type.String()
+        }),
+        res: StandardResponse
+    }, async (req, res) => {
+        try {
+            const user = await Auth.as_user(config, req);
+
+            await config.models.ProfileFeature.delete(sql`
+                starts_with(path, ${req.query.path}) AND username = ${user.email}
+            `);
+
+            return res.json({
+                status: 200,
+                message: 'Features Deleted'
+            });
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
+
     await schema.put('/profile/feature', {
         name: 'Upsert Feature',
         group: 'ProfileFeature',
@@ -116,6 +143,33 @@ export default async function router(schema: Schema, config: Config) {
                 status: 200,
                 message: 'Feature Deleted'
             });
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
+
+    await schema.get('/profile/feature/:id', {
+        name: 'Get Feature',
+        group: 'ProfileFeature',
+        description: `
+            Delete a feature
+        `,
+        params: Type.Object({
+            id: Type.String()
+        }),
+        res: ProfileFeature
+    }, async (req, res) => {
+        try {
+            const user = await Auth.as_user(config, req);
+
+            const feat = await config.models.ProfileFeature.from(sql`
+                id = ${req.params.id} AND username = ${user.email}
+            `);
+
+            return res.json({
+                type: 'Feature',
+                ...feat
+            } as Static<typeof ProfileFeature>)
         } catch (err) {
             return Err.respond(err, res);
         }

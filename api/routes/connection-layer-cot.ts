@@ -124,15 +124,6 @@ export default async function router(schema: Schema, config: Config) {
             pooledClient.tak.write(cots);
             for (const cot of cots) config.conns.cot(pooledClient.config, cot);
 
-            if (data) {
-                const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(pooledClient.config.auth.cert, pooledClient.config.auth.key));
-                await api.Mission.attachContents(data.name, {
-                    uids: cots.map((cot) => { return cot.raw.event._attributes.uid })
-                }, {
-                    token: data.mission_token
-                });
-            }
-
             // TODO Only GeoJSON Features go to Dynamo, this should also store CoT XML
             if (layer.logging && req.query.logging !== false) ddb.queue(req.body.features.map((feat: Static<typeof Feature>) => {
                 const item: QueueItem = {

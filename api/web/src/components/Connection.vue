@@ -72,6 +72,15 @@
                                                 v-text='connection.certificate.validTo'
                                             />
                                         </div>
+                                        <div class='datagrid-item pb-2'>
+                                            <div class='datagrid-title'>
+                                                Certificate Subject
+                                            </div>
+                                            <div
+                                                class='datagrid-content'
+                                                v-text='connection.certificate.subject'
+                                            />
+                                        </div>
                                     </div>
                                 </div>
                             </div>

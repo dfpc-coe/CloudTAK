@@ -8,7 +8,7 @@ export default {
             Description: 'Database size to create',
             AllowedValues: [
                 'db.t3.micro',
-                'db.m6g.large'
+                'db.m5.large'
             ]
         }
     },
