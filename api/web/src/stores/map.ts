@@ -716,9 +716,9 @@ function cotStyles(id: string, opts: {
         filter: ['all', ["==", "$type", "Point"], ['!has', 'icon']],
         layout: {},
         paint: {
-            'circle-color': ["string", ["get", "circle-color"], "#00FF00"],
-            'circle-radius': ["number", ["get", "circle-radius"], 4],
-            'circle-opacity': ['/', ["number", ["get", "circle-opacity"], 255], 255],
+            'circle-color': ["string", ["get", "marker-color"], "#00FF00"],
+            'circle-radius': ["number", ["get", "marker-radius"], 4],
+            'circle-opacity': ['/', ["number", ["get", "marker-opacity"], 255], 255],
         }
     }
 
