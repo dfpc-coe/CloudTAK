@@ -338,6 +338,11 @@ export const useCOTStore = defineStore('cots', {
 
                 cots.set(String(feat.id), feat);
             } else {
+                /**
+                 * Mission CoTs ideally go to the Mission Layer
+                 * TODO: This will only work with existing CoTs in the mission
+                 *       New CoTs will not be added to the proper layer
+                 */
                 let mission_cot = false;
                 for (const [key, value] of this.subscriptions) {
                     if (value.has(feat.id)) {
