@@ -63,7 +63,6 @@ export default async function router(schema: Schema, config: Config) {
                     overlays.total--;
                 } else if (item.mode === 'mission' && !(await api.Mission.exists(
                         item.mode_id,
-                        req.query,
                         await config.conns.subscription(user.email, item.name)
                     ))
                 ) {

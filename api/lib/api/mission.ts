@@ -534,18 +534,28 @@ export default class {
         name: string,
         opts?: Static<typeof MissionOptions>
     ): Promise<boolean> {
-        const url = new URL(`/Marti/api/missions/${this.#encodeName(name)}`, this.api.url);
-
         try {
-            if (this.#isGUID(name)) return await this.getGuid(name, {}, opts);
+            if (this.#isGUID(name)) {
+                const url = new URL(`/Marti/api/missions/guid/${encodeURIComponent(name)}`, this.api.url);
 
-            const missions: TAKList<Static<typeof Mission>> = await this.api.fetch(url, {
-                method: 'GET',
-                headers: this.#headers(opts),
-            });
+                const missions: TAKList<Static<typeof Mission>> = await this.api.fetch(url, {
+                    method: 'GET',
+                    headers: this.#headers(opts),
+                });
 
-            if (!missions.data.length) return false;
-            return true;
+                if (!missions.data.length) return false;
+                return true;
+            } else {
+                const url = new URL(`/Marti/api/missions/${this.#encodeName(name)}`, this.api.url);
+
+                const missions: TAKList<Static<typeof Mission>> = await this.api.fetch(url, {
+                    method: 'GET',
+                    headers: this.#headers(opts),
+                });
+
+                if (!missions.data.length) return false;
+                return true;
+            }
         } catch (err) {
             return false;
         }
