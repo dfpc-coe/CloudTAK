@@ -327,6 +327,8 @@ export const useCOTStore = defineStore('cots', {
 
             feat = this.style(feat);
 
+            console.error(feat.properties);
+
             if (mission_guid)  {
                 let cots = this.subscriptions.get(mission_guid);
                 if (!cots) {
@@ -336,6 +338,16 @@ export const useCOTStore = defineStore('cots', {
 
                 cots.set(String(feat.id), feat);
             } else {
+                let mission_cot = false;
+                for (const [key, value] of this.subscriptions) {
+                    if (value.has(feat.id)) {
+                        value.set(feat.id, feat);
+                        mission_cot = true;
+                    }
+                }
+
+                if (mission_cot) return;
+
                 this.pending.set(String(feat.id), feat);
 
                 if (feat.properties && feat.properties.archived) {
