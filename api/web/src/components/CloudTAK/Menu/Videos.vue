@@ -18,7 +18,8 @@
                 <div
                     v-for='video in videos'
                     :key='video.id'
-                    class='col-12 py-2 px-3 d-flex align-items-center hover-dark'
+                    @click='$router.push(`/cot/${video.id}`)'
+                    class='col-12 py-2 px-3 d-flex align-items-center hover-dark cursor-pointer'
                 >
                     <IconVideo size='32' />
                     <span
