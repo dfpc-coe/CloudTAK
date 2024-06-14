@@ -327,8 +327,6 @@ export const useCOTStore = defineStore('cots', {
 
             feat = this.style(feat);
 
-            console.error(feat.properties);
-
             if (mission_guid)  {
                 let cots = this.subscriptions.get(mission_guid);
                 if (!cots) {
