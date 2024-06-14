@@ -45,14 +45,16 @@ export async function handler(
             const body: any = JSON.parse(record.body)
             if (!body.options) body.options = {};
             return !!body.options.logging;
+        }).filter((record: Lambda.SQSRecord) => {
+            const m = meta.get(record.messageId);
+            if (!m) throw new Error('Indeterminant Meta');
+            return m.Error
         }).map((record: Lambda.SQSRecord) => {
             const m = meta.get(record.messageId);
             if (!m) throw new Error('Indeterminant Meta');
 
-            const MetricName = m.Error ? 'ConnectionSinkFailure' : 'ConnectionSinkSuccess';
-
             return {
-                MetricName,
+                MetricName: 'ConnectionSinkFailure',
                 Value: 1,
                 Timestamp: m.Timestamp,
                 Dimensions: [{
