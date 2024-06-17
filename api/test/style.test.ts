@@ -8,7 +8,7 @@ test('Style: Basic Point', async () => {
         enabled_styles: true,
         styles: {
             point: {
-                color: '#ffffff',
+                'marker-color': '#ffffff',
                 remarks: 'Test Remarks'
             }
         }
@@ -24,7 +24,7 @@ test('Style: Basic Point', async () => {
     }), {
         type: 'Feature',
         properties: {
-            color: '#ffffff',
+            'marker-color': '#ffffff',
             remarks: 'Test Remarks',
             metadata: {},
             stale: 123000
@@ -42,7 +42,7 @@ test('Style: Basic Point: Disabled', async () => {
         enabled_styles: false,
         styles: {
             point: {
-                color: '#ffffff',
+                'marker-color': '#ffffff',
                 remarks: 'Test Remarks'
             }
         }
@@ -73,7 +73,7 @@ test('Style: Basic Point: Stale only applied if stale is undefined on root featu
         enabled_styles: false,
         styles: {
             point: {
-                color: '#ffffff',
+                'marker-color': '#ffffff',
                 remarks: 'Test Remarks'
             }
         }
