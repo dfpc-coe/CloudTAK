@@ -60,6 +60,9 @@ export default {
         },
         description: {
             type: String,
+        },
+        rows: {
+            type: Number
         }
     },
     emits: [
@@ -73,6 +76,8 @@ export default {
     },
     computed: {
         templateRows: function() {
+            if (this.rows) return this.rows;
+
             const rows = this.template.split('\n').length;
             if (rows < 2) return 2
             return rows;

@@ -197,7 +197,7 @@
                     </div>
 
                     <template v-if='isUserDrawn'>
-                        <CoTStyle v-model='feat' />
+                        <CoTStyle :key='feat.id' v-model='feat' />
                     </template>
 
                     <div

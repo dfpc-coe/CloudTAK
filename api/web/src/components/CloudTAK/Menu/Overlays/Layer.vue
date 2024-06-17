@@ -46,7 +46,7 @@
                 :key='p'
                 class='col-12 d-flex bg-gray-500 px-2 my-2 py-2'
             >
-                <template v-if='["fill-opacity", "line-opacity", "circle-opacity"].includes(p)'>
+                <template v-if='["fill-opacity", "line-opacity", "marker-opacity"].includes(p)'>
                     <template v-if='Array.isArray(l.paint[p]) && l.paint[p][0] === "number"'>
                         <TablerRange
                             v-model='l.paint[p][l.paint[p].length -1]'
