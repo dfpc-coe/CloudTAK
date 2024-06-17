@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+- :rocket: `UI` Global Callsign now only shows as a single TextInput as newlines aren't respected
+- :rocket: `API` `node-(cot|tak)` updated to latest version which uses GeoJSON simple style spec 0-1 opacity values
+- :rocket: `UI/API` Update all Style Specs to use new 0-1 values
+- :rocket: `UI` Add Point entry for `marker-opacity`
+
 ### v2.42.0 - 2024-06-13
 
 - :rocket: `UI` Mission CoT updates will be posted to the correct Mission Layer

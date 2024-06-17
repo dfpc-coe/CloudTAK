@@ -5,6 +5,7 @@
                 v-model='filters.callsign'
                 label='Global Callsign'
                 description='Global Callsign will apply to all CoT markers unless they are overriden by a callsign field on a given query'
+                :rows='1'
                 :disabled='disabled'
                 :schema='schema'
             />
