@@ -182,7 +182,7 @@
                         <IconGhost size='20'/>
                         Point Opacity
                     </label>
-                    <span class='mx-2' v-text='`(${Math.round(filters[mode].properties["marker-opacity"] * 100)}%)`'/>
+                    <span v-if='filters[mode].enabled["marker-opacity"]' class='mx-2' v-text='`(${Math.round(filters[mode].properties["marker-opacity"] * 100)}%)`'/>
                     <div class='ms-auto'>
                         <TablerToggle
                             v-model='filters[mode].enabled["marker-opacity"]'
@@ -264,7 +264,7 @@
                         <IconGhost size='20' />
                         Line Opacity
                     </label>
-                    <span class='mx-2' v-text='`(${Math.round(filters[mode].properties["stroke-opacity"] * 100)}%)`'/>
+                    <span v-if='filters[mode].enabled["stroke-opacity"]' class='mx-2' v-text='`(${Math.round(filters[mode].properties["stroke-opacity"] * 100)}%)`'/>
                     <div class='d-flex align-items-center ms-auto btn-list'>
                         <TablerToggle
                             v-model='filters[mode].enabled["stroke-opacity"]'
@@ -307,7 +307,7 @@
                         <IconGhost size='20'/>
                         Fill Opacity
                     </label>
-                    <span class='mx-2' v-text='`(${Math.round(filters[mode].properties["fill-opacity"] * 100)}%)`'/>
+                    <span v-if='filters[mode].enabled["fill-opacity"]' class='mx-2' v-text='`(${Math.round(filters[mode].properties["fill-opacity"] * 100)}%)`'/>
                     <div class='ms-auto'>
                         <TablerToggle
                             v-model='filters[mode].enabled["fill-opacity"]'
