@@ -784,7 +784,7 @@ function cotStyles(id: string, opts: {
             filter: groupFilter,
             paint: {
                 'circle-color': ['get', 'color'],
-                'circle-opacity': ["number", ["get", "circle-opacity"], 255],
+                'circle-opacity': ["number", ["get", "marker-opacity"], 255],
                 'circle-stroke-color': '#ffffff',
                 'circle-stroke-width': [
                     'interpolate',

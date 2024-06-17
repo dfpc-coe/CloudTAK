@@ -104,9 +104,9 @@ export const useCOTStore = defineStore('cots', {
                 ) {
                     diff.remove.push(String(cot.id))
                 } else if (!cot.properties.archived) {
-                    if (now.isBefore(moment(cot.properties.stale)) && (cot.properties['icon-opacity'] !== 1 || cot.properties['circle-opacity'] !== 255)) {
+                    if (now.isBefore(moment(cot.properties.stale)) && (cot.properties['icon-opacity'] !== 1 || cot.properties['marker-opacity'] !== 1)) {
                         cot.properties['icon-opacity'] = 1;
-                        cot.properties['circle-opacity'] = 255;
+                        cot.properties['marker-opacity'] = 1;
 
                         if (!['Point', 'Polygon', 'LineString'].includes(cot.geometry.type)) continue;
 
@@ -117,9 +117,9 @@ export const useCOTStore = defineStore('cots', {
                             }),
                             newGeometry: cot.geometry
                         })
-                    } else if (!now.isBefore(moment(cot.properties.stale)) && (cot.properties['icon-opacity'] !== 0.5 || cot.properties['circle-opacity'] !== 127)) {
+                    } else if (!now.isBefore(moment(cot.properties.stale)) && (cot.properties['icon-opacity'] !== 0.5 || cot.properties['marker-opacity'] !== 127)) {
                         cot.properties['icon-opacity'] = 0.5;
-                        cot.properties['circle-opacity'] = 127;
+                        cot.properties['marker-opacity'] = 0.5;
 
                         if (!['Point', 'Polygon', 'LineString'].includes(cot.geometry.type)) continue;
 
@@ -302,14 +302,14 @@ export const useCOTStore = defineStore('cots', {
                 if (!feat.properties['stroke-width']) feat.properties['stroke-width'] = 3;
 
                 if (!feat.properties['stroke-opacity'] === undefined) {
-                    feat.properties['stroke-opacity'] = 255;
+                    feat.properties['stroke-opacity'] = 1;
                 }
 
                 if (feat.geometry.type.includes('Polygon')) {
                     if (!feat.properties['fill']) feat.properties.fill = '#d63939';
 
                     if (feat.properties['fill-opacity'] === undefined) {
-                        feat.properties['fill-opacity'] = 255;
+                        feat.properties['fill-opacity'] = 1;
                     }
                 }
             }

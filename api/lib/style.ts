@@ -19,7 +19,8 @@ export const StyleLink = Type.Object({
 });
 
 export const StylePoint = Type.Object({
-    color: Type.Optional(Type.String()),
+    'marker-color': Type.Optional(Type.String()),
+    'marker-opacity': Type.Optional(Type.String()),
     remarks: Type.Optional(Type.String()),
     callsign: Type.Optional(Type.String()),
     links: Type.Optional(Type.Array(StyleLink)),
@@ -128,7 +129,7 @@ export default class Style {
             }
         }
 
-    
+
         if (style.remarks) {
             try {
                 handlebars.compile(style.remarks)({});
