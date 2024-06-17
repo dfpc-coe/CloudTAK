@@ -171,7 +171,8 @@
                         />
                     </div>
                 </div>
-                <TablerColour
+                <TablerInput
+                    type='color'
                     v-if='filters[mode].enabled["marker-color"]'
                     v-model='filters[mode].properties["marker-color"]'
                     :disabled='disabled || !filters[mode].enabled["marker-color"]'
@@ -214,7 +215,8 @@
                         />
                     </div>
                 </div>
-                <TablerColour
+                <TablerInput
+                    type='color'
                     v-if='filters[mode].enabled.stroke'
                     v-model='filters[mode].properties.stroke'
                     :disabled='disabled || !filters[mode].enabled.stroke'
@@ -296,7 +298,8 @@
                         />
                     </div>
                 </div>
-                <TablerColour
+                <TablerInput
+                    type='color'
                     v-if='filters[mode].enabled.fill'
                     v-model='filters[mode].properties.fill'
                     :disabled='disabled || !filters[mode].enabled.fill'
@@ -348,7 +351,7 @@ import IconSelect from '../../util/IconSelect.vue';
 import StyleLinks from './StyleLinks.vue';
 import {
     TablerRange,
-    TablerColour,
+    TablerInput,
     TablerToggle,
     TablerEnum
 } from '@tak-ps/vue-tabler';
@@ -369,7 +372,7 @@ export default {
         TablerToggle,
         TablerRange,
         TablerEnum,
-        TablerColour,
+        TablerInput,
         StyleTemplate,
         StyleLinks,
         IconSelect,
