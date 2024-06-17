@@ -164,16 +164,40 @@
                     <label><IconPaint size='20' /> Point Color</label>
                     <div class='ms-auto'>
                         <TablerToggle
-                            v-model='filters[mode].enabled.color'
+                            v-model='filters[mode].enabled["marker-color"]'
                             :disabled='disabled'
                             label='Enabled'
                         />
                     </div>
                 </div>
                 <TablerColour
-                    v-if='filters[mode].enabled.color'
-                    v-model='filters[mode].properties.color'
-                    :disabled='disabled || !filters[mode].enabled.color'
+                    v-if='filters[mode].enabled["marker-color"]'
+                    v-model='filters[mode].properties["marker-color"]'
+                    :disabled='disabled || !filters[mode].enabled["marker-color"]'
+                />
+            </div>
+            <div class='col-md-12 hover-light rounded px-2 py-2'>
+                <div class='col-12 d-flex align-items-center'>
+                    <label>
+                        <IconGhost size='20'/>
+                        Point Opacity
+                    </label>
+                    <span class='mx-2' v-text='`(${Math.round(filters[mode].properties["marker-opacity"] * 100)}%)`'/>
+                    <div class='ms-auto'>
+                        <TablerToggle
+                            v-model='filters[mode].enabled["marker-opacity"]'
+                            :disabled='disabled'
+                            label='Enabled'
+                        />
+                    </div>
+                </div>
+                <TablerRange
+                    v-if='filters[mode].enabled["marker-opacity"]'
+                    v-model='filters[mode].properties["marker-opacity"]'
+                    :disabled='disabled'
+                    :min='0'
+                    :max='1'
+                    :step='0.01'
                 />
             </div>
         </template>
@@ -236,8 +260,12 @@
             </div>
             <div class='col-md-12 hover-light rounded px-2 py-2'>
                 <div class='col-12 d-flex align-items-center'>
-                    <label><IconGhost size='20' /> Line Opacity</label>
-                    <div class='ms-auto'>
+                    <label>
+                        <IconGhost size='20' />
+                        Line Opacity
+                    </label>
+                    <span class='mx-2' v-text='`(${Math.round(filters[mode].properties["stroke-opacity"] * 100)}%)`'/>
+                    <div class='d-flex align-items-center ms-auto btn-list'>
                         <TablerToggle
                             v-model='filters[mode].enabled["stroke-opacity"]'
                             :disabled='disabled'
@@ -250,8 +278,8 @@
                     v-model='filters[mode].properties["stroke-opacity"]'
                     :disabled='disabled || !filters[mode].enabled["stroke-opacity"]'
                     :min='0'
-                    :max='256'
-                    :step='1'
+                    :max='1'
+                    :step='0.01'
                 />
             </div>
         </template>
@@ -275,7 +303,11 @@
             </div>
             <div class='col-md-12 hover-light rounded px-2 py-2'>
                 <div class='col-12 d-flex align-items-center'>
-                    <label><IconGhost size='20' /> Fill Opacity</label>
+                    <label>
+                        <IconGhost size='20'/>
+                        Fill Opacity
+                    </label>
+                    <span class='mx-2' v-text='`(${Math.round(filters[mode].properties["fill-opacity"] * 100)}%)`'/>
                     <div class='ms-auto'>
                         <TablerToggle
                             v-model='filters[mode].enabled["fill-opacity"]'
@@ -289,8 +321,8 @@
                     v-model='filters[mode].properties["fill-opacity"]'
                     :disabled='disabled'
                     :min='0'
-                    :max='256'
-                    :step='1'
+                    :max='1'
+                    :step='0.01'
                 />
             </div>
         </template>
@@ -372,13 +404,15 @@ export default {
                     enabled: {
                         icon: false,
                         links: false,
-                        color: false,
+                        'marker-color': false,
+                        'marker-opacity': false,
                         remarks: false,
                         callsign: false
                     },
                     properties: {
                         icon: '',
-                        color: '#d63939',
+                        'marker-color': '#d63939',
+                        'marker-opacity': 1,
                         remarks: '',
                         callsign: '',
                         links: []
@@ -397,7 +431,7 @@ export default {
                     properties: {
                         stroke: '#d63939',
                         'stroke-style': 'solid',
-                        'stroke-opacity': 256,
+                        'stroke-opacity': 1,
                         'stroke-width': 3,
                         remarks: '',
                         callsign: '',
@@ -419,10 +453,10 @@ export default {
                     properties: {
                         stroke: '#d63939',
                         'stroke-style': 'solid',
-                        'stroke-opacity': 256,
+                        'stroke-opacity': 1,
                         'stroke-width': 3,
                         'fill': '#d63939',
-                        'fill-opacity': 256,
+                        'fill-opacity': 1,
                         remarks: '',
                         callsign: '',
                         links: []
