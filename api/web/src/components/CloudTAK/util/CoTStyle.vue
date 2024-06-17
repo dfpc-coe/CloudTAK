@@ -44,7 +44,8 @@
                         <label class='subheader'>Line Style</label>
                         <TablerEnum
                             v-model='feat.properties["stroke-style"]'
-                            :options='["Solid", "Dashed", "Dotted", "Outlined"]'
+                            :options='["solid", "dashed", "dotted", "outlined"]'
+                            default='solid'
                         />
                     </div>
                     <div class='col-12'>
