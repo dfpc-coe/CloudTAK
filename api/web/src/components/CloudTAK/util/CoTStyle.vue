@@ -2,7 +2,7 @@
     <div class='px-1 pb-2 col-12'>
         <label class='mx-1 subheader'>COT Style</label>
         <div class='mx-2 py-3'>
-            <div class='row g-2 rounded px-2 bg-gray-500'>
+            <div class='row g-2 rounded px-2 bg-gray-500 pb-2'>
                 <template v-if='feat.geometry.type === "Point"'>
                     <div class='col-12'>
                         <IconSelect
@@ -14,9 +14,18 @@
                     <div class='col-12'>
                         <label class='subheader'>Point Colour</label>
                         <TablerInput
-                            v-model='feat.properties.color'
+                            v-model='feat.properties["marker-color"]'
                             type='color'
                             class='pb-2'
+                        />
+                    </div>
+                    <div class='col-12'>
+                        <label class='subheader'>Point Opacity</label>
+                        <TablerRange
+                            v-model='feat.properties["marker-opacity"]'
+                            :min='0'
+                            :max='1'
+                            :step='0.01'
                         />
                     </div>
                 </template>
@@ -50,8 +59,8 @@
                         <TablerRange
                             v-model='feat.properties["stroke-opacity"]'
                             :min='0'
-                            :max='255'
-                            :step='1'
+                            :max='1'
+                            :step='0.01'
                         />
                     </div>
                 </template>
@@ -68,8 +77,8 @@
                         <TablerRange
                             v-model='feat.properties["fill-opacity"]'
                             :min='0'
-                            :max='255'
-                            :step='1'
+                            :max='1'
+                            :step='0.01'
                         />
                     </div>
                 </template>
