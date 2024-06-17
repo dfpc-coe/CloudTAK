@@ -828,7 +828,8 @@ export default {
                         feat.properties.type = 'u-d-f';
                     } else if (mapStore.draw.getMode() === 'point') {
                         feat.properties.type = 'u-d-p';
-                        feat.properties.color = '#00FF00'
+                        feat.properties["marker-opacity"] = 1;
+                        feat.properties["marker-color"] = '#00FF00';
                     }
 
                     mapStore.draw._store.delete([id]);

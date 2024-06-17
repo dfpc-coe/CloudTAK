@@ -15,6 +15,7 @@
                         <label class='subheader'>Point Colour</label>
                         <TablerInput
                             v-model='feat.properties["marker-color"]'
+                            default='#00FF00'
                             type='color'
                             class='pb-2'
                         />
@@ -23,6 +24,7 @@
                         <label class='subheader'>Point Opacity</label>
                         <TablerRange
                             v-model='feat.properties["marker-opacity"]'
+                            :default='1'
                             :min='0'
                             :max='1'
                             :step='0.01'
@@ -49,6 +51,7 @@
                         <label class='subheader'>Line Thickness</label>
                         <TablerRange
                             v-model='feat.properties["stroke-width"]'
+                            :default='1'
                             :min='1'
                             :max='6'
                             :step='1'
@@ -58,6 +61,7 @@
                         <label class='subheader'>Line Opacity</label>
                         <TablerRange
                             v-model='feat.properties["stroke-opacity"]'
+                            :default='1'
                             :min='0'
                             :max='1'
                             :step='0.01'
@@ -76,6 +80,7 @@
                         <label class='subheader'>Fill Opacity</label>
                         <TablerRange
                             v-model='feat.properties["fill-opacity"]'
+                            :default='1'
                             :min='0'
                             :max='1'
                             :step='0.01'
