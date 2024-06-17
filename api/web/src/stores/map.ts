@@ -654,7 +654,7 @@ function cotStyles(id: string, opts: {
         filter: ["==", "$type", "Polygon"],
         layout: {},
         paint: {
-            'fill-opacity': ["number", ["get", "fill-opacity"], 255],
+            'fill-opacity': ["number", ["get", "fill-opacity"], 1],
             'fill-color': ["string", ["get", "fill"], "#00FF00"]
         }
     }
@@ -677,7 +677,7 @@ function cotStyles(id: string, opts: {
         paint: {
             'line-color': ["string", ["get", "stroke"], "#00FF00"],
             'line-width': ["number", ["get", "stroke-width"], 3],
-            'line-opacity': ["number", ["get", "stroke-opacity"], 255],
+            'line-opacity': ["number", ["get", "stroke-opacity"], 1],
         }
     }
 
@@ -699,7 +699,7 @@ function cotStyles(id: string, opts: {
         'paint': {
             'line-color': ["string", ["get", "stroke"], "#00FF00"],
             'line-width': ["*", 2, ["number", ["get", "stroke-width"], 3]],
-            'line-opacity': ["number", ["get", "stroke-opacity"], 255],
+            'line-opacity': ["number", ["get", "stroke-opacity"], 1],
         }
     };
 
@@ -718,7 +718,7 @@ function cotStyles(id: string, opts: {
         paint: {
             'circle-color': ["string", ["get", "marker-color"], "#00FF00"],
             'circle-radius': ["number", ["get", "marker-radius"], 4],
-            'circle-opacity': ["number", ["get", "marker-opacity"], 255],
+            'circle-opacity': ["number", ["get", "marker-opacity"], 1],
         }
     }
 
@@ -783,8 +783,8 @@ function cotStyles(id: string, opts: {
             source: 'cots',
             filter: groupFilter,
             paint: {
-                'circle-color': ['get', 'color'],
-                'circle-opacity': ["number", ["get", "marker-opacity"], 255],
+                'circle-color': ['get', 'marker-color'],
+                'circle-opacity': ["number", ["get", "marker-opacity"], 1],
                 'circle-stroke-color': '#ffffff',
                 'circle-stroke-width': [
                     'interpolate',
