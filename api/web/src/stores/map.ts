@@ -287,7 +287,7 @@ export const useMapStore = defineStore('cloudtak', {
                 }
             };
 
-            if (typeof init.style === 'string') throw new Error('init.style must be an object');
+            if (!init.style || typeof init.style === 'string') throw new Error('init.style must be an object');
 
             if (basemap) {
                 init.style.sources.basemap = {
