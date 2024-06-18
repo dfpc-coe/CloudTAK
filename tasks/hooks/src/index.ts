@@ -16,7 +16,7 @@ export async function handler(
 
     for (const record of event.Records) {
         pool.push(
-            (async () => {
+            (async (record: Lambda.SQSRecord) => {
                 try {
                     const req = JSON.parse(record.body);
 
@@ -34,11 +34,11 @@ export async function handler(
                     const m = meta.get(record.messageId);
                     if (m) m.Error = new Error(String(err));
                 }
-            })()
+            })(record)
         )
     }
 
-    await Promise.all(pool);
+    await Promise.allSettled(pool);
 
     if (process.env.StackName) {
         const MetricData = event.Records.filter((record: Lambda.SQSRecord) => {
