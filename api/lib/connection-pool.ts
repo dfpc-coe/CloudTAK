@@ -113,41 +113,44 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
      * This is also called externally by the layer/:layer/cot API as CoTs
      * aren't rebroadcast to the submitter by the TAK Server
      */
-    async cot(conn: ConnectionConfig, cot: CoT, ephemeral=false) {
+    async cots(conn: ConnectionConfig, cots: CoT[], ephemeral=false) {
         if (this.config.wsClients.has(String(conn.id))) {
-            const feat = cot.to_geojson();
-
-            try {
-                if (ephemeral && feat.properties && feat.properties.chat) {
-                    await this.config.models.ProfileChat.generate({
-                        username: String(conn.id),
-                        chatroom: feat.properties.chat.senderCallsign,
-                        sender_callsign: feat.properties.chat.senderCallsign,
-                        sender_uid: feat.properties.chat.chatgrp._attributes.uid0,
-                        message_id: feat.properties.chat.messageId,
-                        message: feat.properties.remarks
-                    });
-                }
-            } catch (err) {
-                console.error('Failed to save COT: ', err);
-            }
-
-            for (const client of (this.config.wsClients.get(String(conn.id)) || [])) {
-                if (client.format == 'geojson') {
-                    if (feat.properties && feat.properties.chat) {
-                        client.ws.send(JSON.stringify({ type: 'chat', connection: conn.id, data: feat }));
-                    } else {
-                        client.ws.send(JSON.stringify({ type: 'cot', connection: conn.id, data: feat }));
+            for (const cot of cots) {
+                const feat = cot.to_geojson();
+                try {
+                    if (ephemeral && feat.properties && feat.properties.chat) {
+                        await this.config.models.ProfileChat.generate({
+                            username: String(conn.id),
+                            chatroom: feat.properties.chat.senderCallsign,
+                            sender_callsign: feat.properties.chat.senderCallsign,
+                            sender_uid: feat.properties.chat.chatgrp._attributes.uid0,
+                            message_id: feat.properties.chat.messageId,
+                            message: feat.properties.remarks
+                        });
                     }
-                } else {
-                    client.ws.send(JSON.stringify({ type: 'cot', connection: conn.id, data: cot.raw }));
+                } catch (err) {
+                    console.error('Failed to save COT: ', err);
+                }
+
+                for (const client of (this.config.wsClients.get(String(conn.id)) || [])) {
+                    if (client.format == 'geojson') {
+                        if (feat.properties && feat.properties.chat) {
+                            client.ws.send(JSON.stringify({ type: 'chat', connection: conn.id, data: feat }));
+                        } else {
+                            client.ws.send(JSON.stringify({ type: 'cot', connection: conn.id, data: feat }));
+                        }
+                    } else {
+                        client.ws.send(JSON.stringify({ type: 'cot', connection: conn.id, data: cot.raw }));
+                    }
                 }
             }
         }
 
-        if (!ephemeral && !this.config.nosinks && cot.is_atom()) {
+        if (!ephemeral && !this.config.nosinks) {
             try {
-                await this.sinks.cot(conn, cot);
+                await this.sinks.cots(conn, cots.filter((cot) => {
+                    return cot.is_atom();
+                }));
             } catch (err) {
                 console.error('Error', err);
             }
@@ -166,7 +169,7 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
             connClient.retry = 0;
             connClient.initial = false;
 
-            this.cot(connConfig, cot, ephemeral);
+            this.cots(connConfig, [cot], ephemeral);
         }).on('secureConnect', async () => {
             for (const sub of await connConfig.subscriptions()) {
                 try {

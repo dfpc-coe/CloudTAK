@@ -16,17 +16,16 @@ export async function handler(
 
     for (const record of event.Records) {
         pool.push(
-            (async () => {
+            (async (record: Lambda.SQSRecord) => {
                 try {
                     const req = JSON.parse(record.body);
 
                     meta.set(record.messageId, { Timestamp: new Date() });
                     if (req.type === 'ArcGIS') {
-                        console.log('ArcGIS:', req.feat.properties.callsign);
-
+                        console.log(`ArcGIS: ${req.id}, ${req.feat.properties.callsign}`);
                         await ArcGIS(req);
                     } else {
-                        throw new Error('Unknown Event Type');
+                        throw new Error(`Unknown Event Type: ${req.type}`);
                     }
 
                 } catch (err) {
@@ -34,11 +33,11 @@ export async function handler(
                     const m = meta.get(record.messageId);
                     if (m) m.Error = new Error(String(err));
                 }
-            })()
+            })(record)
         )
     }
 
-    await Promise.all(pool);
+    await Promise.allSettled(pool);
 
     if (process.env.StackName) {
         const MetricData = event.Records.filter((record: Lambda.SQSRecord) => {
