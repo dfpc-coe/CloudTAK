@@ -5,7 +5,7 @@
     "private": true,
     "scripts": {
         "tsc": "tsc --noEmit --watch",
-        "lint": "eslint src/*.ts src/**/*.ts",
+        "lint": "eslint src/",
         "build": "tsup --target es2022 --format esm src/index.ts"
     },
     "dependencies": {
@@ -25,7 +25,7 @@
         "@types/sinon": "^17.0.0",
         "@types/terraformer__arcgis": "^2.0.2",
         "eslint": "^8.37.0",
-        "sinon": "^17.0.0",
+        "sinon": "^18.0.0",
         "tsup": "^8.0.0",
         "typescript": "^5.0.0",
         "typescript-eslint": "^7.7.0"
