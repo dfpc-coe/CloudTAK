@@ -23,7 +23,7 @@ export interface EsriAuth {
 }
 
 /**
- * Determine what tyoe of ESRI Asset is being connected to
+ * Determine what type of ESRI Asset is being connected to
  * And handle unified auth between them
  */
 export class EsriBase {

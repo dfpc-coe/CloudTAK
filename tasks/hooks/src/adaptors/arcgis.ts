@@ -75,7 +75,7 @@ export default async function arcgis(data: any): Promise<boolean> {
 
         if (process.env.DEBUG) console.error('/addFeatures', data.feat.properties.callsign, 'Res:', JSON.stringify(body));
 
-        if (body.error) throw new Error(body.error.message);
+        if (body.addResults[0].error) throw new Error(JSON.stringify(body.addResults[0].error));
 
         return true;
     } else {
@@ -112,7 +112,7 @@ export default async function arcgis(data: any): Promise<boolean> {
 
         if (process.env.DEBUG) console.error('/updateFeatures', data.feat.properties.callsign, 'Res:', JSON.stringify(body));
 
-        if (body.error) throw new Error(body.error.message);
+        if (body.updateResults[0].error) throw new Error(JSON.stringify(body.updateResults[0].error));
 
         return true;
     }
