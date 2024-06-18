@@ -135,6 +135,7 @@ export default {
                             Action: [
                                 'sqs:PurgeQueue',
                                 'sqs:SendMessage',
+                                'sqs:SendMessageBatch',
                                 'sqs:ChangeMessageVisibility',
                                 'sqs:GetQueueUrl',
                                 'sqs:GetQueueAttributes'

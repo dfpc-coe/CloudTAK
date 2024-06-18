@@ -122,7 +122,8 @@ export default async function router(schema: Schema, config: Config) {
             if (cots.length === 0) return res.json({ status: 200, message: 'No features found' });
 
             pooledClient.tak.write(cots);
-            for (const cot of cots) config.conns.cot(pooledClient.config, cot);
+
+            config.conns.cots(pooledClient.config, cots);
 
             // TODO Only GeoJSON Features go to Dynamo, this should also store CoT XML
             if (layer.logging && req.query.logging !== false) ddb.queue(req.body.features.map((feat: Static<typeof Feature>) => {
