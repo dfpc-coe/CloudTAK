@@ -25,6 +25,8 @@ export default async function arcgis(data: any): Promise<boolean> {
     if (!res_query.ok) throw new Error(await res_query.text());
     const query = await res_query.json();
 
+    if (process.env.DEBUG) console.error('/query', data.feat.properties.callsign, 'Res:', JSON.stringify(query));
+
     if (query.error) throw new Error(query.error.message);
 
     let geometry = geojsonToArcGIS(data.feat.geometry) as Point;
@@ -71,6 +73,8 @@ export default async function arcgis(data: any): Promise<boolean> {
 
         const body = await res.json();
 
+        if (process.env.DEBUG) console.error('/addFeatures', data.feat.properties.callsign, 'Res:', JSON.stringify(body));
+
         if (body.error) throw new Error(body.error.message);
 
         return true;
@@ -105,6 +109,8 @@ export default async function arcgis(data: any): Promise<boolean> {
         if (!res.ok) throw new Error(await res.text());
 
         const body = await res.json();
+
+        if (process.env.DEBUG) console.error('/updateFeatures', data.feat.properties.callsign, 'Res:', JSON.stringify(body));
 
         if (body.error) throw new Error(body.error.message);
 
