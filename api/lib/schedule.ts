@@ -33,6 +33,13 @@ export default class Schedule {
 
         if (!['second', 'minute', 'hour', 'day'].includes(unit)) throw new Err(400, null, 'Unknown Unit in Rate');
 
+        // AWS went to grammar school and rate(1 minutes) won't be accepted
+        if (freq === 1 && schedules[1].match(/s$/)) {
+            throw new Err(400, null, 'A frequency value of 1 cannot have a plural unit');
+        } else if (freq > 1 && !schedules[1].match(/s$/)) {
+            throw new Err(400, null, 'A frequency value of >1 must have a plural unit');
+        }
+
         return { unit, freq };
     }
 
