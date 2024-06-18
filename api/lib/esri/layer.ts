@@ -71,7 +71,7 @@ export const DefaultLayer: Static<typeof ESRILayer> = {
         "actualType": "nvarchar",
         "alias": "remarks",
         "sqlType": "sqlTypeNVarchar",
-        "length": 100,
+        "length": 2000,
         "nullable": false,
         "editable": true,
         "domain": null,
