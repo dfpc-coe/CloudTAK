@@ -3,7 +3,10 @@ import { geojsonToArcGIS } from '@terraformer/arcgis'
 import proj4 from 'proj4';
 
 export default async function arcgis(data: any): Promise<boolean> {
-    if (data.feat.geometry.type !== 'Point') return false;
+    if (data.feat.geometry.type !== 'Point') {
+        console.error(`ok - skipping ${data.feat.properties.callsign} due to geometry: ${data.feat.geometry.type}`);
+        return false;
+    }
 
     const res_query = await fetch(data.body.layer + '/query', {
         method: 'POST',
