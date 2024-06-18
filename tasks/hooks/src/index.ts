@@ -22,11 +22,10 @@ export async function handler(
 
                     meta.set(record.messageId, { Timestamp: new Date() });
                     if (req.type === 'ArcGIS') {
-                        console.log('ArcGIS:', req.feat.properties.callsign);
-
+                        console.log(`ArcGIS: ${req.id}, ${req.feat.properties.callsign}`);
                         await ArcGIS(req);
                     } else {
-                        throw new Error('Unknown Event Type');
+                        throw new Error(`Unknown Event Type: ${req.type}`);
                     }
 
                 } catch (err) {
