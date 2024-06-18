@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v2.44.0 - 2024-06-17
+
+- :bug: Surface AGOL errors for addFeatures & updateFeatures
+- :rocket: Batch Hook Queue submissions where possible
+
 ### v2.43.0 - 2024-06-17
 
 - :rocket: `UI` Global Callsign now only shows as a single TextInput as newlines aren't respected
