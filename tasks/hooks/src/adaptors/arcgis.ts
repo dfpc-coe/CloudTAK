@@ -3,7 +3,10 @@ import { geojsonToArcGIS } from '@terraformer/arcgis'
 import proj4 from 'proj4';
 
 export default async function arcgis(data: any): Promise<boolean> {
-    if (data.feat.geometry.type !== 'Point') return false;
+    if (data.feat.geometry.type !== 'Point') {
+        console.error(`ok - skipping ${data.feat.properties.callsign} due to geometry: ${data.feat.geometry.type}`);
+        return false;
+    }
 
     const res_query = await fetch(data.body.layer + '/query', {
         method: 'POST',
@@ -21,6 +24,8 @@ export default async function arcgis(data: any): Promise<boolean> {
 
     if (!res_query.ok) throw new Error(await res_query.text());
     const query = await res_query.json();
+
+    if (process.env.DEBUG) console.error('/query', data.feat.properties.callsign, 'Res:', JSON.stringify(query));
 
     if (query.error) throw new Error(query.error.message);
 
@@ -68,7 +73,9 @@ export default async function arcgis(data: any): Promise<boolean> {
 
         const body = await res.json();
 
-        if (body.error) throw new Error(body.error.message);
+        if (process.env.DEBUG) console.error('/addFeatures', data.feat.properties.callsign, 'Res:', JSON.stringify(body));
+
+        if (body.addResults[0].error) throw new Error(JSON.stringify(body.addResults[0].error));
 
         return true;
     } else {
@@ -103,7 +110,9 @@ export default async function arcgis(data: any): Promise<boolean> {
 
         const body = await res.json();
 
-        if (body.error) throw new Error(body.error.message);
+        if (process.env.DEBUG) console.error('/updateFeatures', data.feat.properties.callsign, 'Res:', JSON.stringify(body));
+
+        if (body.updateResults[0].error) throw new Error(JSON.stringify(body.updateResults[0].error));
 
         return true;
     }
