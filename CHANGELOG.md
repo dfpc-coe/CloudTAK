@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v2.45.0 - 2024-06-18
+
+- :rocket: More comprehensive `rate()` parsing
+
 ### v2.44.0 - 2024-06-17
 
 - :bug: Surface AGOL errors for addFeatures & updateFeatures
