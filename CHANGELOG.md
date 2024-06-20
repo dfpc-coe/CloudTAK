@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v2.47.0 - 2024-06-20
+
+- :rocket: `UI` Add Admin page for listing Data Syncs
+- :rocket: `UI` Add "Create Connection" Button in Admin Connection List
+
 ### v2.46.0 - 2024-06-20
 
 - :bug: `API` Guidance from ARA to switch to `UID` as Data Sync type
