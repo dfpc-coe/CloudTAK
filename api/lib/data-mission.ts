@@ -100,7 +100,7 @@ export default class DataMission {
                     await api.MissionLayer.delete(
                         data.name,
                         {
-                            uid: `layer-${l.id}`,
+                            uid: [`layer-${l.id}`],
                             creatorUid: `connection-${data.connection}-data-${data.id}`
                         },
                         { token: data.mission_token }

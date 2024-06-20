@@ -10,11 +10,11 @@
                     <div class='col-auto'>
                         <IconLock
                             v-if='mission.passwordProtected'
-                            size='32'
+                            :size='32'
                         />
                         <IconLockOpen
                             v-else
-                            size='32'
+                            :size='32'
                         />
                     </div>
                     <div class='col-auto row'>
@@ -56,7 +56,7 @@
                                 @click='modal.groups = true'
                             >
                                 <IconListSearch
-                                    size='32'
+                                    :size='32'
                                     class='cursor-pointer mx-2'
                                 />
                             </button>
@@ -81,11 +81,11 @@
                     >
                         <IconSquareChevronRight
                             v-if='!advanced'
-                            size='32'
+                            :size='32'
                         />
                         <IconChevronDown
                             v-else
-                            size='32'
+                            :size='32'
                         />
                         Advanced Options
                     </label>

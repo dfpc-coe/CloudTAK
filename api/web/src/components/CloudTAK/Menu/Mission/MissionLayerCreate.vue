@@ -9,6 +9,7 @@
             <div class='modal-body row g-2'>
                 <TablerInput
                     v-model='layer.name'
+                    @keyup.enter='createLayer'
                     label='Name'
                 />
 
@@ -18,11 +19,11 @@
                 >
                     <IconSquareChevronRight
                         v-if='!advanced'
-                        size='32'
+                        :size='32'
                     />
                     <IconChevronDown
                         v-else
-                        size='32'
+                        :size='32'
                     />
                     Advanced Options
                 </label>

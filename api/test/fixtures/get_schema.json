@@ -494,6 +494,11 @@
         "query": false,
         "res": true
     },
+    "PATCH /marti/missions/:name/layer/:uid": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
     "DELETE /marti/missions/:name/layer/:uid": {
         "body": false,
         "query": false,
