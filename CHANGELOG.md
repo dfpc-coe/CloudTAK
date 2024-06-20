@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v2.48.0 - 2024-06-20
+
+- :rocket: `UI` Allow Renaming Data Sync Layers
+- :bug: `API` Add `uids` array when not present in MissionLayers API
+
 ### v2.47.2 - 2024-06-20
 
 - :bug: `API` Add UIDs array to all UID layers
