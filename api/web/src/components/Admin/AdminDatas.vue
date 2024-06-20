@@ -1,17 +1,11 @@
 <template>
     <div>
-        <div class='card-header d-flex'>
+        <div class='card-header'>
             <h1 class='card-title'>
-                Connection Admin
+                Data Sync Admin
             </h1>
 
             <div class='ms-auto btn-list'>
-                <IconPlus
-                    v-tooltip='"Create Connection"'
-                    size='32'
-                    class='cursor-pointer'
-                    @click='$router.push("/connection/new")'
-                />
                 <IconRefresh
                     v-tooltip='"Refresh"'
                     size='32'
@@ -20,11 +14,10 @@
                 />
             </div>
         </div>
-
         <div style='min-height: 20vh; margin-bottom: 61px'>
             <TablerLoading
                 v-if='loading'
-                desc='Loading Connections'
+                desc='Loading Data Syncs'
             />
             <TablerNone
                 v-else-if='!list.items.length'
@@ -43,25 +36,15 @@
                     />
                     <tbody>
                         <tr
-                            v-for='connection in list.items'
-                            :key='connection.id'
+                            v-for='data in list.items'
+                            :key='data.id'
                             class='cursor-pointer'
-                            @click='stdclick($router, $event, `/connection/${connection.id}`)'
+                            @click='stdclick($router, $event, `/connection/${data.connection}/data/${data.id}`)'
                         >
                             <template v-for='h in header'>
-                                <template v-if='h.display && h.name === "name"'>
+                                <template v-if='h.display'>
                                     <td>
-                                        <div class='d-flex align-items-center'>
-                                            <Status :connection='connection' /><span
-                                                class='mx-2'
-                                                v-text='connection[h.name]'
-                                            />
-                                        </div>
-                                    </td>
-                                </template>
-                                <template v-else-if='h.display'>
-                                    <td>
-                                        <span v-text='connection[h.name]' />
+                                        <span v-text='data[h.name]' />
                                     </td>
                                 </template>
                             </template>
@@ -87,23 +70,21 @@
 import { std, stdurl, stdclick } from '/src/std.ts';
 import TableHeader from '../util/TableHeader.vue'
 import TableFooter from '../util/TableFooter.vue'
+import Status from '../Layer/utils/Status.vue';
 import {
     TablerNone,
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import {
     IconRefresh,
-    IconPlus,
 } from '@tabler/icons-vue'
-import Status from '../Connection/Status.vue';
 
 export default {
-    name: 'LayerAdmin',
+    name: 'DataSyncAdmin',
     components: {
         Status,
         TablerNone,
         IconRefresh,
-        IconPlus,
         TablerLoading,
         TableHeader,
         TableFooter,
@@ -135,13 +116,14 @@ export default {
         }
     },
     mounted: async function() {
-        await this.listLayerSchema();
+        await this.listDataSchema();
         await this.fetchList();
     },
     methods: {
         stdclick,
-        listLayerSchema: async function() {
-            const schema = await std('/api/schema?method=GET&url=/connection');
+        listDataSchema: async function() {
+            const schema = await std('/api/schema?method=GET&url=/data');
+
             this.header = ['id', 'name'].map((h) => {
                 return { name: h, display: true };
             });
@@ -160,7 +142,7 @@ export default {
         },
         fetchList: async function() {
             this.loading = true;
-            const url = stdurl('/api/connection');
+            const url = stdurl('/api/data');
             if (this.query && this.paging.filter) url.searchParams.append('filter', this.paging.filter);
             url.searchParams.append('limit', this.paging.limit);
             url.searchParams.append('page', this.paging.page);

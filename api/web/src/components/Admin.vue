@@ -78,6 +78,14 @@
                                             <span
                                                 class='list-group-item list-group-item-action d-flex align-items-center'
                                                 :class='{
+                                                    "active": $route.name === "admin-data",
+                                                    "cursor-pointer": $route.name !== "admin-data"
+                                                }'
+                                                @click='$router.push(`/admin/data`)'
+                                            ><IconDatabase size='32' /><span class='mx-3'>Data Syncs</span></span>
+                                            <span
+                                                class='list-group-item list-group-item-action d-flex align-items-center'
+                                                :class='{
                                                     "active": $route.name === "admin-user",
                                                     "cursor-pointer": $route.name !== "admin-user"
                                                 }'
@@ -132,6 +140,7 @@ import {
     IconUsers,
     IconSettings,
     IconServer,
+    IconDatabase,
     IconDatabaseExport,
     IconBrandDocker,
     IconBuildingBroadcastTower,
@@ -156,10 +165,11 @@ export default {
         IconBrandDocker,
         IconDatabaseExport,
         IconBuildingBroadcastTower,
+        IconDatabase,
+        IconNetwork,
         PageFooter,
         TablerLoading,
         TablerBreadCrumb,
-        IconNetwork,
     }
 }
 </script>
