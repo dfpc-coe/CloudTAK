@@ -9,6 +9,7 @@
             <div class='modal-body row g-2'>
                 <TablerInput
                     v-model='layer.name'
+                    @keyup.enter='createLayer'
                     label='Name'
                 />
 
