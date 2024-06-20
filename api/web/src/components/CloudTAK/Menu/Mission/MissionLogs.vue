@@ -10,7 +10,7 @@
             <IconPlus
                 v-if='role.permissions.includes("MISSION_WRITE")'
                 v-tooltip='"Create Log"'
-                size='32'
+                :size='32'
                 class='cursor-pointer'
                 @click='createLog = ""'
             />
@@ -59,7 +59,7 @@
                 <div class='col-12 position-relative'>
                     <IconTrash
                         v-if='role.permissions.includes("MISSION_WRITE")'
-                        size='32'
+                        :size='32'
                         class='position-absolute cursor-pointer end-0 mx-2 my-2'
                         @click='deleteLog(log)'
                     />

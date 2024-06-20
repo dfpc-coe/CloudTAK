@@ -73,6 +73,46 @@ export default async function router(schema: Schema, config: Config) {
         }
     });
 
+    await schema.patch('/marti/missions/:name/layer/:uid', {
+        name: 'Update Layer',
+        group: 'MartiMissionLayer',
+        params: Type.Object({
+            name: Type.String(),
+            uid: Type.String()
+        }),
+        body: Type.Object({
+            name: Type.Optional(Type.String()),
+        }),
+        description: 'Helper API to update mission layers',
+        res: StandardResponse
+    }, async (req, res) => {
+        try {
+            const user = await Auth.as_user(config, req);
+
+            const auth = (await config.models.Profile.from(user.email)).auth;
+            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
+
+            if (req.body.name) {
+                await api.MissionLayer.rename(
+                    req.params.name,
+                    req.params.uid,
+                    {
+                        name: req.body.name,
+                        creatorUid: user.email
+                    },
+                    await config.conns.subscription(user.email, req.params.name)
+                );
+            }
+
+            return res.json({
+                status: 200,
+                message: 'Layer Updated'
+            });
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
+
     await schema.delete('/marti/missions/:name/layer/:uid', {
         name: 'Delete Layer',
         group: 'MartiMissionLayer',

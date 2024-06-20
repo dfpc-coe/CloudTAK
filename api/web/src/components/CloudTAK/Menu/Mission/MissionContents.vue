@@ -8,7 +8,7 @@
             <IconPlus
                 v-if='!upload && role.permissions.includes("MISSION_WRITE")'
                 v-tooltip='"Upload File"'
-                size='32'
+                :size='32'
                 class='cursor-pointer'
                 @click='upload = true'
             />
@@ -67,7 +67,7 @@
                         v-tooltip='"Download Asset"'
                         :href='downloadFile(content.data)'
                     ><IconDownload
-                        size='32'
+                        :size='32'
                         class='cursor-pointer'
                     /></a>
                 </div>
