@@ -50,6 +50,8 @@ The following are dependencies which need to be created:
 
 ### Optional Dependencies that can be deployed at any time
 
+| Name                  | Notes |
+| --------------------- | ----- |
 | `coe-media-<name>`   | Task Definitions for Media Server Support - [repo](ttps://github.com/dfoc-coe/media-infra)  |
 
 **coe-ecr-etl**
