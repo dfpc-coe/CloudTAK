@@ -70,7 +70,6 @@
 import { std, stdurl, stdclick } from '/src/std.ts';
 import TableHeader from '../util/TableHeader.vue'
 import TableFooter from '../util/TableFooter.vue'
-import Status from '../Layer/utils/Status.vue';
 import {
     TablerNone,
     TablerLoading
@@ -82,7 +81,6 @@ import {
 export default {
     name: 'DataSyncAdmin',
     components: {
-        Status,
         TablerNone,
         IconRefresh,
         TablerLoading,
