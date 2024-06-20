@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v2.47.1 - 2024-06-20
+
+- :bug: `UI` Fix Web Lints
+
 ### v2.47.0 - 2024-06-20
 
 - :rocket: `UI` Add Admin page for listing Data Syncs
