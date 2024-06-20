@@ -29,7 +29,6 @@ import { std, stdurl } from '/src/std.ts';
 import {
     TablerAlert,
     TablerInput,
-    TablerEnum,
     TablerLoading
 } from '@tak-ps/vue-tabler';
 
@@ -39,7 +38,6 @@ export default {
         TablerAlert,
         TablerLoading,
         TablerInput,
-        TablerEnum,
     },
     props: {
         mission: {
@@ -66,7 +64,7 @@ export default {
 
                 const url = stdurl(`/api/marti/missions/${this.mission.name}/layer/${this.layer.uid}`);
 
-                const res = await std(url, {
+                await std(url, {
                     method: 'PATCH',
                     body: {
                         name: this.editing.name
