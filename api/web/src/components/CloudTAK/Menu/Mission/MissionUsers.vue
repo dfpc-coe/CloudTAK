@@ -14,17 +14,17 @@
                     <IconUserBolt
                         v-if='sub.role.type === "MISSION_OWNER"'
                         v-tooltip='sub.role.type'
-                        size='32'
+                        :size='32'
                     />
                     <IconUserEdit
                         v-else-if='sub.role.type === "MISSION_SUBSCRIBER"'
                         v-tooltip='sub.role.type'
-                        size='32'
+                        :size='32'
                     />
                     <IconUser
                         v-else-if='sub.role.type === "MISSION_READONLY_SUBSCRIBER"'
                         v-tooltip='sub.role.type'
-                        size='32'
+                        :size='32'
                     />
                     <div class='col-auto mx-2'>
                         <div v-text='sub.username' />
