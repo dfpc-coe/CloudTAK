@@ -66,6 +66,12 @@
                     <span v-text='layer.name' class='mx-2'/>
 
                     <div class='ms-auto btn-list'>
+                        <span
+                            v-if='layer.type === "UID"'
+                            class='mx-3 ms-auto badge border bg-blue text-white'
+                            v-text='`${layer.uids.length} Features`'
+                        />
+
                         <TablerDelete
                             v-if='role.permissions.includes("MISSION_WRITE")'
                             displaytype='icon'

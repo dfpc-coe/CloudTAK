@@ -103,7 +103,7 @@ export default async function router(schema: Schema, config: Config) {
                             if (!cot.isDiff(b)) continue;
                         }
 
-                        cot.addDest({ mission: data.name });
+                        cot.addDest({ mission: data.name, path: `layer-${layer.id}`, after: '' });
                         cots.push(cot)
                     }
                 } else {
