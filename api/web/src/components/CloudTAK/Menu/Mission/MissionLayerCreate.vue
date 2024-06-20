@@ -19,11 +19,11 @@
                 >
                     <IconSquareChevronRight
                         v-if='!advanced'
-                        size='32'
+                        :size='32'
                     />
                     <IconChevronDown
                         v-else
-                        size='32'
+                        :size='32'
                     />
                     Advanced Options
                 </label>

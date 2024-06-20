@@ -7,12 +7,12 @@
         <template #buttons>
             <IconPlus
                 v-if='!createLayer && role.permissions.includes("MISSION_WRITE")'
-                size='24'
+                :size='24'
                 class='cursor-pointer'
                 @click='createLayer = true'
             />
             <IconRefresh
-                size='24'
+                :size='24'
                 class='cursor-pointer'
                 @click='fetchLayers'
             />
@@ -39,46 +39,64 @@
             />
             <template v-else>
                 <div
+                    :key='layer.uid'
                     v-for='layer in layers'
-                    class='col-12 hover-dark d-flex align-items-center px-2 py-2'
                 >
-                    <IconFiles
-                        v-if='layer.type === "CONTENTS"'
-                        size='32'
-                    />
-                    <IconMapPin
-                        v-else-if='layer.type === "UID"'
-                        size='32'
-                    />
-                    <IconFolder
-                        v-else-if='layer.type === "GROUP"'
-                        size='32'
-                    />
-                    <IconMap
-                        v-else-if='layer.type === "MAPLAYER"'
-                        size='32'
-                    />
-                    <IconPin
-                        v-else-if='layer.type === "ITEM"'
-                        size='32'
-                    />
-
-                    <span v-text='layer.name' class='mx-2'/>
-
-                    <div class='ms-auto btn-list'>
-                        <span
-                            v-if='layer.type === "UID"'
-                            class='mx-3 ms-auto badge border bg-blue text-white'
-                            v-text='`${layer.uids.length} Features`'
+                    <div class='col-12 hover-dark d-flex align-items-center px-2 py-2'>
+                        <IconFiles
+                            v-if='layer.type === "CONTENTS"'
+                            :size='32'
+                        />
+                        <IconMapPin
+                            v-else-if='layer.type === "UID"'
+                            :size='32'
+                        />
+                        <IconFolder
+                            v-else-if='layer.type === "GROUP"'
+                            :size='32'
+                        />
+                        <IconMap
+                            v-else-if='layer.type === "MAPLAYER"'
+                            :size='32'
+                        />
+                        <IconPin
+                            v-else-if='layer.type === "ITEM"'
+                            :size='32'
                         />
 
-                        <TablerDelete
-                            v-if='role.permissions.includes("MISSION_WRITE")'
-                            displaytype='icon'
-                            size='24'
-                            @delete='deleteLayer(layer)'
-                        />
+                        <span v-text='layer.name' class='mx-2'/>
+
+                        <div class='ms-auto btn-list'>
+                            <span
+                                v-if='layer.type === "UID"'
+                                class='mx-3 ms-auto badge border bg-blue text-white'
+                                v-text='`${layer.uids.length} Features`'
+                            />
+
+                            <IconPencil
+                                v-if='role.permissions.includes("MISSION_WRITE")'
+                                :size='24'
+                                class='cursor-pointer'
+                                @click='layer._edit = true'
+                            />
+
+                            <TablerDelete
+                                v-if='role.permissions.includes("MISSION_WRITE")'
+                                displaytype='icon'
+                                :size='24'
+                                @delete='deleteLayer(layer)'
+                            />
+                        </div>
                     </div>
+
+                    <MissionLayerEdit
+                        v-if='layer._edit'
+                        @cancel='layer._edit = false'
+                        @layer='fetchLayers'
+                        :mission='mission'
+                        :layer='layer'
+                        :role='role'
+                    />
                 </div>
             </template>
         </div>
@@ -89,6 +107,7 @@
 import { std, stdurl } from '/src/std.ts';
 import {
     IconPlus,
+    IconPencil,
     IconRefresh,
     IconFiles,
     IconMapPin,
@@ -103,11 +122,13 @@ import {
 } from '@tak-ps/vue-tabler';
 import MenuTemplate from '../../util/MenuTemplate.vue';
 import MissionLayerCreate from './MissionLayerCreate.vue';
+import MissionLayerEdit from './MissionLayerEdit.vue';
 
 export default {
     name: 'MissionInfo',
     components: {
         IconFiles,
+        IconPencil,
         IconMapPin,
         IconFolder,
         IconMap,
@@ -116,6 +137,7 @@ export default {
         IconRefresh,
         TablerDelete,
         MenuTemplate,
+        MissionLayerEdit,
         MissionLayerCreate,
         TablerNone,
         TablerLoading
@@ -149,7 +171,10 @@ export default {
             this.createLayer = false;
             this.loading.layers = true;
             const url = stdurl(`/api/marti/missions/${this.mission.name}/layer`);
-            this.layers = (await std(url)).data;
+            this.layers = (await std(url)).data.map((l) => {
+                l._edit = false;
+                return l;
+            });
             this.loading.layers = false;
         },
     }
