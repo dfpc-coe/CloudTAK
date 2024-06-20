@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v2.47.2 - 2024-06-20
+
+- :bug: `API` Add UIDs array to all UID layers
+
 ### v2.47.1 - 2024-06-20
 
 - :bug: `UI` Fix Web Lints

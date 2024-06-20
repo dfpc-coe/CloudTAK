@@ -73,10 +73,19 @@ export default class {
     ): Promise<TAKList<Static<typeof MissionLayer>>> {
         const url = new URL(`/Marti/api/missions/${this.#encodeName(name)}/layers`, this.api.url);
 
-        return await this.api.fetch(url, {
+        const res = await this.api.fetch(url, {
             method: 'GET',
             headers: this.#headers(opts),
         });
+    
+        res.data.map((l) => {
+            if (l.type === MissionLayerType.UID && !l.uids) {
+                l.uids = [];
+            }
+            return l;
+        })
+
+        return res;
     }
 
     async create(
