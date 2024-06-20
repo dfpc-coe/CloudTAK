@@ -12,6 +12,13 @@
 
 ### Pending Release
 
+### v2.46.0 - 2024-06-20
+
+- :bug: `API` Guidance from ARA to switch to `UID` as Data Sync type
+- :rocket: `API` Support changing types automatically on a connection managed Data Sync
+- :rocket: `API` Add `path` to push data to a Data Sync automatically
+- :rocket: `UI` Show number of features in a UID type Data Sync UID Layer
+
 ### v2.45.0 - 2024-06-18
 
 - :rocket: More comprehensive `rate()` parsing
