@@ -83,19 +83,41 @@ export default class DataMission {
 
         for (const l of layers.items) {
             const exists = existMap.get(`layer-${l.id}`);
+
             if (!exists) {
                 await api.MissionLayer.create(
                     data.name,
                     {
                         uid: `layer-${l.id}`,
                         name: l.name,
-                        type: MissionLayerType.GROUP,
+                        type: MissionLayerType.UID,
                         creatorUid: `connection-${data.connection}-data-${data.id}`
                     },
                     { token: data.mission_token }
                 );
             } else {
-                // Check for Layer Type Mismatch - not sure
+                if (exists.type !== MissionLayerType.UID) {
+                    await api.MissionLayer.delete(
+                        data.name,
+                        {
+                            uid: `layer-${l.id}`,
+                            creatorUid: `connection-${data.connection}-data-${data.id}`
+                        },
+                        { token: data.mission_token }
+                    );
+
+                    await api.MissionLayer.create(
+                        data.name,
+                        {
+                            uid: `layer-${l.id}`,
+                            name: l.name,
+                            type: MissionLayerType.UID,
+                            creatorUid: `connection-${data.connection}-data-${data.id}`
+                        },
+                        { token: data.mission_token }
+                    );
+                }
+
                 // Check for Name Mismatch - rename
             }
         }
