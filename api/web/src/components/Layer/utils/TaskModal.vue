@@ -155,7 +155,7 @@ export default {
             }
 
             if (this.current.readme) {
-                const readme = await std(`/api/task/prefix/${this.current.prefix}/readme`);
+                const readme = await std(`/api/task/${this.current.id}/readme`);
                 this.current.readme = readme.body;
             }
 

@@ -188,7 +188,29 @@ export default async function router(schema: Schema, config: Config) {
         }
     });
 
-    await schema.get('/task/prefix/:task/readme', {
+    await schema.patch('/task/:task', {
+        name: 'Update Task',
+        group: 'Task',
+        description: 'Update Registered Task',
+        body: Type.Object({
+            name: Type.Optional(Type.String()),
+            repo: Type.Optional(Type.String()),
+            readme: Type.Optional(Type.String()),
+        }),
+        res: TaskResponse
+    }, async (req, res) => {
+        try {
+            await Auth.as_user(config, req);
+
+            const task = await config.models.Task.commit(req.params.task, req.body);
+
+            return res.json(task);
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
+
+    await schema.get('/task/:task/readme', {
         name: 'Task README',
         group: 'Task',
         description: 'Return README Contents',
