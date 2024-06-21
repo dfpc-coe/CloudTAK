@@ -62,7 +62,7 @@
                                             <TablerEnum :options='versions' v-model='version'/>
                                         </div>
                                         <div class='col-md-4'>
-                                            <button class='btn btn-primary w-100' style='margin-top: 8px;'>Select</button>
+                                            <button @click='$emit("task", `${current.prefix}-v${version}`)' class='btn btn-primary w-100' style='margin-top: 8px;'>Select</button>
                                         </div>
                                     </template>
                                     <template v-else>
