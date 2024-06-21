@@ -258,7 +258,7 @@ export default async function router(schema: Schema, config: Config) {
             if (req.body.data) {
                 const data = await config.models.Data.from(req.body.data);
 
-                let modifier = layer.data === req.body.data ? 0 : 1;
+                const modifier = layer.data === req.body.data ? 0 : 1;
 
                 if (data.mission_diff && await config.models.Layer.count({
                     where: sql`data = ${req.body.data}`
