@@ -40,7 +40,7 @@ async function listTasks(): Promise<{
 }
 
 export default async function router(schema: Schema, config: Config) {
-    await schema.get('/task/raw', {
+    await schema.get('/task', {
         name: 'List Tasks',
         group: 'Task',
         description: 'List Tasks',
