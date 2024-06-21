@@ -32,7 +32,7 @@
                 desc='Loading Layers...'
             />
             <TablerNone
-                v-else-if='!layers.length'
+                v-else-if='!layers.length && !feats.size'
                 :create='false'
                 :compact='true'
                 label='Layers'
@@ -41,8 +41,7 @@
                 <div
                     :key='feat.id'
                     v-for='feat of feats.values()'
-                    class='hover-dark py-2'
-                    style='padding-left: 24px'
+                    class='hover-dark py-2 mx-2'
                 >
                     <IconMapPin :size='32'/>
 
