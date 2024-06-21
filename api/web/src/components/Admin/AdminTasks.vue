@@ -36,7 +36,7 @@
                     <div class='row g-2 col-12 py-2 px-2'>
                         <TablerInput label='Task Name' v-model='edit.name'/>
 
-                        <TablerInput :disabled='edit.id' label='Container Prefix' v-model='edit.prefix'/>
+                        <TablerInput label='Container Prefix' v-model='edit.prefix'/>
 
                         <TablerInput label='Task Code Repository URL' v-model='edit.repo'/>
 
@@ -73,8 +73,10 @@
                         />
                         <tbody>
                             <tr
+                                @click='edit = layer'
                                 v-for='layer in list.items'
                                 :key='layer.id'
+                                class='cursor-pointer'
                             >
                                 <template v-for='h in header'>
                                     <template v-if='h.display'>

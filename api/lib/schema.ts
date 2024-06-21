@@ -94,13 +94,16 @@ export const Import = pgTable('imports', {
 });
 
 export const Task = pgTable('tasks', {
-    prefix: text('prefix').primaryKey(),
+    id: text('id').primaryKey(),
+    prefix: text('prefix').notNull(),
     created: timestamp('created', { withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp('updated', { withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     name: text('name').notNull(),
     repo: text('repo'),
     readme: text('readme')
-});
+}, (t) => ({
+    unq: unique().on(t.prefix)
+}));
 
 export const Iconset = pgTable('iconsets', {
     uid: text('uid').primaryKey(),
