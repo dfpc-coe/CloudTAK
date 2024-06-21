@@ -74,13 +74,16 @@
                                 />
                             </div>
                             <div class='ms-auto btn-list mx-2'>
+                                <TablerDelete
+                                    displaytype='icon'
+                                    @delete='deleteCOT'
+                                />
                                 <IconZoomPan
                                     v-tooltip='"Zoom To"'
                                     size='32'
                                     class='cursor-pointer'
                                     @click='zoomTo'
                                 />
-
                                 <IconCode
                                     v-if='mode === "default"'
                                     v-tooltip='"Raw View"'
@@ -249,6 +252,7 @@ const mapStore = useMapStore();
 import {
     TablerNone,
     TablerInput,
+    TablerDelete,
     TablerMarkdown
 } from '@tak-ps/vue-tabler';
 import Share from './util/Share.vue';
@@ -332,6 +336,10 @@ export default {
                 await cotStore.add(this.feat);
             }
         },
+        deleteCOT: async function() {
+            await cotStore.delete(this.feat.id);
+            this.$router.push('/');
+        },
         zoomTo: function() {
             mapStore.map.flyTo({
                 center: this.center,
@@ -351,6 +359,7 @@ export default {
         TablerNone,
         TablerInput,
         TablerMarkdown,
+        TablerDelete,
         IconBattery1,
         IconBattery2,
         IconBattery3,
