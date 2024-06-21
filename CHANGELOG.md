@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v2.52.0 - 2024-06-21
+
+- :rocket: `UI` Show CoTs in their appropriate layers (if any)
+
 ### v2.51.0 - 2024-06-21
 
 - :rocket: Helper functions to get single Layer from Mission Sync Layers
