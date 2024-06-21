@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v2.50.0 - 2024-06-20
+
+- :rocket: `API` Add GeoFence (de)serializing support for CoTs
+
 ### v2.49.0 - 2024-06-20
 
 - :rocket: `UI` Save redirect state when login is required
