@@ -93,6 +93,13 @@ export const Import = pgTable('imports', {
     config: json('config').notNull().default({})
 });
 
+export const Task = pgTable('tasks', {
+    prefix: text('prefix').primaryKey(),
+    name: text('name').notNull(),
+    repo: text('repo'),
+    readme: text('readme')
+});
+
 export const Iconset = pgTable('iconsets', {
     uid: text('uid').primaryKey(),
     created: timestamp('created', { withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
