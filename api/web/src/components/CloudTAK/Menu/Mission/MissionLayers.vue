@@ -14,7 +14,7 @@
             <IconRefresh
                 :size='24'
                 class='cursor-pointer'
-                @click='fetchLayers'
+                @click='refresh'
             />
         </template>
 
@@ -23,7 +23,7 @@
                 v-if='createLayer'
                 class='px-2'
                 :mission='mission'
-                @layer='fetchLayers'
+                @layer='refresh'
                 @cancel='createLayer = false'
             />
             <TablerLoading
@@ -32,12 +32,21 @@
                 desc='Loading Layers...'
             />
             <TablerNone
-                v-else-if='!layers.length'
+                v-else-if='!layers.length && !feats.size'
                 :create='false'
                 :compact='true'
                 label='Layers'
             />
             <template v-else>
+                <div
+                    :key='feat.id'
+                    v-for='feat of feats.values()'
+                    class='hover-dark py-2 mx-2'
+                >
+                    <IconMapPin :size='32'/>
+
+                    <span v-text='feat.properties.callsign || "UNKNOWN"'/>
+                </div>
                 <div
                     :key='layer.uid'
                     v-for='layer in layers'
@@ -47,7 +56,7 @@
                             v-if='layer.type === "CONTENTS"'
                             :size='32'
                         />
-                        <IconMapPin
+                        <IconMapPins
                             v-else-if='layer.type === "UID"'
                             :size='32'
                         />
@@ -66,7 +75,7 @@
 
                         <span v-text='layer.name' class='mx-2'/>
 
-                        <div class='ms-auto btn-list'>
+                        <div class='ms-auto btn-list d-flex align-items-center'>
                             <span
                                 v-if='layer.type === "UID"'
                                 class='mx-3 ms-auto badge border bg-blue text-white'
@@ -86,17 +95,34 @@
                                 :size='24'
                                 @delete='deleteLayer(layer)'
                             />
+
+                            <IconChevronRight @click='layer._open = true' v-if='layer.type === "UID" && !layer._open' :size='32' class='cursor-pointer'/>
+                            <IconChevronDown @click='layer._open = false' v-else-if='layer.type === "UID" && layer._open' :size='32' class='cursor-pointer'/>
                         </div>
                     </div>
 
                     <MissionLayerEdit
                         v-if='layer._edit'
                         @cancel='layer._edit = false'
-                        @layer='fetchLayers'
+                        @layer='refresh'
                         :mission='mission'
                         :layer='layer'
                         :role='role'
                     />
+                    <div
+                        v-else-if='layer._open && layer.type === "UID"'
+                    >
+                        <div
+                            :key='cot.data'
+                            v-for='cot of layer.uids'
+                            class='hover-dark py-2'
+                            style='padding-left: 24px'
+                        >
+                            <IconMapPin :size='32'/>
+
+                            <span class='mx-2' v-text='cot.details.callsign || "UNKNOWN"'/>
+                        </div>
+                    </div>
                 </div>
             </template>
         </div>
@@ -106,11 +132,14 @@
 <script>
 import { std, stdurl } from '/src/std.ts';
 import {
+    IconChevronRight,
+    IconChevronDown,
     IconPlus,
     IconPencil,
     IconRefresh,
     IconFiles,
     IconMapPin,
+    IconMapPins,
     IconFolder,
     IconMap,
     IconPin,
@@ -125,11 +154,14 @@ import MissionLayerCreate from './MissionLayerCreate.vue';
 import MissionLayerEdit from './MissionLayerEdit.vue';
 
 export default {
-    name: 'MissionInfo',
+    name: 'MissionLayers',
     components: {
+        IconChevronRight,
+        IconChevronDown,
         IconFiles,
         IconPencil,
         IconMapPin,
+        IconMapPins,
         IconFolder,
         IconMap,
         IconPin,
@@ -152,30 +184,54 @@ export default {
             loading: {
                 layers: true,
             },
+            feats: new Map(),
             layers: [],
         }
     },
     mounted: async function() {
-        await this.fetchLayers();
+        await this.refresh();
     },
     methods: {
+        refresh: async function() {
+            this.createLayer = false;
+            this.loading.layers = true;
+
+            await this.fetchFeats();
+            await this.fetchLayers();
+
+            this.loading.layers = false;
+        },
         deleteLayer: async function(layer) {
             this.loading.layers = true;
             const url = stdurl(`/api/marti/missions/${this.mission.name}/layer/${layer.uid}`);
 
             await std(url, { method: 'DELETE' })
 
-            await this.fetchLayers();
+            await this.refresh();
+        },
+        fetchFeats: async function() {
+            const url = stdurl(`/api/marti/missions/${this.mission.name}/cot`);
+            const fc = await std(url);
+
+            for (const feat of fc.features) {
+                this.feats.set(feat.id, feat);
+            }
         },
         fetchLayers: async function() {
-            this.createLayer = false;
-            this.loading.layers = true;
             const url = stdurl(`/api/marti/missions/${this.mission.name}/layer`);
             this.layers = (await std(url)).data.map((l) => {
                 l._edit = false;
+                l._open = false;
                 return l;
             });
-            this.loading.layers = false;
+
+            for (const layer of this.layers) {
+                if (layer.type === "UID" && layer.uids.length) {
+                    for (const cot of layer.uids) {
+                        this.feats.delete(cot.data);
+                    }
+                }
+            }
         },
     }
 }
