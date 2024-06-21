@@ -116,7 +116,12 @@ export default {
                 localStorage.token = login.token;
 
                 this.$emit('login');
-                this.$router.push("/");
+
+                if (this.$route.query.redirect) {
+                    this.$router.push(this.$route.query.redirect);
+                } else {
+                    this.$router.push("/");
+                }
             } catch (err) {
                 this.loading = false;
                 throw err;
