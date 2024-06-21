@@ -12,6 +12,12 @@
 
 ### Pending Release
 
+### v2.51.0 - 2024-06-21
+
+- :rocket: Helper functions to get single Layer from Mission Sync Layers
+- :rocket: Helper function to get `latestFeats` from single Layer
+- :rocket: Perform Mission Diff on Layers
+
 ### v2.50.0 - 2024-06-20
 
 - :rocket: `API` Add GeoFence (de)serializing support for CoTs
