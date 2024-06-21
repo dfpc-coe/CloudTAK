@@ -82,7 +82,6 @@
 import { std } from '/src/std.ts';
 import {
     IconCode,
-    IconArrowBack
 } from '@tabler/icons-vue'
 import {
     TablerMarkdown,
@@ -96,7 +95,6 @@ export default {
     name: 'TaskModal',
     components: {
         IconCode,
-        IconArrowBack,
         TablerLoading,
         TablerMarkdown,
         TablerModal,

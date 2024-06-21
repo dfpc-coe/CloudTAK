@@ -182,12 +182,12 @@ export default {
             this.loading = true;
 
             if (this.edit.id) {
-                const url = await std(`/api/task/${this.edit.prefix}`, {
+                await std(`/api/task/${this.edit.prefix}`, {
                     method: 'PATCH',
                     body: this.edit
                 });
             } else {
-                const url = await std('/api/task', {
+                await std('/api/task', {
                     method: 'POST',
                     body: this.edit
                 });
