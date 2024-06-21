@@ -1,2 +1,0 @@
-ALTER TABLE "tasks" ADD COLUMN "created" timestamp with time zone DEFAULT Now() NOT NULL;--> statement-breakpoint
-ALTER TABLE "tasks" ADD COLUMN "updated" timestamp with time zone DEFAULT Now() NOT NULL;
