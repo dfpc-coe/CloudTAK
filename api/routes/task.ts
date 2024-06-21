@@ -4,14 +4,11 @@ import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import ECR from '../lib/aws/ecr.js';
-import CF from '../lib/aws/cloudformation.js';
-import Lambda from '../lib/aws/lambda.js';
-import CloudFormation from '../lib/aws/cloudformation.js';
-import Logs from '../lib/aws/lambda-logs.js';
 import semver from 'semver-sort';
-import Cacher from '../lib/cacher.js';
 import Config from '../lib/config.js';
-import { StandardResponse, JobLogResponse } from '../lib/types.js';
+import { Task } from '../lib/schema.js';
+import { StandardResponse, TaskResponse } from '../lib/types.js';
+import * as Default from '../lib/limits.js';
 
 export enum TaskSchemaEnum {
     OUTPUT = 'schema:output',
@@ -43,9 +40,44 @@ async function listTasks(): Promise<{
 }
 
 export default async function router(schema: Schema, config: Config) {
-    await schema.get('/task', {
+    await schema.get('/task/raw', {
         name: 'List Tasks',
         group: 'Task',
+        description: 'List Tasks',
+        query: Type.Object({
+            limit: Default.Limit,
+            page: Default.Page,
+            order: Default.Order,
+            sort: Type.Optional(Type.String({ default: 'created', enum: Object.keys(Task) })),
+            filter: Default.Filter
+        }),
+        res: Type.Object({
+            total: Type.Integer(),
+            items: Type.Array(TaskResponse)
+        })
+    }, async (req, res) => {
+        try {
+            await Auth.as_user(config, req, { admin: true });
+
+            const list = await config.models.Task.list({
+                limit: req.query.limit,
+                page: req.query.page,
+                order: req.query.order,
+                sort: req.query.sort,
+                where: sql`
+                    name ~* ${req.query.filter}
+                `
+            });
+
+            return res.json(list);
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
+
+    await schema.get('/task/raw', {
+        name: 'List Tasks',
+        group: 'RawTask',
         description: 'List Tasks',
         res: Type.Object({
             total: Type.Integer(),
@@ -53,7 +85,7 @@ export default async function router(schema: Schema, config: Config) {
         })
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req);
+            await Auth.as_user(config, req, { admin: true });
 
             const { total, tasks } = await listTasks();
 
@@ -66,9 +98,9 @@ export default async function router(schema: Schema, config: Config) {
         }
     });
 
-    await schema.get('/task/:task', {
-        name: 'List Tasks',
-        group: 'Task',
+    await schema.get('/task/raw/:task', {
+        name: 'Get Task',
+        group: 'RawTask',
         params: Type.Object({
             task: Type.String(),
         }),
@@ -79,7 +111,7 @@ export default async function router(schema: Schema, config: Config) {
         })
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req);
+            await Auth.as_user(config, req, { admin: true });
 
             // Stuck with this approach for now - https://github.com/aws/containers-roadmap/issues/418
             const { tasks } = await listTasks();
@@ -93,9 +125,9 @@ export default async function router(schema: Schema, config: Config) {
         }
     });
 
-    await schema.delete('/task/:task/version/:version', {
+    await schema.delete('/task/raw/:task/version/:version', {
         name: 'Delete Version',
-        group: 'Task',
+        group: 'RawTask',
         params: Type.Object({
             task: Type.String(),
             version: Type.String(),
@@ -104,7 +136,7 @@ export default async function router(schema: Schema, config: Config) {
         res: StandardResponse
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req);
+            await Auth.as_user(config, req, { admin: true });
 
             const { tasks } = await listTasks();
 
@@ -128,214 +160,6 @@ export default async function router(schema: Schema, config: Config) {
                 status: 200,
                 message: 'Deleted Task Version'
             });
-        } catch (err) {
-            return Err.respond(err, res);
-        }
-    });
-
-    await schema.get('/connection/:connectionid/layer/:layerid/task', {
-        name: 'Task Status',
-        group: 'Task',
-        params: Type.Object({
-            connectionid: Type.Integer(),
-            layerid: Type.Integer(),
-        }),
-        description: 'Get the status of a task stack in relation to a given layer',
-        res: Type.Object({
-            status: Type.String()
-        })
-    }, async (req, res) => {
-        try {
-            const { connection } = await Auth.is_connection(config, req, {
-                resources: []
-            }, req.params.connectionid);
-
-            const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
-                return await config.models.Layer.from(parseInt(String(req.params.layerid)));
-            });
-
-            if (layer.connection !== connection.id) {
-                throw new Err(400, null, 'Layer does not belong to this connection');
-            }
-
-            return res.json(await CF.status(config, layer.id));
-        } catch (err) {
-            return Err.respond(err, res);
-        }
-    });
-
-    await schema.delete('/connection/:connectionid/layer/:layerid/task', {
-        name: 'Cancel Update',
-        group: 'Task',
-        params: Type.Object({
-            connectionid: Type.Integer(),
-            layerid: Type.Integer(),
-        }),
-        description: 'If a stack is currently updating, cancel the stack update',
-        res: StandardResponse
-    }, async (req, res) => {
-        try {
-            const { connection } = await Auth.is_connection(config, req, {
-                resources: []
-            }, req.params.connectionid);
-
-            const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
-                return await config.models.Layer.from(parseInt(String(req.params.layerid)));
-            });
-
-            if (layer.connection !== connection.id) {
-                throw new Err(400, null, 'Layer does not belong to this connection');
-            }
-
-            await CF.cancel(config, layer.id);
-
-            return res.json({
-                status: 200,
-                message: 'Stack Update Cancelled'
-            });
-        } catch (err) {
-            return Err.respond(err, res);
-        }
-    });
-
-    await schema.post('/connection/:connectionid/layer/:layerid/task/invoke', {
-        name: 'Run Task',
-        group: 'Task',
-        params: Type.Object({
-            connectionid: Type.Integer(),
-            layerid: Type.Integer(),
-        }),
-        description: 'Manually invoke a Task',
-        res: StandardResponse
-    }, async (req, res) => {
-        try {
-            const { connection } = await Auth.is_connection(config, req, {
-                resources: []
-            }, req.params.connectionid);
-
-            const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
-                return await config.models.Layer.from(parseInt(String(req.params.layerid)));
-            });
-
-            if (layer.connection !== connection.id) {
-                throw new Err(400, null, 'Layer does not belong to this connection');
-            }
-
-            await Lambda.invoke(config, layer.id)
-
-            return res.json({
-                status: 200,
-                message: 'Manually Invoked Lambda'
-            });
-        } catch (err) {
-            return Err.respond(err, res);
-        }
-    });
-
-    await schema.get('/connection/:connectionid/layer/:layerid/task/logs', {
-        name: 'Task Logs',
-        group: 'Task',
-        params: Type.Object({
-            connectionid: Type.Integer(),
-            layerid: Type.Integer(),
-        }),
-        description: 'Get the logs related to the given task',
-        res: Type.Object({
-            logs: Type.Array(JobLogResponse)
-        })
-    }, async (req, res) => {
-        try {
-            const { connection } = await Auth.is_connection(config, req, {
-                resources: []
-            }, req.params.connectionid);
-
-            const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
-                return await config.models.Layer.from(parseInt(String(req.params.layerid)));
-            });
-
-            if (layer.connection !== connection.id) {
-                throw new Err(400, null, 'Layer does not belong to this connection');
-            }
-
-            return res.json(await Logs.list(config, layer));
-        } catch (err) {
-            return Err.respond(err, res);
-        }
-    });
-
-    await schema.get('/connection/:connectionid/layer/:layerid/task/schema', {
-        name: 'Task Schema',
-        group: 'Task',
-        params: Type.Object({
-            connectionid: Type.Integer(),
-            layerid: Type.Integer(),
-        }),
-        description: 'Get the JSONSchema for the expected environment variables',
-        query: Type.Object({
-            type: Type.Enum(TaskSchemaEnum, {
-                default: TaskSchemaEnum.INPUT
-            })
-        }),
-        res: Type.Object({
-            schema: Type.Any()
-        })
-    }, async (req, res) => {
-        try {
-            const { connection } = await Auth.is_connection(config, req, {
-                resources: []
-            }, req.params.connectionid);
-
-            const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
-                return await config.models.Layer.from(parseInt(String(req.params.layerid)));
-            });
-
-            if (layer.connection !== connection.id) {
-                throw new Err(400, null, 'Layer does not belong to this connection');
-            }
-
-            return res.json({
-                schema: await Lambda.schema(config, layer.id, String(req.query.type))
-            });
-        } catch (err) {
-            return Err.respond(err, res);
-        }
-    });
-
-    await schema.post('/connection/:connectionid/layer/:layerid/task', {
-        name: 'Task Deploy',
-        group: 'Task',
-        params: Type.Object({
-            connectionid: Type.Integer(),
-            layerid: Type.Integer(),
-        }),
-        description: 'Deploy a task stack',
-        res: Type.Object({
-            status: Type.String()
-        })
-    }, async (req, res) => {
-        try {
-            const { connection } = await Auth.is_connection(config, req, {
-                resources: []
-            }, req.params.connectionid);
-
-            const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
-                return await config.models.Layer.from(parseInt(String(req.params.layerid)));
-            });
-
-            if (layer.connection !== connection.id) {
-                throw new Err(400, null, 'Layer does not belong to this connection');
-            }
-
-            try {
-                await Logs.delete(config, layer);
-            } catch (err) {
-                console.log('no existing log groups');
-            }
-
-            const lambda = await Lambda.generate(config, layer);
-            await CloudFormation.create(config, layer.id, lambda);
-
-            return res.json(await CF.status(config, layer.id));
         } catch (err) {
             return Err.respond(err, res);
         }
