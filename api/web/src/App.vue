@@ -162,9 +162,10 @@ export default {
     },
     errorCaptured: function(err) {
         if (err.message === '401') {
+            // Popup Modal if reauthenticating vs initial login
             this.login = true;
         } else if (String(err) === 'Error: Authentication Required') {
-            this.$router.push('/login');
+            this.routeLogin();
         } else {
             this.err = err;
         }
@@ -178,7 +179,7 @@ export default {
             await this.getLogin();
             await this.getServer();
         } else if (this.$route.name !== 'login') {
-            this.$router.push("/login");
+            this.routeLogin();
         }
 
         this.mounted = true;
@@ -189,6 +190,9 @@ export default {
             delete localStorage.token;
             this.$router.push("/login");
         },
+        routeLogin: function() {
+            this.$router.push(`/login?redirect=${encodeURIComponent(window.location.pathname)}`);
+        },
         getLogin: async function() {
             this.loading = true;
             try {
@@ -196,7 +200,9 @@ export default {
             } catch (err) {
                 this.user = null;
                 delete localStorage.token;
-                if (this.$route.name !== 'login') this.$router.push("/login");
+                if (this.$route.name !== 'login') {
+                    this.routeLogin();
+                }
                 this.loading = false;
             }
 
