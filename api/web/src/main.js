@@ -343,6 +343,10 @@ const router = new VueRouter.createRouter({
                 name: 'admin-task',
                 component: () => import('./components/Admin/AdminTasks.vue')
             },{
+                path: 'task-raw',
+                name: 'admin-task-raw',
+                component: () => import('./components/Admin/AdminRawTasks.vue')
+            },{
                 path: 'server',
                 name: 'admin-server',
                 component: () => import('./components/Admin/AdminServer.vue')

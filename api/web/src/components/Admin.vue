@@ -54,11 +54,19 @@
                                             <span
                                                 class='list-group-item list-group-item-action d-flex align-items-center'
                                                 :class='{
+                                                    "active": $route.name === "admin-task-raw",
+                                                    "cursor-pointer": $route.name !== "admin-task-raw"
+                                                }'
+                                                @click='$router.push(`/admin/task-raw`)'
+                                            ><IconBrandDocker size='32' /><span class='mx-3'>ETL Containers</span></span>
+                                            <span
+                                                class='list-group-item list-group-item-action d-flex align-items-center'
+                                                :class='{
                                                     "active": $route.name === "admin-task",
                                                     "cursor-pointer": $route.name !== "admin-task"
                                                 }'
                                                 @click='$router.push(`/admin/task`)'
-                                            ><IconBrandDocker size='32' /><span class='mx-3'>ETL Tasks</span></span>
+                                            ><IconBrandDocker size='32' /><span class='mx-3'>Registered Tasks</span></span>
                                             <span
                                                 class='list-group-item list-group-item-action d-flex align-items-center'
                                                 :class='{
