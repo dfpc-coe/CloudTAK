@@ -18,6 +18,7 @@
             ]
         }
     },
+    "exclude": [],
     "include": [
         "index.ts",
         "routes/**/*",
