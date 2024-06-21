@@ -199,6 +199,30 @@
                         </div>
                     </div>
 
+                    <div
+                        v-if='feat.properties.video'
+                        class='col-12 px-1 pb-2'
+                    >
+                        <label class='subheader px-2'>Video</label>
+                        <div class='table-responsive rounded mx-2 py-2 px-2'>
+                            <table class='table card-table table-hover table-vcenter datatable'>
+                                <thead>
+                                    <th>Key</th>
+                                    <th>Value</th>
+                                </thead>
+                                <tbody class='bg-gray-500'>
+                                    <tr
+                                        v-for='prop of Object.keys(feat.properties.video)'
+                                        :key='prop'
+                                    >
+                                        <td v-text='prop' />
+                                        <td v-text='feat.properties.video[prop]' />
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
                     <template v-if='isUserDrawn'>
                         <CoTStyle :key='feat.id' v-model='feat' />
                     </template>
