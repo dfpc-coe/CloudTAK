@@ -12,6 +12,12 @@
 
 ### Pending Release
 
+### v2.49.0 - 2024-06-20
+
+- :rocket: `UI` Save redirect state when login is required
+- :rocket: `UI` Add delete button to CoTView
+- :rocket: `UI` Show video URL as a stopgap until RTSP streams can be viewed
+
 ### v2.48.0 - 2024-06-20
 
 - :rocket: `UI` Allow Renaming Data Sync Layers
