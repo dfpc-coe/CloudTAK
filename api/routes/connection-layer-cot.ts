@@ -72,12 +72,19 @@ export default async function router(schema: Schema, config: Config) {
                 pooledClient = await config.conns.get(data.connection);
 
                 if (data.mission_diff) {
-                    if (!Array.isArray(req.body.uids)) throw new Err(400, null, 'uids Array must be present when submitting to DataSync with MissionDiff');
+                    if (!Array.isArray(req.body.uids)) {
+                        throw new Err(400, null, 'uids Array must be present when submitting to DataSync with MissionDiff');
+                    }
 
                     const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(pooledClient.config.auth.cert, pooledClient.config.auth.key));
                     // Once NodeJS supports Set.difference we can simplify this
                     const inputFeats = new Set(req.body.uids);
-                    const features = await api.Mission.latestFeats(data.name, { token: data.mission_token });
+
+                    const features = await api.MissionLayer.latestFeats(
+                        data.name,
+                        `layer-${layer.id}`,
+                        { token: data.mission_token }
+                    );
 
                     for (const feat of features.values()) {
                         if (!inputFeats.has(String(feat.id))) {
