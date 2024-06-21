@@ -9,7 +9,7 @@ import { MissionLayer, MissionLayerType } from './api/mission-layer.js';
 import Config from './config.js';
 import { Mission } from './api/mission.js';
 
-export const MAX_LAYERS_IN_DATA_SYNC = 1;
+export const MAX_LAYERS_IN_DATA_SYNC = 5;
 
 export default class DataMission {
     /**

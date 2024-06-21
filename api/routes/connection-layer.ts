@@ -167,8 +167,8 @@ export default async function router(schema: Schema, config: Config) {
                 const data = await config.models.Data.from(req.body.data);
                 if (data.mission_diff && await config.models.Layer.count({
                     where: sql`data = ${req.body.data}`
-                }) > MAX_LAYERS_IN_DATA_SYNC) {
-                    throw new Err(400, null, 'Only a single layer can be added to a DataSync with Mission Diff Enabled')
+                }) + 1 > MAX_LAYERS_IN_DATA_SYNC) {
+                    throw new Err(400, null, `Only ${MAX_LAYERS_IN_DATA_SYNC} layers can be added to a DataSync with Mission Diff Enabled`)
                 }
 
                 if (data.connection !== req.params.connectionid) {
@@ -253,12 +253,17 @@ export default async function router(schema: Schema, config: Config) {
                 ]
             }, req.params.connectionid);
 
+            let layer = await config.models.Layer.from(req.params.layerid);
+
             if (req.body.data) {
                 const data = await config.models.Data.from(req.body.data);
+
+                let modifier = layer.data === req.body.data ? 0 : 1;
+
                 if (data.mission_diff && await config.models.Layer.count({
                     where: sql`data = ${req.body.data}`
-                }) > MAX_LAYERS_IN_DATA_SYNC) {
-                    throw new Err(400, null, 'Only a single layer can be added to a DataSync with Mission Diff Enabled')
+                }) + modifier > MAX_LAYERS_IN_DATA_SYNC) {
+                    throw new Err(400, null, `Only ${MAX_LAYERS_IN_DATA_SYNC} layers can be added to a DataSync with Mission Diff Enabled`)
                 }
 
                 if (data.connection !== req.params.connectionid) {
@@ -271,8 +276,6 @@ export default async function router(schema: Schema, config: Config) {
             }
 
             if (req.body.cron) Schedule.is_valid(req.body.cron);
-
-            let layer = await config.models.Layer.from(req.params.layerid);
 
             if (layer.connection !== connection.id) {
                 throw new Err(400, null, 'Layer does not belong to this connection');
