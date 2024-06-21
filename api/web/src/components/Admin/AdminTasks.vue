@@ -184,7 +184,7 @@ export default {
             this.loading = true;
 
             if (this.edit.id) {
-                await std(`/api/task/${this.edit.prefix}`, {
+                await std(`/api/task/${this.edit.id}`, {
                     method: 'PATCH',
                     body: this.edit
                 });
