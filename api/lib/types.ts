@@ -81,7 +81,9 @@ export const LayerAlertResponse = createSelectSchema(schemas.LayerAlert, {
 
 export const ImportResponse = createSelectSchema(schemas.Import, {});
 
-export const TaskResponse = createSelectSchema(schemas.Task, {});
+export const TaskResponse = createSelectSchema(schemas.Task, {
+    id: Type.Integer(),
+});
 
 export const IconsetResponse = createSelectSchema(schemas.Iconset, {
     version: Type.Integer(),

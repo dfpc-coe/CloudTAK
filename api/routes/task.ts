@@ -188,12 +188,12 @@ export default async function router(schema: Schema, config: Config) {
         }
     });
 
-    await schema.get('/task/prefix/:prefix/readme', {
+    await schema.get('/task/prefix/:task/readme', {
         name: 'Task README',
         group: 'Task',
         description: 'Return README Contents',
         params: Type.Object({
-            prefix: Type.String()
+            task: Type.Integer()
         }),
         res: Type.Object({
             body: Type.String()
@@ -202,7 +202,7 @@ export default async function router(schema: Schema, config: Config) {
         try {
             await Auth.as_user(config, req);
 
-            const task = await config.models.Task.from(req.params.prefix);
+            const task = await config.models.Task.from(req.params.task);
 
             if (task.readme) {
                 const readmeres = await fetch(task.readme);
