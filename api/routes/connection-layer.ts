@@ -161,6 +161,8 @@ export default async function router(schema: Schema, config: Config) {
                 await Style.validate(req.body.styles);
             }
 
+            Schedule.is_valid(req.body.cron);
+
             if (req.body.data) {
                 const data = await config.models.Data.from(req.body.data);
                 if (data.mission_diff && await config.models.Layer.count({
@@ -172,17 +174,8 @@ export default async function router(schema: Schema, config: Config) {
                 if (data.connection !== req.params.connectionid) {
                     throw new Err(400, null, 'Layer cannot reference a Data Sync that is not part of the current connection');
                 }
-
-                try {
-                    // Handle Potential Renames
-                    await DataMission.sync(config, data);
-                } catch (err) {
-                    // Eventually do something
-                    console.error(err);
-                }
             }
 
-            Schedule.is_valid(req.body.cron);
             const layer = await config.models.Layer.generate({
                 connection: req.params.connectionid,
                 ...req.body
@@ -201,6 +194,18 @@ export default async function router(schema: Schema, config: Config) {
                 await CloudFormation.create(config, layer.id, stack);
             } catch (err) {
                 console.error(err);
+            }
+
+            if (req.body.data) {
+                const data = await config.models.Data.from(req.body.data);
+
+                try {
+                    // Handle Potential Renames
+                    await DataMission.sync(config, data);
+                } catch (err) {
+                    // Eventually do something
+                    console.error(err);
+                }
             }
 
             return res.json({
@@ -259,14 +264,6 @@ export default async function router(schema: Schema, config: Config) {
                 if (data.connection !== req.params.connectionid) {
                     throw new Err(400, null, 'Layer cannot reference a Data Sync that is not part of the current connection');
                 }
-
-                try {
-                    // Handle Potential Renames
-                    await DataMission.sync(config, data);
-                } catch (err) {
-                    // Eventually do something
-                    console.error(err);
-                }
             }
 
             if (req.body.styles) {
@@ -312,6 +309,18 @@ export default async function router(schema: Schema, config: Config) {
                     config.events.add(layer.id, layer.cron);
                 } else if (layer.cron && Schedule.is_aws(layer.cron) || !layer.enabled) {
                     await config.events.delete(layer.id);
+                }
+            }
+
+            if (req.body.data) {
+                const data = await config.models.Data.from(req.body.data);
+
+                try {
+                    // Handle Potential Renames
+                    await DataMission.sync(config, data);
+                } catch (err) {
+                    // Eventually do something
+                    console.error(err);
                 }
             }
 
