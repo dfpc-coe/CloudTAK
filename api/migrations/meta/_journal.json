@@ -330,6 +330,13 @@
       "when": 1718125975097,
       "tag": "0046_premium_newton_destine",
       "breakpoints": true
+    },
+    {
+      "idx": 47,
+      "version": "7",
+      "when": 1719000234715,
+      "tag": "0047_sticky_morbius",
+      "breakpoints": true
     }
   ]
 }
