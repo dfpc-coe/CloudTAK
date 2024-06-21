@@ -57,7 +57,7 @@ export default async function router(schema: Schema, config: Config) {
         })
     }, async (req, res) => {
         try {
-            await Auth.as_user(config, req, { admin: true });
+            await Auth.as_user(config, req);
 
             const list = await config.models.Task.list({
                 limit: req.query.limit,
@@ -75,6 +75,29 @@ export default async function router(schema: Schema, config: Config) {
         }
     });
 
+    await schema.post('/task', {
+        name: 'Create Task',
+        group: 'Task',
+        description: 'Create Registered Task',
+        body: Type.Object({
+            name: Type.String(),
+            prefix: Type.String(),
+            repo: Type.Optional(Type.String()),
+            readme: Type.Optional(Type.String()),
+        }),
+        res: TaskResponse
+    }, async (req, res) => {
+        try {
+            await Auth.as_user(config, req);
+
+            const task = await config.models.Task.generate(req.body);
+
+            return res.json(task);
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
+
     await schema.get('/task/raw', {
         name: 'List Tasks',
         group: 'RawTask',
@@ -85,7 +108,7 @@ export default async function router(schema: Schema, config: Config) {
         })
     }, async (req, res) => {
         try {
-            await Auth.as_user(config, req, { admin: true });
+            await Auth.as_user(config, req);
 
             const { total, tasks } = await listTasks();
 
@@ -111,7 +134,7 @@ export default async function router(schema: Schema, config: Config) {
         })
     }, async (req, res) => {
         try {
-            await Auth.as_user(config, req, { admin: true });
+            await Auth.as_user(config, req);
 
             // Stuck with this approach for now - https://github.com/aws/containers-roadmap/issues/418
             const { tasks } = await listTasks();
@@ -136,7 +159,7 @@ export default async function router(schema: Schema, config: Config) {
         res: StandardResponse
     }, async (req, res) => {
         try {
-            await Auth.as_user(config, req, { admin: true });
+            await Auth.as_user(config, req);
 
             const { tasks } = await listTasks();
 
@@ -160,6 +183,35 @@ export default async function router(schema: Schema, config: Config) {
                 status: 200,
                 message: 'Deleted Task Version'
             });
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
+
+    await schema.get('/task/prefix/:prefix/readme', {
+        name: 'Task README',
+        group: 'Task',
+        description: 'Return README Contents',
+        params: Type.Object({
+            prefix: Type.String()
+        }),
+        res: Type.Object({
+            body: Type.String()
+        })
+    }, async (req, res) => {
+        try {
+            await Auth.as_user(config, req);
+
+            const task = await config.models.Task.from(req.params.prefix);
+
+            if (task.readme) {
+                const readmeres = await fetch(task.readme);
+                return res.json({
+                    body: await readmeres.text()
+                })
+            } else {
+                return res.json({ body: '' });
+            }
         } catch (err) {
             return Err.respond(err, res);
         }
