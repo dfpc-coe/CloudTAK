@@ -27,6 +27,8 @@ export default class Models {
     ProfileOverlay: Modeler<typeof pgtypes.ProfileOverlay>;
     ProfileMission: Modeler<typeof pgtypes.ProfileMission>;
 
+    Task: Modeler<typeof pgtypes.Task>;
+
     Iconset: Modeler<typeof pgtypes.Iconset>;
     Icon: Icon;
 
@@ -50,6 +52,7 @@ export default class Models {
         this.Connection = new Modeler(pg, pgtypes.Connection);
         this.ConnectionToken = new Modeler(pg, pgtypes.ConnectionToken);
         this.ConnectionSink = new Modeler(pg, pgtypes.ConnectionSink);
+        this.Task = new Modeler(pg, pgtypes.Task);
         this.Data = new Data(pg);
         this.Iconset = new Modeler(pg, pgtypes.Iconset);
         this.Layer = new Layer(pg);
