@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v2.53.0 - 2024-06-24
+
+- :rocket: `UI/API` Add Registered Tasks with READMEs
+
 ### v2.52.0 - 2024-06-21
 
 - :rocket: `UI` Show CoTs in their appropriate layers (if any)
