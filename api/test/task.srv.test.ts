@@ -29,7 +29,7 @@ test('GET: api/task - empty', async (t) => {
 
         t.deepEquals(res.body, {
             total: 0,
-            items: {}
+            items: []
         });
     } catch (err) {
         t.error(err, 'no error');
@@ -61,7 +61,7 @@ test('GET: api/task - empty', async (t) => {
             });
         });
 
-        const res = await flight.fetch('/api/task', {
+        const res = await flight.fetch('/api/task/raw', {
             method: 'GET',
             auth: {
                 bearer: flight.token.admin
