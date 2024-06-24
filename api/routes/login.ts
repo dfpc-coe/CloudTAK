@@ -73,6 +73,10 @@ export default async function router(schema: Schema, config: Config) {
     }, async (req, res) => {
         const user = await Auth.as_user(config, req);
 
+        const profile = await config.models.Profile.from(user.email);
+
+        await provider.valid(profile);
+
         try {
             return res.json({
                 email: user.email,

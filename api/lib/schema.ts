@@ -94,7 +94,7 @@ export const Import = pgTable('imports', {
 });
 
 export const Task = pgTable('tasks', {
-    id: text('id').primaryKey(),
+    id: serial('id').primaryKey(),
     prefix: text('prefix').notNull(),
     created: timestamp('created', { withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp('updated', { withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
