@@ -17,7 +17,12 @@
                                 Task Selection
                             </div>
                         </div>
-                        <div class='card-body'>
+
+                        <div class='pe-2'>
+                            <TablerInput placeholder='Filter Tasks'/>
+                        </div>
+
+                        <div class='card-body position-relative'>
                             <div class='list-group list-group-transparent'>
                                 <span
                                     :key='t.prefix'
@@ -29,10 +34,18 @@
                                     }'
                                     @click='current = t'
                                 >
-                                    <IconServer :size='32'/>
-
                                     <span class='mx-3' v-text='t.name'/>
                                 </span>
+                            </div>
+
+                            <div class='col-lg-12 fixed-bottom'>
+                                <TablerPager
+                                    v-if='list.total > paging.limit'
+                                    :page='paging.page'
+                                    :total='list.total'
+                                    :limit='paging.limit'
+                                    @page='paging.page = $event'
+                                />
                             </div>
                         </div>
                     </div>
@@ -79,13 +92,15 @@
 </template>
 
 <script>
-import { std } from '/src/std.ts';
+import { std, stdurl } from '/src/std.ts';
 import {
     IconCode,
 } from '@tabler/icons-vue'
 import {
     TablerMarkdown,
     TablerLoading,
+    TablerInput,
+    TablerPager,
     TablerModal,
     TablerNone,
     TablerEnum,
@@ -97,6 +112,8 @@ export default {
         IconCode,
         TablerLoading,
         TablerMarkdown,
+        TablerPager,
+        TablerInput,
         TablerModal,
         TablerNone,
         TablerEnum,
@@ -120,6 +137,11 @@ export default {
             current: false,
             version: '',
             versions: [],
+            paging: {
+                filter: '',
+                limit: 10,
+                page: 0
+            },
             list: {
                 total: 0,
                 items: {}
@@ -129,6 +151,12 @@ export default {
     watch: {
         current: async function() {
             await this.fetchTask();
+        },
+        paging: {
+            deep: true,
+            handler: async function() {
+                await this.fetchTasks();
+            },
         }
     },
     mounted: async function() {
@@ -163,7 +191,13 @@ export default {
         },
         fetchTasks: async function() {
             this.loading.tasks = true;
-            this.list = await std('/api/task');
+            const url = stdurl('/api/task');
+
+            url.searchParams.append('filter', this.paging.filter);
+            url.searchParams.append('limit', this.paging.limit);
+            url.searchParams.append('page', this.paging.page);
+
+            this.list = await std(url);
 
             if (this.list.total) {
                 this.current = this.list.items[0];

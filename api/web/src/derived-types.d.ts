@@ -3,5726 +3,8847 @@
  * Do not make direct changes to the file.
  */
 
-
 export interface paths {
-  "/schema": {
-    /**
-     * List all JSON Schemas in use
-     *             With no parameters this API will return a list of all the endpoints that have a form of schema validation
-     *             If the url/method params are used, the schemas themselves are returned
-     *
-     *             Note: If url or method params are used, they must be used together
-     */
-    get: {
-      parameters: {
-        query?: {
-          /** @description No Description */
-          method?: "GET" | "PUT" | "POST" | "DELETE" | "OPTIONS" | "HEAD" | "PATCH" | "TRACE";
-          /** @description No Description */
-          url?: string;
+    "/schema": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
-      };
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": unknown;
-          };
-        };
-      };
-    };
-  };
-  "/openapi": {
-    /** Return a OpenAPI Schema for the API */
-    get: {
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": unknown;
-          };
-        };
-      };
-    };
-  };
-  "/agency": {
-    /** Return a list Agencies */
-    get: {
-      parameters: {
-        query: {
-          /** @description Filter results by a human readable name field */
-          filter: string;
-        };
-      };
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              total: number;
-              items: {
-                  id: number;
-                  name: string;
-                }[];
+        /**
+         *                 List all JSON Schemas in use
+         *                 With no parameters this API will return a list of all the endpoints that have a form of schema validation
+         *                 If the url/method params are used, the schemas themselves are returned
+         *
+         *                 Note: If url or method params are used, they must be used together
+         *              */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description No Description */
+                    method?: "GET" | "PUT" | "POST" | "DELETE" | "OPTIONS" | "HEAD" | "PATCH" | "TRACE";
+                    /** @description No Description */
+                    url?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
             };
-          };
-        };
-      };
-    };
-  };
-  "/agency/{:agencyid}": {
-    /** Return a single agency by id */
-    get: {
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              id: number;
-              name: string;
-            };
-          };
-        };
-      };
-    };
-  };
-  "/basemap": {
-    /** List BaseMaps */
-    get: {
-      parameters: {
-        query: {
-          /** @description No Description */
-          scope?: "server" | "user";
-          /** @description Limit the number of responses returned */
-          limit: number;
-          /** @description Iterate through "pages" of items based on the "limit" query param */
-          page: number;
-          /** @description Order in which results are returned based on the "sort" query param */
-          order: "asc" | "desc";
-          /** @description No Description */
-          type?: "vector" | "raster" | "terrain";
-          /** @description No Description */
-          sort: "id" | "created" | "updated" | "name" | "url" | "username" | "bounds" | "center" | "minzoom" | "maxzoom" | "format" | "style" | "type";
-          /** @description Filter results by a human readable name field */
-          filter: string;
-        };
-      };
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              total: number;
-              items: ({
-                  id: number;
-                  created: string;
-                  updated: string;
-                  name: string;
-                  url: string;
-                  username: string | null;
-                  bounds: unknown;
-                  center: unknown;
-                  minzoom: number;
-                  maxzoom: number;
-                  format: string;
-                  style: string;
-                  type: string;
-                })[];
-            };
-          };
-        };
-      };
-    };
-    /**
-     * If the Content-Type if text/plain, then assume the body contains a TileJSON URL
-     *             Alternatively, if the Content-Type is a MultiPart upload, assume the input is a TAK XML document
-     *
-     *             Both return as many BaseMap fields as possible to use in the creation of a new BaseMap
-     */
-    put: {
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              name?: string;
-              type?: string;
-              url?: string;
-              bounds?: unknown;
-              center?: unknown;
-              minzoom?: number;
-              maxzoom?: number;
-              style?: string;
-              format?: string;
-            };
-          };
-        };
-      };
-    };
-    /** Register a new basemap */
-    post: {
-      requestBody: {
-        content: {
-          "application/json": {
-            /** @description Human readable name */
-            name: string;
-            /** @default user */
-            scope: "server" | "user";
-            url: string;
-            minzoom?: number;
-            maxzoom?: number;
-            format?: string;
-            style?: string;
-            type?: string;
-            bounds: number[];
-            center: number[];
-          };
-        };
-      };
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              id: number;
-              created: string;
-              updated: string;
-              name: string;
-              url: string;
-              username: string | null;
-              bounds: unknown;
-              center: unknown;
-              minzoom: number;
-              maxzoom: number;
-              format: string;
-              style: string;
-              type: string;
-            };
-          };
-        };
-      };
-    };
-  };
-  "/basemap/{:basemapid}": {
-    /** Get a basemap */
-    get: {
-      parameters: {
-        query?: {
-          /** @description No Description */
-          download?: boolean;
-          /** @description No Description */
-          format?: string;
-          /** @description No Description */
-          token?: string;
-        };
-      };
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": ({
-              id: number;
-              created: string;
-              updated: string;
-              name: string;
-              url: string;
-              username: string | null;
-              bounds: unknown;
-              center: unknown;
-              minzoom: number;
-              maxzoom: number;
-              format: string;
-              style: string;
-              type: string;
-            }) | string;
-          };
-        };
-      };
-    };
-    /** Delete a basemap */
-    delete: {
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              status: number;
-              message: string;
-            };
-          };
-        };
-      };
-    };
-    /** Update a basemap */
-    patch: {
-      requestBody: {
-        content: {
-          "application/json": {
-            /** @description Human readable name */
-            name?: string;
-            url?: string;
-            minzoom?: number;
-            maxzoom?: number;
-            format?: string;
-            style?: string;
-            type?: string;
-            bounds?: number[];
-            center?: number[];
-          };
-        };
-      };
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              id: number;
-              created: string;
-              updated: string;
-              name: string;
-              url: string;
-              username: string | null;
-              bounds: unknown;
-              center: unknown;
-              minzoom: number;
-              maxzoom: number;
-              format: string;
-              style: string;
-              type: string;
-            };
-          };
-        };
-      };
-    };
-  };
-  "/basemap/{:basemapid}/tiles/{:z}/{:x}/{:y}": {
-    /** Get a basemap tile */
-    get: {
-      parameters: {
-        query?: {
-          /** @description No Description */
-          token?: string;
-        };
-      };
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: never;
-        };
-      };
-    };
-  };
-  "/config": {
-    /** Get Config */
-    get: {
-      parameters: {
-        query: {
-          /** @description No Description */
-          keys: string;
-        };
-      };
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": unknown;
-          };
-        };
-      };
-    };
-    /** Update Config Key/Values */
-    put: {
-      requestBody: {
-        content: {
-          "application/json": {
-            "agol::enabled"?: boolean;
-            "agol::token"?: string;
-          };
-        };
-      };
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": unknown;
-          };
-        };
-      };
-    };
-  };
-  "/connection/{:connectionid}/channel": {
-    /** List channels that a given connection is broadcasting to */
-    get: {
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              version: string;
-              type: string;
-              data: unknown;
-              messages?: string[];
-              nodeId?: string;
-            };
-          };
-        };
-      };
-    };
-  };
-  "/connection/{:connectionid}/data/{:dataid}/asset": {
-    /** List Assets */
-    get: {
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              total: number;
-              tiles: {
-                url: string;
-              };
-              assets: {
-                  /** @description The filename of the asset */
-                  name: string;
-                  visualized?: string;
-                  vectorized?: string;
-                  updated: number;
-                  /** @description Does this file meet the glob rules to sync with the server */
-                  sync: boolean;
-                  /** @description AWS S3 generated ETag of the asset */
-                  etag: string;
-                  /** @description Size in bytes of the asset */
-                  size: number;
-                }[];
-            };
-          };
-        };
-      };
-    };
-    /** Create a new asset */
-    post: {
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              status: number;
-              message: string;
-            };
-          };
-        };
-      };
-    };
-  };
-  "/connection/{:connectionid}/data/{:dataid}/asset/{:asset}.{:ext}": {
-    /** Get single raw asset */
-    get: {
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: never;
-        };
-      };
-    };
-    /** Convert Asset into a cloud native or TAK Native format automatically */
-    post: {
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              status: number;
-              message: string;
-            };
-          };
-        };
-      };
-    };
-    /** Delete Asset */
-    delete: {
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              status: number;
-              message: string;
-            };
-          };
-        };
-      };
-    };
-  };
-  "/connection/{:connectionid}/data/{:dataid}/asset/{:asset}.pmtiles/tile": {
-    /** Get TileJSON */
-    get: {
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: never;
-        };
-      };
-    };
-  };
-  "/connection/{:connectionid}/data/{:dataid}/job": {
-    /** List Data Jobs */
-    get: {
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              total: number;
-              items: {
-                  id: string;
-                  asset: string;
-                  status: string;
-                  created: number;
-                  updated?: number;
-                }[];
-            };
-          };
-        };
-      };
-    };
-  };
-  "/connection/{:connectionid}/data/{:dataid}/job/{:jobid}": {
-    /** Get Data Jobs */
-    get: {
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              id: string;
-              asset: string;
-              status: string;
-              created: number;
-              updated?: number;
-            };
-          };
-        };
-      };
-    };
-  };
-  "/connection/{:connectionid}/data/{:dataid}/job/{:jobid}/logs": {
-    /** List Data Job Logs */
-    get: {
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              logs: {
-                  message: string;
-                  timestamp: number;
-                }[];
-            };
-          };
-        };
-      };
-    };
-  };
-  "/connection/{:connectionid}/data": {
-    /** List data */
-    get: {
-      parameters: {
-        query: {
-          /** @description Limit the number of responses returned */
-          limit: number;
-          /** @description Iterate through "pages" of items based on the "limit" query param */
-          page: number;
-          /** @description Order in which results are returned based on the "sort" query param */
-          order: "asc" | "desc";
-          /** @description No Description */
-          sort?: "id" | "created" | "updated" | "name" | "description" | "auto_transform" | "mission_sync" | "mission_diff" | "mission_role" | "mission_token" | "mission_groups" | "assets" | "connection";
-          /** @description Filter results by a human readable name field */
-          filter: string;
-        };
-      };
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              total: number;
-              items: ({
-                  id: number;
-                  created: string;
-                  updated: string;
-                  name: string;
-                  description: string;
-                  auto_transform: boolean;
-                  /** @description Is the mission syncing with TAK Server */
-                  mission_sync: boolean;
-                  /** @description Allow a single layer to diff sync with TAK */
-                  mission_diff: boolean;
-                  mission_role: string;
-                  mission_token: string | null;
-                  mission_groups: string[];
-                  assets: string[];
-                  connection: number;
-                })[];
-            };
-          };
-        };
-      };
-    };
-    /** Register a new data source */
-    post: {
-      requestBody: {
-        content: {
-          "application/json": {
-            /** @description Human readable name */
-            name: string;
-            /** @description Human readable description */
-            description: string;
-            auto_transform?: boolean;
-            mission_diff?: boolean;
-            mission_sync?: boolean;
-            mission_groups?: string[];
-            mission_role?: string;
-          };
-        };
-      };
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              id: number;
-              created: string;
-              updated: string;
-              name: string;
-              /** @description Allow a single layer to diff sync with TAK Server */
-              mission_diff: boolean;
-              /** @description Is the mission syncing with TAK Server */
-              mission_sync: boolean;
-              /** @description Does the mission exist in TAK Server */
-              mission_exists?: boolean;
-              /** @description Returned only if there is an error syncing the mission with the TAK Server */
-              mission_error?: string;
-              mission_groups: string[];
-              mission_role: string;
-              assets: string[];
-              description: string;
-              connection: number;
-              auto_transform: boolean;
-            };
-          };
-        };
-      };
-    };
-  };
-  "/connection/{:connectionid}/data/{:dataid}": {
-    /** Get a data source */
-    get: {
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              id: number;
-              created: string;
-              updated: string;
-              name: string;
-              /** @description Allow a single layer to diff sync with TAK Server */
-              mission_diff: boolean;
-              /** @description Is the mission syncing with TAK Server */
-              mission_sync: boolean;
-              /** @description Does the mission exist in TAK Server */
-              mission_exists?: boolean;
-              /** @description Returned only if there is an error syncing the mission with the TAK Server */
-              mission_error?: string;
-              mission_groups: string[];
-              mission_role: string;
-              assets: string[];
-              description: string;
-              connection: number;
-              auto_transform: boolean;
-            };
-          };
-        };
-      };
-    };
-    /** Delete a data source */
-    delete: {
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              status: number;
-              message: string;
-            };
-          };
-        };
-      };
-    };
-    /** Update a data source */
-    patch: {
-      requestBody: {
-        content: {
-          "application/json": {
-            name: string;
-            description: string;
-            auto_transform?: boolean;
-            mission_diff?: boolean;
-            mission_sync?: boolean;
-          };
-        };
-      };
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              id: number;
-              created: string;
-              updated: string;
-              name: string;
-              /** @description Allow a single layer to diff sync with TAK Server */
-              mission_diff: boolean;
-              /** @description Is the mission syncing with TAK Server */
-              mission_sync: boolean;
-              /** @description Does the mission exist in TAK Server */
-              mission_exists?: boolean;
-              /** @description Returned only if there is an error syncing the mission with the TAK Server */
-              mission_error?: string;
-              mission_groups: string[];
-              mission_role: string;
-              assets: string[];
-              description: string;
-              connection: number;
-              auto_transform: boolean;
-            };
-          };
-        };
-      };
-    };
-  };
-  "/connection/{:connectionid}/layer/{:layerid}/alert": {
-    /** List layer alerts */
-    get: {
-      parameters: {
-        query: {
-          /** @description Limit the number of responses returned */
-          limit: number;
-          /** @description Iterate through "pages" of items based on the "limit" query param */
-          page: number;
-          /** @description Order in which results are returned based on the "sort" query param */
-          order: "asc" | "desc";
-          /** @description No Description */
-          sort?: "id" | "created" | "updated" | "layer" | "icon" | "priority" | "title" | "description" | "hidden";
-          /** @description Filter results by a human readable name field */
-          filter: string;
-        };
-      };
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              total: number;
-              items: {
-                  id: number;
-                  created: string;
-                  updated: string;
-                  layer: number;
-                  icon: string;
-                  priority: string;
-                  title: string;
-                  description: string;
-                  hidden: boolean;
-                }[];
-            };
-          };
-        };
-      };
-    };
-    /** Create a new layer alert */
-    post: {
-      requestBody: {
-        content: {
-          "application/json": {
-            /** @description Human readable name */
-            title: string;
-            /** @description Human readable description */
-            description?: string;
-            icon?: string;
-            priority?: "green" | "yellow" | "red";
-          };
-        };
-      };
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              id: number;
-              created: string;
-              updated: string;
-              layer: number;
-              icon: string;
-              priority: string;
-              title: string;
-              description: string;
-              hidden: boolean;
-            };
-          };
-        };
-      };
-    };
-    /** Delete all alerts for the layer */
-    delete: {
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              status: number;
-              message: string;
-            };
-          };
-        };
-      };
-    };
-  };
-  "/connection/{:connectionid}/layer/{:layerid}/alert/{:alertid}": {
-    /** Delete all alerts for the layer */
-    delete: {
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              status: number;
-              message: string;
-            };
-          };
-        };
-      };
-    };
-  };
-  "/layer/{:layerid}/cot": {
-    /** Post CoT data to a given layer */
-    post: {
-      parameters: {
-        query?: {
-          /** @description If logging is enabled for the layer, allow callers to skip logging for a particular CoT payload */
-          logging?: boolean;
-        };
-      };
-      requestBody: {
-        content: {
-          "application/json": unknown;
-        };
-      };
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              status: number;
-              message: string;
-            };
-          };
-        };
-      };
-    };
-  };
-  "/connection/{:connectionid}/layer/{:layerid}/query": {
-    /** Get the latest feature from a layer */
-    get: {
-      parameters: {
-        query?: {
-          /** @description Filter by Id prefix */
-          filter?: string;
-        };
-      };
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              type: string;
-              features: unknown[];
-            };
-          };
-        };
-      };
-    };
-  };
-  "/connection/{:connectionid}/layer/{:layerid}/query/{:featid}": {
-    /** Get the latest feature from a layer */
-    get: {
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              id: string;
-              type: string;
-              properties: unknown;
-              geometry: unknown;
-            };
-          };
-        };
-      };
-    };
-  };
-  "/layer/redeploy": {
-    /** Redeploy all Layers with latest CloudFormation output */
-    post: {
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              status: number;
-              message: string;
-            };
-          };
-        };
-      };
-    };
-  };
-  "/connection/{:connectionid}/layer": {
-    /** List layers */
-    get: {
-      parameters: {
-        query: {
-          /** @description Limit the number of responses returned */
-          limit: number;
-          /** @description Iterate through "pages" of items based on the "limit" query param */
-          page: number;
-          /** @description Order in which results are returned based on the "sort" query param */
-          order: "asc" | "desc";
-          /** @description No Description */
-          sort?: "id" | "created" | "updated" | "name" | "priority" | "description" | "enabled" | "enabled_styles" | "styles" | "logging" | "stale" | "task" | "connection" | "cron" | "environment" | "config" | "memory" | "timeout" | "data" | "schema";
-          /** @description Filter results by a human readable name field */
-          filter: string;
-          /** @description No Description */
-          data?: number;
-        };
-      };
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              total: number;
-              status: {
-                healthy: number;
-                alarm: number;
-                unknown: number;
-              };
-              items: ({
-                  id: number;
-                  status?: string;
-                  priority: "high" | "low" | "off";
-                  created: string;
-                  updated: string;
-                  name: string;
-                  description: string;
-                  enabled: boolean;
-                  enabled_styles: boolean;
-                  styles: {
-                    line?: {
-                      stroke?: string;
-                      "stroke-style"?: string;
-                      "stroke-opacity"?: string;
-                      "stroke-width"?: string;
-                      remarks?: string;
-                      callsign?: string;
-                      links?: {
-                          remarks: string;
-                          url: string;
-                        }[];
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
                     };
-                    point?: {
-                      color?: string;
-                      remarks?: string;
-                      callsign?: string;
-                      links?: {
-                          remarks: string;
-                          url: string;
-                        }[];
-                      icon?: string;
+                    content: {
+                        "application/json": unknown;
                     };
-                    polygon?: {
-                      stroke?: string;
-                      "stroke-style"?: string;
-                      "stroke-opacity"?: string;
-                      "stroke-width"?: string;
-                      fill?: string;
-                      "fill-opacity"?: string;
-                      remarks?: string;
-                      callsign?: string;
-                      links?: {
-                          remarks: string;
-                          url: string;
-                        }[];
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/openapi": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Return a OpenAPI Schema for the API */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
                     };
-                    remarks?: string;
-                    callsign?: string;
-                    links?: {
-                        remarks: string;
-                        url: string;
-                      }[];
-                    queries?: {
-                        query: string;
-                        remarks?: string;
-                        callsign?: string;
-                        links?: {
-                            remarks: string;
-                            url: string;
-                          }[];
-                        styles: {
-                          remarks?: string;
-                          callsign?: string;
-                          links?: {
-                              remarks: string;
-                              url: string;
+                    content: {
+                        "application/json": unknown;
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/agency": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Return a list Agencies */
+        get: {
+            parameters: {
+                query: {
+                    /** @description Filter results by a human readable name field */
+                    filter: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            total: number;
+                            items: {
+                                id: number;
+                                name: string;
                             }[];
-                          line?: {
-                            stroke?: string;
-                            "stroke-style"?: string;
-                            "stroke-opacity"?: string;
-                            "stroke-width"?: string;
-                            remarks?: string;
-                            callsign?: string;
-                            links?: {
-                                remarks: string;
-                                url: string;
-                              }[];
-                          };
-                          point?: {
-                            color?: string;
-                            remarks?: string;
-                            callsign?: string;
-                            links?: {
-                                remarks: string;
-                                url: string;
-                              }[];
-                            icon?: string;
-                          };
-                          polygon?: {
-                            stroke?: string;
-                            "stroke-style"?: string;
-                            "stroke-opacity"?: string;
-                            "stroke-width"?: string;
-                            fill?: string;
-                            "fill-opacity"?: string;
-                            remarks?: string;
-                            callsign?: string;
-                            links?: {
-                                remarks: string;
-                                url: string;
-                              }[];
-                          };
                         };
-                      }[];
-                  };
-                  logging: boolean;
-                  stale: number;
-                  task: string;
-                  connection?: number;
-                  cron: string;
-                  environment: unknown;
-                  config: {
-                    timezone?: {
-                      timezone: string;
                     };
-                  };
-                  memory: number;
-                  timeout: number;
-                  data?: number;
-                  schema: unknown;
-                })[];
-            };
-          };
-        };
-      };
-    };
-    /** Register a new layer */
-    post: {
-      requestBody: {
-        content: {
-          "application/json": {
-            /** @description Human readable name */
-            name: string;
-            priority?: "high" | "low" | "off";
-            /** @description Human readable description */
-            description: string;
-            enabled: boolean;
-            task: string;
-            cron: string;
-            logging: boolean;
-            stale?: number;
-            data?: number;
-            schema?: unknown;
-            styles?: {
-              line?: {
-                stroke?: string;
-                "stroke-style"?: string;
-                "stroke-opacity"?: string;
-                "stroke-width"?: string;
-                remarks?: string;
-                callsign?: string;
-                links?: {
-                    remarks: string;
-                    url: string;
-                  }[];
-              };
-              point?: {
-                color?: string;
-                remarks?: string;
-                callsign?: string;
-                links?: {
-                    remarks: string;
-                    url: string;
-                  }[];
-                icon?: string;
-              };
-              polygon?: {
-                stroke?: string;
-                "stroke-style"?: string;
-                "stroke-opacity"?: string;
-                "stroke-width"?: string;
-                fill?: string;
-                "fill-opacity"?: string;
-                remarks?: string;
-                callsign?: string;
-                links?: {
-                    remarks: string;
-                    url: string;
-                  }[];
-              };
-              remarks?: string;
-              callsign?: string;
-              links?: {
-                  remarks: string;
-                  url: string;
-                }[];
-              queries?: {
-                  query: string;
-                  remarks?: string;
-                  callsign?: string;
-                  links?: {
-                      remarks: string;
-                      url: string;
-                    }[];
-                  styles: {
-                    remarks?: string;
-                    callsign?: string;
-                    links?: {
-                        remarks: string;
-                        url: string;
-                      }[];
-                    line?: {
-                      stroke?: string;
-                      "stroke-style"?: string;
-                      "stroke-opacity"?: string;
-                      "stroke-width"?: string;
-                      remarks?: string;
-                      callsign?: string;
-                      links?: {
-                          remarks: string;
-                          url: string;
-                        }[];
-                    };
-                    point?: {
-                      color?: string;
-                      remarks?: string;
-                      callsign?: string;
-                      links?: {
-                          remarks: string;
-                          url: string;
-                        }[];
-                      icon?: string;
-                    };
-                    polygon?: {
-                      stroke?: string;
-                      "stroke-style"?: string;
-                      "stroke-opacity"?: string;
-                      "stroke-width"?: string;
-                      fill?: string;
-                      "fill-opacity"?: string;
-                      remarks?: string;
-                      callsign?: string;
-                      links?: {
-                          remarks: string;
-                          url: string;
-                        }[];
-                    };
-                  };
-                }[];
-            };
-          };
-        };
-      };
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              id: number;
-              status?: string;
-              priority: "high" | "low" | "off";
-              created: string;
-              updated: string;
-              name: string;
-              description: string;
-              enabled: boolean;
-              enabled_styles: boolean;
-              styles: {
-                line?: {
-                  stroke?: string;
-                  "stroke-style"?: string;
-                  "stroke-opacity"?: string;
-                  "stroke-width"?: string;
-                  remarks?: string;
-                  callsign?: string;
-                  links?: {
-                      remarks: string;
-                      url: string;
-                    }[];
                 };
-                point?: {
-                  color?: string;
-                  remarks?: string;
-                  callsign?: string;
-                  links?: {
-                      remarks: string;
-                      url: string;
-                    }[];
-                  icon?: string;
-                };
-                polygon?: {
-                  stroke?: string;
-                  "stroke-style"?: string;
-                  "stroke-opacity"?: string;
-                  "stroke-width"?: string;
-                  fill?: string;
-                  "fill-opacity"?: string;
-                  remarks?: string;
-                  callsign?: string;
-                  links?: {
-                      remarks: string;
-                      url: string;
-                    }[];
-                };
-                remarks?: string;
-                callsign?: string;
-                links?: {
-                    remarks: string;
-                    url: string;
-                  }[];
-                queries?: {
-                    query: string;
-                    remarks?: string;
-                    callsign?: string;
-                    links?: {
-                        remarks: string;
-                        url: string;
-                      }[];
-                    styles: {
-                      remarks?: string;
-                      callsign?: string;
-                      links?: {
-                          remarks: string;
-                          url: string;
-                        }[];
-                      line?: {
-                        stroke?: string;
-                        "stroke-style"?: string;
-                        "stroke-opacity"?: string;
-                        "stroke-width"?: string;
-                        remarks?: string;
-                        callsign?: string;
-                        links?: {
-                            remarks: string;
-                            url: string;
-                          }[];
-                      };
-                      point?: {
-                        color?: string;
-                        remarks?: string;
-                        callsign?: string;
-                        links?: {
-                            remarks: string;
-                            url: string;
-                          }[];
-                        icon?: string;
-                      };
-                      polygon?: {
-                        stroke?: string;
-                        "stroke-style"?: string;
-                        "stroke-opacity"?: string;
-                        "stroke-width"?: string;
-                        fill?: string;
-                        "fill-opacity"?: string;
-                        remarks?: string;
-                        callsign?: string;
-                        links?: {
-                            remarks: string;
-                            url: string;
-                          }[];
-                      };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/agency/{:agencyid}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Return a single agency by id */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
                     };
-                  }[];
-              };
-              logging: boolean;
-              stale: number;
-              task: string;
-              connection?: number;
-              cron: string;
-              environment: unknown;
-              config: {
-                timezone?: {
-                  timezone: string;
-                };
-              };
-              memory: number;
-              timeout: number;
-              data?: number;
-              schema: unknown;
-            };
-          };
-        };
-      };
-    };
-  };
-  "/connection/{:connectionid}/layer/{:layerid}": {
-    /** Get a layer */
-    get: {
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              id: number;
-              status?: string;
-              priority: "high" | "low" | "off";
-              created: string;
-              updated: string;
-              name: string;
-              description: string;
-              enabled: boolean;
-              enabled_styles: boolean;
-              styles: {
-                line?: {
-                  stroke?: string;
-                  "stroke-style"?: string;
-                  "stroke-opacity"?: string;
-                  "stroke-width"?: string;
-                  remarks?: string;
-                  callsign?: string;
-                  links?: {
-                      remarks: string;
-                      url: string;
-                    }[];
-                };
-                point?: {
-                  color?: string;
-                  remarks?: string;
-                  callsign?: string;
-                  links?: {
-                      remarks: string;
-                      url: string;
-                    }[];
-                  icon?: string;
-                };
-                polygon?: {
-                  stroke?: string;
-                  "stroke-style"?: string;
-                  "stroke-opacity"?: string;
-                  "stroke-width"?: string;
-                  fill?: string;
-                  "fill-opacity"?: string;
-                  remarks?: string;
-                  callsign?: string;
-                  links?: {
-                      remarks: string;
-                      url: string;
-                    }[];
-                };
-                remarks?: string;
-                callsign?: string;
-                links?: {
-                    remarks: string;
-                    url: string;
-                  }[];
-                queries?: {
-                    query: string;
-                    remarks?: string;
-                    callsign?: string;
-                    links?: {
-                        remarks: string;
-                        url: string;
-                      }[];
-                    styles: {
-                      remarks?: string;
-                      callsign?: string;
-                      links?: {
-                          remarks: string;
-                          url: string;
-                        }[];
-                      line?: {
-                        stroke?: string;
-                        "stroke-style"?: string;
-                        "stroke-opacity"?: string;
-                        "stroke-width"?: string;
-                        remarks?: string;
-                        callsign?: string;
-                        links?: {
-                            remarks: string;
-                            url: string;
-                          }[];
-                      };
-                      point?: {
-                        color?: string;
-                        remarks?: string;
-                        callsign?: string;
-                        links?: {
-                            remarks: string;
-                            url: string;
-                          }[];
-                        icon?: string;
-                      };
-                      polygon?: {
-                        stroke?: string;
-                        "stroke-style"?: string;
-                        "stroke-opacity"?: string;
-                        "stroke-width"?: string;
-                        fill?: string;
-                        "fill-opacity"?: string;
-                        remarks?: string;
-                        callsign?: string;
-                        links?: {
-                            remarks: string;
-                            url: string;
-                          }[];
-                      };
+                    content: {
+                        "application/json": {
+                            id: number;
+                            name: string;
+                        };
                     };
-                  }[];
-              };
-              logging: boolean;
-              stale: number;
-              task: string;
-              connection?: number;
-              cron: string;
-              environment: unknown;
-              config: {
-                timezone?: {
-                  timezone: string;
                 };
-              };
-              memory: number;
-              timeout: number;
-              data?: number;
-              schema: unknown;
             };
-          };
         };
-      };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** Delete a layer */
-    delete: {
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              status: number;
-              message: string;
-            };
-          };
+    "/basemap": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
-      };
-    };
-    /** Update a layer */
-    patch: {
-      requestBody: {
-        content: {
-          "application/json": {
-            /** @description Human readable name */
-            name?: string;
-            priority?: "high" | "low" | "off";
-            /** @description Human readable description */
-            description?: string;
-            cron?: string;
-            memory?: number;
-            timeout?: number;
-            enabled?: boolean;
-            enabled_styles?: boolean;
-            task?: string;
-            styles?: {
-              line?: {
-                stroke?: string;
-                "stroke-style"?: string;
-                "stroke-opacity"?: string;
-                "stroke-width"?: string;
-                remarks?: string;
-                callsign?: string;
-                links?: {
-                    remarks: string;
-                    url: string;
-                  }[];
-              };
-              point?: {
-                color?: string;
-                remarks?: string;
-                callsign?: string;
-                links?: {
-                    remarks: string;
-                    url: string;
-                  }[];
-                icon?: string;
-              };
-              polygon?: {
-                stroke?: string;
-                "stroke-style"?: string;
-                "stroke-opacity"?: string;
-                "stroke-width"?: string;
-                fill?: string;
-                "fill-opacity"?: string;
-                remarks?: string;
-                callsign?: string;
-                links?: {
-                    remarks: string;
-                    url: string;
-                  }[];
-              };
-              remarks?: string;
-              callsign?: string;
-              links?: {
-                  remarks: string;
-                  url: string;
-                }[];
-              queries?: {
-                  query: string;
-                  remarks?: string;
-                  callsign?: string;
-                  links?: {
-                      remarks: string;
-                      url: string;
-                    }[];
-                  styles: {
-                    remarks?: string;
-                    callsign?: string;
-                    links?: {
-                        remarks: string;
-                        url: string;
-                      }[];
-                    line?: {
-                      stroke?: string;
-                      "stroke-style"?: string;
-                      "stroke-opacity"?: string;
-                      "stroke-width"?: string;
-                      remarks?: string;
-                      callsign?: string;
-                      links?: {
-                          remarks: string;
-                          url: string;
-                        }[];
-                    };
-                    point?: {
-                      color?: string;
-                      remarks?: string;
-                      callsign?: string;
-                      links?: {
-                          remarks: string;
-                          url: string;
-                        }[];
-                      icon?: string;
-                    };
-                    polygon?: {
-                      stroke?: string;
-                      "stroke-style"?: string;
-                      "stroke-opacity"?: string;
-                      "stroke-width"?: string;
-                      fill?: string;
-                      "fill-opacity"?: string;
-                      remarks?: string;
-                      callsign?: string;
-                      links?: {
-                          remarks: string;
-                          url: string;
-                        }[];
-                    };
-                  };
-                }[];
-            };
-            logging?: boolean;
-            stale?: number;
-            data?: null | number;
-            environment?: unknown;
-            config?: {
-              timezone?: {
-                timezone: string;
-              };
-            };
-            schema?: unknown;
-          };
-        };
-      };
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              id: number;
-              status?: string;
-              priority: "high" | "low" | "off";
-              created: string;
-              updated: string;
-              name: string;
-              description: string;
-              enabled: boolean;
-              enabled_styles: boolean;
-              styles: {
-                line?: {
-                  stroke?: string;
-                  "stroke-style"?: string;
-                  "stroke-opacity"?: string;
-                  "stroke-width"?: string;
-                  remarks?: string;
-                  callsign?: string;
-                  links?: {
-                      remarks: string;
-                      url: string;
-                    }[];
+        /** List BaseMaps */
+        get: {
+            parameters: {
+                query: {
+                    /** @description No Description */
+                    scope?: "server" | "user";
+                    /** @description Limit the number of responses returned */
+                    limit: number;
+                    /** @description Iterate through "pages" of items based on the "limit" query param */
+                    page: number;
+                    /** @description Order in which results are returned based on the "sort" query param */
+                    order: "asc" | "desc";
+                    /** @description No Description */
+                    type?: "vector" | "raster" | "terrain";
+                    /** @description No Description */
+                    sort: "id" | "created" | "updated" | "name" | "url" | "username" | "bounds" | "center" | "minzoom" | "maxzoom" | "format" | "style" | "type";
+                    /** @description Filter results by a human readable name field */
+                    filter: string;
                 };
-                point?: {
-                  color?: string;
-                  remarks?: string;
-                  callsign?: string;
-                  links?: {
-                      remarks: string;
-                      url: string;
-                    }[];
-                  icon?: string;
-                };
-                polygon?: {
-                  stroke?: string;
-                  "stroke-style"?: string;
-                  "stroke-opacity"?: string;
-                  "stroke-width"?: string;
-                  fill?: string;
-                  "fill-opacity"?: string;
-                  remarks?: string;
-                  callsign?: string;
-                  links?: {
-                      remarks: string;
-                      url: string;
-                    }[];
-                };
-                remarks?: string;
-                callsign?: string;
-                links?: {
-                    remarks: string;
-                    url: string;
-                  }[];
-                queries?: {
-                    query: string;
-                    remarks?: string;
-                    callsign?: string;
-                    links?: {
-                        remarks: string;
-                        url: string;
-                      }[];
-                    styles: {
-                      remarks?: string;
-                      callsign?: string;
-                      links?: {
-                          remarks: string;
-                          url: string;
-                        }[];
-                      line?: {
-                        stroke?: string;
-                        "stroke-style"?: string;
-                        "stroke-opacity"?: string;
-                        "stroke-width"?: string;
-                        remarks?: string;
-                        callsign?: string;
-                        links?: {
-                            remarks: string;
-                            url: string;
-                          }[];
-                      };
-                      point?: {
-                        color?: string;
-                        remarks?: string;
-                        callsign?: string;
-                        links?: {
-                            remarks: string;
-                            url: string;
-                          }[];
-                        icon?: string;
-                      };
-                      polygon?: {
-                        stroke?: string;
-                        "stroke-style"?: string;
-                        "stroke-opacity"?: string;
-                        "stroke-width"?: string;
-                        fill?: string;
-                        "fill-opacity"?: string;
-                        remarks?: string;
-                        callsign?: string;
-                        links?: {
-                            remarks: string;
-                            url: string;
-                          }[];
-                      };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
                     };
-                  }[];
-              };
-              logging: boolean;
-              stale: number;
-              task: string;
-              connection?: number;
-              cron: string;
-              environment: unknown;
-              config: {
-                timezone?: {
-                  timezone: string;
-                };
-              };
-              memory: number;
-              timeout: number;
-              data?: number;
-              schema: unknown;
-            };
-          };
-        };
-      };
-    };
-  };
-  "/connection/{:connectionid}/layer/{:layerid}/redeploy": {
-    /** Redeploy a specific Layer with latest CloudFormation output */
-    post: {
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              status: number;
-              message: string;
-            };
-          };
-        };
-      };
-    };
-  };
-  "/connection/{:connectionid}/sink": {
-    /** List Sinks */
-    get: {
-      parameters: {
-        query: {
-          /** @description Limit the number of responses returned */
-          limit: number;
-          /** @description Iterate through "pages" of items based on the "limit" query param */
-          page: number;
-          /** @description Order in which results are returned based on the "sort" query param */
-          order: "asc" | "desc";
-          /** @description No Description */
-          sort?: "id" | "created" | "updated" | "name" | "enabled" | "connection" | "type" | "body" | "logging";
-          /** @description Filter results by a human readable name field */
-          filter: string;
-          /** @description No Description */
-          enabled?: boolean;
-        };
-      };
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              total: number;
-              items: {
-                  id: number;
-                  created: string;
-                  updated: string;
-                  name: string;
-                  enabled: boolean;
-                  connection: number;
-                  type: string;
-                  body: unknown;
-                  logging: boolean;
-                }[];
-            };
-          };
-        };
-      };
-    };
-    /** Register a new connection sink */
-    post: {
-      requestBody: {
-        content: {
-          "application/json": {
-            /** @description Human readable name */
-            name: string;
-            type: string;
-            logging: boolean;
-            enabled: boolean;
-            body: {
-              layer: string;
-              url: string;
-              username?: string;
-              password?: string;
-            };
-          };
-        };
-      };
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              id: number;
-              created: string;
-              updated: string;
-              name: string;
-              enabled: boolean;
-              connection: number;
-              type: string;
-              body: unknown;
-              logging: boolean;
-            };
-          };
-        };
-      };
-    };
-  };
-  "/connection/{:connectionid}/sink/{:sinkid}": {
-    /** Get a connection sink */
-    get: {
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              id: number;
-              created: string;
-              updated: string;
-              name: string;
-              enabled: boolean;
-              connection: number;
-              type: string;
-              body: unknown;
-              logging: boolean;
-            };
-          };
-        };
-      };
-    };
-    /** Delete a connection sink */
-    delete: {
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              status: number;
-              message: string;
-            };
-          };
-        };
-      };
-    };
-    /** Update a connection sink */
-    patch: {
-      requestBody: {
-        content: {
-          "application/json": {
-            /** @description Human readable name */
-            name?: string;
-            type?: string;
-            logging?: boolean;
-          };
-        };
-      };
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              id: number;
-              created: string;
-              updated: string;
-              name: string;
-              enabled: boolean;
-              connection: number;
-              type: string;
-              body: unknown;
-              logging: boolean;
-            };
-          };
-        };
-      };
-    };
-  };
-  "/connection/{:connectionid}/sink/{:sinkid}/stats": {
-    /** Return Sink Success/Failure Stats */
-    get: {
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              stats: {
-                  label: string;
-                  success: number;
-                  failure: number;
-                }[];
-            };
-          };
-        };
-      };
-    };
-  };
-  "/connection/{:connectionid}/token": {
-    /** List all tokens associated with a given connection */
-    get: {
-      parameters: {
-        query: {
-          /** @description Limit the number of responses returned */
-          limit: number;
-          /** @description Iterate through "pages" of items based on the "limit" query param */
-          page: number;
-          /** @description Order in which results are returned based on the "sort" query param */
-          order: "asc" | "desc";
-          /** @description No Description */
-          sort?: "id" | "connection" | "name" | "token" | "created" | "updated";
-          /** @description Filter results by a human readable name field */
-          filter: string;
-        };
-      };
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              total: number;
-              items: {
-                  id: number;
-                  connection: number;
-                  name: string;
-                  created: string;
-                  updated: string;
-                }[];
-            };
-          };
-        };
-      };
-    };
-    /** Create a new API token for programatic access */
-    post: {
-      requestBody: {
-        content: {
-          "application/json": {
-            /** @description Human readable name */
-            name: string;
-          };
-        };
-      };
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              id: number;
-              connection: number;
-              name: string;
-              token: string;
-              created: string;
-              updated: string;
-            };
-          };
-        };
-      };
-    };
-  };
-  "/connection/{:connectionid}/token/{:id}": {
-    /** Delete a user's API Token */
-    delete: {
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              status: number;
-              message: string;
-            };
-          };
-        };
-      };
-    };
-    /** Update properties of a Token */
-    patch: {
-      requestBody: {
-        content: {
-          "application/json": {
-            /** @description Human readable name */
-            name?: string;
-          };
-        };
-      };
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              status: number;
-              message: string;
-            };
-          };
-        };
-      };
-    };
-  };
-  "/connection": {
-    /** List Connections */
-    get: {
-      parameters: {
-        query: {
-          /** @description Limit the number of responses returned */
-          limit: number;
-          /** @description Iterate through "pages" of items based on the "limit" query param */
-          page: number;
-          /** @description Order in which results are returned based on the "sort" query param */
-          order: "asc" | "desc";
-          /** @description No Description */
-          sort?: "id" | "agency" | "created" | "updated" | "name" | "description" | "enabled" | "auth";
-          /** @description Filter results by a human readable name field */
-          filter: string;
-        };
-      };
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              total: number;
-              status: {
-                /** @description The connection is not currently connected to a TAK server */
-                dead: number;
-                /** @description The connection is currently connected to a TAK server */
-                live: number;
-                /** @description The status of the connection could not be determined */
-                unknown: number;
-              };
-              items: ({
-                  id: number;
-                  status: string;
-                  agency?: number | null;
-                  certificate: {
-                    subject: string;
-                    validFrom: string;
-                    validTo: string;
-                  };
-                  created: string;
-                  updated: string;
-                  name: string;
-                  description: string;
-                  enabled: boolean;
-                })[];
-            };
-          };
-        };
-      };
-    };
-    /** Register a new connection */
-    post: {
-      requestBody: {
-        content: {
-          "application/json": {
-            /** @description Human readable name */
-            name: string;
-            /** @description Human readable description */
-            description: string;
-            /** @default true */
-            enabled?: boolean;
-            agency: null | number;
-            auth: {
-              key: string;
-              cert: string;
-            };
-          };
-        };
-      };
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              id: number;
-              status: string;
-              agency?: number | null;
-              certificate: {
-                subject: string;
-                validFrom: string;
-                validTo: string;
-              };
-              created: string;
-              updated: string;
-              name: string;
-              description: string;
-              enabled: boolean;
-            };
-          };
-        };
-      };
-    };
-  };
-  "/connection/{:connectionid}": {
-    /** Get a connection */
-    get: {
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              id: number;
-              status: string;
-              agency?: number | null;
-              certificate: {
-                subject: string;
-                validFrom: string;
-                validTo: string;
-              };
-              created: string;
-              updated: string;
-              name: string;
-              description: string;
-              enabled: boolean;
-            };
-          };
-        };
-      };
-    };
-    /** Delete a connection */
-    delete: {
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              status: number;
-              message: string;
-            };
-          };
-        };
-      };
-    };
-    /** Update a connection */
-    patch: {
-      requestBody: {
-        content: {
-          "application/json": {
-            /** @description Human readable name */
-            name?: string;
-            /** @description Human readable description */
-            description?: string;
-            enabled?: boolean;
-            agency: null | number;
-            auth?: {
-              key: string;
-              cert: string;
-            };
-          };
-        };
-      };
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              id: number;
-              status: string;
-              agency?: number | null;
-              certificate: {
-                subject: string;
-                validFrom: string;
-                validTo: string;
-              };
-              created: string;
-              updated: string;
-              name: string;
-              description: string;
-              enabled: boolean;
-            };
-          };
-        };
-      };
-    };
-  };
-  "/connection/{:connectionid}/refresh": {
-    /** Refresh a connection */
-    post: {
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              id: number;
-              status: string;
-              agency?: number | null;
-              certificate: {
-                subject: string;
-                validFrom: string;
-                validTo: string;
-              };
-              created: string;
-              updated: string;
-              name: string;
-              description: string;
-              enabled: boolean;
-            };
-          };
-        };
-      };
-    };
-  };
-  "/connection/{:connectionid}/stats": {
-    /** Return Conn Success/Failure Stats */
-    get: {
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              stats: {
-                  label: string;
-                  success: number;
-                }[];
-            };
-          };
-        };
-      };
-    };
-  };
-  "/esri": {
-    /**
-     * Helper API to configure ESRI MapServer Layers
-     *
-     *             The URL can either be an ESRI Portal URL or a Server URL that doesn't require auth
-     *             or supports token generation
-     */
-    post: {
-      requestBody: {
-        content: {
-          "application/json": {
-            url: string;
-            username?: string;
-            password?: string;
-            sinkid?: number;
-          };
-        };
-      };
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              type: "AGOL" | "PORTAL" | "SERVER";
-              base: string;
-              auth?: {
-                token: string;
-                referer: string;
-                expires: number;
-              };
-            };
-          };
-        };
-      };
-    };
-  };
-  "/esri/portal": {
-    /**
-     * Helper API to configure ESRI MapServers
-     *             Return Portal Data
-     */
-    get: {
-      parameters: {
-        query: {
-          /** @description No Description */
-          portal: string;
-          /** @description No Description */
-          token?: string;
-          /** @description No Description */
-          expires?: number;
-        };
-      };
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": unknown;
-          };
-        };
-      };
-    };
-  };
-  "/esri/portal/content": {
-    /**
-     * Helper API to configure ESRI MapServers
-     *             Return Portal Content
-     */
-    get: {
-      parameters: {
-        query: {
-          /** @description No Description */
-          portal: string;
-          /** @description No Description */
-          token?: string;
-          /** @description No Description */
-          expires?: number;
-          /** @description No Description */
-          title?: string;
-        };
-      };
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": unknown;
-          };
-        };
-      };
-    };
-  };
-  "/esri/portal/service": {
-    /** Create Service to store Feature Layers */
-    post: {
-      parameters: {
-        query: {
-          /** @description No Description */
-          portal: string;
-          /** @description No Description */
-          token: string;
-          /** @description No Description */
-          expires: number;
-        };
-      };
-      requestBody: {
-        content: {
-          "application/json": {
-            name: string;
-          };
-        };
-      };
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": unknown;
-          };
-        };
-      };
-    };
-  };
-  "/esri/portal/server": {
-    /**
-     * Helper API to configure ESRI MapServers
-     *             List Servers associates with a given portal
-     */
-    get: {
-      parameters: {
-        query: {
-          /** @description No Description */
-          portal: string;
-          /** @description No Description */
-          token: string;
-          /** @description No Description */
-          expires: number;
-        };
-      };
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              servers: unknown[];
-            };
-          };
-        };
-      };
-    };
-  };
-  "/esri/server": {
-    /** Helper API to configure ESRI MapServers - Get Services */
-    get: {
-      parameters: {
-        query: {
-          /** @description No Description */
-          server: string;
-          /** @description No Description */
-          token?: string;
-          /** @description No Description */
-          expires?: number;
-        };
-      };
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": unknown;
-          };
-        };
-      };
-    };
-  };
-  "/esri/server/layer": {
-    /** Return Sample features and count */
-    get: {
-      parameters: {
-        query: {
-          /** @description No Description */
-          layer: string;
-          /** @description No Description */
-          query: string;
-          /** @description No Description */
-          token?: string;
-          /** @description No Description */
-          expires?: number;
-        };
-      };
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": unknown;
-          };
-        };
-      };
-    };
-    /** Create Layer necessary to push CoT data */
-    post: {
-      parameters: {
-        query: {
-          /** @description No Description */
-          server: string;
-          /** @description No Description */
-          portal: string;
-          /** @description No Description */
-          token: string;
-          /** @description No Description */
-          expires: number;
-        };
-      };
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": unknown;
-          };
-        };
-      };
-    };
-    /** Delete an ESRI Layer */
-    delete: {
-      parameters: {
-        query: {
-          /** @description No Description */
-          server: string;
-          /** @description No Description */
-          portal: string;
-          /** @description No Description */
-          token: string;
-          /** @description No Description */
-          expires: number;
-        };
-      };
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": unknown;
-          };
-        };
-      };
-    };
-  };
-  "/import": {
-    /** List Imports */
-    get: {
-      parameters: {
-        query: {
-          /** @description Limit the number of responses returned */
-          limit: number;
-          /** @description Iterate through "pages" of items based on the "limit" query param */
-          page: number;
-          /** @description Order in which results are returned based on the "sort" query param */
-          order: "asc" | "desc";
-          /** @description No Description */
-          sort?: "id" | "created" | "updated" | "name" | "status" | "error" | "result" | "username" | "mode" | "mode_id" | "config";
-          /** @description No Description */
-          mode?: "Unknown" | "Mission" | "Package";
-          /** @description No Description */
-          mode_id?: string;
-        };
-      };
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              total: number;
-              items: ({
-                  id: string;
-                  created: string;
-                  updated: string;
-                  name: string;
-                  status: string;
-                  error: string | null;
-                  result: (string | number | boolean | null) | unknown[] | Record<string, never>;
-                  username: string;
-                  mode: string;
-                  mode_id: string | null;
-                  config: (string | number | boolean | null) | unknown[] | Record<string, never>;
-                })[];
-            };
-          };
-        };
-      };
-    };
-    /** Import up to 5 unknown assets into the imports manager at a time */
-    put: {
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              imports: {
-                  file: string;
-                  uid: string;
-                  ext: string;
-                }[];
-            };
-          };
-        };
-      };
-    };
-    /** Import an unknown asset into the imports manager */
-    post: {
-      requestBody: {
-        content: {
-          "application/json": {
-            /** @description Human readable name */
-            name: string;
-            mode?: "Unknown" | "Mission" | "Package";
-            mode_id?: string;
-            config?: unknown;
-          };
-        };
-      };
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              id: string;
-              created: string;
-              updated: string;
-              name: string;
-              status: string;
-              error: string | null;
-              result: (string | number | boolean | null) | unknown[] | Record<string, never>;
-              username: string;
-              mode: string;
-              mode_id: string | null;
-              config: (string | number | boolean | null) | unknown[] | Record<string, never>;
-            };
-          };
-        };
-      };
-    };
-  };
-  "/import/{:import}": {
-    /** Get Import */
-    get: {
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              id: string;
-              created: string;
-              updated: string;
-              name: string;
-              status: string;
-              error: string | null;
-              result: (string | number | boolean | null) | unknown[] | Record<string, never>;
-              username: string;
-              mode: string;
-              mode_id: string | null;
-              config: (string | number | boolean | null) | unknown[] | Record<string, never>;
-            };
-          };
-        };
-      };
-    };
-    /** Import an asset into a previously configured import container */
-    put: {
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              id: string;
-              created: string;
-              updated: string;
-              name: string;
-              status: string;
-              error: string | null;
-              result: (string | number | boolean | null) | unknown[] | Record<string, never>;
-              username: string;
-              mode: string;
-              mode_id: string | null;
-              config: (string | number | boolean | null) | unknown[] | Record<string, never>;
-            };
-          };
-        };
-      };
-    };
-    /** Update Import */
-    patch: {
-      requestBody: {
-        content: {
-          "application/json": {
-            status?: string;
-            error?: string;
-            result?: unknown;
-          };
-        };
-      };
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              id: string;
-              created: string;
-              updated: string;
-              name: string;
-              status: string;
-              error: string | null;
-              result: (string | number | boolean | null) | unknown[] | Record<string, never>;
-              username: string;
-              mode: string;
-              mode_id: string | null;
-              config: (string | number | boolean | null) | unknown[] | Record<string, never>;
-            };
-          };
-        };
-      };
-    };
-  };
-  "/iconset": {
-    /** List Iconsets */
-    get: {
-      parameters: {
-        query: {
-          /** @description No Description */
-          scope?: "server" | "user";
-          /** @description Limit the number of responses returned */
-          limit: number;
-          /** @description Iterate through "pages" of items based on the "limit" query param */
-          page: number;
-          /** @description Order in which results are returned based on the "sort" query param */
-          order: "asc" | "desc";
-          /** @description No Description */
-          sort?: "uid" | "created" | "updated" | "version" | "name" | "username" | "default_group" | "default_friendly" | "default_hostile" | "default_neutral" | "default_unknown" | "skip_resize";
-          /** @description Filter results by a human readable name field */
-          filter: string;
-        };
-      };
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              total: number;
-              items: ({
-                  uid: string;
-                  created: string;
-                  updated: string;
-                  version: number;
-                  name: string;
-                  username: string | null;
-                  default_group: string | null;
-                  default_friendly: string | null;
-                  default_hostile: string | null;
-                  default_neutral: string | null;
-                  default_unknown: string | null;
-                  skip_resize: boolean;
-                })[];
-            };
-          };
-        };
-      };
-    };
-    /** Create Iconset */
-    post: {
-      requestBody: {
-        content: {
-          "application/json": {
-            uid: string;
-            version: number;
-            /** @description Human readable name */
-            name: string;
-            scope?: "server" | "user";
-            default_group?: string;
-            default_friendly?: string;
-            default_hostile?: string;
-            default_neutral?: string;
-            default_unknown?: string;
-            skip_resize?: boolean;
-          };
-        };
-      };
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              uid: string;
-              created: string;
-              updated: string;
-              version: number;
-              name: string;
-              username: string | null;
-              default_group: string | null;
-              default_friendly: string | null;
-              default_hostile: string | null;
-              default_neutral: string | null;
-              default_unknown: string | null;
-              skip_resize: boolean;
-            };
-          };
-        };
-      };
-    };
-  };
-  "/iconset/{:iconset}": {
-    /** Get Iconset */
-    get: {
-      parameters: {
-        query?: {
-          /** @description No Description */
-          format?: "json" | "zip";
-          /** @description No Description */
-          download?: boolean;
-          /** @description Resize Images to 32x32px */
-          resize?: boolean;
-          /** @description No Description */
-          token?: string;
-        };
-      };
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              uid: string;
-              created: string;
-              updated: string;
-              version: number;
-              name: string;
-              username: string | null;
-              default_group: string | null;
-              default_friendly: string | null;
-              default_hostile: string | null;
-              default_neutral: string | null;
-              default_unknown: string | null;
-              skip_resize: boolean;
-            };
-          };
-        };
-      };
-    };
-    /** Delete Iconset */
-    delete: {
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              status: number;
-              message: string;
-            };
-          };
-        };
-      };
-    };
-    /** Update Iconset */
-    patch: {
-      requestBody: {
-        content: {
-          "application/json": {
-            public?: boolean;
-            default_group?: string;
-            default_friendly?: string;
-            default_hostile?: string;
-            default_neutral?: string;
-            default_unknown?: string;
-            skip_resize?: boolean;
-          };
-        };
-      };
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              uid: string;
-              created: string;
-              updated: string;
-              version: number;
-              name: string;
-              username: string | null;
-              default_group: string | null;
-              default_friendly: string | null;
-              default_hostile: string | null;
-              default_neutral: string | null;
-              default_unknown: string | null;
-              skip_resize: boolean;
-            };
-          };
-        };
-      };
-    };
-  };
-  "/iconset/{:iconset}/icon": {
-    /** Create Icon */
-    post: {
-      requestBody: {
-        content: {
-          "application/json": {
-            /** @description Human readable name */
-            name: string;
-            data: string;
-            type2525b?: string | null;
-          };
-        };
-      };
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              id: number;
-              created: string;
-              updated: string;
-              name: string;
-              iconset: string;
-              type2525b: string | null;
-              data: string;
-              path: string;
-            };
-          };
-        };
-      };
-    };
-  };
-  "/icon": {
-    /** List Icons */
-    get: {
-      parameters: {
-        query: {
-          /** @description No Description */
-          scope?: "server" | "user";
-          /** @description No Description */
-          limit?: number;
-          /** @description Iterate through "pages" of items based on the "limit" query param */
-          page: number;
-          /** @description Order in which results are returned based on the "sort" query param */
-          order: "asc" | "desc";
-          /** @description No Description */
-          sort?: "id" | "created" | "updated" | "name" | "iconset" | "type2525b" | "data" | "path";
-          /** @description No Description */
-          iconset?: string;
-          /** @description Filter results by a human readable name field */
-          filter: string;
-        };
-      };
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              total: number;
-              items: ({
-                  id: number;
-                  created: string;
-                  updated: string;
-                  name: string;
-                  iconset: string;
-                  type2525b: string | null;
-                  data: string;
-                  path: string;
-                })[];
-            };
-          };
-        };
-      };
-    };
-  };
-  "/iconset/{:iconset}/icon/{:icon}": {
-    /** Icon Metadata */
-    get: {
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              id: number;
-              created: string;
-              updated: string;
-              name: string;
-              iconset: string;
-              type2525b: string | null;
-              data: string;
-              path: string;
-            };
-          };
-        };
-      };
-    };
-    /** Remove Icon from Iconset */
-    delete: {
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              status: number;
-              message: string;
-            };
-          };
-        };
-      };
-    };
-    /** Update Icon in Iconset */
-    patch: {
-      requestBody: {
-        content: {
-          "application/json": {
-            name?: string;
-            data?: string;
-            type2525b?: string | null;
-          };
-        };
-      };
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              id: number;
-              created: string;
-              updated: string;
-              name: string;
-              iconset: string;
-              type2525b: string | null;
-              data: string;
-              path: string;
-            };
-          };
-        };
-      };
-    };
-  };
-  "/iconset/{:iconset}/icon/{:icon}/raw": {
-    /** Icon Data */
-    get: {
-      parameters: {
-        query?: {
-          /** @description No Description */
-          token?: string;
-        };
-      };
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: never;
-        };
-      };
-    };
-  };
-  "/icon/sprite:size?.json": {
-    /** Get Spriteset JSON for CoT types */
-    get: {
-      parameters: {
-        query?: {
-          /** @description No Description */
-          iconset?: string;
-          /** @description No Description */
-          scope?: "server" | "user";
-          /** @description No Description */
-          token?: string;
-        };
-      };
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: never;
-        };
-      };
-    };
-  };
-  "/icon/sprite:size?.png": {
-    /** Return a sprite sheet for CoT Types */
-    get: {
-      parameters: {
-        query?: {
-          /** @description No Description */
-          iconset?: string;
-          /** @description No Description */
-          scope?: "server" | "user";
-          /** @description No Description */
-          token?: string;
-        };
-      };
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: never;
-        };
-      };
-    };
-  };
-  "/layer": {
-    /** Allow admins to list all layers on the server */
-    get: {
-      parameters: {
-        query: {
-          /** @description Limit the number of responses returned */
-          limit: number;
-          /** @description Iterate through "pages" of items based on the "limit" query param */
-          page: number;
-          /** @description Order in which results are returned based on the "sort" query param */
-          order: "asc" | "desc";
-          /** @description No Description */
-          sort?: "id" | "created" | "updated" | "name" | "priority" | "description" | "enabled" | "enabled_styles" | "styles" | "logging" | "stale" | "task" | "connection" | "cron" | "environment" | "config" | "memory" | "timeout" | "data" | "schema";
-          /** @description Filter results by a human readable name field */
-          filter: string;
-          /** @description No Description */
-          data?: number;
-          /** @description No Description */
-          connection?: number;
-        };
-      };
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              total: number;
-              status: {
-                healthy: number;
-                alarm: number;
-                unknown: number;
-              };
-              items: ({
-                  id: number;
-                  status?: string;
-                  priority: "high" | "low" | "off";
-                  created: string;
-                  updated: string;
-                  name: string;
-                  description: string;
-                  enabled: boolean;
-                  enabled_styles: boolean;
-                  styles: {
-                    line?: {
-                      stroke?: string;
-                      "stroke-style"?: string;
-                      "stroke-opacity"?: string;
-                      "stroke-width"?: string;
-                      remarks?: string;
-                      callsign?: string;
-                      links?: {
-                          remarks: string;
-                          url: string;
-                        }[];
-                    };
-                    point?: {
-                      color?: string;
-                      remarks?: string;
-                      callsign?: string;
-                      links?: {
-                          remarks: string;
-                          url: string;
-                        }[];
-                      icon?: string;
-                    };
-                    polygon?: {
-                      stroke?: string;
-                      "stroke-style"?: string;
-                      "stroke-opacity"?: string;
-                      "stroke-width"?: string;
-                      fill?: string;
-                      "fill-opacity"?: string;
-                      remarks?: string;
-                      callsign?: string;
-                      links?: {
-                          remarks: string;
-                          url: string;
-                        }[];
-                    };
-                    remarks?: string;
-                    callsign?: string;
-                    links?: {
-                        remarks: string;
-                        url: string;
-                      }[];
-                    queries?: {
-                        query: string;
-                        remarks?: string;
-                        callsign?: string;
-                        links?: {
-                            remarks: string;
-                            url: string;
-                          }[];
-                        styles: {
-                          remarks?: string;
-                          callsign?: string;
-                          links?: {
-                              remarks: string;
-                              url: string;
+                    content: {
+                        "application/json": {
+                            total: number;
+                            items: {
+                                id: number;
+                                created: string;
+                                updated: string;
+                                name: string;
+                                url: string;
+                                username: string | null;
+                                bounds: unknown | null;
+                                center: unknown | null;
+                                minzoom: number;
+                                maxzoom: number;
+                                format: string;
+                                style: string;
+                                type: string;
                             }[];
-                          line?: {
-                            stroke?: string;
-                            "stroke-style"?: string;
-                            "stroke-opacity"?: string;
-                            "stroke-width"?: string;
-                            remarks?: string;
-                            callsign?: string;
-                            links?: {
-                                remarks: string;
-                                url: string;
-                              }[];
-                          };
-                          point?: {
-                            color?: string;
-                            remarks?: string;
-                            callsign?: string;
-                            links?: {
-                                remarks: string;
-                                url: string;
-                              }[];
-                            icon?: string;
-                          };
-                          polygon?: {
-                            stroke?: string;
-                            "stroke-style"?: string;
-                            "stroke-opacity"?: string;
-                            "stroke-width"?: string;
-                            fill?: string;
-                            "fill-opacity"?: string;
-                            remarks?: string;
-                            callsign?: string;
-                            links?: {
-                                remarks: string;
-                                url: string;
-                              }[];
-                          };
                         };
-                      }[];
-                  };
-                  logging: boolean;
-                  stale: number;
-                  task: string;
-                  connection?: number;
-                  cron: string;
-                  environment: unknown;
-                  config: {
-                    timezone?: {
-                      timezone: string;
                     };
-                  };
-                  memory: number;
-                  timeout: number;
-                  data?: number;
-                  schema: unknown;
-                })[];
+                };
             };
-          };
         };
-      };
-    };
-  };
-  "/layer/{:layerid}": {
-    /**
-     * Events don't have the Connection ID but they have a valid data token
-     *             This API allows a layer token to request the layer object and obtain the
-     *             connection ID for subsequent calls
-     */
-    get: {
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              id: number;
-              status?: string;
-              priority: "high" | "low" | "off";
-              created: string;
-              updated: string;
-              name: string;
-              description: string;
-              enabled: boolean;
-              enabled_styles: boolean;
-              styles: {
-                line?: {
-                  stroke?: string;
-                  "stroke-style"?: string;
-                  "stroke-opacity"?: string;
-                  "stroke-width"?: string;
-                  remarks?: string;
-                  callsign?: string;
-                  links?: {
-                      remarks: string;
-                      url: string;
-                    }[];
+        /**
+         *                 If the Content-Type if text/plain, then assume the body contains a TileJSON URL
+         *                 Alternatively, if the Content-Type is a MultiPart upload, assume the input is a TAK XML document
+         *
+         *                 Both return as many BaseMap fields as possible to use in the creation of a new BaseMap
+         *              */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            name?: string;
+                            type?: string;
+                            url?: string;
+                            bounds?: unknown;
+                            center?: unknown;
+                            minzoom?: number;
+                            maxzoom?: number;
+                            style?: string;
+                            format?: string;
+                        };
+                    };
                 };
-                point?: {
-                  color?: string;
-                  remarks?: string;
-                  callsign?: string;
-                  links?: {
-                      remarks: string;
-                      url: string;
-                    }[];
-                  icon?: string;
-                };
-                polygon?: {
-                  stroke?: string;
-                  "stroke-style"?: string;
-                  "stroke-opacity"?: string;
-                  "stroke-width"?: string;
-                  fill?: string;
-                  "fill-opacity"?: string;
-                  remarks?: string;
-                  callsign?: string;
-                  links?: {
-                      remarks: string;
-                      url: string;
-                    }[];
-                };
-                remarks?: string;
-                callsign?: string;
-                links?: {
-                    remarks: string;
-                    url: string;
-                  }[];
-                queries?: {
-                    query: string;
-                    remarks?: string;
-                    callsign?: string;
-                    links?: {
-                        remarks: string;
+            };
+        };
+        /** Register a new basemap */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /** @description Human readable name */
+                        name: string;
+                        /** @default user */
+                        scope: "server" | "user";
                         url: string;
-                      }[];
-                    styles: {
-                      remarks?: string;
-                      callsign?: string;
-                      links?: {
-                          remarks: string;
-                          url: string;
-                        }[];
-                      line?: {
-                        stroke?: string;
-                        "stroke-style"?: string;
-                        "stroke-opacity"?: string;
-                        "stroke-width"?: string;
-                        remarks?: string;
-                        callsign?: string;
-                        links?: {
-                            remarks: string;
-                            url: string;
-                          }[];
-                      };
-                      point?: {
-                        color?: string;
-                        remarks?: string;
-                        callsign?: string;
-                        links?: {
-                            remarks: string;
-                            url: string;
-                          }[];
-                        icon?: string;
-                      };
-                      polygon?: {
-                        stroke?: string;
-                        "stroke-style"?: string;
-                        "stroke-opacity"?: string;
-                        "stroke-width"?: string;
-                        fill?: string;
-                        "fill-opacity"?: string;
-                        remarks?: string;
-                        callsign?: string;
-                        links?: {
-                            remarks: string;
-                            url: string;
-                          }[];
-                      };
-                    };
-                  }[];
-              };
-              logging: boolean;
-              stale: number;
-              task: string;
-              connection?: number;
-              cron: string;
-              environment: unknown;
-              config: {
-                timezone?: {
-                  timezone: string;
-                };
-              };
-              memory: number;
-              timeout: number;
-              data?: number;
-              schema: unknown;
-            };
-          };
-        };
-      };
-    };
-  };
-  "/login": {
-    /** No Description */
-    get: {
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              email: string;
-              access: "admin" | "agency" | "user";
-            };
-          };
-        };
-      };
-    };
-    /** No Description */
-    post: {
-      requestBody: {
-        content: {
-          "application/json": {
-            username: string;
-            password: string;
-          };
-        };
-      };
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              token: string;
-              access: "admin" | "agency" | "user";
-              email: string;
-            };
-          };
-        };
-      };
-    };
-  };
-  "/marti/export": {
-    /** Helper API to export Timeseries KML data from TAK */
-    post: {
-      parameters: {
-        query?: {
-          /** @description No Description */
-          download?: boolean;
-        };
-      };
-      requestBody: {
-        content: {
-          "application/json": {
-            startTime: string;
-            endTime: string;
-            groups: string[];
-            /** @enum {string} */
-            format: "kmz" | "kml";
-            interval?: number;
-            multiTrackThreshold?: string;
-            extendedData?: boolean;
-            optimizeExport?: boolean;
-          };
-        };
-      };
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: never;
-        };
-      };
-    };
-  };
-  "/marti/api/files/{:hash}": {
-    /** Helper API to download files by file hash */
-    get: {
-      parameters: {
-        query?: {
-          /** @description No Description */
-          name?: string;
-          /** @description No Description */
-          token?: string;
-        };
-      };
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: never;
-        };
-      };
-    };
-    /** Helper API to delete files by file hash */
-    delete: {
-      parameters: {
-        query?: {
-          /** @description No Description */
-          token?: string;
-        };
-      };
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              status: number;
-              message: string;
-            };
-          };
-        };
-      };
-    };
-  };
-  "/marti/missions/{:name}/layer": {
-    /** Helper API list mission layers */
-    get: {
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              version: string;
-              type: string;
-              data: unknown;
-              messages?: string[];
-              nodeId?: string;
-            };
-          };
-        };
-      };
-    };
-    /** Helper API to create mission layers */
-    post: {
-      requestBody: {
-        content: {
-          "application/json": {
-            name: string;
-            type: "GROUP" | "UID" | "CONTENTS" | "MAPLAYER" | "ITEM";
-            uid?: string;
-            parentUid?: string;
-            afterUid?: string;
-          };
-        };
-      };
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              version: string;
-              type: string;
-              data: unknown;
-              messages?: string[];
-              nodeId?: string;
-            };
-          };
-        };
-      };
-    };
-  };
-  "/marti/missions/{:name}/layer/{:uid}": {
-    /** Helper API to delete mission layers */
-    delete: {
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              status: number;
-              message: string;
-            };
-          };
-        };
-      };
-    };
-  };
-  "/marti/missions/{:name}/log": {
-    /** Helper API to add a log to a mission */
-    post: {
-      requestBody: {
-        content: {
-          "application/json": {
-            content: string;
-          };
-        };
-      };
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              version: string;
-              type: string;
-              data: unknown;
-              messages?: string[];
-              nodeId?: string;
-            };
-          };
-        };
-      };
-    };
-  };
-  "/marti/missions/{:name}/log/{:log}": {
-    /** Helper API to delete a log */
-    delete: {
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              status: number;
-              message: string;
-            };
-          };
-        };
-      };
-    };
-  };
-  "/marti/missions/{:name}": {
-    /** Helper API to get a single mission */
-    get: {
-      parameters: {
-        query?: {
-          /** @description No Description */
-          password?: boolean;
-          /** @description No Description */
-          changes?: boolean;
-          /** @description No Description */
-          logs?: boolean;
-          /** @description No Description */
-          secago?: number;
-          /** @description No Description */
-          start?: string;
-          /** @description No Description */
-          end?: string;
-        };
-      };
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              name: string;
-              description: string;
-              chatRoom: string;
-              baseLayer: string;
-              bbox: string;
-              path: string;
-              classification: string;
-              tool: string;
-              keywords: unknown[];
-              creatorUid: string;
-              createTime: string;
-              externalData: unknown[];
-              feeds: unknown[];
-              mapLayers: unknown[];
-              ownerRole?: unknown[];
-              inviteOnly: boolean;
-              expiration: number;
-              guid: string;
-              uids: unknown[];
-              logs?: {
-                  id: string;
-                  content: string;
-                  creatorUid: string;
-                  missionNames: string[];
-                  servertime: string;
-                  dtg?: string;
-                  created: string;
-                  contentHashes: unknown[];
-                  keywords: unknown[];
-                }[];
-              contents: {
-                  timestamp: string;
-                  creatorUid: string;
-                  data: {
-                    keywords: string[];
-                    mimeType: string;
-                    name: string;
-                    hash: string;
-                    submissionTime: string;
-                    submitter: string;
-                    uid: string;
-                    creatorUid: string;
-                    size: number;
-                    expiration: number;
-                  };
-                }[];
-              passwordProtected: boolean;
-              token?: string;
-              groups?: string | string[];
-              missionChanges?: unknown[];
-            };
-          };
-        };
-      };
-    };
-    /** Helper API to create a mission */
-    post: {
-      parameters: {
-        query?: {
-          /** @description No Description */
-          creatorUid?: string;
-          /** @description No Description */
-          group?: string;
-          /** @description No Description */
-          description?: string;
-          /** @description No Description */
-          chatRoom?: string;
-          /** @description No Description */
-          baseLayer?: string;
-          /** @description No Description */
-          bbox?: string;
-          /** @description No Description */
-          boundingPolygon?: string;
-          /** @description No Description */
-          path?: string;
-          /** @description No Description */
-          classification?: string;
-          /** @description No Description */
-          tool?: string;
-          /** @description No Description */
-          password?: string;
-          /** @description No Description */
-          defaultRole?: string;
-          /** @description No Description */
-          expiration?: number;
-          /** @description No Description */
-          inviteOnly?: boolean;
-          /** @description No Description */
-          allowDupe?: boolean;
-        };
-      };
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              version: string;
-              type: string;
-              data: unknown;
-              messages?: string[];
-              nodeId?: string;
-            };
-          };
-        };
-      };
-    };
-    /** Helper API to delete a single mission */
-    delete: {
-      parameters: {
-        query?: {
-          /** @description No Description */
-          creatorUid?: string;
-          /** @description No Description */
-          deepDelete?: boolean;
-        };
-      };
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              version: string;
-              type: string;
-              data: unknown;
-              messages?: string[];
-              nodeId?: string;
-            };
-          };
-        };
-      };
-    };
-  };
-  "/marti/missions/{:name}/cot": {
-    /** Helper API to get latest CoTs */
-    get: {
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              type: string;
-              features: unknown[];
-            };
-          };
-        };
-      };
-    };
-  };
-  "/marti/missions/{:name}/changes": {
-    /** Helper API to get mission changes */
-    get: {
-      parameters: {
-        query?: {
-          /** @description No Description */
-          secago?: number;
-          /** @description No Description */
-          start?: string;
-          /** @description No Description */
-          end?: string;
-          /** @description No Description */
-          squashed?: boolean;
-        };
-      };
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              version: string;
-              type: string;
-              data: unknown;
-              messages?: string[];
-              nodeId?: string;
-            };
-          };
-        };
-      };
-    };
-  };
-  "/marti/mission": {
-    /** Helper API to list missions */
-    get: {
-      parameters: {
-        query?: {
-          /** @description No Description */
-          passwordProtected?: boolean;
-          /** @description No Description */
-          defaultRole?: boolean;
-          /** @description No Description */
-          tool?: string;
-        };
-      };
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              version: string;
-              type: string;
-              data: unknown;
-              messages?: string[];
-              nodeId?: string;
-            };
-          };
-        };
-      };
-    };
-  };
-  "/marti/missions/{:name}/role": {
-    /** Return a role associated with your user */
-    get: {
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              permissions: string[];
-              hibernateLazyInitializer?: unknown;
-              type: "MISSION_OWNER" | "MISSION_SUBSCRIBER" | "MISSION_READONLY_SUBSCRIBER";
-            };
-          };
-        };
-      };
-    };
-  };
-  "/marti/missions/{:name}/subscriptions": {
-    /** List subscriptions associated with a mission */
-    get: {
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              version: string;
-              type: string;
-              data: unknown;
-              messages?: string[];
-              nodeId?: string;
-            };
-          };
-        };
-      };
-    };
-  };
-  "/marti/missions/{:name}/subscriptions/roles": {
-    /** List subscriptions associated with a mission */
-    get: {
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              version: string;
-              type: string;
-              data: unknown;
-              messages?: string[];
-              nodeId?: string;
-            };
-          };
-        };
-      };
-    };
-  };
-  "/marti/missions/{:name}/contacts": {
-    /** List contacts associated with a mission */
-    get: {
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-                filterGroups: string[];
-                notes: string;
-                callsign: string;
-                team: string;
-                role: string;
-                takv: string;
-                uid: string;
-              }[];
-          };
-        };
-      };
-    };
-  };
-  "/marti/missions/{:name}/upload": {
-    /** Create an upload */
-    post: {
-      parameters: {
-        query: {
-          /** @description No Description */
-          name: string;
-        };
-      };
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              version: string;
-              type: string;
-              data: unknown;
-              messages?: string[];
-              nodeId?: string;
-            };
-          };
-        };
-      };
-    };
-  };
-  "/marti/missions/{:name}/upload/{:hash}": {
-    /** Delete an upload by hash */
-    delete: {
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              version: string;
-              type: string;
-              data: unknown;
-              messages?: string[];
-              nodeId?: string;
-            };
-          };
-        };
-      };
-    };
-  };
-  "/marti/package": {
-    /** Helper API to list packages */
-    get: {
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              total: number;
-              items: {
-                  EXPIRATION: string;
-                  UID: string;
-                  SubmissionDateTime: string;
-                  Keywords: string[];
-                  MIMEType: string;
-                  Size: string;
-                  SubmissionUser: string;
-                  PrimaryKey: string;
-                  Hash: string;
-                  CreatorUid: string;
-                  Name: string;
-                  Tool: string;
-                }[];
-            };
-          };
-        };
-      };
-    };
-    /** Helper API to create share package */
-    put: {
-      requestBody: {
-        content: {
-          "application/json": {
-            /** @constant */
-            type: "FeatureCollection";
-            uids?: string[];
-            features: {
-                id: string;
-                /** @constant */
-                type: "Feature";
-                properties: unknown;
-                geometry: unknown;
-              }[];
-          };
-        };
-      };
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              UID: string;
-              SubmissionDateTime: string;
-              Keywords: string[];
-              MIMEType: string;
-              SubmissionUser: string;
-              PrimaryKey: string;
-              Hash: string;
-              CreatorUid: string;
-              Name: string;
-            };
-          };
-        };
-      };
-    };
-  };
-  "/marti/package/{:hash}": {
-    /** Helper API to get a single package */
-    get: {
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              EXPIRATION: string;
-              UID: string;
-              SubmissionDateTime: string;
-              Keywords: string[];
-              MIMEType: string;
-              Size: string;
-              SubmissionUser: string;
-              PrimaryKey: string;
-              Hash: string;
-              CreatorUid: string;
-              Name: string;
-              Tool: string;
-            };
-          };
-        };
-      };
-    };
-  };
-  "/marti/group": {
-    /** Helper API to list groups that the client is part of */
-    get: {
-      parameters: {
-        query?: {
-          /** @description Use Connection auth */
-          connection?: number;
-          /** @description This tells TAK server to return the users cached group selection vs the groups that came directly from the auth backend. */
-          useCache?: boolean;
-        };
-      };
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              version: string;
-              type: string;
-              data: unknown;
-              messages?: string[];
-              nodeId?: string;
-            };
-          };
-        };
-      };
-    };
-    /** Helper API to update groups that the client is part of */
-    put: {
-      parameters: {
-        query?: {
-          /** @description No Description */
-          clientUid?: string;
-          /** @description No Description */
-          connection?: number;
-        };
-      };
-      requestBody: {
-        content: {
-          "application/json": {
-              name: string;
-              direction: string;
-              created: string;
-              type: string;
-              bitpos: number;
-              active: boolean;
-              description?: string;
-            }[];
-        };
-      };
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              version: string;
-              type: string;
-              data: unknown;
-              messages?: string[];
-              nodeId?: string;
-            };
-          };
-        };
-      };
-    };
-  };
-  "/marti/api/contacts/all": {
-    /** Helper API to list contacts */
-    get: {
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-                filterGroups: unknown;
-                notes: string;
-                callsign: string;
-                team: string;
-                role: string;
-                takv: string;
-                uid: string;
-              }[];
-          };
-        };
-      };
-    };
-  };
-  "/marti/signClient": {
-    /** Helper API for obtaining a signed Certificate pair given LDAP Credentials */
-    post: {
-      requestBody: {
-        content: {
-          "application/json": {
-            username: string;
-            password: string;
-          };
-        };
-      };
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              key: string;
-              cert: string;
-            };
-          };
-        };
-      };
-    };
-  };
-  "/overlay": {
-    /** Return a list of Server Overlays */
-    get: {
-      parameters: {
-        query: {
-          /** @description Limit the number of responses returned */
-          limit: number;
-          /** @description Iterate through "pages" of items based on the "limit" query param */
-          page: number;
-          /** @description Order in which results are returned based on the "sort" query param */
-          order: "asc" | "desc";
-          /** @description Filter results by a human readable name field */
-          filter: string;
-        };
-      };
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              total: number;
-              items: ({
-                  id: number;
-                  name: string;
-                  created: string;
-                  updated: string;
-                  type: string;
-                  styles: ((string | number | boolean | null) | unknown[] | Record<string, never>) | null;
-                  url: string;
-                })[];
-            };
-          };
-        };
-      };
-    };
-  };
-  "/profile/asset": {
-    /** List Assets */
-    get: {
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              total: number;
-              tiles: {
-                url: string;
-              };
-              assets: {
-                  /** @description The filename of the asset */
-                  name: string;
-                  visualized?: string;
-                  vectorized?: string;
-                  updated: number;
-                  /** @description AWS S3 generated ETag of the asset */
-                  etag: string;
-                  /** @description Size in bytes of the asset */
-                  size: number;
-                }[];
-            };
-          };
-        };
-      };
-    };
-    /** Create a new asset */
-    post: {
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              status: number;
-              message: string;
-            };
-          };
-        };
-      };
-    };
-  };
-  "/profile/asset/{:asset}.{:ext}": {
-    /** Get single raw asset */
-    get: {
-      parameters: {
-        query?: {
-          /** @description No Description */
-          token?: string;
-        };
-      };
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: never;
-        };
-      };
-    };
-    /** Convert Asset into a cloud native or TAK Native format automatically */
-    post: {
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              status: number;
-              message: string;
-            };
-          };
-        };
-      };
-    };
-    /** Delete Asset */
-    delete: {
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              status: number;
-              message: string;
-            };
-          };
-        };
-      };
-    };
-  };
-  "/profile/asset/{:asset}.pmtiles/tile": {
-    /** Get TileJSON */
-    get: {
-      parameters: {
-        query?: {
-          /** @description No Description */
-          token?: string;
-        };
-      };
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: never;
-        };
-      };
-    };
-  };
-  "/profile/chat": {
-    /** Get User's Profile Chats */
-    get: {
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              total: number;
-              items: unknown[];
-            };
-          };
-        };
-      };
-    };
-  };
-  "/profile/chat/{:chatroom}": {
-    /** Get User's Chats */
-    get: {
-      parameters: {
-        query: {
-          /** @description Limit the number of responses returned */
-          limit: number;
-          /** @description Iterate through "pages" of items based on the "limit" query param */
-          page: number;
-          /** @description Order in which results are returned based on the "sort" query param */
-          order: "asc" | "desc";
-          /** @description No Description */
-          sort?: "id" | "username" | "chatroom" | "sender_callsign" | "sender_uid" | "created" | "updated" | "message_id" | "message";
-        };
-      };
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              total: number;
-              items: unknown[];
-            };
-          };
-        };
-      };
-    };
-  };
-  "/profile/feature": {
-    /** Return a list of Profile Features */
-    get: {
-      parameters: {
-        query: {
-          /** @description No Description */
-          limit: number;
-          /** @description Iterate through "pages" of items based on the "limit" query param */
-          page: number;
-          /** @description Order in which results are returned based on the "sort" query param */
-          order: "asc" | "desc";
-        };
-      };
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              total: number;
-              items: ({
-                  id: string;
-                  /** @constant */
-                  type: "Feature";
-                  properties: {
-                    /** @default UNKNOWN */
-                    callsign: string;
-                    /** @default a-f-g */
-                    type: string;
-                    how: string;
-                    time: string;
-                    start: string;
-                    stale: string;
-                    center: number[];
-                    course?: number;
-                    slope?: number;
-                    speed?: number;
-                    color?: string;
-                    opacity?: number;
-                    stroke?: string;
-                    "stroke-opacity"?: number;
-                    "stroke-width"?: number;
-                    "stroke-style"?: string;
-                    fill?: string;
-                    "fill-opacity"?: number;
-                    metadata?: Record<string, never>;
-                    archived?: boolean;
-                    contact?: {
-                      phone?: string;
-                      endpoint?: string;
-                    };
-                    remarks?: string;
-                    fileshare?: {
-                      filename: string;
-                      name: string;
-                      senderCallsign: string;
-                      senderUid: string;
-                      senderUrl: string;
-                      sha256: string;
-                      sizeInBytes: number;
-                    };
-                    sensor?: {
-                      elevation?: string;
-                      vfov?: string;
-                      fov?: string;
-                      type?: string;
-                      version?: string;
-                      north?: string;
-                      roll?: string;
-                      range?: string;
-                      azimuth?: string;
-                      model?: string;
-                    };
-                    video?: {
-                      sensor?: string;
-                      spi?: string;
-                      url?: string;
-                    };
-                    links?: {
+                        minzoom?: number;
+                        maxzoom?: number;
+                        format?: string;
+                        style?: string;
                         type?: string;
-                        point?: string;
+                        bounds: number[];
+                        center: number[];
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: number;
+                            created: string;
+                            updated: string;
+                            name: string;
+                            url: string;
+                            username: string | null;
+                            bounds: unknown | null;
+                            center: unknown | null;
+                            minzoom: number;
+                            maxzoom: number;
+                            format: string;
+                            style: string;
+                            type: string;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/basemap/{:basemapid}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a basemap */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description No Description */
+                    download?: boolean;
+                    /** @description No Description */
+                    format?: string;
+                    /** @description No Description */
+                    token?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: number;
+                            created: string;
+                            updated: string;
+                            name: string;
+                            url: string;
+                            username: string | null;
+                            bounds: unknown | null;
+                            center: unknown | null;
+                            minzoom: number;
+                            maxzoom: number;
+                            format: string;
+                            style: string;
+                            type: string;
+                        } | string;
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        /** Delete a basemap */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        /** Update a basemap */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /** @description Human readable name */
+                        name?: string;
                         url?: string;
-                        mime?: string;
-                        remarks?: string;
+                        minzoom?: number;
+                        maxzoom?: number;
+                        format?: string;
+                        style?: string;
+                        type?: string;
+                        bounds?: number[];
+                        center?: number[];
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: number;
+                            created: string;
+                            updated: string;
+                            name: string;
+                            url: string;
+                            username: string | null;
+                            bounds: unknown | null;
+                            center: unknown | null;
+                            minzoom: number;
+                            maxzoom: number;
+                            format: string;
+                            style: string;
+                            type: string;
+                        };
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/basemap/{:basemapid}/tiles/{:z}/{:x}/{:y}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a basemap tile */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description No Description */
+                    token?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/config": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Config */
+        get: {
+            parameters: {
+                query: {
+                    /** @description No Description */
+                    keys: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": unknown;
+                    };
+                };
+            };
+        };
+        /** Update Config Key/Values */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        "agol::enabled"?: boolean;
+                        "agol::token"?: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": unknown;
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/connection/{:connectionid}/channel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List channels that a given connection is broadcasting to */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            version: string;
+                            type: string;
+                            data: unknown;
+                            messages?: string[];
+                            nodeId?: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/connection/{:connectionid}/data/{:dataid}/asset": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Assets */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            total: number;
+                            tiles: {
+                                url: string;
+                            };
+                            assets: {
+                                /** @description The filename of the asset */
+                                name: string;
+                                visualized?: string;
+                                vectorized?: string;
+                                updated: number;
+                                /** @description Does this file meet the glob rules to sync with the server */
+                                sync: boolean;
+                                /** @description AWS S3 generated ETag of the asset */
+                                etag: string;
+                                /** @description Size in bytes of the asset */
+                                size: number;
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Create a new asset */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/connection/{:connectionid}/data/{:dataid}/asset/{:asset}.{:ext}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get single raw asset */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        /** Convert Asset into a cloud native or TAK Native format automatically */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        /** Delete Asset */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/connection/{:connectionid}/data/{:dataid}/asset/{:asset}.pmtiles/tile": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get TileJSON  */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/connection/{:connectionid}/data/{:dataid}/job": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Data Jobs */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            total: number;
+                            items: {
+                                id: string;
+                                asset: string;
+                                status: string;
+                                created: number;
+                                updated?: number;
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/connection/{:connectionid}/data/{:dataid}/job/{:jobid}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Data Jobs */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            asset: string;
+                            status: string;
+                            created: number;
+                            updated?: number;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/connection/{:connectionid}/data/{:dataid}/job/{:jobid}/logs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Data Job Logs */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            logs: {
+                                message: string;
+                                timestamp: number;
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/connection/{:connectionid}/data": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List data */
+        get: {
+            parameters: {
+                query: {
+                    /** @description Limit the number of responses returned */
+                    limit: number;
+                    /** @description Iterate through "pages" of items based on the "limit" query param */
+                    page: number;
+                    /** @description Order in which results are returned based on the "sort" query param */
+                    order: "asc" | "desc";
+                    /** @description No Description */
+                    sort?: "id" | "created" | "updated" | "name" | "description" | "auto_transform" | "mission_sync" | "mission_diff" | "mission_role" | "mission_token" | "mission_groups" | "assets" | "connection";
+                    /** @description Filter results by a human readable name field */
+                    filter: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            total: number;
+                            items: {
+                                id: number;
+                                created: string;
+                                updated: string;
+                                name: string;
+                                description: string;
+                                auto_transform: boolean;
+                                /** @description Is the mission syncing with TAK Server */
+                                mission_sync: boolean;
+                                /** @description Allow a single layer to diff sync with TAK */
+                                mission_diff: boolean;
+                                mission_role: string;
+                                mission_token: string | null;
+                                mission_groups: string[];
+                                assets: string[];
+                                connection: number;
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Register a new data source */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /** @description Human readable name */
+                        name: string;
+                        /** @description Human readable description */
+                        description: string;
+                        auto_transform?: boolean;
+                        mission_diff?: boolean;
+                        mission_sync?: boolean;
+                        mission_groups?: string[];
+                        mission_role?: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: number;
+                            created: string;
+                            updated: string;
+                            name: string;
+                            /** @description Allow a single layer to diff sync with TAK Server */
+                            mission_diff: boolean;
+                            /** @description Is the mission syncing with TAK Server */
+                            mission_sync: boolean;
+                            /** @description Does the mission exist in TAK Server */
+                            mission_exists?: boolean;
+                            /** @description Returned only if there is an error syncing the mission with the TAK Server */
+                            mission_error?: string;
+                            mission_groups: string[];
+                            mission_role: string;
+                            assets: string[];
+                            description: string;
+                            connection: number;
+                            auto_transform: boolean;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/connection/{:connectionid}/data/{:dataid}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a data source */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: number;
+                            created: string;
+                            updated: string;
+                            name: string;
+                            /** @description Allow a single layer to diff sync with TAK Server */
+                            mission_diff: boolean;
+                            /** @description Is the mission syncing with TAK Server */
+                            mission_sync: boolean;
+                            /** @description Does the mission exist in TAK Server */
+                            mission_exists?: boolean;
+                            /** @description Returned only if there is an error syncing the mission with the TAK Server */
+                            mission_error?: string;
+                            mission_groups: string[];
+                            mission_role: string;
+                            assets: string[];
+                            description: string;
+                            connection: number;
+                            auto_transform: boolean;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        /** Delete a data source */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        /** Update a data source */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        name: string;
+                        description: string;
+                        auto_transform?: boolean;
+                        mission_diff?: boolean;
+                        mission_sync?: boolean;
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: number;
+                            created: string;
+                            updated: string;
+                            name: string;
+                            /** @description Allow a single layer to diff sync with TAK Server */
+                            mission_diff: boolean;
+                            /** @description Is the mission syncing with TAK Server */
+                            mission_sync: boolean;
+                            /** @description Does the mission exist in TAK Server */
+                            mission_exists?: boolean;
+                            /** @description Returned only if there is an error syncing the mission with the TAK Server */
+                            mission_error?: string;
+                            mission_groups: string[];
+                            mission_role: string;
+                            assets: string[];
+                            description: string;
+                            connection: number;
+                            auto_transform: boolean;
+                        };
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/connection/{:connectionid}/layer/{:layerid}/alert": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List layer alerts */
+        get: {
+            parameters: {
+                query: {
+                    /** @description Limit the number of responses returned */
+                    limit: number;
+                    /** @description Iterate through "pages" of items based on the "limit" query param */
+                    page: number;
+                    /** @description Order in which results are returned based on the "sort" query param */
+                    order: "asc" | "desc";
+                    /** @description No Description */
+                    sort?: "id" | "created" | "updated" | "layer" | "icon" | "priority" | "title" | "description" | "hidden";
+                    /** @description Filter results by a human readable name field */
+                    filter: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            total: number;
+                            items: {
+                                id: number;
+                                created: string;
+                                updated: string;
+                                layer: number;
+                                icon: string;
+                                priority: string;
+                                title: string;
+                                description: string;
+                                hidden: boolean;
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Create a new layer alert */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /** @description Human readable name */
+                        title: string;
+                        /** @description Human readable description */
+                        description?: string;
+                        icon?: string;
+                        priority?: "green" | "yellow" | "red";
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: number;
+                            created: string;
+                            updated: string;
+                            layer: number;
+                            icon: string;
+                            priority: string;
+                            title: string;
+                            description: string;
+                            hidden: boolean;
+                        };
+                    };
+                };
+            };
+        };
+        /** Delete all alerts for the layer */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/connection/{:connectionid}/layer/{:layerid}/alert/{:alertid}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete all alerts for the layer */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/layer/{:layerid}/cot": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Post CoT data to a given layer */
+        post: {
+            parameters: {
+                query?: {
+                    /** @description If logging is enabled for the layer, allow callers to skip logging for a particular CoT payload */
+                    logging?: boolean;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/connection/{:connectionid}/layer/{:layerid}/query": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get the latest feature from a layer */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description Filter by Id prefix */
+                    filter?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            type: string;
+                            features: unknown[];
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/connection/{:connectionid}/layer/{:layerid}/query/{:featid}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get the latest feature from a layer */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            type: string;
+                            properties: unknown;
+                            geometry: unknown;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/layer/redeploy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Redeploy all Layers with latest CloudFormation output */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/connection/{:connectionid}/layer": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List layers */
+        get: {
+            parameters: {
+                query: {
+                    /** @description Limit the number of responses returned */
+                    limit: number;
+                    /** @description Iterate through "pages" of items based on the "limit" query param */
+                    page: number;
+                    /** @description Order in which results are returned based on the "sort" query param */
+                    order: "asc" | "desc";
+                    /** @description No Description */
+                    sort?: "id" | "created" | "updated" | "name" | "priority" | "description" | "enabled" | "enabled_styles" | "styles" | "logging" | "stale" | "task" | "connection" | "cron" | "environment" | "config" | "memory" | "timeout" | "data" | "schema";
+                    /** @description Filter results by a human readable name field */
+                    filter: string;
+                    /** @description No Description */
+                    data?: number;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            total: number;
+                            status: {
+                                healthy: number;
+                                alarm: number;
+                                unknown: number;
+                            };
+                            items: {
+                                id: number;
+                                status?: string;
+                                priority: "high" | "low" | "off";
+                                created: string;
+                                updated: string;
+                                name: string;
+                                description: string;
+                                enabled: boolean;
+                                enabled_styles: boolean;
+                                styles: {
+                                    line?: {
+                                        stroke?: string;
+                                        "stroke-style"?: string;
+                                        "stroke-opacity"?: string;
+                                        "stroke-width"?: string;
+                                        remarks?: string;
+                                        callsign?: string;
+                                        links?: {
+                                            remarks: string;
+                                            url: string;
+                                        }[];
+                                    };
+                                    point?: {
+                                        "marker-color"?: string;
+                                        "marker-opacity"?: string;
+                                        remarks?: string;
+                                        callsign?: string;
+                                        links?: {
+                                            remarks: string;
+                                            url: string;
+                                        }[];
+                                        icon?: string;
+                                    };
+                                    polygon?: {
+                                        stroke?: string;
+                                        "stroke-style"?: string;
+                                        "stroke-opacity"?: string;
+                                        "stroke-width"?: string;
+                                        fill?: string;
+                                        "fill-opacity"?: string;
+                                        remarks?: string;
+                                        callsign?: string;
+                                        links?: {
+                                            remarks: string;
+                                            url: string;
+                                        }[];
+                                    };
+                                    remarks?: string;
+                                    callsign?: string;
+                                    links?: {
+                                        remarks: string;
+                                        url: string;
+                                    }[];
+                                    queries?: {
+                                        query: string;
+                                        remarks?: string;
+                                        callsign?: string;
+                                        links?: {
+                                            remarks: string;
+                                            url: string;
+                                        }[];
+                                        styles: {
+                                            remarks?: string;
+                                            callsign?: string;
+                                            links?: {
+                                                remarks: string;
+                                                url: string;
+                                            }[];
+                                            line?: {
+                                                stroke?: string;
+                                                "stroke-style"?: string;
+                                                "stroke-opacity"?: string;
+                                                "stroke-width"?: string;
+                                                remarks?: string;
+                                                callsign?: string;
+                                                links?: {
+                                                    remarks: string;
+                                                    url: string;
+                                                }[];
+                                            };
+                                            point?: {
+                                                "marker-color"?: string;
+                                                "marker-opacity"?: string;
+                                                remarks?: string;
+                                                callsign?: string;
+                                                links?: {
+                                                    remarks: string;
+                                                    url: string;
+                                                }[];
+                                                icon?: string;
+                                            };
+                                            polygon?: {
+                                                stroke?: string;
+                                                "stroke-style"?: string;
+                                                "stroke-opacity"?: string;
+                                                "stroke-width"?: string;
+                                                fill?: string;
+                                                "fill-opacity"?: string;
+                                                remarks?: string;
+                                                callsign?: string;
+                                                links?: {
+                                                    remarks: string;
+                                                    url: string;
+                                                }[];
+                                            };
+                                        };
+                                    }[];
+                                };
+                                logging: boolean;
+                                stale: number;
+                                task: string;
+                                connection?: number;
+                                cron: string;
+                                environment: unknown;
+                                config: {
+                                    timezone?: {
+                                        timezone: string;
+                                    };
+                                };
+                                memory: number;
+                                timeout: number;
+                                data?: number;
+                                schema: unknown;
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Register a new layer */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /** @description Human readable name */
+                        name: string;
+                        priority?: "high" | "low" | "off";
+                        /** @description Human readable description */
+                        description: string;
+                        enabled: boolean;
+                        task: string;
+                        cron: string;
+                        logging: boolean;
+                        stale?: number;
+                        data?: number;
+                        schema?: unknown;
+                        styles?: {
+                            line?: {
+                                stroke?: string;
+                                "stroke-style"?: string;
+                                "stroke-opacity"?: string;
+                                "stroke-width"?: string;
+                                remarks?: string;
+                                callsign?: string;
+                                links?: {
+                                    remarks: string;
+                                    url: string;
+                                }[];
+                            };
+                            point?: {
+                                "marker-color"?: string;
+                                "marker-opacity"?: string;
+                                remarks?: string;
+                                callsign?: string;
+                                links?: {
+                                    remarks: string;
+                                    url: string;
+                                }[];
+                                icon?: string;
+                            };
+                            polygon?: {
+                                stroke?: string;
+                                "stroke-style"?: string;
+                                "stroke-opacity"?: string;
+                                "stroke-width"?: string;
+                                fill?: string;
+                                "fill-opacity"?: string;
+                                remarks?: string;
+                                callsign?: string;
+                                links?: {
+                                    remarks: string;
+                                    url: string;
+                                }[];
+                            };
+                            remarks?: string;
+                            callsign?: string;
+                            links?: {
+                                remarks: string;
+                                url: string;
+                            }[];
+                            queries?: {
+                                query: string;
+                                remarks?: string;
+                                callsign?: string;
+                                links?: {
+                                    remarks: string;
+                                    url: string;
+                                }[];
+                                styles: {
+                                    remarks?: string;
+                                    callsign?: string;
+                                    links?: {
+                                        remarks: string;
+                                        url: string;
+                                    }[];
+                                    line?: {
+                                        stroke?: string;
+                                        "stroke-style"?: string;
+                                        "stroke-opacity"?: string;
+                                        "stroke-width"?: string;
+                                        remarks?: string;
+                                        callsign?: string;
+                                        links?: {
+                                            remarks: string;
+                                            url: string;
+                                        }[];
+                                    };
+                                    point?: {
+                                        "marker-color"?: string;
+                                        "marker-opacity"?: string;
+                                        remarks?: string;
+                                        callsign?: string;
+                                        links?: {
+                                            remarks: string;
+                                            url: string;
+                                        }[];
+                                        icon?: string;
+                                    };
+                                    polygon?: {
+                                        stroke?: string;
+                                        "stroke-style"?: string;
+                                        "stroke-opacity"?: string;
+                                        "stroke-width"?: string;
+                                        fill?: string;
+                                        "fill-opacity"?: string;
+                                        remarks?: string;
+                                        callsign?: string;
+                                        links?: {
+                                            remarks: string;
+                                            url: string;
+                                        }[];
+                                    };
+                                };
+                            }[];
+                        };
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: number;
+                            status?: string;
+                            priority: "high" | "low" | "off";
+                            created: string;
+                            updated: string;
+                            name: string;
+                            description: string;
+                            enabled: boolean;
+                            enabled_styles: boolean;
+                            styles: {
+                                line?: {
+                                    stroke?: string;
+                                    "stroke-style"?: string;
+                                    "stroke-opacity"?: string;
+                                    "stroke-width"?: string;
+                                    remarks?: string;
+                                    callsign?: string;
+                                    links?: {
+                                        remarks: string;
+                                        url: string;
+                                    }[];
+                                };
+                                point?: {
+                                    "marker-color"?: string;
+                                    "marker-opacity"?: string;
+                                    remarks?: string;
+                                    callsign?: string;
+                                    links?: {
+                                        remarks: string;
+                                        url: string;
+                                    }[];
+                                    icon?: string;
+                                };
+                                polygon?: {
+                                    stroke?: string;
+                                    "stroke-style"?: string;
+                                    "stroke-opacity"?: string;
+                                    "stroke-width"?: string;
+                                    fill?: string;
+                                    "fill-opacity"?: string;
+                                    remarks?: string;
+                                    callsign?: string;
+                                    links?: {
+                                        remarks: string;
+                                        url: string;
+                                    }[];
+                                };
+                                remarks?: string;
+                                callsign?: string;
+                                links?: {
+                                    remarks: string;
+                                    url: string;
+                                }[];
+                                queries?: {
+                                    query: string;
+                                    remarks?: string;
+                                    callsign?: string;
+                                    links?: {
+                                        remarks: string;
+                                        url: string;
+                                    }[];
+                                    styles: {
+                                        remarks?: string;
+                                        callsign?: string;
+                                        links?: {
+                                            remarks: string;
+                                            url: string;
+                                        }[];
+                                        line?: {
+                                            stroke?: string;
+                                            "stroke-style"?: string;
+                                            "stroke-opacity"?: string;
+                                            "stroke-width"?: string;
+                                            remarks?: string;
+                                            callsign?: string;
+                                            links?: {
+                                                remarks: string;
+                                                url: string;
+                                            }[];
+                                        };
+                                        point?: {
+                                            "marker-color"?: string;
+                                            "marker-opacity"?: string;
+                                            remarks?: string;
+                                            callsign?: string;
+                                            links?: {
+                                                remarks: string;
+                                                url: string;
+                                            }[];
+                                            icon?: string;
+                                        };
+                                        polygon?: {
+                                            stroke?: string;
+                                            "stroke-style"?: string;
+                                            "stroke-opacity"?: string;
+                                            "stroke-width"?: string;
+                                            fill?: string;
+                                            "fill-opacity"?: string;
+                                            remarks?: string;
+                                            callsign?: string;
+                                            links?: {
+                                                remarks: string;
+                                                url: string;
+                                            }[];
+                                        };
+                                    };
+                                }[];
+                            };
+                            logging: boolean;
+                            stale: number;
+                            task: string;
+                            connection?: number;
+                            cron: string;
+                            environment: unknown;
+                            config: {
+                                timezone?: {
+                                    timezone: string;
+                                };
+                            };
+                            memory: number;
+                            timeout: number;
+                            data?: number;
+                            schema: unknown;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/connection/{:connectionid}/layer/{:layerid}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a layer */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: number;
+                            status?: string;
+                            priority: "high" | "low" | "off";
+                            created: string;
+                            updated: string;
+                            name: string;
+                            description: string;
+                            enabled: boolean;
+                            enabled_styles: boolean;
+                            styles: {
+                                line?: {
+                                    stroke?: string;
+                                    "stroke-style"?: string;
+                                    "stroke-opacity"?: string;
+                                    "stroke-width"?: string;
+                                    remarks?: string;
+                                    callsign?: string;
+                                    links?: {
+                                        remarks: string;
+                                        url: string;
+                                    }[];
+                                };
+                                point?: {
+                                    "marker-color"?: string;
+                                    "marker-opacity"?: string;
+                                    remarks?: string;
+                                    callsign?: string;
+                                    links?: {
+                                        remarks: string;
+                                        url: string;
+                                    }[];
+                                    icon?: string;
+                                };
+                                polygon?: {
+                                    stroke?: string;
+                                    "stroke-style"?: string;
+                                    "stroke-opacity"?: string;
+                                    "stroke-width"?: string;
+                                    fill?: string;
+                                    "fill-opacity"?: string;
+                                    remarks?: string;
+                                    callsign?: string;
+                                    links?: {
+                                        remarks: string;
+                                        url: string;
+                                    }[];
+                                };
+                                remarks?: string;
+                                callsign?: string;
+                                links?: {
+                                    remarks: string;
+                                    url: string;
+                                }[];
+                                queries?: {
+                                    query: string;
+                                    remarks?: string;
+                                    callsign?: string;
+                                    links?: {
+                                        remarks: string;
+                                        url: string;
+                                    }[];
+                                    styles: {
+                                        remarks?: string;
+                                        callsign?: string;
+                                        links?: {
+                                            remarks: string;
+                                            url: string;
+                                        }[];
+                                        line?: {
+                                            stroke?: string;
+                                            "stroke-style"?: string;
+                                            "stroke-opacity"?: string;
+                                            "stroke-width"?: string;
+                                            remarks?: string;
+                                            callsign?: string;
+                                            links?: {
+                                                remarks: string;
+                                                url: string;
+                                            }[];
+                                        };
+                                        point?: {
+                                            "marker-color"?: string;
+                                            "marker-opacity"?: string;
+                                            remarks?: string;
+                                            callsign?: string;
+                                            links?: {
+                                                remarks: string;
+                                                url: string;
+                                            }[];
+                                            icon?: string;
+                                        };
+                                        polygon?: {
+                                            stroke?: string;
+                                            "stroke-style"?: string;
+                                            "stroke-opacity"?: string;
+                                            "stroke-width"?: string;
+                                            fill?: string;
+                                            "fill-opacity"?: string;
+                                            remarks?: string;
+                                            callsign?: string;
+                                            links?: {
+                                                remarks: string;
+                                                url: string;
+                                            }[];
+                                        };
+                                    };
+                                }[];
+                            };
+                            logging: boolean;
+                            stale: number;
+                            task: string;
+                            connection?: number;
+                            cron: string;
+                            environment: unknown;
+                            config: {
+                                timezone?: {
+                                    timezone: string;
+                                };
+                            };
+                            memory: number;
+                            timeout: number;
+                            data?: number;
+                            schema: unknown;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        /** Delete a layer */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        /** Update a layer */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /** @description Human readable name */
+                        name?: string;
+                        priority?: "high" | "low" | "off";
+                        /** @description Human readable description */
+                        description?: string;
+                        cron?: string;
+                        memory?: number;
+                        timeout?: number;
+                        enabled?: boolean;
+                        enabled_styles?: boolean;
+                        task?: string;
+                        styles?: {
+                            line?: {
+                                stroke?: string;
+                                "stroke-style"?: string;
+                                "stroke-opacity"?: string;
+                                "stroke-width"?: string;
+                                remarks?: string;
+                                callsign?: string;
+                                links?: {
+                                    remarks: string;
+                                    url: string;
+                                }[];
+                            };
+                            point?: {
+                                "marker-color"?: string;
+                                "marker-opacity"?: string;
+                                remarks?: string;
+                                callsign?: string;
+                                links?: {
+                                    remarks: string;
+                                    url: string;
+                                }[];
+                                icon?: string;
+                            };
+                            polygon?: {
+                                stroke?: string;
+                                "stroke-style"?: string;
+                                "stroke-opacity"?: string;
+                                "stroke-width"?: string;
+                                fill?: string;
+                                "fill-opacity"?: string;
+                                remarks?: string;
+                                callsign?: string;
+                                links?: {
+                                    remarks: string;
+                                    url: string;
+                                }[];
+                            };
+                            remarks?: string;
+                            callsign?: string;
+                            links?: {
+                                remarks: string;
+                                url: string;
+                            }[];
+                            queries?: {
+                                query: string;
+                                remarks?: string;
+                                callsign?: string;
+                                links?: {
+                                    remarks: string;
+                                    url: string;
+                                }[];
+                                styles: {
+                                    remarks?: string;
+                                    callsign?: string;
+                                    links?: {
+                                        remarks: string;
+                                        url: string;
+                                    }[];
+                                    line?: {
+                                        stroke?: string;
+                                        "stroke-style"?: string;
+                                        "stroke-opacity"?: string;
+                                        "stroke-width"?: string;
+                                        remarks?: string;
+                                        callsign?: string;
+                                        links?: {
+                                            remarks: string;
+                                            url: string;
+                                        }[];
+                                    };
+                                    point?: {
+                                        "marker-color"?: string;
+                                        "marker-opacity"?: string;
+                                        remarks?: string;
+                                        callsign?: string;
+                                        links?: {
+                                            remarks: string;
+                                            url: string;
+                                        }[];
+                                        icon?: string;
+                                    };
+                                    polygon?: {
+                                        stroke?: string;
+                                        "stroke-style"?: string;
+                                        "stroke-opacity"?: string;
+                                        "stroke-width"?: string;
+                                        fill?: string;
+                                        "fill-opacity"?: string;
+                                        remarks?: string;
+                                        callsign?: string;
+                                        links?: {
+                                            remarks: string;
+                                            url: string;
+                                        }[];
+                                    };
+                                };
+                            }[];
+                        };
+                        logging?: boolean;
+                        stale?: number;
+                        data?: null | number;
+                        environment?: unknown;
+                        config?: {
+                            timezone?: {
+                                timezone: string;
+                            };
+                        };
+                        schema?: unknown;
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: number;
+                            status?: string;
+                            priority: "high" | "low" | "off";
+                            created: string;
+                            updated: string;
+                            name: string;
+                            description: string;
+                            enabled: boolean;
+                            enabled_styles: boolean;
+                            styles: {
+                                line?: {
+                                    stroke?: string;
+                                    "stroke-style"?: string;
+                                    "stroke-opacity"?: string;
+                                    "stroke-width"?: string;
+                                    remarks?: string;
+                                    callsign?: string;
+                                    links?: {
+                                        remarks: string;
+                                        url: string;
+                                    }[];
+                                };
+                                point?: {
+                                    "marker-color"?: string;
+                                    "marker-opacity"?: string;
+                                    remarks?: string;
+                                    callsign?: string;
+                                    links?: {
+                                        remarks: string;
+                                        url: string;
+                                    }[];
+                                    icon?: string;
+                                };
+                                polygon?: {
+                                    stroke?: string;
+                                    "stroke-style"?: string;
+                                    "stroke-opacity"?: string;
+                                    "stroke-width"?: string;
+                                    fill?: string;
+                                    "fill-opacity"?: string;
+                                    remarks?: string;
+                                    callsign?: string;
+                                    links?: {
+                                        remarks: string;
+                                        url: string;
+                                    }[];
+                                };
+                                remarks?: string;
+                                callsign?: string;
+                                links?: {
+                                    remarks: string;
+                                    url: string;
+                                }[];
+                                queries?: {
+                                    query: string;
+                                    remarks?: string;
+                                    callsign?: string;
+                                    links?: {
+                                        remarks: string;
+                                        url: string;
+                                    }[];
+                                    styles: {
+                                        remarks?: string;
+                                        callsign?: string;
+                                        links?: {
+                                            remarks: string;
+                                            url: string;
+                                        }[];
+                                        line?: {
+                                            stroke?: string;
+                                            "stroke-style"?: string;
+                                            "stroke-opacity"?: string;
+                                            "stroke-width"?: string;
+                                            remarks?: string;
+                                            callsign?: string;
+                                            links?: {
+                                                remarks: string;
+                                                url: string;
+                                            }[];
+                                        };
+                                        point?: {
+                                            "marker-color"?: string;
+                                            "marker-opacity"?: string;
+                                            remarks?: string;
+                                            callsign?: string;
+                                            links?: {
+                                                remarks: string;
+                                                url: string;
+                                            }[];
+                                            icon?: string;
+                                        };
+                                        polygon?: {
+                                            stroke?: string;
+                                            "stroke-style"?: string;
+                                            "stroke-opacity"?: string;
+                                            "stroke-width"?: string;
+                                            fill?: string;
+                                            "fill-opacity"?: string;
+                                            remarks?: string;
+                                            callsign?: string;
+                                            links?: {
+                                                remarks: string;
+                                                url: string;
+                                            }[];
+                                        };
+                                    };
+                                }[];
+                            };
+                            logging: boolean;
+                            stale: number;
+                            task: string;
+                            connection?: number;
+                            cron: string;
+                            environment: unknown;
+                            config: {
+                                timezone?: {
+                                    timezone: string;
+                                };
+                            };
+                            memory: number;
+                            timeout: number;
+                            data?: number;
+                            schema: unknown;
+                        };
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/connection/{:connectionid}/layer/{:layerid}/redeploy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Redeploy a specific Layer with latest CloudFormation output */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/connection/{:connectionid}/sink": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Sinks */
+        get: {
+            parameters: {
+                query: {
+                    /** @description Limit the number of responses returned */
+                    limit: number;
+                    /** @description Iterate through "pages" of items based on the "limit" query param */
+                    page: number;
+                    /** @description Order in which results are returned based on the "sort" query param */
+                    order: "asc" | "desc";
+                    /** @description No Description */
+                    sort?: "id" | "created" | "updated" | "name" | "enabled" | "connection" | "type" | "body" | "logging";
+                    /** @description Filter results by a human readable name field */
+                    filter: string;
+                    /** @description No Description */
+                    enabled?: boolean;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            total: number;
+                            items: {
+                                id: number;
+                                created: string;
+                                updated: string;
+                                name: string;
+                                enabled: boolean;
+                                connection: number;
+                                type: string;
+                                body: unknown;
+                                logging: boolean;
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Register a new connection sink */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /** @description Human readable name */
+                        name: string;
+                        type: string;
+                        logging: boolean;
+                        enabled: boolean;
+                        body: {
+                            layer: string;
+                            url: string;
+                            username?: string;
+                            password?: string;
+                        };
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: number;
+                            created: string;
+                            updated: string;
+                            name: string;
+                            enabled: boolean;
+                            connection: number;
+                            type: string;
+                            body: unknown;
+                            logging: boolean;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/connection/{:connectionid}/sink/{:sinkid}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a connection sink */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: number;
+                            created: string;
+                            updated: string;
+                            name: string;
+                            enabled: boolean;
+                            connection: number;
+                            type: string;
+                            body: unknown;
+                            logging: boolean;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        /** Delete a connection sink */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        /** Update a connection sink */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /** @description Human readable name */
+                        name?: string;
+                        type?: string;
+                        logging?: boolean;
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: number;
+                            created: string;
+                            updated: string;
+                            name: string;
+                            enabled: boolean;
+                            connection: number;
+                            type: string;
+                            body: unknown;
+                            logging: boolean;
+                        };
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/connection/{:connectionid}/sink/{:sinkid}/stats": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Return Sink Success/Failure Stats */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            stats: {
+                                label: string;
+                                success: number;
+                                failure: number;
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/connection/{:connectionid}/layer/{:layerid}/task": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get the status of a task stack in relation to a given layer */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Deploy a task stack */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: string;
+                        };
+                    };
+                };
+            };
+        };
+        /** If a stack is currently updating, cancel the stack update */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/connection/{:connectionid}/layer/{:layerid}/task/invoke": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Manually invoke a Task */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/connection/{:connectionid}/layer/{:layerid}/task/logs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get the logs related to the given task */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            logs: {
+                                message: string;
+                                timestamp: number;
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/connection/{:connectionid}/layer/{:layerid}/task/schema": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get the JSONSchema for the expected environment variables */
+        get: {
+            parameters: {
+                query: {
+                    /** @description No Description */
+                    type: "schema:output" | "schema:input";
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            schema: unknown;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/connection/{:connectionid}/token": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List all tokens associated with a given connection */
+        get: {
+            parameters: {
+                query: {
+                    /** @description Limit the number of responses returned */
+                    limit: number;
+                    /** @description Iterate through "pages" of items based on the "limit" query param */
+                    page: number;
+                    /** @description Order in which results are returned based on the "sort" query param */
+                    order: "asc" | "desc";
+                    /** @description No Description */
+                    sort?: "id" | "connection" | "name" | "token" | "created" | "updated";
+                    /** @description Filter results by a human readable name field */
+                    filter: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            total: number;
+                            items: {
+                                id: number;
+                                connection: number;
+                                name: string;
+                                created: string;
+                                updated: string;
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Create a new API token for programatic access */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /** @description Human readable name */
+                        name: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: number;
+                            connection: number;
+                            name: string;
+                            token: string;
+                            created: string;
+                            updated: string;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/connection/{:connectionid}/token/{:id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete a user's API Token */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        /** Update properties of a Token */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /** @description Human readable name */
+                        name?: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/connection": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Connections */
+        get: {
+            parameters: {
+                query: {
+                    /** @description Limit the number of responses returned */
+                    limit: number;
+                    /** @description Iterate through "pages" of items based on the "limit" query param */
+                    page: number;
+                    /** @description Order in which results are returned based on the "sort" query param */
+                    order: "asc" | "desc";
+                    /** @description No Description */
+                    sort?: "id" | "agency" | "created" | "updated" | "name" | "description" | "enabled" | "auth";
+                    /** @description Filter results by a human readable name field */
+                    filter: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            total: number;
+                            status: {
+                                /** @description The connection is not currently connected to a TAK server */
+                                dead: number;
+                                /** @description The connection is currently connected to a TAK server */
+                                live: number;
+                                /** @description The status of the connection could not be determined */
+                                unknown: number;
+                            };
+                            items: {
+                                id: number;
+                                status: string;
+                                agency?: number | null;
+                                certificate: {
+                                    subject: string;
+                                    validFrom: string;
+                                    validTo: string;
+                                };
+                                created: string;
+                                updated: string;
+                                name: string;
+                                description: string;
+                                enabled: boolean;
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Register a new connection */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /** @description Human readable name */
+                        name: string;
+                        /** @description Human readable description */
+                        description: string;
+                        /** @default true */
+                        enabled?: boolean;
+                        agency: null | number;
+                        auth: {
+                            key: string;
+                            cert: string;
+                        };
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: number;
+                            status: string;
+                            agency?: number | null;
+                            certificate: {
+                                subject: string;
+                                validFrom: string;
+                                validTo: string;
+                            };
+                            created: string;
+                            updated: string;
+                            name: string;
+                            description: string;
+                            enabled: boolean;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/connection/{:connectionid}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a connection */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: number;
+                            status: string;
+                            agency?: number | null;
+                            certificate: {
+                                subject: string;
+                                validFrom: string;
+                                validTo: string;
+                            };
+                            created: string;
+                            updated: string;
+                            name: string;
+                            description: string;
+                            enabled: boolean;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        /** Delete a connection */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        /** Update a connection */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /** @description Human readable name */
+                        name?: string;
+                        /** @description Human readable description */
+                        description?: string;
+                        enabled?: boolean;
+                        agency: null | number;
+                        auth?: {
+                            key: string;
+                            cert: string;
+                        };
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: number;
+                            status: string;
+                            agency?: number | null;
+                            certificate: {
+                                subject: string;
+                                validFrom: string;
+                                validTo: string;
+                            };
+                            created: string;
+                            updated: string;
+                            name: string;
+                            description: string;
+                            enabled: boolean;
+                        };
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/connection/{:connectionid}/refresh": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Refresh a connection */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: number;
+                            status: string;
+                            agency?: number | null;
+                            certificate: {
+                                subject: string;
+                                validFrom: string;
+                                validTo: string;
+                            };
+                            created: string;
+                            updated: string;
+                            name: string;
+                            description: string;
+                            enabled: boolean;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/connection/{:connectionid}/stats": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Return Conn Success/Failure Stats */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            stats: {
+                                label: string;
+                                success: number;
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/esri": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         *                 Helper API to configure ESRI MapServer Layers
+         *
+         *                 The URL can either be an ESRI Portal URL or a Server URL that doesn't require auth
+         *                 or supports token generation
+         *              */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        url: string;
+                        username?: string;
+                        password?: string;
+                        sinkid?: number;
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            type: "AGOL" | "PORTAL" | "SERVER";
+                            base: string;
+                            auth?: {
+                                token: string;
+                                referer: string;
+                                expires: number;
+                            };
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/esri/portal": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         *                 Helper API to configure ESRI MapServers
+         *                 Return Portal Data
+         *              */
+        get: {
+            parameters: {
+                query: {
+                    /** @description No Description */
+                    portal: string;
+                    /** @description No Description */
+                    token?: string;
+                    /** @description No Description */
+                    expires?: number;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": unknown;
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/esri/portal/content": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         *                 Helper API to configure ESRI MapServers
+         *                 Return Portal Content
+         *              */
+        get: {
+            parameters: {
+                query: {
+                    /** @description No Description */
+                    portal: string;
+                    /** @description No Description */
+                    token?: string;
+                    /** @description No Description */
+                    expires?: number;
+                    /** @description No Description */
+                    title?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": unknown;
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/esri/portal/service": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create Service to store Feature Layers */
+        post: {
+            parameters: {
+                query: {
+                    /** @description No Description */
+                    portal: string;
+                    /** @description No Description */
+                    token: string;
+                    /** @description No Description */
+                    expires: number;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        name: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": unknown;
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/esri/portal/server": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         *                 Helper API to configure ESRI MapServers
+         *                 List Servers associates with a given portal
+         *              */
+        get: {
+            parameters: {
+                query: {
+                    /** @description No Description */
+                    portal: string;
+                    /** @description No Description */
+                    token: string;
+                    /** @description No Description */
+                    expires: number;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            servers: unknown[];
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/esri/server": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Helper API to configure ESRI MapServers - Get Services */
+        get: {
+            parameters: {
+                query: {
+                    /** @description No Description */
+                    server: string;
+                    /** @description No Description */
+                    token?: string;
+                    /** @description No Description */
+                    expires?: number;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": unknown;
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/esri/server/layer": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Return Sample features and count */
+        get: {
+            parameters: {
+                query: {
+                    /** @description No Description */
+                    layer: string;
+                    /** @description No Description */
+                    query: string;
+                    /** @description No Description */
+                    token?: string;
+                    /** @description No Description */
+                    expires?: number;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": unknown;
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Create Layer necessary to push CoT data */
+        post: {
+            parameters: {
+                query: {
+                    /** @description No Description */
+                    server: string;
+                    /** @description No Description */
+                    portal: string;
+                    /** @description No Description */
+                    token: string;
+                    /** @description No Description */
+                    expires: number;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": unknown;
+                    };
+                };
+            };
+        };
+        /** Delete an ESRI Layer */
+        delete: {
+            parameters: {
+                query: {
+                    /** @description No Description */
+                    server: string;
+                    /** @description No Description */
+                    portal: string;
+                    /** @description No Description */
+                    token: string;
+                    /** @description No Description */
+                    expires: number;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": unknown;
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/iconset": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Iconsets */
+        get: {
+            parameters: {
+                query: {
+                    /** @description No Description */
+                    scope?: "server" | "user";
+                    /** @description Limit the number of responses returned */
+                    limit: number;
+                    /** @description Iterate through "pages" of items based on the "limit" query param */
+                    page: number;
+                    /** @description Order in which results are returned based on the "sort" query param */
+                    order: "asc" | "desc";
+                    /** @description No Description */
+                    sort?: "uid" | "created" | "updated" | "version" | "name" | "username" | "default_group" | "default_friendly" | "default_hostile" | "default_neutral" | "default_unknown" | "skip_resize";
+                    /** @description Filter results by a human readable name field */
+                    filter: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            total: number;
+                            items: {
+                                uid: string;
+                                created: string;
+                                updated: string;
+                                version: number;
+                                name: string;
+                                username: string | null;
+                                default_group: string | null;
+                                default_friendly: string | null;
+                                default_hostile: string | null;
+                                default_neutral: string | null;
+                                default_unknown: string | null;
+                                skip_resize: boolean;
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Create Iconset */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        uid: string;
+                        version: number;
+                        /** @description Human readable name */
+                        name: string;
+                        scope?: "server" | "user";
+                        default_group?: string;
+                        default_friendly?: string;
+                        default_hostile?: string;
+                        default_neutral?: string;
+                        default_unknown?: string;
+                        skip_resize?: boolean;
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            uid: string;
+                            created: string;
+                            updated: string;
+                            version: number;
+                            name: string;
+                            username: string | null;
+                            default_group: string | null;
+                            default_friendly: string | null;
+                            default_hostile: string | null;
+                            default_neutral: string | null;
+                            default_unknown: string | null;
+                            skip_resize: boolean;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/iconset/{:iconset}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Iconset */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description No Description */
+                    format?: "json" | "zip";
+                    /** @description No Description */
+                    download?: boolean;
+                    /** @description Resize Images to 32x32px */
+                    resize?: boolean;
+                    /** @description No Description */
+                    token?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            uid: string;
+                            created: string;
+                            updated: string;
+                            version: number;
+                            name: string;
+                            username: string | null;
+                            default_group: string | null;
+                            default_friendly: string | null;
+                            default_hostile: string | null;
+                            default_neutral: string | null;
+                            default_unknown: string | null;
+                            skip_resize: boolean;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        /** Delete Iconset */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        /** Update Iconset */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        public?: boolean;
+                        default_group?: string;
+                        default_friendly?: string;
+                        default_hostile?: string;
+                        default_neutral?: string;
+                        default_unknown?: string;
+                        skip_resize?: boolean;
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            uid: string;
+                            created: string;
+                            updated: string;
+                            version: number;
+                            name: string;
+                            username: string | null;
+                            default_group: string | null;
+                            default_friendly: string | null;
+                            default_hostile: string | null;
+                            default_neutral: string | null;
+                            default_unknown: string | null;
+                            skip_resize: boolean;
+                        };
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/iconset/{:iconset}/icon": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create Icon */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /** @description Human readable name */
+                        name: string;
+                        data: string;
+                        type2525b?: string | null;
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: number;
+                            created: string;
+                            updated: string;
+                            name: string;
+                            iconset: string;
+                            type2525b: string | null;
+                            data: string;
+                            path: string;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/icon": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Icons */
+        get: {
+            parameters: {
+                query: {
+                    /** @description No Description */
+                    scope?: "server" | "user";
+                    /** @description No Description */
+                    limit?: number;
+                    /** @description Iterate through "pages" of items based on the "limit" query param */
+                    page: number;
+                    /** @description Order in which results are returned based on the "sort" query param */
+                    order: "asc" | "desc";
+                    /** @description No Description */
+                    sort?: "id" | "created" | "updated" | "name" | "iconset" | "type2525b" | "data" | "path";
+                    /** @description No Description */
+                    iconset?: string;
+                    /** @description Filter results by a human readable name field */
+                    filter: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            total: number;
+                            items: {
+                                id: number;
+                                created: string;
+                                updated: string;
+                                name: string;
+                                iconset: string;
+                                type2525b: string | null;
+                                data: string;
+                                path: string;
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/iconset/{:iconset}/icon/{:icon}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Icon Metadata */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: number;
+                            created: string;
+                            updated: string;
+                            name: string;
+                            iconset: string;
+                            type2525b: string | null;
+                            data: string;
+                            path: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        /** Remove Icon from Iconset */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        /** Update Icon in Iconset */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        name?: string;
+                        data?: string;
+                        type2525b?: string | null;
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: number;
+                            created: string;
+                            updated: string;
+                            name: string;
+                            iconset: string;
+                            type2525b: string | null;
+                            data: string;
+                            path: string;
+                        };
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/iconset/{:iconset}/icon/{:icon}/raw": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Icon Data */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description No Description */
+                    token?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/icon/sprite:size?.json": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Spriteset JSON for CoT types */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description No Description */
+                    iconset?: string;
+                    /** @description No Description */
+                    scope?: "server" | "user";
+                    /** @description No Description */
+                    token?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/icon/sprite:size?.png": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Return a sprite sheet for CoT Types */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description No Description */
+                    iconset?: string;
+                    /** @description No Description */
+                    scope?: "server" | "user";
+                    /** @description No Description */
+                    token?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/import": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Imports */
+        get: {
+            parameters: {
+                query: {
+                    /** @description Limit the number of responses returned */
+                    limit: number;
+                    /** @description Iterate through "pages" of items based on the "limit" query param */
+                    page: number;
+                    /** @description Order in which results are returned based on the "sort" query param */
+                    order: "asc" | "desc";
+                    /** @description No Description */
+                    sort?: "id" | "created" | "updated" | "name" | "status" | "error" | "result" | "username" | "mode" | "mode_id" | "config";
+                    /** @description No Description */
+                    mode?: "Unknown" | "Mission" | "Package";
+                    /** @description No Description */
+                    mode_id?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            total: number;
+                            items: {
+                                id: string;
+                                created: string;
+                                updated: string;
+                                name: string;
+                                status: string;
+                                error: string | null;
+                                result: (string | number | boolean | null) | unknown[] | Record<string, never>;
+                                username: string;
+                                mode: string;
+                                mode_id: string | null;
+                                config: (string | number | boolean | null) | unknown[] | Record<string, never>;
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        /** Import up to 5 unknown assets into the imports manager at a time */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            imports: {
+                                file: string;
+                                uid: string;
+                                ext: string;
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        /** Import an unknown asset into the imports manager */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /** @description Human readable name */
+                        name: string;
+                        mode?: "Unknown" | "Mission" | "Package";
+                        mode_id?: string;
+                        config?: unknown;
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            created: string;
+                            updated: string;
+                            name: string;
+                            status: string;
+                            error: string | null;
+                            result: (string | number | boolean | null) | unknown[] | Record<string, never>;
+                            username: string;
+                            mode: string;
+                            mode_id: string | null;
+                            config: (string | number | boolean | null) | unknown[] | Record<string, never>;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/import/{:import}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Import */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            created: string;
+                            updated: string;
+                            name: string;
+                            status: string;
+                            error: string | null;
+                            result: (string | number | boolean | null) | unknown[] | Record<string, never>;
+                            username: string;
+                            mode: string;
+                            mode_id: string | null;
+                            config: (string | number | boolean | null) | unknown[] | Record<string, never>;
+                        };
+                    };
+                };
+            };
+        };
+        /** Import an asset into a previously configured import container */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            created: string;
+                            updated: string;
+                            name: string;
+                            status: string;
+                            error: string | null;
+                            result: (string | number | boolean | null) | unknown[] | Record<string, never>;
+                            username: string;
+                            mode: string;
+                            mode_id: string | null;
+                            config: (string | number | boolean | null) | unknown[] | Record<string, never>;
+                        };
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update Import */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        status?: string;
+                        error?: string;
+                        result?: unknown;
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            created: string;
+                            updated: string;
+                            name: string;
+                            status: string;
+                            error: string | null;
+                            result: (string | number | boolean | null) | unknown[] | Record<string, never>;
+                            username: string;
+                            mode: string;
+                            mode_id: string | null;
+                            config: (string | number | boolean | null) | unknown[] | Record<string, never>;
+                        };
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/layer": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Allow admins to list all layers on the server */
+        get: {
+            parameters: {
+                query: {
+                    /** @description Limit the number of responses returned */
+                    limit: number;
+                    /** @description Iterate through "pages" of items based on the "limit" query param */
+                    page: number;
+                    /** @description Order in which results are returned based on the "sort" query param */
+                    order: "asc" | "desc";
+                    /** @description No Description */
+                    sort?: "id" | "created" | "updated" | "name" | "priority" | "description" | "enabled" | "enabled_styles" | "styles" | "logging" | "stale" | "task" | "connection" | "cron" | "environment" | "config" | "memory" | "timeout" | "data" | "schema";
+                    /** @description Filter results by a human readable name field */
+                    filter: string;
+                    /** @description No Description */
+                    data?: number;
+                    /** @description No Description */
+                    connection?: number;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            total: number;
+                            status: {
+                                healthy: number;
+                                alarm: number;
+                                unknown: number;
+                            };
+                            items: {
+                                id: number;
+                                status?: string;
+                                priority: "high" | "low" | "off";
+                                created: string;
+                                updated: string;
+                                name: string;
+                                description: string;
+                                enabled: boolean;
+                                enabled_styles: boolean;
+                                styles: {
+                                    line?: {
+                                        stroke?: string;
+                                        "stroke-style"?: string;
+                                        "stroke-opacity"?: string;
+                                        "stroke-width"?: string;
+                                        remarks?: string;
+                                        callsign?: string;
+                                        links?: {
+                                            remarks: string;
+                                            url: string;
+                                        }[];
+                                    };
+                                    point?: {
+                                        "marker-color"?: string;
+                                        "marker-opacity"?: string;
+                                        remarks?: string;
+                                        callsign?: string;
+                                        links?: {
+                                            remarks: string;
+                                            url: string;
+                                        }[];
+                                        icon?: string;
+                                    };
+                                    polygon?: {
+                                        stroke?: string;
+                                        "stroke-style"?: string;
+                                        "stroke-opacity"?: string;
+                                        "stroke-width"?: string;
+                                        fill?: string;
+                                        "fill-opacity"?: string;
+                                        remarks?: string;
+                                        callsign?: string;
+                                        links?: {
+                                            remarks: string;
+                                            url: string;
+                                        }[];
+                                    };
+                                    remarks?: string;
+                                    callsign?: string;
+                                    links?: {
+                                        remarks: string;
+                                        url: string;
+                                    }[];
+                                    queries?: {
+                                        query: string;
+                                        remarks?: string;
+                                        callsign?: string;
+                                        links?: {
+                                            remarks: string;
+                                            url: string;
+                                        }[];
+                                        styles: {
+                                            remarks?: string;
+                                            callsign?: string;
+                                            links?: {
+                                                remarks: string;
+                                                url: string;
+                                            }[];
+                                            line?: {
+                                                stroke?: string;
+                                                "stroke-style"?: string;
+                                                "stroke-opacity"?: string;
+                                                "stroke-width"?: string;
+                                                remarks?: string;
+                                                callsign?: string;
+                                                links?: {
+                                                    remarks: string;
+                                                    url: string;
+                                                }[];
+                                            };
+                                            point?: {
+                                                "marker-color"?: string;
+                                                "marker-opacity"?: string;
+                                                remarks?: string;
+                                                callsign?: string;
+                                                links?: {
+                                                    remarks: string;
+                                                    url: string;
+                                                }[];
+                                                icon?: string;
+                                            };
+                                            polygon?: {
+                                                stroke?: string;
+                                                "stroke-style"?: string;
+                                                "stroke-opacity"?: string;
+                                                "stroke-width"?: string;
+                                                fill?: string;
+                                                "fill-opacity"?: string;
+                                                remarks?: string;
+                                                callsign?: string;
+                                                links?: {
+                                                    remarks: string;
+                                                    url: string;
+                                                }[];
+                                            };
+                                        };
+                                    }[];
+                                };
+                                logging: boolean;
+                                stale: number;
+                                task: string;
+                                connection?: number;
+                                cron: string;
+                                environment: unknown;
+                                config: {
+                                    timezone?: {
+                                        timezone: string;
+                                    };
+                                };
+                                memory: number;
+                                timeout: number;
+                                data?: number;
+                                schema: unknown;
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/layer/{:layerid}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         *                 Events don't have the Connection ID but they have a valid data token
+         *                 This API allows a layer token to request the layer object and obtain the
+         *                 connection ID for subsequent calls
+         *              */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: number;
+                            status?: string;
+                            priority: "high" | "low" | "off";
+                            created: string;
+                            updated: string;
+                            name: string;
+                            description: string;
+                            enabled: boolean;
+                            enabled_styles: boolean;
+                            styles: {
+                                line?: {
+                                    stroke?: string;
+                                    "stroke-style"?: string;
+                                    "stroke-opacity"?: string;
+                                    "stroke-width"?: string;
+                                    remarks?: string;
+                                    callsign?: string;
+                                    links?: {
+                                        remarks: string;
+                                        url: string;
+                                    }[];
+                                };
+                                point?: {
+                                    "marker-color"?: string;
+                                    "marker-opacity"?: string;
+                                    remarks?: string;
+                                    callsign?: string;
+                                    links?: {
+                                        remarks: string;
+                                        url: string;
+                                    }[];
+                                    icon?: string;
+                                };
+                                polygon?: {
+                                    stroke?: string;
+                                    "stroke-style"?: string;
+                                    "stroke-opacity"?: string;
+                                    "stroke-width"?: string;
+                                    fill?: string;
+                                    "fill-opacity"?: string;
+                                    remarks?: string;
+                                    callsign?: string;
+                                    links?: {
+                                        remarks: string;
+                                        url: string;
+                                    }[];
+                                };
+                                remarks?: string;
+                                callsign?: string;
+                                links?: {
+                                    remarks: string;
+                                    url: string;
+                                }[];
+                                queries?: {
+                                    query: string;
+                                    remarks?: string;
+                                    callsign?: string;
+                                    links?: {
+                                        remarks: string;
+                                        url: string;
+                                    }[];
+                                    styles: {
+                                        remarks?: string;
+                                        callsign?: string;
+                                        links?: {
+                                            remarks: string;
+                                            url: string;
+                                        }[];
+                                        line?: {
+                                            stroke?: string;
+                                            "stroke-style"?: string;
+                                            "stroke-opacity"?: string;
+                                            "stroke-width"?: string;
+                                            remarks?: string;
+                                            callsign?: string;
+                                            links?: {
+                                                remarks: string;
+                                                url: string;
+                                            }[];
+                                        };
+                                        point?: {
+                                            "marker-color"?: string;
+                                            "marker-opacity"?: string;
+                                            remarks?: string;
+                                            callsign?: string;
+                                            links?: {
+                                                remarks: string;
+                                                url: string;
+                                            }[];
+                                            icon?: string;
+                                        };
+                                        polygon?: {
+                                            stroke?: string;
+                                            "stroke-style"?: string;
+                                            "stroke-opacity"?: string;
+                                            "stroke-width"?: string;
+                                            fill?: string;
+                                            "fill-opacity"?: string;
+                                            remarks?: string;
+                                            callsign?: string;
+                                            links?: {
+                                                remarks: string;
+                                                url: string;
+                                            }[];
+                                        };
+                                    };
+                                }[];
+                            };
+                            logging: boolean;
+                            stale: number;
+                            task: string;
+                            connection?: number;
+                            cron: string;
+                            environment: unknown;
+                            config: {
+                                timezone?: {
+                                    timezone: string;
+                                };
+                            };
+                            memory: number;
+                            timeout: number;
+                            data?: number;
+                            schema: unknown;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/login": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** No Description */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            email: string;
+                            access: "admin" | "agency" | "user";
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** No Description */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        username: string;
+                        password: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            token: string;
+                            access: "admin" | "agency" | "user";
+                            email: string;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/marti/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Helper API to export Timeseries KML data from TAK */
+        post: {
+            parameters: {
+                query?: {
+                    /** @description No Description */
+                    download?: boolean;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        startTime: string;
+                        endTime: string;
+                        groups: string[];
+                        /** @enum {string} */
+                        format: "kmz" | "kml";
+                        interval?: number;
+                        multiTrackThreshold?: string;
+                        extendedData?: boolean;
+                        optimizeExport?: boolean;
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/marti/api/files/{:hash}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Helper API to download files by file hash */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description No Description */
+                    name?: string;
+                    /** @description No Description */
+                    token?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        /** Helper API to delete files by file hash */
+        delete: {
+            parameters: {
+                query?: {
+                    /** @description No Description */
+                    token?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/marti/missions/{:name}/layer": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Helper API list mission layers */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            version: string;
+                            type: string;
+                            data: unknown;
+                            messages?: string[];
+                            nodeId?: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Helper API to create mission layers */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        name: string;
+                        type: "GROUP" | "UID" | "CONTENTS" | "MAPLAYER" | "ITEM";
                         uid?: string;
-                        relation?: string;
-                      }[];
-                    chat?: {
-                      parent?: string;
-                      groupOwner?: string;
-                      messageId?: string;
-                      chatroom: string;
-                      id: string;
-                      senderCallsign: string;
-                      chatgrp: unknown;
+                        parentUid?: string;
+                        afterUid?: string;
                     };
-                    track?: {
-                      speed?: string;
-                      course?: string;
-                      slope?: string;
-                      eCourse?: string;
-                      eSpeed?: string;
-                      eSlope?: string;
-                    };
-                    dest?: {
-                      uid?: string;
-                      callsign?: string;
-                      mission?: string;
-                      after?: string;
-                      path?: string;
-                    } | {
-                        uid?: string;
-                        callsign?: string;
-                        mission?: string;
-                        after?: string;
-                        path?: string;
-                      }[];
-                    icon?: string;
-                    droid?: string;
-                    takv?: {
-                      device?: string;
-                      platform?: string;
-                      os?: string;
-                      version?: string;
-                    };
-                    group?: {
-                      name: string;
-                      role: string;
-                    };
-                    status?: {
-                      battery?: string;
-                      readiness?: string;
-                    };
-                    precisionlocation?: {
-                      geopointsrc?: string;
-                      altsrc?: string;
-                    };
-                    flow?: Record<string, never>;
-                  };
-                  geometry: {
-                    /** @constant */
-                    type: "Point";
-                    coordinates: number[];
-                  } | {
-                    /** @constant */
-                    type: "LineString";
-                    coordinates: number[][];
-                  } | {
-                    /** @constant */
-                    type: "Polygon";
-                    coordinates: number[][][];
-                  };
-                  /** @default / */
-                  path: string;
-                })[];
+                };
             };
-          };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            version: string;
+                            type: string;
+                            data: unknown;
+                            messages?: string[];
+                            nodeId?: string;
+                        };
+                    };
+                };
+            };
         };
-      };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** Create or modify a feature */
-    put: {
-      requestBody: {
-        content: {
-          "application/json": {
-            id: string;
-            /** @constant */
-            type: "Feature";
-            properties: {
-              /** @default UNKNOWN */
-              callsign: string;
-              /** @default a-f-g */
-              type: string;
-              how: string;
-              time: string;
-              start: string;
-              stale: string;
-              center: number[];
-              course?: number;
-              slope?: number;
-              speed?: number;
-              color?: string;
-              opacity?: number;
-              stroke?: string;
-              "stroke-opacity"?: number;
-              "stroke-width"?: number;
-              "stroke-style"?: string;
-              fill?: string;
-              "fill-opacity"?: number;
-              metadata?: Record<string, never>;
-              archived?: boolean;
-              contact?: {
-                phone?: string;
-                endpoint?: string;
-              };
-              remarks?: string;
-              fileshare?: {
-                filename: string;
-                name: string;
-                senderCallsign: string;
-                senderUid: string;
-                senderUrl: string;
-                sha256: string;
-                sizeInBytes: number;
-              };
-              sensor?: {
-                elevation?: string;
-                vfov?: string;
-                fov?: string;
-                type?: string;
-                version?: string;
-                north?: string;
-                roll?: string;
-                range?: string;
-                azimuth?: string;
-                model?: string;
-              };
-              video?: {
-                sensor?: string;
-                spi?: string;
-                url?: string;
-              };
-              links?: {
-                  type?: string;
-                  point?: string;
-                  url?: string;
-                  mime?: string;
-                  remarks?: string;
-                  uid?: string;
-                  relation?: string;
-                }[];
-              chat?: {
-                parent?: string;
-                groupOwner?: string;
-                messageId?: string;
-                chatroom: string;
-                id: string;
-                senderCallsign: string;
-                chatgrp: unknown;
-              };
-              track?: {
-                speed?: string;
-                course?: string;
-                slope?: string;
-                eCourse?: string;
-                eSpeed?: string;
-                eSlope?: string;
-              };
-              dest?: {
-                uid?: string;
-                callsign?: string;
-                mission?: string;
-                after?: string;
-                path?: string;
-              } | {
-                  uid?: string;
-                  callsign?: string;
-                  mission?: string;
-                  after?: string;
-                  path?: string;
-                }[];
-              icon?: string;
-              droid?: string;
-              takv?: {
-                device?: string;
-                platform?: string;
-                os?: string;
-                version?: string;
-              };
-              group?: {
-                name: string;
-                role: string;
-              };
-              status?: {
-                battery?: string;
-                readiness?: string;
-              };
-              precisionlocation?: {
-                geopointsrc?: string;
-                altsrc?: string;
-              };
-              flow?: Record<string, never>;
-            };
-            geometry: {
-              /** @constant */
-              type: "Point";
-              coordinates: number[];
-            } | {
-              /** @constant */
-              type: "LineString";
-              coordinates: number[][];
-            } | {
-              /** @constant */
-              type: "Polygon";
-              coordinates: number[][][];
-            };
-            /** @default / */
-            path: string;
-          };
+    "/marti/missions/{:name}/layer/{:uid}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
-      };
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              id: string;
-              /** @constant */
-              type: "Feature";
-              properties: {
-                /** @default UNKNOWN */
-                callsign: string;
-                /** @default a-f-g */
-                type: string;
-                how: string;
-                time: string;
-                start: string;
-                stale: string;
-                center: number[];
-                course?: number;
-                slope?: number;
-                speed?: number;
-                color?: string;
-                opacity?: number;
-                stroke?: string;
-                "stroke-opacity"?: number;
-                "stroke-width"?: number;
-                "stroke-style"?: string;
-                fill?: string;
-                "fill-opacity"?: number;
-                metadata?: Record<string, never>;
-                archived?: boolean;
-                contact?: {
-                  phone?: string;
-                  endpoint?: string;
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Helper API to delete mission layers */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
                 };
-                remarks?: string;
-                fileshare?: {
-                  filename: string;
-                  name: string;
-                  senderCallsign: string;
-                  senderUid: string;
-                  senderUrl: string;
-                  sha256: string;
-                  sizeInBytes: number;
+            };
+        };
+        options?: never;
+        head?: never;
+        /** Helper API to update mission layers */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        name?: string;
+                    };
                 };
-                sensor?: {
-                  elevation?: string;
-                  vfov?: string;
-                  fov?: string;
-                  type?: string;
-                  version?: string;
-                  north?: string;
-                  roll?: string;
-                  range?: string;
-                  azimuth?: string;
-                  model?: string;
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
                 };
-                video?: {
-                  sensor?: string;
-                  spi?: string;
-                  url?: string;
+            };
+        };
+        trace?: never;
+    };
+    "/marti/missions/{:name}/log": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Helper API to add a log to a mission */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        content: string;
+                    };
                 };
-                links?: {
-                    type?: string;
-                    point?: string;
-                    url?: string;
-                    mime?: string;
-                    remarks?: string;
-                    uid?: string;
-                    relation?: string;
-                  }[];
-                chat?: {
-                  parent?: string;
-                  groupOwner?: string;
-                  messageId?: string;
-                  chatroom: string;
-                  id: string;
-                  senderCallsign: string;
-                  chatgrp: unknown;
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            version: string;
+                            type: string;
+                            data: unknown;
+                            messages?: string[];
+                            nodeId?: string;
+                        };
+                    };
                 };
-                track?: {
-                  speed?: string;
-                  course?: string;
-                  slope?: string;
-                  eCourse?: string;
-                  eSpeed?: string;
-                  eSlope?: string;
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/marti/missions/{:name}/log/{:log}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Helper API to delete a log */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
                 };
-                dest?: {
-                  uid?: string;
-                  callsign?: string;
-                  mission?: string;
-                  after?: string;
-                  path?: string;
-                } | {
-                    uid?: string;
-                    callsign?: string;
-                    mission?: string;
-                    after?: string;
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/marti/missions/{:name}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Helper API to get a single mission */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description No Description */
+                    password?: boolean;
+                    /** @description No Description */
+                    changes?: boolean;
+                    /** @description No Description */
+                    logs?: boolean;
+                    /** @description No Description */
+                    secago?: number;
+                    /** @description No Description */
+                    start?: string;
+                    /** @description No Description */
+                    end?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            name: string;
+                            description: string;
+                            chatRoom: string;
+                            baseLayer: string;
+                            bbox: string;
+                            path: string;
+                            classification: string;
+                            tool: string;
+                            keywords: unknown[];
+                            creatorUid: string;
+                            createTime: string;
+                            externalData: unknown[];
+                            feeds: unknown[];
+                            mapLayers: unknown[];
+                            ownerRole?: unknown[];
+                            inviteOnly: boolean;
+                            expiration: number;
+                            guid: string;
+                            uids: unknown[];
+                            logs?: {
+                                id: string;
+                                content: string;
+                                creatorUid: string;
+                                missionNames: string[];
+                                servertime: string;
+                                dtg?: string;
+                                created: string;
+                                contentHashes: unknown[];
+                                keywords: unknown[];
+                            }[];
+                            contents: {
+                                timestamp: string;
+                                creatorUid: string;
+                                data: {
+                                    keywords: string[];
+                                    mimeType: string;
+                                    name: string;
+                                    hash: string;
+                                    submissionTime: string;
+                                    submitter: string;
+                                    uid: string;
+                                    creatorUid: string;
+                                    size: number;
+                                    expiration: number;
+                                };
+                            }[];
+                            passwordProtected: boolean;
+                            token?: string;
+                            groups?: string | string[];
+                            missionChanges?: unknown[];
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Helper API to create a mission */
+        post: {
+            parameters: {
+                query?: {
+                    /** @description No Description */
+                    creatorUid?: string;
+                    /** @description No Description */
+                    group?: string;
+                    /** @description No Description */
+                    description?: string;
+                    /** @description No Description */
+                    chatRoom?: string;
+                    /** @description No Description */
+                    baseLayer?: string;
+                    /** @description No Description */
+                    bbox?: string;
+                    /** @description No Description */
+                    boundingPolygon?: string;
+                    /** @description No Description */
                     path?: string;
-                  }[];
-                icon?: string;
-                droid?: string;
-                takv?: {
-                  device?: string;
-                  platform?: string;
-                  os?: string;
-                  version?: string;
+                    /** @description No Description */
+                    classification?: string;
+                    /** @description No Description */
+                    tool?: string;
+                    /** @description No Description */
+                    password?: string;
+                    /** @description No Description */
+                    defaultRole?: string;
+                    /** @description No Description */
+                    expiration?: number;
+                    /** @description No Description */
+                    inviteOnly?: boolean;
+                    /** @description No Description */
+                    allowDupe?: boolean;
                 };
-                group?: {
-                  name: string;
-                  role: string;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            name: string;
+                            description: string;
+                            chatRoom: string;
+                            baseLayer: string;
+                            bbox: string;
+                            path: string;
+                            classification: string;
+                            tool: string;
+                            keywords: unknown[];
+                            creatorUid: string;
+                            createTime: string;
+                            externalData: unknown[];
+                            feeds: unknown[];
+                            mapLayers: unknown[];
+                            ownerRole?: unknown[];
+                            inviteOnly: boolean;
+                            expiration: number;
+                            guid: string;
+                            uids: unknown[];
+                            logs?: {
+                                id: string;
+                                content: string;
+                                creatorUid: string;
+                                missionNames: string[];
+                                servertime: string;
+                                dtg?: string;
+                                created: string;
+                                contentHashes: unknown[];
+                                keywords: unknown[];
+                            }[];
+                            contents: {
+                                timestamp: string;
+                                creatorUid: string;
+                                data: {
+                                    keywords: string[];
+                                    mimeType: string;
+                                    name: string;
+                                    hash: string;
+                                    submissionTime: string;
+                                    submitter: string;
+                                    uid: string;
+                                    creatorUid: string;
+                                    size: number;
+                                    expiration: number;
+                                };
+                            }[];
+                            passwordProtected: boolean;
+                            token?: string;
+                            groups?: string | string[];
+                            missionChanges?: unknown[];
+                        };
+                    };
                 };
-                status?: {
-                  battery?: string;
-                  readiness?: string;
+            };
+        };
+        /** Helper API to delete a single mission */
+        delete: {
+            parameters: {
+                query?: {
+                    /** @description No Description */
+                    creatorUid?: string;
+                    /** @description No Description */
+                    deepDelete?: boolean;
                 };
-                precisionlocation?: {
-                  geopointsrc?: string;
-                  altsrc?: string;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            version: string;
+                            type: string;
+                            data: unknown;
+                            messages?: string[];
+                            nodeId?: string;
+                        };
+                    };
                 };
-                flow?: Record<string, never>;
-              };
-              geometry: {
-                /** @constant */
-                type: "Point";
-                coordinates: number[];
-              } | {
-                /** @constant */
-                type: "LineString";
-                coordinates: number[][];
-              } | {
-                /** @constant */
-                type: "Polygon";
-                coordinates: number[][][];
-              };
-              /** @default / */
-              path: string;
             };
-          };
         };
-      };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** Delete features by path */
-    delete: {
-      parameters: {
-        query: {
-          /** @description No Description */
-          path: string;
+    "/marti/missions/{:name}/cot": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
-      };
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              status: number;
-              message: string;
+        /** Helper API to get latest CoTs */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
             };
-          };
-        };
-      };
-    };
-  };
-  "/profile/feature/{:id}": {
-    /** Delete a feature */
-    get: {
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              id: string;
-              /** @constant */
-              type: "Feature";
-              properties: {
-                /** @default UNKNOWN */
-                callsign: string;
-                /** @default a-f-g */
-                type: string;
-                how: string;
-                time: string;
-                start: string;
-                stale: string;
-                center: number[];
-                course?: number;
-                slope?: number;
-                speed?: number;
-                color?: string;
-                opacity?: number;
-                stroke?: string;
-                "stroke-opacity"?: number;
-                "stroke-width"?: number;
-                "stroke-style"?: string;
-                fill?: string;
-                "fill-opacity"?: number;
-                metadata?: Record<string, never>;
-                archived?: boolean;
-                contact?: {
-                  phone?: string;
-                  endpoint?: string;
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            type: string;
+                            features: unknown[];
+                        };
+                    };
                 };
-                remarks?: string;
-                fileshare?: {
-                  filename: string;
-                  name: string;
-                  senderCallsign: string;
-                  senderUid: string;
-                  senderUrl: string;
-                  sha256: string;
-                  sizeInBytes: number;
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/marti/missions/{:name}/changes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Helper API to get mission changes */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description No Description */
+                    secago?: number;
+                    /** @description No Description */
+                    start?: string;
+                    /** @description No Description */
+                    end?: string;
+                    /** @description No Description */
+                    squashed?: boolean;
                 };
-                sensor?: {
-                  elevation?: string;
-                  vfov?: string;
-                  fov?: string;
-                  type?: string;
-                  version?: string;
-                  north?: string;
-                  roll?: string;
-                  range?: string;
-                  azimuth?: string;
-                  model?: string;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            version: string;
+                            type: string;
+                            data: unknown;
+                            messages?: string[];
+                            nodeId?: string;
+                        };
+                    };
                 };
-                video?: {
-                  sensor?: string;
-                  spi?: string;
-                  url?: string;
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/marti/mission": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Helper API to list missions */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description No Description */
+                    passwordProtected?: boolean;
+                    /** @description No Description */
+                    defaultRole?: boolean;
+                    /** @description No Description */
+                    tool?: string;
                 };
-                links?: {
-                    type?: string;
-                    point?: string;
-                    url?: string;
-                    mime?: string;
-                    remarks?: string;
-                    uid?: string;
-                    relation?: string;
-                  }[];
-                chat?: {
-                  parent?: string;
-                  groupOwner?: string;
-                  messageId?: string;
-                  chatroom: string;
-                  id: string;
-                  senderCallsign: string;
-                  chatgrp: unknown;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            version: string;
+                            type: string;
+                            data: unknown;
+                            messages?: string[];
+                            nodeId?: string;
+                        };
+                    };
                 };
-                track?: {
-                  speed?: string;
-                  course?: string;
-                  slope?: string;
-                  eCourse?: string;
-                  eSpeed?: string;
-                  eSlope?: string;
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/marti/missions/{:name}/role": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Return a role associated with your user */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            permissions: string[];
+                            hibernateLazyInitializer?: unknown;
+                            type: "MISSION_OWNER" | "MISSION_SUBSCRIBER" | "MISSION_READONLY_SUBSCRIBER";
+                        };
+                    };
                 };
-                dest?: {
-                  uid?: string;
-                  callsign?: string;
-                  mission?: string;
-                  after?: string;
-                  path?: string;
-                } | {
-                    uid?: string;
-                    callsign?: string;
-                    mission?: string;
-                    after?: string;
-                    path?: string;
-                  }[];
-                icon?: string;
-                droid?: string;
-                takv?: {
-                  device?: string;
-                  platform?: string;
-                  os?: string;
-                  version?: string;
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/marti/missions/{:name}/subscriptions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List subscriptions associated with a mission */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            version: string;
+                            type: string;
+                            data: unknown;
+                            messages?: string[];
+                            nodeId?: string;
+                        };
+                    };
                 };
-                group?: {
-                  name: string;
-                  role: string;
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/marti/missions/{:name}/subscriptions/roles": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List subscriptions associated with a mission */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            version: string;
+                            type: string;
+                            data: unknown;
+                            messages?: string[];
+                            nodeId?: string;
+                        };
+                    };
                 };
-                status?: {
-                  battery?: string;
-                  readiness?: string;
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/marti/missions/{:name}/contacts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List contacts associated with a mission */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            filterGroups: string[];
+                            notes: string;
+                            callsign: string;
+                            team: string;
+                            role: string;
+                            takv: string;
+                            uid: string;
+                        }[];
+                    };
                 };
-                precisionlocation?: {
-                  geopointsrc?: string;
-                  altsrc?: string;
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/marti/missions/{:name}/upload": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create an upload */
+        post: {
+            parameters: {
+                query: {
+                    /** @description No Description */
+                    name: string;
                 };
-                flow?: Record<string, never>;
-              };
-              geometry: {
-                /** @constant */
-                type: "Point";
-                coordinates: number[];
-              } | {
-                /** @constant */
-                type: "LineString";
-                coordinates: number[][];
-              } | {
-                /** @constant */
-                type: "Polygon";
-                coordinates: number[][][];
-              };
-              /** @default / */
-              path: string;
+                header?: never;
+                path?: never;
+                cookie?: never;
             };
-          };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            version: string;
+                            type: string;
+                            data: unknown;
+                            messages?: string[];
+                            nodeId?: string;
+                        };
+                    };
+                };
+            };
         };
-      };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** Delete a feature */
-    delete: {
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              status: number;
-              message: string;
-            };
-          };
+    "/marti/missions/{:name}/upload/{:hash}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
-      };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete an upload by hash */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            version: string;
+                            type: string;
+                            data: unknown;
+                            messages?: string[];
+                            nodeId?: string;
+                        };
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-  };
-  "/profile/job": {
-    /** List Profile Jobs */
-    get: {
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              total: number;
-              items: {
-                  id: string;
-                  asset: string;
-                  status: string;
-                  created: number;
-                  updated?: number;
-                }[];
-            };
-          };
+    "/marti/package": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
-      };
+        /** Helper API to list packages */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            total: number;
+                            items: {
+                                EXPIRATION: string;
+                                UID: string;
+                                SubmissionDateTime: string;
+                                Keywords: string[];
+                                MIMEType: string;
+                                Size: string;
+                                SubmissionUser: string;
+                                PrimaryKey: string;
+                                Hash: string;
+                                CreatorUid: string;
+                                Name: string;
+                                Tool: string;
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        /** Helper API to create share package */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /** @constant */
+                        type: "FeatureCollection";
+                        uids?: string[];
+                        features: {
+                            id: string;
+                            /** @constant */
+                            type: "Feature";
+                            properties: unknown;
+                            geometry: unknown;
+                        }[];
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            UID: string;
+                            SubmissionDateTime: string;
+                            Keywords: string[];
+                            MIMEType: string;
+                            SubmissionUser: string;
+                            PrimaryKey: string;
+                            Hash: string;
+                            CreatorUid: string;
+                            Name: string;
+                        };
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-  };
-  "/profile/job/{:jobid}": {
-    /** List Profile Jobs */
-    get: {
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              id: string;
-              asset: string;
-              status: string;
-              created: number;
-              updated?: number;
-            };
-          };
+    "/marti/package/{:hash}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
-      };
+        /** Helper API to get a single package */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            EXPIRATION: string;
+                            UID: string;
+                            SubmissionDateTime: string;
+                            Keywords: string[];
+                            MIMEType: string;
+                            Size: string;
+                            SubmissionUser: string;
+                            PrimaryKey: string;
+                            Hash: string;
+                            CreatorUid: string;
+                            Name: string;
+                            Tool: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-  };
-  "/profile/job/{:jobid}/logs": {
-    /** List Profile Job Logs */
-    get: {
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              logs: {
-                  message: string;
-                  timestamp: number;
-                }[];
+    "/marti/group": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Helper API to list groups that the client is part of */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description Use Connection auth */
+                    connection?: number;
+                    /** @description This tells TAK server to return the users cached group selection vs the groups that came directly from the auth backend. */
+                    useCache?: boolean;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
             };
-          };
-        };
-      };
-    };
-  };
-  "/profile/overlay": {
-    /**
-     * Return a list of Profile Overlay's that are curently active.
-     *
-     *             Each item is checked to ensure it is still present and if not the overlay is removed from the list
-     *             before being returned.
-     */
-    get: {
-      parameters: {
-        query: {
-          /** @description Limit the number of responses returned */
-          limit: number;
-          /** @description Iterate through "pages" of items based on the "limit" query param */
-          page: number;
-          /** @description Order in which results are returned based on the "sort" query param */
-          order: "asc" | "desc";
-        };
-      };
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              total: number;
-              removed: ({
-                  id: number;
-                  name: string;
-                  username: string;
-                  created: string;
-                  updated: string;
-                  pos: number;
-                  type: string;
-                  opacity: number;
-                  visible: boolean;
-                  token: string | null;
-                  styles: ((string | number | boolean | null) | unknown[] | Record<string, never>) | null;
-                  mode: string;
-                  mode_id: string | null;
-                  url: string;
-                })[];
-              items: ({
-                  id: number;
-                  name: string;
-                  username: string;
-                  created: string;
-                  updated: string;
-                  pos: number;
-                  type: string;
-                  opacity: number;
-                  visible: boolean;
-                  token: string | null;
-                  styles: ((string | number | boolean | null) | unknown[] | Record<string, never>) | null;
-                  mode: string;
-                  mode_id: string | null;
-                  url: string;
-                })[];
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            version: string;
+                            type: string;
+                            data: unknown;
+                            messages?: string[];
+                            nodeId?: string;
+                        };
+                    };
+                };
             };
-          };
         };
-      };
-    };
-    /** Create Profile Overlay */
-    post: {
-      requestBody: {
-        content: {
-          "application/json": {
-            pos?: number;
-            type?: string;
-            opacity?: number;
-            visible?: boolean;
-            mode: string;
-            mode_id?: string;
-            url: string;
-            name: string;
-          };
-        };
-      };
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              id: number;
-              name: string;
-              username: string;
-              created: string;
-              updated: string;
-              pos: number;
-              type: string;
-              opacity: number;
-              visible: boolean;
-              token: string | null;
-              styles: ((string | number | boolean | null) | unknown[] | Record<string, never>) | null;
-              mode: string;
-              mode_id: string | null;
-              url: string;
+        /** Helper API to update groups that the client is part of */
+        put: {
+            parameters: {
+                query?: {
+                    /** @description No Description */
+                    clientUid?: string;
+                    /** @description No Description */
+                    connection?: number;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
             };
-          };
-        };
-      };
-    };
-    /** Create Profile Overlay */
-    delete: {
-      parameters: {
-        query: {
-          /** @description No Description */
-          id: string;
-        };
-      };
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              status: number;
-              message: string;
-            };
-          };
-        };
-      };
-    };
-  };
-  "/profile/overlay/{:overlay}": {
-    /** Get Profile Overlay */
-    get: {
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              id: number;
-              name: string;
-              username: string;
-              created: string;
-              updated: string;
-              pos: number;
-              type: string;
-              opacity: number;
-              visible: boolean;
-              token: string | null;
-              styles: ((string | number | boolean | null) | unknown[] | Record<string, never>) | null;
-              mode: string;
-              mode_id: string | null;
-              url: string;
-            };
-          };
-        };
-      };
-    };
-    /** Update Profile Overlay */
-    patch: {
-      requestBody: {
-        content: {
-          "application/json": {
-            pos?: number;
-            name?: string;
-            opacity?: number;
-            visible?: boolean;
-            styles?: unknown;
-          };
-        };
-      };
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              id: number;
-              name: string;
-              username: string;
-              created: string;
-              updated: string;
-              pos: number;
-              type: string;
-              opacity: number;
-              visible: boolean;
-              token: string | null;
-              styles: ((string | number | boolean | null) | unknown[] | Record<string, never>) | null;
-              mode: string;
-              mode_id: string | null;
-              url: string;
-            };
-          };
-        };
-      };
-    };
-  };
-  "/profile": {
-    /** Get User's Profile */
-    get: {
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              username: string;
-              created: string;
-              updated: string;
-              phone: string;
-              last_login: string;
-              system_admin: boolean;
-              agency_admin: number[];
-              tak_callsign: string;
-              tak_group: "White" | "Yellow" | "Orange" | "Magenta" | "Red" | "Maroon" | "Purple" | "Dark Blue" | "Blue" | "Cyan" | "Teal" | "Green" | "Dark Green" | "Brown";
-              tak_role: "Team Member" | "Team Lead" | "HQ" | "Sniper" | "Medic" | "Forward Observer" | "RTO" | "K9";
-              tak_loc: unknown;
-              display_stale: string;
-              display_distance: string;
-              display_elevation: string;
-              display_speed: string;
-            };
-          };
-        };
-      };
-    };
-    /** Update User's Profile */
-    patch: {
-      requestBody: {
-        content: {
-          "application/json": {
-            display_stale?: "Immediate" | "10 Minutes" | "30 Minutes" | "1 Hour" | "Never";
-            display_distance?: "meter" | "kilometer" | "mile";
-            display_elevation?: "meter" | "feet";
-            display_speed?: "m/s" | "km/h" | "mi/h";
-            tak_callsign?: string;
-            tak_group?: "White" | "Yellow" | "Orange" | "Magenta" | "Red" | "Maroon" | "Purple" | "Dark Blue" | "Blue" | "Cyan" | "Teal" | "Green" | "Dark Green" | "Brown";
-            tak_role?: "Team Member" | "Team Lead" | "HQ" | "Sniper" | "Medic" | "Forward Observer" | "RTO" | "K9";
-            tak_loc?: null | {
-              type: string;
-              coordinates: number[];
-            };
-          };
-        };
-      };
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              username: string;
-              created: string;
-              updated: string;
-              phone: string;
-              last_login: string;
-              system_admin: boolean;
-              agency_admin: number[];
-              tak_callsign: string;
-              tak_group: "White" | "Yellow" | "Orange" | "Magenta" | "Red" | "Maroon" | "Purple" | "Dark Blue" | "Blue" | "Cyan" | "Teal" | "Green" | "Dark Green" | "Brown";
-              tak_role: "Team Member" | "Team Lead" | "HQ" | "Sniper" | "Medic" | "Forward Observer" | "RTO" | "K9";
-              tak_loc: unknown;
-              display_stale: string;
-              display_distance: string;
-              display_elevation: string;
-              display_speed: string;
-            };
-          };
-        };
-      };
-    };
-  };
-  "/server": {
-    /** Get Server */
-    get: {
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              id: number;
-              status: string;
-              created: string;
-              updated: string;
-              provider_client: string;
-              provider_secret: string;
-              provider_url: string;
-              name: string;
-              url: string;
-              api: string;
-              /** @description Once an admin certificate is configured it is not retrivable. This boolean refers to if a certificate is currently loaded */
-              auth: boolean;
-            };
-          };
-        };
-      };
-    };
-    /** Patch Server */
-    patch: {
-      requestBody: {
-        content: {
-          "application/json": {
-            url: string;
-            api: string;
-            name?: string;
-            provider_url?: string;
-            provider_secret?: string;
-            provider_client?: string;
-            auth?: {
-              cert: string;
-              key: string;
-            };
-          };
-        };
-      };
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              id: number;
-              status: string;
-              created: string;
-              updated: string;
-              provider_client: string;
-              provider_secret: string;
-              provider_url: string;
-              name: string;
-              url: string;
-              api: string;
-              /** @description Once an admin certificate is configured it is not retrivable. This boolean refers to if a certificate is currently loaded */
-              auth: boolean;
-            };
-          };
-        };
-      };
-    };
-  };
-  "/search/reverse/{:longitude}/{:latitude}": {
-    /** Get information about a given point */
-    get: {
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              weather: {
-                type: string;
-                properties: {
-                  updated: string;
-                  units: string;
-                  forecastGenerator: string;
-                  generatedAt: string;
-                  updateTime: string;
-                  validTimes: string;
-                  elevation: {
-                    unitCode: string;
-                    value: number;
-                  };
-                  periods: {
-                      number: number;
-                      name: string;
-                      startTime: string;
-                      endTime: string;
-                      isDaytime: boolean;
-                      temperature: number;
-                      temperatureUnit: string;
-                      temperatureTrend: unknown;
-                      probabilityOfPrecipitation: {
-                        unitCode: string;
-                        value: number;
-                      };
-                      dewpoint: {
-                        unitCode: string;
-                        value: number;
-                      };
-                      relativeHumidity: {
-                        unitCode: string;
-                        value: number;
-                      };
-                      windSpeed: string;
-                      windDirection: string;
-                      icon: string;
-                      shortForecast: string;
-                      detailedForecast: string;
+            requestBody: {
+                content: {
+                    "application/json": {
+                        name: string;
+                        direction: string;
+                        created: string;
+                        type: string;
+                        bitpos: number;
+                        active: boolean;
+                        description?: string;
                     }[];
                 };
-                geometry: {
-                  type: string;
-                  coordinates: number[][][];
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            version: string;
+                            type: string;
+                            data: unknown;
+                            messages?: string[];
+                            nodeId?: string;
+                        };
+                    };
                 };
-              } | null;
-              reverse: {
-                LongLabel: string;
-                ShortLabel: string;
-                Addr_type: string;
-              } | null;
             };
-          };
         };
-      };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-  };
-  "/swagger": {
-    /** Return Swagger Doc in JSON */
-    get: {
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": unknown;
-          };
+    "/marti/api/contacts/all": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
-      };
-    };
-  };
-  "/task": {
-    /** List Tasks */
-    get: {
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              total: number;
-              items: unknown;
+        /** Helper API to list contacts */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
             };
-          };
-        };
-      };
-    };
-  };
-  "/task/{:task}": {
-    /** List Version for a specific task */
-    get: {
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              total: number;
-              versions: unknown[];
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            filterGroups: unknown;
+                            notes: string;
+                            callsign: string;
+                            team: string;
+                            role: string;
+                            takv: string;
+                            uid: string;
+                        }[];
+                    };
+                };
             };
-          };
         };
-      };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-  };
-  "/task/{:task}/version/{:version}": {
-    /** Delete a given task version */
-    delete: {
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              status: number;
-              message: string;
+    "/marti/signClient": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Helper API for obtaining a signed Certificate pair given LDAP Credentials */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
             };
-          };
-        };
-      };
-    };
-  };
-  "/connection/{:connectionid}/layer/{:layerid}/task": {
-    /** Get the status of a task stack in relation to a given layer */
-    get: {
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              status: string;
+            requestBody: {
+                content: {
+                    "application/json": {
+                        username: string;
+                        password: string;
+                    };
+                };
             };
-          };
-        };
-      };
-    };
-    /** Deploy a task stack */
-    post: {
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              status: string;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            key: string;
+                            cert: string;
+                        };
+                    };
+                };
             };
-          };
         };
-      };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** If a stack is currently updating, cancel the stack update */
-    delete: {
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              status: number;
-              message: string;
+    "/overlay": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Return a list of Server Overlays */
+        get: {
+            parameters: {
+                query: {
+                    /** @description Limit the number of responses returned */
+                    limit: number;
+                    /** @description Iterate through "pages" of items based on the "limit" query param */
+                    page: number;
+                    /** @description Order in which results are returned based on the "sort" query param */
+                    order: "asc" | "desc";
+                    /** @description Filter results by a human readable name field */
+                    filter: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
             };
-          };
-        };
-      };
-    };
-  };
-  "/connection/{:connectionid}/layer/{:layerid}/task/invoke": {
-    /** Manually invoke a Task */
-    post: {
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              status: number;
-              message: string;
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            total: number;
+                            items: {
+                                id: number;
+                                name: string;
+                                created: string;
+                                updated: string;
+                                type: string;
+                                styles: ((string | number | boolean | null) | unknown[] | Record<string, never>) | null;
+                                url: string;
+                            }[];
+                        };
+                    };
+                };
             };
-          };
         };
-      };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-  };
-  "/connection/{:connectionid}/layer/{:layerid}/task/logs": {
-    /** Get the logs related to the given task */
-    get: {
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              logs: {
-                  message: string;
-                  timestamp: number;
-                }[];
+    "/profile/asset": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Assets */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
             };
-          };
-        };
-      };
-    };
-  };
-  "/connection/{:connectionid}/layer/{:layerid}/task/schema": {
-    /** Get the JSONSchema for the expected environment variables */
-    get: {
-      parameters: {
-        query: {
-          /** @description No Description */
-          type: "schema:output" | "schema:input";
-        };
-      };
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              schema: unknown;
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            total: number;
+                            tiles: {
+                                url: string;
+                            };
+                            assets: {
+                                /** @description The filename of the asset */
+                                name: string;
+                                visualized?: string;
+                                vectorized?: string;
+                                updated: number;
+                                /** @description AWS S3 generated ETag of the asset */
+                                etag: string;
+                                /** @description Size in bytes of the asset */
+                                size: number;
+                            }[];
+                        };
+                    };
+                };
             };
-          };
         };
-      };
-    };
-  };
-  "/token": {
-    /** List all tokens associated with the requester's account */
-    get: {
-      parameters: {
-        query: {
-          /** @description Limit the number of responses returned */
-          limit: number;
-          /** @description Iterate through "pages" of items based on the "limit" query param */
-          page: number;
-          /** @description Order in which results are returned based on the "sort" query param */
-          order: "asc" | "desc";
-          /** @description No Description */
-          sort?: "id" | "email" | "name" | "token" | "created" | "updated";
-          /** @description Filter results by a human readable name field */
-          filter: string;
-        };
-      };
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              total: number;
-              items: {
-                  id: number;
-                  name: string;
-                  created: string;
-                  updated: string;
-                }[];
+        put?: never;
+        /** Create a new asset */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
             };
-          };
-        };
-      };
-    };
-    /** Create a new API token for programatic access */
-    post: {
-      requestBody: {
-        content: {
-          "application/json": {
-            name: string;
-          };
-        };
-      };
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              id: number;
-              email: string;
-              name: string;
-              token: string;
-              created: string;
-              updated: string;
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
             };
-          };
         };
-      };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-  };
-  "/token/{:id}": {
-    /** Delete a user's API Token */
-    delete: {
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              status: number;
-              message: string;
+    "/profile/asset/{:asset}.{:ext}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get single raw asset */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description No Description */
+                    token?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
             };
-          };
-        };
-      };
-    };
-    /** Update properties of a Token */
-    patch: {
-      requestBody: {
-        content: {
-          "application/json": {
-            name?: string;
-          };
-        };
-      };
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              status: number;
-              message: string;
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
             };
-          };
         };
-      };
-    };
-  };
-  "/user": {
-    /** Let Admins see users of the system */
-    get: {
-      parameters: {
-        query: {
-          /** @description Limit the number of responses returned */
-          limit: number;
-          /** @description Iterate through "pages" of items based on the "limit" query param */
-          page: number;
-          /** @description Order in which results are returned based on the "sort" query param */
-          order: "asc" | "desc";
-          /** @description No Description */
-          sort?: "id" | "name" | "username" | "last_login" | "auth" | "created" | "updated" | "phone" | "tak_callsign" | "tak_group" | "tak_role" | "tak_loc" | "display_stale" | "display_distance" | "display_elevation" | "display_speed" | "system_admin" | "agency_admin";
-          /** @description Filter results by a human readable name field */
-          filter: string;
-        };
-      };
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              total: number;
-              items: ({
-                  username: string;
-                  created: string;
-                  updated: string;
-                  phone: string;
-                  last_login: string;
-                  system_admin: boolean;
-                  agency_admin: number[];
-                  tak_callsign: string;
-                  tak_group: "White" | "Yellow" | "Orange" | "Magenta" | "Red" | "Maroon" | "Purple" | "Dark Blue" | "Blue" | "Cyan" | "Teal" | "Green" | "Dark Green" | "Brown";
-                  tak_role: "Team Member" | "Team Lead" | "HQ" | "Sniper" | "Medic" | "Forward Observer" | "RTO" | "K9";
-                  tak_loc: unknown;
-                  display_stale: string;
-                  display_distance: string;
-                  display_elevation: string;
-                  display_speed: string;
-                })[];
+        put?: never;
+        /** Convert Asset into a cloud native or TAK Native format automatically */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
             };
-          };
-        };
-      };
-    };
-  };
-  "/video": {
-    /** Let Admins list video servers */
-    get: {
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              total: number;
-              versions: number[];
-              items: {
-                  id: string;
-                  version: number;
-                  created: string;
-                  status: string;
-                  statusDesired: string;
-                  ipPublic?: string;
-                  ipPrivate?: string;
-                  memory: number;
-                  cpu: number;
-                }[];
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
             };
-          };
         };
-      };
-    };
-    /** Create a new Media Server */
-    post: {
-      requestBody: {
-        content: {
-          "application/json": Record<string, never>;
-        };
-      };
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              id: string;
-              version: number;
-              created: string;
-              status: string;
-              statusDesired: string;
-              ipPublic?: string;
-              ipPrivate?: string;
-              memory: number;
-              cpu: number;
+        /** Delete Asset */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
             };
-          };
-        };
-      };
-    };
-  };
-  "/video/{:serverid}": {
-    /** Get all info about a particular video server */
-    get: {
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              id: string;
-              version: number;
-              created: string;
-              status: string;
-              statusDesired: string;
-              ipPublic?: string;
-              ipPrivate?: string;
-              memory: number;
-              cpu: number;
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
             };
-          };
         };
-      };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** Shut down an existing video server */
-    delete: {
-      responses: {
-        /** @description Successful Response */
-        200: {
-          content: {
-            "application/json": {
-              status: number;
-              message: string;
+    "/profile/asset/{:asset}.pmtiles/tile": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get TileJSON  */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description No Description */
+                    token?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
             };
-          };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
         };
-      };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-  };
+    "/profile/chat": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get User's Profile Chats */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            total: number;
+                            items: unknown[];
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/profile/chat/{:chatroom}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get User's Chats */
+        get: {
+            parameters: {
+                query: {
+                    /** @description Limit the number of responses returned */
+                    limit: number;
+                    /** @description Iterate through "pages" of items based on the "limit" query param */
+                    page: number;
+                    /** @description Order in which results are returned based on the "sort" query param */
+                    order: "asc" | "desc";
+                    /** @description No Description */
+                    sort?: "id" | "username" | "chatroom" | "sender_callsign" | "sender_uid" | "created" | "updated" | "message_id" | "message";
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            total: number;
+                            items: unknown[];
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/profile/feature": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         *                 Return a list of Profile Features
+         *              */
+        get: {
+            parameters: {
+                query: {
+                    /** @description No Description */
+                    limit: number;
+                    /** @description Iterate through "pages" of items based on the "limit" query param */
+                    page: number;
+                    /** @description Order in which results are returned based on the "sort" query param */
+                    order: "asc" | "desc";
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            total: number;
+                            items: {
+                                id: string;
+                                /** @constant */
+                                type: "Feature";
+                                properties: {
+                                    /** @default UNKNOWN */
+                                    callsign: string;
+                                    /** @default a-f-g */
+                                    type: string;
+                                    how: string;
+                                    time: string;
+                                    start: string;
+                                    stale: string;
+                                    center: number[];
+                                    course?: number;
+                                    slope?: number;
+                                    speed?: number;
+                                    "marker-color"?: string;
+                                    "marker-opacity"?: number;
+                                    stroke?: string;
+                                    "stroke-opacity"?: number;
+                                    "stroke-width"?: number;
+                                    "stroke-style"?: string;
+                                    fill?: string;
+                                    "fill-opacity"?: number;
+                                    metadata?: Record<string, never>;
+                                    archived?: boolean;
+                                    geofence?: {
+                                        elevationMonitored?: boolean;
+                                        minElevation?: string;
+                                        maxElevation?: string;
+                                        monitor?: string;
+                                        trigger?: string;
+                                        tracking?: string;
+                                        boundingSphere?: number;
+                                    };
+                                    contact?: {
+                                        phone?: string;
+                                        endpoint?: string;
+                                    };
+                                    remarks?: string;
+                                    mission?: {
+                                        type?: string;
+                                        tool?: string;
+                                        name?: string;
+                                        authorUid?: string;
+                                        missionLayer?: {
+                                            name?: string;
+                                            parentUid?: string;
+                                            type?: string;
+                                            uid?: string;
+                                        };
+                                    };
+                                    fileshare?: {
+                                        filename: string;
+                                        name: string;
+                                        senderCallsign: string;
+                                        senderUid: string;
+                                        senderUrl: string;
+                                        sha256: string;
+                                        sizeInBytes: number;
+                                    };
+                                    sensor?: {
+                                        elevation?: string;
+                                        vfov?: string;
+                                        fov?: string;
+                                        type?: string;
+                                        version?: string;
+                                        north?: string;
+                                        roll?: string;
+                                        range?: string;
+                                        azimuth?: string;
+                                        model?: string;
+                                    };
+                                    video?: {
+                                        sensor?: string;
+                                        spi?: string;
+                                        url?: string;
+                                    };
+                                    links?: {
+                                        type?: string;
+                                        point?: string;
+                                        url?: string;
+                                        mime?: string;
+                                        remarks?: string;
+                                        uid?: string;
+                                        relation?: string;
+                                    }[];
+                                    chat?: {
+                                        parent?: string;
+                                        groupOwner?: string;
+                                        messageId?: string;
+                                        chatroom: string;
+                                        id: string;
+                                        senderCallsign: string;
+                                        chatgrp: unknown;
+                                    };
+                                    track?: {
+                                        speed?: string;
+                                        course?: string;
+                                        slope?: string;
+                                        eCourse?: string;
+                                        eSpeed?: string;
+                                        eSlope?: string;
+                                    };
+                                    dest?: {
+                                        uid?: string;
+                                        callsign?: string;
+                                        mission?: string;
+                                        after?: string;
+                                        path?: string;
+                                    } | {
+                                        uid?: string;
+                                        callsign?: string;
+                                        mission?: string;
+                                        after?: string;
+                                        path?: string;
+                                    }[];
+                                    icon?: string;
+                                    droid?: string;
+                                    takv?: {
+                                        device?: string;
+                                        platform?: string;
+                                        os?: string;
+                                        version?: string;
+                                    };
+                                    group?: {
+                                        name: string;
+                                        role: string;
+                                    };
+                                    status?: {
+                                        battery?: string;
+                                        readiness?: string;
+                                    };
+                                    precisionlocation?: {
+                                        geopointsrc?: string;
+                                        altsrc?: string;
+                                    };
+                                    flow?: Record<string, never>;
+                                };
+                                geometry: {
+                                    /** @constant */
+                                    type: "Point";
+                                    coordinates: number[];
+                                } | {
+                                    /** @constant */
+                                    type: "LineString";
+                                    coordinates: number[][];
+                                } | {
+                                    /** @constant */
+                                    type: "Polygon";
+                                    coordinates: number[][][];
+                                };
+                                /** @default / */
+                                path: string;
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        /**
+         *                 Create or modify a feature
+         *              */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        id: string;
+                        /** @constant */
+                        type: "Feature";
+                        properties: {
+                            /** @default UNKNOWN */
+                            callsign: string;
+                            /** @default a-f-g */
+                            type: string;
+                            how: string;
+                            time: string;
+                            start: string;
+                            stale: string;
+                            center: number[];
+                            course?: number;
+                            slope?: number;
+                            speed?: number;
+                            "marker-color"?: string;
+                            "marker-opacity"?: number;
+                            stroke?: string;
+                            "stroke-opacity"?: number;
+                            "stroke-width"?: number;
+                            "stroke-style"?: string;
+                            fill?: string;
+                            "fill-opacity"?: number;
+                            metadata?: Record<string, never>;
+                            archived?: boolean;
+                            geofence?: {
+                                elevationMonitored?: boolean;
+                                minElevation?: string;
+                                maxElevation?: string;
+                                monitor?: string;
+                                trigger?: string;
+                                tracking?: string;
+                                boundingSphere?: number;
+                            };
+                            contact?: {
+                                phone?: string;
+                                endpoint?: string;
+                            };
+                            remarks?: string;
+                            mission?: {
+                                type?: string;
+                                tool?: string;
+                                name?: string;
+                                authorUid?: string;
+                                missionLayer?: {
+                                    name?: string;
+                                    parentUid?: string;
+                                    type?: string;
+                                    uid?: string;
+                                };
+                            };
+                            fileshare?: {
+                                filename: string;
+                                name: string;
+                                senderCallsign: string;
+                                senderUid: string;
+                                senderUrl: string;
+                                sha256: string;
+                                sizeInBytes: number;
+                            };
+                            sensor?: {
+                                elevation?: string;
+                                vfov?: string;
+                                fov?: string;
+                                type?: string;
+                                version?: string;
+                                north?: string;
+                                roll?: string;
+                                range?: string;
+                                azimuth?: string;
+                                model?: string;
+                            };
+                            video?: {
+                                sensor?: string;
+                                spi?: string;
+                                url?: string;
+                            };
+                            links?: {
+                                type?: string;
+                                point?: string;
+                                url?: string;
+                                mime?: string;
+                                remarks?: string;
+                                uid?: string;
+                                relation?: string;
+                            }[];
+                            chat?: {
+                                parent?: string;
+                                groupOwner?: string;
+                                messageId?: string;
+                                chatroom: string;
+                                id: string;
+                                senderCallsign: string;
+                                chatgrp: unknown;
+                            };
+                            track?: {
+                                speed?: string;
+                                course?: string;
+                                slope?: string;
+                                eCourse?: string;
+                                eSpeed?: string;
+                                eSlope?: string;
+                            };
+                            dest?: {
+                                uid?: string;
+                                callsign?: string;
+                                mission?: string;
+                                after?: string;
+                                path?: string;
+                            } | {
+                                uid?: string;
+                                callsign?: string;
+                                mission?: string;
+                                after?: string;
+                                path?: string;
+                            }[];
+                            icon?: string;
+                            droid?: string;
+                            takv?: {
+                                device?: string;
+                                platform?: string;
+                                os?: string;
+                                version?: string;
+                            };
+                            group?: {
+                                name: string;
+                                role: string;
+                            };
+                            status?: {
+                                battery?: string;
+                                readiness?: string;
+                            };
+                            precisionlocation?: {
+                                geopointsrc?: string;
+                                altsrc?: string;
+                            };
+                            flow?: Record<string, never>;
+                        };
+                        geometry: {
+                            /** @constant */
+                            type: "Point";
+                            coordinates: number[];
+                        } | {
+                            /** @constant */
+                            type: "LineString";
+                            coordinates: number[][];
+                        } | {
+                            /** @constant */
+                            type: "Polygon";
+                            coordinates: number[][][];
+                        };
+                        /** @default / */
+                        path: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            /** @constant */
+                            type: "Feature";
+                            properties: {
+                                /** @default UNKNOWN */
+                                callsign: string;
+                                /** @default a-f-g */
+                                type: string;
+                                how: string;
+                                time: string;
+                                start: string;
+                                stale: string;
+                                center: number[];
+                                course?: number;
+                                slope?: number;
+                                speed?: number;
+                                "marker-color"?: string;
+                                "marker-opacity"?: number;
+                                stroke?: string;
+                                "stroke-opacity"?: number;
+                                "stroke-width"?: number;
+                                "stroke-style"?: string;
+                                fill?: string;
+                                "fill-opacity"?: number;
+                                metadata?: Record<string, never>;
+                                archived?: boolean;
+                                geofence?: {
+                                    elevationMonitored?: boolean;
+                                    minElevation?: string;
+                                    maxElevation?: string;
+                                    monitor?: string;
+                                    trigger?: string;
+                                    tracking?: string;
+                                    boundingSphere?: number;
+                                };
+                                contact?: {
+                                    phone?: string;
+                                    endpoint?: string;
+                                };
+                                remarks?: string;
+                                mission?: {
+                                    type?: string;
+                                    tool?: string;
+                                    name?: string;
+                                    authorUid?: string;
+                                    missionLayer?: {
+                                        name?: string;
+                                        parentUid?: string;
+                                        type?: string;
+                                        uid?: string;
+                                    };
+                                };
+                                fileshare?: {
+                                    filename: string;
+                                    name: string;
+                                    senderCallsign: string;
+                                    senderUid: string;
+                                    senderUrl: string;
+                                    sha256: string;
+                                    sizeInBytes: number;
+                                };
+                                sensor?: {
+                                    elevation?: string;
+                                    vfov?: string;
+                                    fov?: string;
+                                    type?: string;
+                                    version?: string;
+                                    north?: string;
+                                    roll?: string;
+                                    range?: string;
+                                    azimuth?: string;
+                                    model?: string;
+                                };
+                                video?: {
+                                    sensor?: string;
+                                    spi?: string;
+                                    url?: string;
+                                };
+                                links?: {
+                                    type?: string;
+                                    point?: string;
+                                    url?: string;
+                                    mime?: string;
+                                    remarks?: string;
+                                    uid?: string;
+                                    relation?: string;
+                                }[];
+                                chat?: {
+                                    parent?: string;
+                                    groupOwner?: string;
+                                    messageId?: string;
+                                    chatroom: string;
+                                    id: string;
+                                    senderCallsign: string;
+                                    chatgrp: unknown;
+                                };
+                                track?: {
+                                    speed?: string;
+                                    course?: string;
+                                    slope?: string;
+                                    eCourse?: string;
+                                    eSpeed?: string;
+                                    eSlope?: string;
+                                };
+                                dest?: {
+                                    uid?: string;
+                                    callsign?: string;
+                                    mission?: string;
+                                    after?: string;
+                                    path?: string;
+                                } | {
+                                    uid?: string;
+                                    callsign?: string;
+                                    mission?: string;
+                                    after?: string;
+                                    path?: string;
+                                }[];
+                                icon?: string;
+                                droid?: string;
+                                takv?: {
+                                    device?: string;
+                                    platform?: string;
+                                    os?: string;
+                                    version?: string;
+                                };
+                                group?: {
+                                    name: string;
+                                    role: string;
+                                };
+                                status?: {
+                                    battery?: string;
+                                    readiness?: string;
+                                };
+                                precisionlocation?: {
+                                    geopointsrc?: string;
+                                    altsrc?: string;
+                                };
+                                flow?: Record<string, never>;
+                            };
+                            geometry: {
+                                /** @constant */
+                                type: "Point";
+                                coordinates: number[];
+                            } | {
+                                /** @constant */
+                                type: "LineString";
+                                coordinates: number[][];
+                            } | {
+                                /** @constant */
+                                type: "Polygon";
+                                coordinates: number[][][];
+                            };
+                            /** @default / */
+                            path: string;
+                        };
+                    };
+                };
+            };
+        };
+        post?: never;
+        /**
+         *                 Delete features by path
+         *              */
+        delete: {
+            parameters: {
+                query: {
+                    /** @description No Description */
+                    path: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/profile/feature/{:id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         *                 Delete a feature
+         *              */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            /** @constant */
+                            type: "Feature";
+                            properties: {
+                                /** @default UNKNOWN */
+                                callsign: string;
+                                /** @default a-f-g */
+                                type: string;
+                                how: string;
+                                time: string;
+                                start: string;
+                                stale: string;
+                                center: number[];
+                                course?: number;
+                                slope?: number;
+                                speed?: number;
+                                "marker-color"?: string;
+                                "marker-opacity"?: number;
+                                stroke?: string;
+                                "stroke-opacity"?: number;
+                                "stroke-width"?: number;
+                                "stroke-style"?: string;
+                                fill?: string;
+                                "fill-opacity"?: number;
+                                metadata?: Record<string, never>;
+                                archived?: boolean;
+                                geofence?: {
+                                    elevationMonitored?: boolean;
+                                    minElevation?: string;
+                                    maxElevation?: string;
+                                    monitor?: string;
+                                    trigger?: string;
+                                    tracking?: string;
+                                    boundingSphere?: number;
+                                };
+                                contact?: {
+                                    phone?: string;
+                                    endpoint?: string;
+                                };
+                                remarks?: string;
+                                mission?: {
+                                    type?: string;
+                                    tool?: string;
+                                    name?: string;
+                                    authorUid?: string;
+                                    missionLayer?: {
+                                        name?: string;
+                                        parentUid?: string;
+                                        type?: string;
+                                        uid?: string;
+                                    };
+                                };
+                                fileshare?: {
+                                    filename: string;
+                                    name: string;
+                                    senderCallsign: string;
+                                    senderUid: string;
+                                    senderUrl: string;
+                                    sha256: string;
+                                    sizeInBytes: number;
+                                };
+                                sensor?: {
+                                    elevation?: string;
+                                    vfov?: string;
+                                    fov?: string;
+                                    type?: string;
+                                    version?: string;
+                                    north?: string;
+                                    roll?: string;
+                                    range?: string;
+                                    azimuth?: string;
+                                    model?: string;
+                                };
+                                video?: {
+                                    sensor?: string;
+                                    spi?: string;
+                                    url?: string;
+                                };
+                                links?: {
+                                    type?: string;
+                                    point?: string;
+                                    url?: string;
+                                    mime?: string;
+                                    remarks?: string;
+                                    uid?: string;
+                                    relation?: string;
+                                }[];
+                                chat?: {
+                                    parent?: string;
+                                    groupOwner?: string;
+                                    messageId?: string;
+                                    chatroom: string;
+                                    id: string;
+                                    senderCallsign: string;
+                                    chatgrp: unknown;
+                                };
+                                track?: {
+                                    speed?: string;
+                                    course?: string;
+                                    slope?: string;
+                                    eCourse?: string;
+                                    eSpeed?: string;
+                                    eSlope?: string;
+                                };
+                                dest?: {
+                                    uid?: string;
+                                    callsign?: string;
+                                    mission?: string;
+                                    after?: string;
+                                    path?: string;
+                                } | {
+                                    uid?: string;
+                                    callsign?: string;
+                                    mission?: string;
+                                    after?: string;
+                                    path?: string;
+                                }[];
+                                icon?: string;
+                                droid?: string;
+                                takv?: {
+                                    device?: string;
+                                    platform?: string;
+                                    os?: string;
+                                    version?: string;
+                                };
+                                group?: {
+                                    name: string;
+                                    role: string;
+                                };
+                                status?: {
+                                    battery?: string;
+                                    readiness?: string;
+                                };
+                                precisionlocation?: {
+                                    geopointsrc?: string;
+                                    altsrc?: string;
+                                };
+                                flow?: Record<string, never>;
+                            };
+                            geometry: {
+                                /** @constant */
+                                type: "Point";
+                                coordinates: number[];
+                            } | {
+                                /** @constant */
+                                type: "LineString";
+                                coordinates: number[][];
+                            } | {
+                                /** @constant */
+                                type: "Polygon";
+                                coordinates: number[][][];
+                            };
+                            /** @default / */
+                            path: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        /**
+         *                 Delete a feature
+         *              */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/profile/job": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Profile Jobs */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            total: number;
+                            items: {
+                                id: string;
+                                asset: string;
+                                status: string;
+                                created: number;
+                                updated?: number;
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/profile/job/{:jobid}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Profile Jobs */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            asset: string;
+                            status: string;
+                            created: number;
+                            updated?: number;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/profile/job/{:jobid}/logs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Profile Job Logs */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            logs: {
+                                message: string;
+                                timestamp: number;
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/profile/overlay": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         *                 Return a list of Profile Overlay's that are curently active.
+         *
+         *                 Each item is checked to ensure it is still present and if not the overlay is removed from the list
+         *                 before being returned.
+         *              */
+        get: {
+            parameters: {
+                query: {
+                    /** @description Limit the number of responses returned */
+                    limit: number;
+                    /** @description Iterate through "pages" of items based on the "limit" query param */
+                    page: number;
+                    /** @description Order in which results are returned based on the "sort" query param */
+                    order: "asc" | "desc";
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            total: number;
+                            removed: {
+                                id: number;
+                                name: string;
+                                username: string;
+                                created: string;
+                                updated: string;
+                                pos: number;
+                                type: string;
+                                opacity: number;
+                                visible: boolean;
+                                token: string | null;
+                                styles: ((string | number | boolean | null) | unknown[] | Record<string, never>) | null;
+                                mode: string;
+                                mode_id: string | null;
+                                url: string;
+                            }[];
+                            items: {
+                                id: number;
+                                name: string;
+                                username: string;
+                                created: string;
+                                updated: string;
+                                pos: number;
+                                type: string;
+                                opacity: number;
+                                visible: boolean;
+                                token: string | null;
+                                styles: ((string | number | boolean | null) | unknown[] | Record<string, never>) | null;
+                                mode: string;
+                                mode_id: string | null;
+                                url: string;
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Create Profile Overlay */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        pos?: number;
+                        type?: string;
+                        opacity?: number;
+                        visible?: boolean;
+                        mode: string;
+                        mode_id?: string;
+                        url: string;
+                        name: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: number;
+                            name: string;
+                            username: string;
+                            created: string;
+                            updated: string;
+                            pos: number;
+                            type: string;
+                            opacity: number;
+                            visible: boolean;
+                            token: string | null;
+                            styles: ((string | number | boolean | null) | unknown[] | Record<string, never>) | null;
+                            mode: string;
+                            mode_id: string | null;
+                            url: string;
+                        };
+                    };
+                };
+            };
+        };
+        /** Create Profile Overlay */
+        delete: {
+            parameters: {
+                query: {
+                    /** @description No Description */
+                    id: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/profile/overlay/{:overlay}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Profile Overlay */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: number;
+                            name: string;
+                            username: string;
+                            created: string;
+                            updated: string;
+                            pos: number;
+                            type: string;
+                            opacity: number;
+                            visible: boolean;
+                            token: string | null;
+                            styles: ((string | number | boolean | null) | unknown[] | Record<string, never>) | null;
+                            mode: string;
+                            mode_id: string | null;
+                            url: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update Profile Overlay */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        pos?: number;
+                        name?: string;
+                        opacity?: number;
+                        visible?: boolean;
+                        styles?: unknown;
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: number;
+                            name: string;
+                            username: string;
+                            created: string;
+                            updated: string;
+                            pos: number;
+                            type: string;
+                            opacity: number;
+                            visible: boolean;
+                            token: string | null;
+                            styles: ((string | number | boolean | null) | unknown[] | Record<string, never>) | null;
+                            mode: string;
+                            mode_id: string | null;
+                            url: string;
+                        };
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/profile": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get User's Profile */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            username: string;
+                            created: string;
+                            updated: string;
+                            phone: string;
+                            last_login: string;
+                            system_admin: boolean;
+                            agency_admin: number[];
+                            tak_callsign: string;
+                            tak_group: "White" | "Yellow" | "Orange" | "Magenta" | "Red" | "Maroon" | "Purple" | "Dark Blue" | "Blue" | "Cyan" | "Teal" | "Green" | "Dark Green" | "Brown";
+                            tak_role: "Team Member" | "Team Lead" | "HQ" | "Sniper" | "Medic" | "Forward Observer" | "RTO" | "K9";
+                            tak_loc: unknown;
+                            display_stale: string;
+                            display_distance: string;
+                            display_elevation: string;
+                            display_speed: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update User's Profile */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        display_stale?: "Immediate" | "10 Minutes" | "30 Minutes" | "1 Hour" | "Never";
+                        display_distance?: "meter" | "kilometer" | "mile";
+                        display_elevation?: "meter" | "feet";
+                        display_speed?: "m/s" | "km/h" | "mi/h";
+                        tak_callsign?: string;
+                        tak_group?: "White" | "Yellow" | "Orange" | "Magenta" | "Red" | "Maroon" | "Purple" | "Dark Blue" | "Blue" | "Cyan" | "Teal" | "Green" | "Dark Green" | "Brown";
+                        tak_role?: "Team Member" | "Team Lead" | "HQ" | "Sniper" | "Medic" | "Forward Observer" | "RTO" | "K9";
+                        tak_loc?: null | {
+                            type: string;
+                            coordinates: number[];
+                        };
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            username: string;
+                            created: string;
+                            updated: string;
+                            phone: string;
+                            last_login: string;
+                            system_admin: boolean;
+                            agency_admin: number[];
+                            tak_callsign: string;
+                            tak_group: "White" | "Yellow" | "Orange" | "Magenta" | "Red" | "Maroon" | "Purple" | "Dark Blue" | "Blue" | "Cyan" | "Teal" | "Green" | "Dark Green" | "Brown";
+                            tak_role: "Team Member" | "Team Lead" | "HQ" | "Sniper" | "Medic" | "Forward Observer" | "RTO" | "K9";
+                            tak_loc: unknown;
+                            display_stale: string;
+                            display_distance: string;
+                            display_elevation: string;
+                            display_speed: string;
+                        };
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/search/reverse/{:longitude}/{:latitude}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get information about a given point */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            weather: {
+                                type: string;
+                                properties: {
+                                    updated: string;
+                                    units: string;
+                                    forecastGenerator: string;
+                                    generatedAt: string;
+                                    updateTime: string;
+                                    validTimes: string;
+                                    elevation: {
+                                        unitCode: string;
+                                        value: number;
+                                    };
+                                    periods: {
+                                        number: number;
+                                        name: string;
+                                        startTime: string;
+                                        endTime: string;
+                                        isDaytime: boolean;
+                                        temperature: number;
+                                        temperatureUnit: string;
+                                        temperatureTrend: unknown;
+                                        probabilityOfPrecipitation: {
+                                            unitCode: string;
+                                            value: number;
+                                        };
+                                        dewpoint: {
+                                            unitCode: string;
+                                            value: number;
+                                        };
+                                        relativeHumidity: {
+                                            unitCode: string;
+                                            value: number;
+                                        };
+                                        windSpeed: string;
+                                        windDirection: string;
+                                        icon: string;
+                                        shortForecast: string;
+                                        detailedForecast: string;
+                                    }[];
+                                };
+                                geometry: {
+                                    type: string;
+                                    coordinates: number[][][];
+                                };
+                            } | null;
+                            reverse: {
+                                LongLabel: string;
+                                ShortLabel: string;
+                                Addr_type: string;
+                            } | null;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/server": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Server */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: number;
+                            status: string;
+                            created: string;
+                            updated: string;
+                            provider_client: string;
+                            provider_secret: string;
+                            provider_url: string;
+                            name: string;
+                            url: string;
+                            api: string;
+                            /** @description Once an admin certificate is configured it is not retrivable. This boolean refers to if a certificate is currently loaded */
+                            auth: boolean;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Patch Server */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        url: string;
+                        api: string;
+                        name?: string;
+                        provider_url?: string;
+                        provider_secret?: string;
+                        provider_client?: string;
+                        auth?: {
+                            cert: string;
+                            key: string;
+                        };
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: number;
+                            status: string;
+                            created: string;
+                            updated: string;
+                            provider_client: string;
+                            provider_secret: string;
+                            provider_url: string;
+                            name: string;
+                            url: string;
+                            api: string;
+                            /** @description Once an admin certificate is configured it is not retrivable. This boolean refers to if a certificate is currently loaded */
+                            auth: boolean;
+                        };
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/swagger": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Return Swagger Doc in JSON */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": unknown;
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/task": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Tasks */
+        get: {
+            parameters: {
+                query: {
+                    /** @description Limit the number of responses returned */
+                    limit: number;
+                    /** @description Iterate through "pages" of items based on the "limit" query param */
+                    page: number;
+                    /** @description Order in which results are returned based on the "sort" query param */
+                    order: "asc" | "desc";
+                    /** @description No Description */
+                    sort?: "id" | "prefix" | "created" | "updated" | "name" | "repo" | "readme";
+                    /** @description Filter results by a human readable name field */
+                    filter: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            total: number;
+                            items: {
+                                id: number;
+                                prefix: string;
+                                created: string;
+                                updated: string;
+                                name: string;
+                                repo: string | null;
+                                readme: string | null;
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Create Registered Task */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        name: string;
+                        prefix: string;
+                        repo?: string;
+                        readme?: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: number;
+                            prefix: string;
+                            created: string;
+                            updated: string;
+                            name: string;
+                            repo: string | null;
+                            readme: string | null;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/task/raw": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Tasks */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            total: number;
+                            items: unknown;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/task/raw/{:task}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Version for a specific task */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            total: number;
+                            versions: unknown[];
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/task/raw/{:task}/version/{:version}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete a given task version */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/task/{:task}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update Registered Task */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        name?: string;
+                        repo?: string;
+                        readme?: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: number;
+                            prefix: string;
+                            created: string;
+                            updated: string;
+                            name: string;
+                            repo: string | null;
+                            readme: string | null;
+                        };
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/task/{:task}/readme": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Return README Contents */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            body: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/token": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List all tokens associated with the requester's account */
+        get: {
+            parameters: {
+                query: {
+                    /** @description Limit the number of responses returned */
+                    limit: number;
+                    /** @description Iterate through "pages" of items based on the "limit" query param */
+                    page: number;
+                    /** @description Order in which results are returned based on the "sort" query param */
+                    order: "asc" | "desc";
+                    /** @description No Description */
+                    sort?: "id" | "email" | "name" | "token" | "created" | "updated";
+                    /** @description Filter results by a human readable name field */
+                    filter: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            total: number;
+                            items: {
+                                id: number;
+                                name: string;
+                                created: string;
+                                updated: string;
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Create a new API token for programatic access */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        name: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: number;
+                            email: string;
+                            name: string;
+                            token: string;
+                            created: string;
+                            updated: string;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/token/{:id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete a user's API Token */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        /** Update properties of a Token */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        name?: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/user": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Let Admins see users of the system */
+        get: {
+            parameters: {
+                query: {
+                    /** @description Limit the number of responses returned */
+                    limit: number;
+                    /** @description Iterate through "pages" of items based on the "limit" query param */
+                    page: number;
+                    /** @description Order in which results are returned based on the "sort" query param */
+                    order: "asc" | "desc";
+                    /** @description No Description */
+                    sort?: "id" | "name" | "username" | "last_login" | "auth" | "created" | "updated" | "phone" | "tak_callsign" | "tak_group" | "tak_role" | "tak_loc" | "display_stale" | "display_distance" | "display_elevation" | "display_speed" | "system_admin" | "agency_admin";
+                    /** @description Filter results by a human readable name field */
+                    filter: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            total: number;
+                            items: {
+                                username: string;
+                                created: string;
+                                updated: string;
+                                phone: string;
+                                last_login: string;
+                                system_admin: boolean;
+                                agency_admin: number[];
+                                tak_callsign: string;
+                                tak_group: "White" | "Yellow" | "Orange" | "Magenta" | "Red" | "Maroon" | "Purple" | "Dark Blue" | "Blue" | "Cyan" | "Teal" | "Green" | "Dark Green" | "Brown";
+                                tak_role: "Team Member" | "Team Lead" | "HQ" | "Sniper" | "Medic" | "Forward Observer" | "RTO" | "K9";
+                                tak_loc: unknown;
+                                display_stale: string;
+                                display_distance: string;
+                                display_elevation: string;
+                                display_speed: string;
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/video": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Let Admins list video servers */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            total: number;
+                            versions: number[];
+                            items: {
+                                id: string;
+                                version: number;
+                                created: string;
+                                status: string;
+                                statusDesired: string;
+                                ipPublic?: string;
+                                ipPrivate?: string;
+                                memory: number;
+                                cpu: number;
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** Create a new Media Server */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": Record<string, never>;
+                };
+            };
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            version: number;
+                            created: string;
+                            status: string;
+                            statusDesired: string;
+                            ipPublic?: string;
+                            ipPrivate?: string;
+                            memory: number;
+                            cpu: number;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/video/{:serverid}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get all info about a particular video server */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            id: string;
+                            version: number;
+                            created: string;
+                            status: string;
+                            statusDesired: string;
+                            ipPublic?: string;
+                            ipPrivate?: string;
+                            memory: number;
+                            cpu: number;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        /** Shut down an existing video server */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successful Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            status: number;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
-
 export type webhooks = Record<string, never>;
-
-export type components = Record<string, never>;
-
+export interface components {
+    schemas: never;
+    responses: never;
+    parameters: never;
+    requestBodies: never;
+    headers: never;
+    pathItems: never;
+}
 export type $defs = Record<string, never>;
-
-export type external = Record<string, never>;
-
 export type operations = Record<string, never>;
