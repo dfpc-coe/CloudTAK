@@ -12,9 +12,13 @@
 
 ### Pending Release
 
+### v2.56.0 - 2024-06-24
+
+- :rocket: `API` Make a API call to ensure certificate is valid GET login
+
 ### v2.55.0 - 2024-06-24
 
-- :rocket: `API` Make a API call to ensure certificate is valid on login
+- :rocket: `API` Make a API call to ensure certificate is valid POST login
 
 ### v2.54.0 - 2024-06-24
 
