@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v2.53.1 - 2024-06-24
+
+- :bug: `UI` Fix Task Version Check
+
 ### v2.53.0 - 2024-06-24
 
 - :rocket: `UI/API` Add Registered Tasks with READMEs
