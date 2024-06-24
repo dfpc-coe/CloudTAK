@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v2.55.0 - 2024-06-24
+
+- :rocket: `API` Make a API call to ensure certificate is valid on login
+
 ### v2.54.0 - 2024-06-24
 
 - :bug: `UI` Add search and paging to Task Selection
