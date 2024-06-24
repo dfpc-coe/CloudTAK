@@ -5,7 +5,7 @@ import fetch from './fetch.js';
 import { CookieJar } from 'tough-cookie';
 import { CookieAgent } from 'http-cookie-agent/undici';
 import { X509Certificate } from 'crypto';
-import TAKAPI, { APIAuthPassword } from '../lib/tak-api.js';
+import TAKAPI, { APIAuthPassword, APIAuthCertificate } from '../lib/tak-api.js';
 
 export enum AuthProviderAccess {
     ADMIN = 'admin',
@@ -51,9 +51,9 @@ export default class AuthProvider {
         if (split.length < 2) throw new Err(500, null, 'Unexpected TAK JWT Format');
         const contents: { sub: string; aud: string; nbf: number; exp: number; iat: number; } = JSON.parse(split[1]);
 
-        let profile;
         const api = await TAKAPI.init(new URL(this.config.MartiAPI), new APIAuthPassword(username, password));
 
+        let profile;
         try {
             profile = await this.config.models.Profile.from(username);
         } catch (err) {
@@ -79,9 +79,27 @@ export default class AuthProvider {
             }
         } catch (err) {
             console.error(`Error: CertificateExpiration: ${validTo}: ${err}`);
-            await this.config.models.Profile.commit(username, {
+
+            profile = await this.config.models.Profile.commit(username, {
                 auth: await api.Credentials.generate()
             });
+        }
+
+        const cert_api = await TAKAPI.init(new URL(String(this.config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
+
+        try {
+            // No "certificate validity" endpoint exists so make a common call
+            // to ensure we get a 200 response and not a 500 - Update to check status when Josh
+            // pushes a fix to throw a 401 instead of a 500 on bad certs
+            await cert_api.Contacts.list();
+        } catch (err) {
+            if (err.message.includes('org.springframework.security.authentication.BadCredentialsException')) {
+                profile = await this.config.models.Profile.commit(username, {
+                    auth: await api.Credentials.generate()
+                });
+            } else {
+                throw err;
+            }
         }
 
         return contents.sub;
