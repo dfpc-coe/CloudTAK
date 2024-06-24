@@ -12,7 +12,7 @@
 
 ### Pending Release
 
-### v2.53.2 - 2024-06-24
+### v2.54.0 - 2024-06-24
 
 - :bug: `UI` Add search and paging to Task Selection
 
