@@ -43,4 +43,24 @@ export default async function router(schema: Schema, config: Config) {
             return Err.respond(err, res);
         }
     });
+
+    await schema.get('/user/:email', {
+        name: 'Get User',
+        group: 'User',
+        description: 'Let Admins see a given user of the system',
+        params: Type.Object({
+            email: Type.String(),
+        }),
+        res: ProfileResponse
+    }, async (req, res) => {
+        try {
+            await Auth.as_user(config, req, { admin: true });
+
+            const user = await config.models.Profile.from(req.params.email);
+
+            return res.json(user);
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
 }

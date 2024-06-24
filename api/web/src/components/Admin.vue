@@ -94,8 +94,8 @@
                                             <span
                                                 class='list-group-item list-group-item-action d-flex align-items-center'
                                                 :class='{
-                                                    "active": $route.name === "admin-user",
-                                                    "cursor-pointer": $route.name !== "admin-user"
+                                                    "active": $route.name.startsWith("admin-user"),
+                                                    "cursor-pointer": !$route.name.startsWith("admin-user")
                                                 }'
                                                 @click='$router.push(`/admin/user`)'
                                             ><IconUsers size='32' /><span class='mx-3'>Users</span></span>

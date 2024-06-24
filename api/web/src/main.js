@@ -336,8 +336,12 @@ const router = new VueRouter.createRouter({
                 component: () => import('./components/Admin/AdminConnections.vue')
             },{
                 path: 'user',
-                name: 'admin-user',
+                name: 'admin-users',
                 component: () => import('./components/Admin/AdminUsers.vue')
+            },{
+                path: 'user/:user',
+                name: 'admin-user',
+                component: () => import('./components/Admin/AdminUser.vue')
             },{
                 path: 'task',
                 name: 'admin-task',
