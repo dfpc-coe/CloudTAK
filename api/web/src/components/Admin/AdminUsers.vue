@@ -36,6 +36,7 @@
                             v-for='user in list.items'
                             :key='user.id'
                             class='cursor-pointer'
+                            @click='$router.push(`/admin/user/${user.username}`)'
                         >
                             <template v-for='h in header'>
                                 <template v-if='h.display'>
@@ -75,7 +76,7 @@ import {
 } from '@tabler/icons-vue'
 
 export default {
-    name: 'UserAdmin',
+    name: 'UsersAdmin',
     components: {
         TablerNone,
         IconRefresh,
