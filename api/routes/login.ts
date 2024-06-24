@@ -43,7 +43,9 @@ export default async function router(schema: Schema, config: Config) {
                     console.error(err);
                 }
             } else {
-                await config.models.Profile.commit(email, { last_login: new Date().toISOString() });
+                await config.models.Profile.commit(email, {
+                    last_login: new Date().toISOString()
+                });
             }
 
             const profile = await config.models.Profile.from(email);
