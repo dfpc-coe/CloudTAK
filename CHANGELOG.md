@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v2.57.0 - 2024-06-24
+
+- :rocket: `API` JWTs are now set to expire after 16 hours by default
+
 ### v2.56.0 - 2024-06-24
 
 - :rocket: `API` Make a API call to ensure certificate is valid GET login
