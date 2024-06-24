@@ -193,6 +193,9 @@ export default async function router(schema: Schema, config: Config) {
         name: 'Update Task',
         group: 'Task',
         description: 'Update Registered Task',
+        params: Type.Object({
+            task: Type.String()
+        }),
         body: Type.Object({
             name: Type.Optional(Type.String()),
             repo: Type.Optional(Type.String()),

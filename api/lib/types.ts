@@ -83,6 +83,8 @@ export const ImportResponse = createSelectSchema(schemas.Import, {});
 
 export const TaskResponse = createSelectSchema(schemas.Task, {
     id: Type.Integer(),
+    created: Type.String(),
+    updated: Type.String(),
 });
 
 export const IconsetResponse = createSelectSchema(schemas.Iconset, {

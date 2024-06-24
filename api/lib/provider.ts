@@ -1,8 +1,10 @@
 import Config from './config.js';
+import { InferSelectModel } from 'drizzle-orm';
 import Err from '@openaddresses/batch-error';
 import moment from 'moment';
 import fetch from './fetch.js';
 import { CookieJar } from 'tough-cookie';
+import { Profile } from './schema.js';
 import { CookieAgent } from 'http-cookie-agent/undici';
 import { X509Certificate } from 'crypto';
 import TAKAPI, { APIAuthPassword, APIAuthCertificate } from '../lib/tak-api.js';
@@ -51,13 +53,13 @@ export default class AuthProvider {
         if (split.length < 2) throw new Err(500, null, 'Unexpected TAK JWT Format');
         const contents: { sub: string; aud: string; nbf: number; exp: number; iat: number; } = JSON.parse(split[1]);
 
-        const api = await TAKAPI.init(new URL(this.config.MartiAPI), new APIAuthPassword(username, password));
-
         let profile;
         try {
             profile = await this.config.models.Profile.from(username);
         } catch (err) {
             if (err.name === 'PublicError' && err.status === 404) {
+                const api = await TAKAPI.init(new URL(this.config.MartiAPI), new APIAuthPassword(username, password));
+
                 await this.config.models.Profile.generate({
                     username: username,
                     auth: await api.Credentials.generate()
@@ -67,6 +69,15 @@ export default class AuthProvider {
             }
         }
 
+        await this.valid(profile, password);
+
+        return contents.sub;
+    }
+
+    async valid(
+        profile: InferSelectModel<typeof Profile>,
+        password?: string
+    ): Promise<InferSelectModel<typeof Profile>> {
         let validTo;
 
         try {
@@ -80,9 +91,14 @@ export default class AuthProvider {
         } catch (err) {
             console.error(`Error: CertificateExpiration: ${validTo}: ${err}`);
 
-            profile = await this.config.models.Profile.commit(username, {
-                auth: await api.Credentials.generate()
-            });
+            if (password) {
+                const api = await TAKAPI.init(new URL(this.config.MartiAPI), new APIAuthPassword(profile.username, password));
+                profile = await this.config.models.Profile.commit(profile.username, {
+                    auth: await api.Credentials.generate()
+                });
+            } else {
+                throw new Err(401, null, 'Certificate is expired');
+            }
         }
 
         const cert_api = await TAKAPI.init(new URL(String(this.config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
@@ -94,14 +110,20 @@ export default class AuthProvider {
             await cert_api.Contacts.list();
         } catch (err) {
             if (err.message.includes('org.springframework.security.authentication.BadCredentialsException')) {
-                profile = await this.config.models.Profile.commit(username, {
-                    auth: await api.Credentials.generate()
-                });
+                if (password) {
+                    const api = await TAKAPI.init(new URL(this.config.MartiAPI), new APIAuthPassword(profile.username, password));
+                    profile = await this.config.models.Profile.commit(profile.username, {
+                        auth: await api.Credentials.generate()
+                    });
+                } else {
+                    throw new Err(401, null, 'Certificate is Revoked');
+                }
             } else {
                 throw err;
             }
         }
 
-        return contents.sub;
+        return profile;
     }
+
 }
