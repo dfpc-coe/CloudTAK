@@ -139,9 +139,10 @@ export default async function router(schema: Schema, config: Config) {
             // Stuck with this approach for now - https://github.com/aws/containers-roadmap/issues/418
             const { tasks } = await listTasks();
 
+            const list = tasks.get(req.params.task);
             return res.json({
-                total: tasks.get(req.params.task).length || 0,
-                versions: semver.desc(tasks.get(req.params.task) || [])
+                total: list ? list.length : 0,
+                versions: semver.desc(list || [])
             });
         } catch (err) {
             return Err.respond(err, res);

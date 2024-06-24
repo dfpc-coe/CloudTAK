@@ -8,21 +8,21 @@
         />
         <div class='modal-status bg-yellow' />
         <div class='modal-body py-4'>
-            <TablerLoading v-if='loading.tasks' desc='Loading Tasks'/>
-            <template v-else>
-                <div class='row g-0'>
-                    <div class='col-12 col-md-3 border-end'>
-                        <div class='card-header'>
-                            <div class='card-title subheader'>
-                                Task Selection
-                            </div>
+            <div class='row g-0'>
+                <div class='col-12 col-md-3 border-end'>
+                    <div class='card-header'>
+                        <div class='card-title subheader'>
+                            Task Selection
                         </div>
+                    </div>
 
-                        <div class='pe-2'>
-                            <TablerInput placeholder='Filter Tasks'/>
-                        </div>
+                    <div class='pe-2'>
+                        <TablerInput placeholder='Filter Tasks' v-model='paging.filter'/>
+                    </div>
 
-                        <div class='card-body position-relative'>
+                    <TablerLoading v-if='loading.tasks' desc='Loading Tasks'/>
+                    <template v-else>
+                        <div class='card-body'>
                             <div class='list-group list-group-transparent'>
                                 <span
                                     :key='t.prefix'
@@ -37,56 +37,56 @@
                                     <span class='mx-3' v-text='t.name'/>
                                 </span>
                             </div>
+                        </div>
+                    </template>
 
-                            <div class='col-lg-12 fixed-bottom'>
-                                <TablerPager
-                                    v-if='list.total > paging.limit'
-                                    :page='paging.page'
-                                    :total='list.total'
-                                    :limit='paging.limit'
-                                    @page='paging.page = $event'
-                                />
+                    <div class='col-lg-12'>
+                        <TablerPager
+                            v-if='list.total > paging.limit'
+                            :page='paging.page'
+                            :total='list.total'
+                            :limit='paging.limit'
+                            @page='paging.page = $event'
+                        />
+                    </div>
+                </div>
+                <div class='col-12 col-md-9 position-relative'>
+                    <TablerLoading v-if='loading.task' desc='Loading Task'/>
+                    <TablerNone v-else-if='!current' :create='false'/>
+                    <div v-else>
+                        <div class='card-header d-flex align-items-center'>
+                            <div class='card-title subheader' v-text='current.name'></div>
+
+                            <div class='ms-auto btn-list'>
+                                <div class='subheader' v-text='`(${current.prefix})`'></div>
+
+                                <IconCode v-if='current.repo' :size='32' @click='external(current.repo)'/>
                             </div>
                         </div>
-                    </div>
-                    <div class='col-12 col-md-9 position-relative'>
-                        <TablerLoading v-if='loading.task' desc='Loading Task'/>
-                        <TablerNone v-else-if='!current' :create='false'/>
-                        <div v-else>
-                            <div class='card-header d-flex align-items-center'>
-                                <div class='card-title subheader' v-text='current.name'></div>
-
-                                <div class='ms-auto btn-list'>
-                                    <div class='subheader' v-text='`(${current.prefix})`'></div>
-
-                                    <IconCode v-if='current.repo' :size='32' @click='external(current.repo)'/>
-                                </div>
-                            </div>
-                            <div class='card-body'>
-                                <TablerMarkdown
-                                    class='card-body'
-                                    :markdown='current.readme'
-                                />
-                            </div>
-                            <div class='card-footer'>
-                                <div class='row g-2'>
-                                    <template v-if='versions.length'>
-                                        <div class='col-md-8'>
-                                            <TablerEnum :options='versions' v-model='version'/>
-                                        </div>
-                                        <div class='col-md-4'>
-                                            <button @click='$emit("task", `${current.prefix}-v${version}`)' class='btn btn-primary w-100' style='margin-top: 8px;'>Select</button>
-                                        </div>
-                                    </template>
-                                    <template v-else>
-                                        Task is registered but contains no active versions
-                                    </template>
-                                </div>
+                        <div class='card-body'>
+                            <TablerMarkdown
+                                class='card-body'
+                                :markdown='current.readme'
+                            />
+                        </div>
+                        <div class='card-footer'>
+                            <div class='row g-2'>
+                                <template v-if='versions.length'>
+                                    <div class='col-md-8'>
+                                        <TablerEnum :options='versions' v-model='version'/>
+                                    </div>
+                                    <div class='col-md-4'>
+                                        <button @click='$emit("task", `${current.prefix}-v${version}`)' class='btn btn-primary w-100' style='margin-top: 8px;'>Select</button>
+                                    </div>
+                                </template>
+                                <template v-else>
+                                    Task is registered but contains no active versions
+                                </template>
                             </div>
                         </div>
                     </div>
                 </div>
-            </template>
+            </div>
         </div>
     </TablerModal>
 </template>
@@ -172,8 +172,6 @@ export default {
             } else {
                 this.loading.task = true;
                 const task = await std(`/api/task/raw/${this.current.prefix}`);
-
-                console.error(task);
 
                 this.versions = task.versions;
 
