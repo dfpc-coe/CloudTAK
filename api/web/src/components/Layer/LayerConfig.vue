@@ -389,7 +389,7 @@ export default {
             const task = match[1];
             const version = match[2];
 
-            const list = await std(`/api/task/${task}`);
+            const list = await std(`/api/task/raw/${task}`);
 
             if (list.versions.indexOf(version) !== 0) {
                 this.newTaskVersion = list.versions[0];
