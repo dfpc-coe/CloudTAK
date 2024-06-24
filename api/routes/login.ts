@@ -57,7 +57,11 @@ export default async function router(schema: Schema, config: Config) {
                 access = AuthUserAccess.AGENCY
             }
 
-            return res.json({ access, email, token: jwt.sign({ access, email }, config.SigningSecret) })
+            return res.json({
+                access,
+                email,
+                token: jwt.sign({ access, email }, config.SigningSecret, { expiresIn: '16h' })
+            })
         } catch (err) {
             Err.respond(err, res);
         }
