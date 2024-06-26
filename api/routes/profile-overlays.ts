@@ -121,7 +121,7 @@ export default async function router(schema: Schema, config: Config) {
         try {
             const user = await Auth.as_user(config, req);
 
-            const overlay = await config.models.ProfileOverlay.from(req.params.overlay)
+            let overlay = await config.models.ProfileOverlay.from(req.params.overlay)
             if (overlay.username !== user.email) throw new Err(401, null, 'Cannot edit another\'s overlay');
 
             if (req.body.styles) {
@@ -129,7 +129,7 @@ export default async function router(schema: Schema, config: Config) {
                 if (errors.length) throw new Err(400, null, JSON.stringify(errors));
             }
 
-            await config.models.ProfileOverlay.commit(req.params.overlay, req.body)
+            overlay = await config.models.ProfileOverlay.commit(req.params.overlay, req.body)
 
             return res.json(overlay);
         } catch (err) {
