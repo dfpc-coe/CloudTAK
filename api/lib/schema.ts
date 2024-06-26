@@ -53,6 +53,7 @@ export const ProfileChat = pgTable('profile_chats', {
 
 export const VideoLease = pgTable('video_lease', {
     id: serial('id').primaryKey(),
+    name: text('name').notNull(),
     created: timestamp('created', { withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     updated: timestamp('updated', { withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
     username: text('username').notNull().references(() => Profile.username),

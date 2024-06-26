@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS "video_lease" (
 	"created" timestamp with time zone DEFAULT Now() NOT NULL,
 	"updated" timestamp with time zone DEFAULT Now() NOT NULL,
 	"username" text NOT NULL,
-	"expiration" timestamp with time zone DEFAULT Now() + INTERVAL 1 HOUR; NOT NULL,
+	"expiration" timestamp with time zone DEFAULT Now() + INTERVAL '1 HOUR' NOT NULL,
 	"path" text NOT NULL
 );
 --> statement-breakpoint
@@ -22,10 +22,6 @@ CREATE TABLE IF NOT EXISTS "video_lease" (
     Hope to release this update as soon as possible
 */
 
--- ALTER TABLE "tasks" DROP CONSTRAINT "<constraint_name>";--> statement-breakpoint
-ALTER TABLE "tasks" ADD COLUMN "id" serial NOT NULL;--> statement-breakpoint
-ALTER TABLE "tasks" ADD COLUMN "created" timestamp with time zone DEFAULT Now() NOT NULL;--> statement-breakpoint
-ALTER TABLE "tasks" ADD COLUMN "updated" timestamp with time zone DEFAULT Now() NOT NULL;--> statement-breakpoint
 DO $$ BEGIN
  ALTER TABLE "video_lease" ADD CONSTRAINT "video_lease_username_profile_username_fk" FOREIGN KEY ("username") REFERENCES "public"."profile"("username") ON DELETE no action ON UPDATE no action;
 EXCEPTION
