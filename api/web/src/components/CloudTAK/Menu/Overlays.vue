@@ -23,7 +23,7 @@
                     v-tooltip='"Save Order"'
                     class='cursor-pointer'
                     :size='32'
-                    @click='saveOrder'
+                    @click='isDraggable = false'
                 />
 
                 <IconPlus
@@ -39,6 +39,8 @@
                 <template v-else>
                     <div ref='sortable'>
                         <div
+                            :id='element.id'
+                            :key='element.id'
                             v-for='element in layers'
                             class='col-lg py-2'
                         >
@@ -184,6 +186,8 @@ import { useMapStore } from '/src/stores/map.ts';
 const mapStore = useMapStore();
 import { useCOTStore } from '/src/stores/cots.ts';
 const cotStore = useCOTStore();
+import { useOverlayStore } from '/src/stores/overlays.ts';
+const overlayStore = useOverlayStore();
 
 let sortable;
 
@@ -208,7 +212,8 @@ export default {
                 sortable = new Sortable(this.$refs.sortable, {
                     sort: true,
                     handle: '.drag-handle',
-                    dragoverBubble: true
+                    dataIdAttr: 'id',
+                    onSort: this.saveOrder
                 })
             } else {
                 sortable.destroy()
@@ -216,11 +221,15 @@ export default {
         }
     },
     methods: {
-        saveOrder: async function(layer) {
-            this.loading = true;
-            this.isDraggable = false;
+        saveOrder: async function(sortableEv) {
+            const layers = sortable.toArray()
 
-            this.loading = false;
+            for (const l of this.layers) {
+                if (!l.overlay) continue;
+                const pos = layers.indexOf(l.id);
+
+                await overlayStore.updateOverlay(l.overlay, { pos })
+            }
         },
         removeLayer: async function(layer) {
             this.loading = true;
