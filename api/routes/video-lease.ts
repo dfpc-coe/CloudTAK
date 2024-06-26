@@ -6,6 +6,7 @@ import Config from '../lib/config.js';
 import jwt from 'jsonwebtoken';
 import { sql } from 'drizzle-orm';
 import { Token } from '../lib/schema.js';
+import { randomUUID } from 'node:crypto';
 import { StandardResponse, VideoLeaseResponse } from '../lib/types.js';
 import * as Default from '../lib/limits.js';
 
@@ -23,7 +24,7 @@ export default async function router(schema: Schema, config: Config) {
         }),
         res: Type.Object({
             total: Type.Integer(),
-            items: Type.Array(ProfileTokenResponse)
+            items: Type.Array(VideoLeaseResponse)
         })
     }, async (req, res) => {
         try {
@@ -65,6 +66,7 @@ export default async function router(schema: Schema, config: Config) {
 
             const lease = await config.models.VideoLease.generate({
                 ...req.body,
+                path: randomUUID(),
                 username: user.email
             })
 
