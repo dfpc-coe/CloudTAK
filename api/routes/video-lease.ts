@@ -3,7 +3,6 @@ import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth, { AuthUserAccess } from '../lib/auth.js';
 import Config from '../lib/config.js';
-import jwt from 'jsonwebtoken';
 import { sql } from 'drizzle-orm';
 import { Token } from '../lib/schema.js';
 import { randomUUID } from 'node:crypto';
