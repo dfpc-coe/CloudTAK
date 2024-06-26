@@ -12,6 +12,7 @@ export const useOverlayStore = defineStore('overlays', {
         overlays: ProfileOverlay[],
     } => {
         return {
+            initialized: false,
             overlays: [],
         }
     },
@@ -46,6 +47,8 @@ export const useOverlayStore = defineStore('overlays', {
         list: async function() {
             // @ts-ignore Eventually Type API reqs
             this.overlays = (await std(`/api/profile/overlay`)).items;
+
+            this.initialized = true;
         }
     },
 })

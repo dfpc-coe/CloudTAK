@@ -213,7 +213,7 @@ export default {
                     sort: true,
                     handle: '.drag-handle',
                     dataIdAttr: 'id',
-                    onSort: this.saveOrder
+                    onEnd: this.saveOrder
                 })
             } else {
                 sortable.destroy()
@@ -222,11 +222,26 @@ export default {
     },
     methods: {
         saveOrder: async function(sortableEv) {
-            const layers = sortable.toArray()
+            const layer_ids = sortable.toArray()
+
+            const layer = mapStore.getLayer(sortableEv.item.getAttribute('id'))
+
+            if (sortableEv.newIndex === layer_ids.length - 1) {
+                for (const l of layer.layers) {
+                    mapStore.map.moveLayer(l.id)
+                }
+            } else {
+                const post = mapStore.getLayer(layer_ids[sortableEv.newIndex + 1]);
+                const postID = post.layers[post.layers.length - 1].id;
+
+                for (const l of layer.layers) {
+                    mapStore.map.moveLayer(l.id, postID)
+                }
+            }
 
             for (const l of this.layers) {
                 if (!l.overlay) continue;
-                const pos = layers.indexOf(l.id);
+                const pos = layer_ids.indexOf(l.id);
 
                 await overlayStore.updateOverlay(l.overlay, { pos })
             }
