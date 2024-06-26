@@ -14,7 +14,7 @@
                 <IconPlus
                     v-tooltip='"Add Overlay"'
                     class='cursor-pointer'
-                    size='32'
+                    :size='32'
                     @click='$router.push("/menu/datas")'
                 />
             </template>
@@ -31,14 +31,14 @@
                                 <IconEye
                                     v-if='layer.visible === "visible"'
                                     v-tooltip='"Hide Layer"'
-                                    size='32'
+                                    :size='32'
                                     class='cursor-pointer'
                                     @click.stop.prevent='flipVisible(layer)'
                                 />
                                 <IconEyeOff
                                     v-else
                                     v-tooltip='"Show Layer"'
-                                    size='32'
+                                    :size='32'
                                     class='cursor-pointer'
                                     @click.stop.prevent='flipVisible(layer)'
                                 />
@@ -47,12 +47,12 @@
                                     <IconMap
                                         v-if='layer.type === "raster"'
                                         v-tooltip='"Raster"'
-                                        size='32'
+                                        :size='32'
                                     />
                                     <IconVector
                                         v-else
                                         v-tooltip='"Vector"'
-                                        size='32'
+                                        :size='32'
                                     />
                                 </span>
 
@@ -69,26 +69,38 @@
                                     <IconMaximize
                                         v-if='getSource(layer).bounds'
                                         v-tooltip='"Zoom To Overlay"'
-                                        size='32'
+                                        :size='32'
                                         class='cursor-pointer'
                                         @click.stop.prevent='zoomTo(getSource(layer).bounds)'
                                     />
                                     <TablerDelete
-                                        v-if='layer.mode === "mission" || layer.name.startsWith("data-") || layer.name.startsWith("profile-")'
+                                        v-if='opened.includes(layer.id) && (layer.mode === "mission" || layer.name.startsWith("data-") || layer.name.startsWith("profile-"))'
                                         :key='layer.id'
                                         v-tooltip='"Delete Overlay"'
                                         displaytype='icon'
                                         @delete='removeLayer(layer)'
                                     />
                                 </div>
+
+                                <IconChevronRight
+                                    v-if='!opened.includes(layer.id)'
+                                    :size='32'
+                                    class='cursor-pointer'
+                                    @click='opened.push(layer.id)'
+                                />
+                                <IconChevronDown
+                                    v-else
+                                    :size='32'
+                                    class='cursor-pointer'
+                                    @click='opened.splice(opened.indexOf(layer.id), 1)'
+                                />
                             </div>
                         </div>
 
                         <div
-                            v-if='layer.type === "raster"'
+                            v-if='layer.type === "raster" && opened.includes(layer.id)'
                             class='col-12'
                             style='margin-left: 30px; padding-right: 40px;'
-                            step=''
                         >
                             <TablerRange
                                 v-model='layer.opacity'
@@ -99,11 +111,11 @@
                                 @change='updateOpacity(layer)'
                             />
                         </div>
-                        <div v-else-if='layer.type === "geojson"'>
+                        <div v-else-if='layer.type === "geojson" && opened.includes(layer.id)'>
                             <TablerLoading v-if='loadingPaths[layer.id] === true'/>
                             <template v-else>
                                 <div v-for='path in paths(layer)' class='d-flex align-items-center hover-dark px-3 py-2'>
-                                    <IconFolder size='32' style='margin-left: 40px;'/>
+                                    <IconFolder :size='32' style='margin-left: 40px;'/>
                                     <span v-text='path.path' class='mx-2'/>
                                     <div v-if='layer.id === "cots"' class='ms-auto'>
                                         <TablerDelete @click='deletePath(layer, path.path)' displaytype='icon'/>
@@ -127,6 +139,8 @@ import {
     TablerRange
 } from '@tak-ps/vue-tabler';
 import {
+    IconChevronRight,
+    IconChevronDown,
     IconMaximize,
     IconVector,
     IconFolder,
@@ -148,6 +162,7 @@ export default {
             err: false,
             isEditing: false,
             loading: false,
+            opened: [],
             loadingPaths: {}
         }
     },
@@ -213,6 +228,8 @@ export default {
         TablerRange,
         TablerLoading,
         TablerDelete,
+        IconChevronRight,
+        IconChevronDown,
         IconMaximize,
         IconFolder,
         IconEye,
