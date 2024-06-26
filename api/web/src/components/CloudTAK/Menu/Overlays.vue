@@ -27,6 +27,7 @@
                 />
 
                 <IconPlus
+                    v-if='!isDraggable'
                     v-tooltip='"Add Overlay"'
                     class='cursor-pointer'
                     :size='32'
