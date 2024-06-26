@@ -1,12 +1,12 @@
 import { Type } from '@sinclair/typebox'
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
-import Auth from '../lib/auth.js';
+import Auth, { AuthUserAccess } from '../lib/auth.js';
 import Config from '../lib/config.js';
 import jwt from 'jsonwebtoken';
 import { sql } from 'drizzle-orm';
 import { Token } from '../lib/schema.js';
-import { StandardResponse, CreateProfileTokenResponse, ProfileTokenResponse } from '../lib/types.js';
+import { StandardResponse, VideoLeaseResponse } from '../lib/types.js';
 import * as Default from '../lib/limits.js';
 
 export default async function router(schema: Schema, config: Config) {
@@ -51,20 +51,54 @@ export default async function router(schema: Schema, config: Config) {
         group: 'VideoLease',
         description: 'Create a new video Lease',
         body: Type.Object({
-            name: Type.String()
+            name: Type.String(),
+            duration: Type.Integer()
         }),
-        res: CreateProfileTokenResponse,
+        res: VideoLeaseResponse,
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
 
-            const token = await config.models.Token.generate({
-                ...req.body,
-                token: 'etl.' + jwt.sign({ id: user.email, access: 'profile' }, config.SigningSecret),
-                email: user.email
-            });
+            if (user.access !== AuthUserAccess.ADMIN  &&req.body.duration > 60 * 60 * 16) {
+                throw new Err(400, null, 'Only Administrators can request a lease > 16 hours')
+            }
 
-            return res.json(token);
+            const lease = await config.models.VideoLease.generate({
+                ...req.body,
+                username: user.email
+            })
+
+            return res.json(lease);
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
+
+    await schema.delete('/video/lease/:lease', {
+        name: 'Delete Lease',
+        group: 'VideoLease',
+        description: 'Delete a video Lease',
+        params: Type.Object({
+            lease: Type.String()
+        }),
+        res: StandardResponse
+    }, async (req, res) => {
+        try {
+            const user = await Auth.as_user(config, req);
+
+            if (user.access === AuthUserAccess.ADMIN) {
+                await config.models.VideoLease.delete(req.params.lease);
+            } else {
+                await config.models.VideoLease.delete(sql`
+                    username = ${user.email}
+                    AND id = ${req.params.lease}
+                `);
+            }
+
+            return res.json({
+                status: 200,
+                message: 'Video Lease Deleted'
+            });
         } catch (err) {
             return Err.respond(err, res);
         }
