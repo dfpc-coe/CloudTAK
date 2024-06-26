@@ -184,6 +184,8 @@ const mapStore = useMapStore();
 import { useCOTStore } from '/src/stores/cots.ts';
 const cotStore = useCOTStore();
 
+let sortable;
+
 export default {
     name: 'CloudTAKOverlays',
     data: function() {
@@ -199,13 +201,18 @@ export default {
     computed: {
         ...mapState(useMapStore, ['layers'])
     },
-    mounted: function() {
-        this.$nextTick(() => {
-            new Sortable(this.$refs.sortable, {
-                sort: true,
-                hande: '.drag'
-            })
-        })
+    watch: {
+        isDraggable: function() {
+            if (this.isDraggable) {
+                sortable = new Sortable(this.$refs.sortable, {
+                    sort: true,
+                    handle: '.drag-handle',
+                    dragoverBubble: true
+                })
+            } else {
+                sortable.destroy()
+            }
+        }
     },
     methods: {
         saveOrder: async function(layer) {
