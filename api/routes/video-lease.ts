@@ -29,7 +29,7 @@ export default async function router(schema: Schema, config: Config) {
         try {
             const user = await Auth.as_user(config, req);
 
-            const list = await config.models.Token.list({
+            const list = await config.models.VideoLease.list({
                 limit: req.query.limit,
                 page: req.query.page,
                 order: req.query.order,

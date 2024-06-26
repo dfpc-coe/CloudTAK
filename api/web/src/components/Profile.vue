@@ -50,6 +50,14 @@
                                             <span
                                                 class='list-group-item list-group-item-action d-flex align-items-center'
                                                 :class='{
+                                                    "active": $route.name === "profile-videos",
+                                                    "cursor-pointer": $route.name !== "profile-videos"
+                                                }'
+                                                @click='$router.push(`/profile/videos`)'
+                                            ><IconVideo size='32' /><span class='mx-3'>Video Leases</span></span>
+                                            <span
+                                                class='list-group-item list-group-item-action d-flex align-items-center'
+                                                :class='{
                                                     "active": $route.name === "profile-jobs",
                                                     "cursor-pointer": $route.name !== "profile-jobs"
                                                 }'
@@ -78,6 +86,7 @@ import {
     TablerBreadCrumb
 } from '@tak-ps/vue-tabler';
 import {
+    IconVideo,
     IconRobot,
     IconTransform,
     IconFiles,
@@ -87,6 +96,7 @@ import {
 export default {
     name: 'UserProfile',
     components: {
+        IconVideo,
         IconRobot,
         PageFooter,
         IconTransform,

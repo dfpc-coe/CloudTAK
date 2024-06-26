@@ -299,6 +299,10 @@ const router = new VueRouter.createRouter({
                 path: 'tokens',
                 name: 'profile-tokens',
                 component: () => import('./components/Profile/ProfileTokens.vue')
+            },{
+                path: 'videos',
+                name: 'profile-videos',
+                component: () => import('./components/Profile/ProfileVideos.vue')
             }]
         },
 
