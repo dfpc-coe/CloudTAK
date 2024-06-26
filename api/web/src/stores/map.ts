@@ -173,6 +173,15 @@ export const useMapStore = defineStore('cloudtak', {
                 });
             }
         },
+        getLayer(id: string): OverlayContainer | null {
+            for (let i = 0; i < this.layers.length; i++) {
+                if (this.layers[i].id === id) {
+                    return this.layers[i];
+                }
+            }
+
+            return null;
+        },
         getLayerByMode(mode: string, mode_id: string): OverlayContainer | null {
             for (let i = 0; i < this.layers.length; i++) {
                 if (this.layers[i].mode === mode && this.layers[i].mode_id === mode_id) {
