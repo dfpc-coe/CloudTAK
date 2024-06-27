@@ -6,6 +6,7 @@ import Schema from '@openaddresses/batch-schema';
 import S3 from '../lib/aws/s3.js';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
+import { ProfileOverlay } from '../lib/schema.js';
 import { StandardResponse, ProfileOverlayResponse } from '../lib/types.js'
 import { sql } from 'drizzle-orm';
 import TAKAPI, {
@@ -26,7 +27,8 @@ export default async function router(schema: Schema, config: Config) {
         query: Type.Object({
             limit: Default.Limit,
             page: Default.Page,
-            order: Default.Order
+            order: Default.Order,
+            sort: Type.Optional(Type.String({ default: 'pos', enum: Object.keys(ProfileOverlay) })),
         }),
         res: Type.Object({
             total: Type.Integer(),
@@ -44,6 +46,7 @@ export default async function router(schema: Schema, config: Config) {
                 limit: req.query.limit,
                 page: req.query.page,
                 order: req.query.order,
+                sort: req.query.sort,
                 where: sql`
                     username = ${user.email}
                 `
