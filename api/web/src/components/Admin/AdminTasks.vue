@@ -8,7 +8,8 @@
             <div class='ms-auto btn-list'>
                 <IconPlus
                     v-tooltip='"Register New Task"'
-                    size='32'
+                    :size='32'
+                    :stroke='1'
                     class='cursor-pointer'
                     @click='edit = {
                         "name": "",
@@ -19,7 +20,8 @@
                 />
                 <IconRefresh
                     v-tooltip='"Refresh"'
-                    size='32'
+                    :size='32'
+                    :stroke='1'
                     class='cursor-pointer'
                     @click='fetchList'
                 />

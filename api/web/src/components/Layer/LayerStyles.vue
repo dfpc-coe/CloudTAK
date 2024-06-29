@@ -8,7 +8,8 @@
                 <IconSettings
                     v-if='disabled'
                     v-tooltip='"Edit Style"'
-                    size='32'
+                    :size='32'
+                    :stroke='1'
                     class='cursor-pointer'
                     @click='disabled = false'
                 />
@@ -25,7 +26,8 @@
                         >
                             <IconDeviceFloppy
                                 v-tooltip='"Save Style"'
-                                size='32'
+                                :size='32'
+                                :stroke='1'
                             />
                         </div>
                     </div>
@@ -66,7 +68,8 @@
                     >
                         <IconHelp
                             v-tooltip='"JSONata Help"'
-                            size='32'
+                            :size='32'
+                            :stroke='1'
                         />
                     </button>
                     <button
@@ -76,7 +79,8 @@
                     >
                         <IconX
                             v-tooltip='"Return to list"'
-                            size='32'
+                            :size='32'
+                            :stroke='1'
                         />
                     </button>
                     <template v-if='!disabled'>
@@ -87,7 +91,8 @@
                         >
                             <IconPlus
                                 v-tooltip='"New Query"'
-                                size='32'
+                                :size='32'
+                                :stroke='1'
                             />
                         </button>
                     </template>
@@ -119,7 +124,8 @@
                                 <div class='ms-auto'>
                                     <IconTrash
                                         v-if='!disabled'
-                                        size='32'
+                                        :size='32'
+                                        :stroke='1'
                                         @click.stop='queries.splice(q_idx, 1)'
                                     />
                                 </div>

@@ -3,7 +3,8 @@
         <template #buttons>
             <IconRefresh
                 v-tooltip='"Refresh"'
-                size='32'
+                :size='32'
+                :stroke='1'
                 class='cursor-pointer'
                 @click='refresh'
             />
@@ -21,7 +22,10 @@
                     @click='$router.push(`/cot/${video.id}`)'
                     class='col-12 py-2 px-3 d-flex align-items-center hover-dark cursor-pointer'
                 >
-                    <IconVideo size='32' />
+                    <IconVideo
+                        :size='32'
+                        :stroke='1'
+                    />
                     <span
                         class='mx-2'
                         style='font-size: 18px;'

@@ -8,7 +8,8 @@
                         <IconSelect
                             v-model='feat.properties.icon'
                             label='Point Icon'
-                            size='32'
+                            :size='32'
+                            :stroke='1'
                         />
                     </div>
                     <div class='col-12'>

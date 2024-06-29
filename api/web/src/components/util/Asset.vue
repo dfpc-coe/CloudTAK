@@ -2,7 +2,7 @@
     <div class='row'>
         <div class='col-12 d-flex'>
             <div class='py-2'>
-                <IconFolder size='32' /><span
+                <IconFolder :size='32' :stroke='1'/><span
                     class='px-2'
                     v-text='asset.name'
                 />
@@ -13,7 +13,7 @@
                     class='btn btn-sm'
                     @click='download'
                 >
-                    <IconDownload size='32' />
+                    <IconDownload :size='32' :stroke='1'/>
                 </div>
             </div>
         </div>

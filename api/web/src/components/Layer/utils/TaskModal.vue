@@ -60,7 +60,7 @@
                             <div class='ms-auto btn-list'>
                                 <div class='subheader' v-text='`(${current.prefix})`'></div>
 
-                                <IconCode v-if='current.repo' :size='32' @click='external(current.repo)'/>
+                                <IconCode v-if='current.repo' :size='32' :stroke='1' @click='external(current.repo)'/>
                             </div>
                         </div>
                         <div class='card-body'>

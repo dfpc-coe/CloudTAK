@@ -10,7 +10,8 @@
                 <IconRefresh
                     v-if='!disabled && !err && !loading'
                     v-tooltip='"Refresh"'
-                    size='32'
+                    :size='32'
+                    :stroke='1'
                     class='cursor-pointer'
                     @click='getList'
                 />
@@ -18,14 +19,16 @@
                 <IconArrowBack
                     v-if='!disabled && !err && !loading'
                     v-tooltip='"Back"'
-                    size='32'
+                    :size='32'
+                    :stroke='1'
                     class='cursor-pointer'
                     @click='back'
                 />
                 <IconX
                     v-if='!disabled'
                     v-tooltip='"Close Explorer"'
-                    size='32'
+                    :size='32'
+                    :stroke='1'
                     class='cursor-pointer'
                     @click='$emit("close")'
                 />
@@ -63,14 +66,14 @@
                                 <td>
                                     <div class='d-flex align-items-center'>
                                         <template v-if='l.type === "folder"'>
-                                            <IconFolder size='32' />
+                                            <IconFolder :size='32' :stroke='1' />
                                             <span
                                                 class='mx-3'
                                                 v-text='l.name'
                                             />
                                         </template>
                                         <template v-else>
-                                            <IconMap size='32' />
+                                            <IconMap :size='32' :stroke='1'/>
                                             <span
                                                 class='mx-3'
                                                 v-text='l.name'
@@ -137,14 +140,15 @@
                             >
                                 <td>
                                     <div class='d-flex align-items-center'>
-                                        <IconMap size='32' /><span
+                                        <IconMap :size='32' :stroke='1' /><span
                                             class='mx-3'
                                             v-text='lyr.name'
                                         />
                                         <div class='ms-auto btn-list'>
                                             <IconCheck
                                                 v-if='layer && layer.id === lyr.id'
-                                                size='32'
+                                                :size='32'
+                                                :stroke='1'
                                             />
                                             <TablerDelete
                                                 v-if='!readonly && !disabled'

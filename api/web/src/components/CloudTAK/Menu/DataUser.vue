@@ -16,17 +16,20 @@
                     <IconEyeX
                         v-if='!a.visualized'
                         v-tooltip='"No Viz Layer"'
-                        size='32'
+                        :size='32'
+                        :stroke='1'
                     />
                     <IconEye
                         v-else-if='a.visible'
-                        size='32'
+                        :size='32'
+                        :stroke='1'
                         class='cursor-pointer'
                         @click='flipVisible(a)'
                     />
                     <IconEyeOff
                         v-else
-                        size='32'
+                        :size='32'
+                        :stroke='1'
                         class='cursor-pointer'
                         @click='flipVisible(a)'
                     />

@@ -32,7 +32,8 @@
                                 <div class='ms-auto'>
                                     <div class='btn-list'>
                                         <IconRefresh
-                                            size='32'
+                                            :size='32'
+                                            :stroke='1'
                                             class='cursor-pointer'
                                             @click='fetchLogs'
                                         />

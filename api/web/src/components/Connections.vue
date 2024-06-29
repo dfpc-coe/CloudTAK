@@ -38,7 +38,10 @@
                                         placeholder='Search…'
                                     >
                                     <span class='input-icon-addon'>
-                                        <IconSearch size='24' />
+                                        <IconSearch
+                                            :size='24'
+                                            :stroke='1'
+                                        />
                                     </span>
                                 </div>
                             </div>
@@ -74,7 +77,8 @@
                                             <AgencyBadge :connection='connection' />
 
                                             <IconSettings
-                                                size='32'
+                                                :size='32'
+                                                :stroke='1'
                                                 class='cursor-pointer'
                                                 @click='$router.push(`/connection/${connection.id}/edit`)'
                                             />

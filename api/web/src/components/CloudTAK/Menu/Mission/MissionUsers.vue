@@ -15,16 +15,19 @@
                         v-if='sub.role.type === "MISSION_OWNER"'
                         v-tooltip='sub.role.type'
                         :size='32'
+                        :stroke='1'
                     />
                     <IconUserEdit
                         v-else-if='sub.role.type === "MISSION_SUBSCRIBER"'
                         v-tooltip='sub.role.type'
                         :size='32'
+                        :stroke='1'
                     />
                     <IconUser
                         v-else-if='sub.role.type === "MISSION_READONLY_SUBSCRIBER"'
                         v-tooltip='sub.role.type'
                         :size='32'
+                        :stroke='1'
                     />
                     <div class='col-auto mx-2'>
                         <div v-text='sub.username' />

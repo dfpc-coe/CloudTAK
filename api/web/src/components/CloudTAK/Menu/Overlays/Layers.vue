@@ -17,15 +17,18 @@
                         <span>
                             <IconPaint
                                 v-if='l.type === "fill"'
-                                size='24'
+                                :size='24'
+                                :stroke='1'
                             />
                             <IconLine
                                 v-else-if='l.type === "line"'
-                                size='24'
+                                :size='24'
+                                :stroke='1'
                             />
                             <IconCircle
                                 v-else-if='l.type === "circle"'
-                                size='24'
+                                :size='24'
+                                :stroke='1'
                             />
                         </span>
 

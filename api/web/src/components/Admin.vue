@@ -42,7 +42,12 @@
                                                     "cursor-pointer": $route.name !== "admin-server"
                                                 }'
                                                 @click='$router.push(`/admin/server`)'
-                                            ><IconServer size='32' /><span class='mx-3'>TAK Server</span></span>
+                                            >
+                                                <IconServer
+                                                    :size='32'
+                                                    :stroke='1'
+                                                /><span class='mx-3'>TAK Server</span>
+                                            </span>
                                             <span
                                                 class='list-group-item list-group-item-action d-flex align-items-center'
                                                 :class='{
@@ -50,7 +55,10 @@
                                                     "cursor-pointer": $route.name !== "admin-config"
                                                 }'
                                                 @click='$router.push(`/admin/config`)'
-                                            ><IconSettings size='32' /><span class='mx-3'>Settings</span></span>
+                                            ><IconSettings
+                                                :size='32'
+                                                :stroke='1'
+                                            /><span class='mx-3'>Settings</span></span>
                                             <span
                                                 class='list-group-item list-group-item-action d-flex align-items-center'
                                                 :class='{
@@ -58,7 +66,10 @@
                                                     "cursor-pointer": $route.name !== "admin-task-raw"
                                                 }'
                                                 @click='$router.push(`/admin/task-raw`)'
-                                            ><IconBrandDocker size='32' /><span class='mx-3'>ETL Containers</span></span>
+                                            ><IconBrandDocker
+                                                :size='32'
+                                                :stroke='1'
+                                            /><span class='mx-3'>ETL Containers</span></span>
                                             <span
                                                 class='list-group-item list-group-item-action d-flex align-items-center'
                                                 :class='{
@@ -66,7 +77,10 @@
                                                     "cursor-pointer": $route.name !== "admin-task"
                                                 }'
                                                 @click='$router.push(`/admin/task`)'
-                                            ><IconBrandDocker size='32' /><span class='mx-3'>Registered Tasks</span></span>
+                                            ><IconBrandDocker 
+                                                :size='32'
+                                                :stroke='1'
+                                            /><span class='mx-3'>Registered Tasks</span></span>
                                             <span
                                                 class='list-group-item list-group-item-action d-flex align-items-center'
                                                 :class='{
@@ -74,7 +88,10 @@
                                                     "cursor-pointer": $route.name !== "admin-connection"
                                                 }'
                                                 @click='$router.push(`/admin/connection`)'
-                                            ><IconNetwork size='32' /><span class='mx-3'>Connections</span></span>
+                                            ><IconNetwork
+                                                :size='32'
+                                                :stroke='1'
+                                            /><span class='mx-3'>Connections</span></span>
                                             <span
                                                 class='list-group-item list-group-item-action d-flex align-items-center'
                                                 :class='{
@@ -82,7 +99,10 @@
                                                     "cursor-pointer": $route.name !== "admin-layer"
                                                 }'
                                                 @click='$router.push(`/admin/layer`)'
-                                            ><IconBuildingBroadcastTower size='32' /><span class='mx-3'>Layers</span></span>
+                                            ><IconBuildingBroadcastTower
+                                                :size='32'
+                                                :stroke='1'
+                                            /><span class='mx-3'>Layers</span></span>
                                             <span
                                                 class='list-group-item list-group-item-action d-flex align-items-center'
                                                 :class='{
@@ -90,7 +110,10 @@
                                                     "cursor-pointer": $route.name !== "admin-data"
                                                 }'
                                                 @click='$router.push(`/admin/data`)'
-                                            ><IconDatabase size='32' /><span class='mx-3'>Data Syncs</span></span>
+                                            ><IconDatabase 
+                                                :size='32'
+                                                :stroke='1'
+                                            /><span class='mx-3'>Data Syncs</span></span>
                                             <span
                                                 class='list-group-item list-group-item-action d-flex align-items-center'
                                                 :class='{
@@ -98,7 +121,10 @@
                                                     "cursor-pointer": !$route.name.startsWith("admin-user")
                                                 }'
                                                 @click='$router.push(`/admin/user`)'
-                                            ><IconUsers size='32' /><span class='mx-3'>Users</span></span>
+                                            ><IconUsers 
+                                                :size='32'
+                                                :stroke='1'
+                                            /><span class='mx-3'>Users</span></span>
                                             <span
                                                 class='list-group-item list-group-item-action d-flex align-items-center'
                                                 :class='{
@@ -106,7 +132,10 @@
                                                     "cursor-pointer": !$route.name.includes("admin-video")
                                                 }'
                                                 @click='$router.push(`/admin/video`)'
-                                            ><IconVideo size='32' /><span class='mx-3'>Video Servers</span></span>
+                                            ><IconVideo 
+                                                :size='32'
+                                                :stroke='1'
+                                            /><span class='mx-3'>Video Servers</span></span>
                                             <span
                                                 class='list-group-item list-group-item-action d-flex align-items-center'
                                                 :class='{
@@ -114,7 +143,10 @@
                                                     "cursor-pointer": !$route.name.includes("admin-export")
                                                 }'
                                                 @click='$router.push(`/admin/export`)'
-                                            ><IconDatabaseExport size='32' /><span class='mx-3'>Export</span></span>
+                                            ><IconDatabaseExport 
+                                                :size='32'
+                                                :stroke='1'
+                                            /><span class='mx-3'>Export</span></span>
                                         </div>
                                     </div>
                                 </div>

@@ -11,7 +11,8 @@
                 <IconX
                     v-tooltip='"Cancel Share"'
                     class='cursor-pointer mx-2 my-2'
-                    size='20'
+                    :size='20'
+                    :stroke='1'
                     @click='$emit("cancel")'
                 />
             </div>
@@ -51,7 +52,8 @@
                     >
                         <IconShare2
                             v-if='compact'
-                            size='20'
+                            :size='20'
+                            :stroke='1'
                         />
                         <span v-else>Share to Selected</span>
                     </button>
@@ -65,7 +67,8 @@
                     >
                         <IconBroadcast
                             v-if='compact'
-                            size='20'
+                            :size='20'
+                            :stroke='1'
                         />
                         <span v-else>Broadcast to All</span>
                     </button>

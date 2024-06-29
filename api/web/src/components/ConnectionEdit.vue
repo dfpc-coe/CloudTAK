@@ -88,13 +88,15 @@
                                     >
                                         <IconLogin
                                             v-tooltip='"User Login"'
-                                            size='32'
+                                            :size='32'
+                                            :stroke='1'
                                             class='cursor-pointer'
                                             @click='modal.login = true'
                                         />
                                         <IconPlus
                                             v-tooltip='"P12 Upload"'
-                                            size='32'
+                                            :size='32'
+                                            :stroke='1'
                                             class='cursor-pointer'
                                             @click='modal.upload = true'
                                         />
@@ -123,7 +125,10 @@
                                         <template v-else>
                                             <div class='border px-3 py-3'>
                                                 <div class='d-flex justify-content-center'>
-                                                    <IconLock size='50' />
+                                                    <IconLock
+                                                        :size='50'
+                                                        :stroke='1'
+                                                    />
                                                 </div>
                                                 <div class='d-flex justify-content-center my-3'>
                                                     Once Certificates are generated they cannot be viewed

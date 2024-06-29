@@ -37,20 +37,23 @@
                                     <div class='btn-list'>
                                         <IconAlertTriangle
                                             v-tooltip='"Layer Alerts"'
-                                            size='32'
+                                            :size='32'
+                                            :stroke='1'
                                             class='cursor-pointer'
                                             :class='{ "text-red": alerts.total }'
                                             @click='$router.push(`/connection/${$route.params.connectionid}/layer/${layer.id}/alert`)'
                                         />
                                         <IconDatabase
                                             v-tooltip='"CoT Logging"'
-                                            size='32'
+                                            :size='32'
+                                            :stroke='1'
                                             class='cursor-pointer'
                                             @click='$router.push(`/connection/${$route.params.connectionid}/layer/${layer.id}/query`)'
                                         />
                                         <IconSettings
                                             v-tooltip='"Edit"'
-                                            size='32'
+                                            :size='32'
+                                            :stroke='1'
                                             class='cursor-pointer'
                                             @click='$router.push(`/connection/${$route.params.connectionid}/layer/${layer.id}/edit`)'
                                         />
@@ -97,7 +100,8 @@
                                     <IconX
                                         v-tooltip='"Cancel Stack Update"'
                                         class='cursor-pointer'
-                                        size='32'
+                                        :size='32'
+                                        :stroke='1'
                                         @click='cancelUpdate'
                                     />
                                 </div>
@@ -124,7 +128,10 @@
                                                     "cursor-pointer": $route.name !== "layer-deployment"
                                                 }'
                                                 @click='$router.push(`/connection/${$route.params.connectionid}/layer/${$route.params.layerid}/deployment`)'
-                                            ><IconPlaneDeparture size='32' /><span class='mx-3'>Deployment</span></span>
+                                            ><IconPlaneDeparture
+                                                :size='32'
+                                                :stroke='32'
+                                            /><span class='mx-3'>Deployment</span></span>
                                             <span
                                                 class='list-group-item list-group-item-action d-flex align-items-center'
                                                 :class='{
@@ -132,7 +139,10 @@
                                                     "cursor-pointer": $route.name !== "layer-config"
                                                 }'
                                                 @click='$router.push(`/connection/${$route.params.connectionid}/layer/${$route.params.layerid}/config`)'
-                                            ><IconAdjustments size='32' /><span class='mx-3'>Config</span></span>
+                                            ><IconAdjustments
+                                                :size='32'
+                                                :stroke='32'
+                                            /><span class='mx-3'>Config</span></span>
                                             <span
                                                 class='list-group-item list-group-item-action d-flex align-items-center'
                                                 :class='{
@@ -140,7 +150,10 @@
                                                     "cursor-pointer": $route.name !== "layer-environment"
                                                 }'
                                                 @click='$router.push(`/connection/${$route.params.connectionid}/layer/${$route.params.layerid}/environment`)'
-                                            ><IconBeach size='32' /><span class='mx-3'>Environment</span></span>
+                                            ><IconBeach
+                                                :size='32'
+                                                :stroke='32'
+                                            /><span class='mx-3'>Environment</span></span>
                                             <span
                                                 class='list-group-item list-group-item-action d-flex align-items-center'
                                                 :class='{
@@ -148,7 +161,10 @@
                                                     "cursor-pointer": $route.name !== "layer-schema"
                                                 }'
                                                 @click='$router.push(`/connection/${$route.params.connectionid}/layer/${$route.params.layerid}/schema`)'
-                                            ><IconSchema size='32' /><span class='mx-3'>Schema</span></span>
+                                            ><IconSchema
+                                                :size='32'
+                                                :stroke='32'
+                                            /><span class='mx-3'>Schema</span></span>
                                             <span
                                                 class='list-group-item list-group-item-action d-flex align-items-center'
                                                 :class='{
@@ -156,7 +172,10 @@
                                                     "cursor-pointer": $route.name !== "layer-styles"
                                                 }'
                                                 @click='$router.push(`/connection/${$route.params.connectionid}/layer/${$route.params.layerid}/styles`)'
-                                            ><IconPaint size='32' /><span class='mx-3'>Styling</span></span>
+                                            ><IconPaint
+                                                :size='32'
+                                                :stroke='32'
+                                            /><span class='mx-3'>Styling</span></span>
                                         </div>
                                     </div>
                                 </div>

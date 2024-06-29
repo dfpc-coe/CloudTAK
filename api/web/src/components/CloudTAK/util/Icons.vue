@@ -7,7 +7,8 @@
 
             <div class='ms-auto btn-list'>
                 <IconSearch
-                    size='32'
+                    :size='32'
+                    :stroke='1'
                     class='cursor-pointer'
                     @click='search = !search'
                 />

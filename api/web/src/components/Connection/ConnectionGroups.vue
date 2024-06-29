@@ -8,7 +8,8 @@
             <div class='ms-auto btn-list'>
                 <IconRefresh
                     v-tooltip='"Refresh"'
-                    size='32'
+                    :size='32'
+                    :stroke='1'
                     class='cursor-pointer'
                     @click='fetch'
                 />
@@ -41,14 +42,16 @@
                                 <IconEye
                                     v-if='group.active'
                                     v-tooltip='"Disable"'
-                                    size='32'
+                                    :size='32'
+                                    :stroke='1'
                                     class='cursor-pointer'
                                     @click='setStatus(group, false)'
                                 />
                                 <IconEyeOff
                                     v-else
                                     v-tooltip='"Enable"'
-                                    size='32'
+                                    :size='32'
+                                    :stroke='1'
                                     class='cursor-pointer'
                                     @click='setStatus(group, true)'
                                 />
@@ -63,17 +66,20 @@
                             <IconLocation
                                 v-if='group.direction.length === 2'
                                 v-tooltip='"Bi-Directional"'
-                                size='32'
+                                :size='32'
+                                :stroke='1'
                             />
                             <IconLocation
                                 v-else-if='group.direction.includes("IN")'
                                 v-tooltip='"Location Sharing"'
-                                size='32'
+                                :size='32'
+                                :stroke='1'
                             />
                             <IconLocationOff
                                 v-else-if='group.direction.includes("OUT")'
                                 v-tooltip='"No Location Sharing"'
-                                size='32'
+                                :size='32'
+                                :stroke='1'
                             />
                         </td>
                     </tr>
