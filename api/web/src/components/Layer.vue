@@ -130,7 +130,7 @@
                                                 @click='$router.push(`/connection/${$route.params.connectionid}/layer/${$route.params.layerid}/deployment`)'
                                             ><IconPlaneDeparture
                                                 :size='32'
-                                                :stroke='32'
+                                                :stroke='1'
                                             /><span class='mx-3'>Deployment</span></span>
                                             <span
                                                 class='list-group-item list-group-item-action d-flex align-items-center'
@@ -141,7 +141,7 @@
                                                 @click='$router.push(`/connection/${$route.params.connectionid}/layer/${$route.params.layerid}/config`)'
                                             ><IconAdjustments
                                                 :size='32'
-                                                :stroke='32'
+                                                :stroke='1'
                                             /><span class='mx-3'>Config</span></span>
                                             <span
                                                 class='list-group-item list-group-item-action d-flex align-items-center'
@@ -152,7 +152,7 @@
                                                 @click='$router.push(`/connection/${$route.params.connectionid}/layer/${$route.params.layerid}/environment`)'
                                             ><IconBeach
                                                 :size='32'
-                                                :stroke='32'
+                                                :stroke='1'
                                             /><span class='mx-3'>Environment</span></span>
                                             <span
                                                 class='list-group-item list-group-item-action d-flex align-items-center'
@@ -163,7 +163,7 @@
                                                 @click='$router.push(`/connection/${$route.params.connectionid}/layer/${$route.params.layerid}/schema`)'
                                             ><IconSchema
                                                 :size='32'
-                                                :stroke='32'
+                                                :stroke='1'
                                             /><span class='mx-3'>Schema</span></span>
                                             <span
                                                 class='list-group-item list-group-item-action d-flex align-items-center'
@@ -174,7 +174,7 @@
                                                 @click='$router.push(`/connection/${$route.params.connectionid}/layer/${$route.params.layerid}/styles`)'
                                             ><IconPaint
                                                 :size='32'
-                                                :stroke='32'
+                                                :stroke='1'
                                             /><span class='mx-3'>Styling</span></span>
                                         </div>
                                     </div>
