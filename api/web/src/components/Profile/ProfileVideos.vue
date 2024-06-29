@@ -33,11 +33,11 @@
             v-else
             class='table-responsive'
         >
-            <table class='table table-hover card-table table-vcenter cursor-pointer'>
+            <table class='table table-hover card-table table-vcenter'>
                 <thead>
                     <tr>
+                        <th>Name</th>
                         <th>Lease Path</th>
-                        <th>Created</th>
                         <th>Updated</th>
                         <th>Lease Expiration</th>
                     </tr>
@@ -46,11 +46,11 @@
                     <tr
                         v-for='t in list.items'
                         :key='t.id'
-                        @click='lease = t'
                     >
                         <td v-text='t.name' />
-                        <td><TablerEpoch :date='t.created' /></td>
-                        <td><TablerEpoch :date='t.updated' /></td>
+                        <td class='subheader'v-text='`/${t.path}`' />
+                        <td><TablerEpoch :date='t.updated'/></td>
+                        <td><TablerEpoch :date='t.expiration'/></td>
                     </tr>
                 </tbody>
             </table>
