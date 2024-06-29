@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { std } from '../std.js';
+import { std, stdurl } from '../std.js';
 import * as pmtiles from 'pmtiles';
 import pointOnFeature from '@turf/point-on-feature';
 import { useCOTStore } from './cots.js'
@@ -9,9 +9,11 @@ import type { Static } from '@sinclair/typebox';
 
 export const useOverlayStore = defineStore('overlays', {
     state: (): {
-        overlays: ProfileOverlay[],
+        initialized: boolean;
+        overlays: ProfileOverlay[];
     } => {
         return {
+            initialized: false,
             overlays: [],
         }
     },
@@ -44,8 +46,14 @@ export const useOverlayStore = defineStore('overlays', {
             await this.list()
         },
         list: async function() {
+            const url = stdurl('/api/profile/overlay');
+            url.searchParams.append('sort', 'pos');
+            url.searchParams.append('order', 'asc');
+
             // @ts-ignore Eventually Type API reqs
-            this.overlays = (await std(`/api/profile/overlay`)).items;
+            this.overlays = (await std(url)).items;
+
+            this.initialized = true;
         }
     },
 })

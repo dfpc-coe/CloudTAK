@@ -17,17 +17,20 @@
                         <IconEyeX
                             v-if='!a.visualized'
                             v-tooltip='"No Viz Layer"'
-                            size='32'
+                            :size='32'
+                            :stroke='1'
                         />
                         <IconEye
                             v-else-if='a.visible'
-                            size='32'
+                            :size='32'
+                            :stroke='1'
                             class='cursor-pointer'
                             @click='flipVisible(a)'
                         />
                         <IconEyeOff
                             v-else
-                            size='32'
+                            :size='32'
+                            :stroke='1'
                             class='cursor-pointer'
                             @click='flipVisible(a)'
                         />
@@ -54,7 +57,11 @@
                         @click='data = d'
                     >
                         <div class='col-12 py-2 px-2 d-flex align-items-center'>
-                            <IconFolder size='32' /><span
+                            <IconFolder
+                                :size='32'
+                                :stroke='1'
+                            />
+                            <span
                                 class='mx-2'
                                 v-text='d.name'
                             />

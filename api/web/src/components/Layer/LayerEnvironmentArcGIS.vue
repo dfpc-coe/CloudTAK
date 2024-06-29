@@ -141,11 +141,13 @@
         >
             <IconSquareChevronRight
                 v-if='!advanced'
-                size='32'
+                :size='32'
+                :stroke='1'
             />
             <IconChevronDown
                 v-else
-                size='32'
+                :size='32'
+                :stroke='1'
             />
             Advanced Options
         </label>
@@ -170,7 +172,10 @@
                             style='height: 40px; margin-left: 8px; margin-top: 28px;'
                             @click='filterModal = true'
                         >
-                            <IconFilter size='32' /> Query Editor
+                            <IconFilter
+                                :size='32'
+                                :stroke='1'
+                            /> Query Editor
                         </button>
                     </div>
                 </div>

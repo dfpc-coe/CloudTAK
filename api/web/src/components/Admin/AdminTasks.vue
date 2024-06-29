@@ -8,7 +8,8 @@
             <div class='ms-auto btn-list'>
                 <IconPlus
                     v-tooltip='"Register New Task"'
-                    size='32'
+                    :size='32'
+                    :stroke='1'
                     class='cursor-pointer'
                     @click='edit = {
                         "name": "",
@@ -19,14 +20,14 @@
                 />
                 <IconRefresh
                     v-tooltip='"Refresh"'
-                    size='32'
+                    :size='32'
+                    :stroke='1'
                     class='cursor-pointer'
                     @click='fetchList'
                 />
             </div>
         </div>
         <div style='min-height: 20vh; margin-bottom: 61px'>
-
             <template v-if='edit'>
                 <TablerLoading
                     v-if='loading'
@@ -34,18 +35,41 @@
                 />
                 <template v-else>
                     <div class='row g-2 col-12 py-2 px-2'>
-                        <TablerInput label='Task Name' v-model='edit.name'/>
+                        <TablerInput
+                            v-model='edit.name'
+                            label='Task Name'
+                        />
 
-                        <TablerInput :disabled='edit.id' label='Container Prefix' v-model='edit.prefix'/>
+                        <TablerInput
+                            v-model='edit.prefix'
+                            :disabled='edit.id'
+                            label='Container Prefix'
+                        />
 
-                        <TablerInput label='Task Code Repository URL' v-model='edit.repo'/>
+                        <TablerInput
+                            v-model='edit.repo'
+                            label='Task Code Repository URL'
+                        />
 
-                        <TablerInput label='Task Markdown Readme URL' v-model='edit.readme'/>
+                        <TablerInput
+                            v-model='edit.readme'
+                            label='Task Markdown Readme URL'
+                        />
 
                         <div class='col-12 d-flex py-2'>
-                            <button @click='edit = false' class='btn btn-secondary'>Cancel</button>
+                            <button
+                                class='btn btn-secondary'
+                                @click='edit = false'
+                            >
+                                Cancel
+                            </button>
                             <div class='ms-auto btn-list mx-3'>
-                                <button @click='saveTask' class='btn btn-primary'>Save</button>
+                                <button
+                                    class='btn btn-primary'
+                                    @click='saveTask'
+                                >
+                                    Save
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -73,10 +97,10 @@
                         />
                         <tbody>
                             <tr
-                                @click='edit = layer'
                                 v-for='layer in list.items'
                                 :key='layer.id'
                                 class='cursor-pointer'
+                                @click='edit = layer'
                             >
                                 <template v-for='h in header'>
                                     <template v-if='h.display'>

@@ -20,37 +20,61 @@
                 class='col-12 hover-dark px-2 py-1'
             >
                 <template v-if='change.type === "CREATE_MISSION"'>
-                    <IconSquarePlus :size='24' /><span
+                    <IconSquarePlus
+                        :size='24'
+                        :stroke='1'
+                    />
+                    <span
                         class='mx-2'
                         v-text='`Mission Created: ${change.missionName}`'
                     />
                 </template>
                 <template v-else-if='change.type === "ADD_CONTENT" && change.contentResource'>
-                    <IconFile :size='24' /><span
+                    <IconFile
+                        :size='24'
+                        :stroke='1'
+                    />
+                    <span
                         class='mx-2'
                         v-text='change.contentResource.name'
                     />
                 </template>
                 <template v-else-if='change.type === "ADD_CONTENT" && change.details'>
-                    <IconPolygon :size='24' /><span
+                    <IconPolygon
+                        :size='24'
+                        :stroke='1'
+                    />
+                    <span
                         class='mx-2'
                         v-text='`${change.details.callsign} (${change.details.type})`'
                     />
                 </template>
                 <template v-else-if='change.type === "ADD_CONTENT"'>
-                    <IconSquarePlus :size='24' /><span
+                    <IconSquarePlus
+                        :size='24'
+                        :stroke='1'
+                    />
+                    <span
                         v-tooltip='change.contentUid'
                         class='mx-2'
                     >Content Added</span>
                 </template>
                 <template v-else-if='change.type === "REMOVE_CONTENT" && change.contentResource'>
-                    <IconFileX :size='24' /><span
+                    <IconFileX
+                        :size='24'
+                        :stroke='1'
+                    />
+                    <span
                         class='mx-2'
                         v-text='change.contentResource.name'
                     />
                 </template>
                 <template v-else-if='change.type === "REMOVE_CONTENT"'>
-                    <IconSquareX :size='24' /><span
+                    <IconSquareX
+                        :size='24'
+                        :stroke='1'
+                    />
+                    <span
                         v-tooltip='change.contentUid'
                         class='mx-2'
                     >Content Removed</span>

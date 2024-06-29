@@ -4,18 +4,21 @@
             <IconPlus
                 v-if='iconset.username || profile.system_admin'
                 v-tooltip='"Create Icon"'
-                size='32'
+                :size='32'
+                :stroke='1'
                 class='cursor-pointer'
                 @click='editIconModal = {}'
             /> <IconSettings
                 v-if='iconset.username || profile.system_admin'
                 class='cursor-pointer'
-                size='32'
+                :size='32'
+                :stroke='1'
                 @click='editIconsetModal = iconset'
             />
             <IconDownload
                 v-tooltip='"Download TAK Zip"'
-                size='32'
+                :size='32'
+                :stroke='1'
                 class='cursor-pointer'
                 @click.stop='download'
             />

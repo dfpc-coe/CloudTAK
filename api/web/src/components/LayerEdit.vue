@@ -90,7 +90,8 @@
                                                         aria-expanded='false'
                                                     >
                                                         <IconSettings
-                                                            size='16'
+                                                            :size='16'
+                                                            :stroke='1'
                                                             class='cursor-pointer dropdown-toggle'
                                                         />
                                                     </div>
@@ -140,7 +141,8 @@
                                             >
                                                 <div class='ms-auto btn-list'>
                                                     <IconSettings
-                                                        size='16'
+                                                        :size='16'
+                                                        :stroke='1'
                                                         class='cursor-pointer'
                                                         @click='taskmodal = true'
                                                     />

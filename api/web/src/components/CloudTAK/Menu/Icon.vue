@@ -8,7 +8,8 @@
             />
             <IconSettings
                 v-if='iconset.username || profile.system_admin'
-                size='32'
+                :size='32'
+                :stroke='1'
                 class='cursor-pointer'
                 @click='editModal = icon'
             />

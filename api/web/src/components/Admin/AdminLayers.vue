@@ -8,14 +8,16 @@
             <div class='ms-auto btn-list'>
                 <IconCloudUpload
                     v-tooltip='"Redeploy"'
-                    size='32'
+                    :size='32'
+                    :stroke='1'
                     class='cursor-pointer'
                     @click='redeploy'
                 />
 
                 <IconRefresh
                     v-tooltip='"Refresh"'
-                    size='32'
+                    :size='32'
+                    :stroke='1'
                     class='cursor-pointer'
                     @click='fetchList'
                 />

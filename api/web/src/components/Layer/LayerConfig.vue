@@ -7,7 +7,8 @@
             <div class='ms-auto btn-list'>
                 <IconSettings
                     v-if='disabled'
-                    size='32'
+                    :size='32'
+                    :stroke='1'
                     class='cursor-pointer'
                     @click='disabled = false'
                 />
@@ -43,7 +44,8 @@
                                     aria-expanded='false'
                                 >
                                     <IconSettings
-                                        size='16'
+                                        :size='16'
+                                        :stroke='1'
                                         class='cursor-pointer dropdown-toggle'
                                     />
                                 </div>
@@ -107,7 +109,8 @@
                                     <IconRefresh
                                         v-if='!newTaskVersion && !loading.version'
                                         v-tooltip='"Check for new version"'
-                                        size='16'
+                                        :size='16'
+                                        :stroke='1'
                                         class='cursor-pointer'
                                         @click='latestVersion'
                                     />
@@ -136,7 +139,8 @@
                                 </div>
                                 <div v-if='!disabled'>
                                     <IconSettings
-                                        size='16'
+                                        :size='16'
+                                        :stroke='1'
                                         class='cursor-pointer'
                                         @click='taskmodal = true'
                                     />
@@ -208,7 +212,10 @@
                             <label>Optional Data Sync</label>
                         </div>
                         <div class='col-12 d-flex align-items-center my-1'>
-                            <IconDatabase size='32' />
+                            <IconDatabase
+                                :size='32'
+                                :stroke='1'
+                            />
                             <DataSelect
                                 v-model='config.data'
                                 :disabled='disabled'

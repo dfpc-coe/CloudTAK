@@ -27,6 +27,8 @@ export default class Models {
     ProfileOverlay: Modeler<typeof pgtypes.ProfileOverlay>;
     ProfileMission: Modeler<typeof pgtypes.ProfileMission>;
 
+    VideoLease: Modeler<typeof pgtypes.VideoLease>;
+
     Task: Modeler<typeof pgtypes.Task>;
 
     Iconset: Modeler<typeof pgtypes.Iconset>;
@@ -49,6 +51,7 @@ export default class Models {
         this.ProfileMission = new Modeler(pg, pgtypes.ProfileMission);
         this.Basemap = new Modeler(pg, pgtypes.Basemap);
         this.Import = new Modeler(pg, pgtypes.Import);
+        this.VideoLease = new Modeler(pg, pgtypes.VideoLease);
         this.Connection = new Modeler(pg, pgtypes.Connection);
         this.ConnectionToken = new Modeler(pg, pgtypes.ConnectionToken);
         this.ConnectionSink = new Modeler(pg, pgtypes.ConnectionSink);

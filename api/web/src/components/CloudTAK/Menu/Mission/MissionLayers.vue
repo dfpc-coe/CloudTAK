@@ -8,11 +8,13 @@
             <IconPlus
                 v-if='!createLayer && role.permissions.includes("MISSION_WRITE")'
                 :size='24'
+                :stroke='1'
                 class='cursor-pointer'
                 @click='createLayer = true'
             />
             <IconRefresh
                 :size='24'
+                :stroke='1'
                 class='cursor-pointer'
                 @click='refresh'
             />
@@ -39,41 +41,52 @@
             />
             <template v-else>
                 <div
-                    :key='feat.id'
                     v-for='feat of feats.values()'
+                    :key='feat.id'
                     class='hover-dark py-2 mx-2'
                 >
-                    <IconMapPin :size='32'/>
+                    <IconMapPin
+                        :size='32'
+                        :stroke='1'
+                    />
 
-                    <span v-text='feat.properties.callsign || "UNKNOWN"'/>
+                    <span v-text='feat.properties.callsign || "UNKNOWN"' />
                 </div>
                 <div
-                    :key='layer.uid'
                     v-for='layer in layers'
+                    :key='layer.uid'
                 >
                     <div class='col-12 hover-dark d-flex align-items-center px-2 py-2'>
                         <IconFiles
                             v-if='layer.type === "CONTENTS"'
                             :size='32'
+                            :stroke='1'
                         />
                         <IconMapPins
                             v-else-if='layer.type === "UID"'
                             :size='32'
+                            :stroke='1'
                         />
                         <IconFolder
                             v-else-if='layer.type === "GROUP"'
                             :size='32'
+                            :stroke='1'
                         />
                         <IconMap
                             v-else-if='layer.type === "MAPLAYER"'
                             :size='32'
+                            :stroke='1'
                         />
                         <IconPin
                             v-else-if='layer.type === "ITEM"'
                             :size='32'
+                            :stroke='1'
                         />
 
-                        <span v-text='layer.name' class='mx-2'/>
+                        <span
+                            class='mx-2'
+                            v-text='layer.name'
+                        />
 
                         <div class='ms-auto btn-list d-flex align-items-center'>
                             <span
@@ -85,6 +98,7 @@
                             <IconPencil
                                 v-if='role.permissions.includes("MISSION_WRITE")'
                                 :size='24'
+                                :stroke='1'
                                 class='cursor-pointer'
                                 @click='layer._edit = true'
                             />
@@ -93,34 +107,53 @@
                                 v-if='role.permissions.includes("MISSION_WRITE")'
                                 displaytype='icon'
                                 :size='24'
+                                :stroke='1'
                                 @delete='deleteLayer(layer)'
                             />
 
-                            <IconChevronRight @click='layer._open = true' v-if='layer.type === "UID" && !layer._open' :size='32' class='cursor-pointer'/>
-                            <IconChevronDown @click='layer._open = false' v-else-if='layer.type === "UID" && layer._open' :size='32' class='cursor-pointer'/>
+                            <IconChevronRight
+                                v-if='layer.type === "UID" && !layer._open'
+                                :size='32'
+                                :stroke='1'
+                                class='cursor-pointer'
+                                @click='layer._open = true'
+                            />
+                            <IconChevronDown
+                                v-else-if='layer.type === "UID" && layer._open'
+                                :size='32'
+                                :stroke='1'
+                                class='cursor-pointer'
+                                @click='layer._open = false'
+                            />
                         </div>
                     </div>
 
                     <MissionLayerEdit
                         v-if='layer._edit'
-                        @cancel='layer._edit = false'
-                        @layer='refresh'
                         :mission='mission'
                         :layer='layer'
                         :role='role'
+                        @cancel='layer._edit = false'
+                        @layer='refresh'
                     />
                     <div
                         v-else-if='layer._open && layer.type === "UID"'
                     >
                         <div
-                            :key='cot.data'
                             v-for='cot of layer.uids'
+                            :key='cot.data'
                             class='hover-dark py-2'
                             style='padding-left: 24px'
                         >
-                            <IconMapPin :size='32'/>
+                            <IconMapPin
+                                :size='32'
+                                :stroke='1'
+                            />
 
-                            <span class='mx-2' v-text='cot.details.callsign || "UNKNOWN"'/>
+                            <span
+                                class='mx-2'
+                                v-text='cot.details.callsign || "UNKNOWN"'
+                            />
                         </div>
                     </div>
                 </div>

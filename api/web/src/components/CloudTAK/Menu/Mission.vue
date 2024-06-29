@@ -13,7 +13,8 @@
             <IconRefresh
                 v-if='!loading.initial'
                 v-tooltip='"Refresh"'
-                size='32'
+                :size='32'
+                :stroke='1'
                 class='cursor-pointer'
                 @click='refresh'
             />
@@ -42,7 +43,8 @@
                         class='btn btn-sm'
                     ><IconInfoSquare
                         v-tooltip='"Metadata"'
-                        size='32'
+                        :size='32'
+                        :stroke='1'
                     /></label>
 
                     <input
@@ -59,7 +61,8 @@
                         class='btn btn-sm'
                     ><IconBoxMultiple
                         v-tooltip='"Layers"'
-                        size='32'
+                        :size='32'
+                        :stroke='1'
                     /></label>
 
                     <input
@@ -76,7 +79,8 @@
                         class='btn btn-sm'
                     ><IconUsers
                         v-tooltip='"Users"'
-                        size='32'
+                        :size='32'
+                        :stroke='1'
                     /></label>
 
                     <input
@@ -93,7 +97,8 @@
                         class='btn btn-sm'
                     ><IconTimeline
                         v-tooltip='"Timeline"'
-                        size='32'
+                        :size='32'
+                        :stroke='1'
                     /></label>
 
                     <input
@@ -110,7 +115,8 @@
                         class='btn btn-sm'
                     ><IconArticle
                         v-tooltip='"Logs"'
-                        size='32'
+                        :size='32'
+                        :stroke='1'
                     /></label>
 
                     <input
@@ -127,7 +133,8 @@
                         class='btn btn-sm'
                     ><IconFiles
                         v-tooltip='"Files"'
-                        size='32'
+                        :size='32'
+                        :stroke='1'
                     /></label>
                 </div>
             </template>
@@ -143,7 +150,10 @@
     <template v-if='mission.passwordProtected && !password'>
         <div class='modal-body'>
             <div class='d-flex justify-content-center py-3'>
-                <IconLock size='32' />
+                <IconLock
+                    :size='32'
+                    :stroke='1'
+                />
             </div>
             <h3 class='text-center'>
                 Mission Locked

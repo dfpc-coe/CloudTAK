@@ -5,12 +5,14 @@
                 <IconCheck
                     v-if='selected'
                     :size='compact ? 20 : 32'
+                    :stroke='1'
                     :style='compact ? "margin-left: 8px" : "margin-left: 16px;"'
                 />
                 <IconCircleFilled
                     v-else
                     :style='compact ? "margin-left: 8px" : "margin-left: 16px;"'
                     :size='compact ? 20 : 32'
+                    :stroke='1'
                     :class='{
                         "text-yellow": contact.team === "Yellow",
                         "text-cyan": contact.team === "Cyan",
@@ -51,14 +53,16 @@
                 <IconMessage
                     v-if='buttonChat && isChatable(contact)'
                     v-tooltip='"Start Chat"'
-                    size='32'
+                    :size='32'
+                    :stroke='1'
                     class='cursor-pointer'
                     @click='$emit("chat", contact.uid)'
                 />
                 <IconZoomPan
                     v-if='buttonZoom && isZoomable(contact)'
                     v-tooltip='"Zoom To"'
-                    size='32'
+                    :size='32'
+                    :stroke='1'
                     class='cursor-pointer'
                     @click='flyTo(contact)'
                 />

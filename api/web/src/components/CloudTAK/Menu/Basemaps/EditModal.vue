@@ -28,13 +28,15 @@
             >
                 <IconFileUpload
                     v-tooltip='"XML Upload"'
-                    size='32'
+                    :size='32' 
+                    :stroke='1' 
                     class='cursor-pointer'
                     @click='mode.upload = true'
                 />
                 <IconFileImport
                     v-tooltip='"TileJSON Import"'
-                    size='32'
+                    :size='32' 
+                    :stroke='1' 
                     class='cursor-pointer'
                     @click='mode.tilejson = true'
                 />
@@ -45,7 +47,8 @@
             >
                 <IconDownload
                     v-tooltip='"Download TAK XML"'
-                    size='32'
+                    :size='32' 
+                    :stroke='1' 
                     class='cursor-pointer'
                     @click='download'
                 />

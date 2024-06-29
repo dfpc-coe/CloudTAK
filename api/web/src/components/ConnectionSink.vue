@@ -51,12 +51,14 @@
                                         </label>
                                     </div>
                                     <IconRefresh
-                                        size='32'
+                                        :size='32'
+                                        :stroke='1'
                                         class='cursor-pointer'
                                         @click='fetch'
                                     />
                                     <IconSettings
-                                        size='32'
+                                        :size='32'
+                                        :stroke='1'
                                         class='cursor-pointer'
                                         @click='$router.push(`/connection/${$route.params.connectionid}/sink/${$route.params.sinkid}/edit`)'
                                     />
