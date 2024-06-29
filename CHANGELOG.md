@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v2.59.0 - 2024-06-29
+
+- :rocket: `UI` Add Video Lease Creation
+
 ### v2.58.0 - 2024-06-29
 
 - :rocket: `API` Add basic Video Lease APIs & UI
