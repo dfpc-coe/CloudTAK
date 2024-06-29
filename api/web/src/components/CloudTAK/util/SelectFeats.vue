@@ -54,7 +54,7 @@
                     <IconPackageExport
                         :size='20'
                         :stroke='1'
-                     />
+                    />
                     <span class='mx-2'>Share</span>
                 </button>
             </div>

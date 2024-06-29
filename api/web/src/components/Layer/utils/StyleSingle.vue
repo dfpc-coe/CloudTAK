@@ -89,7 +89,10 @@
 
         <div class='col-md-12 hover-light rounded px-2 py-2'>
             <div class='col-12 d-flex align-items-center'>
-                <label><IconBlockquote :size='20' :stroke='1' /> Callsign Override</label>
+                <label><IconBlockquote
+                    :size='20'
+                    :stroke='1'
+                /> Callsign Override</label>
                 <div class='ms-auto'>
                     <TablerToggle
                         v-model='filters[mode].enabled.callsign'
@@ -110,7 +113,10 @@
 
         <div class='col-md-12 hover-light rounded px-2 py-2'>
             <div class='col-12 d-flex align-items-center'>
-                <label><IconBlockquote :size='20' :stroke='1'/> Remarks Override</label>
+                <label><IconBlockquote
+                    :size='20'
+                    :stroke='1'
+                /> Remarks Override</label>
                 <div class='ms-auto'>
                     <TablerToggle
                         v-model='filters[mode].enabled.remarks'
@@ -131,7 +137,10 @@
 
         <div class='col-md-12 hover-light rounded px-2 py-2'>
             <div class='col-12 d-flex align-items-center'>
-                <label><IconLink :size='20' :stroke='1' /> Links Override</label>
+                <label><IconLink
+                    :size='20'
+                    :stroke='1'
+                /> Links Override</label>
                 <div class='ms-auto'>
                     <TablerToggle
                         v-model='filters[mode].enabled.links'
@@ -153,7 +162,10 @@
         <template v-if='mode === "point"'>
             <div class='col-md-12 hover-light rounded px-2 py-2'>
                 <div class='col-12 d-flex align-items-center'>
-                    <label><IconPhoto :size='20' :stroke='1' /> Point Icon</label>
+                    <label><IconPhoto
+                        :size='20'
+                        :stroke='1'
+                    /> Point Icon</label>
                     <div class='ms-auto'>
                         <TablerToggle
                             v-model='filters[mode].enabled.icon'
@@ -171,7 +183,10 @@
             </div>
             <div class='col-md-12 hover-light rounded px-2 py-2'>
                 <div class='col-12 d-flex align-items-center'>
-                    <label><IconPaint :size='20' :stroke='1' /> Point Color</label>
+                    <label><IconPaint
+                        :size='20'
+                        :stroke='1'
+                    /> Point Color</label>
                     <div class='ms-auto'>
                         <TablerToggle
                             v-model='filters[mode].enabled["marker-color"]'
@@ -181,19 +196,26 @@
                     </div>
                 </div>
                 <TablerInput
-                    type='color'
                     v-if='filters[mode].enabled["marker-color"]'
                     v-model='filters[mode].properties["marker-color"]'
+                    type='color'
                     :disabled='disabled || !filters[mode].enabled["marker-color"]'
                 />
             </div>
             <div class='col-md-12 hover-light rounded px-2 py-2'>
                 <div class='col-12 d-flex align-items-center'>
                     <label>
-                        <IconGhost :size='20' :stroke='1'/>
+                        <IconGhost
+                            :size='20'
+                            :stroke='1'
+                        />
                         Point Opacity
                     </label>
-                    <span v-if='filters[mode].enabled["marker-opacity"]' class='mx-2' v-text='`(${Math.round(filters[mode].properties["marker-opacity"] * 100)}%)`'/>
+                    <span
+                        v-if='filters[mode].enabled["marker-opacity"]'
+                        class='mx-2'
+                        v-text='`(${Math.round(filters[mode].properties["marker-opacity"] * 100)}%)`'
+                    />
                     <div class='ms-auto'>
                         <TablerToggle
                             v-model='filters[mode].enabled["marker-opacity"]'
@@ -215,7 +237,12 @@
         <template v-else-if='mode !== "point"'>
             <div class='col-md-12 hover-light rounded px-2 py-2'>
                 <div class='col-12 d-flex align-items-center'>
-                    <div><IconPaint :size='20' :stroke='1'/> Line Color</div>
+                    <div>
+                        <IconPaint
+                            :size='20'
+                            :stroke='1'
+                        /> Line Color
+                    </div>
                     <div class='ms-auto'>
                         <TablerToggle
                             v-model='filters[mode].enabled.stroke'
@@ -225,16 +252,19 @@
                     </div>
                 </div>
                 <TablerInput
-                    type='color'
                     v-if='filters[mode].enabled.stroke'
                     v-model='filters[mode].properties.stroke'
+                    type='color'
                     :disabled='disabled || !filters[mode].enabled.stroke'
                 />
             </div>
 
             <div class='col-md-12 hover-light rounded px-2 py-2'>
                 <div class='col-12 d-flex align-items-center'>
-                    <label><IconBorderStyle2 :size='20' :stroke='1'/> Line Style</label>
+                    <label><IconBorderStyle2
+                        :size='20'
+                        :stroke='1'
+                    /> Line Style</label>
                     <div class='ms-auto'>
                         <TablerToggle
                             v-model='filters[mode].enabled["stroke-style"]'
@@ -252,7 +282,10 @@
             </div>
             <div class='col-md-12 hover-light rounded px-2 py-2'>
                 <div class='col-12 d-flex align-items-center'>
-                    <label><IconRuler2 :size='20' :stroke='1'/> Line Width</label>
+                    <label><IconRuler2
+                        :size='20'
+                        :stroke='1'
+                    /> Line Width</label>
                     <div class='ms-auto'>
                         <TablerToggle
                             v-model='filters[mode].enabled["stroke-width"]'
@@ -273,10 +306,17 @@
             <div class='col-md-12 hover-light rounded px-2 py-2'>
                 <div class='col-12 d-flex align-items-center'>
                     <label>
-                        <IconGhost :size='20' :stroke='1'/>
+                        <IconGhost
+                            :size='20'
+                            :stroke='1'
+                        />
                         Line Opacity
                     </label>
-                    <span v-if='filters[mode].enabled["stroke-opacity"]' class='mx-2' v-text='`(${Math.round(filters[mode].properties["stroke-opacity"] * 100)}%)`'/>
+                    <span
+                        v-if='filters[mode].enabled["stroke-opacity"]'
+                        class='mx-2'
+                        v-text='`(${Math.round(filters[mode].properties["stroke-opacity"] * 100)}%)`'
+                    />
                     <div class='d-flex align-items-center ms-auto btn-list'>
                         <TablerToggle
                             v-model='filters[mode].enabled["stroke-opacity"]'
@@ -298,7 +338,10 @@
         <template v-if='mode === "polygon"'>
             <div class='col-md-12 hover-light rounded px-2 py-2'>
                 <div class='col-12 d-flex align-items-center'>
-                    <label><IconPaint :size='20' :stroke='1'/> Fill Color</label>
+                    <label><IconPaint
+                        :size='20'
+                        :stroke='1'
+                    /> Fill Color</label>
                     <div class='ms-auto'>
                         <TablerToggle
                             v-model='filters[mode].enabled.fill'
@@ -308,19 +351,26 @@
                     </div>
                 </div>
                 <TablerInput
-                    type='color'
                     v-if='filters[mode].enabled.fill'
                     v-model='filters[mode].properties.fill'
+                    type='color'
                     :disabled='disabled || !filters[mode].enabled.fill'
                 />
             </div>
             <div class='col-md-12 hover-light rounded px-2 py-2'>
                 <div class='col-12 d-flex align-items-center'>
                     <label>
-                        <IconGhost :size='20' :stroke='1'/>
+                        <IconGhost
+                            :size='20'
+                            :stroke='1'
+                        />
                         Fill Opacity
                     </label>
-                    <span v-if='filters[mode].enabled["fill-opacity"]' class='mx-2' v-text='`(${Math.round(filters[mode].properties["fill-opacity"] * 100)}%)`'/>
+                    <span
+                        v-if='filters[mode].enabled["fill-opacity"]'
+                        class='mx-2'
+                        v-text='`(${Math.round(filters[mode].properties["fill-opacity"] * 100)}%)`'
+                    />
                     <div class='ms-auto'>
                         <TablerToggle
                             v-model='filters[mode].enabled["fill-opacity"]'

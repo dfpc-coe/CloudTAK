@@ -17,16 +17,22 @@
                     </div>
 
                     <div class='pe-2'>
-                        <TablerInput placeholder='Filter Tasks' v-model='paging.filter'/>
+                        <TablerInput
+                            v-model='paging.filter'
+                            placeholder='Filter Tasks'
+                        />
                     </div>
 
-                    <TablerLoading v-if='loading.tasks' desc='Loading Tasks'/>
+                    <TablerLoading
+                        v-if='loading.tasks'
+                        desc='Loading Tasks'
+                    />
                     <template v-else>
                         <div class='card-body'>
                             <div class='list-group list-group-transparent'>
                                 <span
-                                    :key='t.prefix'
                                     v-for='t of list.items'
+                                    :key='t.prefix'
                                     class='list-group-item list-group-item-action d-flex align-items-center'
                                     :class='{
                                         "active": current.prefix === t.prefix,
@@ -34,7 +40,10 @@
                                     }'
                                     @click='current = t'
                                 >
-                                    <span class='mx-3' v-text='t.name'/>
+                                    <span
+                                        class='mx-3'
+                                        v-text='t.name'
+                                    />
                                 </span>
                             </div>
                         </div>
@@ -51,16 +60,33 @@
                     </div>
                 </div>
                 <div class='col-12 col-md-9 position-relative'>
-                    <TablerLoading v-if='loading.task' desc='Loading Task'/>
-                    <TablerNone v-else-if='!current' :create='false'/>
+                    <TablerLoading
+                        v-if='loading.task'
+                        desc='Loading Task'
+                    />
+                    <TablerNone
+                        v-else-if='!current'
+                        :create='false'
+                    />
                     <div v-else>
                         <div class='card-header d-flex align-items-center'>
-                            <div class='card-title subheader' v-text='current.name'></div>
+                            <div
+                                class='card-title subheader'
+                                v-text='current.name'
+                            />
 
                             <div class='ms-auto btn-list'>
-                                <div class='subheader' v-text='`(${current.prefix})`'></div>
+                                <div
+                                    class='subheader'
+                                    v-text='`(${current.prefix})`'
+                                />
 
-                                <IconCode v-if='current.repo' :size='32' :stroke='1' @click='external(current.repo)'/>
+                                <IconCode
+                                    v-if='current.repo'
+                                    :size='32'
+                                    :stroke='1'
+                                    @click='external(current.repo)'
+                                />
                             </div>
                         </div>
                         <div class='card-body'>
@@ -73,10 +99,19 @@
                             <div class='row g-2'>
                                 <template v-if='versions.length'>
                                     <div class='col-md-8'>
-                                        <TablerEnum :options='versions' v-model='version'/>
+                                        <TablerEnum
+                                            v-model='version'
+                                            :options='versions'
+                                        />
                                     </div>
                                     <div class='col-md-4'>
-                                        <button @click='$emit("task", `${current.prefix}-v${version}`)' class='btn btn-primary w-100' style='margin-top: 8px;'>Select</button>
+                                        <button
+                                            class='btn btn-primary w-100'
+                                            style='margin-top: 8px;'
+                                            @click='$emit("task", `${current.prefix}-v${version}`)'
+                                        >
+                                            Select
+                                        </button>
                                     </div>
                                 </template>
                                 <template v-else>

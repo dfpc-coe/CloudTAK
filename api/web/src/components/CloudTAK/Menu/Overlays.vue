@@ -20,7 +20,7 @@
                     @click='isDraggable = true'
                 />
                 <IconPencilCheck
-                    v-else='isDraggable === false'
+                    v-else-if='isDraggable === true'
                     v-tooltip='"Save Order"'
                     class='cursor-pointer'
                     :size='32'
@@ -42,9 +42,9 @@
                 <template v-else>
                     <div ref='sortable'>
                         <div
+                            v-for='element in layers'
                             :id='element.id'
                             :key='element.id'
-                            v-for='element in layers'
                             class='col-lg py-2'
                         >
                             <div class='py-2 px-3'>
@@ -149,17 +149,29 @@
                                     />
                                 </div>
                                 <div v-else-if='element.type === "geojson" && opened.includes(element.id)'>
-                                    <TablerLoading v-if='loadingPaths[element.id] === true'/>
+                                    <TablerLoading v-if='loadingPaths[element.id] === true' />
                                     <template v-else>
-                                        <div v-for='path in paths(element)' class='d-flex align-items-center hover-dark px-3 py-2'>
+                                        <div
+                                            v-for='path in paths(element)'
+                                            class='d-flex align-items-center hover-dark px-3 py-2'
+                                        >
                                             <IconFolder
                                                 :size='32'
                                                 :stroke='1'
                                                 style='margin-left: 40px;'
                                             />
-                                            <span v-text='path.path' class='mx-2'/>
-                                            <div v-if='element.id === "cots"' class='ms-auto'>
-                                                <TablerDelete @click='deletePath(element, path.path)' displaytype='icon'/>
+                                            <span
+                                                class='mx-2'
+                                                v-text='path.path'
+                                            />
+                                            <div
+                                                v-if='element.id === "cots"'
+                                                class='ms-auto'
+                                            >
+                                                <TablerDelete
+                                                    displaytype='icon'
+                                                    @click='deletePath(element, path.path)'
+                                                />
                                             </div>
                                         </div>
                                     </template>

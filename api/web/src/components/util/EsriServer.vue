@@ -66,14 +66,20 @@
                                 <td>
                                     <div class='d-flex align-items-center'>
                                         <template v-if='l.type === "folder"'>
-                                            <IconFolder :size='32' :stroke='1' />
+                                            <IconFolder
+                                                :size='32'
+                                                :stroke='1'
+                                            />
                                             <span
                                                 class='mx-3'
                                                 v-text='l.name'
                                             />
                                         </template>
                                         <template v-else>
-                                            <IconMap :size='32' :stroke='1'/>
+                                            <IconMap
+                                                :size='32'
+                                                :stroke='1'
+                                            />
                                             <span
                                                 class='mx-3'
                                                 v-text='l.name'
@@ -140,7 +146,10 @@
                             >
                                 <td>
                                     <div class='d-flex align-items-center'>
-                                        <IconMap :size='32' :stroke='1' /><span
+                                        <IconMap
+                                            :size='32'
+                                            :stroke='1'
+                                        /><span
                                             class='mx-3'
                                             v-text='lyr.name'
                                         />

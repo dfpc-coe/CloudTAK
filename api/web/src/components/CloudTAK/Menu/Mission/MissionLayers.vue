@@ -41,8 +41,8 @@
             />
             <template v-else>
                 <div
-                    :key='feat.id'
                     v-for='feat of feats.values()'
+                    :key='feat.id'
                     class='hover-dark py-2 mx-2'
                 >
                     <IconMapPin
@@ -50,11 +50,11 @@
                         :stroke='1'
                     />
 
-                    <span v-text='feat.properties.callsign || "UNKNOWN"'/>
+                    <span v-text='feat.properties.callsign || "UNKNOWN"' />
                 </div>
                 <div
-                    :key='layer.uid'
                     v-for='layer in layers'
+                    :key='layer.uid'
                 >
                     <div class='col-12 hover-dark d-flex align-items-center px-2 py-2'>
                         <IconFiles
@@ -83,7 +83,10 @@
                             :stroke='1'
                         />
 
-                        <span v-text='layer.name' class='mx-2'/>
+                        <span
+                            class='mx-2'
+                            v-text='layer.name'
+                        />
 
                         <div class='ms-auto btn-list d-flex align-items-center'>
                             <span
@@ -109,36 +112,36 @@
                             />
 
                             <IconChevronRight
-                                @click='layer._open = true'
                                 v-if='layer.type === "UID" && !layer._open'
                                 :size='32'
                                 :stroke='1'
                                 class='cursor-pointer'
+                                @click='layer._open = true'
                             />
                             <IconChevronDown
-                                @click='layer._open = false'
                                 v-else-if='layer.type === "UID" && layer._open'
                                 :size='32'
                                 :stroke='1'
                                 class='cursor-pointer'
+                                @click='layer._open = false'
                             />
                         </div>
                     </div>
 
                     <MissionLayerEdit
                         v-if='layer._edit'
-                        @cancel='layer._edit = false'
-                        @layer='refresh'
                         :mission='mission'
                         :layer='layer'
                         :role='role'
+                        @cancel='layer._edit = false'
+                        @layer='refresh'
                     />
                     <div
                         v-else-if='layer._open && layer.type === "UID"'
                     >
                         <div
-                            :key='cot.data'
                             v-for='cot of layer.uids'
+                            :key='cot.data'
                             class='hover-dark py-2'
                             style='padding-left: 24px'
                         >
@@ -147,7 +150,10 @@
                                 :stroke='1'
                             />
 
-                            <span class='mx-2' v-text='cot.details.callsign || "UNKNOWN"'/>
+                            <span
+                                class='mx-2'
+                                v-text='cot.details.callsign || "UNKNOWN"'
+                            />
                         </div>
                     </div>
                 </div>

@@ -162,7 +162,10 @@
                                     @click='fmtserver(res)'
                                 >
                                     <td>
-                                        <IconMap :size='32' :stroke='1' />
+                                        <IconMap
+                                            :size='32'
+                                            :stroke='1'
+                                        />
                                         <span
                                             class='mx-1'
                                             v-text='res.title'

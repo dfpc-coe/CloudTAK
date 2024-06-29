@@ -36,8 +36,7 @@
                             v-text='sub.username'
                         />
                     </div>
-                    <div class='col-auto ms-auto btn-list'>
-                    </div>
+                    <div class='col-auto ms-auto btn-list' />
                 </div>
             </div>
         </div>
