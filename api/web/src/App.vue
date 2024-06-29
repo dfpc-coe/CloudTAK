@@ -35,7 +35,7 @@
                             target='_blank'
                             rel='noreferrer'
                         >
-                            <IconCode size='32' />Docs
+                            <IconCode :size='32' :stroke='1' />Docs
                         </a>
                         <div class='dropdown'>
                             <div
@@ -45,7 +45,7 @@
                                 aria-expanded='false'
                                 class='btn btn-dark'
                             >
-                                <IconUser size='32' />
+                                <IconUser :size='32' :stroke='1' />
                             </div>
                             <ul
                                 class='dropdown-menu'
@@ -55,21 +55,21 @@
                                     class='d-flex dropdown-item cursor-pointer hover-dark'
                                     @click='$router.push("/profile")'
                                 >
-                                    <IconUser size='32' />
+                                    <IconUser :size='32' :stroke='1' />
                                     <span class='mx-2'>Profile</span>
                                 </div>
                                 <div
                                     class='d-flex dropdown-item cursor-pointer hover-dark'
                                     @click='$router.push("/connection")'
                                 >
-                                    <IconNetwork size='32' />
+                                    <IconNetwork :size='32' :stroke='1' />
                                     <span class='mx-2'>Connections</span>
                                 </div>
                                 <div
                                     class='d-flex dropdown-item cursor-pointer hover-dark'
                                     @click='$router.push("/admin")'
                                 >
-                                    <IconSettings size='32' />
+                                    <IconSettings :size='32' :stroke='1' />
                                     <span class='mx-2'>Server</span>
                                     <span class='ms-auto badge border border-red bg-red text-white'>Admin</span>
                                 </div>
@@ -77,7 +77,7 @@
                                     class='d-flex dropdown-item cursor-pointer hover-dark'
                                     @click='logout'
                                 >
-                                    <IconLogout size='32' />
+                                    <IconLogout :size='32' :stroke='1'/>
                                     <span class='mx-2'>Logout</span>
                                 </div>
                             </ul>

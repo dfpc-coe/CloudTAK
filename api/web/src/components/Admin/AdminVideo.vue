@@ -144,7 +144,7 @@ export default {
     methods: {
         fetchDelete: async function() {
             this.loading = true;
-            const url = stdurl(`/api/video/${this.$route.params.video}`);
+            const url = stdurl(`/api/video/server/${this.$route.params.video}`);
             await std(url, {
                 method: 'DELETE'
             });
@@ -154,7 +154,7 @@ export default {
         fetch: async function() {
             this.loading = true;
             try {
-                const url = stdurl(`/api/video/${this.$route.params.video}`);
+                const url = stdurl(`/api/video/server/${this.$route.params.video}`);
                 this.video = await std(url);
             } catch (err) {
                 if (err.message === 'Could not find Media Server with that ID') this.$router.push('/admin/video');

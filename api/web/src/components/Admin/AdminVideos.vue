@@ -117,13 +117,13 @@ export default {
     methods: {
         fetchList: async function() {
             this.loading = true;
-            const url = stdurl('/api/video');
+            const url = stdurl('/api/video/server');
             this.list = await std(url);
             this.loading = false;
         },
         createServer: async function() {
             this.loading = true;
-            const url = stdurl('/api/video');
+            const url = stdurl('/api/video/server');
             const server = await std(url, {
                 method: 'POST',
                 body: {}
