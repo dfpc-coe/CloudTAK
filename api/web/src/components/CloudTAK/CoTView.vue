@@ -232,7 +232,10 @@
                     </div>
 
                     <template v-if='isUserDrawn'>
-                        <CoTStyle :key='feat.id' v-model='feat' />
+                        <CoTStyle
+                            :key='feat.id'
+                            v-model='feat'
+                        />
                     </template>
 
                     <div

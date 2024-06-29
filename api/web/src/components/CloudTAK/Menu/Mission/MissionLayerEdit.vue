@@ -9,14 +9,24 @@
             <div class='modal-body mx-2'>
                 <TablerInput
                     v-model='editing.name'
-                    @keyup.enter='editLayer'
                     label='Name'
+                    @keyup.enter='editLayer'
                 />
 
                 <div class='col-12 d-flex py-3'>
-                    <button @click='$emit("cancel")' class='btn btn-secondary'>Cancel</button>
+                    <button
+                        class='btn btn-secondary'
+                        @click='$emit("cancel")'
+                    >
+                        Cancel
+                    </button>
                     <div class='ms-auto'>
-                        <button @click='editLayer' class='btn btn-primary'>Save</button>
+                        <button
+                            class='btn btn-primary'
+                            @click='editLayer'
+                        >
+                            Save
+                        </button>
                     </div>
                 </div>
             </div>
