@@ -33,19 +33,19 @@
 
                     <template v-if='shown[shown.length - 1] === h'>
                         <div class='ms-auto'>
-                            <div class='dropdown'>
+                            <TablerDropdown>
                                 <IconSettings
                                     :size='16'
                                     :stroke='1'
                                     class='mx-2 dropdown-toggle cursor-pointer'
-                                    data-bs-toggle='dropdown'
                                 />
-                                <div class='dropdown-menu'>
+
+                                <template #dropdown>
                                     <div
                                         v-for='(h, h_it) of header'
                                         :key='h_it'
                                     >
-                                        <label class='form-check subheader mb-0'>
+                                        <label class='form-check subheader mb-1 mx-1'>
                                             <input
                                                 class='form-check-input'
                                                 type='checkbox'
@@ -58,8 +58,8 @@
                                             />
                                         </label>
                                     </div>
-                                </div>
-                            </div>
+                                </template>
+                            </TablerDropdown>
                         </div>
                     </template>
                 </div>
@@ -74,10 +74,14 @@ import {
     IconChevronDown,
     IconSettings
 } from '@tabler/icons-vue';
+import {
+    TablerDropdown
+} from '@tak-ps/vue-tabler'
 
 export default {
     name: 'TableHeader',
     components: {
+        TablerDropdown,
         IconSettings,
         IconChevronUp,
         IconChevronDown
