@@ -255,7 +255,7 @@
                         class='col-12 py-1 px-2 hover-button cursor-pointer'
                         @click='startDraw("point")'
                     >
-                        <IconPoint 
+                        <IconPoint
                             :size='25'
                             :stroke='1'
                         /> Draw Point
@@ -264,7 +264,7 @@
                         class='col-12 py-1 px-2 hover-button cursor-pointer'
                         @click='startDraw("linestring")'
                     >
-                        <IconLine 
+                        <IconLine
                             :size='25'
                             :stroke='1'
                         /> Draw Line
@@ -376,9 +376,9 @@
                 />
                 <div class='modal-header text-white'>
                     <div class='d-flex align-items-center'>
-                        <IconInfoSquare 
-                            :size='28' 
-                            :stroke='1' 
+                        <IconInfoSquare
+                            :size='28'
+                            :stroke='1'
                         />
                         <span class='mx-2'>No Channels Selected</span>
                     </div>
@@ -503,7 +503,7 @@ export default {
     },
     unmounted: function() {
         cotStore.$reset();
-        mapStore.$reset();
+        mapStore.destroy();
         overlayStore.$reset();
         profileStore.$reset();
     },
