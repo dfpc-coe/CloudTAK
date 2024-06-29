@@ -3,7 +3,8 @@
         <div class='col-12 border-bottom border-light'>
             <div class='modal-header px-0 mx-2'>
                 <IconCircleArrowLeft
-                    size='32'
+                    :size='32'
+                    :stroke='1'
                     class='cursor-pointer'
                     @click='$router.back()'
                 />
@@ -13,7 +14,8 @@
                 />
                 <div class='btn-list'>
                     <IconRefresh
-                        size='32'
+                        :size='32'
+                        :stroke='1'
                         class='cursor-pointer'
                         @click='fetchChats'
                     />

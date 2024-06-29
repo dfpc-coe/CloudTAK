@@ -30,7 +30,10 @@
                                                     "cursor-pointer": $route.name !== "profile-groups"
                                                 }'
                                                 @click='$router.push(`/profile/groups`)'
-                                            ><IconAffiliate size='32' /><span class='mx-3'>Channels</span></span>
+                                            ><IconAffiliate
+                                                :size='32'
+                                                :stroke='1'
+                                            /><span class='mx-3'>Channels</span></span>
                                             <span
                                                 class='list-group-item list-group-item-action d-flex align-items-center'
                                                 :class='{
@@ -38,7 +41,10 @@
                                                     "cursor-pointer": $route.name !== "profile-tokens"
                                                 }'
                                                 @click='$router.push(`/profile/tokens`)'
-                                            ><IconRobot size='32' /><span class='mx-3'>API Tokens</span></span>
+                                            ><IconRobot
+                                                :size='32'
+                                                :stroke='1'
+                                            /><span class='mx-3'>API Tokens</span></span>
                                             <span
                                                 class='list-group-item list-group-item-action d-flex align-items-center'
                                                 :class='{
@@ -46,7 +52,10 @@
                                                     "cursor-pointer": $route.name !== "profile-files"
                                                 }'
                                                 @click='$router.push(`/profile/files`)'
-                                            ><IconFiles size='32' /><span class='mx-3'>Files</span></span>
+                                            ><IconFiles
+                                                :size='32'
+                                                :stroke='1'
+                                            /><span class='mx-3'>Files</span></span>
                                             <span
                                                 class='list-group-item list-group-item-action d-flex align-items-center'
                                                 :class='{
@@ -54,7 +63,10 @@
                                                     "cursor-pointer": $route.name !== "profile-videos"
                                                 }'
                                                 @click='$router.push(`/profile/videos`)'
-                                            ><IconVideo size='32' /><span class='mx-3'>Video Leases</span></span>
+                                            ><IconVideo
+                                                :size='32'
+                                                :stroke='1'
+                                            /><span class='mx-3'>Video Leases</span></span>
                                             <span
                                                 class='list-group-item list-group-item-action d-flex align-items-center'
                                                 :class='{
@@ -62,7 +74,10 @@
                                                     "cursor-pointer": $route.name !== "profile-jobs"
                                                 }'
                                                 @click='$router.push(`/profile/jobs`)'
-                                            ><IconTransform size='32' /><span class='mx-3'>Jobs</span></span>
+                                            ><IconTransform
+                                                :size='32'
+                                                :stroke='1'
+                                            /><span class='mx-3'>Jobs</span></span>
                                         </div>
                                     </div>
                                 </div>

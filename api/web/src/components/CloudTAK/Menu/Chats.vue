@@ -3,14 +3,16 @@
         <template #buttons>
             <IconPlus
                 v-tooltip='"New Chat"'
-                size='32'
+                :size='32' 
+                :stroke='1' 
                 class='cursor-pointer'
                 @click='$router.push("/menu/contacts")'
             />
             <IconRefresh
                 v-if='!loading'
                 v-tooltip='"Refresh"'
-                size='32'
+                :size='32' 
+                :stroke='1' 
                 class='cursor-pointer'
                 @click='fetchList'
             />
@@ -28,7 +30,10 @@
                         class='cursor-pointer col-12 py-2 px-3 d-flex align-items-center hover-dark'
                         @click='$router.push(`/menu/chats/${chat.chatroom}`)'
                     >
-                        <IconUser size='32' />
+                        <IconUser 
+                            :size='32'
+                            :stroke='1'
+                        />
                         <span
                             class='mx-2'
                             style='font-size: 18px;'

@@ -29,7 +29,10 @@
                         class='cursor-pointer col-12 py-2 px-3 d-flex align-items-center hover-dark'
                         @click='$router.push("/menu/settings")'
                     >
-                        <IconSettings size='32' />
+                        <IconSettings
+                            :size='32'
+                            :stroke='1'
+                        />
                         <span
                             class='mx-2'
                             style='font-size: 18px;'
@@ -39,7 +42,10 @@
                         class='cursor-pointer col-12 py-2 px-3 d-flex align-items-center hover-dark'
                         @click='$router.push("/menu/overlays")'
                     >
-                        <IconBoxMultiple size='32' />
+                        <IconBoxMultiple
+                            :size='32'
+                            :stroke='1'
+                        />
                         <span
                             class='mx-2'
                             style='font-size: 18px;'
@@ -49,7 +55,10 @@
                         class='cursor-pointer col-12 py-2 px-3 d-flex align-items-center hover-dark'
                         @click='$router.push("/menu/contacts")'
                     >
-                        <IconUsers size='32' />
+                        <IconUsers
+                            :size='32'
+                            :stroke='1'
+                        />
                         <span
                             class='mx-2'
                             style='font-size: 18px;'
@@ -59,7 +68,10 @@
                         class='cursor-pointer col-12 py-2 px-3 d-flex align-items-center hover-dark'
                         @click='$router.push("/menu/basemaps")'
                     >
-                        <IconMap size='32' />
+                        <IconMap
+                            :size='32'
+                            :stroke='1'
+                        />
                         <span
                             class='mx-2'
                             style='font-size: 18px;'
@@ -69,7 +81,10 @@
                         class='cursor-pointer col-12 py-2 px-3 d-flex align-items-center hover-dark'
                         @click='$router.push("/menu/missions")'
                     >
-                        <IconAmbulance size='32' />
+                        <IconAmbulance
+                            :size='32'
+                            :stroke='1'
+                        />
                         <span
                             class='mx-2'
                             style='font-size: 18px;'
@@ -79,7 +94,10 @@
                         class='cursor-pointer col-12 py-2 px-3 d-flex align-items-center hover-dark'
                         @click='$router.push("/menu/packages")'
                     >
-                        <IconPackages size='32' />
+                        <IconPackages
+                            :size='32'
+                            :stroke='1'
+                        />
                         <span
                             class='mx-2'
                             style='font-size: 18px;'
@@ -89,7 +107,10 @@
                         class='cursor-pointer col-12 py-2 px-3 d-flex align-items-center hover-dark'
                         @click='$router.push("/menu/channels")'
                     >
-                        <IconAffiliate size='32' />
+                        <IconAffiliate
+                            :size='32'
+                            :stroke='1'
+                        />
                         <span
                             class='mx-2'
                             style='font-size: 18px;'
@@ -99,7 +120,10 @@
                         class='cursor-pointer col-12 py-2 px-3 d-flex align-items-center hover-dark'
                         @click='$router.push("/menu/videos")'
                     >
-                        <IconVideo size='32' />
+                        <IconVideo
+                            :size='32'
+                            :stroke='1'
+                        />
                         <span
                             class='mx-2'
                             style='font-size: 18px;'
@@ -109,7 +133,10 @@
                         class='cursor-pointer col-12 py-2 px-3 d-flex align-items-center hover-dark'
                         @click='$router.push("/menu/chats")'
                     >
-                        <IconMessage size='32' />
+                        <IconMessage
+                            :size='32'
+                            :stroke='1'
+                        />
                         <span
                             class='mx-2'
                             style='font-size: 18px;'
@@ -119,7 +146,10 @@
                         class='cursor-pointer col-12 py-2 px-3 d-flex align-items-center hover-dark'
                         @click='$router.push("/menu/imports")'
                     >
-                        <IconFileImport size='32' />
+                        <IconFileImport
+                            :size='32'
+                            :stroke='1'
+                        />
                         <span
                             class='mx-2'
                             style='font-size: 18px;'
@@ -129,7 +159,10 @@
                         class='cursor-pointer col-12 py-2 px-3 d-flex align-items-center hover-dark'
                         @click='$router.push("/menu/iconsets")'
                     >
-                        <IconPhoto size='32' />
+                        <IconPhoto
+                            :size='32'
+                            :stroke='1'
+                        />
                         <span
                             class='mx-2'
                             style='font-size: 18px;'
@@ -141,7 +174,10 @@
                         class='cursor-pointer col-12 py-2 px-3 d-flex align-items-center hover-dark'
                         @click='$router.push("/connection")'
                     >
-                        <IconNetwork size='32' />
+                        <IconNetwork
+                            :size='32'
+                            :stroke='1'
+                        />
                         <span
                             class='mx-2'
                             style='font-size: 18px;'
@@ -153,7 +189,10 @@
                         class='cursor-pointer col-12 py-2 px-3 d-flex align-items-center hover-dark'
                         @click='$router.push("/admin")'
                     >
-                        <IconSettings size='32' />
+                        <IconSettings
+                            :size='32'
+                            :stroke='1'
+                        />
                         <span
                             class='mx-2'
                             style='font-size: 18px;'
@@ -175,7 +214,8 @@
                     >
                         <div class='d-flex align-items-center'>
                             <IconUser
-                                size='32'
+                                :size='32'
+                                :stroke='1'
                                 class='mx-2'
                             />
                             <span
@@ -192,7 +232,8 @@
                     >
                         <IconLogout
                             v-tooltip='"Logout"'
-                            size='32'
+                            :size='32'
+                            :stroke='1'
                         />
                     </div>
                 </div>

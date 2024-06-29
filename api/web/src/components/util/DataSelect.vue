@@ -23,14 +23,16 @@
                 >
                     <IconTrash
                         v-if='selected.id'
-                        size='32'
+                        :size='32'
+                        :stroke='1'
                         class='cursor-pointer'
                         @click='update'
                     />
                     <TablerDropdown>
                         <template #default>
                             <IconSettings
-                                size='32'
+                                :size='32'
+                                :stroke='1'
                                 class='cursor-pointer dropdown-toggle'
                             />
                         </template>

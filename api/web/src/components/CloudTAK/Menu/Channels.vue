@@ -4,14 +4,16 @@
             <IconSearch
                 v-if='channels.length'
                 v-tooltip='"Search"'
-                size='32'
+                :size='32' 
+                :stroke='1' 
                 class='cursor-pointer'
                 @click='search.shown = !search.shown'
             />
             <IconRefresh
                 v-if='!loading'
                 v-tooltip='"Refresh"'
-                size='32'
+                :size='32' 
+                :stroke='1' 
                 class='cursor-pointer'
                 @click='loadChannels'
             />
@@ -46,14 +48,16 @@
                                 <IconEye
                                     v-if='ch.active'
                                     v-tooltip='"Disable"'
-                                    size='32'
+                                    :size='32' 
+                                    :stroke='1' 
                                     class='cursor-pointer'
                                     @click='setStatus(ch, false)'
                                 />
                                 <IconEyeOff
                                     v-else
                                     v-tooltip='"Enable"'
-                                    size='32'
+                                    :size='32' 
+                                    :stroke='1' 
                                     class='cursor-pointer'
                                     @click='setStatus(ch, true)'
                                 />
@@ -66,17 +70,20 @@
                                     <IconLocation
                                         v-if='ch.direction.length === 2'
                                         v-tooltip='"Bi-Directional"'
-                                        size='32'
+                                        :size='32' 
+                                        :stroke='1' 
                                     />
                                     <IconLocation
                                         v-else-if='ch.direction.includes("IN")'
                                         v-tooltip='"Location Sharing"'
-                                        size='32'
+                                        :size='32' 
+                                        :stroke='1' 
                                     />
                                     <IconLocationOff
                                         v-else-if='ch.direction.includes("OUT")'
                                         v-tooltip='"No Location Sharing"'
-                                        size='32'
+                                        :size='32' 
+                                        :stroke='1' 
                                     />
                                 </div>
                             </div>

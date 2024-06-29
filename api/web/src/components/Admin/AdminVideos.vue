@@ -9,14 +9,16 @@
                 <IconPlus
                     v-if='list.versions.length'
                     v-tooltip='"Create Server"'
-                    size='32'
+                    :size='32'
+                    :stroke='1'
                     class='cursor-pointer'
                     @click='createServer'
                 />
 
                 <IconRefresh
                     v-tooltip='"Refresh"'
-                    size='32'
+                    :size='32'
+                    :stroke='1'
                     class='cursor-pointer'
                     @click='fetchList'
                 />

@@ -27,19 +27,23 @@
                             >
                                 <IconBattery1
                                     v-if='parseInt(feat.properties.status.battery) <= 25'
-                                    size='32'
+                                    :size='32' 
+                                    :stroke='1' 
                                 />
                                 <IconBattery2
                                     v-else-if='parseInt(feat.properties.status.battery) <= 50'
-                                    size='32'
+                                    :size='32' 
+                                    :stroke='1' 
                                 />
                                 <IconBattery3
                                     v-else-if='parseInt(feat.properties.status.battery) <= 75'
-                                    size='32'
+                                    :size='32' 
+                                    :stroke='1' 
                                 />
                                 <IconBattery4
                                     v-else-if='parseInt(feat.properties.status.battery) <= 100'
-                                    size='32'
+                                    :size='32' 
+                                    :stroke='1' 
                                 />
                             </span>
                             <div class='col-12'>
@@ -68,7 +72,8 @@
                             <div class='btn-list'>
                                 <IconShare2
                                     v-tooltip='"Share"'
-                                    size='32'
+                                    :size='32' 
+                                    :stroke='1' 
                                     class='cursor-pointer'
                                     @click='mode === "share" ? mode = "default" : mode = "share"'
                                 />
@@ -80,21 +85,24 @@
                                 />
                                 <IconZoomPan
                                     v-tooltip='"Zoom To"'
-                                    size='32'
+                                    :size='32' 
+                                    :stroke='1' 
                                     class='cursor-pointer'
                                     @click='zoomTo'
                                 />
                                 <IconCode
                                     v-if='mode === "default"'
                                     v-tooltip='"Raw View"'
-                                    size='32'
+                                    :size='32' 
+                                    :stroke='1' 
                                     class='cursor-pointer'
                                     @click='mode = "raw"'
                                 />
                                 <IconX
                                     v-if='mode === "raw"'
                                     v-tooltip='"Default View"'
-                                    size='32'
+                                    :size='32' 
+                                    :stroke='1' 
                                     class='cursor-pointer'
                                     @click='mode = "default"'
                                 />

@@ -9,7 +9,8 @@
             >
                 <IconPlus
                     v-tooltip='"Add Link"'
-                    size='20'
+                    :size='20'
+                    :stroke='1'
                     class='cursor-pointer'
                     @click='create = true'
                 />
@@ -51,7 +52,8 @@
                                 <div class='ms-auto'>
                                     <IconTrash
                                         v-if='!disabled'
-                                        size='32'
+                                        :size='32'
+                                        :stroke='1'
                                         class='cursor-pointer'
                                         @click.stop='links.splice(it, 1)'
                                     />

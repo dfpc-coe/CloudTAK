@@ -4,14 +4,16 @@
             <IconSearch
                 v-if='contacts.length'
                 v-tooltip='"Search"'
-                size='32'
+                :size='32'
+                :stroke='1'
                 class='cursor-pointer'
                 @click='search.shown = !search.shown'
             />
             <IconRefresh
                 v-if='!loading'
                 v-tooltip='"Refresh"'
-                size='32'
+                :size='32'
+                :stroke='1'
                 class='cursor-pointer'
                 @click='fetchList'
             />

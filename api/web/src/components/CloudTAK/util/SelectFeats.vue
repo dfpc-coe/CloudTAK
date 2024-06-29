@@ -12,7 +12,8 @@
                     <IconX
                         v-tooltip='"Clear Selection"'
                         class='cursor-pointer mx-2 my-2'
-                        size='20'
+                        :size='20'
+                        :stroke='1'
                         @click='selected.clear()'
                     />
                 </div>
@@ -34,7 +35,8 @@
                     />
                     <IconTrash
                         v-tooltip='"Remove from Selection"'
-                        size='20'
+                        :size='20'
+                        :stroke='1'
                         class='ms-auto cursor-pointer mx-2 my-2'
                         @click='selected.delete(select.properties.id)'
                     />
@@ -49,7 +51,10 @@
                     style='height: 30px'
                     @click='share = true'
                 >
-                    <IconPackageExport size='20' />
+                    <IconPackageExport
+                        :size='20'
+                        :stroke='1'
+                     />
                     <span class='mx-2'>Share</span>
                 </button>
             </div>

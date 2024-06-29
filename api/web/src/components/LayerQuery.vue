@@ -28,7 +28,10 @@
                                         @keyup.enter='query'
                                     >
                                     <span class='input-icon-addon'>
-                                        <IconSearch />
+                                        <IconSearch
+                                            :size='32'
+                                            :stroke='1'
+                                        />
                                     </span>
                                 </div>
 
@@ -122,7 +125,7 @@ import {
 import {
     TablerNone,
     TablerAlert,
-    TablerBreadCrumb, 
+    TablerBreadCrumb,
     TablerLoading
 } from '@tak-ps/vue-tabler'
 
@@ -133,7 +136,7 @@ export default {
         TablerAlert,
         PageFooter,
         IconSearch,
-        TablerBreadCrumb, 
+        TablerBreadCrumb,
         TablerLoading,
     },
     data: function() {

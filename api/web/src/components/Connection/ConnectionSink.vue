@@ -15,7 +15,8 @@
                     >
                         <IconPlus
                             v-tooltip='"Create Sink"'
-                            size='32'
+                            :size='32'
+                            :stroke='1'
                             class='cursor-pointer'
                         />
                     </div>

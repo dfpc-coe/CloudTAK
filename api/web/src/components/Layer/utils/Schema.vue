@@ -51,19 +51,22 @@
                     >
                         <IconTrash
                             v-tooltip='"Clear Table"'
-                            size='32'
+                            :size='32'
+                            :stroke='1'
                             class='cursor-pointer'
                             @click='data[key].splice(0, data[key].length)'
                         />
                         <IconDatabaseImport
                             v-tooltip='"Import CSV"'
-                            size='32'
+                            :size='32'
+                            :stroke='1'
                             class='cursor-pointer'
                             @click='importModal(Object.keys(schema.properties[key].items.properties), data[key])'
                         />
                         <IconPlus
                             v-tooltip='"Add Row"'
-                            size='32'
+                            :size='32'
+                            :stroke='1'
                             class='cursor-pointer'
                             @click='editModal(schema.properties[key].items, {}, key)'
                         />
@@ -122,7 +125,8 @@
                             <div class='ms-auto mx-2 my-2'>
                                 <IconTrash
                                     v-if='!disabled'
-                                    size='32'
+                                    :size='32'
+                                    :stroke='1'
                                     class='cursor-pointer'
                                     @click='data[key].splice(i, 1)'
                                 />

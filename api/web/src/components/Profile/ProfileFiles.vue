@@ -8,13 +8,15 @@
             <div class='ms-auto btn-list'>
                 <IconPlus
                     v-tooltip='"Upload"'
-                    size='32'
+                    :size='32'
+                    :stroke='1'
                     class='cursor-pointer'
                     @click='upload = true'
                 />
                 <IconRefresh
                     v-tooltip='"Refresh"'
-                    size='32'
+                    :size='32'
+                    :stroke='1'
                     class='cursor-pointer'
                     @click='fetchList'
                 />
@@ -44,12 +46,14 @@
                                     <IconMap
                                         v-if='asset.visualized'
                                         v-tooltip='"Visualizable"'
-                                        size='32'
+                                        :size='32'
+                                        :stroke='1'
                                     />
                                     <IconMapOff
                                         v-else
                                         v-tooltip='"Not Cloud Optimized"'
-                                        size='32'
+                                        :size='32'
+                                        :stroke='1'
                                     />
                                 </div>
 
@@ -73,13 +77,15 @@
                                 <IconTransform
                                     v-if='!asset.visualized'
                                     v-tooltip='"Convert Asset"'
-                                    size='32'
+                                    :size='32'
+                                    :stroke='1'
                                     class='cursor-pointer'
                                     @click='initTransform(asset)'
                                 />
                                 <IconDownload
                                     v-tooltip='"Download Asset"'
-                                    size='32'
+                                    :size='32'
+                                    :stroke='1'
                                     class='cursor-pointer'
                                     @click='downloadAsset(asset)'
                                 />

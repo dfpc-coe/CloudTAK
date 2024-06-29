@@ -9,7 +9,8 @@
                 class='align-self-center'
             >
                 <IconInfoSquare
-                    size='20'
+                    :size='20'
+                    :stroke='1'
                     class='cursor-pointer'
                     @click='help = true'
                 />
@@ -59,7 +60,8 @@
                     <IconTrash
                         v-if='selected.name'
                         v-tooltip='"Remove Icon"'
-                        size='32'
+                        :size='32'
+                        :stroke='1'
                         class='cursor-pointer'
                         @click='removeIcon'
                     />
@@ -68,7 +70,8 @@
                         <template #default>
                             <IconSettings
                                 v-tooltip='"Select Icon"'
-                                size='32'
+                                :size='32'
+                                :stroke='1'
                                 class='cursor-pointer'
                             />
                         </template>
@@ -76,7 +79,8 @@
                             <label class='w-100 subheader d-flex'>
                                 <span class='mx-2 d-flex justify-content-center align-items-center'>Iconsets</span>
                                 <IconSearch
-                                    size='32'
+                                    :size='32'
+                                    :stroke='1'
                                     class='ms-auto cursor-pointer mx-2'
                                     @click.stop.prevent='params.showFilter = !params.showFilter'
                                 />
