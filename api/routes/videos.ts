@@ -10,7 +10,7 @@ import { StandardResponse, VideoResponse } from '../lib/types.js';
 export default async function router(schema: Schema, config: Config) {
     const video = new ECSVideo(config);
 
-    await schema.get('/video', {
+    await schema.get('/video/server', {
         name: 'List Video Servers',
         group: 'Video',
         description: 'Let Admins list video servers',
@@ -57,7 +57,7 @@ export default async function router(schema: Schema, config: Config) {
         }
     });
 
-    await schema.post('/video', {
+    await schema.post('/video/server', {
         name: 'Create Server',
         group: 'Video',
         description: 'Create a new Media Server',
@@ -78,14 +78,14 @@ export default async function router(schema: Schema, config: Config) {
                 memory: Number(item.memory),
                 cpu: Number(item.cpu)
             }
-           
-            return res.json(i); 
+
+            return res.json(i);
         } catch (err) {
             return Err.respond(err, res);
         }
     });
 
-    await schema.get('/video/:serverid', {
+    await schema.get('/video/server/:serverid', {
         name: 'Get Server',
         group: 'Video',
         description: 'Get all info about a particular video server',
@@ -127,7 +127,7 @@ export default async function router(schema: Schema, config: Config) {
         }
     });
 
-    await schema.delete('/video/:serverid', {
+    await schema.delete('/video/server/:serverid', {
         name: 'Delete Server',
         group: 'Video',
         description: 'Shut down an existing video server',
