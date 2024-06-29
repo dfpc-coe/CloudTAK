@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v2.58.0 - 2024-06-29
+
+- :rocket: `API` Add basic Video Lease APIs & UI
+- :rocket: `UI` Allow setting Overlay position
+
 ### v2.57.0 - 2024-06-24
 
 - :rocket: `API` JWTs are now set to expire after 16 hours by default
