@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v2.59.1 - 2024-06-29
+
+- :rocket: `UI` Fix stroke size in Layer Pane
+
 ### v2.59.0 - 2024-06-29
 
 - :rocket: `UI` Add Video Lease Creation
