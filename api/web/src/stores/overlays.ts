@@ -9,7 +9,8 @@ import type { Static } from '@sinclair/typebox';
 
 export const useOverlayStore = defineStore('overlays', {
     state: (): {
-        overlays: ProfileOverlay[],
+        initialized: boolean;
+        overlays: ProfileOverlay[];
     } => {
         return {
             initialized: false,
