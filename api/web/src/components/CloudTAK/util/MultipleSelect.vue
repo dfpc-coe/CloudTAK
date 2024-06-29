@@ -22,15 +22,18 @@
         >
             <IconPoint
                 v-if='feat.geometry.type.includes("Point")'
-                size='20'
+                :size='20'
+                :stroke='1'
             />
             <IconLine
                 v-else-if='feat.geometry.type.includes("Line")'
-                size='20'
+                :size='20'
+                :stroke='1'
             />
             <IconPolygon
                 v-else-if='feat.geometry.type.includes("Polygon")'
-                size='20'
+                :size='20'
+                :stroke='1'
             />
             <div
                 class='subheader'

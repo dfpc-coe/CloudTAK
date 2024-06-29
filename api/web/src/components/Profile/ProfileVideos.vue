@@ -2,12 +2,12 @@
     <div>
         <div class='card-header'>
             <h3 class='card-title'>
-                API Tokens
+                Video Server Leases
             </h3>
 
             <div class='ms-auto btn-list'>
                 <IconPlus
-                    v-tooltip='"New Token"'
+                    v-tooltip='"New Lease"'
                     :size='32'
                     :stroke='1'
                     class='cursor-pointer'
@@ -24,9 +24,9 @@
         </div>
 
         <TablerNone
-            v-if='!tokens.items.length'
+            v-if='!list.items.length'
             :create='false'
-            label='Tokens'
+            label='Leases'
         />
         <TablerLoading v-else-if='loading' />
         <div
@@ -36,14 +36,15 @@
             <table class='table table-hover card-table table-vcenter cursor-pointer'>
                 <thead>
                     <tr>
-                        <th>Token Name</th>
+                        <th>Lease Path</th>
                         <th>Created</th>
                         <th>Updated</th>
+                        <th>Lease Expiration</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr
-                        v-for='t in tokens.items'
+                        v-for='t in list.items'
                         :key='t.id'
                         @click='token = t'
                     >
@@ -78,7 +79,7 @@ import {
 } from '@tak-ps/vue-tabler';
 
 export default {
-    name: 'ProfileTokens',
+    name: 'ProfileVideos',
     components: {
         TokenModal,
         TablerNone,
@@ -91,7 +92,7 @@ export default {
         return {
             loading: true,
             token: false,
-            tokens: {
+            list: {
                 total: 0,
                 items: []
             }
@@ -104,7 +105,7 @@ export default {
         fetch: async function() {
             this.token = false;
             this.loading = true;
-            this.tokens = await std('/api/token');
+            this.list = await std('/api/video/lease');
             this.loading = false;
         },
     }

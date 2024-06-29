@@ -10,7 +10,8 @@
                 v-tooltip='"Download Asset"'
                 :href='downloadFile()'
             ><IconDownload
-                size='32'
+                :size='32'
+                :stroke='1'
                 class='cursor-pointer'
             /></a>
         </template>
@@ -48,7 +49,8 @@
                         @click='createImport'
                     >
                         <IconFileImport
-                            size='20'
+                            :size='20'
+                            :stroke='1'
                             class='mx-1'
                         />Import
                     </button>

@@ -3,21 +3,24 @@
         <template #buttons>
             <IconPlus
                 v-tooltip='"Create Iconset"'
-                size='32'
+                :size='32'
+                :stroke='1'
                 class='cursor-pointer'
                 @click='editModal = {}'
             />
             <IconFileUpload
                 v-if='!upload'
                 v-tooltip='"Zip Upload"'
-                size='32'
+                :size='32'
+                :stroke='1'
                 class='cursor-pointer'
                 @click='upload = true'
             />
             <IconRefresh
                 v-if='!loading'
                 v-tooltip='"Refresh"'
-                size='32'
+                :size='32'
+                :stroke='1'
                 class='cursor-pointer'
                 @click='fetchList'
             />
@@ -54,7 +57,8 @@
                         class='btn btn-sm'
                     ><IconAlbum
                         v-tooltip='"Iconsets"'
-                        size='32'
+                        :size='32'
+                        :stroke='1'
                     /></label>
 
                     <input
@@ -71,7 +75,8 @@
                         class='btn btn-sm'
                     ><IconPhoto
                         v-tooltip='"Icons"'
-                        size='32'
+                        :size='32'
+                        :stroke='1'
                     /></label>
                 </div>
 
@@ -84,7 +89,8 @@
 
                             <div class='ms-auto btn-list'>
                                 <IconSearch
-                                    size='32'
+                                    :size='32'
+                                    :stroke='1'
                                     class='cursor-pointer'
                                     @click='search = !search'
                                 />
@@ -130,7 +136,8 @@
                                 >Private</span>
                                 <IconDownload
                                     v-tooltip='"Download TAK Zip"'
-                                    size='32'
+                                    :size='32'
+                                    :stroke='1'
                                     class='cursor-pointer'
                                     @click.stop='download(iconset)'
                                 />

@@ -36,13 +36,15 @@
 
                                     <IconRefresh
                                         v-tooltip='"Refresh"'
-                                        size='32'
+                                        :size='32'
+                                        :stroke='1'
                                         class='cursor-pointer'
                                         @click='refresh'
                                     />
                                     <IconSettings
                                         v-tooltip='"Edit"'
-                                        size='32'
+                                        :size='32'
+                                        :stroke='1'
                                         class='cursor-pointer'
                                         @click='$router.push(`/connection/${connection.id}/edit`)'
                                     />
@@ -109,7 +111,10 @@
                                                     "cursor-pointer": $route.name !== "connection-layers"
                                                 }'
                                                 @click='$router.push(`/connection/${$route.params.connectionid}/layer`)'
-                                            ><IconBuildingBroadcastTower size='32' /><span class='mx-3'>Layers</span></span>
+                                            ><IconBuildingBroadcastTower
+                                                :size='32'
+                                                :stroke='1'
+                                            /><span class='mx-3'>Layers</span></span>
                                             <span
                                                 class='list-group-item list-group-item-action d-flex align-items-center'
                                                 :class='{
@@ -117,7 +122,10 @@
                                                     "cursor-pointer": $route.name !== "connection-groups"
                                                 }'
                                                 @click='$router.push(`/connection/${$route.params.connectionid}/groups`)'
-                                            ><IconAffiliate size='32' /><span class='mx-3'>Channels</span></span>
+                                            ><IconAffiliate 
+                                                :size='32'
+                                                :stroke='1'
+                                            /><span class='mx-3'>Channels</span></span>
                                             <span
                                                 class='list-group-item list-group-item-action d-flex align-items-center'
                                                 :class='{
@@ -125,7 +133,10 @@
                                                     "cursor-pointer": $route.name !== "connection-datas"
                                                 }'
                                                 @click='$router.push(`/connection/${$route.params.connectionid}/data`)'
-                                            ><IconDatabase size='32' /><span class='mx-3'>Data Syncs</span></span>
+                                            ><IconDatabase
+                                                :size='32' 
+                                                :stroke='1' 
+                                            /><span class='mx-3'>Data Syncs</span></span>
                                             <span
                                                 class='list-group-item list-group-item-action d-flex align-items-center'
                                                 :class='{
@@ -133,7 +144,10 @@
                                                     "cursor-pointer": $route.name !== "connection-sinks"
                                                 }'
                                                 @click='$router.push(`/connection/${$route.params.connectionid}/sink`)'
-                                            ><IconOutbound size='32' /><span class='mx-3'>Outbounds Sinks</span></span>
+                                            ><IconOutbound 
+                                                :size='32'
+                                                :stroke='1'
+                                            /><span class='mx-3'>Outbounds Sinks</span></span>
                                             <span
                                                 class='list-group-item list-group-item-action d-flex align-items-center'
                                                 :class='{
@@ -141,7 +155,10 @@
                                                     "cursor-pointer": $route.name !== "connection-healths"
                                                 }'
                                                 @click='$router.push(`/connection/${$route.params.connectionid}/health`)'
-                                            ><IconCloudDataConnection size='32' /><span class='mx-3'>Health &amp; Metrics</span></span>
+                                            ><IconCloudDataConnection
+                                                :size='32'
+                                                :stroke='1'
+                                            /><span class='mx-3'>Health &amp; Metrics</span></span>
                                             <span
                                                 class='list-group-item list-group-item-action d-flex align-items-center'
                                                 :class='{
@@ -149,7 +166,10 @@
                                                     "cursor-pointer": $route.name !== "connection-tokens"
                                                 }'
                                                 @click='$router.push(`/connection/${$route.params.connectionid}/tokens`)'
-                                            ><IconRobot size='32' /><span class='mx-3'>API Tokens</span></span>
+                                            ><IconRobot
+                                                :size='32'
+                                                :stroke='1'
+                                            /><span class='mx-3'>API Tokens</span></span>
                                         </div>
                                     </div>
                                 </div>

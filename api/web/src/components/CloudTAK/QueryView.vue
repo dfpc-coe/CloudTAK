@@ -16,7 +16,8 @@
                     <div class='btn-list'>
                         <IconRefresh
                             class='cursor-pointer'
-                            size='32'
+                            :size='32'
+                            :stroke='1'
                             @click='fetch'
                         />
                     </div>

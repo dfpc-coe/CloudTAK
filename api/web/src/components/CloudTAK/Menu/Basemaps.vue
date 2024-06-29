@@ -4,20 +4,23 @@
             <template #buttons>
                 <IconPlus
                     v-tooltip='"Create Basemap"'
-                    size='32'
+                    :size='32' 
+                    :stroke='1' 
                     class='cursor-pointer'
                     @click='editModal = {}'
                 />
                 <IconSearch
                     v-tooltip='"Search"'
-                    size='32'
+                    :size='32' 
+                    :stroke='1' 
                     class='cursor-pointer'
                     @click='query = !query'
                 />
                 <IconRefresh
                     v-if='!loading'
                     v-tooltip='"Refresh"'
-                    size='32'
+                    :size='32' 
+                    :stroke='1' 
                     class='cursor-pointer'
                     @click='fetchList'
                 />
@@ -67,7 +70,8 @@
                                 <IconSettings
                                     v-if='(!basemap.username && profile.system_admin) || basemap.username'
                                     v-tooltip='"Edit Basemap"'
-                                    size='32'
+                                    :size='32' 
+                                    :stroke='1' 
                                     class='cursor-pointer'
                                     @click.stop.prevent='editModal = basemap'
                                 />

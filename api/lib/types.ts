@@ -58,6 +58,10 @@ export const ProfileResponse = Type.Object({
     display_speed: Type.String()
 });
 
+export const VideoLeaseResponse = createSelectSchema(schemas.VideoLease, {
+    id: Type.Integer(),
+});
+
 export const OverlayResponse = createSelectSchema(schemas.Overlay, {
     id: Type.Integer(),
 });

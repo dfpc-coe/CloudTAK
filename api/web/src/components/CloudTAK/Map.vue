@@ -13,13 +13,15 @@
         >
             <IconMenu2
                 v-if='noMenuShown'
-                size='40'
+                :size='40'
+                :stroke='1'
                 class='mx-2 cursor-pointer hover-button'
                 @click='$router.push("/menu")'
             />
             <IconX
                 v-else
-                size='40'
+                :size='40'
+                :stroke='1'
                 class='mx-2 cursor-pointer bg-dark'
                 @click='closeAllMenu'
             />
@@ -66,12 +68,14 @@
                 >
                     <IconLocationOff
                         v-if='!profile.tak_loc'
-                        size='20'
+                        :size='20'
+                        :stroke='1'
                         @click='setLocation'
                     />
                     <IconLocation
                         v-else
-                        size='20'
+                        :size='20'
+                        :stroke='1'
                         @click='setLocation'
                     />
                 </div>
@@ -109,7 +113,8 @@
             <IconSearch
                 v-if='false'
                 v-tooltip='"Search"'
-                size='40'
+                :size='40'
+                :stroke='1'
                 class='cursor-pointer hover-button mb-3'
             />
 
@@ -121,7 +126,8 @@
                 <IconCircleArrowUp
                     v-tooltip='"Snap to North"'
                     :transform='`rotate(${360 - bearing})`'
-                    size='40'
+                    :size='40'
+                    :stroke='1'
                 />
                 <div
                     v-if='bearing !== 0'
@@ -132,13 +138,15 @@
             <IconFocus2
                 v-if='!radial.cot && !locked.length'
                 v-tooltip='"Get Location"'
-                size='40'
+                :size='40'
+                :stroke='1'
                 class='cursor-pointer hover-button'
                 @click='getLocation'
             />
             <IconLockAccess
                 v-else-if='!radial.cot'
-                size='40'
+                :size='40'
+                :stroke='1'
                 class='cursor-pointer hover-button'
                 @click='locked.splice(0, locked.length)'
             />
@@ -146,13 +154,15 @@
             <div class='mt-3'>
                 <IconPlus
                     v-tooltip='"Zoom In"'
-                    size='40'
+                    :size='40'
+                    :stroke='1'
                     class='cursor-pointer hover-button'
                     @click='setZoom(getZoom() + 1);'
                 />
                 <IconMinus
                     v-tooltip='"Zoom Out"'
-                    size='40'
+                    :size='40'
+                    :stroke='1'
                     class='cursor-pointer hover-button'
                     @click='setZoom(getZoom() - 1);'
                 />
@@ -174,7 +184,8 @@
                 <template #default>
                     <div class='mx-2 cursor-pointer'>
                         <IconBell
-                            size='40'
+                            :size='40'
+                            :stroke='1'
                             class='hover-button'
                         />
                         <span
@@ -211,7 +222,10 @@
                                 class='col-12 cursor-pointer hover-dark'
                                 @click='$router.push(n.url)'
                             >
-                                <IconMessage size='32' />
+                                <IconMessage
+                                    :size='32'
+                                    :stroke='1'
+                                />
                                 <span v-text='n.name' />
                             </div>
                         </div>
@@ -221,7 +235,8 @@
             <TablerDropdown>
                 <template #default>
                     <IconPencil
-                        size='40'
+                        :size='40'
+                        :stroke='1'
                         class='mx-2 cursor-pointer hover-button'
                         @click='closeAllMenu'
                     />
@@ -231,31 +246,46 @@
                         class='col-12 py-1 px-2 hover-button cursor-pointer'
                         @click='pointInput.shown = true'
                     >
-                        <IconCursorText size='25' /> Coordinate Input
+                        <IconCursorText
+                            :size='25'
+                            :stroke='1'
+                        /> Coordinate Input
                     </div>
                     <div
                         class='col-12 py-1 px-2 hover-button cursor-pointer'
                         @click='startDraw("point")'
                     >
-                        <IconPoint size='25' /> Draw Point
+                        <IconPoint 
+                            :size='25'
+                            :stroke='1'
+                        /> Draw Point
                     </div>
                     <div
                         class='col-12 py-1 px-2 hover-button cursor-pointer'
                         @click='startDraw("linestring")'
                     >
-                        <IconLine size='25' /> Draw Line
+                        <IconLine 
+                            :size='25'
+                            :stroke='1'
+                        /> Draw Line
                     </div>
                     <div
                         class='col-12 py-1 px-2 hover-button cursor-pointer'
                         @click='startDraw("polygon")'
                     >
-                        <IconPolygon size='25' /> Draw Polygon
+                        <IconPolygon
+                            :size='25'
+                            :stroke='1'
+                        /> Draw Polygon
                     </div>
                     <div
                         class='col-12 py-1 px-2 hover-button cursor-pointer'
                         @click='startDraw("rectangle")'
                     >
-                        <IconVector size='25' /> Draw Rectangle
+                        <IconVector
+                            :size='25'
+                            :stroke='25'
+                        /> Draw Rectangle
                     </div>
                 </template>
             </TablerDropdown>
@@ -346,7 +376,10 @@
                 />
                 <div class='modal-header text-white'>
                     <div class='d-flex align-items-center'>
-                        <IconInfoSquare size='28' />
+                        <IconInfoSquare 
+                            :size='28' 
+                            :stroke='1' 
+                        />
                         <span class='mx-2'>No Channels Selected</span>
                     </div>
                 </div>

@@ -11,7 +11,8 @@
                         <IconSettings
                             v-if='!edit'
                             v-tooltip='"Configure Server"'
-                            size='32'
+                            :size='32'
+                            :stroke='1'
                             class='cursor-pointer'
                             @click='edit = true'
                         />

@@ -8,12 +8,14 @@
                 <template v-if='!raw && disabled'>
                     <IconCode
                         v-tooltip='"Raw View"'
-                        size='32'
+                        :size='32'
+                        :stroke='1'
                         class='cursor-pointer'
                         @click='raw = true'
                     />
                     <IconSettings
-                        size='32'
+                        :size='32'
+                        :stroke='1'
                         class='cursor-pointer'
                         @click='disabled = false'
                     />
@@ -21,7 +23,8 @@
                 <template v-else-if='raw'>
                     <IconX
                         v-tooltip='"Close View"'
-                        size='32'
+                        :size='32'
+                        :stroke='1'
                         class='cursor-pointer'
                         @click='raw = false'
                     />

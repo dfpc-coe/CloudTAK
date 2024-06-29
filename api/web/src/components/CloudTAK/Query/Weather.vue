@@ -9,35 +9,43 @@
         >
             <IconSun
                 v-if='weather.properties.periods[0].shortForecast.toLowerCase().includes("sunny")'
-                size='40'
+                :size='40'
+                :stroke='1'
             />
             <IconMoon
                 v-else-if='weather.properties.periods[0].shortForecast.toLowerCase().includes("clear")'
-                size='40'
+                :size='40'
+                :stroke='1'
             />
             <IconCloud
                 v-else-if='weather.properties.periods[0].shortForecast.toLowerCase().includes("cloud")'
-                size='40'
+                :size='40'
+                :stroke='1'
             />
             <IconCloudRain
                 v-else-if='weather.properties.periods[0].shortForecast.toLowerCase().includes("rain")'
-                size='40'
+                :size='40'
+                :stroke='1'
             />
             <IconSnowflake
                 v-else-if='weather.properties.periods[0].shortForecast.toLowerCase().includes("snow")'
-                size='40'
+                :size='40'
+                :stroke='1'
             />
             <IconCloudStorm
                 v-else-if='weather.properties.periods[0].shortForecast.toLowerCase().includes("storm")'
-                size='40'
+                :size='40'
+                :stroke='1'
             />
             <IconCloudFog
                 v-else-if='weather.properties.periods[0].shortForecast.toLowerCase().includes("fog")'
-                size='40'
+                :size='40'
+                :stroke='1'
             />
             <IconWind
                 v-else-if='weather.properties.periods[0].shortForecast.toLowerCase().includes("wind")'
-                size='40'
+                :size='40'
+                :stroke='1'
             />
 
             <div class='d-flex mx-2'>

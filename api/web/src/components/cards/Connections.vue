@@ -7,7 +7,10 @@
                         class='bg-primary text-white avatar cursor-pointer'
                         @click='$router.push("/connection")'
                     >
-                        <IconNetwork size='32' />
+                        <IconNetwork 
+                            :size='32' 
+                            :stroke='1' 
+                        />
                     </span>
                 </div>
                 <div class='col'>

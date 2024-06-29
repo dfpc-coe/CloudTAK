@@ -9,19 +9,22 @@
                 <IconPlus
                     v-if='!disabled'
                     v-tooltip='"Manual Addition"'
-                    size='32'
+                    :size='32'
+                    :stroke='1'
                     class='cursor-pointer'
                     @click='create = true'
                 />
                 <IconWorldDownload
                     v-if='!disabled'
                     v-tooltip='"Automated Schema"'
-                    size='32'
+                    :size='32'
+                    :stroke='1'
                     class='cursor-pointer'
                     @click='fetchSchema'
                 />
                 <IconSettings
-                    size='32'
+                    :size='32'
+                    :stroke='1'
                     class='cursor-pointer'
                     @click='disabled = false'
                 />
@@ -69,16 +72,28 @@
                             <div class='d-flex align-items-center'>
                                 <span class='mx-3'>
                                     <template v-if='field.type === "string"'>
-                                        <IconAlphabetLatin size='32' />
+                                        <IconAlphabetLatin
+                                            :size='32'
+                                            :stroke='1'
+                                        />
                                     </template>
                                     <template v-else-if='field.type === "number"'>
-                                        <IconDecimal size='32' />
+                                        <IconDecimal
+                                            :size='32'
+                                            :stroke='1'
+                                        />
                                     </template>
                                     <template v-else-if='field.type === "integer"'>
-                                        <IconSort09 size='32' />
+                                        <IconSort09
+                                            :size='32'
+                                            :stroke='1'
+                                        />
                                     </template>
                                     <template v-else>
-                                        <IconBinary size='32' />
+                                        <IconBinary
+                                            :size='32'
+                                            :stroke='1'
+                                        />
                                     </template>
                                 </span>
                                 <span v-text='field.name' />
@@ -96,7 +111,8 @@
                                 <div class='ms-auto'>
                                     <IconTrash
                                         v-if='!disabled'
-                                        size='32'
+                                        :size='32'
+                                        :stroke='1'
                                         class='cursor-pointer'
                                         @click.stop='schema.splice(field_it, 1)'
                                     />

@@ -4,7 +4,10 @@
             class='cursor-pointer col-12 py-2 px-3 d-flex align-items-center hover-dark'
             @click='$router.push("/menu/settings/callsign")'
         >
-            <IconUserCog size='32' />
+            <IconUserCog
+                :size='32'
+                :stroke='1'
+            />
             <span
                 class='mx-2'
                 style='font-size: 18px;'
@@ -14,7 +17,10 @@
             class='cursor-pointer col-12 py-2 px-3 d-flex align-items-center hover-dark'
             @click='$router.push("/menu/settings/display")'
         >
-            <IconAdjustments size='32' />
+            <IconAdjustments
+                :size='32'
+                :stroke='1'
+            />
             <span
                 class='mx-2'
                 style='font-size: 18px;'

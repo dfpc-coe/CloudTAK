@@ -7,7 +7,10 @@
                         class='bg-primary text-white avatar cursor-pointer'
                         @click='$router.push("/layer")'
                     >
-                        <IconBuildingBroadcastTower size='32' />
+                        <IconBuildingBroadcastTower
+                            :size='32' 
+                            :stroke='1' 
+                        />
                     </span>
                 </div>
                 <div class='col'>

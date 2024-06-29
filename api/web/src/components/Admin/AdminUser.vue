@@ -1,14 +1,23 @@
 <template>
     <div>
         <div class='card-header'>
-            <IconCircleArrowLeft @click='$router.push("/admin/user")' class='cursor-pointer' :size='32'/>
+            <IconCircleArrowLeft
+                class='cursor-pointer'
+                :size='32'
+                :stroke='1'
+                @click='$router.push("/admin/user")'
+            />
 
-            <h1 class='card-title mx-2' v-text='`User: ${$route.params.user}`'></h1>
+            <h1
+                class='card-title mx-2'
+                v-text='`User: ${$route.params.user}`'
+            />
 
             <div class='ms-auto btn-list'>
                 <IconRefresh
                     v-tooltip='"Refresh"'
-                    size='32'
+                    :size='32'
+                    :stroke='1'
                     class='cursor-pointer'
                     @click='fetchUser'
                 />

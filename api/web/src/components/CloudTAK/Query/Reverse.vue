@@ -8,7 +8,8 @@
             class='col-12 d-flex py-2 px-2'
         >
             <IconMapPin
-                size='40'
+                :size='40'
+                :stroke='1'
             />
 
             <div class='mx-2'>

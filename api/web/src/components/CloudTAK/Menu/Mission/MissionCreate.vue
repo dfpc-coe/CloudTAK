@@ -11,10 +11,12 @@
                         <IconLock
                             v-if='mission.passwordProtected'
                             :size='32'
+                            :stroke='1'
                         />
                         <IconLockOpen
                             v-else
                             :size='32'
+                            :stroke='1'
                         />
                     </div>
                     <div class='col-auto row'>
@@ -57,6 +59,7 @@
                             >
                                 <IconListSearch
                                     :size='32'
+                                    :stroke='1'
                                     class='cursor-pointer mx-2'
                                 />
                             </button>
@@ -82,10 +85,12 @@
                         <IconSquareChevronRight
                             v-if='!advanced'
                             :size='32'
+                            :stroke='1'
                         />
                         <IconChevronDown
                             v-else
                             :size='32'
+                            :stroke='1'
                         />
                         Advanced Options
                     </label>

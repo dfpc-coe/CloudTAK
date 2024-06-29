@@ -6,13 +6,15 @@
         <template #buttons>
             <IconPlus
                 v-tooltip='"Create Mission"'
-                size='32'
+                :size='32'
+                :stroke='1'
                 class='cursor-pointer'
                 @click='create = true'
             />
             <IconRefresh
                 v-tooltip='"Refresh"'
-                size='32'
+                :size='32'
+                :stroke='1'
                 class='cursor-pointer'
                 @click='fetchMissions'
             />
@@ -42,11 +44,13 @@
                         <div class='d-flex justify-content-center align-items-center'>
                             <IconLock
                                 v-if='mission.passwordProtected'
-                                size='32'
+                                :size='32'
+                                :stroke='1'
                             />
                             <IconLockOpen
                                 v-else
-                                size='32'
+                                :size='32'
+                                :stroke='1'
                             />
                         </div>
                         <div class='mx-2'>
@@ -69,7 +73,8 @@
                             <IconAccessPoint
                                 v-if='subscribed.has(mission.guid)'
                                 v-tooltip='"Subscribed"'
-                                size='32'
+                                :size='32'
+                                :stroke='1'
                                 class='text-green'
                             />
                         </div>

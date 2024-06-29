@@ -8,7 +8,8 @@
             <div class='ms-auto btn-list'>
                 <IconPlus
                     v-tooltip='"Create Layer"'
-                    size='32'
+                    :size='32'
+                    :stroke='1'
                     class='cursor-pointer'
                     @click='$router.push(`/connection/${$route.params.connectionid}/layer/new`)'
                 />
@@ -55,7 +56,8 @@
                                         <IconDatabase
                                             v-if='layer.data'
                                             v-tooltip='`Pushing to Data Sync`'
-                                            size='32'
+                                            :size='32'
+                                            :stroke='1'
                                             @click.stop.prevent='$router.push(`/connection/${$route.params.connectionid}/data/${layer.data}`)'
                                         />                                
                                     </div>

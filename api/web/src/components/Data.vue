@@ -45,19 +45,22 @@
                                         <IconAccessPoint
                                             v-if='data.mission_sync'
                                             v-tooltip='"Mission Sync On"'
-                                            size='32'
+                                            :size='32'
+                                            :stroke='1'
                                             class='text-green'
                                         />
                                         <IconAccessPointOff
                                             v-else
                                             v-tooltip='"Mission Sync Off"'
-                                            size='32'
+                                            :size='32'
+                                            :stroke='1'
                                             class='text-red'
                                         />
 
                                         <IconSettings
                                             v-tooltip='"Edit"'
-                                            size='32'
+                                            :size='32'
+                                            :stroke='1'
                                             class='cursor-pointer'
                                             @click='$router.push(`/connection/${$route.params.connectionid}/data/${data.id}/edit`)'
                                         />
@@ -129,7 +132,10 @@
                                                     "cursor-pointer": $route.name !== "data-groups"
                                                 }'
                                                 @click='$router.push(`/connection/${$route.params.connectionid}/data/${$route.params.dataid}/groups`)'
-                                            ><IconAffiliate size='32' /><span class='mx-3'>Channels</span></span>
+                                            ><IconAffiliate
+                                                :size='32'
+                                                :stroke='1'
+                                            /><span class='mx-3'>Channels</span></span>
                                             <span
                                                 class='list-group-item list-group-item-action d-flex align-items-center'
                                                 :class='{
@@ -137,7 +143,10 @@
                                                     "cursor-pointer": $route.name !== "data-files"
                                                 }'
                                                 @click='$router.push(`/connection/${$route.params.connectionid}/data/${$route.params.dataid}/files`)'
-                                            ><IconFiles size='32' /><span class='mx-3'>Files</span></span>
+                                            ><IconFiles
+                                                :size='32'
+                                                :stroke='1'
+                                            /><span class='mx-3'>Files</span></span>
                                             <span
                                                 class='list-group-item list-group-item-action d-flex align-items-center'
                                                 :class='{
@@ -145,7 +154,10 @@
                                                     "cursor-pointer": $route.name !== "data-layer"
                                                 }'
                                                 @click='$router.push(`/connection/${$route.params.connectionid}/data/${$route.params.dataid}/layer`)'
-                                            ><IconBuildingBroadcastTower size='32' /><span class='mx-3'>Layers</span></span>
+                                            ><IconBuildingBroadcastTower
+                                                :size='32'
+                                                :stroke='1'
+                                            /><span class='mx-3'>Layers</span></span>
                                             <span
                                                 class='list-group-item list-group-item-action d-flex align-items-center'
                                                 :class='{
@@ -153,7 +165,10 @@
                                                     "cursor-pointer": $route.name !== "data-jobs"
                                                 }'
                                                 @click='$router.push(`/connection/${$route.params.connectionid}/data/${$route.params.dataid}/jobs`)'
-                                            ><IconTransform size='32' /><span class='mx-3'>Jobs</span></span>
+                                            ><IconTransform
+                                                :size='32'
+                                                :stroke='1'
+                                            /><span class='mx-3'>Jobs</span></span>
                                         </div>
                                     </div>
                                 </div>

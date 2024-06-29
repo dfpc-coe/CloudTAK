@@ -26,12 +26,14 @@
                 >
                     <IconCircleFilled
                         v-if='selected.has(group.name)'
-                        size='32'
+                        :size='32'
+                        :stroke='1'
                         class='cursor-pointer'
                     />
                     <IconCircle
                         v-else
-                        size='32'
+                        :size='32'
+                        :stroke='1'
                         class='cursor-pointer'
                     />
                     <span

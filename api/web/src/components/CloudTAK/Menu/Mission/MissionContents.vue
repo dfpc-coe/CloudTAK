@@ -9,6 +9,7 @@
                 v-if='!upload && role.permissions.includes("MISSION_WRITE")'
                 v-tooltip='"Upload File"'
                 :size='32'
+                :stroke='1'
                 class='cursor-pointer'
                 @click='upload = true'
             />

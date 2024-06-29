@@ -16,7 +16,8 @@
             <div class='col-auto btn-list my-2 ms-auto d-flex align-items-center mx-2'>
                 <IconZoomPan
                     v-tooltip='"Zoom To"'
-                    size='32'
+                    :size='32'
+                    :stroke='1'
                     class='cursor-pointer'
                     @click='zoomTo'
                 />
@@ -24,14 +25,16 @@
                 <IconCode
                     v-if='mode === "default"'
                     v-tooltip='"Raw View"'
-                    size='32'
+                    :size='32'
+                    :stroke='1'
                     class='cursor-pointer'
                     @click='mode = "raw"'
                 />
                 <IconX
                     v-if='mode === "raw"'
                     v-tooltip='"Default View"'
-                    size='32'
+                    :size='32'
+                    :stroke='1'
                     class='cursor-pointer'
                     @click='mode = "default"'
                 />

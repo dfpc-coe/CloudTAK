@@ -8,21 +8,24 @@
                 <div class='btn-list'>
                     <IconPlayerPlay
                         v-tooltip='"Manually Run"'
-                        size='24'
+                        :size='24'
+                        :stroke='1'
                         class='cursor-pointer'
                         @click='invoke'
                     />
 
                     <IconCloudUpload
                         v-tooltip='"Redeploy"'
-                        size='24'
+                        :size='24'
+                        :stroke='1'
                         class='cursor-pointer'
                         @click='redeploy'
                     />
 
                     <IconRefresh
                         v-tooltip='"Refresh"'
-                        size='24'
+                        :size='24'
+                        :stroke='1'
                         class='cursor-pointer'
                         @click='$emit("stack")'
                     />

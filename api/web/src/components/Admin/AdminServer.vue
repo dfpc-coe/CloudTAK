@@ -10,7 +10,8 @@
                     <div class='btn-list'>
                         <IconSettings
                             v-tooltip='"Configure Server"'
-                            size='32'
+                            :size='32'
+                            :stroke='1'
                             class='cursor-pointer'
                             @click='edit = true'
                         />
@@ -84,7 +85,8 @@
                 >
                     <IconPlus
                         v-tooltip='"Upload P12"'
-                        size='32'
+                        :size='32'
+                        :stroke='1'
                         class='cursor-pointer'
                         @click='modal.upload = true'
                     />
@@ -111,7 +113,10 @@
                 </template>
                 <template v-else>
                     <div class='col-auto'>
-                        <IconLock size='50' />
+                        <IconLock
+                            :size='50'
+                            :stroke='1'
+                        />
                     </div>
                     <div class='col-auto d-flex align-items-center'>
                         Once Certificates are uploaded they cannot be viewed

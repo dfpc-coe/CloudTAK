@@ -1,7 +1,8 @@
 <template>
     <div class='col-12 d-flex align-items-center py-2 px-2 text-muted'>
         <IconInfoSquareRounded
-            size='32'
+            :size='32'
+            :stroke='1'
             class='mx-2'
         />
         <div>

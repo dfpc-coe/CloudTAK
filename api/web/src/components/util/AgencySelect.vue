@@ -10,7 +10,8 @@
             <div class='d-flex align-items-center'>
                 <IconTrash
                     v-if='selected.id'
-                    size='32'
+                    :size='32'
+                    :stroke='1'
                     class='cursor-pointer'
                     @click='selected.id = null'
                 />
@@ -30,7 +31,8 @@
                     <TablerDropdown>
                         <IconSettings
                             v-tooltip='"Select Agency"'
-                            size='32'
+                            :size='32'
+                            :stroke='1'
                             class='cursor-pointer dropdown-toggle'
                         />
                         <template #dropdown>

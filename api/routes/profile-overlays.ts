@@ -6,6 +6,7 @@ import Schema from '@openaddresses/batch-schema';
 import S3 from '../lib/aws/s3.js';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
+import { ProfileOverlay } from '../lib/schema.js';
 import { StandardResponse, ProfileOverlayResponse } from '../lib/types.js'
 import { sql } from 'drizzle-orm';
 import TAKAPI, {
@@ -26,7 +27,8 @@ export default async function router(schema: Schema, config: Config) {
         query: Type.Object({
             limit: Default.Limit,
             page: Default.Page,
-            order: Default.Order
+            order: Default.Order,
+            sort: Type.Optional(Type.String({ default: 'pos', enum: Object.keys(ProfileOverlay) })),
         }),
         res: Type.Object({
             total: Type.Integer(),
@@ -44,6 +46,7 @@ export default async function router(schema: Schema, config: Config) {
                 limit: req.query.limit,
                 page: req.query.page,
                 order: req.query.order,
+                sort: req.query.sort,
                 where: sql`
                     username = ${user.email}
                 `
@@ -121,7 +124,7 @@ export default async function router(schema: Schema, config: Config) {
         try {
             const user = await Auth.as_user(config, req);
 
-            const overlay = await config.models.ProfileOverlay.from(req.params.overlay)
+            let overlay = await config.models.ProfileOverlay.from(req.params.overlay)
             if (overlay.username !== user.email) throw new Err(401, null, 'Cannot edit another\'s overlay');
 
             if (req.body.styles) {
@@ -129,7 +132,7 @@ export default async function router(schema: Schema, config: Config) {
                 if (errors.length) throw new Err(400, null, JSON.stringify(errors));
             }
 
-            await config.models.ProfileOverlay.commit(req.params.overlay, req.body)
+            overlay = await config.models.ProfileOverlay.commit(req.params.overlay, req.body)
 
             return res.json(overlay);
         } catch (err) {

@@ -8,13 +8,15 @@
             <div class='ms-auto btn-list'>
                 <IconPlus
                     v-tooltip='"Upload"'
-                    size='32'
+                    :size='32'
+                    :stroke='1'
                     class='cursor-pointer'
                     @click='upload = true'
                 />
                 <IconRefresh
                     v-tooltip='"Refresh"'
-                    size='32'
+                    :size='32'
+                    :stroke='1'
                     class='cursor-pointer'
                     @click='fetchList'
                 />
@@ -44,7 +46,8 @@
                                     <IconMap
                                         v-if='asset.visualized'
                                         v-tooltip='"Visualizable"'
-                                        size='32'
+                                        :size='32'
+                                        :stroke='1'
                                     />
                                     <IconMapOff
                                         v-else
@@ -61,12 +64,14 @@
                                 <IconRefreshDot
                                     v-if='data.mission_sync && asset.sync'
                                     v-tooltip='"Syncing"'
-                                    size='32'
+                                    :size='32'
+                                    :stroke='1'
                                     class='text-green'
                                 />
                                 <IconRefreshOff
                                     v-else-if='data.mission_sync && !asset.sync'
-                                    size='32'
+                                    :size='32'
+                                    :stroke='1'
                                 />
                             </div>
                         </td>
@@ -84,13 +89,15 @@
                                 <IconTransform
                                     v-if='!asset.visualized'
                                     v-tooltip='"Convert Asset"'
-                                    size='32'
+                                    :size='32'
+                                    :stroke='1'
                                     class='cursor-pointer'
                                     @click='initTransform(asset)'
                                 />
                                 <IconDownload
                                     v-tooltip='"Download Asset"'
-                                    size='32'
+                                    :size='32'
+                                    :stroke='1'
                                     class='cursor-pointer'
                                     @click='downloadAsset(asset)'
                                 />
