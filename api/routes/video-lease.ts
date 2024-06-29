@@ -1,4 +1,5 @@
 import { Type } from '@sinclair/typebox'
+import moment from 'moment';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth, { AuthUserAccess } from '../lib/auth.js';
@@ -64,7 +65,8 @@ export default async function router(schema: Schema, config: Config) {
             }
 
             const lease = await config.models.VideoLease.generate({
-                ...req.body,
+                name: req.body.name,
+                expiration: moment().add(req.body.duration, 'seconds').toISOString(),
                 path: randomUUID(),
                 username: user.email
             })

@@ -11,7 +11,7 @@
                     :size='32'
                     :stroke='1'
                     class='cursor-pointer'
-                    @click='token={}'
+                    @click='lease={}'
                 />
                 <IconRefresh
                     v-tooltip='"Refresh"'
@@ -46,7 +46,7 @@
                     <tr
                         v-for='t in list.items'
                         :key='t.id'
-                        @click='token = t'
+                        @click='lease = t'
                     >
                         <td v-text='t.name' />
                         <td><TablerEpoch :date='t.created' /></td>
@@ -56,10 +56,10 @@
             </table>
         </div>
 
-        <TokenModal
-            v-if='token'
-            :token='token'
-            @close='token = false'
+        <VideoLeaseModal
+            v-if='lease'
+            :lease='lease'
+            @close='lease = false'
             @refresh='fetch'
         />
     </div>
@@ -67,7 +67,7 @@
 
 <script>
 import { std } from '/src/std.ts';
-import TokenModal from './TokenModal.vue';
+import VideoLeaseModal from './VideoLeaseModal.vue';
 import {
     IconPlus,
     IconRefresh,
@@ -81,7 +81,7 @@ import {
 export default {
     name: 'ProfileVideos',
     components: {
-        TokenModal,
+        VideoLeaseModal,
         TablerNone,
         IconPlus,
         IconRefresh,
@@ -91,7 +91,7 @@ export default {
     data: function() {
         return {
             loading: true,
-            token: false,
+            lease: false,
             list: {
                 total: 0,
                 items: []
@@ -103,7 +103,7 @@ export default {
     },
     methods: {
         fetch: async function() {
-            this.token = false;
+            this.lease = false;
             this.loading = true;
             this.list = await std('/api/video/lease');
             this.loading = false;

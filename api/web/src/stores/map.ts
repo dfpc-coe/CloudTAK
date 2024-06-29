@@ -90,6 +90,13 @@ export const useMapStore = defineStore('cloudtak', {
         }
     },
     actions: {
+        destroy: function() {
+            if (this.map) {
+                this.map.remove();
+                delete this.map;
+            }
+            this.$reset();
+        },
         addLayer: async function(layer: {
             id: string;
             name: string;
@@ -340,7 +347,7 @@ export const useMapStore = defineStore('cloudtak', {
                 layer.visible = true;
             }
 
-            if (this.map.getSource(layer.id)) {
+            if (this.map && this.map.getSource(layer.id)) {
                 this.map.removeSource(layer.id);
             }
 
