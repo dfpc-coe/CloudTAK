@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v2.61.2 - 2024-07-02
+
+- :arrow_up: Update to node-tak@9.8 to include Point, Poly, LineString shape support & basic styling
+
 ### v2.61.1 - 2024-07-02
 
 - :arrow_up: Update to node-tak@9.6 to truncate coordinates to something reasonable
