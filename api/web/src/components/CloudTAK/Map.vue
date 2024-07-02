@@ -284,7 +284,7 @@
                     >
                         <IconVector
                             :size='25'
-                            :stroke='25'
+                            :stroke='1'
                         /> Draw Rectangle
                     </div>
                 </template>
