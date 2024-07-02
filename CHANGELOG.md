@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v2.60.0 - 2024-07-01
+
+- :rocket: `UI` Fix stroke size in CloudTAK/Draw Rectangle
+- :arrow_up: Update to node-tak@9.4 to support target cursor
+
 ### v2.59.1 - 2024-06-29
 
 - :rocket: `UI` Fix stroke size in Layer Pane
