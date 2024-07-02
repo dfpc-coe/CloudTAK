@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v2.62.0 - 2024-07-02
+
+- :arrow_up: Update to node-tak@9.0 to include `ackrequest`
+- :bug: Fix layer redeploy endpoint
+
 ### v2.61.2 - 2024-07-02
 
 - :arrow_up: Update to node-tak@9.8 to include Point, Poly, LineString shape support & basic styling
