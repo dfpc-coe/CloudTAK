@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v2.61.1 - 2024-07-02
+
+- :arrow_up: Update to node-tak@9.6 to truncate coordinates to something reasonable
+
 ### v2.61.0 - 2024-07-01
 
 - :arrow_up: Update to node-tak@9.5 to support Circles
