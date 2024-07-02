@@ -16,7 +16,7 @@
                         </div>
                     </div>
 
-                    <div class='pe-2'>
+                    <div class='pb-2'>
                         <TablerInput
                             v-model='paging.filter'
                             placeholder='Filter Tasks'
@@ -29,7 +29,7 @@
                     />
                     <template v-else>
                         <div class='card-body'>
-                            <div class='list-group list-group-transparent'>
+                            <div class='list-group'>
                                 <span
                                     v-for='t of list.items'
                                     :key='t.prefix'
@@ -49,7 +49,7 @@
                         </div>
                     </template>
 
-                    <div class='col-lg-12'>
+                    <div class='col-lg-12 py-2'>
                         <TablerPager
                             v-if='list.total > paging.limit'
                             :page='paging.page'
@@ -59,7 +59,7 @@
                         />
                     </div>
                 </div>
-                <div class='col-12 col-md-9 position-relative'>
+                <div class='col-12 col-md-9 position-relative px-4'>
                     <TablerLoading
                         v-if='loading.task'
                         desc='Loading Task'
@@ -72,22 +72,8 @@
                         <div class='card-header d-flex align-items-center'>
                             <div
                                 class='card-title subheader'
-                                v-text='current.name'
+                                v-text='`${current.name} (${current.prefix})`'
                             />
-
-                            <div class='ms-auto btn-list'>
-                                <div
-                                    class='subheader'
-                                    v-text='`(${current.prefix})`'
-                                />
-
-                                <IconCode
-                                    v-if='current.repo'
-                                    :size='32'
-                                    :stroke='1'
-                                    @click='external(current.repo)'
-                                />
-                            </div>
                         </div>
                         <div class='card-body'>
                             <TablerMarkdown
