@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v2.63.0 - 2024-07-02
+
+- :rocket: Automatically broadcast imported DataPackage CoTs
+
 ### v2.62.0 - 2024-07-02
 
 - :arrow_up: Update to node-tak@9.0 to include `ackrequest`
