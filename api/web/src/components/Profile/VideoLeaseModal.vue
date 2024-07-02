@@ -117,7 +117,7 @@ export default {
                 });
                 this.$emit('refresh');
             } else {
-                const newlease = await std('/api/video/lease', {
+                await std('/api/video/lease', {
                     method: 'POST',
                     body: {
                         name: this.editLease.name,

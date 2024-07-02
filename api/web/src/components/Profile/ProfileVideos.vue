@@ -48,9 +48,12 @@
                         :key='t.id'
                     >
                         <td v-text='t.name' />
-                        <td class='subheader'v-text='`/${t.path}`' />
-                        <td><TablerEpoch :date='t.updated'/></td>
-                        <td><TablerEpoch :date='t.expiration'/></td>
+                        <td
+                            class='subheader'
+                            v-text='`/${t.path}`'
+                        />
+                        <td><TablerEpoch :date='t.updated' /></td>
+                        <td><TablerEpoch :date='t.expiration' /></td>
                     </tr>
                 </tbody>
             </table>

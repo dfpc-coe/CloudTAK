@@ -539,21 +539,6 @@
         "query": false,
         "res": true
     },
-    "PUT /marti/package": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "GET /marti/package": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /marti/package/:hash": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
     "GET /iconset": {
         "body": false,
         "query": true,
@@ -618,6 +603,21 @@
         "body": false,
         "query": true,
         "res": false
+    },
+    "PUT /marti/package": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "GET /marti/package": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /marti/package/:hash": {
+        "body": false,
+        "query": false,
+        "res": true
     },
     "GET /marti/group": {
         "body": false,
@@ -844,22 +844,37 @@
         "query": false,
         "res": true
     },
-    "GET /video": {
+    "GET /video/lease": {
         "body": false,
-        "query": false,
+        "query": true,
         "res": true
     },
-    "POST /video": {
+    "POST /video/lease": {
         "body": true,
         "query": false,
         "res": true
     },
-    "GET /video/:serverid": {
+    "DELETE /video/lease/:lease": {
         "body": false,
         "query": false,
         "res": true
     },
-    "DELETE /video/:serverid": {
+    "GET /video/server": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "POST /video/server": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "GET /video/server/:serverid": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "DELETE /video/server/:serverid": {
         "body": false,
         "query": false,
         "res": true
