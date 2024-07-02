@@ -115,9 +115,6 @@
 <script>
 import { std, stdurl } from '/src/std.ts';
 import {
-    IconCode,
-} from '@tabler/icons-vue'
-import {
     TablerMarkdown,
     TablerLoading,
     TablerInput,
@@ -130,7 +127,6 @@ import {
 export default {
     name: 'TaskModal',
     components: {
-        IconCode,
         TablerLoading,
         TablerMarkdown,
         TablerPager,
