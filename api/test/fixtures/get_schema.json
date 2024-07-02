@@ -539,6 +539,21 @@
         "query": false,
         "res": true
     },
+    "PUT /marti/package": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "GET /marti/package": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /marti/package/:hash": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
     "GET /iconset": {
         "body": false,
         "query": true,
@@ -603,21 +618,6 @@
         "body": false,
         "query": true,
         "res": false
-    },
-    "PUT /marti/package": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "GET /marti/package": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /marti/package/:hash": {
-        "body": false,
-        "query": false,
-        "res": true
     },
     "GET /marti/group": {
         "body": false,
@@ -696,7 +696,7 @@
     },
     "PUT /profile/feature": {
         "body": true,
-        "query": false,
+        "query": true,
         "res": true
     },
     "DELETE /profile/feature/:id": {

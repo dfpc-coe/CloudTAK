@@ -1,4 +1,5 @@
 import { Type, Static } from '@sinclair/typebox'
+import { CoT } from '@tak-ps/node-tak';
 import { coordEach } from '@turf/meta';
 import { GenerateUpsert } from '@openaddresses/batch-generic';
 import Config from '../lib/config.js';
@@ -89,6 +90,15 @@ export default async function router(schema: Schema, config: Config) {
         description: `
             Create or modify a feature
         `,
+        query: Type.Object({
+            broadcast: Type.Boolean({
+                default: false,
+                description: `
+                    Broadcast featues as CoTs to connected WebSocket clients
+                    Used primarily by the Events Task for importing DataPackage CoTs
+                `
+            })
+        }),
         body: ProfileFeature,
         res: ProfileFeature,
     }, async (req, res) => {
@@ -100,22 +110,26 @@ export default async function router(schema: Schema, config: Config) {
                 return coords
             })
 
-            const feat = await config.models.ProfileFeature.generate({
-                id: req.body.id,
-                username: user.email,
-                properties: req.body.properties,
-                geometry: req.body.geometry
-            }, {
-                upsert: GenerateUpsert.UPDATE
-            });
-
-            return res.json({
-                id: feat.id,
-                path: feat.path,
+            const feat: Static<typeof ProfileFeature> = {
                 type: 'Feature',
-                properties: feat.properties,
-                geometry: feat.geometry
-            } as Static<typeof ProfileFeature>);
+                ...(await config.models.ProfileFeature.generate({
+                    id: req.body.id,
+                    username: user.email,
+                    properties: req.body.properties,
+                    geometry: req.body.geometry
+                }, {
+                    upsert: GenerateUpsert.UPDATE
+                }))
+            } as Static<typeof ProfileFeature>;
+
+            if (req.query.broadcast) {
+                const sockets = config.wsClients.get(user.email) || []
+                for (const socket of sockets) {
+                    config.conns.cots(socket.client.config, [CoT.from_geojson(feat)])
+                }
+            }
+
+            return res.json(feat)
         } catch (err) {
             return Err.respond(err, res);
         }
