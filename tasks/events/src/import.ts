@@ -52,6 +52,7 @@ export default async function(md: Event) {
             for (const feat of feats) {
                 await API.putFeature({
                     token: md.UserToken,
+                    broadcast: true,
                     body: {
                         ...feat.to_geojson(),
                         path: `/${pkg.settings.name.replace(/\//g, '')}/`,

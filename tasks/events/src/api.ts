@@ -64,9 +64,11 @@ export default class API {
 
     static async putFeature(event: {
         token: string;
+        broadcast: boolean;
         body: object;
     }) {
         const url = new URL(`/api/profile/feature`, process.env.TAK_ETL_API);
+        url.searchParams.append('broadcast', String(event.broadcast));
         const res = await fetch(url, {
             method: 'PUT',
             headers: {
