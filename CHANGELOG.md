@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v2.61.0 - 2024-07-01
+
+- :arrow_up: Update to node-tak@9.5 to support Circles
+
 ### v2.60.0 - 2024-07-01
 
 - :rocket: `UI` Fix stroke size in CloudTAK/Draw Rectangle
