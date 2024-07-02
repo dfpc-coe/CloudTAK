@@ -89,6 +89,15 @@ export default async function router(schema: Schema, config: Config) {
         description: `
             Create or modify a feature
         `,
+        query: Type.Object({
+            broadcast: Type.Boolean({
+                default: false,
+                description: `
+                    Broadcast featues as CoTs to connected WebSocket clients
+                    Used primarily by the Events Task for importing DataPackage CoTs
+                `
+            })
+        }),
         body: ProfileFeature,
         res: ProfileFeature,
     }, async (req, res) => {
