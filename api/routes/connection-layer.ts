@@ -26,9 +26,6 @@ export default async function router(schema: Schema, config: Config) {
     await schema.post('/layer/redeploy', {
         name: 'Redeploy Layers',
         group: 'LayerAdmin',
-        params: Type.Object({
-            connectionid: Type.Integer({ minimum: 1 })
-        }),
         description: 'Redeploy all Layers with latest CloudFormation output',
         res: StandardResponse
     }, async (req, res) => {

@@ -117,6 +117,7 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
         if (this.config.wsClients.has(String(conn.id))) {
             for (const cot of cots) {
                 const feat = cot.to_geojson();
+
                 try {
                     if (ephemeral && feat.properties && feat.properties.chat) {
                         await this.config.models.ProfileChat.generate({
