@@ -186,6 +186,7 @@
                                             </template>
                                             <template v-else-if='type === "creation"'>
                                                 <CertificateMachineUser
+                                                    :connection='connection'
                                                     @certs='marti($event)'
                                                     @err='err = $event'
                                                 />

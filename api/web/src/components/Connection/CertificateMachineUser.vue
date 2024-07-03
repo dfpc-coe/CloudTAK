@@ -18,7 +18,7 @@
         <div class='col-12 mb-2'>
             <TablerInput
                 v-model='paging.filter'
-                label='Channels Filter'
+                placeholder='Channels Filter...'
                 @keyup.enter='generate'
             />
         </div>
@@ -70,6 +70,9 @@ export default {
     emits: [
         'certs',
     ],
+    props: {
+        connection: Object
+    },
     data: function() {
         return {
             loading: {
@@ -124,7 +127,16 @@ export default {
             this.loading.channels = false;
         },
         generate: async function() {
-
+            const url = stdurl('/api/ldap/user');
+            await std(url, {
+                method: 'POST',
+                body: {
+                    name: this.connection.name,
+                    description: this.connection.description,
+                    agency_id: this.connection.agency,
+                    channels: this.selected.map((s) => { return s.id })
+                }
+            })
         }
     }
 }

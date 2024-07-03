@@ -61,25 +61,40 @@ export default class ExternalProvider {
         name: string;
         agency_id: number;
         password: string;
+        integration: {
+            name: string;
+            description: string;
+            management_url: string;
+        }
     }): Promise<Static<typeof Agency>> {
         await this.auth();
 
+                console.error('BODY', body);
+
         const url = new URL(`api/v1/proxy/machine-users`, this.config.server.provider_url);
         url.searchParams.append('proxy_user_id', String(uid));
-        const agencyres = await fetch(url, {
+        url.searchParams.append('sequential_email', 'true')
+        const userres = await fetch(url, {
             method: 'POST',
             headers: {
                 Accept: 'application/json',
+                "Content-Type": "application/json",
                 "Authorization": `Bearer ${this.cache.token}`
             },
             body: JSON.stringify({
-                ...body,
-                active: true
+                name: body.name,
+                agency_id: body.agency_id,
+                password: body.password,
+                active: true,
+                integration: {
+                    ...body.integration,
+                    active: true
+                }
             })
         });
 
-        if (!agencyres.ok) throw new Err(500, new Error(await agencyres.text()), 'External Agency List Error');
-        const list = await agencyres.typed(Type.Object({
+        if (!userres.ok) throw new Err(500, new Error(await userres.text()), 'External Machine User Creation Error');
+        const list = await userres.typed(Type.Object({
             data: Agency
         }));
 
