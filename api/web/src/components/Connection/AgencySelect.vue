@@ -1,88 +1,52 @@
 <template>
-    <div class='w-100'>
-        <template v-if='loading'>
-            <TablerLoading :inline='true' />
-        </template>
-        <template v-else>
-            <div class='col-12 pb-2'>
-                <label>Connection Agency</label>
-            </div>
-            <div class='d-flex align-items-center'>
-                <IconTrash
-                    v-if='selected.id'
-                    :size='32'
-                    :stroke='1'
-                    class='cursor-pointer'
-                    @click='selected.id = null'
-                />
-                <div
-                    v-if='selected.id'
-                    class='mx-2'
-                    v-text='selected.name'
-                />
-                <div v-else>
-                    No Agency Selected
-                </div>
-
-                <div
-                    v-if='!disabled'
-                    class='ms-auto btn-list'
-                >
-                    <TablerDropdown>
-                        <IconSettings
-                            v-tooltip='"Select Agency"'
+<div>
+    <label class='mx-1 mb-1'>Connection Agency</label>
+    <div class='card'>
+        <div class='card-body'>
+            <TablerLoading v-if='loading' :inline='true' />
+            <template v-else-if='selected.id'>
+                <div class='col-12 d-flex align-items-center'>
+                    <div v-text='selected.name' />
+                    <div class='ms-auto'>
+                        <IconTrash
+                            v-if='selected.id'
                             :size='32'
                             :stroke='1'
-                            class='cursor-pointer dropdown-toggle'
+                            class='cursor-pointer'
+                            v-tooltip='"Remove Agency"'
+                            @click='selected.id = null'
                         />
-                        <template #dropdown>
-                            <div class='m-1'>
-                                <TablerInput
-                                    v-model='filter'
-                                    placeholder='Filter...'
-                                />
-
-                                <TablerNone
-                                    v-if='data.total === 0'
-                                    :create='false'
-                                    label='Agencies'
-                                />
-                                <div
-                                    v-else
-                                    class='table-resposive'
-                                >
-                                    <table class='table table-hover'>
-                                        <thead>
-                                            <tr>
-                                                <th>Agency Name</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody class='table-tbody'>
-                                            <tr
-                                                v-for='data of data.items'
-                                                :key='data.id'
-                                                class='cursor-pointer'
-                                                @click='selected = data'
-                                            >
-                                                <td>
-                                                    <div class='d-flex align-items-center'>
-                                                        <span
-                                                            class='mt-2'
-                                                            v-text='data.name'
-                                                        />
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </template>
-                    </TablerDropdown>
+                    </div>
                 </div>
-            </div>
-        </template>
+            </template>
+            <template v-else>
+                <TablerInput
+                    v-model='filter'
+                    placeholder='Filter...'
+                />
+
+                <TablerNone
+                    v-if='data.total === 0'
+                    :create='false'
+                    label='Agencies'
+                />
+
+                <template v-else v-for='agency in data.items'>
+                    <div
+                        @click='selected = agency'
+                        class='hover-light px-2 py-2 cursor-pointer row rounded'
+                    >
+                        <div class='col-md-12'>
+                            <span v-text='agency.name'/>
+                        </div>
+
+                        <div class='col-md-8' v-text='agency.description'/>
+                    </div>
+                </template>
+            </template>
+        </div>
     </div>
+</div>
 </template>
 
 <script>
@@ -95,7 +59,6 @@ import {
     TablerLoading,
     TablerInput,
     TablerNone,
-    TablerDropdown
 } from '@tak-ps/vue-tabler';
 
 export default {
@@ -103,7 +66,6 @@ export default {
     components: {
         IconTrash,
         IconSettings,
-        TablerDropdown,
         TablerInput,
         TablerNone,
         TablerLoading
