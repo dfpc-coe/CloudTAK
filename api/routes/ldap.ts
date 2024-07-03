@@ -48,6 +48,7 @@ export default async function router(schema: Schema, config: Config) {
         description: 'Create a machine user',
         body: Type.Object({
             name: Type.String(),
+            description: Type.String(),
             agency_id: Type.Integer(),
             channels: Type.Array(Type.String())
         }),
@@ -66,7 +67,12 @@ export default async function router(schema: Schema, config: Config) {
             if (!profile.id) throw new Err(400, null, 'External ID must be set on profile');
             const list = await config.external.createMachineUser(profile.id, {
                 ...req.body,
-                password: randomUUID()
+                password: randomUUID(),
+                integration: {
+                    name: req.body.name,
+                    description: req.body.description,
+                    management_url: config.API_URL
+                }
             });
 
             return res.json({

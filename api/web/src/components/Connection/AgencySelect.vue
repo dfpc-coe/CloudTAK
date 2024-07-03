@@ -22,7 +22,7 @@
             <template v-else>
                 <TablerInput
                     v-model='filter'
-                    placeholder='Filter...'
+                    placeholder='Agency Filter...'
                 />
 
                 <div v-if='loading.list' class='card-body'>
