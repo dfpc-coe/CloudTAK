@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v2.64.0 - 2024-07-03
+
+- :rocket: Add prelim support for QuickPics
+
 ### v2.63.0 - 2024-07-02
 
 - :rocket: Automatically broadcast imported DataPackage CoTs
