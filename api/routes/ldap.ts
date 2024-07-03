@@ -18,7 +18,7 @@ export default async function router(schema: Schema, config: Config) {
         group: 'LDAP',
         description: 'List Channels by proxy',
         query: Type.Object({
-            filter: Type.String()
+            filter: Type.String({ default: '' })
         }),
         res: Type.Object({
             total: Type.Integer(),
