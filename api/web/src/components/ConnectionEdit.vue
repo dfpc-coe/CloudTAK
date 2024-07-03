@@ -87,6 +87,16 @@
                                             <div class='col-12 d-flex align-items-center'>
                                                 <IconCheck :size='40' class='text-green'/>
                                                 <span class='mx-3'>Certificate Uploaded</span>
+
+                                                <div class='ms-auto'>
+                                                    <IconTrash
+                                                        :size='32'
+                                                        :stroke='1'
+                                                        class='cursor-pointer'
+                                                        @click='marti({ key: "", cert: ""})'    
+                                                        v-tooltip='"Remove Certificate"'
+                                                    />
+                                                </div>
                                             </div>
                                         </template>
                                         <template v-else-if='!$route.params.connectionid || regen'>
@@ -239,6 +249,7 @@ import {
     IconLock,
     IconLogin,
     IconCheck,
+    IconTrash,
 } from '@tabler/icons-vue';
 import {
     TablerLoading,
@@ -254,6 +265,7 @@ export default {
         IconLock,
         IconLogin,
         IconCheck,
+        IconTrash,
         AgencySelect,
         TablerDelete,
         TablerBreadCrumb,
