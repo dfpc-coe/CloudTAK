@@ -128,6 +128,8 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
                             message_id: feat.properties.chat.messageId,
                             message: feat.properties.remarks
                         });
+                    } else if (ephemeral && feat.properties.fileshare) {
+
                     }
                 } catch (err) {
                     console.error('Failed to save COT: ', err);

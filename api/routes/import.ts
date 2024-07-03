@@ -1,3 +1,4 @@
+import ImportControl, { ImportModeEnum } from '../lib/control/import.js';
 import { Type } from '@sinclair/typebox'
 import Schema from '@openaddresses/batch-schema';
 import path from 'node:path';
@@ -12,17 +13,10 @@ import Auth, { AuthResourceAccess } from '../lib/auth.js';
 import { ImportResponse } from '../lib/types.js';
 import { Import } from '../lib/schema.js';
 import * as Default from '../lib/limits.js';
-import TAKAPI, {
-    APIAuthCertificate,
-} from '../lib/tak-api.js';
-
-export enum ImportModeEnum {
-    UNKNOWN = 'Unknown',
-    MISSION = 'Mission',
-    PACKAGE = 'Package'
-}
 
 export default async function router(schema: Schema, config: Config) {
+    const importControl = new ImportControl(config);
+
     await schema.post('/import', {
         name: 'Import',
         group: 'Import',
@@ -38,28 +32,10 @@ export default async function router(schema: Schema, config: Config) {
         try {
             const user = await Auth.as_user(config, req);
 
-            const imp = await config.models.Import.generate({
-                id: crypto.randomUUID(),
-                name: req.body.name,
-                username: user.email,
-                status: 'Empty',
-                mode: req.body.mode,
-                mode_id: req.body.mode_id,
-                config: req.body.config
-            });
-
-            if (req.body.mode === ImportModeEnum.PACKAGE) {
-                const profile = await config.models.Profile.from(user.email);
-                const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(profile.auth.cert, profile.auth.key));
-
-                const file = await api.Files.download(req.body.mode_id);
-
-                await S3.put(`import/${imp.id}.zip`, file)
-
-                await config.models.Import.commit(imp.id, {
-                    status: 'Pending'
-                });
-            }
+            const imp = await importControl.create({
+                ...req.body,
+                username: user.email
+            })
 
             return res.json(imp)
         } catch (err) {
