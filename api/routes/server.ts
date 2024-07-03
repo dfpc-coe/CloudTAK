@@ -14,7 +14,9 @@ export default async function router(schema: Schema, config: Config) {
         res: ServerResponse
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req);
+            await Auth.is_auth(config, req, {
+                admin: true
+            });
 
             if (!config.server.auth) {
                 return res.json({
@@ -64,7 +66,9 @@ export default async function router(schema: Schema, config: Config) {
         res: ServerResponse
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req);
+            await Auth.is_auth(config, req, {
+                admin: true
+            });
 
             if (!config.server) throw new Err(400, null, 'Cannot patch a server that hasn\'t been created');
 
