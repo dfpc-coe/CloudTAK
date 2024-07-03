@@ -64,7 +64,7 @@ export default class ExternalProvider {
     }): Promise<Static<typeof Agency>> {
         await this.auth();
 
-        const url = new URL(`/api/v1/proxy/agencies/${agency_id}`, this.config.server.provider_url);
+        const url = new URL(`api/v1/proxy/machine-users`, this.config.server.provider_url);
         url.searchParams.append('proxy_user_id', String(uid));
         const agencyres = await fetch(url, {
             method: 'POST',
@@ -107,6 +107,7 @@ export default class ExternalProvider {
     }
 
     async channels(uid: number, filter: string): Promise<{
+        total: number;
         items: Array<Static<typeof Channel>>
     }> {
         await this.auth();
@@ -125,15 +126,23 @@ export default class ExternalProvider {
         if (!channelres.ok) throw new Err(500, new Error(await channelres.text()), 'External Channel List Error');
 
         const list = await channelres.typed(Type.Object({
-            data: Type.Array(Channel)
+            data: Type.Array(Channel),
+            meta: Type.Object({
+                current_page: Type.Integer(),
+                last_page: Type.Integer(),
+                per_page: Type.Integer(),
+                total: Type.Integer()
+            })
         }));
 
         return {
+            total: list.meta.total,
             items: list.data
         }
     }
 
     async agencies(uid: number, filter: string): Promise<{
+        total: number;
         items: Array<Static<typeof Agency>>
     }> {
         await this.auth();
@@ -151,10 +160,17 @@ export default class ExternalProvider {
 
         if (!agencyres.ok) throw new Err(500, new Error(await agencyres.text()), 'External Agency List Error');
         const list = await agencyres.typed(Type.Object({
-            data: Type.Array(Agency)
+            data: Type.Array(Agency),
+            meta: Type.Object({
+                current_page: Type.Integer(),
+                last_page: Type.Integer(),
+                per_page: Type.Integer(),
+                total: Type.Integer()
+            })
         }));
 
         return {
+            total: list.meta.total,
             items: list.data
         }
     }

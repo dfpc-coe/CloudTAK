@@ -109,7 +109,7 @@ export default class {
         name: string,
         layerUid: string, // Layer UID
         opts?: Static<typeof MissionOptions>
-    ): Promise<Static<typeof Feature>[]> {
+    ): Promise<Static<typeof Feature.Feature>[]> {
         const layer = await this.get(name, layerUid, opts);
         const feats = await this.api.Mission.latestFeats(name, opts);
 

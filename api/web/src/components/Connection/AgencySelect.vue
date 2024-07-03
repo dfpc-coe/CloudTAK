@@ -3,7 +3,7 @@
     <label class='mx-1 mb-1'>Connection Agency</label>
     <div class='card'>
         <div class='card-body'>
-            <TablerLoading v-if='loading' :inline='true' />
+            <TablerLoading v-if='loading.main' :inline='true' desc='Loading Agencies'/>
             <template v-else-if='selected.id'>
                 <div class='col-12 d-flex align-items-center'>
                     <div v-text='selected.name' />
@@ -25,12 +25,15 @@
                     placeholder='Filter...'
                 />
 
+                <div v-if='loading.list' class='card-body'>
+                    <TablerLoading desc='Loading Agencies'/>
+                </div>
                 <TablerNone
-                    v-if='data.total === 0'
+                    v-else-if='data.total === 0'
                     :create='false'
+                    :compact='true'
                     label='Agencies'
                 />
-
                 <template v-else v-for='agency in data.items'>
                     <div
                         @click='selected = agency'
@@ -82,7 +85,10 @@ export default {
     ],
     data: function() {
         return {
-            loading: true,
+            loading: {
+                main: true,
+                list: true,
+            },
             filter: '',
             selected: {
                 id: '',
@@ -111,16 +117,18 @@ export default {
     mounted: async function() {
         if (this.modelValue) await this.fetch();
         await this.listData();
-        this.loading = false;
+        this.loading.main = false;
     },
     methods: {
         fetch: async function() {
             this.selected = await std(`/api/agency/${this.modelValue}`);
         },
         listData: async function() {
+            this.loading.list = true;
             const url = stdurl('/api/agency');
             url.searchParams.append('filter', this.filter);
             this.data = await std(url);
+            this.loading.list = false;
         },
     }
 };
