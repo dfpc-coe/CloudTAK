@@ -828,11 +828,14 @@ function cotStyles(id: string, opts: {
     }
 
     if (opts.labels) {
+        const MIN_LABEL_ZOOM = 7;
+
         const labels: SymbolLayerSpecification = {
             id: `${id}-text-point`,
             type: 'symbol',
             source: id,
             filter: [ 'all', ['==', '$type', 'Point'], ],
+            minzoom: MIN_LABEL_ZOOM,
             paint: {
                 'text-color': '#ffffff',
                 'text-halo-color': '#000000',
@@ -863,6 +866,7 @@ function cotStyles(id: string, opts: {
             type: 'symbol',
             source: id,
             filter: [ 'all', ['==', '$type', 'LineString'], ],
+            minzoom: MIN_LABEL_ZOOM,
             paint: {
                 'text-color': '#ffffff',
                 'text-halo-color': '#000000',
@@ -886,6 +890,7 @@ function cotStyles(id: string, opts: {
             type: 'symbol',
             source: id,
             filter: [ 'all', ['==', '$type', 'Polygon'], ],
+            minzoom: MIN_LABEL_ZOOM,
             paint: {
                 'text-color': '#ffffff',
                 'text-halo-color': '#000000',
