@@ -43,6 +43,8 @@ export default async function router(schema: Schema, config: Config) {
         group: 'LDAP',
         description: 'Create a machine user',
         body: Type.Object({
+            name: Type.String(),
+            agency_id: Type.Integer(),
             channels: Type.Array(Type.String())
         }),
         res: Type.Object({
@@ -58,8 +60,8 @@ export default async function router(schema: Schema, config: Config) {
             }
 
             if (!profile.id) throw new Err(400, null, 'External ID must be set on profile');
-            const list = await config.external.createUser({
-
+            const list = await config.external.createMachineUser({
+                ...req.body
             });
 
             return res.json({

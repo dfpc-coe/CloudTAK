@@ -57,6 +57,35 @@ export default class ExternalProvider {
         }
     }
 
+    async createMachineUser(uid: number, body: {
+        name: string;
+        agency_id: number;
+        password: string;
+    }): Promise<Static<typeof Agency>> {
+        await this.auth();
+
+        const url = new URL(`/api/v1/proxy/agencies/${agency_id}`, this.config.server.provider_url);
+        url.searchParams.append('proxy_user_id', String(uid));
+        const agencyres = await fetch(url, {
+            method: 'POST',
+            headers: {
+                Accept: 'application/json',
+                "Authorization": `Bearer ${this.cache.token}`
+            },
+            body: JSON.stringify({
+                ...body,
+                active: true
+            })
+        });
+
+        if (!agencyres.ok) throw new Err(500, new Error(await agencyres.text()), 'External Agency List Error');
+        const list = await agencyres.typed(Type.Object({
+            data: Agency
+        }));
+
+        return list.data;
+    }
+
     async agency(uid: number, agency_id: number): Promise<Static<typeof Agency>> {
         await this.auth();
 
