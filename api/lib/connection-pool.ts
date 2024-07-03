@@ -1,4 +1,5 @@
 import Err from '@openaddresses/batch-error';
+import ImportControl, { ImportModeEnum }  from './control/import.js';
 import Sinks from './sinks.js';
 import Config from './config.js';
 import Metrics from './aws/metric.js';
@@ -39,11 +40,13 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
     config: Config;
     metrics: Metrics;
     sinks: Sinks;
+    importControl: ImportControl;
 
     constructor(config: Config) {
         super();
 
         this.config = config;
+        this.importControl = new ImportControl(config);
         this.metrics = new Metrics(this.config.StackName);
 
         if (config.nometrics) this.metrics.paused = true;
@@ -129,7 +132,14 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
                             message: feat.properties.remarks
                         });
                     } else if (ephemeral && feat.properties.fileshare) {
+                        const file = new URL(feat.properties.fileshare.senderUrl);
 
+                        await this.importControl.create({
+                            username: String(conn.id),
+                            name: feat.properties.fileshare.name,
+                            mode: ImportModeEnum.PACKAGE,
+                            mode_id: file.searchParams.get('hash')
+                        })
                     }
                 } catch (err) {
                     console.error('Failed to save COT: ', err);
