@@ -184,6 +184,12 @@
                                                     @err='err = $event'
                                                 />
                                             </template>
+                                            <template v-else-if='type === "creation"'>
+                                                <CertificateMachineUser
+                                                    @certs='marti($event)'
+                                                    @err='err = $event'
+                                                />
+                                            </template>
                                         </template>
                                         <template v-else>
                                             <div class='border px-3 py-3'>
@@ -244,6 +250,7 @@ import AgencySelect from './Connection/AgencySelect.vue';
 import CertificateP12 from './Connection/CertificateP12.vue';
 import CertificateLogin from './Connection/CertificateLogin.vue';
 import CertificateRaw from './Connection/CertificateRaw.vue';
+import CertificateMachineUser from './Connection/CertificateMachineUser.vue';
 import {
     IconPlus,
     IconLock,
@@ -272,6 +279,7 @@ export default {
         CertificateP12,
         CertificateRaw,
         CertificateLogin,
+        CertificateMachineUser,
         TablerInput,
         TablerLoading,
         PageFooter,
@@ -280,7 +288,7 @@ export default {
         return {
             loading: true,
             regen: false,
-            type: 'raw',
+            type: 'creation',
             modal: {
                 upload: false,
             },

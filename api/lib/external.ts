@@ -9,6 +9,12 @@ export const Agency = Type.Object({
     description: Type.Any()
 });
 
+export const Channel = Type.Object({
+    id: Type.Number(),
+    name: Type.String(),
+    description: Type.Any()
+});
+
 export default class ExternalProvider {
     config: Config;
     cache?: {
@@ -69,6 +75,33 @@ export default class ExternalProvider {
         }));
 
         return list.data;
+    }
+
+    async channels(uid: number, filter: string): Promise<{
+        items: Array<Static<typeof Channel>>
+    }> {
+        await this.auth();
+
+        const url = new URL(`/api/v1/proxy/channels`, this.config.server.provider_url);
+        url.searchParams.append('proxy_user_id', String(uid));
+        url.searchParams.append('filter', filter);
+
+        const channelres = await fetch(url, {
+            headers: {
+                Accept: 'application/json',
+                "Authorization": `Bearer ${this.cache.token}`
+            },
+        });
+
+        if (!channelres.ok) throw new Err(500, new Error(await channelres.text()), 'External Channel List Error');
+
+        const list = await channelres.typed(Type.Object({
+            data: Type.Array(Channel)
+        }));
+
+        return {
+            items: list.data
+        }
     }
 
     async agencies(uid: number, filter: string): Promise<{
