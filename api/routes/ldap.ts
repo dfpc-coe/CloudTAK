@@ -1,4 +1,5 @@
 import { Type } from '@sinclair/typebox'
+import { randomUUID } from 'node:crypto';
 import Config from '../lib/config.js';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
@@ -16,13 +17,16 @@ export default async function router(schema: Schema, config: Config) {
         name: 'List Channel',
         group: 'LDAP',
         description: 'List Channels by proxy',
+        query: Type.Object({
+            filter: Type.String()
+        }),
         res: Type.Object({
+            total: Type.Integer(),
             items: Type.Array(ChannelResponse)
         })
     }, async (req, res) => {
         try {
-            const user = await Auth.as_user(config, req);
-            const profile = await config.models.Profile.from(user.email);
+            const profile = await Auth.as_profile(config, req);
 
             if (!config.server.provider_url || !config.server.provider_secret || !config.server.provider_client) {
                 throw new Err(400, null, 'External LDAP API not configured - Contact your administrator');
@@ -53,15 +57,16 @@ export default async function router(schema: Schema, config: Config) {
         })
     }, async (req, res) => {
         try {
-            const user = await Auth.as_user(config, req);
+            const profile = await Auth.as_profile(config, req);
 
             if (!config.server.provider_url || !config.server.provider_secret || !config.server.provider_client) {
                 throw new Err(400, null, 'External LDAP API not configured - Contact your administrator');
             }
 
             if (!profile.id) throw new Err(400, null, 'External ID must be set on profile');
-            const list = await config.external.createMachineUser({
-                ...req.body
+            const list = await config.external.createMachineUser(profile.id, {
+                ...req.body,
+                password: randomUUID()
             });
 
             return res.json({
