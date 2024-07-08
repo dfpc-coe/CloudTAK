@@ -119,6 +119,7 @@ export default {
 
             try {
                 const url = stdurl('/api/ldap/channel');
+                url.searchParams.append('filter', this.paging.filter);
                 this.channels = (await std(url)).items;
             } catch (err) {
                 this.loading.channels = false;
