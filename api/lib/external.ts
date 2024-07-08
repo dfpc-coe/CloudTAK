@@ -9,6 +9,10 @@ export const Agency = Type.Object({
     description: Type.Any()
 });
 
+export const MachineUser = Type.Object({
+    id: Type.Number(),
+});
+
 export const Channel = Type.Object({
     id: Type.Number(),
     name: Type.String(),
@@ -66,10 +70,8 @@ export default class ExternalProvider {
             description: string;
             management_url: string;
         }
-    }): Promise<Static<typeof Agency>> {
+    }): Promise<Static<typeof MachineUser>> {
         await this.auth();
-
-                console.error('BODY', body);
 
         const url = new URL(`api/v1/proxy/machine-users`, this.config.server.provider_url);
         url.searchParams.append('proxy_user_id', String(uid));
@@ -94,11 +96,36 @@ export default class ExternalProvider {
         });
 
         if (!userres.ok) throw new Err(500, new Error(await userres.text()), 'External Machine User Creation Error');
-        const list = await userres.typed(Type.Object({
-            data: Agency
-        }));
 
-        return list.data;
+        const user = await userres.typed(Type.Object({
+            data: MachineUser
+        }))
+
+        return user.data;
+    }
+
+    async attachMachineUser(uid: number, body: {
+        machine_id: number;
+        channel_id: number;
+    }): Promise<void> {
+        await this.auth();
+
+        const url = new URL(`api/v1/proxy/channels/${body.channel_id}/machine-users/attach/${body.machine_id}`, this.config.server.provider_url);
+        url.searchParams.append('proxy_user_id', String(uid));
+        url.searchParams.append('sync', 'true')
+
+        const userres = await fetch(url, {
+            method: 'GET',
+            headers: {
+                Accept: 'application/json',
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${this.cache.token}`
+            }
+        });
+
+        if (!userres.ok) throw new Err(500, new Error(await userres.text()), 'External Machine User Attachment Error');
+
+        return;
     }
 
     async agency(uid: number, agency_id: number): Promise<Static<typeof Agency>> {
