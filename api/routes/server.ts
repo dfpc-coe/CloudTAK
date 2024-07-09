@@ -27,7 +27,7 @@ export default async function router(schema: Schema, config: Config) {
                     api: '',
                     auth: false
                 });
-            } else if (user.access {
+            } else {
                 let auth = false
                 if (config.server.auth.cert && config.server.auth.key) auth = true;
 
