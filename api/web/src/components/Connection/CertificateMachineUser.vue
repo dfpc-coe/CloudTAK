@@ -112,6 +112,8 @@ export default {
     },
     methods: {
         push: async function(channel) {
+            this.paging.filter = '';
+
             for (const ch of this.selected) {
                 if (ch.id === channel.id) return;
             }

@@ -119,11 +119,14 @@ export default {
         selected: {
             deep: true,
             handler: function() {
-                this.$emit('update:modelValue', this.selected.id);
+                if (!this.noAgency) {
+                    this.$emit('update:modelValue', this.selected.id);
+                }
             }
         },
         noAgency: function() {
             if (this.noAgency) {
+                this.selected.id = '';
                 this.$emit('update:modelValue', null);
             }
         },
