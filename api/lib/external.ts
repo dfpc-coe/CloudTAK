@@ -154,15 +154,25 @@ export default class ExternalProvider {
         return list.data;
     }
 
-    async channels(uid: number, filter: string): Promise<{
+    async channels(uid: number, query: {
+        filter: string;
+        agency?: number;
+    }): Promise<{
         total: number;
         items: Array<Static<typeof Channel>>
     }> {
         await this.auth();
 
-        const url = new URL(`/api/v1/proxy/channels`, this.config.server.provider_url);
-        url.searchParams.append('proxy_user_id', String(uid));
-        url.searchParams.append('filter', filter);
+        let url: URL;
+        if (query.agency) {
+            url = new URL(`api/v1/proxy/agencies/${query.agency}/channels`, this.config.server.provider_url);
+            url.searchParams.append('proxy_user_id', String(uid));
+            url.searchParams.append('filter', query.filter);
+        } else {
+            url = new URL(`/api/v1/proxy/channels`, this.config.server.provider_url);
+            url.searchParams.append('proxy_user_id', String(uid));
+            url.searchParams.append('filter', query.filter);
+        }
 
         const channelres = await fetch(url, {
             headers: {
