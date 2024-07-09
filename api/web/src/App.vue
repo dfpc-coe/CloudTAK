@@ -139,6 +139,7 @@ import {
     IconSettings,
 } from '@tabler/icons-vue';
 import Loading from './components/Loading.vue';
+import { useProfileStore } from '/src/stores/profile.ts';
 import {
     TablerError
 } from '@tak-ps/vue-tabler';
@@ -196,6 +197,9 @@ export default {
         if (localStorage.token) {
             await this.getLogin();
             await this.getServer();
+
+            const profileStore = useProfileStore();
+            await profileStore.load();
         } else if (this.$route.name !== 'login') {
             this.routeLogin();
         }

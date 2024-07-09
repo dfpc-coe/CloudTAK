@@ -84,14 +84,7 @@
                                     </div>
                                 </div>
 
-                                <template v-if='!$route.params.connectionid'>
-                                    <div class='col-12 d-flex px-3 pb-3'>
-                                        <div class='ms-auto'>
-                                            <button :disabled='!isNextReady' class='btn btn-primary'>Next</button>
-                                        </div>
-                                    </div>
-                                </template>
-                                <template v-else>
+                                <template v-if='isNextReady || $route.params.connectionid'>
                                     <div class='card-header'>
                                         <h3 class='card-title'>Connection Authentication</h3>
                                     </div>
@@ -314,7 +307,7 @@ export default {
             },
             connection: {
                 name: '',
-                agency: null,
+                agency: undefined,
                 description: '',
                 enabled: true,
                 auth: { cert: '', key: '' }
@@ -332,6 +325,7 @@ export default {
         isNextReady: function() {
             return this.connection.name.trim().length > 0
                 && this.connection.description.trim().length > 0
+                && this.connection.agency !== undefined
         },
         isReady: function() {
             return this.connection.auth.cert.trim().length && this.connection.auth.key.trim().length
