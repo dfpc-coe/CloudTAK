@@ -1,7 +1,7 @@
 import { Type } from '@sinclair/typebox'
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
-import Auth from '../lib/auth.js';
+import Auth, { AuthUserAccess } from '../lib/auth.js';
 import { sql } from 'drizzle-orm';
 import Config from '../lib/config.js';
 import { ServerResponse } from '../lib/types.js';
@@ -14,7 +14,7 @@ export default async function router(schema: Schema, config: Config) {
         res: ServerResponse
     }, async (req, res) => {
         try {
-            await Auth.as_user(config, req, { admin: true });
+            const user = await Auth.as_user(config, req);
 
             if (!config.server.auth) {
                 return res.json({
@@ -25,20 +25,30 @@ export default async function router(schema: Schema, config: Config) {
                     updated: new Date().toISOString(),
                     url: '',
                     api: '',
-                    provider_url: '',
-                    provider_client: '',
-                    provider_secret: '',
                     auth: false
                 });
-            } else {
+            } else if (user.access {
                 let auth = false
                 if (config.server.auth.cert && config.server.auth.key) auth = true;
 
-                return res.json({
-                    status: 'configured',
-                    ...config.server,
-                    auth
-                });
+                if (user.access === AuthUserAccess.ADMIN) {
+                    return res.json({
+                        status: 'configured',
+                        ...config.server,
+                        auth
+                    });
+                } else {
+                    return res.json({
+                        id: config.server.id,
+                        status: 'configured',
+                        name: config.server.name,
+                        created: config.server.created,
+                        updated: config.server.updated,
+                        url: config.server.url,
+                        api: config.server.api,
+                        auth
+                    })
+                }
             }
         } catch (err) {
             return Err.respond(err, res);
