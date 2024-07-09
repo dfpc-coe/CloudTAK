@@ -76,6 +76,21 @@ export default class ExternalProvider {
         const url = new URL(`api/v1/proxy/machine-users`, this.config.server.provider_url);
         url.searchParams.append('proxy_user_id', String(uid));
         url.searchParams.append('sequential_email', 'true')
+        url.searchParams.append('sync', 'true')
+
+        const req = {
+            name: body.name,
+            agency_id: body.agency_id,
+            password: body.password,
+            active: true,
+            integration: {
+                ...body.integration,
+                active: true
+            }
+        }
+
+        if (!req.agency_id) delete req.agency_id;
+
         const userres = await fetch(url, {
             method: 'POST',
             headers: {
@@ -83,16 +98,7 @@ export default class ExternalProvider {
                 "Content-Type": "application/json",
                 "Authorization": `Bearer ${this.cache.token}`
             },
-            body: JSON.stringify({
-                name: body.name,
-                agency_id: body.agency_id,
-                password: body.password,
-                active: true,
-                integration: {
-                    ...body.integration,
-                    active: true
-                }
-            })
+            body: JSON.stringify(req)
         });
 
         if (!userres.ok) throw new Err(500, new Error(await userres.text()), 'External Machine User Creation Error');

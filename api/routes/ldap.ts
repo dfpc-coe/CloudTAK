@@ -49,7 +49,7 @@ export default async function router(schema: Schema, config: Config) {
         body: Type.Object({
             name: Type.String(),
             description: Type.String(),
-            agency_id: Type.Integer(),
+            agency_id: Type.Union([Type.Integer(), Type.Null()]),
             channels: Type.Array(Type.Integer())
         }),
         res: Type.Object({
