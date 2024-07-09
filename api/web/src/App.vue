@@ -227,7 +227,6 @@ export default {
                 if (this.$route.name !== 'login') {
                     this.routeLogin();
                 }
-                this.loading = false;
             }
 
             await this.getServer()
