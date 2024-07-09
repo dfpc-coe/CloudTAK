@@ -195,11 +195,14 @@ export default {
         });
 
         if (localStorage.token) {
+            this.loading = true;
             await this.getLogin();
             await this.getServer();
 
             const profileStore = useProfileStore();
             await profileStore.load();
+
+            this.loading = false;
         } else if (this.$route.name !== 'login') {
             this.routeLogin();
         }
@@ -216,7 +219,6 @@ export default {
             this.$router.push(`/login?redirect=${encodeURIComponent(window.location.pathname)}`);
         },
         getLogin: async function() {
-            this.loading = true;
             try {
                 this.user = await std('/api/login');
             } catch (err) {
@@ -229,8 +231,6 @@ export default {
             }
 
             await this.getServer()
-
-            this.loading = false;
         },
         getServer: async function() {
             this.server = await std('/api/server');
