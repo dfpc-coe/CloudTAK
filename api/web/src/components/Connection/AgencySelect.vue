@@ -18,7 +18,7 @@
                         <div v-text='selected.name' />
                         <div class='ms-auto'>
                             <IconTrash
-                                v-if='selected.id'
+                                v-if='selected.id && data.total > 1'
                                 :size='32'
                                 :stroke='1'
                                 class='cursor-pointer'
@@ -153,7 +153,15 @@ export default {
             this.loading.list = true;
             const url = stdurl('/api/agency');
             url.searchParams.append('filter', this.filter);
-            this.data = await std(url);
+            const data = await std(url);
+
+            if (!this.profile.system_admin && data.total === 1) {
+                this.selected.name = data.items[0].name;
+                this.selected.id = data.items[0].id;
+            }
+
+            this.data = data;
+
             this.loading.list = false;
         },
     }

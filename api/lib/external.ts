@@ -168,6 +168,8 @@ export default class ExternalProvider {
             url = new URL(`api/v1/proxy/agencies/${query.agency}/channels`, this.config.server.provider_url);
             url.searchParams.append('proxy_user_id', String(uid));
             url.searchParams.append('filter', query.filter);
+
+            console.error(url)
         } else {
             url = new URL(`/api/v1/proxy/channels`, this.config.server.provider_url);
             url.searchParams.append('proxy_user_id', String(uid));
