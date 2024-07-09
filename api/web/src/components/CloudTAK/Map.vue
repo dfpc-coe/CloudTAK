@@ -514,7 +514,6 @@ export default {
             this.$emit('err', new Error(evt.message));
         });
 
-        await profileStore.load();
         await profileStore.loadChannels();
         this.warnChannels = profileStore.hasNoChannels;
 
