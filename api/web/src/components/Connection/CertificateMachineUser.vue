@@ -135,7 +135,7 @@ export default {
         },
         generate: async function() {
             const url = stdurl('/api/ldap/user');
-            await std(url, {
+            const res = await std(url, {
                 method: 'POST',
                 body: {
                     name: this.connection.name,
@@ -144,6 +144,8 @@ export default {
                     channels: this.selected.map((s) => { return s.id })
                 }
             })
+
+            this.$emit('certs', res);
         }
     }
 }

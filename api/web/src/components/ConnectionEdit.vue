@@ -59,12 +59,18 @@
                                                 v-model='connection.name'
                                                 label='Connection Name'
                                                 :error='errors.name'
+                                                description='
+                                                    The human readable name of the Connection
+                                                '
                                             />
                                         </div>
                                         <div class='col-md-12'>
                                             <TablerInput
                                                 v-model='connection.description'
                                                 label='Connection Description'
+                                                description='
+                                                    Human readable details about what the connection contains or is used for
+                                                '
                                                 :error='errors.description'
                                                 :rows='6'
                                             />
@@ -78,161 +84,170 @@
                                     </div>
                                 </div>
 
-                                <div class='card-header'>
-                                    <h3 class='card-title'>Connection Authentication</h3>
-                                </div>
-                                <div class='card-body'>
-                                    <div class='row'>
-                                        <template v-if='isReady'>
-                                            <div class='col-12 d-flex align-items-center'>
-                                                <IconCheck :size='40' class='text-green'/>
-                                                <span class='mx-3'>Certificate Uploaded</span>
+                                <template v-if='!$route.params.connectionid'>
+                                    <div class='col-12 d-flex px-3 pb-3'>
+                                        <div class='ms-auto'>
+                                            <button :disabled='!isNextReady' class='btn btn-primary'>Next</button>
+                                        </div>
+                                    </div>
+                                </template>
+                                <template v-else>
+                                    <div class='card-header'>
+                                        <h3 class='card-title'>Connection Authentication</h3>
+                                    </div>
+                                    <div class='card-body'>
+                                        <div class='row'>
+                                            <template v-if='isReady'>
+                                                <div class='col-12 d-flex align-items-center'>
+                                                    <IconCheck :size='40' class='text-green'/>
+                                                    <span class='mx-3'>Certificate Uploaded</span>
 
-                                                <div class='ms-auto'>
-                                                    <IconTrash
-                                                        :size='32'
-                                                        :stroke='1'
-                                                        class='cursor-pointer'
-                                                        @click='marti({ key: "", cert: ""})'    
-                                                        v-tooltip='"Remove Certificate"'
+                                                    <div class='ms-auto'>
+                                                        <IconTrash
+                                                            :size='32'
+                                                            :stroke='1'
+                                                            class='cursor-pointer'
+                                                            @click='marti({ key: "", cert: ""})'
+                                                            v-tooltip='"Remove Certificate"'
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </template>
+                                            <template v-else-if='!$route.params.connectionid || regen'>
+                                                <div class='col-12 pb-2'>
+                                                    <div
+                                                        class='btn-group w-100'
+                                                        role='group'
+                                                    >
+                                                        <input
+                                                            id='creation'
+                                                            type='radio'
+                                                            class='btn-check'
+                                                            name='cert-type'
+                                                            autocomplete='off'
+                                                            :checked='type === "creation"'
+                                                            @click='type = "creation"'
+                                                        >
+                                                        <label
+                                                            for='creation'
+                                                            type='button'
+                                                            class='btn'
+                                                        >Machine User Creation</label>
+
+                                                        <input
+                                                            id='login'
+                                                            type='radio'
+                                                            class='btn-check'
+                                                            name='cert-type'
+                                                            autocomplete='off'
+                                                            :checked='type === "login"'
+                                                            @click='type = "login"'
+                                                        >
+                                                        <label
+                                                            for='login'
+                                                            type='button'
+                                                            class='btn'
+                                                        >User Login</label>
+
+                                                        <input
+                                                            id='p12'
+                                                            type='radio'
+                                                            class='btn-check'
+                                                            name='cert-type'
+                                                            autocomplete='off'
+                                                            :checked='type === "p12"'
+                                                            @click='type = "p12"'
+                                                        >
+                                                        <label
+                                                            for='p12'
+                                                            type='button'
+                                                            class='btn'
+                                                        >P12 Certificate Upload</label>
+
+                                                        <input
+                                                            id='raw'
+                                                            type='radio'
+                                                            class='btn-check'
+                                                            name='cert-type'
+                                                            autocomplete='off'
+                                                            :checked='type === "raw"'
+                                                            @click='type = "raw"'
+                                                        >
+                                                        <label
+                                                            for='raw'
+                                                            type='button'
+                                                            class='btn'
+                                                        >Raw Certificate</label>
+                                                    </div>
+                                                </div>
+                                                <template v-if='type === "raw"'>
+                                                    <CertificateRaw
+                                                        @certs='marti($event)'
+                                                        @err='err = $event'
                                                     />
-                                                </div>
-                                            </div>
-                                        </template>
-                                        <template v-else-if='!$route.params.connectionid || regen'>
-                                            <div class='col-12 pb-2'>
-                                                <div
-                                                    class='btn-group w-100'
-                                                    role='group'
-                                                >
-                                                    <input
-                                                        id='creation'
-                                                        type='radio'
-                                                        class='btn-check'
-                                                        name='cert-type'
-                                                        autocomplete='off'
-                                                        :checked='type === "creation"'
-                                                        @click='type = "creation"'
-                                                    >
-                                                    <label
-                                                        for='creation'
-                                                        type='button'
-                                                        class='btn'
-                                                    >Machine User Creation</label>
-
-                                                    <input
-                                                        id='login'
-                                                        type='radio'
-                                                        class='btn-check'
-                                                        name='cert-type'
-                                                        autocomplete='off'
-                                                        :checked='type === "login"'
-                                                        @click='type = "login"'
-                                                    >
-                                                    <label
-                                                        for='login'
-                                                        type='button'
-                                                        class='btn'
-                                                    >User Login</label>
-
-                                                    <input
-                                                        id='p12'
-                                                        type='radio'
-                                                        class='btn-check'
-                                                        name='cert-type'
-                                                        autocomplete='off'
-                                                        :checked='type === "p12"'
-                                                        @click='type = "p12"'
-                                                    >
-                                                    <label
-                                                        for='p12'
-                                                        type='button'
-                                                        class='btn'
-                                                    >P12 Certificate Upload</label>
-
-                                                    <input
-                                                        id='raw'
-                                                        type='radio'
-                                                        class='btn-check'
-                                                        name='cert-type'
-                                                        autocomplete='off'
-                                                        :checked='type === "raw"'
-                                                        @click='type = "raw"'
-                                                    >
-                                                    <label
-                                                        for='raw'
-                                                        type='button'
-                                                        class='btn'
-                                                    >Raw Certificate</label>
-                                                </div>
-                                            </div>
-                                            <template v-if='type === "raw"'>
-                                                <CertificateRaw
-                                                    @certs='marti($event)'
-                                                    @err='err = $event'
-                                                />
-                                            </template>
-                                            <template v-else-if='type === "p12"'>
-                                                <CertificateP12
-                                                    @certs='p12upload($event)'
-                                                    @err='err = $event'
-                                                />
-                                            </template>
-                                            <template v-else-if='type === "login"'>
-                                                <CertificateLogin
-                                                    @certs='marti($event)'
-                                                    @err='err = $event'
-                                                />
-                                            </template>
-                                            <template v-else-if='type === "creation"'>
-                                                <CertificateMachineUser
-                                                    :connection='connection'
-                                                    @certs='marti($event)'
-                                                    @err='err = $event'
-                                                />
-                                            </template>
-                                        </template>
-                                        <template v-else>
-                                            <div class='border px-3 py-3'>
-                                                <div class='d-flex justify-content-center'>
-                                                    <IconLock
-                                                        :size='50'
-                                                        :stroke='1'
+                                                </template>
+                                                <template v-else-if='type === "p12"'>
+                                                    <CertificateP12
+                                                        @certs='p12upload($event)'
+                                                        @err='err = $event'
                                                     />
+                                                </template>
+                                                <template v-else-if='type === "login"'>
+                                                    <CertificateLogin
+                                                        @certs='marti($event)'
+                                                        @err='err = $event'
+                                                    />
+                                                </template>
+                                                <template v-else-if='type === "creation"'>
+                                                    <CertificateMachineUser
+                                                        :connection='connection'
+                                                        @certs='marti($event)'
+                                                        @err='err = $event'
+                                                    />
+                                                </template>
+                                            </template>
+                                            <template v-else>
+                                                <div class='border px-3 py-3'>
+                                                    <div class='d-flex justify-content-center'>
+                                                        <IconLock
+                                                            :size='50'
+                                                            :stroke='1'
+                                                        />
+                                                    </div>
+                                                    <div class='d-flex justify-content-center my-3'>
+                                                        Once Certificates are generated they cannot be viewed
+                                                    </div>
+                                                    <div class='d-flex justify-content-center'>
+                                                        <button
+                                                            class='btn btn-secondary'
+                                                            @click='regen = true'
+                                                        >
+                                                            Regenerate Certificate
+                                                        </button>
+                                                    </div>
                                                 </div>
-                                                <div class='d-flex justify-content-center my-3'>
-                                                    Once Certificates are generated they cannot be viewed
-                                                </div>
-                                                <div class='d-flex justify-content-center'>
-                                                    <button
-                                                        class='btn btn-secondary'
-                                                        @click='regen = true'
-                                                    >
-                                                        Regenerate Certificate
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </template>
+                                            </template>
 
-                                        <div class='col-md-12 mt-3'>
-                                            <div class='d-flex'>
-                                                <TablerDelete
-                                                    v-if='$route.params.connectionid'
-                                                    label='Delete Connection'
-                                                    @delete='del'
-                                                />
+                                            <div class='col-md-12 mt-3'>
+                                                <div class='d-flex'>
+                                                    <TablerDelete
+                                                        v-if='$route.params.connectionid'
+                                                        label='Delete Connection'
+                                                        @delete='del'
+                                                    />
 
-                                                <div class='ms-auto'>
-                                                    <button
-                                                        :disabled='!$route.params.connectionid && !isReady'
-                                                        class='cursor-pointer btn btn-primary'
-                                                        @click='create'
-                                                    >Save Connection</button>
+                                                    <div class='ms-auto'>
+                                                        <button
+                                                            :disabled='!$route.params.connectionid && !isReady'
+                                                            class='cursor-pointer btn btn-primary'
+                                                            @click='create'
+                                                        >Save Connection</button>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
+                                </template>
                             </div>
                         </template>
                     </div>
@@ -314,6 +329,10 @@ export default {
         }
     },
     computed: {
+        isNextReady: function() {
+            return this.connection.name.trim().length > 0
+                && this.connection.description.trim().length > 0
+        },
         isReady: function() {
             return this.connection.auth.cert.trim().length && this.connection.auth.key.trim().length
         }
