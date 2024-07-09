@@ -5,6 +5,9 @@ import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import * as Default from '../lib/limits.js';
+import TAKAPI, {
+    APIAuthPassword,
+} from '../lib/tak-api.js';
 
 export const ChannelResponse = Type.Object({
     id: Type.Integer(),
@@ -18,6 +21,7 @@ export default async function router(schema: Schema, config: Config) {
         group: 'LDAP',
         description: 'List Channels by proxy',
         query: Type.Object({
+            agency: Type.Optional(Type.Integer()),
             filter: Type.String({ default: '' })
         }),
         res: Type.Object({
@@ -34,7 +38,7 @@ export default async function router(schema: Schema, config: Config) {
 
             if (!profile.id) throw new Err(400, null, 'External ID must be set on profile');
 
-            const list = await config.external.channels(profile.id, req.query.filter)
+            const list = await config.external.channels(profile.id, req.query)
 
             return res.json(list);
         } catch (err) {
@@ -65,15 +69,18 @@ export default async function router(schema: Schema, config: Config) {
             }
 
             if (!profile.id) throw new Err(400, null, 'External ID must be set on profile');
+            const password = randomUUID();
             const user = await config.external.createMachineUser(profile.id, {
                 ...req.body,
-                password: randomUUID(),
+                password,
                 integration: {
                     name: req.body.name,
                     description: req.body.description,
                     management_url: config.API_URL
                 }
             });
+
+            console.error(user);
 
             for (const channel of req.body.channels) {
                 await config.external.attachMachineUser(profile.id, {
@@ -82,10 +89,14 @@ export default async function router(schema: Schema, config: Config) {
                 })
             }
 
-            return res.json({
-                cert: '',
-                key: ''
-            });
+            const api = await TAKAPI.init(
+                new URL(config.MartiAPI),
+                new APIAuthPassword('', password)
+            );
+
+            const certs = await api.Credentials.generate();
+
+            return res.json(certs)
         } catch (err) {
             return Err.respond(err, res);
         }

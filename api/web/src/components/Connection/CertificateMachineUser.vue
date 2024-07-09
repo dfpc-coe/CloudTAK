@@ -86,6 +86,9 @@ export default {
         }
     },
     watch: {
+        'connection.agency': async function() {
+            await this.listChannels();
+        },
         paging: {
             deep: true,
             handler: async function() {
@@ -119,6 +122,9 @@ export default {
 
             try {
                 const url = stdurl('/api/ldap/channel');
+                if (this.connection.agency) {
+                    url.searchParams.append('agency', this.connection.agency);
+                }
                 url.searchParams.append('filter', this.paging.filter);
                 this.channels = (await std(url)).items;
             } catch (err) {
