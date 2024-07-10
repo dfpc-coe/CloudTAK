@@ -45,7 +45,7 @@
                             v-for='element in layers'
                             :id='element.id'
                             :key='element.id'
-                            class='col-lg py-2'
+                            class='col-lg py-2 hover-button'
                         >
                             <div class='py-2 px-3'>
                                 <div class='col-12 d-flex align-items-center'>
@@ -53,38 +53,36 @@
                                         v-if='isDraggable'
                                         v-tooltip='"Draw to reorder"'
                                         class='drag-handle cursor-move'
-                                        :size='32'
+                                        :size='20'
                                         :stroke='1'
                                     />
 
-                                    <IconEye
-                                        v-if='element.visible === "visible"'
-                                        v-tooltip='"Hide Layer"'
-                                        :size='32'
+                                    <IconChevronRight
+                                        v-if='!isDraggable && !opened.includes(element.id)'
+                                        :size='20'
                                         :stroke='1'
                                         class='cursor-pointer'
-                                        @click.stop.prevent='flipVisible(element)'
+                                        @click='opened.push(element.id)'
                                     />
-                                    <IconEyeOff
-                                        v-else
-                                        v-tooltip='"Show Layer"'
-                                        :size='32'
+                                    <IconChevronDown
+                                        v-else-if='!isDraggable'
+                                        :size='20'
                                         :stroke='1'
                                         class='cursor-pointer'
-                                        @click.stop.prevent='flipVisible(element)'
+                                        @click='opened.splice(opened.indexOf(element.id), 1)'
                                     />
 
                                     <span class='mx-2'>
                                         <IconMap
                                             v-if='element.type === "raster"'
                                             v-tooltip='"Raster"'
-                                            :size='32'
+                                            :size='20'
                                             :stroke='1'
                                         />
                                         <IconVector
                                             v-else
                                             v-tooltip='"Vector"'
-                                            :size='32'
+                                            :size='20'
                                             :stroke='1'
                                         />
                                     </span>
@@ -102,7 +100,7 @@
                                         <IconMaximize
                                             v-if='getSource(element).bounds'
                                             v-tooltip='"Zoom To Overlay"'
-                                            :size='32'
+                                            :size='20'
                                             :stroke='1'
                                             class='cursor-pointer'
                                             @click.stop.prevent='zoomTo(getSource(element).bounds)'
@@ -115,21 +113,23 @@
                                             @delete='removeLayer(element)'
                                         />
                                     </div>
+                                    <IconEye
+                                        v-if='element.visible === "visible"'
+                                        v-tooltip='"Hide Layer"'
+                                        :size='20'
+                                        :stroke='1'
+                                        class='cursor-pointer'
+                                        @click.stop.prevent='flipVisible(element)'
+                                    />
+                                    <IconEyeOff
+                                        v-else
+                                        v-tooltip='"Show Layer"'
+                                        :size='20'
+                                        :stroke='1'
+                                        class='cursor-pointer'
+                                        @click.stop.prevent='flipVisible(element)'
+                                    />
 
-                                    <IconChevronRight
-                                        v-if='!isDraggable && !opened.includes(element.id)'
-                                        :size='32'
-                                        :stroke='1'
-                                        class='cursor-pointer'
-                                        @click='opened.push(element.id)'
-                                    />
-                                    <IconChevronDown
-                                        v-else-if='!isDraggable'
-                                        :size='32'
-                                        :stroke='1'
-                                        class='cursor-pointer'
-                                        @click='opened.splice(opened.indexOf(element.id), 1)'
-                                    />
                                 </div>
                             </div>
 
@@ -156,7 +156,7 @@
                                             class='d-flex align-items-center hover-dark px-3 py-2'
                                         >
                                             <IconFolder
-                                                :size='32'
+                                                :size='20'
                                                 :stroke='1'
                                                 style='margin-left: 40px;'
                                             />
