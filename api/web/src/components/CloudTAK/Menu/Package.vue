@@ -21,7 +21,7 @@
                 <div class='overflow-auto'>
                     <Share
                         style='height: 70vh'
-                        :feats='[feat]'
+                        :feats='[shareFeat]'
                         @done='mode = "default"'
                         @cancel='mode = "default"'
                     />
@@ -72,8 +72,8 @@
                         >
                             <IconShare2
                                 v-tooltip='"Share"'
-                                :size='20' 
-                                :stroke='1' 
+                                :size='20'
+                                :stroke='1'
                                 class='me-2'
                             /> Share
                         </button>
@@ -116,20 +116,48 @@ export default {
         return {
             loading: true,
             mode: 'default',
+            server: null,
             pkg: {
                 Name: 'Package'
-            }
+            },
         }
     },
     computed: {
         ...mapState(useProfileStore, ['profile']),
+        shareFeat: function() {
+            return {
+                type: 'Feature',
+                properties: {
+                    type: 'b-f-t-r',
+                    how: 'h-e',
+                    fileshare: {
+                        "filename": this.pkg.Name + '.zip',
+                        "senderUrl": `${this.server.api}/Marti/sync/content?hash=${this.pkg.Hash}`,
+                        "sizeInBytes": parseInt(this.pkg.Size),
+                        "sha256": this.pkg.Hash,
+                        "senderUid": `ANDROID-CloudTAK-${this.profile.username}`,
+                        "senderCallsign": this.profile.tak_callsign,
+                        "name": this.pkg.Name
+                    },
+                    metadata: {},
+                },
+                geometry: {
+                    type: 'Point',
+                    coordinates: [0, 0, 0]
+                }
+            }
+        }
     },
     mounted: async function() {
         await this.fetch();
+        await this.getServer();
     },
     methods: {
         timeDiff(update) {
             return timeDiff(update);
+        },
+        getServer: async function() {
+            this.server = await std('/api/server');
         },
         downloadFile: function() {
             const url = stdurl(`/api/marti/api/files/${this.pkg.Hash}`)
