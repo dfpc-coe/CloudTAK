@@ -1,5 +1,5 @@
 <template>
-    <MenuTemplate :name='pkg.Name'>
+    <MenuTemplate name='Package'>
         <template #buttons>
             <TablerDelete
                 v-if='profile.username === pkg.SubmissionUser'
@@ -7,6 +7,7 @@
                 @delete='deleteFile(pkg.Hash)'
             />
             <a
+                v-if='!loading && !err'
                 v-tooltip='"Download Asset"'
                 :href='downloadFile()'
             ><IconDownload
@@ -17,6 +18,7 @@
         </template>
         <template #default>
             <TablerLoading v-if='loading' />
+            <TablerAlert v-else-if='err' :err='err' />
             <template v-else-if='mode === "share"'>
                 <div class='overflow-auto'>
                     <Share
@@ -34,6 +36,15 @@
                     <div class='datagrid'>
                         <div class='datagrid-item'>
                             <div class='datagrid-title'>
+                                Name
+                            </div>
+                            <div
+                                class='datagrid-content'
+                                v-text='pkg.Name'
+                            />
+                        </div>
+                        <div class='datagrid-item'>
+                            <div class='datagrid-title'>
                                 Created By
                             </div>
                             <div
@@ -41,7 +52,6 @@
                                 v-text='pkg.SubmissionUser'
                             />
                         </div>
-
                         <div class='datagrid-item'>
                             <div class='datagrid-title'>
                                 Created
@@ -89,6 +99,7 @@ import { std, stdurl } from '/src/std.ts';
 import Share from '../util/Share.vue';
 import timeDiff from '../../../timediff.js';
 import {
+    TablerAlert,
     TablerDelete,
     TablerLoading,
 } from '@tak-ps/vue-tabler';
@@ -108,6 +119,7 @@ export default {
         IconShare2,
         IconDownload,
         IconFileImport,
+        TablerAlert,
         TablerDelete,
         TablerLoading,
         MenuTemplate,
@@ -115,6 +127,7 @@ export default {
     data: function() {
         return {
             loading: true,
+            err: null,
             mode: 'default',
             server: null,
             pkg: {
@@ -149,8 +162,8 @@ export default {
         }
     },
     mounted: async function() {
-        await this.fetch();
         await this.getServer();
+        await this.fetch();
     },
     methods: {
         timeDiff(update) {
@@ -166,9 +179,16 @@ export default {
             return url;
         },
         fetch: async function() {
-            this.loading = true;
-            const url = stdurl(`/api/marti/package/${this.$route.params.package}`);
-            this.pkg = await std(url);
+            try {
+                this.loading = true;
+                const url = stdurl(`/api/marti/package/${this.$route.params.package}`);
+                this.pkg = await std(url);
+                this.loading = false;
+            } catch (err) {
+                this.err = err;
+                this.loading = false;
+            }
+
             this.loading = false;
         },
         deleteFile: async function(hash) {
