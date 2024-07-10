@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v2.65.1 - 2024-07-10
+
+- :rocket: `UI` Smarten up Share Panel
+
 ### v2.65.0 - 2024-07-10
 
 - :rocket: Avoid small buttons with widly different functionality
