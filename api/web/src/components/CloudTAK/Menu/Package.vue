@@ -25,7 +25,6 @@
             <template v-else-if='mode === "share"'>
                 <div class='overflow-auto'>
                     <Share
-                        style='height: 70vh'
                         :feats='[shareFeat]'
                         @done='mode = "default"'
                         @cancel='mode = "default"'
