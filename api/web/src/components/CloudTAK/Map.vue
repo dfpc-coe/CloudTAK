@@ -269,7 +269,7 @@
             </TablerDropdown>
         </div>
 
-        <router-view @reset='deleteCOT()' />
+        <Menu :compact='noMenuShown' @reset='deleteCOT()' />
 
         <div
             v-if='pointInput.shown'
@@ -410,6 +410,7 @@ import {
 } from '@tabler/icons-vue';
 import SelectFeats from './util/SelectFeats.vue';
 import MultipleSelect from './util/MultipleSelect.vue';
+import Menu from './Menu.vue';
 import {
     TablerDropdown,
     TablerModal,
@@ -861,6 +862,7 @@ export default {
         }
     },
     components: {
+        Menu,
         Loading,
         SelectFeats,
         MultipleSelect,
@@ -890,7 +892,6 @@ export default {
         CloudTAKFeatView,
         IconCursorText,
         IconCircleArrowUp,
-        Status,
         IconX,
     }
 }

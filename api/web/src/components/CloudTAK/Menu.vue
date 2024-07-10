@@ -6,13 +6,13 @@
         }'
         style='z-index: 1; top: 56px;'
         :style='`
-            width: ${compact ? "50px" : "400px"};
+            width: ${compact ? "60px" : "400px"};
             ${compact ? "background-color: rgb(0, 0, 0, 0.5)" : ""}
         `'
     >
         <div class='position-relative h-100 container px-0'>
             <router-view
-                v-if='$route.name !== "home-menu"'
+                v-if='!["home", "home-menu"].includes($route.name)'
                 @reset='$emit("reset")'
             />
             <template v-else>
@@ -29,15 +29,7 @@
                         <div class='modal-title'>
                             Sidebar
                         </div>
-                        <div>
-                            <IconChevronRight
-                                v-tooltip='"Pin to Edge"'
-                                :size='40'
-                                :stroke='1'
-                                class='cursor-pointer'
-                                @click='compact = true'
-                            />
-                        </div>
+                        <div></div>
                     </div>
                 </div>
                 <div
@@ -53,6 +45,8 @@
                         @click='push("/menu/settings")'
                     >
                         <IconSettings
+                            v-tooltip='"Display Settings"'
+                            :class='{ "mx-2": compact }'
                             :size='compact ? 40 : 32'
                             :stroke='1'
                         />
@@ -71,6 +65,8 @@
                         @click='push("/menu/overlays")'
                     >
                         <IconBoxMultiple
+                            v-tooltip='"Overlays"'
+                            :class='{ "mx-2": compact }'
                             :size='32'
                             :stroke='1'
                         />
@@ -89,7 +85,8 @@
                         @click='push("/menu/contacts")'
                     >
                         <IconUsers
-                            v-if='!compact'
+                            v-tooltip='"Contacts"'
+                            :class='{ "mx-2": compact }'
                             :size='32'
                             :stroke='1'
                         />
@@ -108,6 +105,8 @@
                         @click='push("/menu/basemaps")'
                     >
                         <IconMap
+                            v-tooltip='"Basemaps"'
+                            :class='{ "mx-2": compact }'
                             :size='32'
                             :stroke='1'
                         />
@@ -126,6 +125,8 @@
                         @click='push("/menu/missions")'
                     >
                         <IconAmbulance
+                            v-tooltip='"Data Sync"'
+                            :class='{ "mx-2": compact }'
                             :size='32'
                             :stroke='1'
                         />
@@ -133,7 +134,7 @@
                             v-if='!compact'
                             class='mx-2'
                             style='font-size: 18px;'
-                        >Mission Sync</span>
+                        >Data Sync</span>
                     </div>
                     <div
                         class='cursor-pointer col-12 d-flex align-items-center'
@@ -144,6 +145,8 @@
                         @click='push("/menu/packages")'
                     >
                         <IconPackages
+                            v-tooltip='"Data Packages"'
+                            :class='{ "mx-2": compact }'
                             :size='32'
                             :stroke='1'
                         />
@@ -162,6 +165,8 @@
                         @click='push("/menu/channels")'
                     >
                         <IconAffiliate
+                            v-tooltip='"Channels"'
+                            :class='{ "mx-2": compact }'
                             :size='32'
                             :stroke='1'
                         />
@@ -180,6 +185,8 @@
                         @click='push("/menu/videos")'
                     >
                         <IconVideo
+                            v-tooltip='"Videos"'
+                            :class='{ "mx-2": compact }'
                             :size='32'
                             :stroke='1'
                         />
@@ -198,6 +205,8 @@
                         @click='push("/menu/chats")'
                     >
                         <IconMessage
+                            v-tooltip='"Chats"'
+                            :class='{ "mx-2": compact }'
                             :size='32'
                             :stroke='1'
                         />
@@ -216,6 +225,8 @@
                         @click='push("/menu/imports")'
                     >
                         <IconFileImport
+                            v-tooltip='"Imports"'
+                            :class='{ "mx-2": compact }'
                             :size='32'
                             :stroke='1'
                         />
@@ -234,6 +245,8 @@
                         @click='push("/menu/iconsets")'
                     >
                         <IconPhoto
+                            v-tooltip='"Iconsets"'
+                            :class='{ "mx-2": compact }'
                             :size='32'
                             :stroke='1'
                         />
@@ -254,6 +267,8 @@
                         @click='push("/connection")'
                     >
                         <IconNetwork
+                            v-tooltip='"Connections"'
+                            :class='{ "mx-2": compact }'
                             :size='32'
                             :stroke='1'
                         />
@@ -279,6 +294,8 @@
                         @click='push("/admin")'
                     >
                         <IconSettings
+                            v-tooltip='"Server Settings"'
+                            :class='{ "mx-2": compact }'
                             :size='32'
                             :stroke='1'
                         />
@@ -300,7 +317,7 @@
             <div
                 class='position-absolute bottom-0 start-0 end-0'
                 :class='{
-                    "bg-dark border-top border-white": !compact
+                    "bg-dark border-top border-white": !compact && $route.name === "home-menu"
                 }'
             >
                 <div
@@ -337,7 +354,7 @@
                         />
                     </div>
                 </div>
-                <div v-else>
+                <div v-else-if='$route.name === "home-menu"'>
                     <Status
                         :status='open ? "success" : "fail"'
                         :dark='true'
@@ -363,7 +380,6 @@ import {
     IconAmbulance,
     IconBoxMultiple,
     IconFileImport,
-    IconChevronRight,
     IconAffiliate,
 } from '@tabler/icons-vue';
 import Status from '../util/Status.vue';
@@ -375,14 +391,11 @@ export default {
     computed: {
         ...mapState(useProfileStore, ['profile']),
     },
-    data: function() {
-        return {
-            compact: false
-        }
+    props: {
+        compact: Boolean
     },
     methods: {
         push: function(path) {
-            this.compact = false;
             this.$router.push(path);
         },
         logout: function() {
@@ -393,7 +406,6 @@ export default {
     },
     components: {
         Status,
-        IconChevronRight,
         IconBoxMultiple,
         IconPackages,
         IconPhoto,
