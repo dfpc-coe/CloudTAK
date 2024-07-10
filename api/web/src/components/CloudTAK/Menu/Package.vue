@@ -173,7 +173,7 @@ export default {
         },
         deleteFile: async function(hash) {
             this.loading = true;
-            const imp = await std(`/api/marti/api/files/${hash}`, {
+            const imp = await std(`/api/marti/package/${hash}`, {
                 method: 'DELETE',
             });
 
