@@ -11,6 +11,7 @@ export const Agency = Type.Object({
 
 export const MachineUser = Type.Object({
     id: Type.Number(),
+    email: Type.String(),
 });
 
 export const Channel = Type.Object({
@@ -168,8 +169,6 @@ export default class ExternalProvider {
             url = new URL(`api/v1/proxy/agencies/${query.agency}/channels`, this.config.server.provider_url);
             url.searchParams.append('proxy_user_id', String(uid));
             url.searchParams.append('filter', query.filter);
-
-            console.error(url)
         } else {
             url = new URL(`/api/v1/proxy/channels`, this.config.server.provider_url);
             url.searchParams.append('proxy_user_id', String(uid));
