@@ -505,7 +505,6 @@ export default {
         cotStore.$reset();
         mapStore.destroy();
         overlayStore.$reset();
-        profileStore.$reset();
     },
     mounted: async function() {
         // ensure uncaught errors in the stack are captured into vue context
@@ -514,7 +513,6 @@ export default {
             this.$emit('err', new Error(evt.message));
         });
 
-        await profileStore.load();
         await profileStore.loadChannels();
         this.warnChannels = profileStore.hasNoChannels;
 
