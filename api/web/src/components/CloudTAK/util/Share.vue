@@ -1,9 +1,6 @@
 <template>
-    <div class='position-relative mb-2'>
+    <div class='mb-2'>
         <div class='sticky-top col-12 d-flex align-items-center user-select-none'>
-            <div class='subheader mx-2 my-2'>
-                Share
-            </div>
             <div
                 v-if='compact'
                 class='ms-auto'
@@ -27,9 +24,9 @@
             <div
                 class='overflow-auto'
                 :style='`
-                height: calc(100% - 36px - ${compact ? "30px" : "100px"});
-                margin-bottom: ${compact ? "30px" : "100px"};
-            `'
+                    height: calc(100% - 36px - ${compact ? "30px" : "100px"});
+                    margin-bottom: ${compact ? "30px" : "100px"};
+                `'
             >
                 <Contact
                     v-for='a of visibleContacts'
@@ -42,8 +39,11 @@
                     @click='selected.has(a) ? selected.delete(a) : selected.add(a)'
                 />
             </div>
-            <div class='position-absolute row g-0 bottom-0 start-0 end-0'>
-                <div class='col-6 px-2'>
+            <div class='position-absolute row g-0 bottom-0 start-0 end-0 bg-dark'>
+                <div :class='{
+                    "col-6 px-1": compact,
+                    "col-4 px-1": !compact
+                }'>
                     <button
                         v-tooltip='"Share to Selected"'
                         class='w-100 btn btn-primary'
@@ -58,7 +58,10 @@
                         <span v-else>Share to Selected</span>
                     </button>
                 </div>
-                <div class='col-6 px-2'>
+                <div :class='{
+                    "col-6 px-1": compact,
+                    "col-4 px-1": !compact
+                }'>
                     <button
                         v-tooltip='"Broadcast to All"'
                         class='w-100 btn btn-secondary'
@@ -75,10 +78,14 @@
                 </div>
                 <div
                     v-if='!compact'
-                    class='col-12 px-2 pt-2'
-                    @click='$emit("cancel")'
+                    class='col-4 px-1 pb-1'
                 >
-                    <button class='w-100 btn btn-secondary'>
+                    <button
+                        v-tooltip='"Cancel Share"'
+                        class='w-100 btn btn-secondary'
+                        :style='compact ? "height: 30px" : ""'
+                        @click='$emit("cancel")'
+                    >
                         Cancel
                     </button>
                 </div>
