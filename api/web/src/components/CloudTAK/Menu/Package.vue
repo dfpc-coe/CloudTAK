@@ -17,51 +17,76 @@
         </template>
         <template #default>
             <TablerLoading v-if='loading' />
-            <div
-                v-else
-                class='mx-4 my-4'
-            >
-                <div class='datagrid'>
-                    <div class='datagrid-item'>
-                        <div class='datagrid-title'>
-                            Created By
+            <template v-else-if='mode === "share"'>
+                <div class='overflow-auto'>
+                    <Share
+                        style='height: 70vh'
+                        :feats='[feat]'
+                        @done='mode = "default"'
+                        @cancel='mode = "default"'
+                    />
+                </div>
+            </template>
+            <template v-else>
+                <div
+                    class='row g-2 mx-4 my-4'
+                >
+                    <div class='datagrid'>
+                        <div class='datagrid-item'>
+                            <div class='datagrid-title'>
+                                Created By
+                            </div>
+                            <div
+                                class='datagrid-content'
+                                v-text='pkg.SubmissionUser'
+                            />
                         </div>
-                        <div
-                            class='datagrid-content'
-                            v-text='pkg.SubmissionUser'
-                        />
+
+                        <div class='datagrid-item'>
+                            <div class='datagrid-title'>
+                                Created
+                            </div>
+                            <div
+                                class='datagrid-content'
+                                v-text='timeDiff(pkg.SubmissionDateTime)'
+                            />
+                        </div>
                     </div>
 
-                    <div class='datagrid-item'>
-                        <div class='datagrid-title'>
-                            Created
-                        </div>
-                        <div
-                            class='datagrid-content'
-                            v-text='timeDiff(pkg.SubmissionDateTime)'
-                        />
+                    <div class='col-md-6 py-3'>
+                        <button
+                            class='btn btn-primary w-100'
+                            @click='createImport'
+                        >
+                            <IconFileImport
+                                :size='20'
+                                :stroke='1'
+                                class='me-2'
+                            />Import
+                        </button>
+                    </div>
+                    <div class='col-md-6 py-3'>
+                        <button
+                            class='btn btn-secondary w-100'
+                            @click='mode === "share" ? mode = "default" : mode = "share"'
+                        >
+                            <IconShare2
+                                v-tooltip='"Share"'
+                                :size='20' 
+                                :stroke='1' 
+                                class='me-2'
+                            /> Share
+                        </button>
                     </div>
                 </div>
-
-                <div class='col-12 py-3'>
-                    <button
-                        class='btn btn-primary w-100'
-                        @click='createImport'
-                    >
-                        <IconFileImport
-                            :size='20'
-                            :stroke='1'
-                            class='mx-1'
-                        />Import
-                    </button>
-                </div>
-            </div>
+            </template>
         </template>
     </MenuTemplate>
 </template>
 
 <script>
 import { std, stdurl } from '/src/std.ts';
+import Share from '../util/Share.vue';
 import timeDiff from '../../../timediff.js';
 import {
     TablerDelete,
@@ -69,6 +94,7 @@ import {
 } from '@tak-ps/vue-tabler';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import {
+    IconShare2,
     IconDownload,
     IconFileImport
 } from '@tabler/icons-vue';
@@ -78,6 +104,8 @@ import { useProfileStore } from '/src/stores/profile.ts';
 export default {
     name: 'CloudTAKPackage',
     components: {
+        Share,
+        IconShare2,
         IconDownload,
         IconFileImport,
         TablerDelete,
@@ -87,6 +115,7 @@ export default {
     data: function() {
         return {
             loading: true,
+            mode: 'default',
             pkg: {
                 Name: 'Package'
             }
