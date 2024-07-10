@@ -28,28 +28,6 @@
         </div>
 
         <div
-            class='position-absolute bottom-0 end-0 text-white'
-            style='
-                z-index: 1;
-                width: 100px;
-                height: 40px;
-                border-radius: 6px 0px 0px 0px;
-                background-color: rgba(0, 0, 0, 0.5);
-            '
-        >
-            <div
-                v-tooltip='open ? "Connected" : "No Connection"'
-                class='d-flex align-items-center'
-            >
-                <Status
-                    :status='open ? "success" : "fail"'
-                    :dark='true'
-                />
-                Server
-            </div>
-        </div>
-
-        <div
             v-if='profile'
             class='position-absolute bottom-0 begin-0 text-white'
             style='
@@ -409,7 +387,6 @@
 <script>
 import { std, stdurl } from '/src/std.ts';
 import CloudTAKFeatView from './FeatView.vue';
-import Status from '../util/Status.vue';
 import {
     IconSearch,
     IconInfoSquare,
