@@ -1,4 +1,5 @@
 import TAKAPI from '../tak-api.js';
+import FormData from 'form-data';
 import { Readable } from 'node:stream';
 import mime from 'mime';
 import { Type, Static } from '@sinclair/typebox';
@@ -40,6 +41,32 @@ export default class File {
         return await this.api.fetch(url, {
             method: 'DELETE',
         });
+    }
+
+    async uploadPackage(opts: {
+        name: string;
+        creatorUid: string;
+        hash: string;
+    }, body: Readable | Buffer): Promise<Static<typeof Content>> {
+        const url = new URL(`/Marti/sync/missionupload`, this.api.url);
+        url.searchParams.append('filename', opts.name)
+        url.searchParams.append('creatorUid', opts.creatorUid)
+        url.searchParams.append('hash', opts.hash)
+
+        if (body instanceof Buffer) {
+            body = Readable.from(body as Buffer);
+        }
+        body as Readable;
+
+        const form = new FormData()
+        form.append('assetfile', body);
+
+        const res = await this.api.fetch(url, {
+            method: 'POST',
+            body: form
+        });
+
+        return res;
     }
 
     async upload(opts: {

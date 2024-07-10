@@ -171,6 +171,15 @@ export default {
             this.pkg = await std(url);
             this.loading = false;
         },
+        deleteFile: async function(hash) {
+            this.loading = true;
+            const imp = await std(`/api/marti/api/files/${hash}`, {
+                method: 'DELETE',
+            });
+
+            this.$router.push(`/menu/packages`)
+
+        },
         createImport: async function() {
             this.loading = true;
             const imp = await std('/api/import', {
