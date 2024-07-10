@@ -1,41 +1,43 @@
 <template>
-<div class='card mx-2 px-0'>
-    <div class='card-body row'>
-        <div class='col-md-6'>
-            <TablerInput
-                v-model='auth.cert'
-                :rows='5'
-                label='X509 Certificate'
-                @keyup.enter='generate'
-            />
+    <div class='card mx-2 px-0'>
+        <div class='card-body row'>
+            <div class='col-md-6'>
+                <TablerInput
+                    v-model='auth.cert'
+                    :rows='5'
+                    label='X509 Certificate'
+                    @keyup.enter='generate'
+                />
+            </div>
+            <div class='col-md-6'>
+                <TablerInput
+                    v-model='auth.key'
+                    :rows='5'
+                    label='Private Key'
+                    @keyup.enter='generate'
+                />
+            </div>
         </div>
-        <div class='col-md-6'>
-            <TablerInput
-                v-model='auth.key'
-                :rows='5'
-                label='Private Key'
-                @keyup.enter='generate'
-            />
+        <div class='card-footer'>
+            <button
+                class='cursor-pointer btn btn-primary w-100'
+                @click='generate'
+            >
+                Submit Certificate
+            </button>
         </div>
     </div>
-    <div class='card-footer'>
-        <button class='cursor-pointer btn btn-primary w-100' @click='generate'>Submit Certificate</button>
-    </div>
-</div>
 </template>
 
 <script>
-import { std } from '/src/std.ts';
 import {
     TablerInput,
-    TablerLoading
 } from '@tak-ps/vue-tabler';
 
 export default {
     name: 'CertificateRaw',
     components: {
         TablerInput,
-        TablerLoading
     },
     emits: [
         'certs',
