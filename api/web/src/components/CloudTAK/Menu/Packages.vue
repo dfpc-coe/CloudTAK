@@ -23,13 +23,14 @@
             />
         </template>
         <template #default>
-            <Upload
-                v-if='upload'
-                :url='uploadURL()'
-                :headers='uploadHeaders()'
-                @cancel='upload = false'
-                @done='fetchList'
-            />
+            <div v-if='upload' class='px-3 py-4'>
+                <Upload
+                    :url='uploadURL()'
+                    :headers='uploadHeaders()'
+                    @cancel='upload = false'
+                    @done='fetchList'
+                />
+            </div>
             <template v-else>
                 <ChannelInfo label='Data Packages' />
                 <NoChannelsInfo v-if='hasNoChannels' />
