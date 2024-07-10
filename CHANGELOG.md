@@ -12,6 +12,17 @@
 
 ### Pending Release
 
+### v2.65.0 - 2024-07-10
+
+- :rocket: Avoid small buttons with widly different functionality
+- :rocket: Move 4 different creation options into human readable mode-switch buttons
+- :rocket: Switch modal behavior to cards based on state of mode-switcher
+- :rocket: Add ability to dynamically create Machine User (list Channels & Create User)
+- :rocket: Move Agency Selection to inline
+- :rocket: Add ability to delete mission data packages
+- :rocket: Add ability to share mission data packages
+- :rocket: Add ability to create mission data packages
+
 ### v2.64.0 - 2024-07-03
 
 - :rocket: Add prelim support for QuickPics
