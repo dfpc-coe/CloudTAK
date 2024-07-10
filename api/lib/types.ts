@@ -31,9 +31,9 @@ export const ServerResponse = Type.Object({
     status: Type.String(),
     created: Type.String(),
     updated: Type.String(),
-    provider_client: Type.String(),
-    provider_secret: Type.String(),
-    provider_url: Type.String(),
+    provider_client: Type.Optional(Type.String()),
+    provider_secret: Type.Optional(Type.String()),
+    provider_url: Type.Optional(Type.String()),
     name: Type.String(),
     url: Type.String(),
     api: Type.String(),
@@ -66,7 +66,7 @@ export const OverlayResponse = createSelectSchema(schemas.Overlay, {
     id: Type.Integer(),
 });
 
-export const ProfileFeature = Type.Composite([ Feature, Type.Object({
+export const ProfileFeature = Type.Composite([ Feature.Feature, Type.Object({
     path: Type.String({ default: '/' }),
 })]);
 

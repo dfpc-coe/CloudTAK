@@ -35,10 +35,7 @@ export default async function router(schema: Schema, config: Config) {
             if (!profile.id) throw new Err(400, null, 'External ID must be set on profile');
             const list = await config.external.agencies(profile.id, req.query.filter);
 
-            return res.json({
-                total: list.items.length, // This is a lie as there isn't a total in the API
-                items: list.items
-            });
+            return res.json(list);
         } catch (err) {
             return Err.respond(err, res);
         }

@@ -92,8 +92,12 @@ export const useMapStore = defineStore('cloudtak', {
     actions: {
         destroy: function() {
             if (this.map) {
-                this.map.remove();
-                delete this.map;
+                try {
+                    this.map.remove();
+                    delete this.map;
+                } catch (err) {
+                    console.error(err);
+                }
             }
             this.$reset();
         },
