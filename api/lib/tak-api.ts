@@ -1,3 +1,4 @@
+import FormData from 'form-data';
 import Package from './api/package.js';
 import Mission from './api/mission.js';
 import MissionLog from './api/mission-log.js';
@@ -82,6 +83,8 @@ export default class TAKAPI {
             ) {
                 opts.body = JSON.stringify(opts.body);
                 opts.headers['Content-Type'] = 'application/json';
+            } else if (opts.body instanceof FormData) {
+                opts.headers = opts.body.getHeaders();
             } else if (opts.body instanceof URLSearchParams) {
                 opts.headers['Content-Type'] = 'application/x-www-form-urlencoded'
                 opts.body = String(opts.body);

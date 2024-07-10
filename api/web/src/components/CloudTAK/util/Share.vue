@@ -155,7 +155,12 @@ export default {
         /** Feats often come from Vector Tiles which don't contain the full feature */
         currentFeats: function() {
             return this.feats.map((f) => {
-                return cotStore.get(f.id);
+                if (f.properties.type === 'b-f-t-r') {
+                    // FileShare is manually generated and won't exist in CoT Store
+                    return f;
+                } else {
+                    return cotStore.get(f.id);
+                }
             }).filter((f) => {
                 return !!f;
             });

@@ -226,8 +226,8 @@ export default class {
     async latestFeats(
         name: string,
         opts?: Static<typeof MissionOptions>
-    ): Promise<Static<typeof Feature>[]> {
-        const feats: Static<typeof Feature>[] = [];
+    ): Promise<Static<typeof Feature.Feature>[]> {
+        const feats: Static<typeof Feature.Feature>[] = [];
 
         let partial = {
             event: '',
