@@ -1,4 +1,5 @@
 import crypto from 'node:crypto';
+import busboy from 'busboy';
 import fs from 'node:fs';
 import fsp from 'node:fs/promises';
 import { Type } from '@sinclair/typebox'
@@ -14,8 +15,67 @@ import TAKAPI, {
 } from '../lib/tak-api.js';
 
 export default async function router(schema: Schema, config: Config) {
+    await schema.post('/marti/package', {
+        name: 'Create File Package',
+        group: 'MartiPackages',
+        description: 'Helper API to create package',
+        res: Content
+    }, async (req, res) => {
+        try {
+            const user = await Auth.as_user(config, req);
+            const profile = await config.models.Profile.from(user.email);
+            const auth = profile.auth;
+            const creatorUid = profile.username;
+            const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
+
+            const id = crypto.randomUUID();
+            const pkg = new DataPackage(id, id);
+
+            if (req.headers['content-type'] && req.headers['content-type'].startsWith('multipart/form-data')) {
+                const bb = busboy({
+                    headers: req.headers,
+                    limits: {
+                        files: 1
+                    }
+                });
+
+                bb.on('file', async (fieldname, file, meta) => {
+                    try {
+                        pkg.addFile(file, {
+                            name: meta.filename,
+                        });
+                    } catch (err) {
+                        return Err.respond(err, res);
+                    }
+                }).on('finish', async () => {
+                    const out = await pkg.finalize()
+
+                    const { size } = await fsp.stat(out);
+
+                    const content = await api.Files.upload({
+                        name: id,
+                        contentType: 'application/x-zip-compressed',
+                        contentLength: size,
+                        keywords: ['missionpackage'],
+                        creatorUid: creatorUid,
+                    }, fs.createReadStream(out));
+
+                    await pkg.destroy();
+
+                    return res.json(content)
+                });
+
+                return req.pipe(bb);
+            } else {
+                throw new Err(400, null, 'Unsupported Content-Type');
+            }
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
+
     await schema.put('/marti/package', {
-        name: 'Create Package',
+        name: 'Create COT Package',
         group: 'MartiPackages',
         description: 'Helper API to create share package',
         body: Type.Object({
