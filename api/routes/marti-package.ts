@@ -52,8 +52,6 @@ export default async function router(schema: Schema, config: Config) {
                 }).on('finish', async () => {
                     const out = await pkg.finalize()
 
-                    const { size } = await fsp.stat(out);
-
                     const hash = await DataPackage.hash(out);
 
                     await api.Files.uploadPackage({
@@ -219,7 +217,7 @@ export default async function router(schema: Schema, config: Config) {
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
-            const auth = (await config.models.Profile.from(user.email)).auth;
+
             const api = await TAKAPI.init(
                 new URL(String(config.server.api)),
                 new APIAuthCertificate(

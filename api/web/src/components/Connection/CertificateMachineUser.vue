@@ -1,49 +1,52 @@
 <template>
 <div class='card mx-2 px-0'>
     <div class='card-body'>
-        <div v-for='(channel, it) in selected' class='card my-2'>
-            <div class='col-12 d-flex align-items-center px-2 py-2'>
-                <div v-text='channel.name' />
-                <div class='ms-auto'>
-                    <IconTrash
-                        :size='32'
-                        :stroke='1'
-                        class='cursor-pointer'
-                        v-tooltip='"Remove Channel"'
-                        @click='selected.splice(it, 1)'
-                    />
+        <TablerLoading v-if='loading.gen'/>
+        <template v-else>
+            <div v-for='(channel, it) in selected' class='card my-2'>
+                <div class='col-12 d-flex align-items-center px-2 py-2'>
+                    <div v-text='channel.name' />
+                    <div class='ms-auto'>
+                        <IconTrash
+                            :size='32'
+                            :stroke='1'
+                            class='cursor-pointer'
+                            v-tooltip='"Remove Channel"'
+                            @click='selected.splice(it, 1)'
+                        />
+                    </div>
                 </div>
             </div>
-        </div>
-        <div class='col-12 mb-2'>
-            <TablerInput
-                v-model='paging.filter'
-                placeholder='Channels Filter...'
-                @keyup.enter='generate'
-            />
-        </div>
-        <div class='col-12'>
-            <TablerLoading
-                v-if='loading.channels'
-                desc='Loading Channels'
-            />
-            <TablerNone v-else-if='filteredChannels.length === 0' :compact='true' :create='false' label='Channels'/>
-            <template v-else v-for='channel in filteredChannels'>
-                <div
-                    @click='push(channel)'
-                    class='hover-light px-2 py-2 cursor-pointer row'
-                >
-                    <div class='col-md-4'>
-                        <span v-text='channel.name'/>
-                    </div>
+            <div class='col-12 mb-2'>
+                <TablerInput
+                    v-model='paging.filter'
+                    placeholder='Channels Filter...'
+                    @keyup.enter='generate'
+                />
+            </div>
+            <div class='col-12'>
+                <TablerLoading
+                    v-if='loading.channels'
+                    desc='Loading Channels'
+                />
+                <TablerNone v-else-if='filteredChannels.length === 0' :compact='true' :create='false' label='Channels'/>
+                <template v-else v-for='channel in filteredChannels'>
+                    <div
+                        @click='push(channel)'
+                        class='hover-light px-2 py-2 cursor-pointer row'
+                    >
+                        <div class='col-md-4'>
+                            <span v-text='channel.name'/>
+                        </div>
 
-                    <div class='col-md-8' v-text='channel.description'/>
-                </div>
-            </template>
-        </div>
+                        <div class='col-md-8' v-text='channel.description'/>
+                    </div>
+                </template>
+            </div>
+        </template>
     </div>
     <div class='card-footer'>
-        <button class='cursor-pointer btn btn-primary w-100' @click='generate'>Create Machine User</button>
+        <button :disabled='loading.gen' class='cursor-pointer btn btn-primary w-100' @click='generate'>Create Machine User</button>
     </div>
 </div>
 </template>
@@ -76,6 +79,7 @@ export default {
     data: function() {
         return {
             loading: {
+                gen: false,
                 channels: true
             },
             paging: {
@@ -136,6 +140,7 @@ export default {
             this.loading.channels = false;
         },
         generate: async function() {
+            this.loading.gen = true;
             const url = stdurl('/api/ldap/user');
             const res = await std(url, {
                 method: 'POST',
@@ -147,6 +152,7 @@ export default {
                 }
             })
 
+            this.loading.gen = true;
             this.$emit('certs', res);
         }
     }

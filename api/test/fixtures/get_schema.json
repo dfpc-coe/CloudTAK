@@ -491,7 +491,7 @@
     },
     "GET /ldap/channel": {
         "body": false,
-        "query": false,
+        "query": true,
         "res": true
     },
     "POST /ldap/user": {
@@ -614,6 +614,11 @@
         "query": false,
         "res": true
     },
+    "POST /marti/package": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
     "PUT /marti/package": {
         "body": true,
         "query": false,
@@ -625,6 +630,11 @@
         "res": true
     },
     "GET /marti/package/:hash": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "DELETE /marti/package/:hash": {
         "body": false,
         "query": false,
         "res": true

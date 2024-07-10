@@ -4,7 +4,6 @@ import Config from '../lib/config.js';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
-import * as Default from '../lib/limits.js';
 import TAKAPI, {
     APIAuthPassword,
 } from '../lib/tak-api.js';
@@ -80,8 +79,6 @@ export default async function router(schema: Schema, config: Config) {
                 }
             });
 
-            console.error(user);
-
             for (const channel of req.body.channels) {
                 await config.external.attachMachineUser(profile.id, {
                     machine_id: user.id,
@@ -91,7 +88,7 @@ export default async function router(schema: Schema, config: Config) {
 
             const api = await TAKAPI.init(
                 new URL(config.MartiAPI),
-                new APIAuthPassword('', password)
+                new APIAuthPassword(user.email, password)
             );
 
             const certs = await api.Credentials.generate();
