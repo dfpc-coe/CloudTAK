@@ -1,42 +1,42 @@
 <template>
-<div class='card mx-2'>
-    <div class='card-body text-center py-4'>
-        <template v-if='!file'>
-            <form
-                id='dropzone-default'
-                class='dropzone dz-clickable'
-                action='./'
-                autocomplete='off'
-                novalidate=''
-            >
-                <div class='dz-default dz-message'>
-                    <button
-                        class='dz-button'
-                        type='button'
-                    >
-                        Drop .p12 here<br>click to upload
-                    </button>
-                </div>
-            </form>
-        </template>
-        <template v-else>
-            <TablerInput
-                v-model='password'
-                label='P12 Password'
-                @keyup.enter='extract'
-            />
+    <div class='card mx-2'>
+        <div class='card-body text-center py-4'>
+            <template v-if='!file'>
+                <form
+                    id='dropzone-default'
+                    class='dropzone dz-clickable'
+                    action='./'
+                    autocomplete='off'
+                    novalidate=''
+                >
+                    <div class='dz-default dz-message'>
+                        <button
+                            class='dz-button'
+                            type='button'
+                        >
+                            Drop .p12 here<br>click to upload
+                        </button>
+                    </div>
+                </form>
+            </template>
+            <template v-else>
+                <TablerInput
+                    v-model='password'
+                    label='P12 Password'
+                    @keyup.enter='extract'
+                />
 
-            <div class='row mt-3'>
-                <div class='col'>
-                    <a
-                        class='cursor-pointer btn w-100'
-                        @click='extract'
-                    >OK</a>
+                <div class='row mt-3'>
+                    <div class='col'>
+                        <a
+                            class='cursor-pointer btn w-100'
+                            @click='extract'
+                        >OK</a>
+                    </div>
                 </div>
-            </div>
-        </template>
+            </template>
+        </div>
     </div>
-</div>
 </template>
 
 <script>

@@ -23,7 +23,10 @@
             />
         </template>
         <template #default>
-            <div v-if='upload' class='px-3 py-4'>
+            <div
+                v-if='upload'
+                class='px-3 py-4'
+            >
                 <Upload
                     :url='uploadURL()'
                     :headers='uploadHeaders()'

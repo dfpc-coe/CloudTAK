@@ -86,22 +86,27 @@
 
                                 <template v-if='isNextReady || $route.params.connectionid'>
                                     <div class='card-header'>
-                                        <h3 class='card-title'>Connection Authentication</h3>
+                                        <h3 class='card-title'>
+                                            Connection Authentication
+                                        </h3>
                                     </div>
                                     <div class='card-body'>
                                         <div class='row'>
                                             <template v-if='isReady'>
                                                 <div class='col-12 d-flex align-items-center'>
-                                                    <IconCheck :size='40' class='text-green'/>
+                                                    <IconCheck
+                                                        :size='40'
+                                                        class='text-green'
+                                                    />
                                                     <span class='mx-3'>Certificate Uploaded</span>
 
                                                     <div class='ms-auto'>
                                                         <IconTrash
+                                                            v-tooltip='"Remove Certificate"'
                                                             :size='32'
                                                             :stroke='1'
                                                             class='cursor-pointer'
                                                             @click='marti({ key: "", cert: ""})'
-                                                            v-tooltip='"Remove Certificate"'
                                                         />
                                                     </div>
                                                 </div>
@@ -234,7 +239,9 @@
                                                             :disabled='!$route.params.connectionid && !isReady'
                                                             class='cursor-pointer btn btn-primary'
                                                             @click='create'
-                                                        >Save Connection</button>
+                                                        >
+                                                            Save Connection
+                                                        </button>
                                                     </div>
                                                 </div>
                                             </div>
@@ -261,9 +268,7 @@ import CertificateLogin from './Connection/CertificateLogin.vue';
 import CertificateRaw from './Connection/CertificateRaw.vue';
 import CertificateMachineUser from './Connection/CertificateMachineUser.vue';
 import {
-    IconPlus,
     IconLock,
-    IconLogin,
     IconCheck,
     IconTrash,
 } from '@tabler/icons-vue';
@@ -277,9 +282,7 @@ import {
 export default {
     name: 'ConnectionNew',
     components: {
-        IconPlus,
         IconLock,
-        IconLogin,
         IconCheck,
         IconTrash,
         AgencySelect,
@@ -314,13 +317,6 @@ export default {
             }
         }
     },
-    mounted: async function() {
-        if (this.$route.params.connectionid) {
-            await this.fetch();
-        } else {
-            this.loading = false;
-        }
-    },
     computed: {
         isNextReady: function() {
             return this.connection.name.trim().length > 0
@@ -329,6 +325,13 @@ export default {
         },
         isReady: function() {
             return this.connection.auth.cert.trim().length && this.connection.auth.key.trim().length
+        }
+    },
+    mounted: async function() {
+        if (this.$route.params.connectionid) {
+            await this.fetch();
+        } else {
+            this.loading = false;
         }
     },
     methods: {

@@ -18,7 +18,10 @@
         </template>
         <template #default>
             <TablerLoading v-if='loading' />
-            <TablerAlert v-else-if='err' :err='err' />
+            <TablerAlert
+                v-else-if='err'
+                :err='err'
+            />
             <template v-else-if='mode === "share"'>
                 <div class='overflow-auto'>
                     <Share
@@ -193,7 +196,7 @@ export default {
         },
         deleteFile: async function(hash) {
             this.loading = true;
-            const imp = await std(`/api/marti/package/${hash}`, {
+            await std(`/api/marti/package/${hash}`, {
                 method: 'DELETE',
             });
 
