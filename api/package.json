@@ -64,6 +64,7 @@
         "express-minify": "^1.0.0",
         "fast-xml-parser": "^4.3.5",
         "forever": "^4.0.3",
+        "form-data": "^4.0.0",
         "handlebars": "^4.7.8",
         "http-cookie-agent": "^6.0.1",
         "jsonata": "^2.0.1",

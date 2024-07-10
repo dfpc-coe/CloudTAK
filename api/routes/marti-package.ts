@@ -19,7 +19,7 @@ export default async function router(schema: Schema, config: Config) {
         name: 'Create File Package',
         group: 'MartiPackages',
         description: 'Helper API to create package',
-        res: Content
+        res: Package
     }, async (req, res) => {
         try {
             const user = await Auth.as_user(config, req);
@@ -41,6 +41,7 @@ export default async function router(schema: Schema, config: Config) {
 
                 bb.on('file', async (fieldname, file, meta) => {
                     try {
+                        pkg.settings.name = meta.filename;
                         pkg.addFile(file, {
                             name: meta.filename,
                         });
@@ -52,17 +53,21 @@ export default async function router(schema: Schema, config: Config) {
 
                     const { size } = await fsp.stat(out);
 
-                    const content = await api.Files.upload({
-                        name: id,
-                        contentType: 'application/x-zip-compressed',
-                        contentLength: size,
-                        keywords: ['missionpackage'],
-                        creatorUid: creatorUid,
+                    const hash = await DataPackage.hash(out);
+
+                    await api.Files.uploadPackage({
+                        name: pkg.settings.name, creatorUid, hash
                     }, fs.createReadStream(out));
 
                     await pkg.destroy();
 
-                    return res.json(content)
+                    const pkgres = await api.Package.list({
+                        uid: hash
+                    });
+
+                    if (!pkgres.results.length) throw new Err(404, null, 'Package not found');
+
+                    return res.json(pkgres.results[0]);
                 });
 
                 return req.pipe(bb);
@@ -102,8 +107,8 @@ export default async function router(schema: Schema, config: Config) {
             const api = await TAKAPI.init(new URL(String(config.server.api)), new APIAuthCertificate(auth.cert, auth.key));
 
             const id = crypto.randomUUID();
-
             const pkg = new DataPackage(id, id);
+
             pkg.setEphemeral();
             for (const feat of req.body.features) {
                 await pkg.addCoT(CoT.from_geojson(feat))
