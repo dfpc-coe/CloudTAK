@@ -96,7 +96,7 @@ export default async function router(schema: Schema, config: Config) {
                         }
                     }
 
-                    const existMap: Map<string, Static<typeof Feature>> = new Map()
+                    const existMap: Map<string, Static<typeof Feature.Feature>> = new Map()
                     for (const feat of features) {
                         existMap.set(String(feat.id), feat);
                     }
@@ -133,7 +133,7 @@ export default async function router(schema: Schema, config: Config) {
             config.conns.cots(pooledClient.config, cots);
 
             // TODO Only GeoJSON Features go to Dynamo, this should also store CoT XML
-            if (layer.logging && req.query.logging !== false) ddb.queue(req.body.features.map((feat: Static<typeof Feature>) => {
+            if (layer.logging && req.query.logging !== false) ddb.queue(req.body.features.map((feat: Static<typeof Feature.Feature>) => {
                 const item: QueueItem = {
                     id: String(feat.id),
                     layer: layer.id,

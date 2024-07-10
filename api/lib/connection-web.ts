@@ -32,7 +32,7 @@ export class ConnectionWebSocket {
                             message: msg.data.message
                         })
                     } else {
-                        const feat = msg.data as Static<typeof Feature>;
+                        const feat = msg.data as Static<typeof Feature.Feature>;
 
                         const cot = CoT.from_geojson(feat);
                         client.tak.write([cot]);

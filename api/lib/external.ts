@@ -9,6 +9,17 @@ export const Agency = Type.Object({
     description: Type.Any()
 });
 
+export const MachineUser = Type.Object({
+    id: Type.Number(),
+    email: Type.String(),
+});
+
+export const Channel = Type.Object({
+    id: Type.Number(),
+    name: Type.String(),
+    description: Type.Any()
+});
+
 export default class ExternalProvider {
     config: Config;
     cache?: {
@@ -51,6 +62,79 @@ export default class ExternalProvider {
         }
     }
 
+    async createMachineUser(uid: number, body: {
+        name: string;
+        agency_id: number;
+        password: string;
+        integration: {
+            name: string;
+            description: string;
+            management_url: string;
+        }
+    }): Promise<Static<typeof MachineUser>> {
+        await this.auth();
+
+        const url = new URL(`api/v1/proxy/machine-users`, this.config.server.provider_url);
+        url.searchParams.append('proxy_user_id', String(uid));
+        url.searchParams.append('sequential_email', 'true')
+        url.searchParams.append('sync', 'true')
+
+        const req = {
+            name: body.name,
+            agency_id: body.agency_id,
+            password: body.password,
+            active: true,
+            integration: {
+                ...body.integration,
+                active: true
+            }
+        }
+
+        if (!req.agency_id) delete req.agency_id;
+
+        const userres = await fetch(url, {
+            method: 'POST',
+            headers: {
+                Accept: 'application/json',
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${this.cache.token}`
+            },
+            body: JSON.stringify(req)
+        });
+
+        if (!userres.ok) throw new Err(500, new Error(await userres.text()), 'External Machine User Creation Error');
+
+        const user = await userres.typed(Type.Object({
+            data: MachineUser
+        }))
+
+        return user.data;
+    }
+
+    async attachMachineUser(uid: number, body: {
+        machine_id: number;
+        channel_id: number;
+    }): Promise<void> {
+        await this.auth();
+
+        const url = new URL(`api/v1/proxy/channels/${body.channel_id}/machine-users/attach/${body.machine_id}`, this.config.server.provider_url);
+        url.searchParams.append('proxy_user_id', String(uid));
+        url.searchParams.append('sync', 'true')
+
+        const userres = await fetch(url, {
+            method: 'GET',
+            headers: {
+                Accept: 'application/json',
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${this.cache.token}`
+            }
+        });
+
+        if (!userres.ok) throw new Err(500, new Error(await userres.text()), 'External Machine User Attachment Error');
+
+        return;
+    }
+
     async agency(uid: number, agency_id: number): Promise<Static<typeof Agency>> {
         await this.auth();
 
@@ -71,7 +155,53 @@ export default class ExternalProvider {
         return list.data;
     }
 
+    async channels(uid: number, query: {
+        filter: string;
+        agency?: number;
+    }): Promise<{
+        total: number;
+        items: Array<Static<typeof Channel>>
+    }> {
+        await this.auth();
+
+        let url: URL;
+        if (query.agency) {
+            url = new URL(`api/v1/proxy/agencies/${query.agency}/channels`, this.config.server.provider_url);
+            url.searchParams.append('proxy_user_id', String(uid));
+            url.searchParams.append('filter', query.filter);
+        } else {
+            url = new URL(`/api/v1/proxy/channels`, this.config.server.provider_url);
+            url.searchParams.append('proxy_user_id', String(uid));
+            url.searchParams.append('filter', query.filter);
+        }
+
+        const channelres = await fetch(url, {
+            headers: {
+                Accept: 'application/json',
+                "Authorization": `Bearer ${this.cache.token}`
+            },
+        });
+
+        if (!channelres.ok) throw new Err(500, new Error(await channelres.text()), 'External Channel List Error');
+
+        const list = await channelres.typed(Type.Object({
+            data: Type.Array(Channel),
+            meta: Type.Object({
+                current_page: Type.Integer(),
+                last_page: Type.Integer(),
+                per_page: Type.Integer(),
+                total: Type.Integer()
+            })
+        }));
+
+        return {
+            total: list.meta.total,
+            items: list.data
+        }
+    }
+
     async agencies(uid: number, filter: string): Promise<{
+        total: number;
         items: Array<Static<typeof Agency>>
     }> {
         await this.auth();
@@ -89,10 +219,17 @@ export default class ExternalProvider {
 
         if (!agencyres.ok) throw new Err(500, new Error(await agencyres.text()), 'External Agency List Error');
         const list = await agencyres.typed(Type.Object({
-            data: Type.Array(Agency)
+            data: Type.Array(Agency),
+            meta: Type.Object({
+                current_page: Type.Integer(),
+                last_page: Type.Integer(),
+                per_page: Type.Integer(),
+                total: Type.Integer()
+            })
         }));
 
         return {
+            total: list.meta.total,
             items: list.data
         }
     }
