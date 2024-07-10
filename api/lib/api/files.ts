@@ -34,6 +34,14 @@ export default class File {
         return res.body;
     }
 
+    async adminDelete(hash: string) {
+        const url = new URL(`/Marti/api/files/${hash}`, this.api.url);
+
+        return await this.api.fetch(url, {
+            method: 'DELETE',
+        });
+    }
+
     async delete(hash: string) {
         const url = new URL(`/Marti/sync/delete`, this.api.url);
         url.searchParams.append('hash', hash)
