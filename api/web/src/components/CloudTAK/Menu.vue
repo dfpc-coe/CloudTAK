@@ -45,7 +45,10 @@
                         @click='push("/menu/settings")'
                     >
                         <IconSettings
-                            v-tooltip='"Display Settings"'
+                            v-tooltip='{
+                                content: "Display Settings",
+                                placement: "right"
+                            }'
                             :class='{ "mx-2": compact }'
                             :size='compact ? 40 : 32'
                             :stroke='1'
@@ -65,7 +68,10 @@
                         @click='push("/menu/overlays")'
                     >
                         <IconBoxMultiple
-                            v-tooltip='"Overlays"'
+                            v-tooltip='{
+                                content: "Overlays",
+                                placement: "right"
+                            }'
                             :class='{ "mx-2": compact }'
                             :size='32'
                             :stroke='1'
@@ -85,7 +91,10 @@
                         @click='push("/menu/contacts")'
                     >
                         <IconUsers
-                            v-tooltip='"Contacts"'
+                            v-tooltip='{
+                                content: "Contacts",
+                                placement: "right"
+                            }'
                             :class='{ "mx-2": compact }'
                             :size='32'
                             :stroke='1'
@@ -105,7 +114,10 @@
                         @click='push("/menu/basemaps")'
                     >
                         <IconMap
-                            v-tooltip='"Basemaps"'
+                            v-tooltip='{
+                                content: "Basemaps",
+                                placement: "right"
+                            }'
                             :class='{ "mx-2": compact }'
                             :size='32'
                             :stroke='1'
@@ -125,7 +137,10 @@
                         @click='push("/menu/missions")'
                     >
                         <IconAmbulance
-                            v-tooltip='"Data Sync"'
+                            v-tooltip='{
+                                content: "Data Sync",
+                                placement: "right"
+                            }'
                             :class='{ "mx-2": compact }'
                             :size='32'
                             :stroke='1'
@@ -145,7 +160,10 @@
                         @click='push("/menu/packages")'
                     >
                         <IconPackages
-                            v-tooltip='"Data Packages"'
+                            v-tooltip='{
+                                content: "Data Packages",
+                                placement: "right"
+                            }'
                             :class='{ "mx-2": compact }'
                             :size='32'
                             :stroke='1'
@@ -165,7 +183,10 @@
                         @click='push("/menu/channels")'
                     >
                         <IconAffiliate
-                            v-tooltip='"Channels"'
+                            v-tooltip='{
+                                content: "Channels",
+                                placement: "right"
+                            }'
                             :class='{ "mx-2": compact }'
                             :size='32'
                             :stroke='1'
@@ -185,7 +206,10 @@
                         @click='push("/menu/videos")'
                     >
                         <IconVideo
-                            v-tooltip='"Videos"'
+                            v-tooltip='{
+                                content: "Videos",
+                                placement: "right"
+                            }'
                             :class='{ "mx-2": compact }'
                             :size='32'
                             :stroke='1'
@@ -205,7 +229,10 @@
                         @click='push("/menu/chats")'
                     >
                         <IconMessage
-                            v-tooltip='"Chats"'
+                            v-tooltip='{
+                                content: "Chats",
+                                placement: "right"
+                            }'
                             :class='{ "mx-2": compact }'
                             :size='32'
                             :stroke='1'
@@ -225,7 +252,10 @@
                         @click='push("/menu/imports")'
                     >
                         <IconFileImport
-                            v-tooltip='"Imports"'
+                            v-tooltip='{
+                                content: "Imports",
+                                placement: "right"
+                            }'
                             :class='{ "mx-2": compact }'
                             :size='32'
                             :stroke='1'
@@ -245,7 +275,10 @@
                         @click='push("/menu/iconsets")'
                     >
                         <IconPhoto
-                            v-tooltip='"Iconsets"'
+                            v-tooltip='{
+                                content: "Iconsets",
+                                placement: "right"
+                            }'
                             :class='{ "mx-2": compact }'
                             :size='32'
                             :stroke='1'
@@ -267,7 +300,10 @@
                         @click='push("/connection")'
                     >
                         <IconNetwork
-                            v-tooltip='"Connections"'
+                            v-tooltip='{
+                                content: "Connections",
+                                placement: "right"
+                            }'
                             :class='{ "mx-2": compact }'
                             :size='32'
                             :stroke='1'
@@ -293,8 +329,11 @@
                         }'
                         @click='push("/admin")'
                     >
-                        <IconSettings
-                            v-tooltip='"Server Settings"'
+                        <IconServerCog
+                            v-tooltip='{
+                                content: "Server Settings",
+                                placement: "right"
+                            }'
                             :class='{ "mx-2": compact }'
                             :size='32'
                             :stroke='1'
@@ -379,6 +418,7 @@ import {
     IconPackages,
     IconSettings,
     IconAmbulance,
+    IconServerCog,
     IconBoxMultiple,
     IconFileImport,
     IconAffiliate,
@@ -410,6 +450,7 @@ export default {
     },
     components: {
         Status,
+        IconServerCog,
         IconBoxMultiple,
         IconPackages,
         IconPhoto,
