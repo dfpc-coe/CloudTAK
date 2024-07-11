@@ -116,8 +116,8 @@
 import { std, stdurl } from '/src/std.ts';
 import PageFooter from './PageFooter.vue';
 import ConnectionStatus from './Connection/Status.vue';
-import timeDiff from '../timediff.js';
 import AgencyBadge from './Connection/AgencyBadge.vue';
+import timeDiff from '../timediff.js';
 import {
     TablerPager,
     TablerBreadCrumb,

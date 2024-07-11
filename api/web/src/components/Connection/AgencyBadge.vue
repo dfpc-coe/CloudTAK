@@ -2,16 +2,24 @@
     <div>
         <span
             v-if='connection.agency'
-            class='badge border bg-blue text-white cursor-pointer'
+            class='badge border text-white cursor-pointer'
+            :class='{
+                "bg-blue": !muted,
+                "bg-blue-lt": muted
+            }'
             style='height: 20px'
             @click='info = true'
             v-text='`Agency`'
         />
         <span
             v-else
-            class='badge border bg-red text-white'
+            class='badge border text-white'
+            :class='{
+                "bg-red": !muted,
+                "bg-red-lt": muted
+            }'
             style='height: 20px'
-            v-text='`Server`'
+            v-text='`Admin`'
         />
 
         <TablerModal v-if='info'>
@@ -78,6 +86,10 @@ export default {
         connection: {
             type: Object,
             required: true
+        },
+        muted: {
+            type: Boolean,
+            default: false
         }
     },
     data: function() {
