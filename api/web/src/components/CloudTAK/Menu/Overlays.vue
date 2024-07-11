@@ -108,28 +108,29 @@
                                         <TablerDelete
                                             v-if='opened.includes(element.id) && (element.mode === "mission" || element.name.startsWith("data-") || element.name.startsWith("profile-"))'
                                             :key='element.id'
+                                            :size='20'
                                             v-tooltip='"Delete Overlay"'
                                             displaytype='icon'
                                             @delete='removeLayer(element)'
                                         />
-                                    </div>
-                                    <IconEye
-                                        v-if='element.visible === "visible"'
-                                        v-tooltip='"Hide Layer"'
-                                        :size='20'
-                                        :stroke='1'
-                                        class='cursor-pointer'
-                                        @click.stop.prevent='flipVisible(element)'
-                                    />
-                                    <IconEyeOff
-                                        v-else
-                                        v-tooltip='"Show Layer"'
-                                        :size='20'
-                                        :stroke='1'
-                                        class='cursor-pointer'
-                                        @click.stop.prevent='flipVisible(element)'
-                                    />
 
+                                        <IconEye
+                                            v-if='element.visible === "visible"'
+                                            v-tooltip='"Hide Layer"'
+                                            :size='20'
+                                            :stroke='1'
+                                            class='cursor-pointer'
+                                            @click.stop.prevent='flipVisible(element)'
+                                        />
+                                        <IconEyeOff
+                                            v-else
+                                            v-tooltip='"Show Layer"'
+                                            :size='20'
+                                            :stroke='1'
+                                            class='cursor-pointer'
+                                            @click.stop.prevent='flipVisible(element)'
+                                        />
+                                    </div>
                                 </div>
                             </div>
 
