@@ -391,6 +391,7 @@ export default {
     computed: {
         ...mapState(useProfileStore, ['profile']),
     },
+    emits: ['resets'],
     props: {
         compact: Boolean
     },
