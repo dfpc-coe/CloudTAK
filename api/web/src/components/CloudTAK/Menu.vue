@@ -47,7 +47,7 @@
                         <IconSettings
                             v-tooltip='{
                                 content: "Display Settings",
-                                placement: "right"
+                                placement: "left",
                             }'
                             :class='{ "mx-2": compact }'
                             :size='compact ? 40 : 32'
@@ -70,7 +70,7 @@
                         <IconBoxMultiple
                             v-tooltip='{
                                 content: "Overlays",
-                                placement: "right"
+                                placement: "left",
                             }'
                             :class='{ "mx-2": compact }'
                             :size='32'
@@ -93,7 +93,7 @@
                         <IconUsers
                             v-tooltip='{
                                 content: "Contacts",
-                                placement: "right"
+                                placement: "left",
                             }'
                             :class='{ "mx-2": compact }'
                             :size='32'
@@ -116,7 +116,7 @@
                         <IconMap
                             v-tooltip='{
                                 content: "Basemaps",
-                                placement: "right"
+                                placement: "left",
                             }'
                             :class='{ "mx-2": compact }'
                             :size='32'
@@ -139,7 +139,7 @@
                         <IconAmbulance
                             v-tooltip='{
                                 content: "Data Sync",
-                                placement: "right"
+                                placement: "left",
                             }'
                             :class='{ "mx-2": compact }'
                             :size='32'
@@ -162,7 +162,7 @@
                         <IconPackages
                             v-tooltip='{
                                 content: "Data Packages",
-                                placement: "right"
+                                placement: "left",
                             }'
                             :class='{ "mx-2": compact }'
                             :size='32'
@@ -185,7 +185,7 @@
                         <IconAffiliate
                             v-tooltip='{
                                 content: "Channels",
-                                placement: "right"
+                                placement: "left",
                             }'
                             :class='{ "mx-2": compact }'
                             :size='32'
@@ -208,7 +208,7 @@
                         <IconVideo
                             v-tooltip='{
                                 content: "Videos",
-                                placement: "right"
+                                placement: "left",
                             }'
                             :class='{ "mx-2": compact }'
                             :size='32'
@@ -231,7 +231,7 @@
                         <IconMessage
                             v-tooltip='{
                                 content: "Chats",
-                                placement: "right"
+                                placement: "left",
                             }'
                             :class='{ "mx-2": compact }'
                             :size='32'
@@ -254,7 +254,7 @@
                         <IconFileImport
                             v-tooltip='{
                                 content: "Imports",
-                                placement: "right"
+                                placement: "left",
                             }'
                             :class='{ "mx-2": compact }'
                             :size='32'
@@ -277,7 +277,7 @@
                         <IconPhoto
                             v-tooltip='{
                                 content: "Iconsets",
-                                placement: "right"
+                                placement: "left",
                             }'
                             :class='{ "mx-2": compact }'
                             :size='32'
@@ -302,7 +302,7 @@
                         <IconNetwork
                             v-tooltip='{
                                 content: "Connections",
-                                placement: "right"
+                                placement: "left",
                             }'
                             :class='{ "mx-2": compact }'
                             :size='32'
@@ -332,7 +332,7 @@
                         <IconServerCog
                             v-tooltip='{
                                 content: "Server Settings",
-                                placement: "right"
+                                placement: "left",
                             }'
                             :class='{ "mx-2": compact }'
                             :size='32'
