@@ -297,7 +297,7 @@
                             "py-2 px-3 hover-dark": !compact,
                             "py-1 px-2 hover-button": compact
                         }'
-                        @click='push("/connection")'
+                        @click='push("/menu/connections")'
                     >
                         <IconNetwork
                             v-tooltip='{
