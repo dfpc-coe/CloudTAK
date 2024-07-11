@@ -4,34 +4,25 @@
             <template #buttons>
                 <IconPlus
                     v-tooltip='"Create Basemap"'
-                    :size='32' 
-                    :stroke='1' 
+                    :size='32'
+                    :stroke='1'
                     class='cursor-pointer'
                     @click='editModal = {}'
-                />
-                <IconSearch
-                    v-tooltip='"Search"'
-                    :size='32' 
-                    :stroke='1' 
-                    class='cursor-pointer'
-                    @click='query = !query'
                 />
                 <IconRefresh
                     v-if='!loading'
                     v-tooltip='"Refresh"'
-                    :size='32' 
-                    :stroke='1' 
+                    :size='32'
+                    :stroke='1'
                     class='cursor-pointer'
                     @click='fetchList'
                 />
             </template>
 
             <template #default>
-                <div
-                    v-if='query'
-                    class='col-12 px-3 pb-3'
-                >
+                <div class='col-12 px-2 pb-2'>
                     <TablerInput
+                        icon='search'
                         v-model='paging.filter'
                         placeholder='Filter'
                     />
@@ -70,8 +61,8 @@
                                 <IconSettings
                                     v-if='(!basemap.username && profile.system_admin) || basemap.username'
                                     v-tooltip='"Edit Basemap"'
-                                    :size='32' 
-                                    :stroke='1' 
+                                    :size='32'
+                                    :stroke='1'
                                     class='cursor-pointer'
                                     @click.stop.prevent='editModal = basemap'
                                 />
@@ -115,7 +106,6 @@ import {
     IconPlus,
     IconRefresh,
     IconSettings,
-    IconSearch
 } from '@tabler/icons-vue'
 import { mapState } from 'pinia'
 import { useMapStore } from '/src/stores/map.ts';
@@ -198,7 +188,6 @@ export default {
         IconSettings,
         IconPlus,
         IconRefresh,
-        IconSearch,
         TablerLoading,
         BasemapEditModal,
         MenuTemplate
