@@ -354,8 +354,9 @@
                         />
                     </div>
                 </div>
-                <div v-else-if='$route.name === "home-menu"'>
+                <div v-else-if='["home", "home-menu"].includes($route.name)'>
                     <Status
+                        class='mx-2 my-2'
                         :status='open ? "success" : "fail"'
                         :dark='true'
                     />
@@ -385,11 +386,13 @@ import {
 import Status from '../util/Status.vue';
 import { mapState } from 'pinia'
 import { useProfileStore } from '/src/stores/profile.ts';
+import { useConnectionStore } from '/src/stores/connection.ts';
 
 export default {
     name: 'CloudTAKMenu',
     computed: {
         ...mapState(useProfileStore, ['profile']),
+        ...mapState(useConnectionStore, ['open']),
     },
     emits: ['resets'],
     props: {

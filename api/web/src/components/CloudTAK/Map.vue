@@ -445,7 +445,6 @@ export default {
     computed: {
         ...mapState(useMapStore, ['bearing', 'select', 'radial', 'isLoaded', 'selected']),
         ...mapState(useProfileStore, ['profile', 'notifications']),
-        ...mapState(useConnectionStore, ['open']),
         humanBearing: function() {
             if (this.bearing < 0) {
                 return Math.round(this.bearing * -1) + '°'
