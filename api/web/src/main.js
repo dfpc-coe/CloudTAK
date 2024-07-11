@@ -25,7 +25,6 @@ const router = new VueRouter.createRouter({
             },{
                 path: 'menu',
                 name: 'home-menu',
-                component: () => import('./components/CloudTAK/Menu.vue'),
                 children: [{
                     path: 'settings',
                     name: 'home-menu-settings',
