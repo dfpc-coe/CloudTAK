@@ -1,6 +1,14 @@
 m<template>
     <MenuTemplate name='Connections'>
         <template #buttons>
+            <IconPlus
+                v-if='!loading'
+                v-tooltip='"Create Connection"'
+                :size='32'
+                :stroke='1'
+                class='cursor-pointer'
+                @click='$router.push("/connection/new")'
+            />
             <IconRefresh
                 v-if='!loading'
                 v-tooltip='"Refresh"'
@@ -81,6 +89,7 @@ import {
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import {
+    IconPlus,
     IconRefresh,
 } from '@tabler/icons-vue';
 import MenuTemplate from '../util/MenuTemplate.vue';
@@ -99,6 +108,7 @@ export default {
         TablerLoading,
         ConnectionStatus,
         AgencyBadge,
+        IconPlus,
         IconRefresh,
         MenuTemplate,
     },
