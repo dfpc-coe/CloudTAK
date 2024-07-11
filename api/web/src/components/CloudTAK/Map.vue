@@ -151,7 +151,7 @@
             v-if='isLoaded && mode === "Default"'
             class='d-flex position-absolute top-0 text-white py-2'
             style='
-                z-index: 1;
+                z-index: 2;
                 width: 120px;
                 right: 60px;
                 background-color: rgba(0, 0, 0, 0.5);

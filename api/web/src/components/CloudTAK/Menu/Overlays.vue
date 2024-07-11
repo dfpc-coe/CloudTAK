@@ -45,7 +45,7 @@
                             v-for='element in layers'
                             :id='element.id'
                             :key='element.id'
-                            class='col-lg py-2 hover-button'
+                            class='col-lg py-2'
                         >
                             <div class='py-2 px-3'>
                                 <div class='col-12 d-flex align-items-center'>
@@ -154,26 +154,31 @@
                                     <template v-else>
                                         <div
                                             v-for='path in paths(element)'
-                                            class='d-flex align-items-center hover-dark px-3 py-2'
+                                            class='d-flex align-items-center hover-button px-3 py-2'
                                         >
-                                            <IconFolder
-                                                :size='20'
-                                                :stroke='1'
-                                                style='margin-left: 40px;'
-                                            />
-                                            <span
-                                                class='mx-2'
-                                                v-text='path.path'
-                                            />
-                                            <div
-                                                v-if='element.id === "cots"'
-                                                class='ms-auto'
-                                            >
-                                                <TablerDelete
-                                                    displaytype='icon'
-                                                    @click='deletePath(element, path.path)'
+                                            <template v-if='path === "/"'>
+                                            </template>
+                                            <template v-else>
+                                                <IconFolder
+                                                    :size='20'
+                                                    :stroke='1'
+                                                    style='margin-left: 28px;'
                                                 />
-                                            </div>
+                                                <span
+                                                    class='mx-2'
+                                                    v-text='path.path'
+                                                />
+                                                <div
+                                                    v-if='element.id === "cots"'
+                                                    class='ms-auto'
+                                                >
+                                                    <TablerDelete
+                                                        :size='20'
+                                                        displaytype='icon'
+                                                        @click='deletePath(element, path.path)'
+                                                    />
+                                                </div>
+                                            </template>
                                         </div>
                                     </template>
                                 </div>

@@ -35,6 +35,14 @@
                 />
             </div>
             <template v-else>
+                <div class='col-12 px-2'>
+                    <TablerInput
+                        icon='search'
+                        v-model='paging.filter'
+                        placeholder='Filter'
+                    />
+                </div>
+
                 <ChannelInfo label='Data Packages' />
                 <NoChannelsInfo v-if='hasNoChannels' />
 
@@ -45,7 +53,7 @@
                 />
                 <template v-else>
                     <div
-                        v-for='pkg in list.items'
+                        v-for='pkg in filteredList'
                         :key='pkg.Hash'
                     >
                         <div
@@ -76,6 +84,7 @@ import MenuTemplate from '../util/MenuTemplate.vue';
 import { std, stdurl } from '/src/std.ts';
 import {
     TablerNone,
+    TablerInput,
 } from '@tak-ps/vue-tabler';
 import {
     IconPlus,
@@ -94,6 +103,7 @@ export default {
         Upload,
         NoChannelsInfo,
         ChannelInfo,
+        TablerInput,
         TablerNone,
         IconPlus,
         IconRefresh,
@@ -105,15 +115,10 @@ export default {
             loading: true,
             upload: false,
             paging: {
+                filter: ''
             },
-            list: []
-        }
-    },
-    watch: {
-        paging: {
-            deep: true,
-            handler: async function() {
-                await this.fetchList()
+            list: {
+                items: []
             }
         }
     },
@@ -122,6 +127,12 @@ export default {
     },
     computed: {
         ...mapGetters(useProfileStore, ['hasNoChannels']),
+        filteredList: function() {
+            return this.list.items.filter((pkg) => {
+                return pkg.Name.toLowerCase()
+                    .includes(this.paging.filter.toLowerCase());
+            })
+        }
     },
     methods: {
         uploadHeaders: function() {

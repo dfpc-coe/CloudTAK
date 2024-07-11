@@ -20,6 +20,14 @@
             />
         </template>
         <template #default>
+            <div class='col-12 px-2'>
+                <TablerInput
+                    icon='search'
+                    v-model='paging.filter'
+                    placeholder='Filter'
+                />
+            </div>
+
             <ChannelInfo />
 
             <NoChannelsInfo v-if='hasNoChannels' />
@@ -35,7 +43,7 @@
             />
             <template v-else>
                 <div
-                    v-for='(mission, mission_it) in list.data'
+                    v-for='(mission, mission_it) in filteredList'
                     :key='mission_it'
                     class='cursor-pointer col-12 py-2 hover-dark'
                     @click='$router.push(`/menu/missions/${mission.guid}`)'
@@ -107,6 +115,7 @@
 import MissionCreate from './Mission/MissionCreate.vue';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import {
+    TablerInput,
     TablerNone,
     TablerAlert,
     TablerModal
@@ -134,6 +143,7 @@ export default {
         MenuTemplate,
         TablerNone,
         TablerAlert,
+        TablerInput,
         TablerModal,
         MissionCreate,
         IconPlus,
@@ -148,6 +158,9 @@ export default {
             create: false,
             loading: true,
             subscribed: new Set(),
+            paging: {
+                filter: ''
+            },
             list: {
                 data: [],
             }
@@ -158,6 +171,12 @@ export default {
     },
     computed: {
         ...mapGetters(useProfileStore, ['hasNoChannels']),
+        filteredList: function() {
+            return this.list.data.filter((mission) => {
+                return mission.name.toLowerCase()
+                    .includes(this.paging.filter.toLowerCase());
+            })
+        }
     },
     methods: {
         fetchMissions: async function() {
