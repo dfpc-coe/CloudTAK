@@ -1,4 +1,4 @@
-<template>
+m<template>
     <MenuTemplate name='Connections'>
         <template #buttons>
             <IconRefresh
@@ -22,7 +22,7 @@
             <TablerLoading v-if='loading' />
             <TablerNone
                 v-else-if='!list.items.length'
-                label='Imports'
+                label='Connections'
                 :create='false'
             />
             <template v-else>
@@ -90,7 +90,7 @@ import Status from '../../util/Status.vue';
 import timeDiff from '../../../timediff.js';
 
 export default {
-    name: 'CloudTAKImports',
+    name: 'CloudTAKConnections',
     components: {
         Status,
         TablerNone,
@@ -108,6 +108,7 @@ export default {
             loading: true,
             paging: {
                 limit: 20,
+                filter: '',
                 page: 0
             },
             list: []
@@ -135,6 +136,7 @@ export default {
             url.searchParams.append('page', this.paging.page);
             url.searchParams.append('limit', this.paging.limit);
             url.searchParams.append('sort', 'created');
+            url.searchParams.append('filter', this.paging.filter);
             this.list = await std(url);
             this.loading = false;
         },
