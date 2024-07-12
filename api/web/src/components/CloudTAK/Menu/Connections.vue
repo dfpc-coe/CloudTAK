@@ -95,13 +95,11 @@ import {
 import MenuTemplate from '../util/MenuTemplate.vue';
 import ConnectionStatus from './../../Connection/Status.vue';
 import AgencyBadge from './../../Connection/AgencyBadge.vue';
-import Status from '../../util/Status.vue';
 import timeDiff from '../../../timediff.js';
 
 export default {
     name: 'CloudTAKConnections',
     components: {
-        Status,
         TablerNone,
         TablerPager,
         TablerInput,

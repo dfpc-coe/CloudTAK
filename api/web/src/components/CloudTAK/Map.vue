@@ -269,7 +269,7 @@
             </TablerDropdown>
         </div>
 
-        <Menu :compact='noMenuShown' @reset='deleteCOT()' />
+        <SideMenu :compact='noMenuShown' @reset='deleteCOT()' />
 
         <div
             v-if='pointInput.shown'
@@ -410,7 +410,7 @@ import {
 } from '@tabler/icons-vue';
 import SelectFeats from './util/SelectFeats.vue';
 import MultipleSelect from './util/MultipleSelect.vue';
-import Menu from './Menu.vue';
+import SideMenu from './Menu.vue';
 import {
     TablerDropdown,
     TablerModal,
@@ -861,7 +861,7 @@ export default {
         }
     },
     components: {
-        Menu,
+        SideMenu,
         Loading,
         SelectFeats,
         MultipleSelect,
