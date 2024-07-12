@@ -12,6 +12,13 @@
 
 ### Pending Release
 
+### v2.66.0 - 2024-07-11
+
+- :rocket: `UI` Show Panel menu in collapsed state by default
+- :rocket: `UI` Show tooltips for all menu items in default panel
+- :rocket: `UI` Add alt text for login page
+- :rocket: `API` Destory TLS connection for ephemeral connections if there are no more active WS connections
+
 ### v2.65.1 - 2024-07-10
 
 - :rocket: `UI` Smarten up Share Panel
