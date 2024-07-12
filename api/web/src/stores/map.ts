@@ -878,6 +878,13 @@ function cotStyles(id: string, opts: {
             },
             layout: {
                 "symbol-placement": "line",
+                'text-size': [
+                    'interpolate',
+                    ['linear'],
+                    ['zoom'],
+                    8, 8,
+                    15, 15
+                ],
                 'text-font': ['Open Sans Bold'],
                 'text-field':  '{callsign}'
             }
@@ -901,6 +908,13 @@ function cotStyles(id: string, opts: {
                 'text-halo-width': 2,
             },
             layout: {
+                'text-size': [
+                    'interpolate',
+                    ['linear'],
+                    ['zoom'],
+                    8, 8,
+                    15, 15
+                ],
                 'text-font': ['Open Sans Bold'],
                 'text-field':  '{callsign}'
             }

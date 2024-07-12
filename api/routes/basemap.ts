@@ -372,11 +372,14 @@ export default async function router(schema: Schema, config: Config) {
             const proxy = await fetch(url)
 
             res.status(proxy.status);
-            for (const h of ['content-type', 'content-length', 'content-encoding']) {
+            for (const h of [
+                'content-type',
+                'content-length',
+                'content-encoding'
+            ]) {
                 const ph = proxy.headers.get(h);
                 if (ph) res.append(h, ph);
             }
-
 
             // @ts-expect-error Doesnt meet TS def
             return Readable.fromWeb(proxy.body).pipe(res);

@@ -214,7 +214,6 @@ export default {
             });
 
             this.$router.push(`/menu/imports/${imp.id}`)
-
         },
     },
 }

@@ -19,12 +19,10 @@
             />
         </template>
         <template #default>
-            <div
-                v-if='search.shown'
-                class='col-12 px-3'
-            >
+            <div v-if='!loading' class='col-12 px-2 pb-2'>
                 <TablerInput
-                    v-model='search.filter'
+                    icon='search'
+                    v-model='paging.filter'
                     placeholder='Filter'
                 />
             </div>
@@ -125,15 +123,9 @@ export default {
         return {
             err: false,
             loading: true,
-            search: {
-                shown: false,
+            paging: {
                 filter: ''
             },
-        }
-    },
-    watch: {
-        'search.shown': function() {
-            if (!this.search.shown) this.search.filter = '';
         }
     },
     mounted: async function() {
@@ -158,7 +150,7 @@ export default {
                 })
 
             for (const key of Object.keys(channels)) {
-                if (this.search.shown && !key.includes(this.search.filter)) {
+                if (!key.toLowerCase().includes(this.paging.filter.toLowerCase())) {
                     delete channels[key];
                 }
             }

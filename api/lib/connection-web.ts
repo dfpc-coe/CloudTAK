@@ -48,4 +48,10 @@ export class ConnectionWebSocket {
             });
         }
     }
+
+    destroy() {
+        this.ws.close();
+        delete this.client;
+    }
+
 }

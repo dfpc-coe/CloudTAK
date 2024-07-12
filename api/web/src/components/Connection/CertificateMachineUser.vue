@@ -8,7 +8,7 @@
                     class='card my-2'
                 >
                     <div class='col-12 d-flex align-items-center px-2 py-2'>
-                        <div v-text='channel.name' />
+                        <div v-text='channel.rdn' />
                         <div class='ms-auto'>
                             <IconTrash
                                 v-tooltip='"Remove Channel"'
@@ -47,7 +47,7 @@
                             @click='push(channel)'
                         >
                             <div class='col-md-4'>
-                                <span v-text='channel.name' />
+                                <span v-text='channel.rdn' />
                             </div>
 
                             <div

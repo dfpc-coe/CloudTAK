@@ -28,28 +28,6 @@
         </div>
 
         <div
-            class='position-absolute bottom-0 end-0 text-white'
-            style='
-                z-index: 1;
-                width: 100px;
-                height: 40px;
-                border-radius: 6px 0px 0px 0px;
-                background-color: rgba(0, 0, 0, 0.5);
-            '
-        >
-            <div
-                v-tooltip='open ? "Connected" : "No Connection"'
-                class='d-flex align-items-center'
-            >
-                <Status
-                    :status='open ? "success" : "fail"'
-                    :dark='true'
-                />
-                Server
-            </div>
-        </div>
-
-        <div
             v-if='profile'
             class='position-absolute bottom-0 begin-0 text-white'
             style='
@@ -173,7 +151,7 @@
             v-if='isLoaded && mode === "Default"'
             class='d-flex position-absolute top-0 text-white py-2'
             style='
-                z-index: 1;
+                z-index: 2;
                 width: 120px;
                 right: 60px;
                 background-color: rgba(0, 0, 0, 0.5);
@@ -291,7 +269,7 @@
             </TablerDropdown>
         </div>
 
-        <router-view @reset='deleteCOT()' />
+        <SideMenu :compact='noMenuShown' @reset='deleteCOT()' />
 
         <div
             v-if='pointInput.shown'
@@ -409,7 +387,6 @@
 <script>
 import { std, stdurl } from '/src/std.ts';
 import CloudTAKFeatView from './FeatView.vue';
-import Status from '../util/Status.vue';
 import {
     IconSearch,
     IconInfoSquare,
@@ -433,6 +410,7 @@ import {
 } from '@tabler/icons-vue';
 import SelectFeats from './util/SelectFeats.vue';
 import MultipleSelect from './util/MultipleSelect.vue';
+import SideMenu from './Menu.vue';
 import {
     TablerDropdown,
     TablerModal,
@@ -467,7 +445,6 @@ export default {
     computed: {
         ...mapState(useMapStore, ['bearing', 'select', 'radial', 'isLoaded', 'selected']),
         ...mapState(useProfileStore, ['profile', 'notifications']),
-        ...mapState(useConnectionStore, ['open']),
         humanBearing: function() {
             if (this.bearing < 0) {
                 return Math.round(this.bearing * -1) + '°'
@@ -884,6 +861,7 @@ export default {
         }
     },
     components: {
+        SideMenu,
         Loading,
         SelectFeats,
         MultipleSelect,
@@ -913,7 +891,6 @@ export default {
         CloudTAKFeatView,
         IconCursorText,
         IconCircleArrowUp,
-        Status,
         IconX,
     }
 }
