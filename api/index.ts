@@ -197,12 +197,29 @@ export default async function server(config: Config) {
                     client = await config.conns.add(new ProfileConnConfig(config, parsedParams.connection, profile.auth), true);
                 } else {
                     client = config.conns.get(parsedParams.connection);
-
                 }
+
+                const connClient = new ConnectionWebSocket(ws, parsedParams.format, client);
+
+                ws.on('close', () => {
+                    const conns = config.wsClients.get(parsedParams.connection);
+                    if (!conns.length) return;
+
+                    const i = webClients.indexOf(connClient);
+                    if (!i) return;
+                    webClients[i].destroy();
+                    webClients.splice(i, 1);
+
+                    if (webClients.length !== 0) return;
+
+                    config.wsClients.delete(parsedParams.connection);
+
+                    config.conns.delete(parsedParams.connection);
+                })
 
                 let webClients = config.wsClients.get(parsedParams.connection)
                 if (!webClients) webClients = [];
-                webClients.push(new ConnectionWebSocket(ws, parsedParams.format, client));
+                webClients.push(connClient);
                 config.wsClients.set(parsedParams.connection, webClients);
             } else {
                 throw new Error('Unauthorized');

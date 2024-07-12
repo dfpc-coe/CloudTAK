@@ -39,7 +39,7 @@
         "@humanwhocodes/momoa": "^3.0.0",
         "@maplibre/maplibre-gl-style-spec": "^20.1.1",
         "@openaddresses/batch-error": "^2.1.4",
-        "@openaddresses/batch-generic": "^19.0.0",
+        "@openaddresses/batch-generic": "19.2.0",
         "@openaddresses/batch-schema": "^10.7.0",
         "@openaddresses/cloudfriend": "^7.0.0",
         "@placemarkio/check-geojson": "^0.1.12",
