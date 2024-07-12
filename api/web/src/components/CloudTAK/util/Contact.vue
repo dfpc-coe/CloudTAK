@@ -1,5 +1,11 @@
 <template>
-    <div class='col-12 py-2 d-flex hover-dark cursor-pointer'>
+    <div
+        class='col-12'
+        :class='{
+            "hover-dark": hover,
+            "py-2": !compact
+        }'
+    >
         <div class='row col-12 align-items-center'>
             <div class='col-auto'>
                 <IconCheck
@@ -8,28 +14,7 @@
                     :stroke='1'
                     :style='compact ? "margin-left: 8px" : "margin-left: 16px;"'
                 />
-                <IconCircleFilled
-                    v-else
-                    :style='compact ? "margin-left: 8px" : "margin-left: 16px;"'
-                    :size='compact ? 20 : 32'
-                    :stroke='1'
-                    :class='{
-                        "text-yellow": contact.team === "Yellow",
-                        "text-cyan": contact.team === "Cyan",
-                        "text-lime": contact.team === "Green",
-                        "text-red": contact.team === "Red",
-                        "text-purple": contact.team === "Purple",
-                        "text-orange": contact.team === "Orange",
-                        "text-azure": contact.team === "Blue",
-                        "text-dribble": contact.team === "Magenta",
-                        "text-white": contact.team === "White",
-                        "text-pinterest": contact.team === "Maroon",
-                        "text-blue": contact.team === "Dark Blue",
-                        "text-teal": contact.team === "Teal",
-                        "text-green": contact.team === "Dark Green",
-                        "text-google": contact.team === "Brown",
-                    }'
-                />
+                <ContactPuck v-else :contact='contact' :compact='compact'/>
             </div>
             <div
                 :class='{
@@ -53,7 +38,7 @@
                 <IconMessage
                     v-if='buttonChat && isChatable(contact)'
                     v-tooltip='"Start Chat"'
-                    :size='32'
+                    :size='compact ? 20 : 32'
                     :stroke='1'
                     class='cursor-pointer'
                     @click='$emit("chat", contact.uid)'
@@ -61,7 +46,7 @@
                 <IconZoomPan
                     v-if='buttonZoom && isZoomable(contact)'
                     v-tooltip='"Zoom To"'
-                    :size='32'
+                    :size='compact ? 20 : 32'
                     :stroke='1'
                     class='cursor-pointer'
                     @click='flyTo(contact)'
@@ -76,8 +61,8 @@ import {
     IconCheck,
     IconMessage,
     IconZoomPan,
-    IconCircleFilled,
 } from '@tabler/icons-vue';
+import ContactPuck from './ContactPuck.vue';
 import { useCOTStore } from '/src/stores/cots.ts';
 const cotStore = useCOTStore();
 import { useMapStore } from '/src/stores/map.ts';
@@ -89,7 +74,7 @@ export default {
         IconCheck,
         IconMessage,
         IconZoomPan,
-        IconCircleFilled,
+        ContactPuck
     },
     props: {
         contact: {
@@ -105,6 +90,10 @@ export default {
             default: true
         },
         buttonChat: {
+            type: Boolean,
+            default: true
+        },
+        hover: {
             type: Boolean,
             default: true
         },

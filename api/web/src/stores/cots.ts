@@ -153,6 +153,37 @@ export const useCOTStore = defineStore('cots', {
             });
         },
 
+        groups(store?: Map<string, Feature>): Array<string> {
+            if (!store) store = this.cots;
+
+            const groups: Set<string> = new Set();
+            for (const [key, value] of store) {
+                if (value.properties.group) groups.add(value.properties.group.name);
+            }
+
+            return Array.from(groups);
+        },
+
+        contacts(store?: Map<string, Feature>, group?: string): Array<Feature> {
+            if (!store) store = this.cots;
+
+            const contacts: Set<Feature> = new Set();
+            for (const [key, value] of store) {
+                if (value.properties.group) contacts.add(value);
+            }
+
+            let list = Array.from(contacts);
+
+            if (group) {
+                list = list.filter((contact) => {
+                    if (!contact.properties.group) return false;
+                    return contact.properties.group.name === group;
+                })
+            }
+
+            return list;
+        },
+
         async deletePath(path: string, store?: Map<string, Feature>): Promise<void> {
             if (!store) store = this.cots;
 

@@ -52,7 +52,7 @@ import {
     TablerInput,
     TablerLoading
 } from '@tak-ps/vue-tabler';
-import Contact from '../partial/Contact.vue';
+import Contact from '../util/Contact.vue';
 import NoChannelsInfo from '../util/NoChannelsInfo.vue';
 import {
     IconRefresh,

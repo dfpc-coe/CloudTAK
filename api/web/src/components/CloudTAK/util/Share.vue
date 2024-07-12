@@ -105,7 +105,7 @@ import {
     IconBroadcast,
     IconShare2
 } from '@tabler/icons-vue';
-import Contact from '../partial/Contact.vue';
+import Contact from '../util/Contact.vue';
 import { useConnectionStore } from '/src/stores/connection.ts';
 import { useCOTStore } from '/src/stores/cots.ts';
 
