@@ -13,6 +13,7 @@
                                     <img
                                         src='/logo.png'
                                         height='150'
+                                        alt='CloudTAK System Logo'
                                     >
                                 </div>
                                 <h2 class='h2 text-center mb-4'>

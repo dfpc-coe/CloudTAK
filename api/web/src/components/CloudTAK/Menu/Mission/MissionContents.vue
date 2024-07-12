@@ -64,11 +64,20 @@
                         displaytype='icon'
                         @delete='deleteFile(content.data)'
                     />
+                    <IconFileImport
+                        v-tooltip='"Import File"'
+                        @click='importFile(content)'
+                        :size='32'
+                        :stroke='1'
+                        class='cursor-pointer'
+                    />
                     <a
                         v-tooltip='"Download Asset"'
                         :href='downloadFile(content.data)'
                     ><IconDownload
                         :size='32'
+                        :stroke='1'
+                        color='white'
                         class='cursor-pointer'
                     /></a>
                 </div>
@@ -97,6 +106,7 @@
 import { std, stdurl } from '/src/std.ts';
 import {
     IconPlus,
+    IconFileImport,
     IconDownload,
 } from '@tabler/icons-vue';
 import UploadImport from '../../util/UploadImport.vue';
@@ -120,6 +130,7 @@ export default {
         TablerAlert,
         TablerDelete,
         IconPlus,
+        IconFileImport,
         IconDownload,
     },
     props: {

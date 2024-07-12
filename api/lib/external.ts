@@ -16,6 +16,7 @@ export const MachineUser = Type.Object({
 
 export const Channel = Type.Object({
     id: Type.Number(),
+    rdn: Type.String(),
     name: Type.String(),
     description: Type.Any()
 });

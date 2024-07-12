@@ -25,7 +25,6 @@ const router = new VueRouter.createRouter({
             },{
                 path: 'menu',
                 name: 'home-menu',
-                component: () => import('./components/CloudTAK/Menu.vue'),
                 children: [{
                     path: 'settings',
                     name: 'home-menu-settings',
@@ -46,6 +45,10 @@ const router = new VueRouter.createRouter({
                     path: 'packages',
                     name: 'home-menu-packages',
                     component: () => import('./components/CloudTAK/Menu/Packages.vue')
+                },{
+                    path: 'connections',
+                    name: 'home-menu-connections',
+                    component: () => import('./components/CloudTAK/Menu/Connections.vue')
                 },{
                     path: 'videos',
                     name: 'home-menu-videos',

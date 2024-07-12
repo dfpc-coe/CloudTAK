@@ -4,15 +4,10 @@ import Config from '../lib/config.js';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
+import { Channel }  from '../lib/external.js';
 import TAKAPI, {
     APIAuthPassword,
 } from '../lib/tak-api.js';
-
-export const ChannelResponse = Type.Object({
-    id: Type.Integer(),
-    name: Type.String(),
-    description: Type.String()
-});
 
 export default async function router(schema: Schema, config: Config) {
     await schema.get('/ldap/channel', {
@@ -25,7 +20,7 @@ export default async function router(schema: Schema, config: Config) {
         }),
         res: Type.Object({
             total: Type.Integer(),
-            items: Type.Array(ChannelResponse)
+            items: Type.Array(Channel)
         })
     }, async (req, res) => {
         try {

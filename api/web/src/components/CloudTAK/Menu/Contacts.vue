@@ -1,14 +1,6 @@
 <template>
     <MenuTemplate name='Contacts'>
         <template #buttons>
-            <IconSearch
-                v-if='contacts.length'
-                v-tooltip='"Search"'
-                :size='32'
-                :stroke='1'
-                class='cursor-pointer'
-                @click='search.shown = !search.shown'
-            />
             <IconRefresh
                 v-if='!loading'
                 v-tooltip='"Refresh"'
@@ -19,12 +11,10 @@
             />
         </template>
         <template #default>
-            <div
-                v-if='search.shown'
-                class='col-12 px-3'
-            >
+            <div v-if='!loading' class='col-12 px-2 pb-2'>
                 <TablerInput
-                    v-model='search.filter'
+                    icon='search'
+                    v-model='paging.filter'
                     placeholder='Filter'
                 />
             </div>
@@ -66,7 +56,6 @@ import Contact from '../partial/Contact.vue';
 import NoChannelsInfo from '../util/NoChannelsInfo.vue';
 import {
     IconRefresh,
-    IconSearch,
 } from '@tabler/icons-vue';
 
 export default {
@@ -78,7 +67,6 @@ export default {
         TablerInput,
         TablerLoading,
         IconRefresh,
-        IconSearch,
         MenuTemplate
     },
     data: function() {
@@ -86,8 +74,7 @@ export default {
             err: false,
             loading: true,
             contacts: [],
-            search: {
-                shown: false,
+            paging: {
                 filter: ''
             }
         }
@@ -98,14 +85,8 @@ export default {
             return this.contacts.filter((contact) => {
                 return contact.callsign;
             }).filter((contact) => {
-                if (this.search.shown) return contact.callsign.includes(this.search.filter);
-                return true;
+                return contact.callsign.toLowerCase().includes(this.paging.filter.toLowerCase());
             })
-        }
-    },
-    watch: {
-        'search.shown': function() {
-            if (!this.search.shown) this.search.filter = '';
         }
     },
     mounted: async function() {
