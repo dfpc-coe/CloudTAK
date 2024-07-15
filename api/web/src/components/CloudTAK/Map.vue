@@ -269,7 +269,10 @@
             </TablerDropdown>
         </div>
 
-        <SideMenu :compact='noMenuShown' @reset='deleteCOT()' />
+        <SideMenu
+            :compact='noMenuShown'
+            @reset='deleteCOT()'
+        />
 
         <div
             v-if='pointInput.shown'

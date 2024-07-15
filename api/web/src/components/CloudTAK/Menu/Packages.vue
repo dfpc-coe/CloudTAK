@@ -37,8 +37,8 @@
             <template v-else>
                 <div class='col-12 px-2'>
                     <TablerInput
-                        icon='search'
                         v-model='paging.filter'
+                        icon='search'
                         placeholder='Filter'
                     />
                 </div>

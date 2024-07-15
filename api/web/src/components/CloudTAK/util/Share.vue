@@ -40,10 +40,12 @@
                 />
             </div>
             <div class='position-absolute row g-0 bottom-0 start-0 end-0 bg-dark'>
-                <div :class='{
-                    "col-6 px-1": compact,
-                    "col-4 px-1": !compact
-                }'>
+                <div
+                    :class='{
+                        "col-6 px-1": compact,
+                        "col-4 px-1": !compact
+                    }'
+                >
                     <button
                         v-tooltip='"Share to Selected"'
                         class='w-100 btn btn-primary'
@@ -58,10 +60,12 @@
                         <span v-else>Share to Selected</span>
                     </button>
                 </div>
-                <div :class='{
-                    "col-6 px-1": compact,
-                    "col-4 px-1": !compact
-                }'>
+                <div
+                    :class='{
+                        "col-6 px-1": compact,
+                        "col-4 px-1": !compact
+                    }'
+                >
                     <button
                         v-tooltip='"Broadcast to All"'
                         class='w-100 btn btn-secondary'
