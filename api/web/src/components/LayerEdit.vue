@@ -112,7 +112,7 @@
                                         </div>
 
                                         <template v-if='type === "template"'>
-
+                                            <LayerTemplateSelect v-model='template'/>
                                         </template>
                                         <template v-else-if='type === "manual"'>
                                             <div class='card mx-2'>
@@ -238,6 +238,7 @@
 <script>
 import { std, stdurl } from '/src/std.ts';
 import PageFooter from './PageFooter.vue';
+import LayerTemplateSelect from './util/LayerTemplateSelect.vue';
 import cronstrue from 'cronstrue';
 import {
     TablerBreadCrumb,
@@ -254,6 +255,7 @@ export default {
     name: 'LayerEdit',
     components: {
         PageFooter,
+        LayerTemplateSelect,
         TablerBreadCrumb,
         TablerInput,
         TablerDelete,
@@ -274,6 +276,7 @@ export default {
                 description: '',
             },
             taskmodal: false,
+            template: null,
             layer: {
                 name: '',
                 description: '',
