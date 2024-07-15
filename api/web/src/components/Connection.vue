@@ -34,12 +34,19 @@
                                 <div class='ms-auto d-flex align-items-center btn-list'>
                                     <AgencyBadge :connection='connection' />
 
+                                    <IconPlugConnected
+                                        v-tooltip='"Cycle Connection"'
+                                        :size='32'
+                                        :stroke='1'
+                                        class='cursor-pointer'
+                                        @click='refresh'
+                                    />
                                     <IconRefresh
                                         v-tooltip='"Refresh"'
                                         :size='32'
                                         :stroke='1'
                                         class='cursor-pointer'
-                                        @click='refresh'
+                                        @click='fetch'
                                     />
                                     <IconSettings
                                         v-tooltip='"Edit"'
@@ -200,6 +207,7 @@ import {
     IconDatabase,
     IconOutbound,
     IconAffiliate,
+    IconPlugConnected,
     IconCloudDataConnection,
     IconBuildingBroadcastTower,
     IconSettings
@@ -220,6 +228,7 @@ export default {
         IconAffiliate,
         IconRefresh,
         IconDatabase,
+        IconPlugConnected,
         IconBuildingBroadcastTower,
         IconCloudDataConnection,
         IconOutbound,
