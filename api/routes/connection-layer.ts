@@ -145,7 +145,11 @@ export default async function router(schema: Schema, config: Config) {
             stale: Type.Optional(Type.Integer()),
             data: Type.Optional(Type.Integer()),
             schema: Type.Optional(Type.Any()),
-            styles: Type.Optional(StyleContainer)
+            enabled_styles: Type.Optional(Type.Boolean()),
+            styles: Type.Optional(StyleContainer),
+            memory: Type.Optional(Type.Integer()),
+            timeout: Type.Optional(Type.Integer()),
+            config: Type.Optional(Layer_Config),
         }),
         res: LayerResponse
     }, async (req, res) => {

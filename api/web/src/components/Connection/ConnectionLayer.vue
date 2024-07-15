@@ -13,6 +13,14 @@
                     class='cursor-pointer'
                     @click='$router.push(`/connection/${$route.params.connectionid}/layer/new`)'
                 />
+
+                <IconRefresh
+                    v-tooltip='"Refresh"'
+                    :size='32'
+                    :stroke='1'
+                    class='cursor-pointer'
+                    @click='listLayers'
+                />
             </div>
         </div>
 
@@ -86,6 +94,7 @@ import { std, stdurl } from '/src/std.ts';
 import TableFooter from '../util/TableFooter.vue';
 import {
     IconPlus,
+    IconRefresh,
     IconDatabase
 } from '@tabler/icons-vue';
 import {
@@ -101,6 +110,7 @@ export default {
         TablerNone,
         TablerAlert,
         IconPlus,
+        IconRefresh,
         IconDatabase,
         TablerLoading,
         TableFooter,

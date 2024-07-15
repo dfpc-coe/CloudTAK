@@ -60,7 +60,7 @@ export default class AuthProvider {
             if (err.name === 'PublicError' && err.status === 404) {
                 const api = await TAKAPI.init(new URL(this.config.MartiAPI), new APIAuthPassword(username, password));
 
-                await this.config.models.Profile.generate({
+                profile = await this.config.models.Profile.generate({
                     username: username,
                     auth: await api.Credentials.generate()
                 });

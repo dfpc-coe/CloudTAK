@@ -35,6 +35,7 @@ export default class Models {
     Icon: Icon;
 
     Layer: Layer;
+    LayerTemplate: Modeler<typeof pgtypes.LayerTemplate>;
     LayerAlert: Modeler<typeof pgtypes.LayerAlert>;
 
     constructor(pg: Pool<typeof pgtypes>) {
@@ -60,5 +61,6 @@ export default class Models {
         this.Iconset = new Modeler(pg, pgtypes.Iconset);
         this.Layer = new Layer(pg);
         this.LayerAlert = new Modeler(pg, pgtypes.LayerAlert);
+        this.LayerTemplate = new Modeler(pg, pgtypes.LayerTemplate);
     }
 }
