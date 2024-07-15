@@ -21,8 +21,8 @@ m<template>
         <template #default>
             <div class='col-12 px-2 pb-2'>
                 <TablerInput
-                    icon='search'
                     v-model='paging.filter'
+                    icon='search'
                     placeholder='Filter'
                 />
             </div>
@@ -41,7 +41,7 @@ m<template>
                 >
                     <div class='cursor-pointer col-12 py-2 px-3 d-flex align-items-center hover-dark'>
                         <div class='col-auto'>
-                            <ConnectionStatus :connection='conn'/>
+                            <ConnectionStatus :connection='conn' />
                         </div>
                         <div
                             class='mx-2'
@@ -59,7 +59,10 @@ m<template>
                                     v-text='timeDiff(conn.created)'
                                 />
                                 <div class='ms-auto'>
-                                    <AgencyBadge :connection='conn' :muted='true'/>
+                                    <AgencyBadge
+                                        :connection='conn'
+                                        :muted='true'
+                                    />
                                 </div>
                             </div>
                         </div>

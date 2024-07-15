@@ -176,9 +176,15 @@ export default async function router(schema: Schema, config: Config) {
                 throw new Err(400, null, 'Layer does not belong to this connection');
             }
 
-            return res.json({
-                schema: await Lambda.schema(config, layer.id, String(req.query.type))
-            });
+            const schema = await Lambda.schema(config, layer.id, String(req.query.type));
+
+            // @ts-expect-error Type these eventually
+            if (schema.errorType && schema.errorMessage) {
+                // @ts-expect-error Type these eventually
+                throw new Err(400, null, `ETL Error: ${schema.errorMessage}`);
+            }
+
+            return res.json({ schema });
         } catch (err) {
             return Err.respond(err, res);
         }
