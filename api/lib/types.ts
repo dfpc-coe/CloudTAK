@@ -68,6 +68,14 @@ export const OverlayResponse = createSelectSchema(schemas.Overlay, {
 
 export const LayerTemplateResponse = createSelectSchema(schemas.LayerTemplate, {
     id: Type.Integer(),
+    stale: Type.Integer(),
+    enabled_styles: Type.Boolean(),
+    memory: Type.Integer(),
+    datasync: Type.Boolean(),
+    timeout: Type.Integer(),
+    logging: Type.Boolean(),
+    created: Type.String(),
+    updated: Type.String(),
 });
 
 export const ProfileFeature = Type.Composite([ Feature.Feature, Type.Object({

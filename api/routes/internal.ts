@@ -130,9 +130,7 @@ export default async function router(schema: Schema, config: Config) {
         res: LayerResponse
     }, async (req, res) => {
         try {
-            const auth = await Auth.is_auth(config, req);
-
-            if (auth.is_user()) {
+            if (Auth.is_user(config, req)) {
                 await Auth.as_user(config, req, { admin: true });
             } else {
                 await Auth.as_resource(config, req, {
