@@ -264,20 +264,6 @@ export default {
                 this.isEditing = overlay;
             }
         },
-        deletePath: async function(layer, path) {
-            if (layer.id !== 'cots') return;
-
-            this.loadingPaths[layer.id] = true;
-
-            try {
-                await cotStore.deletePath(path);
-            } catch (err) {
-                this.loadingPaths[layer.id] = false;
-                throw err;
-            }
-
-            this.loadingPaths[layer.id] = false;
-        },
         getSource: function(layer) {
             return mapStore.map.getSource(layer.source)
         },

@@ -53,7 +53,7 @@
 
                     <template v-if='treeState.teams[group]'>
                         <div
-                            v-for='contact in contacts(element, group)'
+                            v-for='contact in contacts(group)'
                             class='ms-3 d-flex align-items-center hover-button px-3 py-2 me-2'
                         >
                             <Contact
@@ -90,36 +90,33 @@
                     class='cursor-pointer'
                     @click='treeState.paths._ = false'
                 />
-                <IconFolder class='mx-2' :size='20' :stroke='2'/> Folders
+                <IconFolder class='mx-2' :size='20' :stroke='2'/> Your Features
             </div>
 
             <template v-if='treeState.paths._'>
                 <div
-                    v-for='path in paths(element)'
+                    v-for='path in paths'
                     class='d-flex align-items-center hover-button px-3 py-2'
                 >
-                    <template v-if='path === "/"' />
-                    <template v-else>
-                        <IconFolder
+                    <IconFolder
+                        :size='20'
+                        :stroke='2'
+                        class='ms-3'
+                    />
+                    <span
+                        class='mx-2'
+                        v-text='path.path'
+                    />
+                    <div
+                        v-if='element.id === "cots"'
+                        class='ms-auto'
+                    >
+                        <TablerDelete
                             :size='20'
-                            :stroke='1'
-                            class='ms-3'
+                            displaytype='icon'
+                            @click='deletePath(element, path.path)'
                         />
-                        <span
-                            class='mx-2'
-                            v-text='path.path'
-                        />
-                        <div
-                            v-if='element.id === "cots"'
-                            class='ms-auto'
-                        >
-                            <TablerDelete
-                                :size='20'
-                                displaytype='icon'
-                                @click='deletePath(element, path.path)'
-                            />
-                        </div>
-                    </template>
+                    </div>
                 </div>
             </template>
         </div>
@@ -170,16 +167,26 @@ export default {
         }
     },
     methods: {
-        contacts: function(layer, group) {
-            if (layer.type !== 'geojson') return;
-
-            if (layer.id === 'cots') {
-                const contacts = cotStore.contacts(cotStore.cots, group);
-                return contacts;
-            } else {
-                return []
-            }
+        contacts: function(group) {
+            const contacts = cotStore.contacts(cotStore.cots, group);
+            return contacts;
         },
+        deletePath: async function(layer, path) {
+            if (layer.id !== 'cots') return;
+
+            this.loadingPaths[layer.id] = true;
+
+            try {
+                await cotStore.deletePath(path);
+            } catch (err) {
+                this.loadingPaths[layer.id] = false;
+                throw err;
+            }
+
+            this.loadingPaths[layer.id] = false;
+        },
+    },
+    computed: {
         groups: function() {
             const groups = cotStore.groups();
 
@@ -191,9 +198,9 @@ export default {
 
             return groups;
         },
-        paths: function(layer) {
+        paths: function() {
             return cotStore.paths();
         },
-    }
+    },
 }
 </script>
