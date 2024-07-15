@@ -210,6 +210,33 @@ export const Layer = pgTable('layers', {
     unq: unique().on(t.connection, t.name)
 }));
 
+export const LayerTemplate = pgTable('layers_template', {
+    id: serial('id').primaryKey(),
+    created: timestamp('created', { withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    updated: timestamp('updated', { withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
+    name: text('name').notNull(),
+    description: text('description').notNull().default(''),
+
+    username: text('username').notNull().references(() => Profile.username),
+
+    // Should the template be used when attached to a DataSync
+    datasync: boolean('datasync').notNull().default(false),
+
+    // Layer Specific Properties
+    priority: text('priority').$type<Layer_Priority>().notNull().default(Layer_Priority.OFF),
+    enabled: boolean('enabled').notNull().default(true),
+    enabled_styles: boolean('enabled_styles').notNull().default(false),
+    styles: json('styles').$type<Static<typeof StyleContainer>>().notNull().default({}),
+    logging: boolean('logging').notNull().default(true),
+    stale: integer('stale').notNull().default(20),
+    task: text('task').notNull(),
+    cron: text('cron').notNull(),
+    config: json('config').notNull().default({}),
+    memory: integer('memory').notNull().default(128),
+    timeout: integer('timeout').notNull().default(128),
+}));
+
+
 export const LayerAlert = pgTable('layer_alerts', {
     id: serial('id').primaryKey(),
     created: timestamp('created', { withTimezone: true, mode: 'string' }).notNull().default(sql`Now()`),
