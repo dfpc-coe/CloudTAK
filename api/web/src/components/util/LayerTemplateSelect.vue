@@ -29,6 +29,7 @@
                     <TablerInput
                         v-model='paging.filter'
                         placeholder='Template Filter...'
+                        class='pb-2'
                     />
 
                     <div
