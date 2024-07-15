@@ -47,6 +47,9 @@
             <template v-if='raw'>
                 <pre v-text='environment' />
             </template>
+            <template v-else-if='alert'>
+                <TablerAlert title='Layer failed to return an Environment Schema' :err='alert'/>
+            </template>
             <template v-else-if='schema.display === "arcgis"'>
                 <LayerEnvironmentArcGIS
                     v-model='environment'
@@ -103,6 +106,7 @@
 <script>
 import { std } from '/src/std.ts';
 import {
+    TablerAlert,
     TablerLoading,
     TablerTimeZone,
 } from '@tak-ps/vue-tabler';
@@ -122,6 +126,7 @@ export default {
         IconX,
         IconSettings,
         TablerTimeZone,
+        TablerAlert,
         TablerLoading,
         LayerEnvironmentArcGIS
     },
@@ -170,7 +175,7 @@ export default {
             } else if (!config.timezone) {
                 config.timezone = { timezone: 'No TimeZone' }
             }
-            
+
             this.config = config;
 
             this.disabled = true;
@@ -184,15 +189,14 @@ export default {
                 this.loading.schema = true;
                 this.schema = (await std(`/api/connection/${this.$route.params.connectionid}/layer/${this.$route.params.layerid}/task/schema`)).schema;
             } catch (err) {
-                this.alert = true;
+                this.alert = err;
             }
 
             try {
                 const output = (await std(`/api/connection/${this.$route.params.connectionid}/layer/${this.$route.params.layerid}/task/schema?type=schema:output`)).schema;
                 if (output.properties) this.schemaOutput = output;
             } catch (err) {
-                //For now this is allowed to fail as dynamic schemas can require input schemas to be defined
-                console.error(err)
+                this.alert = err;
             }
         },
         saveLayer: async function() {
