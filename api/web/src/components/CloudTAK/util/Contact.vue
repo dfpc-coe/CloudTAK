@@ -14,7 +14,11 @@
                     :stroke='1'
                     :style='compact ? "margin-left: 8px" : "margin-left: 16px;"'
                 />
-                <ContactPuck v-else :contact='contact' :compact='compact'/>
+                <ContactPuck
+                    v-else
+                    :contact='contact'
+                    :compact='compact'
+                />
             </div>
             <div
                 :class='{

@@ -11,10 +11,13 @@
             />
         </template>
         <template #default>
-            <div v-if='!loading' class='col-12 px-2 pb-2'>
+            <div
+                v-if='!loading'
+                class='col-12 px-2 pb-2'
+            >
                 <TablerInput
-                    icon='search'
                     v-model='paging.filter'
+                    icon='search'
                     placeholder='Filter'
                 />
             </div>

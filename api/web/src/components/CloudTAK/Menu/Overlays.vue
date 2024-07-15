@@ -108,8 +108,8 @@
                                         <TablerDelete
                                             v-if='opened.includes(element.id) && (element.mode === "mission" || element.name.startsWith("data-") || element.name.startsWith("profile-"))'
                                             :key='element.id'
-                                            :size='20'
                                             v-tooltip='"Delete Overlay"'
+                                            :size='20'
                                             displaytype='icon'
                                             @delete='removeLayer(element)'
                                         />
@@ -178,59 +178,60 @@
                                                 /> Teams
                                             </div>
 
-                                            <div
-                                                v-if='treeState[element.id].teams._'
-                                                v-for='group in groups(element)'
-                                                class='ms-3'
-                                            >
-                                                <div class='d-flex align-items-center px-3 py-2 me-2 hover-button'>
-                                                    <IconChevronRight
-                                                        v-if='!treeState[element.id].teams[group]'
-                                                        :size='20'
-                                                        :stroke='1'
-                                                        class='cursor-pointer'
-                                                        @click='treeState[element.id].teams[group] = true'
-                                                    />
-                                                    <IconChevronDown
-                                                        v-else-if='treeState[element.id].teams[group]'
-                                                        :size='20'
-                                                        :stroke='1'
-                                                        class='cursor-pointer'
-                                                        @click='treeState[element.id].teams[group] = false'
-                                                    />
-                                                    <ContactPuck
-                                                        class='mx-2'
-                                                        :compact='true'
-                                                        :contact='{ "team": group }'
-                                                    /><span v-text='`${group} Team`'/>
-                                                </div>
-
+                                            <template v-if='treeState[element.id].teams._'>
                                                 <div
-                                                    v-if='treeState[element.id].teams[group]'
-                                                    v-for='contact in contacts(element, group)'
-                                                    class='ms-3 d-flex align-items-center hover-button px-3 py-2 me-2'
-
+                                                    v-for='group in groups(element)'
+                                                    class='ms-3'
                                                 >
-                                                    <Contact 
-                                                        :compact='true'
-                                                        :hover='false'
-                                                        :buttonZoom='true'
-                                                        :buttonChat='false'
-                                                        :contact='{
-                                                            "uid": contact.id,
-                                                            "callsign": contact.properties.callsign,
-                                                            "team": contact.properties.group.name,
-                                                            "notes": ""
-                                                        }'/>
+                                                    <div class='d-flex align-items-center px-3 py-2 me-2 hover-button'>
+                                                        <IconChevronRight
+                                                            v-if='!treeState[element.id].teams[group]'
+                                                            :size='20'
+                                                            :stroke='1'
+                                                            class='cursor-pointer'
+                                                            @click='treeState[element.id].teams[group] = true'
+                                                        />
+                                                        <IconChevronDown
+                                                            v-else-if='treeState[element.id].teams[group]'
+                                                            :size='20'
+                                                            :stroke='1'
+                                                            class='cursor-pointer'
+                                                            @click='treeState[element.id].teams[group] = false'
+                                                        />
+                                                        <ContactPuck
+                                                            class='mx-2'
+                                                            :compact='true'
+                                                            :contact='{ "team": group }'
+                                                        /><span v-text='`${group} Team`' />
+                                                    </div>
+
+                                                    <template v-if='treeState[element.id].teams[group]'>
+                                                        <div
+                                                            v-for='contact in contacts(element, group)'
+                                                            class='ms-3 d-flex align-items-center hover-button px-3 py-2 me-2'
+                                                        >
+                                                            <Contact 
+                                                                :compact='true'
+                                                                :hover='false'
+                                                                :button-zoom='true'
+                                                                :button-chat='false'
+                                                                :contact='{
+                                                                    "uid": contact.id,
+                                                                    "callsign": contact.properties.callsign,
+                                                                    "team": contact.properties.group.name,
+                                                                    "notes": ""
+                                                                }'
+                                                            />
+                                                        </div>
+                                                    </template>
                                                 </div>
-                                            </div>
+                                            </template>
                                         </div>
                                         <div
                                             v-for='path in paths(element)'
                                             class='d-flex align-items-center hover-button px-3 py-2'
                                         >
-                                            <template v-if='path === "/"'>
-                                            </template>
+                                            <template v-if='path === "/"' />
                                             <template v-else>
                                                 <IconFolder
                                                     :size='20'
