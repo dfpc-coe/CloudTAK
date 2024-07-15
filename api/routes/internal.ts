@@ -130,11 +130,17 @@ export default async function router(schema: Schema, config: Config) {
         res: LayerResponse
     }, async (req, res) => {
         try {
-            await Auth.as_resource(config, req, {
-                resources: [
-                    { access: AuthResourceAccess.LAYER, id: req.params.layerid }
-                ]
-            });
+            const auth = await Auth.is_auth(config, req);
+
+            if (auth.is_user()) {
+                await Auth.as_user(config, req, { admin: true });
+            } else {
+                await Auth.as_resource(config, req, {
+                    resources: [
+                        { access: AuthResourceAccess.LAYER, id: req.params.layerid }
+                    ]
+                });
+            }
 
             const layer = await config.cacher.get(Cacher.Miss(req.query, `layer-${req.params.layerid}`), async () => {
                 return await config.models.Layer.from(req.params.layerid);

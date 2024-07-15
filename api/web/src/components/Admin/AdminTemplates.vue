@@ -47,12 +47,14 @@
                             v-for='layer in list.items'
                             :key='layer.id'
                             class='cursor-pointer'
-                            @click='stdclick($router, $event, `/connection/${layer.connection}/layer/${layer.id}`)'
+                            @click='stdclick($router, $event, `/admin/template/${layer.id}`)'
                         >
                             <template v-for='h in header'>
-                                <td>
-                                    <span v-text='layer[h.name]' />
-                                </td>
+                                <template v-if='h.display'>
+                                    <td>
+                                        <span v-text='layer[h.name]' />
+                                    </td>
+                                </template>
                             </template>
                         </tr>
                     </tbody>
@@ -129,7 +131,7 @@ export default {
         stdclick,
         listLayerTemplateSchema: async function() {
             const schema = await std('/api/schema?method=GET&url=/template');
-            this.header = ['id', 'name'].map((h) => {
+            this.header = ['id', 'name', 'username', 'updated'].map((h) => {
                 return { name: h, display: true };
             });
 

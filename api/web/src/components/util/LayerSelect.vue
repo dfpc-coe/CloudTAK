@@ -20,7 +20,7 @@
                                 :size='32'
                                 :stroke='1'
                                 class='cursor-pointer'
-                                @click='selected.id = null'
+                                @click='selected = {}'
                             />
                         </div>
                     </div>
@@ -63,10 +63,9 @@
                     </template>
                 </template>
             </div>
-            <div class='card-footer d-flex'>
+            <div v-if='list.total > paging.limit && !selected.id' class='card-footer d-flex'>
                 <div class='ms-auto'>
                     <TablerPager
-                        v-if='list.total > paging.limit'
                         :page='paging.page'
                         :total='list.total'
                         :limit='paging.limit'
