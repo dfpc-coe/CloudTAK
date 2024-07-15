@@ -75,7 +75,6 @@ import {
 } from '@tak-ps/vue-tabler';
 import {
     IconRefresh,
-    IconCloudUpload,
 } from '@tabler/icons-vue'
 
 export default {
@@ -83,7 +82,6 @@ export default {
     components: {
         TablerNone,
         IconRefresh,
-        IconCloudUpload,
         TablerLoading,
         TableHeader,
         TableFooter,
