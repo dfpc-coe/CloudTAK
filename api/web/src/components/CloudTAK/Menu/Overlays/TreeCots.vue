@@ -185,8 +185,6 @@ export default {
 
             this.loadingPaths[layer.id] = false;
         },
-    },
-    computed: {
         groups: function() {
             const groups = cotStore.groups();
 
@@ -198,6 +196,8 @@ export default {
 
             return groups;
         },
+    },
+    computed: {
         paths: function() {
             return cotStore.paths();
         },

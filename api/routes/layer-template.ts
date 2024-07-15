@@ -133,10 +133,11 @@ export default async function router(schema: Schema, config: Config) {
 
             const layer = await config.models.Layer.from(req.body.layer);
 
+           delete layer.created;
+           delete layer.updated;
+
             const template = await config.models.LayerTemplate.generate({
                 ...layer,
-                created: sql`Now()`,
-                updated: sql`Now()`,
                 username: user.email,
                 ...req.body
             });

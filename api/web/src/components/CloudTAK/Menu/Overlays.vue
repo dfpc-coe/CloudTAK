@@ -185,8 +185,6 @@ import Sortable from 'sortablejs';
 import { mapState } from 'pinia'
 import { useMapStore } from '/src/stores/map.ts';
 const mapStore = useMapStore();
-import { useCOTStore } from '/src/stores/cots.ts';
-const cotStore = useCOTStore();
 import { useOverlayStore } from '/src/stores/overlays.ts';
 const overlayStore = useOverlayStore();
 
