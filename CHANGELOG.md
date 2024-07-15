@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v2.67.1 - 2024-07-15
+
+- :bug: `API` Fix mission data count
+
 ### v2.67.0 - 2024-07-15
 
 - :rocket: `UI` Show Tree based filtering view for Teams
