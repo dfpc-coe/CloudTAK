@@ -369,6 +369,10 @@ const router = new VueRouter.createRouter({
                 path: 'export',
                 name: 'admin-export',
                 component: () => import('./components/Admin/AdminExport.vue')
+            },{
+                path: 'template',
+                name: 'admin-template',
+                component: () => import('./components/Admin/AdminTemplates.vue')
             }]
         },
 

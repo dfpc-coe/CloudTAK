@@ -147,6 +147,17 @@
                                                 :size='32'
                                                 :stroke='1'
                                             /><span class='mx-3'>Export</span></span>
+                                            <span
+                                                class='list-group-item list-group-item-action d-flex align-items-center'
+                                                :class='{
+                                                    "active": $route.name.includes("admin-template"),
+                                                    "cursor-pointer": !$route.name.includes("admin-template")
+                                                }'
+                                                @click='$router.push(`/admin/template`)'
+                                            ><IconTemplate
+                                                :size='32'
+                                                :stroke='1'
+                                            /><span class='mx-3'>Layer Templates</span></span>
                                         </div>
                                     </div>
                                 </div>
@@ -176,6 +187,7 @@ import {
 } from '@tak-ps/vue-tabler'
 import {
     IconNetwork,
+    IconTemplate,
     IconVideo,
     IconUsers,
     IconSettings,
@@ -199,6 +211,7 @@ export default {
     components: {
         TablerAlert,
         IconSettings,
+        IconTemplate,
         IconVideo,
         IconUsers,
         IconServer,
