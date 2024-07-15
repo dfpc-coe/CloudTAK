@@ -224,7 +224,6 @@ export const LayerTemplate = pgTable('layers_template', {
 
     // Layer Specific Properties
     priority: text('priority').$type<Layer_Priority>().notNull().default(Layer_Priority.OFF),
-    enabled: boolean('enabled').notNull().default(true),
     enabled_styles: boolean('enabled_styles').notNull().default(false),
     styles: json('styles').$type<Static<typeof StyleContainer>>().notNull().default({}),
     logging: boolean('logging').notNull().default(true),
