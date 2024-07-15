@@ -80,7 +80,7 @@ export default async function router(schema: Schema, config: Config) {
         res: LayerTemplateResponse
     }, async (req, res) => {
         try {
-            const user = await Auth.as_user(config, req, { admin: true });
+            await Auth.as_user(config, req, { admin: true });
 
             const template = await config.models.LayerTemplate.commit(req.params.templateid, {
                 ...req.body,
@@ -103,7 +103,7 @@ export default async function router(schema: Schema, config: Config) {
         res: StandardResponse
     }, async (req, res) => {
         try {
-            const user = await Auth.as_user(config, req, { admin: true });
+            await Auth.as_user(config, req, { admin: true });
 
             await config.models.LayerTemplate.delete(req.params.templateid);
 
