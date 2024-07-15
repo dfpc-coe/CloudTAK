@@ -149,113 +149,7 @@
                                         @change='updateOpacity(element)'
                                     />
                                 </div>
-                                <div v-else-if='element.type === "geojson" && opened.includes(element.id)'>
-                                    <TablerLoading v-if='loadingPaths[element.id] === true' />
-                                    <template v-else>
-                                        <div
-                                            v-if='treeState[element.id]'
-                                            class='ms-3'
-                                        >
-                                            <div class='align-items-center px-3 py-2 me-2 hover-button'>
-                                                <IconChevronRight
-                                                    v-if='!treeState[element.id].teams._'
-                                                    :size='20'
-                                                    :stroke='1'
-                                                    class='cursor-pointer'
-                                                    @click='treeState[element.id].teams._ = true'
-                                                />
-                                                <IconChevronDown
-                                                    v-else-if='treeState[element.id].teams._'
-                                                    :size='20'
-                                                    :stroke='1'
-                                                    class='cursor-pointer'
-                                                    @click='treeState[element.id].teams._ = false'
-                                                />
-                                                <ContactPuck
-                                                    class='mx-2'
-                                                    :compact='true'
-                                                    :contact='{ "team": "White" }'
-                                                /> Teams
-                                            </div>
-
-                                            <template v-if='treeState[element.id].teams._'>
-                                                <div
-                                                    v-for='group in groups(element)'
-                                                    class='ms-3'
-                                                >
-                                                    <div class='d-flex align-items-center px-3 py-2 me-2 hover-button'>
-                                                        <IconChevronRight
-                                                            v-if='!treeState[element.id].teams[group]'
-                                                            :size='20'
-                                                            :stroke='1'
-                                                            class='cursor-pointer'
-                                                            @click='treeState[element.id].teams[group] = true'
-                                                        />
-                                                        <IconChevronDown
-                                                            v-else-if='treeState[element.id].teams[group]'
-                                                            :size='20'
-                                                            :stroke='1'
-                                                            class='cursor-pointer'
-                                                            @click='treeState[element.id].teams[group] = false'
-                                                        />
-                                                        <ContactPuck
-                                                            class='mx-2'
-                                                            :compact='true'
-                                                            :contact='{ "team": group }'
-                                                        /><span v-text='`${group} Team`' />
-                                                    </div>
-
-                                                    <template v-if='treeState[element.id].teams[group]'>
-                                                        <div
-                                                            v-for='contact in contacts(element, group)'
-                                                            class='ms-3 d-flex align-items-center hover-button px-3 py-2 me-2'
-                                                        >
-                                                            <Contact 
-                                                                :compact='true'
-                                                                :hover='false'
-                                                                :button-zoom='true'
-                                                                :button-chat='false'
-                                                                :contact='{
-                                                                    "uid": contact.id,
-                                                                    "callsign": contact.properties.callsign,
-                                                                    "team": contact.properties.group.name,
-                                                                    "notes": ""
-                                                                }'
-                                                            />
-                                                        </div>
-                                                    </template>
-                                                </div>
-                                            </template>
-                                        </div>
-                                        <div
-                                            v-for='path in paths(element)'
-                                            class='d-flex align-items-center hover-button px-3 py-2'
-                                        >
-                                            <template v-if='path === "/"' />
-                                            <template v-else>
-                                                <IconFolder
-                                                    :size='20'
-                                                    :stroke='1'
-                                                    class='ms-3'
-                                                />
-                                                <span
-                                                    class='mx-2'
-                                                    v-text='path.path'
-                                                />
-                                                <div
-                                                    v-if='element.id === "cots"'
-                                                    class='ms-auto'
-                                                >
-                                                    <TablerDelete
-                                                        :size='20'
-                                                        displaytype='icon'
-                                                        @click='deletePath(element, path.path)'
-                                                    />
-                                                </div>
-                                            </template>
-                                        </div>
-                                    </template>
-                                </div>
+                                <TreeCots v-else-if='element.type === "geojson" && opened.includes(element.id)' :element='element'/>
                             </template>
                         </div>
                     </div>
@@ -273,15 +167,13 @@ import {
     TablerLoading,
     TablerRange
 } from '@tak-ps/vue-tabler';
-import Contact from '../util/Contact.vue';
-import ContactPuck from '../util/ContactPuck.vue';
+import TreeCots from './Overlays/TreeCots.vue';
 import {
     IconGripVertical,
     IconChevronRight,
     IconChevronDown,
     IconMaximize,
     IconVector,
-    IconFolder,
     IconEyeOff,
     IconPencil,
     IconPencilCheck,
@@ -386,42 +278,6 @@ export default {
 
             this.loadingPaths[layer.id] = false;
         },
-        contacts: function(layer, group) {
-            if (layer.type !== 'geojson') return;
-
-            if (layer.id === 'cots') {
-                const contacts = cotStore.contacts(cotStore.cots, group);
-                return contacts;
-            } else {
-                return []
-            }
-        },
-        groups: function(layer) {
-            if (layer.type !== 'geojson') return;
-
-            if (layer.id === 'cots') {
-                const groups = cotStore.groups();
-
-                for (const group of groups) {
-                    if (this.treeState[layer.id].teams[group] === undefined) {
-                        this.treeState[layer.id].teams[group] = false;
-                    }
-                }
-
-                return groups;
-            } else {
-                return []
-            }
-        },
-        paths: function(layer) {
-            if (layer.type !== 'geojson') return;
-
-            if (layer.id === 'cots') {
-                return cotStore.paths();
-            } else {
-                return []
-            }
-        },
         getSource: function(layer) {
             return mapStore.map.getSource(layer.source)
         },
@@ -443,8 +299,7 @@ export default {
     },
     components: {
         MenuTemplate,
-        ContactPuck,
-        Contact,
+        TreeCots,
         OverlayLayers,
         TablerRange,
         TablerLoading,
@@ -453,7 +308,6 @@ export default {
         IconChevronRight,
         IconChevronDown,
         IconMaximize,
-        IconFolder,
         IconPencil,
         IconPencilCheck,
         IconEye,
