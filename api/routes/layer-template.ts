@@ -44,4 +44,55 @@ export default async function router(schema: Schema, config: Config) {
             return Err.respond(err, res);
         }
     });
+
+    await schema.get('/template/:templateid', {
+        name: 'Get Template',
+        group: 'LayerTemplate',
+        description: 'Return a single Layer Template',
+        params: Type.Object({
+            templateid: Type.Integer()
+        }),
+        res: LayerTemplateResponse
+    }, async (req, res) => {
+        try {
+            await Auth.as_user(config, req);
+
+            const template = await config.models.LayerTemplate.from(req.params.templateid);
+
+            return res.json(template)
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
+
+    await schema.post('/template', {
+        name: 'Create Template',
+        group: 'LayerTemplate',
+        description: 'Create a layer template',
+        body: Type.Object({
+            name: Default.NameField,
+            description: Default.DescriptionField,
+            datasync: Type.Optional(Type.Boolean({ default: true })),
+            layer: Type.Integer()
+        }),
+        res: LayerTemplateResponse
+    }, async (req, res) => {
+        try {
+            const user = await Auth.as_user(config, req, { admin: true });
+
+            const layer = await config.models.Layer.from(req.body.layer);
+
+            const template = await config.models.LayerTemplate.generate({
+                ...layer,
+                created: sql`Now()`,
+                updated: sql`Now()`,
+                username: user.email,
+                ...req.body
+            });
+
+            return res.json(template)
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
 }

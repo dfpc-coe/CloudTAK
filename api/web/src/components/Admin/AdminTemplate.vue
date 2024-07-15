@@ -63,7 +63,15 @@
                         />
                     </div>
 
-                    <LayerSelect/>
+                    <template v-if='$route.params.template === "new"'>
+                        <LayerSelect v-model='template.layer'/>
+
+                        <div class='col-md-12 d-flex align-items-center'>
+                            <div class='ms-auto'>
+                                <button :disabled='!template.layer' @click='createTemplate' class='btn btn-primary'>Submit</button>
+                            </div>
+                        </div>
+                    </template>
                 </div>
             </div>
         </div>
@@ -99,7 +107,10 @@ export default {
         return {
             err: false,
             loading: true,
-            errors: {},
+            errors: {
+                name: '',
+                description: ''
+            },
             template: {
                 name: '',
                 description: '',
@@ -123,6 +134,25 @@ export default {
             });
 
             this.$router.push("/admin/template");
+        },
+        createTemplate: async function() {
+            let fields =  ['name', 'description']
+            for (const field of fields) {
+                this.errors[field] = !this.template[field] ? 'Cannot be empty' : '';
+            }
+
+            if (this.template.name.length < 4) this.errors.name = 'Name too short'
+            if (this.template.description.length < 8) this.errors.description = 'Description too short'
+            for (const e in this.errors) if (this.errors[e]) return;
+
+            this.loading = true;
+            const url = stdurl(`/api/template`);
+            this.video = await std(url, {
+                method: 'POST',
+                body: this.template
+            });
+
+            this.$route.push('/admin/template');
         },
         fetch: async function() {
             this.loading = true;
