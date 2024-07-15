@@ -66,6 +66,10 @@ export const OverlayResponse = createSelectSchema(schemas.Overlay, {
     id: Type.Integer(),
 });
 
+export const LayerTemplateResponse = createSelectSchema(schemas.LayerTemplate, {
+    id: Type.Integer(),
+});
+
 export const ProfileFeature = Type.Composite([ Feature.Feature, Type.Object({
     path: Type.String({ default: '/' }),
 })]);
