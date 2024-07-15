@@ -8,15 +8,15 @@
                 <TablerLoading
                     v-if='loading.main'
                     :inline='true'
-                    desc='Loading Agencies'
+                    desc='Loading Layers'
                 />
                 <template v-else-if='selected.id'>
                     <div class='col-12 d-flex align-items-center'>
                         <div v-text='selected.name' />
                         <div class='ms-auto'>
                             <IconTrash
-                                v-if='selected.id && data.total > 1'
-                                v-tooltip='"Remove Agency"'
+                                v-if='selected.id && list.total > 1'
+                                v-tooltip='"Remove Layer"'
                                 :size='32'
                                 :stroke='1'
                                 class='cursor-pointer'
@@ -27,7 +27,7 @@
                 </template>
                 <template v-else>
                     <TablerInput
-                        v-model='filter'
+                        v-model='paging.filter'
                         placeholder='Layer Filter...'
                     />
 
@@ -35,16 +35,16 @@
                         v-if='loading.list'
                         class='card-body'
                     >
-                        <TablerLoading desc='Loading Agencies' />
+                        <TablerLoading desc='Loading Layers' />
                     </div>
                     <TablerNone
-                        v-else-if='data.total === 0'
+                        v-else-if='list.total === 0'
                         :create='false'
                         :compact='true'
-                        label='Agencies'
+                        label='Layers'
                     />
                     <template
-                        v-for='layer in data.items'
+                        v-for='layer in list.items'
                         v-else
                     >
                         <div
@@ -63,6 +63,17 @@
                     </template>
                 </template>
             </div>
+            <div class='card-footer d-flex'>
+                <div class='ms-auto'>
+                    <TablerPager
+                        v-if='list.total > paging.limit'
+                        :page='paging.page'
+                        :total='list.total'
+                        :limit='paging.limit'
+                        @page='paging.page = $event'
+                    />
+                </div>
+            </div>
         </div>
     </div>
 </template>
@@ -75,6 +86,7 @@ import {
 import {
     TablerLoading,
     TablerInput,
+    TablerPager,
     TablerNone,
 } from '@tak-ps/vue-tabler';
 
@@ -83,6 +95,7 @@ export default {
     components: {
         IconTrash,
         TablerInput,
+        TablerPager,
         TablerNone,
         TablerLoading
     },
@@ -102,12 +115,16 @@ export default {
                 main: true,
                 list: true,
             },
-            filter: '',
             selected: {
                 id: '',
                 name: ''
             },
-            data: {
+            paging: {
+                filter: '',
+                limit: 10,
+                page: 0
+            },
+            list: {
                 total: 0,
                 items: []
             }
@@ -120,11 +137,14 @@ export default {
                 this.$emit('update:modelValue', this.selected.id);
             }
         },
-        filter: async function() {
-            await this.listData()
-        },
         modelValue: function() {
             if (this.modelValue) this.fetch();
+        },
+        paging: {
+            deep: true,
+            handler: async function() {
+                await this.listData();
+            },
         }
     },
     mounted: async function() {
@@ -139,10 +159,10 @@ export default {
         listData: async function() {
             this.loading.list = true;
             const url = stdurl('/api/layer');
-            url.searchParams.append('filter', this.filter);
-            const data = await std(url);
-
-            this.data = data;
+            url.searchParams.append('filter', this.paging.filter);
+            url.searchParams.append('limit', this.paging.limit);
+            url.searchParams.append('page', this.paging.page);
+            this.list = await std(url);
 
             this.loading.list = false;
         },
