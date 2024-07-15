@@ -4,7 +4,6 @@ import { Static, Type } from "@sinclair/typebox";
 export const FetchHourly = Type.Object({
     type: Type.String(),
     properties: Type.Object({
-        updated: Type.String(),
         units: Type.String(),
         forecastGenerator: Type.String(),
         generatedAt: Type.String(),

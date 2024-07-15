@@ -150,8 +150,8 @@
                                             <span
                                                 class='list-group-item list-group-item-action d-flex align-items-center'
                                                 :class='{
-                                                    "active": $route.name.includes("admin-template"),
-                                                    "cursor-pointer": !$route.name.includes("admin-template")
+                                                    "active": $route.name.includes("admin-templates"),
+                                                    "cursor-pointer": !$route.name.includes("admin-templates")
                                                 }'
                                                 @click='$router.push(`/admin/template`)'
                                             ><IconTemplate
