@@ -233,8 +233,8 @@ export const LayerTemplate = pgTable('layers_template', {
     cron: text('cron').notNull(),
     config: json('config').notNull().default({}),
     memory: integer('memory').notNull().default(128),
-    timeout: integer('timeout').notNull().default(128),
-}));
+    timeout: integer('timeout').notNull().default(128)
+});
 
 
 export const LayerAlert = pgTable('layer_alerts', {
