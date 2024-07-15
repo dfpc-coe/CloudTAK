@@ -4,7 +4,7 @@ import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import Config from '../lib/config.js';
 import { sql } from 'drizzle-orm';
-import { LayerTemplateResponse } from '../lib/types.js';
+import { StandardResponse, LayerTemplateResponse } from '../lib/types.js';
 import { LayerTemplate } from '../lib/schema.js';
 import * as Default from '../lib/limits.js';
 
@@ -60,6 +60,57 @@ export default async function router(schema: Schema, config: Config) {
             const template = await config.models.LayerTemplate.from(req.params.templateid);
 
             return res.json(template)
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
+
+    await schema.patch('/template/:templateid', {
+        name: 'Update Template',
+        group: 'LayerTemplate',
+        description: 'Update a layer template',
+        params: Type.Object({
+            templateid: Type.Integer()
+        }),
+        body: Type.Object({
+            name: Default.NameField,
+            description: Default.DescriptionField,
+            datasync: Type.Optional(Type.Boolean({ default: true })),
+        }),
+        res: LayerTemplateResponse
+    }, async (req, res) => {
+        try {
+            const user = await Auth.as_user(config, req, { admin: true });
+
+            const template = await config.models.LayerTemplate.commit(req.params.templateid, {
+                ...req.body,
+                updated: sql`Now()`,
+            });
+
+            return res.json(template)
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
+
+    await schema.delete('/template/:templateid', {
+        name: 'Create Template',
+        group: 'LayerTemplate',
+        description: 'Create a layer template',
+        params: Type.Object({
+            templateid: Type.Integer()
+        }),
+        res: StandardResponse
+    }, async (req, res) => {
+        try {
+            const user = await Auth.as_user(config, req, { admin: true });
+
+            await config.models.LayerTemplate.delete(req.params.templateid);
+
+            return res.json({
+                status: 200,
+                message: 'Layer Template Deleted'
+            })
         } catch (err) {
             return Err.respond(err, res);
         }

@@ -72,6 +72,13 @@
                             </div>
                         </div>
                     </template>
+                    <template v-else>
+                        <div class='col-md-12 d-flex align-items-center'>
+                            <div class='ms-auto'>
+                                <button @click='updateTemplate' class='btn btn-primary'>Update</button>
+                            </div>
+                        </div>
+                    </template>
                 </div>
             </div>
         </div>
@@ -135,7 +142,7 @@ export default {
 
             this.$router.push("/admin/template");
         },
-        createTemplate: async function() {
+        isValid: function() {
             let fields =  ['name', 'description']
             for (const field of fields) {
                 this.errors[field] = !this.template[field] ? 'Cannot be empty' : '';
@@ -143,21 +150,45 @@ export default {
 
             if (this.template.name.length < 4) this.errors.name = 'Name too short'
             if (this.template.description.length < 8) this.errors.description = 'Description too short'
-            for (const e in this.errors) if (this.errors[e]) return;
+            for (const e in this.errors) if (this.errors[e]) return false;
+
+            return true;
+        },
+        createTemplate: async function() {
+            if (!this.isValid()) return;
 
             this.loading = true;
             const url = stdurl(`/api/template`);
-            this.video = await std(url, {
+            await std(url, {
                 method: 'POST',
                 body: this.template
             });
 
-            this.$route.push('/admin/template');
+            this.$router.push('/admin/template');
+        },
+        deleteTemplate: async function() {
+            this.loading = true;
+            const url = stdurl(`/api/template/${this.template.id}`);
+            await std(url, { method: 'DELETE', });
+
+            this.$router.push('/admin/template');
+        },
+        updateTemplate: async function() {
+            if (!this.isValid()) return;
+
+            this.loading = true;
+            const url = stdurl(`/api/template/${this.template.id}`);
+            await std(url, {
+                method: 'PATCH',
+                body: this.template
+            });
+
+            this.$router.push('/admin/template');
         },
         fetch: async function() {
             this.loading = true;
             const url = stdurl(`/api/template/${this.$route.params.template}`);
-            this.video = await std(url);
+            this.template = await std(url);
             this.loading = false;
         }
     }
