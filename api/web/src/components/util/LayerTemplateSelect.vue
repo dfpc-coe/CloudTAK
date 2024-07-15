@@ -100,7 +100,7 @@ export default {
         TablerLoading
     },
     props: {
-        modelValue: Number,
+        modelValue: Object,
         disabled: {
             type: Boolean,
             default: false
@@ -117,7 +117,6 @@ export default {
             },
             selected: {
                 id: '',
-                name: ''
             },
             paging: {
                 filter: '',
@@ -134,11 +133,17 @@ export default {
         selected: {
             deep: true,
             handler: function() {
-                this.$emit('update:modelValue', this.selected.id);
+                if (this.selected.id) {
+                    this.$emit('update:modelValue', this.selected);
+                } else {
+                    this.$emit('update:modelValue', {});
+                }
             }
         },
-        modelValue: function() {
-            if (this.modelValue) this.fetch();
+        modelValue: async function() {
+            if (this.modelValue && this.modelValue.id !== this.selected.id) {
+                await this.fetch();
+            }
         },
         paging: {
             deep: true,
@@ -148,13 +153,16 @@ export default {
         }
     },
     mounted: async function() {
-        if (this.modelValue) await this.fetch();
+        if (this.modelValue) {
+            await this.fetch();
+        }
+
         await this.listData();
         this.loading.main = false;
     },
     methods: {
         fetch: async function() {
-            this.selected = await std(`/api/template/${this.modelValue}`);
+            this.selected = await std(`/api/template/${this.modelValue.id}`);
         },
         listData: async function() {
             this.loading.list = true;

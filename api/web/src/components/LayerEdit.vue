@@ -92,7 +92,7 @@
                                                     for='template'
                                                     type='button'
                                                     class='btn'
-                                                ><IconTemplate :size='20' :stoke='1'/> Templated Creation</label>
+                                                ><IconTemplate class='me-2' :size='20' :stoke='1'/> Templated Creation</label>
 
                                                 <input
                                                     id='manual'
@@ -107,7 +107,7 @@
                                                     for='manual'
                                                     type='button'
                                                     class='btn'
-                                                ><IconPencil :size='20' :stoke='1'/> Manual Creation</label>
+                                                ><IconPencil class='me-2' :size='20' :stoke='1'/> Manual Creation</label>
                                             </div>
                                         </div>
 
@@ -248,6 +248,8 @@ import {
 } from '@tak-ps/vue-tabler';
 import {
     IconSettings,
+    IconTemplate,
+    IconPencil,
 } from '@tabler/icons-vue';
 import TaskModal from './Layer/utils/TaskModal.vue';
 
@@ -260,6 +262,8 @@ export default {
         TablerInput,
         TablerDelete,
         TablerLoading,
+        IconTemplate,
+        IconPencil,
         IconSettings,
         TaskModal,
     },
@@ -324,7 +328,10 @@ export default {
             this.$router.push(`/connection/${this.$route.params.connectionid}/layer`);
         },
         create: async function() {
-            let fields =  ['name', 'description', 'task', 'cron']
+            let fields =  ['name', 'description']
+
+            if (this.type === "manual") fields.push('task', 'cron');
+
             for (const field of fields) {
                 this.errors[field] = !this.layer[field] ? 'Cannot be empty' : '';
             }
@@ -355,10 +362,15 @@ export default {
                     if (this.layer.connection) delete layer.data;
                     if (this.layer.data) delete layer.connection;
 
-                    layer = await std(url, {
-                        method: 'POST',
-                        body: layer
-                    });
+                    let body = JSON.parse(JSON.stringify(this.layer));
+                    if (this.type === "template" && this.template) {
+                        // These should be overwritten
+                        delete body.cron;
+                        delete body.task;
+                        body = { ...this.template, ...body };
+                    }
+
+                    layer = await std(url, { method: 'POST', body });
                 }
 
 
