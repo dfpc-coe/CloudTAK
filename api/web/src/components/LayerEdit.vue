@@ -74,81 +74,127 @@
                                         />
                                     </div>
                                     <template v-if='!$route.params.layerid'>
-                                        <div class='col-md-6'>
-                                            <TablerInput
-                                                v-model='layer.cron'
-                                                :error='errors.cron'
-                                                label='Cron Expression'
-                                                placeholder='Cron Expression'
+                                        <div class='col-12'>
+                                            <div
+                                                class='btn-group w-100'
+                                                role='group'
                                             >
-                                                <div class='dropdown'>
-                                                    <div
-                                                        id='dropdownCron'
-                                                        class='dropdown-toggle'
-                                                        type='button'
-                                                        data-bs-toggle='dropdown'
-                                                        aria-expanded='false'
-                                                    >
-                                                        <IconSettings
-                                                            :size='16'
-                                                            :stroke='1'
-                                                            class='cursor-pointer dropdown-toggle'
+                                                <input
+                                                    id='template'
+                                                    type='radio'
+                                                    class='btn-check'
+                                                    name='creation-type'
+                                                    autocomplete='off'
+                                                    :checked='type === "template"'
+                                                    @click='type = "template"'
+                                                >
+                                                <label
+                                                    for='template'
+                                                    type='button'
+                                                    class='btn'
+                                                ><IconTemplate :size='20' :stoke='1'/> Templated Creation</label>
+
+                                                <input
+                                                    id='manual'
+                                                    type='radio'
+                                                    class='btn-check'
+                                                    name='creation-type'
+                                                    autocomplete='off'
+                                                    :checked='type === "manual"'
+                                                    @click='type = "manual"'
+                                                >
+                                                <label
+                                                    for='manual'
+                                                    type='button'
+                                                    class='btn'
+                                                ><IconPencil :size='20' :stoke='1'/> Manual Creation</label>
+                                            </div>
+                                        </div>
+
+                                        <template v-if='type === "template"'>
+
+                                        </template>
+                                        <template v-else-if='type === "manual"'>
+                                            <div class='card mx-2'>
+                                                <div class='card-body row'>
+                                                    <div class='col-md-6'>
+                                                        <TablerInput
+                                                            v-model='layer.cron'
+                                                            :error='errors.cron'
+                                                            label='Cron Expression'
+                                                            placeholder='Cron Expression'
+                                                        >
+                                                            <div class='dropdown'>
+                                                                <div
+                                                                    id='dropdownCron'
+                                                                    class='dropdown-toggle'
+                                                                    type='button'
+                                                                    data-bs-toggle='dropdown'
+                                                                    aria-expanded='false'
+                                                                >
+                                                                    <IconSettings
+                                                                        :size='16'
+                                                                        :stroke='1'
+                                                                        class='cursor-pointer dropdown-toggle'
+                                                                    />
+                                                                </div>
+                                                                <ul
+                                                                    class='dropdown-menu px-1 py-1'
+                                                                    aria-labelledby='dropdownCron'
+                                                                >
+                                                                    <li
+                                                                        class='py-1 cursor-pointer'
+                                                                        @click='layer.cron = "rate(1 minute)"'
+                                                                    >
+                                                                        rate(1 minute)
+                                                                    </li>
+                                                                    <li
+                                                                        class='py-1 cursor-pointer'
+                                                                        @click='layer.cron = "rate(5 minutes)"'
+                                                                    >
+                                                                        rate(5 minutes)
+                                                                    </li>
+                                                                    <li
+                                                                        class='py-1 cursor-pointer'
+                                                                        @click='layer.cron = "cron(15 10 * * ? *)"'
+                                                                    >
+                                                                        cron(15 10 * * ? *)
+                                                                    </li>
+                                                                    <li
+                                                                        class='py-1 cursor-pointer'
+                                                                        @click='layer.cron = "cron(0/5 8-17 ? * MON-FRI *)"'
+                                                                    >
+                                                                        cron(0/5 8-17 ? * MON-FRI *)
+                                                                    </li>
+                                                                </ul>
+                                                            </div>
+                                                        </TablerInput>
+                                                        <label
+                                                            v-if='layer.cron'
+                                                            v-text='cronstr(layer.cron)'
                                                         />
                                                     </div>
-                                                    <ul
-                                                        class='dropdown-menu px-1 py-1'
-                                                        aria-labelledby='dropdownCron'
-                                                    >
-                                                        <li
-                                                            class='py-1 cursor-pointer'
-                                                            @click='layer.cron = "rate(1 minute)"'
+                                                    <div class='col-md-6'>
+                                                        <div class='d-flex' />
+                                                        <TablerInput
+                                                            v-model='layer.task'
+                                                            :error='errors.task'
+                                                            label='Schedule Task'
+                                                            placeholder='Schedule Task'
                                                         >
-                                                            rate(1 minute)
-                                                        </li>
-                                                        <li
-                                                            class='py-1 cursor-pointer'
-                                                            @click='layer.cron = "rate(5 minutes)"'
-                                                        >
-                                                            rate(5 minutes)
-                                                        </li>
-                                                        <li
-                                                            class='py-1 cursor-pointer'
-                                                            @click='layer.cron = "cron(15 10 * * ? *)"'
-                                                        >
-                                                            cron(15 10 * * ? *)
-                                                        </li>
-                                                        <li
-                                                            class='py-1 cursor-pointer'
-                                                            @click='layer.cron = "cron(0/5 8-17 ? * MON-FRI *)"'
-                                                        >
-                                                            cron(0/5 8-17 ? * MON-FRI *)
-                                                        </li>
-                                                    </ul>
+                                                            <div class='ms-auto btn-list'>
+                                                                <IconSettings
+                                                                    :size='16'
+                                                                    :stroke='1'
+                                                                    class='cursor-pointer'
+                                                                    @click='taskmodal = true'
+                                                                />
+                                                            </div>
+                                                        </TablerInput>
+                                                    </div>
                                                 </div>
-                                            </TablerInput>
-                                            <label
-                                                v-if='layer.cron'
-                                                v-text='cronstr(layer.cron)'
-                                            />
-                                        </div>
-                                        <div class='col-md-6'>
-                                            <div class='d-flex' />
-                                            <TablerInput
-                                                v-model='layer.task'
-                                                :error='errors.task'
-                                                label='Schedule Task'
-                                                placeholder='Schedule Task'
-                                            >
-                                                <div class='ms-auto btn-list'>
-                                                    <IconSettings
-                                                        :size='16'
-                                                        :stroke='1'
-                                                        class='cursor-pointer'
-                                                        @click='taskmodal = true'
-                                                    />
-                                                </div>
-                                            </TablerInput>
-                                        </div>
+                                            </div>
+                                        </template>
                                     </template>
                                     <div class='col-lg-12 d-flex'>
                                         <div v-if='$route.params.layerid'>
@@ -217,6 +263,7 @@ export default {
     },
     data: function() {
         return {
+            type: 'template',
             loading: {
                 layer: true
             },
