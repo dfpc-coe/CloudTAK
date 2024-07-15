@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v2.67.0 - 2024-07-15
+
+- :rocket: `UI` Show Tree based filtering view for Teams
+- :bug: `API` Ensure ESRI API Response is returned on errors
+
 ### v2.66.0 - 2024-07-11
 
 - :rocket: `UI` Show Panel menu in collapsed state by default
