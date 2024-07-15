@@ -48,7 +48,10 @@
                 <pre v-text='environment' />
             </template>
             <template v-else-if='alert'>
-                <TablerAlert title='Layer failed to return an Environment Schema' :err='alert'/>
+                <TablerAlert
+                    title='Layer failed to return an Environment Schema'
+                    :err='alert'
+                />
             </template>
             <template v-else-if='schema.display === "arcgis"'>
                 <LayerEnvironmentArcGIS
