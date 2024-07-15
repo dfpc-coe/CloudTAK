@@ -11,10 +11,13 @@
             />
         </template>
         <template #default>
-            <div v-if='!loading' class='col-12 px-2 pb-2'>
+            <div
+                v-if='!loading'
+                class='col-12 px-2 pb-2'
+            >
                 <TablerInput
-                    icon='search'
                     v-model='paging.filter'
+                    icon='search'
                     placeholder='Filter'
                 />
             </div>
@@ -52,7 +55,7 @@ import {
     TablerInput,
     TablerLoading
 } from '@tak-ps/vue-tabler';
-import Contact from '../partial/Contact.vue';
+import Contact from '../util/Contact.vue';
 import NoChannelsInfo from '../util/NoChannelsInfo.vue';
 import {
     IconRefresh,

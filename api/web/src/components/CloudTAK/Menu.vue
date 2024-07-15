@@ -29,7 +29,7 @@
                         <div class='modal-title'>
                             Sidebar
                         </div>
-                        <div></div>
+                        <div />
                     </div>
                 </div>
                 <div
@@ -434,20 +434,6 @@ export default {
         ...mapState(useProfileStore, ['profile']),
         ...mapState(useConnectionStore, ['open']),
     },
-    emits: ['resets'],
-    props: {
-        compact: Boolean
-    },
-    methods: {
-        push: function(path) {
-            this.$router.push(path);
-        },
-        logout: function() {
-            this.user = null;
-            delete localStorage.token;
-            this.$router.push("/login");
-        },
-    },
     components: {
         Status,
         IconServerCog,
@@ -465,6 +451,20 @@ export default {
         IconUser,
         IconUsers,
         IconMap
+    },
+    props: {
+        compact: Boolean
+    },
+    emits: ['resets'],
+    methods: {
+        push: function(path) {
+            this.$router.push(path);
+        },
+        logout: function() {
+            this.user = null;
+            delete localStorage.token;
+            this.$router.push("/login");
+        },
     }
 }
 </script>

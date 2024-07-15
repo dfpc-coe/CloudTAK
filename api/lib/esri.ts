@@ -90,7 +90,7 @@ export class EsriBase {
 
             if (json.error) {
                 // @ts-expect-error No Typing on JSON Body
-                throw new Err(400, null, `ESRI Server Error: ${json.error.message} - ${json.error.details.join(', ')}`);
+                throw new Err(400, null, `ESRI Server Error: ${json.error.message} - ${String(json.error.details)}`);
             }
 
             if (!('token' in json) && typeof json.token === 'string') throw new Err(400, null, 'ESRI Server did not provide token');

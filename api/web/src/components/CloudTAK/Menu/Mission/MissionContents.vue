@@ -66,10 +66,10 @@
                     />
                     <IconFileImport
                         v-tooltip='"Import File"'
-                        @click='importFile(content)'
                         :size='32'
                         :stroke='1'
                         class='cursor-pointer'
+                        @click='importFile(content)'
                     />
                     <a
                         v-tooltip='"Download Asset"'
