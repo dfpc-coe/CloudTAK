@@ -351,6 +351,13 @@
       "when": 1719431802482,
       "tag": "0049_silly_blink",
       "breakpoints": true
+    },
+    {
+      "idx": 50,
+      "version": "7",
+      "when": 1721065826224,
+      "tag": "0050_fluffy_puck",
+      "breakpoints": true
     }
   ]
 }

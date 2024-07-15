@@ -149,10 +149,15 @@
                 </div>
             </div>
             <div
-                v-if='server.updated'
-                class='card-footer'
+                class='position-absolute bottom-0 w-100'
+                style='height: 61px;'
             >
-                <span v-text='`Last Updated: ${timeDiff(server.updated)}`' />
+                <div
+                    v-if='server.updated'
+                    class='card-footer'
+                >
+                    <span v-text='`Last Updated: ${timeDiff(server.updated)}`' />
+                </div>
             </div>
         </template>
         <Upload

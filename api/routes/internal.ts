@@ -5,7 +5,7 @@ import Alarm from '../lib/aws/alarm.js';
 import Cacher from '../lib/cacher.js';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
-import Auth, { AuthResourceAccess } from '../lib/auth.js';
+import Auth, { AuthResourceAccess, AuthUser, AuthUserAccess } from '../lib/auth.js';
 import Config from '../lib/config.js';
 import DataMission from '../lib/data-mission.js';
 import { DataResponse, LayerResponse } from '../lib/types.js';
@@ -89,11 +89,17 @@ export default async function router(schema: Schema, config: Config) {
         res: DataResponse
     }, async (req, res) => {
         try {
-            await Auth.as_resource(config, req, {
+            const auth = await Auth.as_resource(config, req, {
                 resources: [
                     { access: AuthResourceAccess.DATA, id: req.params.dataid }
                 ]
             });
+
+            if (auth instanceof AuthUser) {
+                if (auth.access !== AuthUserAccess.ADMIN) {
+                    throw new Err(401, null, 'User must be a System Administrator to access this resource');
+                }
+            }
 
             const data = await config.models.Data.from(req.params.dataid);
 
@@ -130,7 +136,7 @@ export default async function router(schema: Schema, config: Config) {
         res: LayerResponse
     }, async (req, res) => {
         try {
-            await Auth.as_resource(config, req, {
+            await Auth.is_auth(config, req, {
                 resources: [
                     { access: AuthResourceAccess.LAYER, id: req.params.layerid }
                 ]
