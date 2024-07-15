@@ -15,7 +15,7 @@
                         <div v-text='selected.name' />
                         <div class='ms-auto'>
                             <IconTrash
-                                v-if='selected.id && list.total > 1'
+                                v-if='selected.id'
                                 v-tooltip='"Remove Template"'
                                 :size='32'
                                 :stroke='1'
