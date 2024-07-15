@@ -235,7 +235,7 @@ export default {
                 cron: '',
                 task: '',
                 enabled: true,
-                logging: true,
+                logging: false,
             }
         }
     },
