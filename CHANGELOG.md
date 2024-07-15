@@ -12,6 +12,13 @@
 
 ### Pending Release
 
+### v2.68.0 - 2024-07-15
+
+- :rocket: `UI` Add ability to create/manage/delete Layer Templates
+- :rocket: `UI` Add ability to use a layer template from the Layer Creation component
+- :rocket: `API` Backend/DB changes to support Layer Templates
+- :rocket: `UI` Move CoT overlay tree view to it's own component to keep the overlay component clean
+
 ### v2.67.2 - 2024-07-15
 
 - :rocket: `UI` Distinction between refresh and connection cycle
