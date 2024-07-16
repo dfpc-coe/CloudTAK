@@ -15,6 +15,7 @@
                     :disabled='disabled'
                     :options='schema.properties[key].enum'
                     :default='schema.properties[key].default'
+                    :required='schema.required.includes(key)'
                     :description='schema.properties[key].description'
                 />
             </template>
@@ -24,6 +25,7 @@
                     :label='key'
                     :disabled='disabled'
                     :default='schema.properties[key].default'
+                    :required='schema.required.includes(key)'
                     :description='schema.properties[key].description'
                 />
             </template>
@@ -33,6 +35,7 @@
                     :label='key'
                     :disabled='disabled'
                     :default='schema.properties[key].default'
+                    :required='schema.required.includes(key)'
                     :description='schema.properties[key].description'
                 />
             </template>
