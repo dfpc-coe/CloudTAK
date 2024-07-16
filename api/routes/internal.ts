@@ -96,7 +96,8 @@ export default async function router(schema: Schema, config: Config) {
             });
 
             if (auth instanceof AuthUser) {
-                if (auth.access !== AuthUserAccess.ADMIN) {
+                const a = auth as AuthUser;
+                if (a.access !== AuthUserAccess.ADMIN) {
                     throw new Err(401, null, 'User must be a System Administrator to access this resource');
                 }
             }
