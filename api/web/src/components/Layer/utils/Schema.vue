@@ -51,6 +51,7 @@
                         class='form-label'
                         v-text='key'
                     />
+                    <span v-if='schema.required.includes(key)' class='text-red mx-1'>*</span>
                     <div
                         v-if='!disabled'
                         class='ms-auto'
