@@ -117,7 +117,7 @@ export default {
 
                 this.$emit('login');
 
-                if (this.$route.query.redirect && !redirect.includes('/login')) {
+                if (this.$route.query.redirect && !this.$route.query.redirect.includes('/login')) {
                     this.$router.push(this.$route.query.redirect);
                 } else {
                     this.$router.push("/");

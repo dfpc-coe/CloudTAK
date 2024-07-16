@@ -301,7 +301,7 @@
                     >
                         <IconNetwork
                             v-tooltip='{
-                                content: "Connections",
+                                content: "Integrations",
                                 placement: "left",
                             }'
                             :class='{ "mx-2": compact }'
@@ -312,7 +312,7 @@
                             v-if='!compact'
                             class='mx-2'
                             style='font-size: 18px;'
-                        >Connections</span>
+                        >Integrations</span>
                         <span
                             v-if='!compact'
                             class='ms-auto badge border border-red bg-red text-white'
