@@ -31,6 +31,30 @@
             <template v-else-if='!template'>
                 <TemplateSelect v-model='template'/>
             </template>
+            <template v-else-if='template'>
+                <div class='row g-2'>
+                    <div class='col-12'>
+                        <TablerInput
+                            label='Integration Name'
+                            :placeholder='`${template.name} 2024-01-01 Lost Hiker`'
+                            v-model='integration.name'
+                        />
+                    </div>
+                    <div class='col-12'>
+                        <TablerInput
+                            label='Integration Description'
+                            :placeholder='`${template.name} 2024-01-01 Lost Hiker`'
+                            v-model='integration.description'
+                            :rows='2'
+                        />
+                    </div>
+                    <div class='col-12 d-flex'>
+                        <div class='ms-auto'>
+                            <button :disabled='isIntegrationNextable' class='btn btn-primary'>Submit</button>
+                        </div>
+                    </div>
+                </div>
+            </template>
         </div>
         <div class='modal-footer'>
             <div class='d-flex align-items-center w-100'>
@@ -71,6 +95,7 @@ import {
     IconInfoHexagon
 } from '@tabler/icons-vue';
 import {
+    TablerInput,
     TablerProgress,
     TablerModal,
     TablerLoading,
@@ -82,15 +107,20 @@ export default {
     components: {
         IconCaretLeft,
         IconInfoHexagon,
+        TablerInput,
         TablerModal,
         TablerLoading,
         TablerProgress,
+        TablerSchema,
         ConnectionSelect,
         TemplateSelect,
-        TablerSchema,
     },
     emits: [ 'close' ],
     computed: {
+        isIntegrationNextable: function() {
+            return !(this.integration.name.trim().length > 4
+                && this.integration.description.trim().length > 4)
+        },
         progress: function() {
             if (this.connection) {
                 return 0.2
@@ -103,8 +133,12 @@ export default {
         return {
             connection: null,
             template: null,
-            loading: {
+            integration: {
+                name: '',
+                description: '',
+                channels: []
             },
+            layer: null
         }
     },
     mounted: async function() {
