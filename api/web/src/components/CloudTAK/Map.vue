@@ -89,11 +89,11 @@
             '
         >
             <IconSearch
-                v-if='false'
                 v-tooltip='"Search"'
                 :size='40'
                 :stroke='1'
                 class='cursor-pointer hover-button mb-3'
+                @click='search.shown = !search.shown'
             />
 
             <div
@@ -145,6 +145,31 @@
                     @click='setZoom(getZoom() - 1);'
                 />
             </div>
+        </div>
+
+        <div
+            v-if='search.shown'
+            class='position-absolute top-0 text-white bg-dark'
+            style='
+                z-index: 1;
+                left: 60px;
+                width: 200px;
+            '
+        >
+            <TablerInput
+                class='mt-0'
+                v-model='search.filter'
+                placeholder='Place Search'
+                icon='search'
+            />
+
+            <div
+                :key='item.magicKey'
+                v-for='item of search.results'
+                v-text='item.text'
+                class='col-12 px-2 py-2 hover-button cursor-pointer'
+                @click='fetchSearch(item.text, item.magicKey)'
+            />
         </div>
 
         <div
@@ -475,6 +500,9 @@ export default {
                 this.locked.pop();
             }
         },
+        'search.filter': async function() {
+            await this.fetchSearch();
+        },
         'pointInput.shown': function() {
             this.pointInput.name = '';
             const center = mapStore.map.getCenter()
@@ -529,6 +557,11 @@ export default {
         return {
             mode: 'Default',
             warnChannels: false,        // Show a popup if no channels are selected on load
+            search: {
+                shown: false,
+                filter: '',
+                results: []
+            },
             pointInput: {
                 shown: false,
                 name: '',
@@ -609,6 +642,32 @@ export default {
                 })
                 this.setYou();
             });
+        },
+        fetchSearch: async function(query, magicKey) {
+            if (!magicKey) {
+                const url = stdurl('/api/search/suggest');
+                url.searchParams.append('query', this.search.filter);
+                this.search.results = (await std(url)).items;
+            } else {
+                const url = stdurl('/api/search/forward');
+                url.searchParams.append('query', query);
+                url.searchParams.append('magicKey', magicKey);
+                const items = (await std(url)).items;
+
+                this.search.shown = false;
+                this.search.filter = '';
+                this.search.results = [];
+
+                if (items.length) {
+                    mapStore.map.fitBounds([
+                        [items[0].extent.xmin, items[0].extent.ymin],
+                        [items[0].extent.xmax, items[0].extent.ymax],
+                    ], {
+                        duration: 0,
+                        padding: {top: 25, bottom:25, left: 25, right: 25}
+                    });
+                }
+            }
         },
         setBearing: function(bearing=0) {
             mapStore.map.setBearing(bearing);
