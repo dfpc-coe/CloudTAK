@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v2.70.2 - 2024-07-16
+
+- :rocket: `UI` Update vue-tabler
+
 ### v2.70.1 - 2024-07-16
 
 - :rocket: `UI` Add `required` & `description` to Layer Env editor
