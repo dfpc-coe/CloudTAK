@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v2.70.3 - 2024-07-16
+
+- :bug: `UI` Fix login Component redirecting to login component - resulting in stalled loading pane
+
 ### v2.70.2 - 2024-07-16
 
 - :rocket: `UI` Update vue-tabler
