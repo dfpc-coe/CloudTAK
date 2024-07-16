@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v2.70.0 - 2024-07-16
+
+- :rocket: `UI` Add Search boxes to admin sub-pages
+
 ### v2.69.0 - 2024-07-16
 
 - :rocket: `API` Add suggest/forward API endpoints
