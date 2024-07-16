@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v2.69.0 - 2024-07-16
+
+- :rocket: `API` Add suggest/forward API endpoints
+- :rocket: `UI` Add mainpage support for forward geocoding
+
 ### v2.68.0 - 2024-07-15
 
 - :rocket: `UI` Add ability to create/manage/delete Layer Templates
