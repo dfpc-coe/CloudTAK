@@ -25,15 +25,14 @@
                                 />
                                 <template v-else>
                                     <div class='mb-3'>
-                                        <label class='form-label'>Username or Email</label>
-                                        <input
+                                        <TablerInput
+                                            icon='user'
+                                            label='Username or Email'
                                             v-model='username'
-                                            type='text'
-                                            class='form-control'
                                             placeholder='your@email.com'
                                             autocomplete='off'
                                             @keyup.enter='createLogin'
-                                        >
+                                        />
                                     </div>
                                     <div class='mb-2'>
                                         <label class='form-label'>
@@ -45,16 +44,14 @@
                                                 >Forgot Password</a>
                                             </span>
                                         </label>
-                                        <div class='input-group input-group-flat'>
-                                            <input
-                                                v-model='password'
-                                                type='password'
-                                                class='form-control'
-                                                placeholder='Your password'
-                                                autocomplete='off'
-                                                @keyup.enter='createLogin'
-                                            >
-                                        </div>
+                                        <TablerInput
+                                            icon='lock'
+                                            v-model='password'
+                                            type='password'
+                                            placeholder='Your password'
+                                            autocomplete='off'
+                                            @keyup.enter='createLogin'
+                                        />
                                     </div>
                                     <div class='form-footer'>
                                         <button
@@ -81,12 +78,14 @@
 <script>
 import { std } from '/src/std.ts';
 import {
-    TablerLoading
+    TablerLoading,
+    TablerInput
 } from '@tak-ps/vue-tabler'
 
 export default {
     name: 'UserLogin',
     components: {
+        TablerInput,
         TablerLoading
     },
     emits: [
