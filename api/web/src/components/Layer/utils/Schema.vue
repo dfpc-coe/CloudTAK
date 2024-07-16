@@ -15,6 +15,7 @@
                     :disabled='disabled'
                     :options='schema.properties[key].enum'
                     :default='schema.properties[key].default'
+                    :description='schema.properties[key].description'
                 />
             </template>
             <template v-else-if='schema.properties[key].type === "string"'>
@@ -23,6 +24,7 @@
                     :label='key'
                     :disabled='disabled'
                     :default='schema.properties[key].default'
+                    :description='schema.properties[key].description'
                 />
             </template>
             <template v-else-if='schema.properties[key].type === "boolean"'>
@@ -31,6 +33,7 @@
                     :label='key'
                     :disabled='disabled'
                     :default='schema.properties[key].default'
+                    :description='schema.properties[key].description'
                 />
             </template>
             <template
