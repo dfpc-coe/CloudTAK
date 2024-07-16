@@ -111,9 +111,8 @@
             v-else
             :user='user'
             @err='err = $event'
-            @login='getLogin'
+            @login='refreshLogin'
         />
-
         <TablerError
             v-if='err'
             :err='err'
@@ -195,14 +194,7 @@ export default {
         });
 
         if (localStorage.token) {
-            this.loading = true;
-            await this.getLogin();
-            await this.getServer();
-
-            const profileStore = useProfileStore();
-            await profileStore.load();
-
-            this.loading = false;
+            await this.refreshLogin();
         } else if (this.$route.name !== 'login') {
             this.routeLogin();
         }
@@ -217,6 +209,16 @@ export default {
         },
         routeLogin: function() {
             this.$router.push(`/login?redirect=${encodeURIComponent(window.location.pathname)}`);
+        },
+        refreshLogin: async function() {
+            this.loading = true;
+            await this.getLogin();
+            await this.getServer();
+
+            const profileStore = useProfileStore();
+            await profileStore.load();
+
+            this.loading = false;
         },
         getLogin: async function() {
             try {
