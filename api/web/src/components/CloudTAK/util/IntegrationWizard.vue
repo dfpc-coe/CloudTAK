@@ -35,18 +35,21 @@
                 <div class='row g-2'>
                     <div class='col-12'>
                         <TablerInput
-                            label='Integration Name'
+                            label='Name'
                             :placeholder='`${template.name} 2024-01-01 Lost Hiker`'
                             v-model='integration.name'
                         />
                     </div>
                     <div class='col-12'>
                         <TablerInput
-                            label='Integration Description'
+                            label='Description'
                             :placeholder='`${template.name} 2024-01-01 Lost Hiker`'
                             v-model='integration.description'
                             :rows='2'
                         />
+                    </div>
+                    <div v-if='template.datasync'>
+                        <ChannelSelect :connection='connection'/>
                     </div>
                     <div class='col-12 d-flex'>
                         <div class='ms-auto'>
@@ -89,6 +92,7 @@
 <script>
 import { std, stdurl } from '/src/std.ts';
 import ConnectionSelect from './Wizard/ConnectionSelect.vue';
+import ChannelSelect from './Wizard/ChannelSelect.vue';
 import TemplateSelect from './Wizard/TemplateSelect.vue';
 import {
     IconCaretLeft,
@@ -113,6 +117,7 @@ export default {
         TablerProgress,
         TablerSchema,
         ConnectionSelect,
+        ChannelSelect,
         TemplateSelect,
     },
     emits: [ 'close' ],
@@ -122,7 +127,9 @@ export default {
                 && this.integration.description.trim().length > 4)
         },
         progress: function() {
-            if (this.connection) {
+            if (this.template) {
+                return 0.3
+            } else if (this.connection) {
                 return 0.2
             } else {
                 return 0.01
