@@ -24,6 +24,12 @@
         </div>
 
         <div style='min-height: 20vh; margin-bottom: 61px'>
+            <TablerInput
+                v-model='paging.filter'
+                placeholder='Filter...'
+                class='mx-1 my-2'
+            />
+
             <TablerLoading
                 v-if='loading'
                 desc='Loading Connections'
@@ -91,6 +97,7 @@ import TableHeader from '../util/TableHeader.vue'
 import TableFooter from '../util/TableFooter.vue'
 import {
     TablerNone,
+    TablerInput,
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import {
@@ -104,9 +111,10 @@ export default {
     components: {
         Status,
         TablerNone,
+        TablerInput,
+        TablerLoading,
         IconRefresh,
         IconPlus,
-        TablerLoading,
         TableHeader,
         TableFooter,
     },
@@ -163,7 +171,7 @@ export default {
         fetchList: async function() {
             this.loading = true;
             const url = stdurl('/api/connection');
-            if (this.query && this.paging.filter) url.searchParams.append('filter', this.paging.filter);
+            url.searchParams.append('filter', this.paging.filter);
             url.searchParams.append('limit', this.paging.limit);
             url.searchParams.append('page', this.paging.page);
             this.list = await std(url);
