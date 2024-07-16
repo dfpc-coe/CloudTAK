@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v2.70.1 - 2024-07-16
+
+- :rocket: `UI` Add `required` & `description` to Layer Env editor
+
 ### v2.70.0 - 2024-07-16
 
 - :rocket: `UI` Add Search boxes to admin sub-pages
