@@ -1,5 +1,4 @@
 import fetch from './fetch.js';
-import Err from '@openaddresses/batch-error';
 import { Static, Type } from "@sinclair/typebox";
 
 export const FetchReverse = Type.Object({
