@@ -489,6 +489,31 @@
         "query": false,
         "res": true
     },
+    "GET /template": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "GET /template/:templateid": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "PATCH /template/:templateid": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "DELETE /template/:templateid": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "POST /template": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
     "GET /ldap/channel": {
         "body": false,
         "query": true,
@@ -782,6 +807,16 @@
     "GET /search/reverse/:longitude/:latitude": {
         "body": false,
         "query": false,
+        "res": true
+    },
+    "GET /search/forward": {
+        "body": false,
+        "query": true,
+        "res": true
+    },
+    "GET /search/suggest": {
+        "body": false,
+        "query": true,
         "res": true
     },
     "GET /server": {
