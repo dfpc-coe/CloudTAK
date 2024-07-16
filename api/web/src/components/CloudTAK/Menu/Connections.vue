@@ -1,14 +1,6 @@
 m<template>
-    <MenuTemplate name='Connections'>
+    <MenuTemplate name='Integrations'>
         <template #buttons>
-            <IconPlus
-                v-if='!loading'
-                v-tooltip='"Create Connection"'
-                :size='32'
-                :stroke='1'
-                class='cursor-pointer'
-                @click='$router.push("/connection/new")'
-            />
             <IconRefresh
                 v-if='!loading'
                 v-tooltip='"Refresh"'
@@ -19,6 +11,33 @@ m<template>
             />
         </template>
         <template #default>
+            <div class='row g-0 py-2'>
+                <div class='col-6 px-2'>
+                    <button
+                        class='btn btn-primary w-100'
+                        @click='wizard = true'
+                    >
+                        <IconWand
+                            v-tooltip='"Create Connection"'
+                            :size='20'
+                            :stroke='1'
+                        /><span class='mx-2'>Wizard</span>
+                    </button>
+                </div>
+                <div class='col-6 px-2'>
+                    <button
+                        class='btn btn-secondary w-100'
+                        @click='$router.push("/connection/new")'
+                    >
+                        <IconPlus
+                            v-tooltip='"Create Connection"'
+                            :size='20'
+                            :stroke='1'
+                        /><span class='mx-2'>New Connection</span>
+                    </button>
+                </div>
+            </div>
+
             <div class='col-12 px-2 pb-2'>
                 <TablerInput
                     v-model='paging.filter'
@@ -81,10 +100,13 @@ m<template>
             </div>
         </template>
     </MenuTemplate>
+
+    <IntegrationWizard v-if='wizard' @close='wizard = false'/>
 </template>
 
 <script>
 import { std, stdurl } from '/src/std.ts';
+import IntegrationWizard from '../util/IntegrationWizard.vue';
 import {
     TablerNone,
     TablerInput,
@@ -93,6 +115,7 @@ import {
 } from '@tak-ps/vue-tabler';
 import {
     IconPlus,
+    IconWand,
     IconRefresh,
 } from '@tabler/icons-vue';
 import MenuTemplate from '../util/MenuTemplate.vue';
@@ -103,13 +126,15 @@ import timeDiff from '../../../timediff.js';
 export default {
     name: 'CloudTAKConnections',
     components: {
+        IconPlus,
+        IconWand,
         TablerNone,
         TablerPager,
         TablerInput,
         TablerLoading,
         ConnectionStatus,
+        IntegrationWizard,
         AgencyBadge,
-        IconPlus,
         IconRefresh,
         MenuTemplate,
     },
@@ -117,6 +142,7 @@ export default {
         return {
             err: false,
             loading: true,
+            wizard: false,
             paging: {
                 limit: 20,
                 filter: '',
