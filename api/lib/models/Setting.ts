@@ -11,7 +11,10 @@ export default class SettingModel extends Modeler<typeof Setting> {
         super(pool, Setting);
     }
 
-    async typed<T>(key: string, defaultValue?: T): Promise<T> {
+    async typed<T>(key: string, defaultValue?: T): Promise<{
+        key: string,
+        value: T
+    }> {
         const pgres = await this.pool
         .select({
             key: Setting.key,
@@ -23,12 +26,15 @@ export default class SettingModel extends Modeler<typeof Setting> {
 
         if (pgres.length !== 1) {
             if (defaultValue !== undefined) {
-                return defaultValue;
+                return { key, value: defaultValue }
             } else {
                 throw new Err(404, null, `Item Not Found`);
             }
         }
 
-        return pgres[0] as T
+        return {
+            key: key,
+            value: pgres[0].value as T
+        }
     }
 }
