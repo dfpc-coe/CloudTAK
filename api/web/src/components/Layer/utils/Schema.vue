@@ -15,6 +15,8 @@
                     :disabled='disabled'
                     :options='schema.properties[key].enum'
                     :default='schema.properties[key].default'
+                    :required='schema.required.includes(key)'
+                    :description='schema.properties[key].description'
                 />
             </template>
             <template v-else-if='schema.properties[key].type === "string"'>
@@ -23,6 +25,8 @@
                     :label='key'
                     :disabled='disabled'
                     :default='schema.properties[key].default'
+                    :required='schema.required.includes(key)'
+                    :description='schema.properties[key].description'
                 />
             </template>
             <template v-else-if='schema.properties[key].type === "boolean"'>
@@ -31,6 +35,8 @@
                     :label='key'
                     :disabled='disabled'
                     :default='schema.properties[key].default'
+                    :required='schema.required.includes(key)'
+                    :description='schema.properties[key].description'
                 />
             </template>
             <template
@@ -45,6 +51,7 @@
                         class='form-label'
                         v-text='key'
                     />
+                    <span v-if='schema.required.includes(key)' class='text-red mx-1'>*</span>
                     <div
                         v-if='!disabled'
                         class='ms-auto'
