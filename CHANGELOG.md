@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v2.71.0 - 2024-07-17
+
+- :bug: `UI` Release the Integration Wizard - a new workflow for quickly creating Layers from Templates
+
 ### v2.70.3 - 2024-07-16
 
 - :bug: `UI` Fix login Component redirecting to login component - resulting in stalled loading pane
