@@ -150,7 +150,7 @@
                                     />
                                 </div>
                                 <TreeCots
-                                    v-else-if='element.type === "geojson" && opened.includes(element.id)'
+                                    v-else-if='element.type === "geojson" && element.id === "cots" && opened.includes(element.id)'
                                     :element='element'
                                 />
                             </template>
