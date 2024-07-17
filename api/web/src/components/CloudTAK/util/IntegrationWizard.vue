@@ -32,7 +32,7 @@
                 </template>
             </div>
         </div>
-        <div class='modal-body overflow-auto' style='height: 60vh;'>
+        <div class='modal-body overflow-auto position-relative' style='height: 60vh;'>
             <TablerLoading v-if='loading' :desc='loading'/>
             <template v-else-if='!connection'>
                 <ConnectionSelect v-model='connection'/>
@@ -67,17 +67,32 @@
                     </div>
                 </div>
             </template>
-            <template v-else-if='stack'>
+            <template v-else-if='stack && !complete'>
                 <LayerEnvironment
                     :editing='true'
                     :layer='layer'
+                    @layer='complete = true'
                 />
+            </template>
+            <template v-else-if='complete'>
+                <div class='d-flex justify-content-center'>
+                    <IconCircleCheck :size='48' :stroke='1'/>
+
+                    Integration Creation Complete
+                </div>
+                <div class='position-absolute bottom-0 mb-3 mx-3 start-0 end-0'>
+                    <div class='d-flex'>
+                        <div class='ms-auto'>
+                            <button @click='$emit("close")' class='btn btn-primary'>Done</button> 
+                        </div>
+                    </div>
+                </div>
             </template>
         </div>
         <div class='modal-footer'>
             <div class='d-flex align-items-center w-100'>
                 <div
-                    v-if='connection'
+                    v-if='connection && !stack'
                     style='width: 32px;'
                     class='hover-dark'
                     :class='{
@@ -111,6 +126,7 @@ import ChannelSelect from './Wizard/ChannelSelect.vue';
 import TemplateSelect from './Wizard/TemplateSelect.vue';
 import LayerEnvironment from '../../Layer/LayerEnvironment.vue';
 import {
+    IconCircleCheck,
     IconCaretLeft,
     IconInfoHexagon
 } from '@tabler/icons-vue';
@@ -131,6 +147,7 @@ function sleep(ms) {
 export default {
     name: 'IntegrationWizard',
     components: {
+        IconCircleCheck,
         IconCaretLeft,
         IconInfoHexagon,
         TablerInput,
@@ -150,7 +167,9 @@ export default {
                 && this.integration.description.trim().length > 4)
         },
         progress: function() {
-            if (this.layer) {
+            if (this.complete) {
+                return 1
+            } else if (this.layer) {
                 return 0.8
             } else if (this.datasync) {
                 return 0.6
@@ -176,6 +195,7 @@ export default {
             datasync: null,
             layer: null,
             stack: null,
+            complete: false
         }
     },
     methods: {
