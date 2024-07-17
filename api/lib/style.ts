@@ -8,9 +8,9 @@ interface ValidateStyle {
     callsign?: string;
     remarks?: string;
     links?: Array<Static<typeof StyleLink>>;
-    point?: { callsign?: string; remarks?: string; links?: Array<Static<typeof StyleLink>> };
-    line?: { callsign?: string; remarks?: string; links?: Array<Static<typeof StyleLink>> };
-    polygon?: { callsign?: string; remarks?: string; links?: Array<Static<typeof StyleLink>> };
+    point?:     { callsign?: string; type?: string; remarks?: string; links?: Array<Static<typeof StyleLink>> };
+    line?:      { callsign?: string; remarks?: string; links?: Array<Static<typeof StyleLink>> };
+    polygon?:   { callsign?: string; remarks?: string; links?: Array<Static<typeof StyleLink>> };
 }
 
 export const StyleLink = Type.Object({
@@ -21,6 +21,7 @@ export const StyleLink = Type.Object({
 export const StylePoint = Type.Object({
     'marker-color': Type.Optional(Type.String()),
     'marker-opacity': Type.Optional(Type.String()),
+    type: Type.Optional(Type.String()),
     remarks: Type.Optional(Type.String()),
     callsign: Type.Optional(Type.String()),
     links: Type.Optional(Type.Array(StyleLink)),
@@ -146,6 +147,14 @@ export default class Style {
             if (type in style) {
                 if (style[type].links) this.#validateLinks(style[type].links);
 
+                if (style[type].type) {
+                    try {
+                        handlebars.compile(style[type].type)({});
+                    } catch (err) {
+                        throw new Err(400, err, `Invalid (${type}) Type Template: ${style[type].type}`)
+                    }
+                }
+
                 if (style[type].callsign) {
                     try {
                         handlebars.compile(style[type].callsign)({});
@@ -255,6 +264,7 @@ export default class Style {
         if (!feature.properties) feature.properties = {};
 
         if (feature.geometry.type === 'Point' && style.point) {
+            if (style.point.type) feature.properties.type = handlebars.compile(style.point.type)(feature.properties.metadata);
             if (style.point.remarks) feature.properties.remarks = handlebars.compile(style.point.remarks)(feature.properties.metadata);
             if (style.point.callsign) feature.properties.callsign = handlebars.compile(style.point.callsign)(feature.properties.metadata);
             if (style.point.links) this.#links(style.point.links, feature);
