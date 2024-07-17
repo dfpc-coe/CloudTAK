@@ -26,7 +26,7 @@
 
             <template v-if='treeState.teams._'>
                 <div
-                    v-for='group in groups'
+                    v-for='group in groups()'
                     class='ms-3'
                 >
                     <div class='d-flex align-items-center px-3 py-2 me-2 hover-button'>
