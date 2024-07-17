@@ -101,7 +101,10 @@ m<template>
         </template>
     </MenuTemplate>
 
-    <IntegrationWizard v-if='wizard' @close='wizard = false'/>
+    <IntegrationWizard
+        v-if='wizard'
+        @close='wizard = false'
+    />
 </template>
 
 <script>

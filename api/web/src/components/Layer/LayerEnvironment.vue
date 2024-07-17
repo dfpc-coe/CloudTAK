@@ -4,7 +4,10 @@
             <h3 class='card-title'>
                 Environment
             </h3>
-            <div v-if='!editing' class='ms-auto btn-list'>
+            <div
+                v-if='!editing'
+                class='ms-auto btn-list'
+            >
                 <template v-if='!raw && disabled'>
                     <IconCode
                         v-tooltip='"Raw View"'
@@ -144,14 +147,6 @@ export default {
             default: false
         }
     },
-    watch: {
-        editing: function() {
-            console.error('HERE');
-            if (this.editing) {
-                this.disabled = false;
-            }
-        }
-    },
     emits: [
         'layer'
     ],
@@ -171,6 +166,14 @@ export default {
                 save: false
             },
         };
+    },
+    watch: {
+        editing: function() {
+            console.error('HERE');
+            if (this.editing) {
+                this.disabled = false;
+            }
+        }
     },
     mounted: async function() {
         await this.reload();

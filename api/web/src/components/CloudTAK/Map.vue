@@ -157,18 +157,18 @@
             '
         >
             <TablerInput
-                class='mt-0'
                 v-model='search.filter'
+                class='mt-0'
                 placeholder='Place Search'
                 icon='search'
             />
 
             <div
-                :key='item.magicKey'
                 v-for='item of search.results'
-                v-text='item.text'
+                :key='item.magicKey'
                 class='col-12 px-2 py-2 hover-button cursor-pointer'
                 @click='fetchSearch(item.text, item.magicKey)'
+                v-text='item.text'
             />
         </div>
 

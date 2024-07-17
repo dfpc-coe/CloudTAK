@@ -90,7 +90,11 @@
                     class='cursor-pointer'
                     @click='treeState.paths._ = false'
                 />
-                <IconFolder class='mx-2' :size='20' :stroke='2'/> Your Features
+                <IconFolder
+                    class='mx-2'
+                    :size='20'
+                    :stroke='2'
+                /> Your Features
             </div>
 
             <template v-if='treeState.paths._'>
@@ -140,9 +144,6 @@ const cotStore = useCOTStore();
 
 export default {
     name: 'TreeCots',
-    props: {
-        element: Object
-    },
     components: {
         ContactPuck,
         Contact,
@@ -151,6 +152,9 @@ export default {
         IconChevronRight,
         IconChevronDown,
         IconFolder,
+    },
+    props: {
+        element: Object
     },
     data: function() {
         return {
@@ -165,6 +169,11 @@ export default {
             },
             loadingPaths: {}
         }
+    },
+    computed: {
+        paths: function() {
+            return cotStore.paths();
+        },
     },
     methods: {
         contacts: function(group) {
@@ -195,11 +204,6 @@ export default {
             }
 
             return groups;
-        },
-    },
-    computed: {
-        paths: function() {
-            return cotStore.paths();
         },
     },
 }

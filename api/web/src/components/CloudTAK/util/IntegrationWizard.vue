@@ -11,58 +11,93 @@
         <div class='modal-header'>
             <div class='strong d-flex align-items-center'>
                 <template v-if='!connection'>
-                    <IconInfoHexagon :stroke='1' :size='20' class='me-2'/>
+                    <IconInfoHexagon
+                        :stroke='1'
+                        :size='20'
+                        class='me-2'
+                    />
                     Select Connection
                 </template>
                 <template v-else-if='!template'>
-                    <IconInfoHexagon :stroke='1' :size='20' class='me-2'/>
+                    <IconInfoHexagon
+                        :stroke='1'
+                        :size='20'
+                        class='me-2'
+                    />
                     Select an Integration Template
                 </template>
                 <template v-else-if='!layer'>
-                    <IconInfoHexagon :stroke='1' :size='20' class='me-2'/>
+                    <IconInfoHexagon
+                        :stroke='1'
+                        :size='20'
+                        class='me-2'
+                    />
                     Integration Template Installation
                 </template>
                 <template v-else-if='!stack'>
-                    <IconInfoHexagon :stroke='1' :size='20' class='me-2'/>
+                    <IconInfoHexagon
+                        :stroke='1'
+                        :size='20'
+                        class='me-2'
+                    />
                     Integration Template Installation
                 </template>
                 <template v-else-if='stack'>
-                    <IconInfoHexagon :stroke='1' :size='20' class='me-2'/>
+                    <IconInfoHexagon
+                        :stroke='1'
+                        :size='20'
+                        class='me-2'
+                    />
                     Installing Integration
                 </template>
             </div>
         </div>
-        <div class='modal-body overflow-auto position-relative' style='height: 60vh;'>
-            <TablerLoading v-if='loading' :desc='loading'/>
+        <div
+            class='modal-body overflow-auto position-relative'
+            style='height: 60vh;'
+        >
+            <TablerLoading
+                v-if='loading'
+                :desc='loading'
+            />
             <template v-else-if='!connection'>
-                <ConnectionSelect v-model='connection'/>
+                <ConnectionSelect v-model='connection' />
             </template>
             <template v-else-if='!template'>
-                <TemplateSelect v-model='template'/>
+                <TemplateSelect v-model='template' />
             </template>
             <template v-else-if='template && !stack'>
                 <div class='row g-2'>
                     <div class='col-12'>
                         <TablerInput
+                            v-model='integration.name'
                             label='Name'
                             :placeholder='`${template.name} 2024-01-01 Lost Hiker`'
-                            v-model='integration.name'
                         />
                     </div>
                     <div class='col-12'>
                         <TablerInput
+                            v-model='integration.description'
                             label='Description'
                             :placeholder='`${template.name} 2024-01-01 Lost Hiker`'
-                            v-model='integration.description'
                             :rows='2'
                         />
                     </div>
                     <div v-if='template.datasync'>
-                        <ChannelSelect v-model='integration.channels' :connection='connection'/>
+                        <ChannelSelect
+                            v-model='integration.channels'
+                            :connection='connection'
+                        />
                     </div>
                     <div class='col-12 d-flex'>
                         <div class='ms-auto'>
-                            <button @click='createIntegration' :disabled='isIntegrationNextable' class='btn btn-primary'>Submit</button>
+                            <button
+                                :disabled='isIntegrationNextable'
+                                class='btn btn-primary'
+                                @click='createIntegration'
+                            >
+                                Submit
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -76,7 +111,10 @@
             </template>
             <template v-else-if='complete'>
                 <div class='d-flex justify-content-center py-4'>
-                    <IconCircleCheck :size='48' :stroke='1'/>
+                    <IconCircleCheck
+                        :size='48'
+                        :stroke='1'
+                    />
                 </div>
                 <div class='d-flex justify-content-center'>
                     Integration Creation Complete
@@ -84,7 +122,12 @@
                 <div class='position-absolute bottom-0 mb-3 mx-3 start-0 end-0'>
                     <div class='d-flex'>
                         <div class='ms-auto'>
-                            <button @click='$emit("close")' class='btn btn-primary'>Done</button> 
+                            <button
+                                class='btn btn-primary'
+                                @click='$emit("close")'
+                            >
+                                Done
+                            </button> 
                         </div>
                     </div>
                 </div>
@@ -94,15 +137,15 @@
             <div class='d-flex align-items-center w-100'>
                 <div
                     v-if='connection && !stack'
+                    v-tooltip='"Back"'
                     style='width: 32px;'
                     class='hover-dark'
                     :class='{
                         "cursor-pointer": connection
                     }'
-                    v-tooltip='"Back"'
                     @click='back'
                 >
-                    <IconCaretLeft size='32'/>
+                    <IconCaretLeft size='32' />
                 </div>
                 <div
                     style='
@@ -121,7 +164,7 @@
 </template>
 
 <script>
-import { std, stdurl } from '/src/std.ts';
+import { std } from '/src/std.ts';
 import ConnectionSelect from './Wizard/ConnectionSelect.vue';
 import ChannelSelect from './Wizard/ChannelSelect.vue';
 import TemplateSelect from './Wizard/TemplateSelect.vue';
@@ -136,7 +179,6 @@ import {
     TablerProgress,
     TablerModal,
     TablerLoading,
-    TablerSchema
 } from '@tak-ps/vue-tabler';
 
 function sleep(ms) {
@@ -155,13 +197,28 @@ export default {
         TablerModal,
         TablerLoading,
         TablerProgress,
-        TablerSchema,
         ConnectionSelect,
         ChannelSelect,
         TemplateSelect,
         LayerEnvironment
     },
     emits: [ 'close' ],
+    data: function() {
+        return {
+            loading: false,
+            connection: null,
+            template: null,
+            integration: {
+                name: '',
+                description: '',
+                channels: []
+            },
+            datasync: null,
+            layer: null,
+            stack: null,
+            complete: false
+        }
+    },
     computed: {
         isIntegrationNextable: function() {
             return !(this.integration.name.trim().length > 4
@@ -181,22 +238,6 @@ export default {
             } else {
                 return 0.01
             }
-        }
-    },
-    data: function() {
-        return {
-            loading: false,
-            connection: null,
-            template: null,
-            integration: {
-                name: '',
-                description: '',
-                channels: []
-            },
-            datasync: null,
-            layer: null,
-            stack: null,
-            complete: false
         }
     },
     methods: {

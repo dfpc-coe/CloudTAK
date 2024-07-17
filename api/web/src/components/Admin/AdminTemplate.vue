@@ -64,18 +64,29 @@
                     </div>
 
                     <template v-if='$route.params.template === "new"'>
-                        <LayerSelect v-model='template.layer'/>
+                        <LayerSelect v-model='template.layer' />
 
                         <div class='col-md-12 d-flex align-items-center'>
                             <div class='ms-auto'>
-                                <button :disabled='!template.layer' @click='createTemplate' class='btn btn-primary'>Submit</button>
+                                <button
+                                    :disabled='!template.layer'
+                                    class='btn btn-primary'
+                                    @click='createTemplate'
+                                >
+                                    Submit
+                                </button>
                             </div>
                         </div>
                     </template>
                     <template v-else>
                         <div class='col-md-12 d-flex align-items-center'>
                             <div class='ms-auto'>
-                                <button @click='updateTemplate' class='btn btn-primary'>Update</button>
+                                <button
+                                    class='btn btn-primary'
+                                    @click='updateTemplate'
+                                >
+                                    Update
+                                </button>
                             </div>
                         </div>
                     </template>

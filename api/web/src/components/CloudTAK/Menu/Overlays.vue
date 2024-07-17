@@ -149,7 +149,10 @@
                                         @change='updateOpacity(element)'
                                     />
                                 </div>
-                                <TreeCots v-else-if='element.type === "geojson" && opened.includes(element.id)' :element='element'/>
+                                <TreeCots
+                                    v-else-if='element.type === "geojson" && opened.includes(element.id)'
+                                    :element='element'
+                                />
                             </template>
                         </div>
                     </div>

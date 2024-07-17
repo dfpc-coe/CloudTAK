@@ -63,7 +63,10 @@
                     </template>
                 </template>
             </div>
-            <div v-if='list.total > paging.limit && !selected.id' class='card-footer d-flex'>
+            <div
+                v-if='list.total > paging.limit && !selected.id'
+                class='card-footer d-flex'
+            >
                 <div class='ms-auto'>
                     <TablerPager
                         :page='paging.page'
