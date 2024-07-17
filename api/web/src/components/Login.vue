@@ -26,9 +26,9 @@
                                 <template v-else>
                                     <div class='mb-3'>
                                         <TablerInput
+                                            v-model='username'
                                             icon='user'
                                             label='Username or Email'
-                                            v-model='username'
                                             placeholder='your@email.com'
                                             autocomplete='off'
                                             @keyup.enter='createLogin'
@@ -45,8 +45,8 @@
                                             </span>
                                         </label>
                                         <TablerInput
-                                            icon='lock'
                                             v-model='password'
+                                            icon='lock'
                                             type='password'
                                             placeholder='Your password'
                                             autocomplete='off'
@@ -117,7 +117,7 @@ export default {
 
                 this.$emit('login');
 
-                if (this.$route.query.redirect && !redirect.includes('/login')) {
+                if (this.$route.query.redirect && !this.$route.query.redirect.includes('/login')) {
                     this.$router.push(this.$route.query.redirect);
                 } else {
                     this.$router.push("/");

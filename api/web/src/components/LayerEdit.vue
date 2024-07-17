@@ -92,7 +92,11 @@
                                                     for='template'
                                                     type='button'
                                                     class='btn'
-                                                ><IconTemplate class='me-2' :size='20' :stoke='1'/> Templated Creation</label>
+                                                ><IconTemplate
+                                                    class='me-2'
+                                                    :size='20'
+                                                    :stoke='1'
+                                                /> Templated Creation</label>
 
                                                 <input
                                                     id='manual'
@@ -107,12 +111,16 @@
                                                     for='manual'
                                                     type='button'
                                                     class='btn'
-                                                ><IconPencil class='me-2' :size='20' :stoke='1'/> Manual Creation</label>
+                                                ><IconPencil
+                                                    class='me-2'
+                                                    :size='20'
+                                                    :stoke='1'
+                                                /> Manual Creation</label>
                                             </div>
                                         </div>
 
                                         <template v-if='type === "template"'>
-                                            <LayerTemplateSelect v-model='template'/>
+                                            <LayerTemplateSelect v-model='template' />
                                         </template>
                                         <template v-else-if='type === "manual"'>
                                             <div class='card mx-2'>
