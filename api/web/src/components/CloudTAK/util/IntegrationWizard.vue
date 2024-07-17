@@ -75,9 +75,10 @@
                 />
             </template>
             <template v-else-if='complete'>
-                <div class='d-flex justify-content-center'>
+                <div class='d-flex justify-content-center py-4'>
                     <IconCircleCheck :size='48' :stroke='1'/>
-
+                </div>
+                <div class='d-flex justify-content-center'>
                     Integration Creation Complete
                 </div>
                 <div class='position-absolute bottom-0 mb-3 mx-3 start-0 end-0'>
