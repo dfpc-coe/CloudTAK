@@ -162,6 +162,29 @@
         <template v-if='mode === "point"'>
             <div class='col-md-12 hover-light rounded px-2 py-2'>
                 <div class='col-12 d-flex align-items-center'>
+                    <label><IconCategory
+                        :size='20'
+                        :stroke='1'
+                    /> Point Type</label>
+                    <div class='ms-auto'>
+                        <TablerToggle
+                            v-model='filters[mode].enabled.type'
+                            :disabled='disabled'
+                            label='Enabled'
+                        />
+                    </div>
+                </div>
+                <StyleTemplate
+                    v-if='filters[mode].enabled.type'
+                    v-model='filters[mode].properties.type'
+                    placeholder='Type Override (a-f-G)'
+                    :disabled='disabled'
+                    :rows='1'
+                    :schema='schema'
+                />
+            </div>
+            <div class='col-md-12 hover-light rounded px-2 py-2'>
+                <div class='col-12 d-flex align-items-center'>
                     <label><IconPhoto
                         :size='20'
                         :stroke='1'
@@ -402,6 +425,7 @@ import {
     IconPhoto,
     IconLine,
     IconPolygon,
+    IconCategory,
     IconBorderStyle2,
     IconBlockquote,
     IconRuler2,
@@ -428,13 +452,14 @@ export default {
         IconLink,
         IconBlockquote,
         IconBorderStyle2,
+        IconCategory,
+        IconSelect,
         TablerToggle,
         TablerRange,
         TablerEnum,
         TablerInput,
         StyleTemplate,
         StyleLinks,
-        IconSelect,
     },
     props: {
         modelValue: {
