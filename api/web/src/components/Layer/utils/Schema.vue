@@ -51,7 +51,10 @@
                         class='form-label'
                         v-text='key'
                     />
-                    <span v-if='schema.required.includes(key)' class='text-red mx-1'>*</span>
+                    <span
+                        v-if='schema.required.includes(key)'
+                        class='text-red mx-1'
+                    >*</span>
                     <div
                         v-if='!disabled'
                         class='ms-auto'
@@ -118,6 +121,11 @@
                             </tbody>
                         </table>
                     </div>
+                    <TablerNone
+                        v-if='!data[key] || !data[key].length'
+                        :label='key'
+                        @create='editModal(schema.properties[key].items, {}, key)'
+                    />
                 </template>
                 <template v-else>
                     <div
@@ -181,6 +189,7 @@
 
 <script>
 import {
+    TablerNone,
     TablerInput,
     TablerToggle,
     TablerSchema,
@@ -200,6 +209,7 @@ export default {
         IconPlus,
         IconDatabaseImport,
         IconTrash,
+        TablerNone,
         TablerInput,
         TablerToggle,
         TablerEnum,
