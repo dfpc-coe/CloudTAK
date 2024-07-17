@@ -4,7 +4,7 @@
             <h3 class='card-title'>
                 Environment
             </h3>
-            <div class='ms-auto btn-list'>
+            <div v-if='!editing' class='ms-auto btn-list'>
                 <template v-if='!raw && disabled'>
                     <IconCode
                         v-tooltip='"Raw View"'
@@ -88,6 +88,7 @@
                 class='col-12 px-2 py-2 d-flex'
             >
                 <button
+                    v-if='!editing'
                     class='btn'
                     @click='reload'
                 >
@@ -138,13 +139,28 @@ export default {
             type: Object,
             required: true
         },
+        editing: {
+            type: Boolean,
+            default: false
+        }
     },
+    watch: {
+        editing: function() {
+            console.error('HERE');
+            if (this.editing) {
+                this.disabled = false;
+            }
+        }
+    },
+    emits: [
+        'layer'
+    ],
     data: function() {
         return {
             raw: false,
             alert: false,
             esriView: false,
-            disabled: true,
+            disabled: this.editing ? false : true,
             config: {},
             environment: {},
             schema: { properties: {} },
@@ -181,7 +197,7 @@ export default {
 
             this.config = config;
 
-            this.disabled = true;
+            if (!this.editing) this.disabled = true;
 
             this.loading.schema = false;
         },
@@ -190,13 +206,13 @@ export default {
 
             try {
                 this.loading.schema = true;
-                this.schema = (await std(`/api/connection/${this.$route.params.connectionid}/layer/${this.$route.params.layerid}/task/schema`)).schema;
+                this.schema = (await std(`/api/connection/${this.layer.connection}/layer/${this.layer.id}/task/schema`)).schema;
             } catch (err) {
                 this.alert = err;
             }
 
             try {
-                const output = (await std(`/api/connection/${this.$route.params.connectionid}/layer/${this.$route.params.layerid}/task/schema?type=schema:output`)).schema;
+                const output = (await std(`/api/connection/${this.layer.connection}/layer/${this.layer.id}/task/schema?type=schema:output`)).schema;
                 if (output.properties) this.schemaOutput = output;
             } catch (err) {
                 this.alert = err;
@@ -205,7 +221,7 @@ export default {
         saveLayer: async function() {
             this.loading.save = true;
 
-            const layer = await std(`/api/connection/${this.$route.params.connectionid}/layer/${this.$route.params.layerid}`, {
+            const layer = await std(`/api/connection/${this.layer.connection}/layer/${this.layer.id}`, {
                 method: 'PATCH',
                 body: {
                     environment: this.environment,
