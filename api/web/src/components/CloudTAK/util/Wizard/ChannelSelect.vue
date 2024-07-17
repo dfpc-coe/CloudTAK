@@ -90,7 +90,7 @@ export default {
         connection: Object
     },
     emits: [
-        'certs',
+        'update:modelValue'
     ],
     data: function() {
         return {
@@ -132,6 +132,12 @@ export default {
             deep: true,
             handler: async function() {
                 await this.listChannels();
+            }
+        },
+        selected: {
+            deep: true,
+            handler: function() {
+                this.$emit('update:modelValue', this.selected);
             }
         }
     },

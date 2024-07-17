@@ -138,7 +138,7 @@ export default async function router(schema: Schema, config: Config) {
             name: Default.NameField,
             priority: Type.Optional(Type.Enum(Layer_Priority)),
             description: Default.DescriptionField,
-            enabled: Type.Boolean(),
+            enabled: Type.Optional(Type.Boolean()),
             task: Type.String(),
             cron: Type.String(),
             logging: Type.Boolean(),

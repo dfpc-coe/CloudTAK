@@ -118,6 +118,11 @@
                             </tbody>
                         </table>
                     </div>
+                    <TablerNone
+                        v-if='!data[key] || !data[key].length'
+                        @create='editModal(schema.properties[key].items, {}, key)'
+                        :label='key'
+                    />
                 </template>
                 <template v-else>
                     <div
@@ -181,6 +186,7 @@
 
 <script>
 import {
+    TablerNone,
     TablerInput,
     TablerToggle,
     TablerSchema,
@@ -200,6 +206,7 @@ export default {
         IconPlus,
         IconDatabaseImport,
         IconTrash,
+        TablerNone,
         TablerInput,
         TablerToggle,
         TablerEnum,

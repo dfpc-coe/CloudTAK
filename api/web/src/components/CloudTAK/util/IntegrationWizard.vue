@@ -22,16 +22,25 @@
                     <IconInfoHexagon :stroke='1' :size='20' class='me-2'/>
                     Integration Template Installation
                 </template>
+                <template v-else-if='!stack'>
+                    <IconInfoHexagon :stroke='1' :size='20' class='me-2'/>
+                    Integration Template Installation
+                </template>
+                <template v-else-if='stack'>
+                    <IconInfoHexagon :stroke='1' :size='20' class='me-2'/>
+                    Installing Integration
+                </template>
             </div>
         </div>
         <div class='modal-body overflow-auto' style='height: 60vh;'>
-            <template v-if='!connection'>
+            <TablerLoading v-if='loading' :desc='loading'/>
+            <template v-else-if='!connection'>
                 <ConnectionSelect v-model='connection'/>
             </template>
             <template v-else-if='!template'>
                 <TemplateSelect v-model='template'/>
             </template>
-            <template v-else-if='template'>
+            <template v-else-if='template && !stack'>
                 <div class='row g-2'>
                     <div class='col-12'>
                         <TablerInput
@@ -49,14 +58,20 @@
                         />
                     </div>
                     <div v-if='template.datasync'>
-                        <ChannelSelect :connection='connection'/>
+                        <ChannelSelect v-model='integration.channels' :connection='connection'/>
                     </div>
                     <div class='col-12 d-flex'>
                         <div class='ms-auto'>
-                            <button :disabled='isIntegrationNextable' class='btn btn-primary'>Submit</button>
+                            <button @click='createIntegration' :disabled='isIntegrationNextable' class='btn btn-primary'>Submit</button>
                         </div>
                     </div>
                 </div>
+            </template>
+            <template v-else-if='stack'>
+                <LayerEnvironment
+                    :editing='true'
+                    :layer='layer'
+                />
             </template>
         </div>
         <div class='modal-footer'>
@@ -94,6 +109,7 @@ import { std, stdurl } from '/src/std.ts';
 import ConnectionSelect from './Wizard/ConnectionSelect.vue';
 import ChannelSelect from './Wizard/ChannelSelect.vue';
 import TemplateSelect from './Wizard/TemplateSelect.vue';
+import LayerEnvironment from '../../Layer/LayerEnvironment.vue';
 import {
     IconCaretLeft,
     IconInfoHexagon
@@ -105,6 +121,12 @@ import {
     TablerLoading,
     TablerSchema
 } from '@tak-ps/vue-tabler';
+
+function sleep(ms) {
+    return new Promise((resolve) => {
+        setTimeout(resolve, ms);
+    }); 
+}
 
 export default {
     name: 'IntegrationWizard',
@@ -119,6 +141,7 @@ export default {
         ConnectionSelect,
         ChannelSelect,
         TemplateSelect,
+        LayerEnvironment
     },
     emits: [ 'close' ],
     computed: {
@@ -127,8 +150,12 @@ export default {
                 && this.integration.description.trim().length > 4)
         },
         progress: function() {
-            if (this.template) {
-                return 0.3
+            if (this.layer) {
+                return 0.8
+            } else if (this.datasync) {
+                return 0.6
+            } else if (this.template) {
+                return 0.4
             } else if (this.connection) {
                 return 0.2
             } else {
@@ -138,6 +165,7 @@ export default {
     },
     data: function() {
         return {
+            loading: false,
             connection: null,
             template: null,
             integration: {
@@ -145,12 +173,59 @@ export default {
                 description: '',
                 channels: []
             },
-            layer: null
+            datasync: null,
+            layer: null,
+            stack: null,
         }
     },
-    mounted: async function() {
-    },
     methods: {
+        createIntegration: async function() {
+            if (this.template.datasync) {
+                this.loading = `Creating DataSync "${this.integration.name}"...`;
+                this.datasync = await std(`/api/connection/${this.connection.id}/data`, {
+                    method: 'POST',
+                    body: {
+                        name: this.integration.name,
+                        mission_sync: true,
+                        auto_transform: true,
+                        mission_groups: this.integration.channels.map((ch) => {
+                            return ch.name;
+                        }),
+                        mission_role: 'MISSION_READONLY_SUBSCRIBER',
+                        mission_diff: true,
+                        description: this.integration.description
+                    }
+                });
+            }
+
+            this.loading = `Creating Layer "${this.integration.name}"...`;
+
+            this.layer = await std(`/api/connection/${this.connection.id}/layer`, {
+                method: 'POST',
+                body: {
+                    ...this.template,
+                    name: this.integration.name,
+                    data: this.datasync ? this.datasync.id : undefined,
+                    description: this.integration.description
+                }
+            });
+
+            this.loading = `Creating Stack`;
+            do { 
+                this.stack = await std(`/api/connection/${this.connection.id}/layer/${this.layer.id}/task`);
+                this.loading = `Creating Stack: ${this.stack.status}`;
+                await sleep(750);
+            } while (!this.stack.status.includes('COMPLETE'));
+
+            this.loading = `Loading Integration Config`;
+            do { 
+                this.stack = await std(`/api/connection/${this.connection.id}/layer/${this.layer.id}/task`);
+                this.loading = `Creating Stack: ${this.stack.status}`;
+                await sleep(750);
+            } while (!this.stack.status.includes('COMPLETE'));
+
+            this.loading = false;
+        },
         back: function() {
             if (this.template) {
                 this.template = null;
