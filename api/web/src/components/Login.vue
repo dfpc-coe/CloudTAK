@@ -26,9 +26,9 @@
                                 <template v-else>
                                     <div class='mb-3'>
                                         <TablerInput
+                                            v-model='username'
                                             icon='user'
                                             label='Username or Email'
-                                            v-model='username'
                                             placeholder='your@email.com'
                                             autocomplete='off'
                                             @keyup.enter='createLogin'
@@ -45,8 +45,8 @@
                                             </span>
                                         </label>
                                         <TablerInput
-                                            icon='lock'
                                             v-model='password'
+                                            icon='lock'
                                             type='password'
                                             placeholder='Your password'
                                             autocomplete='off'

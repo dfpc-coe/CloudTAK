@@ -51,7 +51,10 @@
                         class='form-label'
                         v-text='key'
                     />
-                    <span v-if='schema.required.includes(key)' class='text-red mx-1'>*</span>
+                    <span
+                        v-if='schema.required.includes(key)'
+                        class='text-red mx-1'
+                    >*</span>
                     <div
                         v-if='!disabled'
                         class='ms-auto'
@@ -120,8 +123,8 @@
                     </div>
                     <TablerNone
                         v-if='!data[key] || !data[key].length'
-                        @create='editModal(schema.properties[key].items, {}, key)'
                         :label='key'
+                        @create='editModal(schema.properties[key].items, {}, key)'
                     />
                 </template>
                 <template v-else>
