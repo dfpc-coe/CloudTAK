@@ -49,6 +49,7 @@ export const useConnectionStore = defineStore('connection', {
 
                 this.open = false;
             });
+
             this.ws.addEventListener('message', async (msg) => {
                 const body = JSON.parse(msg.data) as {
                     type: string;
@@ -64,6 +65,14 @@ export const useConnectionStore = defineStore('connection', {
                     throw new Error(err.properties.message);
                 } else if (body.type === 'cot') {
                     await cotStore.add(body.data as Feature);
+                } else if (body.type === 'task') {
+                    const task = body.data as Feature;
+
+                    if (task.properties.type === 't-x-m-c') {
+                        cotStore.subChange(task);
+                    } else {
+                        console.warn('Unknown Task', JSON.stringify(task));
+                    }
                 } else if (body.type === 'chat') {
                     profileStore.notifications.push({
                         type: 'Chat',

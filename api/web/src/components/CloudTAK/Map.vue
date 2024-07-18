@@ -782,14 +782,6 @@ export default {
                     mapStore.map.getSource('cots').updateData(diff);
                 }
 
-                for (const sub of cotStore.subscriptions.keys()) {
-                    const overlay = mapStore.getLayerByMode('mission', sub)
-                    if (!overlay) continue;
-
-                    const oStore = mapStore.map.getSource(`${overlay.mode}-${overlay.mode_id}-${overlay.id}`);
-                    if (oStore) oStore.setData(cotStore.collection(cotStore.subscriptions.get(sub)))
-                }
-
                 if (this.locked.length && cotStore.has(this.locked[this.locked.length - 1])) {
                     const flyTo = {
                         center: cotStore.get(this.locked[this.locked.length - 1]).properties.center,

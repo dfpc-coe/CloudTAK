@@ -202,6 +202,22 @@ export const useMapStore = defineStore('cloudtak', {
 
             return null;
         },
+
+        /**
+         * Given a mission Guid, attempt to refresh the Map Layer
+         * @returns {boolean} True if successful, false if not
+         */
+        updateMissionData: function(guid: string): boolean {
+            const overlay = this.getLayerByMode('mission', guid)
+            if (!overlay) return false;
+
+            const oStore = this.map.getSource(overlay.source);
+            if (!oStore) return false
+
+            oStore.setData(cotStore.collection(cotStore.subscriptions.get(guid)))
+
+            return true;
+        },
         updateLayer: async function(newLayer: OverlayContainer) {
             if (!this.map) throw new Error('Cannot updateLayer before map has loaded');
 
