@@ -202,6 +202,27 @@ export const useMapStore = defineStore('cloudtak', {
 
             return null;
         },
+
+        /**
+         * Given a mission Guid, attempt to refresh the Map Layer
+         * @returns {boolean} True if successful, false if not
+         */
+        updateMissionData: function(guid: string): boolean {
+            const overlay = this.getLayerByMode('mission', guid)
+            if (!overlay) return false;
+
+            if (!this.map) throw new Error('Cannot updateLayer before map has loaded');
+            const oStore = this.map.getSource(overlay.source);
+            if (!oStore) return false
+
+            // @ts-expect-error TS currently blows up Map<string, Feature> into actual { type: 'Feature' ... } etc
+            const fc = cotStore.collection(cotStore.subscriptions.get(guid))
+
+            // @ts-expect-error Source.setData is not defined
+            oStore.setData(fc);
+
+            return true;
+        },
         updateLayer: async function(newLayer: OverlayContainer) {
             if (!this.map) throw new Error('Cannot updateLayer before map has loaded');
 

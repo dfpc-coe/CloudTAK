@@ -11,6 +11,7 @@ import type { Feature } from '../types.ts';
 import type { FeatureCollection } from 'geojson';
 import { useProfileStore } from './profile.ts';
 const profileStore = useProfileStore();
+import { useMapStore } from './map.ts';
 
 type NestedArray = {
     path: string;
@@ -27,14 +28,16 @@ export const useCOTStore = defineStore('cots', {
         pending: Map<string, Feature>;
         pendingDelete: Set<string>;
         subscriptions: Map<string, Map<string, Feature>>;
+        subscriptionPending: Map<string, string>;
     } => {
         return {
-            archive: new Map(),         // Store all archived CoT messages
-            cots: new Map(),            // Store all on-screen CoT messages
-            hidden: new Set(),          // Store CoTs that should be hidden
-            pending: new Map(),         // Store yet to be rendered on-screen CoT Messages
-            pendingDelete: new Set(),   // Store yet to be deleted on-screen CoT Messages
-            subscriptions: new Map()    // Store All Mission CoT messages by GUID
+            cots: new Map(),                // Store all on-screen CoT messages
+            hidden: new Set(),              // Store CoTs that should be hidden
+            archive: new Map(),             // Store all archived CoT messages
+            pending: new Map(),             // Store yet to be rendered on-screen CoT Messages
+            pendingDelete: new Set(),       // Store yet to be deleted on-screen CoT Messages
+            subscriptions: new Map(),       // Store All Mission CoT messages by GUID
+            subscriptionPending: new Map()  // Map<uid, guid>
         }
     },
     actions: {
@@ -51,6 +54,38 @@ export const useCOTStore = defineStore('cots', {
             }
 
             return videos;
+        },
+
+        subChange: function(task: Feature): void {
+            if (task.properties.type === 't-x-m-c' && task.properties.mission && task.properties.mission.missionChanges) {
+                let updateGuid;
+
+                for (const change of task.properties.mission.missionChanges) {
+                    if (!task.properties.mission.guid) {
+                        console.error(`Cannot add ${change.contentUid} to ${JSON.stringify(task.properties.mission)} as no guid was included`);
+                        continue;
+                    }
+
+                    if (change.type === 'ADD_CONTENT') {
+                        this.subscriptionPending.set(change.contentUid, task.properties.mission.guid);
+                    } else if (change.type === 'REMOVE_CONTENT') {
+                        const sub = this.subscriptions.get(task.properties.mission.guid);
+                        if (!sub) {
+                            console.error(`Cannot remove ${change.contentUid} from ${task.properties.mission.guid} as it's not in memory`);
+                            continue;
+                        }
+
+                        sub.delete(change.contentUid);
+                        updateGuid = task.properties.mission.guid;
+                    }
+                }
+
+                console.error('UPDATING', updateGuid);
+                if (updateGuid) {
+                    const mapStore = useMapStore();
+                    mapStore.updateMissionData(updateGuid);
+                }
+            }
         },
 
         /**
@@ -73,6 +108,7 @@ export const useCOTStore = defineStore('cots', {
                 sub = new Map();
                 this.subscriptions.set(guid, sub)
             }
+
             return this.collection(sub)
         },
 
@@ -358,6 +394,8 @@ export const useCOTStore = defineStore('cots', {
 
             feat = this.style(feat);
 
+            mission_guid = mission_guid || this.subscriptionPending.get(feat.id);
+
             if (mission_guid)  {
                 let cots = this.subscriptions.get(mission_guid);
                 if (!cots) {
@@ -366,6 +404,9 @@ export const useCOTStore = defineStore('cots', {
                 }
 
                 cots.set(String(feat.id), feat);
+
+                const mapStore = useMapStore();
+                mapStore.updateMissionData(mission_guid);
             } else {
                 /**
                  * Mission CoTs ideally go to the Mission Layer
