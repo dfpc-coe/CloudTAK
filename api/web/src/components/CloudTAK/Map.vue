@@ -776,7 +776,7 @@ export default {
                 cotStore.pendingDelete.clear();
 
                 if (diff.add.length || diff.remove.length || diff.update.length) {
-                    mapStore.map.getSource('cots').updateData(diff);
+                    mapStore.map.getSource('-1').updateData(diff);
                 }
 
                 if (this.locked.length && cotStore.has(this.locked[this.locked.length - 1])) {
@@ -798,7 +798,7 @@ export default {
         setYou: function() {
             if (profileStore.profile.tak_loc) {
                 connectionStore.sendCOT(profileStore.CoT());
-                mapStore.map.getSource('you').setData({
+                mapStore.map.getSource(0).setData({
                     type: 'FeatureCollection',
                     features: [{
                         type: 'Feature',
