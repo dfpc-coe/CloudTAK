@@ -38,7 +38,7 @@
                 />
             </template>
             <template #default>
-                <TablerLoading v-if='loading' />
+                <TablerLoading v-if='loading || !initialized' />
                 <template v-else>
                     <div ref='sortable'>
                         <div
@@ -103,7 +103,7 @@
                                             :size='20'
                                             :stroke='1'
                                             class='cursor-pointer'
-                                            @click.stop.prevent='zoomTo(getSource(overlay).bounds)'
+                                            @click.stop.prevent='zoomTo(overlay)'
                                         />
                                         <TablerDelete
                                             v-if='opened.includes(overlay.id) && (overlay.mode === "mission" || overlay.name.startsWith("data-") || overlay.name.startsWith("profile-"))'
@@ -211,7 +211,7 @@ export default {
         }
     },
     computed: {
-        ...mapState(useMapStore, ['overlays'])
+        ...mapState(useMapStore, ['overlays', 'initialized'])
     },
     watch: {
         isDraggable: function() {
@@ -275,8 +275,10 @@ export default {
                 await mapStore.updateLayer(layer)
             }
         },
-        zoomTo: function(bounds) {
-            mapStore.map.fitBounds(bounds);
+        zoomTo: function(layer) {
+            const source = this.getSource(layer);
+            if (!source || !source.bounds) return;
+            mapStore.map.fitBounds(source.bounds);
         },
         updateOpacity: async function(layer) {
             await mapStore.updateLayer(layer)
