@@ -178,18 +178,14 @@ export default class Overlay {
 
         if (body.visible !== undefined) {
             for (const l of this._layers) {
-                if (this.visible === false) {
-                    this._map.setLayoutProperty(this.id, 'visibility', 'none');
-                } else if (this.visible === true) {
-                    this._map.setLayoutProperty(this.id, 'visibility', 'visible');
-                }
+                this._map.setLayoutProperty(this.id, 'visibility', this.visible ? 'visible' : 'none');
             }
         }
 
-        await this.#save();
+        await this.save();
     }
 
-    async #save(): Promise<void> {
+    async save(): Promise<void> {
         if (this._destroyed) throw new Error('Cannot save a destroyed layer');
         if (this._internal) return;
 

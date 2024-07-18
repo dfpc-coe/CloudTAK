@@ -115,12 +115,12 @@
                                         />
 
                                         <IconEye
-                                            v-if='overlay.visible === "visible"'
+                                            v-if='overlay.visible'
                                             v-tooltip='"Hide Layer"'
                                             :size='20'
                                             :stroke='1'
                                             class='cursor-pointer'
-                                            @click.stop.prevent='flipVisible(overlay)'
+                                            @click.stop.prevent='overlay.update({ visible: !overlay.visible })'
                                         />
                                         <IconEyeOff
                                             v-else
@@ -128,7 +128,7 @@
                                             :size='20'
                                             :stroke='1'
                                             class='cursor-pointer'
-                                            @click.stop.prevent='flipVisible(overlay)'
+                                            @click.stop.prevent='overlay.update({ visible: !overlay.visible })'
                                         />
                                     </div>
                                 </div>
@@ -146,7 +146,9 @@
                                         :min='0'
                                         :max='1'
                                         :step='0.1'
-                                        @change='updateOpacity(overlay)'
+                                        @change='overlay.update({
+                                            opacity: $event
+                                        })'
                                     />
                                 </div>
                                 <TreeCots
@@ -266,16 +268,10 @@ export default {
         getSource: function(layer) {
             return mapStore.map.getSource(layer.id)
         },
-        flipVisible: async function(overlay) {
-            await overlay.update({ visible: !overlay.visible })
-        },
         zoomTo: function(layer) {
             const source = this.getSource(layer);
             if (!source || !source.bounds) return;
             mapStore.map.fitBounds(source.bounds);
-        },
-        updateOpacity: async function(layer) {
-            await mapStore.updateLayer(layer)
         },
     },
     components: {
