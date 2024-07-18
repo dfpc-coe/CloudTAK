@@ -42,9 +42,9 @@
                 <template v-else>
                     <div ref='sortable'>
                         <div
-                            v-for='element in layers'
-                            :id='element.id'
-                            :key='element.id'
+                            v-for='overlay in overlays'
+                            :id='overlay.id'
+                            :key='overlay.id'
                             class='col-lg py-2'
                         >
                             <div class='py-2 px-3'>
@@ -58,23 +58,23 @@
                                     />
 
                                     <IconChevronRight
-                                        v-if='!isDraggable && !opened.includes(element.id)'
+                                        v-if='!isDraggable && !opened.includes(overlay.id)'
                                         :size='20'
                                         :stroke='1'
                                         class='cursor-pointer'
-                                        @click='opened.push(element.id)'
+                                        @click='opened.push(overlay.id)'
                                     />
                                     <IconChevronDown
                                         v-else-if='!isDraggable'
                                         :size='20'
                                         :stroke='1'
                                         class='cursor-pointer'
-                                        @click='opened.splice(opened.indexOf(element.id), 1)'
+                                        @click='opened.splice(opened.indexOf(overlay.id), 1)'
                                     />
 
                                     <span class='mx-2'>
                                         <IconMap
-                                            v-if='element.type === "raster"'
+                                            v-if='overlay.type === "raster"'
                                             v-tooltip='"Raster"'
                                             :size='20'
                                             :stroke='1'
@@ -90,37 +90,37 @@
                                     <span
                                         class='mx-2 user-select-none'
                                         :class='{
-                                            "cursor-pointer": ["data", "profile"].includes(element.mode) && element.type === "vector"
+                                            "cursor-pointer": ["data", "profile"].includes(overlay.mode) && overlay.type === "vector"
                                         }'
-                                        @click='editor(element)'
-                                        v-text='element.name'
+                                        @click='editor(overlay)'
+                                        v-text='overlay.name'
                                     />
 
                                     <div class='ms-auto btn-list'>
                                         <IconMaximize
-                                            v-if='getSource(element).bounds'
+                                            v-if='getSource(overlay).bounds'
                                             v-tooltip='"Zoom To Overlay"'
                                             :size='20'
                                             :stroke='1'
                                             class='cursor-pointer'
-                                            @click.stop.prevent='zoomTo(getSource(element).bounds)'
+                                            @click.stop.prevent='zoomTo(getSource(overlay).bounds)'
                                         />
                                         <TablerDelete
-                                            v-if='opened.includes(element.id) && (element.mode === "mission" || element.name.startsWith("data-") || element.name.startsWith("profile-"))'
-                                            :key='element.id'
+                                            v-if='opened.includes(overlay.id) && (overlay.mode === "mission" || overlay.name.startsWith("data-") || overlay.name.startsWith("profile-"))'
+                                            :key='overlay.id'
                                             v-tooltip='"Delete Overlay"'
                                             :size='20'
                                             displaytype='icon'
-                                            @delete='removeLayer(element)'
+                                            @delete='removeLayer(overlay)'
                                         />
 
                                         <IconEye
-                                            v-if='element.visible === "visible"'
+                                            v-if='overlay.visible === "visible"'
                                             v-tooltip='"Hide Layer"'
                                             :size='20'
                                             :stroke='1'
                                             class='cursor-pointer'
-                                            @click.stop.prevent='flipVisible(element)'
+                                            @click.stop.prevent='flipVisible(overlay)'
                                         />
                                         <IconEyeOff
                                             v-else
@@ -128,7 +128,7 @@
                                             :size='20'
                                             :stroke='1'
                                             class='cursor-pointer'
-                                            @click.stop.prevent='flipVisible(element)'
+                                            @click.stop.prevent='flipVisible(overlay)'
                                         />
                                     </div>
                                 </div>
@@ -136,22 +136,22 @@
 
                             <template v-if='!isDraggable'>
                                 <div
-                                    v-if='element.type === "raster" && opened.includes(element.id)'
+                                    v-if='overlay.type === "raster" && opened.includes(overlay.id)'
                                     class='col-12'
                                     style='margin-left: 30px; padding-right: 40px;'
                                 >
                                     <TablerRange
-                                        v-model='element.opacity'
+                                        v-model='overlay.opacity'
                                         label='Opacity'
                                         :min='0'
                                         :max='1'
                                         :step='0.1'
-                                        @change='updateOpacity(element)'
+                                        @change='updateOpacity(overlay)'
                                     />
                                 </div>
                                 <TreeCots
-                                    v-else-if='element.type === "geojson" && element.id === "cots" && opened.includes(element.id)'
-                                    :element='element'
+                                    v-else-if='overlay.type === "geojson" && overlay.id === "cots" && opened.includes(overlay.id)'
+                                    :element='overlay'
                                 />
                             </template>
                         </div>
@@ -188,8 +188,6 @@ import Sortable from 'sortablejs';
 import { mapState } from 'pinia'
 import { useMapStore } from '/src/stores/map.ts';
 const mapStore = useMapStore();
-import { useOverlayStore } from '/src/stores/overlays.ts';
-const overlayStore = useOverlayStore();
 
 let sortable;
 
@@ -213,7 +211,7 @@ export default {
         }
     },
     computed: {
-        ...mapState(useMapStore, ['layers'])
+        ...mapState(useMapStore, ['overlays'])
     },
     watch: {
         isDraggable: function() {

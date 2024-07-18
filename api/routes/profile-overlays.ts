@@ -64,6 +64,14 @@ export default async function router(schema: Schema, config: Config) {
                     await config.models.ProfileOverlay.delete(item.id);
                     removed.push(...overlays.items.splice(i, 1));
                     overlays.total--;
+                } else if (item.mode === 'basemap') {
+                    try {
+                        await config.models.Basemap.from(item.mode_id);
+                    } catch (err) {
+                        await config.models.ProfileOverlay.delete(item.id);
+                        removed.push(...overlays.items.splice(i, 1));
+                        overlays.total--;
+                    }
                 } else if (item.mode === 'mission' && !(await api.Mission.access(
                         item.mode_id,
                         await config.conns.subscription(user.email, item.name)

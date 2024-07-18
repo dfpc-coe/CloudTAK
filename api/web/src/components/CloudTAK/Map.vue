@@ -451,7 +451,6 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import RadialMenu from './RadialMenu/RadialMenu.vue';
 import { mapState, mapActions } from 'pinia'
 import { useMapStore } from '/src/stores/map.ts';
-import { useOverlayStore } from '/src/stores/overlays.ts';
 import { useProfileStore } from '/src/stores/profile.ts';
 import { useCOTStore } from '/src/stores/cots.ts';
 import { useConnectionStore } from '/src/stores/connection.ts';
@@ -459,7 +458,6 @@ import UploadImport from './util/UploadImport.vue'
 const profileStore = useProfileStore();
 const cotStore = useCOTStore();
 const mapStore = useMapStore();
-const overlayStore = useOverlayStore();
 const connectionStore = useConnectionStore();
 
 export default {
@@ -512,7 +510,6 @@ export default {
     unmounted: function() {
         cotStore.$reset();
         mapStore.destroy();
-        overlayStore.$reset();
     },
     mounted: async function() {
         // ensure uncaught errors in the stack are captured into vue context
@@ -812,40 +809,18 @@ export default {
             }
         },
         mountMap: async function() {
-            let basemap;
-
-            const burl = stdurl('/api/basemap');
-            burl.searchParams.append('type', 'raster');
-            const basemaps = await std(burl);
-            if (basemaps.items.length > 0) {
-                basemap = basemaps.items[0];
-                basemap.url = String(stdurl(`/api/basemap/${basemap.id}/tiles/`)) + `{z}/{x}/{y}?token=${localStorage.token}`;
-            }
-
-            const turl = stdurl('/api/basemap');
-            turl.searchParams.append('type', 'raster-dem');
-
-            /* Disabled for now
-            const terrains = await std(turl);
-            if (terrains.items.length > 0) {
-                terrain = terrains.items[0];
-                terrain.url = String(stdurl(`/api/basemap/${terrain.id}/tiles/`)) + `{z}/{x}/{y}?token=${localStorage.token}`;
-            }
-            */
-
-            mapStore.init(this.$refs.map, basemap);
+            mapStore.init(this.$refs.map);
 
             mapStore.map.once('idle', async () => {
-                await mapStore.initLayers(basemap);
-
+                // Eventually make a sprite URL part of the overlay so KMLs can load a sprite package
                 const iconsets = await std('/api/iconset');
                 for (const iconset of iconsets.items) {
                     mapStore.map.addSprite(iconset.uid, String(stdurl(`/api/icon/sprite?token=${localStorage.token}&iconset=${iconset.uid}`)))
                 }
 
                 await mapStore.initOverlays();
-
                 mapStore.initDraw();
+
                 this.setYou();
 
                 mapStore.draw.on('deselect', async () => {

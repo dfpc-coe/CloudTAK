@@ -5,7 +5,6 @@ import * as pmtiles from 'pmtiles';
 import mapgl from 'maplibre-gl'
 import * as terraDraw from 'terra-draw';
 import pointOnFeature from '@turf/point-on-feature';
-import { useOverlayStore } from './overlays.js'
 import type { Basemap, ProfileOverlay } from '../types.ts';
 import type { FeatureCollection, Feature } from 'geojson';
 import type {
@@ -19,7 +18,6 @@ import type {
     FillLayerSpecification,
     MapGeoJSONFeature
 } from 'maplibre-gl';
-const overlayStore = useOverlayStore();
 import { useCOTStore } from './cots.js'
 const cotStore = useCOTStore();
 
@@ -46,7 +44,7 @@ export const useMapStore = defineStore('cloudtak', {
             y: number;
         },
         initialized: boolean;
-        layers: OverlayContainer[]
+        overlays: Array<Overlays>
     } => {
         const protocol = new pmtiles.Protocol();
         mapgl.addProtocol('pmtiles', protocol.tile);
@@ -63,7 +61,7 @@ export const useMapStore = defineStore('cloudtak', {
             radial: {
                 x: 0, y: 0,
             },
-            layers: [],
+            overlays: [],
 
             // Set to true once all Overlays are loaded
             initialized: false,
@@ -120,14 +118,14 @@ export const useMapStore = defineStore('cloudtak', {
             if (overlay.before) {
                 const beforePos = this.getLayerPos(overlay.before)
                 if (beforePos !== false) {
-                    overlay.before = this.layers[beforePos].layers[0].id;
+                    overlay.before = this.overlays[beforePos].layers[0].id;
                     // @ts-expect-error Type instantiation is excessively deep and possibly infinite.
-                    this.layers.splice(beforePos, 0, overlay);
+                    this.overlays.splice(beforePos, 0, overlay);
                 } else {
-                    this.layers.push(overlay);
+                    this.overlays.push(overlay);
                 }
             } else {
-                this.layers.push(overlay);
+                this.overlays.push(overlay);
             }
 
             for (const l of overlay.layers) {
@@ -157,27 +155,29 @@ export const useMapStore = defineStore('cloudtak', {
             if (overlay.save && !config.initial) {
                 if (!overlay.url || !overlay.mode) throw new Error('Saved overlay must have url & mode property');
 
+/*
                 await overlayStore.saveOverlay({
                     ...overlay,
                     mode_id: overlay.mode_id ? overlay.mode_id : undefined,
                     url: overlay.type === 'vector' ? new URL(overlay.url).pathname : overlay.url,
                     visible: overlay.visible === 'visible' ? true : false
                 });
+*/
             }
         },
         getLayer(id: string): OverlayContainer | null {
-            for (let i = 0; i < this.layers.length; i++) {
-                if (this.layers[i].id === id) {
-                    return this.layers[i];
+            for (let i = 0; i < this.overlays.length; i++) {
+                if (this.overlays[i].id === id) {
+                    return this.overlays[i];
                 }
             }
 
             return null;
         },
         getLayerByMode(mode: string, mode_id: string): OverlayContainer | null {
-            for (let i = 0; i < this.layers.length; i++) {
-                if (this.layers[i].mode === mode && this.layers[i].mode_id === mode_id) {
-                    return this.layers[i];
+            for (let i = 0; i < this.overlays.length; i++) {
+                if (this.overlays[i].mode === mode && this.overlays[i].mode_id === mode_id) {
+                    return this.overlays[i];
                 }
             }
 
@@ -209,7 +209,7 @@ export const useMapStore = defineStore('cloudtak', {
 
             const pos = this.getLayerPos(newLayer.name);
             if (pos === false) return
-            this.layers[pos] = newLayer;
+            this.overlays[pos] = newLayer;
 
             for (const l of newLayer.layers) {
                 if (newLayer.type === 'raster') {
@@ -224,51 +224,51 @@ export const useMapStore = defineStore('cloudtak', {
             }
 
             if (newLayer.save && newLayer.overlay) {
+/*
                 await overlayStore.updateOverlay(newLayer.overlay, {
                     visible: newLayer.visible === 'visible' ? true : false
                 });
+*/
             }
         },
         removeLayerBySource: async function(source: string) {
             const pos = this.getLayerPos(source, 'source');
             if (pos === false) return
-            const layer = this.layers[pos];
+            const layer = this.overlays[pos];
 
             await this.removeLayer(layer.name);
         },
         getLayerPos: function(name: string, key='name') {
             if (!['name', 'source'].includes(key)) throw new Error(`Unsupported Lookup Key: ${key}`);
 
-            for (let i = 0; i < this.layers.length; i++) {
-                if (key === 'name' && this.layers[i].name === name) {
+            for (let i = 0; i < this.overlays.length; i++) {
+                if (key === 'name' && this.overlays[i].name === name) {
                     return i;
-                } else if (key === 'source' && this.layers[i].source === name) {
+                } else if (key === 'source' && this.overlays[i].source === name) {
                     return i;
                 }
             }
 
             return false
         },
-        removeLayer: async function(name: string) {
-            if (!this.map) throw new Error('Cannot removeLayer before map has loaded');
+        removeOverlay: async function(name: string) {
+            if (!this.map) throw new Error('Cannot removeOverlay before map has loaded');
 
             const pos = this.getLayerPos(name);
             if (pos === false) return;
-            const layer = this.layers[pos];
+            const overlay = this.overlays[pos];
 
-            this.layers.splice(pos, 1)
+            this.overlays.splice(pos, 1)
 
-            for (const l of layer.layers) {
+            for (const l of overlay.layers) {
                 this.map.removeLayer(l.id);
             }
 
-            this.map.removeSource(layer.source);
+            this.map.removeSource(overlay.source);
 
-            if (layer.save && layer.overlay) {
-                await overlayStore.deleteOverlay(layer.overlay);
-            }
+            await overlay.delete();
         },
-        init: function(container: HTMLElement, basemap?: Basemap, terrain?: Basemap) {
+        init: function(container: HTMLElement) {
             this.container = container;
 
             const init: mapgl.MapOptions = {
@@ -311,36 +311,149 @@ export const useMapStore = defineStore('cloudtak', {
 
             if (!init.style || typeof init.style === 'string') throw new Error('init.style must be an object');
 
-            if (basemap) {
-                init.style.sources.basemap = {
-                    type: 'raster',
-                    tileSize: 256,
-                    tiles: [ basemap.url ]
-                }
-            }
-
-            if (terrain) {
-                init.style.sources.terrain = {
-                    type: 'raster-dem',
-                    tileSize: 256,
-                    tiles: [ terrain.url ]
-                }
-
-                init.style.terrain = {
-                    source: 'terrain',
-                }
-            }
-
             this.map = new mapgl.Map(init);
         },
 
         initOverlays: async function() {
+            if (!this.map) throw new Error('Cannot initLayers before map has loaded');
+
+            await this.addLayer({
+                id: 'cots',
+                name: 'CoT Icons',
+                source: 'cots',
+                type: 'geojson',
+                clickable: [
+                    { id: 'cots', type: 'cot' },
+                    { id: 'cots-poly', type: 'cot' },
+                    { id: 'cots-group', type: 'cot' },
+                    { id: `cots-icon`, type: 'cot' },
+                    { id: 'cots-line', type: 'cot' }
+                ],
+                layers: cotStyles('cots', {
+                    group: true,
+                    icons: true,
+                    labels: true
+                })
+            });
+
+            await this.addLayer({
+                id: 'you',
+                name: 'Your Location',
+                source: 'you',
+                type: 'vector',
+                layers: [{
+                    id: 'you',
+                    type: 'circle',
+                    source: 'you',
+                    paint: {
+                        'circle-radius': 10,
+                        'circle-color': '#0000f6',
+                    },
+                }]
+            });
+
+            this.map.on('rotate', () => {
+                this.bearing = this.map.getBearing()
+            })
+            this.map.on('click', (e: MapMouseEvent) => {
+                if (this.draw && this.draw.getMode() !== 'static') return;
+
+                if (this.radial.mode) this.radial.mode = undefined;
+                if (this.select.feats) this.select.feats = [];
+
+                // Ignore Non-Clickable Layer
+                const clickMap: Map<string, { type: string, id: string }> = new Map();
+                for (const l of this.overlays) for (const c of l.clickable) clickMap.set(c.id, c);
+                const features = this.map.queryRenderedFeatures(e.point).filter((feat) => {
+                    return clickMap.has(feat.layer.id);
+                });
+
+                if (!features.length) return;
+
+                // MultiSelect Mode
+                if (e.originalEvent.ctrlKey && features.length) {
+                    this.selected.set(features[0].properties.id, features[0]);
+                } else if (features.length === 1) {
+                    this.radialClick(features[0], {
+                        lngLat: e.lngLat,
+                        point: e.point
+                    })
+                } else if (features.length > 1) {
+                    if (e.point.x < 150 || e.point.y < 150) {
+                        const flyTo: mapgl.FlyToOptions = {
+                            speed: Infinity,
+                            center: [e.lngLat.lng, e.lngLat.lat]
+                        };
+
+                        if (this.map.getZoom() < 3) flyTo.zoom = 4;
+                        this.map.flyTo(flyTo)
+
+                        this.select.x = this.container ? this.container.clientWidth / 2 : 0;
+                        this.select.y = this.container ? this.container.clientHeight / 2 : 0;
+                    } else {
+                        this.select.x = e.point.x;
+                        this.select.y = e.point.y;
+                    }
+
+                    this.select.e = e;
+                    this.select.feats = features;
+                }
+            });
+
+            this.map.on('contextmenu', (e) => {
+                if (this.edit) return;
+
+                this.radialClick({
+                    id: window.crypto.randomUUID(),
+                    type: 'Feature',
+                    properties: {
+                        callsign: 'New Feature',
+                        archived: true,
+                        type: 'u-d-p',
+                        'marker-color': '#00ff00',
+                        'marker-opacity': 1
+                    },
+                    geometry: {
+                        type: 'Point',
+                        coordinates: [e.lngLat.lng, e.lngLat.lat]
+                    }
+                }, {
+                    mode: 'context',
+                    point: e.point,
+                    lngLat: e.lngLat
+                });
+            });
+
             const url = stdurl('/api/profile/overlay');
             url.searchParams.append('sort', 'pos');
             url.searchParams.append('order', 'asc');
-            const list = await std(url);
+            const items = (await std(url)).items;
 
-            for (const item of list.items) {
+            const hasBasemap = items.some((o) => {
+                return o.mode === 'basemap'
+            });
+
+            // Courtesy add an initial basemap
+            if (!hasBasemap) {
+                const burl = stdurl('/api/basemap');
+                burl.searchParams.append('type', 'raster');
+                const basemaps = await std(burl);
+
+                if (basemaps.items.length > 0) {
+                    const basemap = await Overlay.create({
+                        name: basemaps.items[0].name,
+                        pos: -1,
+                        type: 'raster',
+                        url: `/api/basemap/${basemaps.items[0].id}/tiles`,
+                        mode: 'basemap',
+                        mode_id: basemaps.items[0].id
+                    });
+
+                    items.unshift(basemap);
+                }
+            }
+
+            for (const item of items) {
                 const overlay = new Overlay(item as ProfileOverlay)
 
                 await this.addDefaultLayer({
@@ -451,131 +564,6 @@ export const useMapStore = defineStore('cloudtak', {
             }
         },
         initLayers: async function(basemap?: Basemap) {
-            if (!this.map) throw new Error('Cannot initLayers before map has loaded');
-            const map = this.map;
-
-            if (basemap) {
-                await this.addLayer({
-                    id: 'basemap',
-                    name: basemap.name,
-                    source: 'basemap',
-                    type: 'raster',
-                    layers: [{
-                        id: 'basemap',
-                        type: 'raster',
-                        source: 'basemap',
-                        minzoom: basemap.minzoom,
-                        maxzoom: basemap.maxzoom
-                    }]
-                });
-            }
-
-            await this.addLayer({
-                id: 'cots',
-                name: 'CoT Icons',
-                source: 'cots',
-                type: 'geojson',
-                clickable: [
-                    { id: 'cots', type: 'cot' },
-                    { id: 'cots-poly', type: 'cot' },
-                    { id: 'cots-group', type: 'cot' },
-                    { id: `cots-icon`, type: 'cot' },
-                    { id: 'cots-line', type: 'cot' }
-                ],
-                layers: cotStyles('cots', {
-                    group: true,
-                    icons: true,
-                    labels: true
-                })
-            });
-
-            await this.addLayer({
-                id: 'you',
-                name: 'Your Location',
-                source: 'you',
-                type: 'vector',
-                layers: [{
-                    id: 'you',
-                    type: 'circle',
-                    source: 'you',
-                    paint: {
-                        'circle-radius': 10,
-                        'circle-color': '#0000f6',
-                    },
-                }]
-            });
-
-            map.on('rotate', () => {
-                this.bearing = map.getBearing()
-            })
-            map.on('click', (e: MapMouseEvent) => {
-                if (this.draw && this.draw.getMode() !== 'static') return;
-
-                if (this.radial.mode) this.radial.mode = undefined;
-                if (this.select.feats) this.select.feats = [];
-
-                // Ignore Non-Clickable Layer
-                const clickMap: Map<string, { type: string, id: string }> = new Map();
-                for (const l of this.layers) for (const c of l.clickable) clickMap.set(c.id, c);
-                const features = map.queryRenderedFeatures(e.point).filter((feat) => {
-                    return clickMap.has(feat.layer.id);
-                });
-
-                if (!features.length) return;
-
-                // MultiSelect Mode
-                if (e.originalEvent.ctrlKey && features.length) {
-                    this.selected.set(features[0].properties.id, features[0]);
-                } else if (features.length === 1) {
-                    this.radialClick(features[0], {
-                        lngLat: e.lngLat,
-                        point: e.point
-                    })
-                } else if (features.length > 1) {
-                    if (e.point.x < 150 || e.point.y < 150) {
-                        const flyTo: mapgl.FlyToOptions = {
-                            speed: Infinity,
-                            center: [e.lngLat.lng, e.lngLat.lat]
-                        };
-
-                        if (map.getZoom() < 3) flyTo.zoom = 4;
-                        map.flyTo(flyTo)
-
-                        this.select.x = this.container ? this.container.clientWidth / 2 : 0;
-                        this.select.y = this.container ? this.container.clientHeight / 2 : 0;
-                    } else {
-                        this.select.x = e.point.x;
-                        this.select.y = e.point.y;
-                    }
-
-                    this.select.e = e;
-                    this.select.feats = features;
-                }
-            });
-
-            map.on('contextmenu', (e) => {
-                if (this.edit) return;
-
-                this.radialClick({
-                    id: window.crypto.randomUUID(),
-                    type: 'Feature',
-                    properties: {
-                        callsign: 'New Feature',
-                        archived: true,
-                        type: 'u-d-p',
-                        'marker-color': '#00ff00',
-                        'marker-opacity': 1
-                    },
-                    geometry: {
-                        type: 'Point',
-                        coordinates: [e.lngLat.lng, e.lngLat.lat]
-                    }
-                }, {
-                    mode: 'context',
-                    point: e.point,
-                    lngLat: e.lngLat
-                });
-            });
         },
         radialClick: async function(feat: MapGeoJSONFeature | Feature, opts: {
             lngLat: LngLat;
@@ -589,7 +577,7 @@ export const useMapStore = defineStore('cloudtak', {
 
             if (!opts.mode) {
                 const clickMap: Map<string, { type: string, id: string }> = new Map();
-                for (const l of this.layers) for (const c of l.clickable) clickMap.set(c.id, c);
+                for (const l of this.overlays) for (const c of l.clickable) clickMap.set(c.id, c);
                 if (!('layer' in feat)) return;
                 const click = clickMap.get(feat.layer.id);
                 if (!click) return;
