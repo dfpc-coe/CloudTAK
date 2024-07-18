@@ -38,7 +38,7 @@
                 />
             </template>
             <template #default>
-                <TablerLoading v-if='loading || !initialized' />
+                <TablerLoading v-if='loading || !isLoaded' />
                 <template v-else>
                     <div ref='sortable'>
                         <div
@@ -211,7 +211,7 @@ export default {
         }
     },
     computed: {
-        ...mapState(useMapStore, ['overlays', 'initialized'])
+        ...mapState(useMapStore, ['overlays', 'isLoaded'])
     },
     watch: {
         isDraggable: function() {
@@ -264,16 +264,10 @@ export default {
             }
         },
         getSource: function(layer) {
-            return mapStore.map.getSource(layer.source)
+            return mapStore.map.getSource(layer.id)
         },
-        flipVisible: async function(layer) {
-            if (layer.visible === 'visible') {
-                layer.visible = 'none';
-                await mapStore.updateLayer(layer)
-            } else {
-                layer.visible = 'visible';
-                await mapStore.updateLayer(layer)
-            }
+        flipVisible: async function(overlay) {
+            await overlay.update({ visible: !overlay.visible })
         },
         zoomTo: function(layer) {
             const source = this.getSource(layer);
