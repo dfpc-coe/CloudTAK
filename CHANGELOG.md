@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v2.72.0 - 2024-07-18
+
+- :rocket: `UI` Map incoming CoTs from Missions to their correct layer
+
 ### v2.71.0 - 2024-07-17
 
 - :bug: `UI` Release the Integration Wizard - a new workflow for quickly creating Layers from Templates
