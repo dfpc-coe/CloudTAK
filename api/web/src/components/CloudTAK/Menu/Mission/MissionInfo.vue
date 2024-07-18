@@ -138,7 +138,7 @@ export default {
     },
     computed: {
         subscribed: function() {
-            if (!mapStore.initialized || this.loading.subscribe) return;
+            if (!mapStore.isLoaded || this.loading.subscribe) return;
             return !!mapStore.getLayerByMode('mission', this.mission.guid);
         }
     },

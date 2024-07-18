@@ -42,12 +42,11 @@ export default class Overlay {
         body: {
             id: number;
             name: string;
-            source: string;
         },
         layers: Array<LayerSpecification>
     ): Overlay {
         const overlay = new Overlay(map, {
-            id, name, source,
+            ...body,
             type: 'vector'
         });
 
@@ -130,9 +129,9 @@ export default class Overlay {
             this._map.addLayer(l) // before);
 
             // TODO: Not sure why "visibility: overlay.visible"  above isn't respected
-            if (overlay.visible === 'none') {
+            if (overlay.visible === false) {
                 this._map.setLayoutProperty(l.id, 'visibility', 'none');
-            } else if (overlay.visible === 'visible') {
+            } else if (overlay.visible === true) {
                 this._map.setLayoutProperty(l.id, 'visibility', 'visible');
             }
         }

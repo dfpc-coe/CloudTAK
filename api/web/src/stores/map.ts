@@ -44,7 +44,6 @@ export const useMapStore = defineStore('cloudtak', {
             x: number;
             y: number;
         },
-        initialized: boolean;
         overlays: Array<Overlays>
     } => {
         const protocol = new pmtiles.Protocol();
@@ -64,8 +63,6 @@ export const useMapStore = defineStore('cloudtak', {
             },
             overlays: [],
 
-            // Set to true once all Overlays are loaded
-            initialized: false,
             selected: new Map()
         }
     },
@@ -109,7 +106,7 @@ export const useMapStore = defineStore('cloudtak', {
             if (!overlay) return false;
 
             if (!this.map) throw new Error('Cannot updateMissionData before map has loaded');
-            const oStore = this.map.getSource(overlay.source);
+            const oStore = this.map.getSource(overlay.id);
             if (!oStore) return false
 
             // @ts-expect-error TS currently blows up Map<string, Feature> into actual { type: 'Feature' ... } etc
@@ -133,7 +130,7 @@ export const useMapStore = defineStore('cloudtak', {
             for (let i = 0; i < this.overlays.length; i++) {
                 if (key === 'name' && this.overlays[i].name === name) {
                     return i;
-                } else if (key === 'source' && this.overlays[i].source === name) {
+                } else if (key === 'source' && this.overlays[i].id === name) {
                     return i;
                 }
             }
@@ -153,7 +150,7 @@ export const useMapStore = defineStore('cloudtak', {
                 this.map.removeLayer(l.id);
             }
 
-            this.map.removeSource(overlay.source);
+            this.map.removeSource(overlay.id);
 
             await overlay.delete();
         },
@@ -178,13 +175,13 @@ export const useMapStore = defineStore('cloudtak', {
                         url: String(stdurl(`/api/icon/sprite?token=${localStorage.token}&iconset=default`))
                     }],
                     sources: {
-                        cots: {
+                        '-1': {
                             type: 'geojson',
                             cluster: false,
                             promoteId: 'id',
                             data: { type: 'FeatureCollection', features: [] }
                         },
-                        you: {
+                        0: {
                             type: 'geojson',
                             cluster: false,
                             data: { type: 'FeatureCollection', features: [] }
@@ -312,12 +309,11 @@ export const useMapStore = defineStore('cloudtak', {
                 ));
             }
 
-            this.overlays.push(new Overlay(
+            this.overlays.push(Overlay.internal(
                 this.map,
                 {
                     id: -1,
                     name: 'CoT Icons',
-                    source: 'cots',
                     type: 'geojson',
                 },{
                     layers: cotStyles('cots', {
@@ -335,18 +331,17 @@ export const useMapStore = defineStore('cloudtak', {
                 }
             ));
 
-            this.overlays.push(new Overlay(
+            this.overlays.push(Overlay.internal(
                 this.map,
                 {
                     id: 0,
                     name: 'Your Location',
-                    source: 'you',
                     type: 'vector',
                 },{
                     layers: [{
                         id: 'you',
                         type: 'circle',
-                        source: 'you',
+                        source: 0,
                         paint: {
                             'circle-radius': 10,
                             'circle-color': '#0000f6',
@@ -354,8 +349,6 @@ export const useMapStore = defineStore('cloudtak', {
                     }]
                 }
             ));
-
-            this.initialized = true;
         },
         radialClick: async function(feat: MapGeoJSONFeature | Feature, opts: {
             lngLat: LngLat;
