@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import Overlay from './overlays/base.ts';
+import cotStyles from './overlays/styles.ts'
 import { std, stdurl } from '../std.js';
 import * as pmtiles from 'pmtiles';
 import mapgl from 'maplibre-gl'
@@ -80,91 +81,6 @@ export const useMapStore = defineStore('cloudtak', {
             }
             this.$reset();
         },
-        addLayer: async function(layer: {
-            id: string;
-            name: string;
-            source: string;
-            layers: Array<LayerSpecification>;
-            url?: string;
-            save?: boolean;
-            visible?: string;
-            opacity?: number;
-            mode?: string;
-            mode_id?: string | null;
-            overlay?: number;
-            type?: string;
-            before?: string;
-            clickable?: Array<{ id: string; type: string; }>
-        }, config: {
-            initial: boolean;
-        } = {
-            initial: false
-        }) {
-            if (!this.map) throw new Error('Cannot addLayer before map has loaded');
-            const map = this.map;
-
-            if (!layer.name) throw new Error('Layer Name must be set');
-            if (!layer.source) throw new Error('Layer Source must be set');
-            if (!layer.clickable) layer.clickable = [];
-
-            if (this.getLayerPos(layer.name) !== false) return;
-
-            if (!layer.visible) layer.visible = 'visible';
-            if (layer.opacity === undefined || isNaN(layer.opacity)) layer.opacity = 1;
-            if (!layer.type) layer.type = 'raster';
-
-            const overlay = layer as OverlayContainer;
-
-            if (overlay.before) {
-                const beforePos = this.getLayerPos(overlay.before)
-                if (beforePos !== false) {
-                    overlay.before = this.overlays[beforePos].layers[0].id;
-                    // @ts-expect-error Type instantiation is excessively deep and possibly infinite.
-                    this.overlays.splice(beforePos, 0, overlay);
-                } else {
-                    this.overlays.push(overlay);
-                }
-            } else {
-                this.overlays.push(overlay);
-            }
-
-            for (const l of overlay.layers) {
-                map.addLayer({
-                    ...l,
-                }, layer.before);
-
-                // TODO: Not sure why "visibility: overlay.visible"  above isn't respected
-                if (overlay.visible === 'none') {
-                    this.map.setLayoutProperty(l.id, 'visibility', 'none');
-                } else if (overlay.visible === 'visible') {
-                    this.map.setLayoutProperty(l.id, 'visibility', 'visible');
-                }
-            }
-
-            for (const click of layer.clickable) {
-                map.on('mouseenter', click.id, () => {
-                    if (this.draw && this.draw.getMode() !== 'static') return;
-                    map.getCanvas().style.cursor = 'pointer';
-                })
-                map.on('mouseleave', click.id, () => {
-                    if (this.draw && this.draw.getMode() !== 'static') return;
-                    map.getCanvas().style.cursor = '';
-                })
-            }
-
-            if (overlay.save && !config.initial) {
-                if (!overlay.url || !overlay.mode) throw new Error('Saved overlay must have url & mode property');
-
-/*
-                await overlayStore.saveOverlay({
-                    ...overlay,
-                    mode_id: overlay.mode_id ? overlay.mode_id : undefined,
-                    url: overlay.type === 'vector' ? new URL(overlay.url).pathname : overlay.url,
-                    visible: overlay.visible === 'visible' ? true : false
-                });
-*/
-            }
-        },
         getLayer(id: string): OverlayContainer | null {
             for (let i = 0; i < this.overlays.length; i++) {
                 if (this.overlays[i].id === id) {
@@ -192,7 +108,7 @@ export const useMapStore = defineStore('cloudtak', {
             const overlay = this.getLayerByMode('mission', guid)
             if (!overlay) return false;
 
-            if (!this.map) throw new Error('Cannot updateLayer before map has loaded');
+            if (!this.map) throw new Error('Cannot updateMissionData before map has loaded');
             const oStore = this.map.getSource(overlay.source);
             if (!oStore) return false
 
@@ -203,33 +119,6 @@ export const useMapStore = defineStore('cloudtak', {
             oStore.setData(fc);
 
             return true;
-        },
-        updateLayer: async function(newLayer: OverlayContainer) {
-            if (!this.map) throw new Error('Cannot updateLayer before map has loaded');
-
-            const pos = this.getLayerPos(newLayer.name);
-            if (pos === false) return
-            this.overlays[pos] = newLayer;
-
-            for (const l of newLayer.layers) {
-                if (newLayer.type === 'raster') {
-                    this.map.setPaintProperty(l.id, 'raster-opacity', Number(newLayer.opacity))
-                }
-
-                if (newLayer.visible === 'none') {
-                    this.map.setLayoutProperty(l.id, 'visibility', 'none');
-                } else if (newLayer.visible === 'visible') {
-                    this.map.setLayoutProperty(l.id, 'visibility', 'visible');
-                }
-            }
-
-            if (newLayer.save && newLayer.overlay) {
-/*
-                await overlayStore.updateOverlay(newLayer.overlay, {
-                    visible: newLayer.visible === 'visible' ? true : false
-                });
-*/
-            }
         },
         removeLayerBySource: async function(source: string) {
             const pos = this.getLayerPos(source, 'source');
@@ -313,45 +202,8 @@ export const useMapStore = defineStore('cloudtak', {
 
             this.map = new mapgl.Map(init);
         },
-
         initOverlays: async function() {
             if (!this.map) throw new Error('Cannot initLayers before map has loaded');
-
-            await this.addLayer({
-                id: 'cots',
-                name: 'CoT Icons',
-                source: 'cots',
-                type: 'geojson',
-                clickable: [
-                    { id: 'cots', type: 'cot' },
-                    { id: 'cots-poly', type: 'cot' },
-                    { id: 'cots-group', type: 'cot' },
-                    { id: `cots-icon`, type: 'cot' },
-                    { id: 'cots-line', type: 'cot' }
-                ],
-                layers: cotStyles('cots', {
-                    group: true,
-                    icons: true,
-                    labels: true
-                })
-            });
-
-            await this.addLayer({
-                id: 'you',
-                name: 'Your Location',
-                source: 'you',
-                type: 'vector',
-                layers: [{
-                    id: 'you',
-                    type: 'circle',
-                    source: 'you',
-                    paint: {
-                        'circle-radius': 10,
-                        'circle-color': '#0000f6',
-                    },
-                }]
-            });
-
             this.map.on('rotate', () => {
                 this.bearing = this.map.getBearing()
             })
@@ -454,116 +306,56 @@ export const useMapStore = defineStore('cloudtak', {
             }
 
             for (const item of items) {
-                const overlay = new Overlay(item as ProfileOverlay)
-
-                await this.addDefaultLayer({
-                    ...overlay,
-                    id: `${overlay.mode}-${overlay.mode_id}-${overlay.id}`,
-                    url: String(url),
-                    save: true,
-                    overlay: overlay.id,
-                }, true)
+                this.overlays.push(new Overlay(
+                    this.map,
+                    item as ProfileOverlay
+                ));
             }
+
+            this.overlays.push(new Overlay(
+                this.map,
+                {
+                    id: -1,
+                    name: 'CoT Icons',
+                    source: 'cots',
+                    type: 'geojson',
+                },{
+                    layers: cotStyles('cots', {
+                        group: true,
+                        icons: true,
+                        labels: true
+                    }),
+                    clickable: [
+                        { id: 'cots', type: 'cot' },
+                        { id: 'cots-poly', type: 'cot' },
+                        { id: 'cots-group', type: 'cot' },
+                        { id: `cots-icon`, type: 'cot' },
+                        { id: 'cots-line', type: 'cot' }
+                    ],
+                }
+            ));
+
+            this.overlays.push(new Overlay(
+                this.map,
+                {
+                    id: 0,
+                    name: 'Your Location',
+                    source: 'you',
+                    type: 'vector',
+                },{
+                    layers: [{
+                        id: 'you',
+                        type: 'circle',
+                        source: 'you',
+                        paint: {
+                            'circle-radius': 10,
+                            'circle-color': '#0000f6',
+                        },
+                    }]
+                }
+            ));
 
             this.initialized = true;
-        },
-
-        addDefaultLayer: async function(layer: {
-            id: string;
-            url?: string;
-            name: string;
-            save: boolean;
-            visible: boolean;
-            opacity: number;
-            mode: string;
-            mode_id?: string | null;
-            overlay?: number;
-            type: string;
-            before?: string;
-        }, initial=false) {
-            if (!this.map) throw new Error('Cannot addDefaultLayer before map has loaded');
-
-            if (layer.visible === undefined) {
-                layer.visible = true;
-            }
-
-            if (this.map && this.map.getSource(layer.id)) {
-                this.map.removeSource(layer.id);
-            }
-
-            if (layer.type ==='vector') {
-                this.map.addSource(layer.id, {
-                    type: 'vector',
-                    url: String(layer.url)
-                });
-            } else if (layer.type === 'geojson') {
-                if (!this.map.getSource(layer.id)) {
-                    let data: FeatureCollection = { type: 'FeatureCollection', features: [] };
-                    if (layer.mode === 'mission' && layer.mode_id) {
-                        data = await cotStore.loadMission(layer.mode_id);
-                    }
-
-                    this.map.addSource(layer.id, { type: 'geojson', cluster: false, data })
-                }
-            }
-
-            if (['vector', 'geojson'].includes(layer.type)) {
-                await this.addLayer({
-                    id: layer.id,
-                    url: layer.url,
-                    save: true,
-                    name: layer.name || layer.id,
-                    mode: layer.mode || layer.id.split('-')[0],
-                    mode_id:  layer.mode_id ? layer.mode_id : layer.id.split('-')[1],
-                    visible: layer.visible ? 'visible' : 'none',
-                    overlay: layer.overlay,
-                    source: layer.id,
-                    type: layer.type,
-                    before: 'CoT Icons',
-                    clickable: [
-                        { id: `${layer.id}-poly`, type: 'feat' },
-                        { id: `${layer.id}-polyline`, type: 'feat' },
-                        { id: `${layer.id}-line`, type: 'feat' },
-                        { id: `${layer.id}-icon`, type: 'feat' },
-                        { id: layer.id, type: 'feat' }
-                    ],
-                    layers: cotStyles(layer.id, {
-                        icons: layer.type === 'geojson',
-                        labels: layer.type === 'geojson',
-                        sourceLayer: layer.type === 'vector' ? 'out' : undefined
-                    }),
-                },
-                {
-                    initial: initial
-                });
-            } else {
-                this.map.addSource(layer.id, {
-                    type: 'raster',
-                    tileSize: 256,
-                    url: String(layer.url)
-                });
-
-                await this.addLayer({
-                    id: layer.id,
-                    url: layer.url,
-                    save: true,
-                    name: layer.name,
-                    mode: layer.id.split('-')[0],
-                    mode_id:  layer.id.split('-')[1],
-                    overlay: layer.overlay,
-                    source: layer.id,
-                    type: 'raster',
-                    visible: layer.visible ? 'visible' : 'none',
-                    before: 'CoT Icons',
-                    layers: [{
-                        id: layer.id,
-                        type: 'raster',
-                        source: layer.id
-                    }]
-                });
-            }
-        },
-        initLayers: async function(basemap?: Basemap) {
         },
         radialClick: async function(feat: MapGeoJSONFeature | Feature, opts: {
             lngLat: LngLat;
@@ -648,278 +440,3 @@ export const useMapStore = defineStore('cloudtak', {
         }
     },
 })
-
-function cotStyles(id: string, opts: {
-    sourceLayer?: string;
-    group?: boolean;
-    labels?: boolean;
-    icons?: boolean;
-} = {
-    sourceLayer: undefined,
-    group: false,
-    labels: false,
-    icons: false
-}): Array<LayerSpecification> {
-    const styles: Array<LayerSpecification> = [];
-
-    const poly: FillLayerSpecification = {
-        id: `${id}-poly`,
-        type: 'fill',
-        source: id,
-        filter: ["==", "$type", "Polygon"],
-        layout: {},
-        paint: {
-            'fill-opacity': ["number", ["get", "fill-opacity"], 1],
-            'fill-color': ["string", ["get", "fill"], "#00FF00"]
-        }
-    }
-
-    if (opts.sourceLayer) {
-        poly['source-layer'] = opts.sourceLayer;
-    }
-
-    styles.push(poly);
-
-    const polyline: LineLayerSpecification = {
-        id: `${id}-polyline`,
-        type: 'line',
-        source: id,
-        filter: ["==", "$type", "Polygon"],
-        layout: {
-            'line-join': 'round',
-            'line-cap': 'round'
-        },
-        paint: {
-            'line-color': ["string", ["get", "stroke"], "#00FF00"],
-            'line-width': ["number", ["get", "stroke-width"], 3],
-            'line-opacity': ["number", ["get", "stroke-opacity"], 1],
-        }
-    }
-
-    if (opts.sourceLayer) {
-        polyline['source-layer'] = opts.sourceLayer;
-    }
-
-    styles.push(polyline);
-
-    const line: LineLayerSpecification = {
-        id: `${id}-line`,
-        type: 'line',
-        source: id,
-        filter: ["==", "$type", "LineString"],
-        layout: {
-            'line-join': 'round',
-            'line-cap': 'round'
-        },
-        'paint': {
-            'line-color': ["string", ["get", "stroke"], "#00FF00"],
-            'line-width': ["*", 2, ["number", ["get", "stroke-width"], 3]],
-            'line-opacity': ["number", ["get", "stroke-opacity"], 1],
-        }
-    };
-
-    if (opts.sourceLayer) {
-        line['source-layer'] = opts.sourceLayer;
-    }
-
-    styles.push(line);
-
-    const circle: CircleLayerSpecification = {
-        id: id,
-        type: 'circle',
-        source: id,
-        filter: ['all', ["==", "$type", "Point"], ['!has', 'icon']],
-        layout: {},
-        paint: {
-            'circle-color': ["string", ["get", "marker-color"], "#00FF00"],
-            'circle-radius': ["number", ["get", "marker-radius"], 4],
-            'circle-opacity': ["number", ["get", "marker-opacity"], 1],
-        }
-    }
-
-    if (opts.sourceLayer) {
-        circle['source-layer'] = opts.sourceLayer;
-    }
-
-    if (opts.group) {
-        // @ts-expect-error Type defs don't allow this
-        circle.filter.push(['!has', 'group']);
-    }
-
-    styles.push(circle);
-
-    if (opts.icons) {
-        const icon: SymbolLayerSpecification = {
-            id: `${id}-icon`,
-            type: 'symbol',
-            source: id,
-            filter: [
-                'all',
-                ['==', '$type', 'Point'],
-                ['has', 'icon']
-            ],
-            paint: {
-                'icon-opacity': ['get', 'icon-opacity'],
-                'icon-halo-color': '#ffffff',
-                'icon-halo-width': 4
-            },
-            layout: {
-                'icon-size': [
-                    'interpolate',
-                    ['linear'],
-                    ['zoom'],
-                    8, 0.8,
-                    15, 1
-                ],
-                'icon-rotate': ['get', 'course'],
-                'icon-allow-overlap': true,
-                'icon-image': '{icon}',
-                'icon-anchor': 'center',
-            }
-        }
-
-        if (opts.sourceLayer) {
-            icon['source-layer'] = opts.sourceLayer;
-        }
-
-        styles.push(icon);
-    }
-
-    if (opts.group) {
-        const groupFilter: mapgl.FilterSpecification = [
-            'all',
-            ['==', '$type', 'Point'],
-            ['has', 'group']
-        ]
-
-        const group: CircleLayerSpecification = {
-            id: 'cots-group',
-            type: 'circle',
-            source: 'cots',
-            filter: groupFilter,
-            paint: {
-                'circle-color': ['get', 'marker-color'],
-                'circle-opacity': ["number", ["get", "marker-opacity"], 1],
-                'circle-stroke-color': '#ffffff',
-                'circle-stroke-width': [
-                    'interpolate',
-                    ['linear'],
-                    ['zoom'],
-                    8, 1,
-                    15, 2
-                ],
-                'circle-radius': [
-                    'interpolate',
-                    ['linear'],
-                    ['zoom'],
-                    8, 5,
-                    15, 10
-                ]
-            },
-        }
-
-        if (opts.sourceLayer) {
-            group['source-layer'] = opts.sourceLayer;
-        }
-
-        styles.push(group);
-    }
-
-    if (opts.labels) {
-        const MIN_LABEL_ZOOM = 7;
-
-        const labels: SymbolLayerSpecification = {
-            id: `${id}-text-point`,
-            type: 'symbol',
-            source: id,
-            filter: [ 'all', ['==', '$type', 'Point'], ],
-            minzoom: MIN_LABEL_ZOOM,
-            paint: {
-                'text-color': '#ffffff',
-                'text-halo-color': '#000000',
-                'text-halo-width': 2,
-            },
-            layout: {
-                'text-size': [
-                    'interpolate',
-                    ['linear'],
-                    ['zoom'],
-                    8, 8,
-                    15, 15
-                ],
-                'text-offset': [0, 2],
-                'text-font': ['Open Sans Bold'],
-                'text-field':  '{callsign}'
-            }
-        }
-
-        if (opts.sourceLayer) {
-            labels['source-layer'] = opts.sourceLayer;
-        }
-
-        styles.push(labels);
-
-        const labelsLine: SymbolLayerSpecification = {
-            id: `${id}-text-line`,
-            type: 'symbol',
-            source: id,
-            filter: [ 'all', ['==', '$type', 'LineString'], ],
-            minzoom: MIN_LABEL_ZOOM,
-            paint: {
-                'text-color': '#ffffff',
-                'text-halo-color': '#000000',
-                'text-halo-width': 2,
-            },
-            layout: {
-                "symbol-placement": "line",
-                'text-size': [
-                    'interpolate',
-                    ['linear'],
-                    ['zoom'],
-                    8, 8,
-                    15, 15
-                ],
-                'text-font': ['Open Sans Bold'],
-                'text-field':  '{callsign}'
-            }
-        }
-
-        if (opts.sourceLayer) {
-            labelsLine['source-layer'] = opts.sourceLayer;
-        }
-
-        styles.push(labelsLine);
-
-        const labelsPoly: SymbolLayerSpecification = {
-            id: `${id}-text-poly`,
-            type: 'symbol',
-            source: id,
-            filter: [ 'all', ['==', '$type', 'Polygon'], ],
-            minzoom: MIN_LABEL_ZOOM,
-            paint: {
-                'text-color': '#ffffff',
-                'text-halo-color': '#000000',
-                'text-halo-width': 2,
-            },
-            layout: {
-                'text-size': [
-                    'interpolate',
-                    ['linear'],
-                    ['zoom'],
-                    8, 8,
-                    15, 15
-                ],
-                'text-font': ['Open Sans Bold'],
-                'text-field':  '{callsign}'
-            }
-        }
-
-        if (opts.sourceLayer) {
-            labelsPoly['source-layer'] = opts.sourceLayer;
-        }
-
-        styles.push(labelsPoly);
-    }
-
-    return styles;
-}
