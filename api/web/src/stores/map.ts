@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+import Overlay from './overlays/base.ts';
 import { std, stdurl } from '../std.js';
 import * as pmtiles from 'pmtiles';
 import mapgl from 'maplibre-gl'
@@ -21,26 +22,6 @@ import type {
 const overlayStore = useOverlayStore();
 import { useCOTStore } from './cots.js'
 const cotStore = useCOTStore();
-
-export type OverlayContainer = {
-    id: string;
-    url?: string;
-    name: string;
-    save: boolean;
-    visible: string;
-    opacity: number;
-    mode: string;
-    mode_id?: string | null;
-    overlay?: number;
-    source: string;
-    type: string;
-    before: string;
-    layers: Array<LayerSpecification>,
-    clickable: Array<{
-        id: string;
-        type: string;
-    }>
-};
 
 export const useMapStore = defineStore('cloudtak', {
     state: (): {
@@ -353,6 +334,27 @@ export const useMapStore = defineStore('cloudtak', {
             this.map = new mapgl.Map(init);
         },
 
+        initOverlays: async function() {
+            const url = stdurl('/api/profile/overlay');
+            url.searchParams.append('sort', 'pos');
+            url.searchParams.append('order', 'asc');
+            const list = await std(url);
+
+            for (const item of list.items) {
+                const overlay = new Overlay(item as ProfileOverlay)
+
+                await this.addDefaultLayer({
+                    ...overlay,
+                    id: `${overlay.mode}-${overlay.mode_id}-${overlay.id}`,
+                    url: String(url),
+                    save: true,
+                    overlay: overlay.id,
+                }, true)
+            }
+
+            this.initialized = true;
+        },
+
         addDefaultLayer: async function(layer: {
             id: string;
             url?: string;
@@ -612,23 +614,6 @@ export const useMapStore = defineStore('cloudtak', {
 
             this.radial.cot = feat;
             this.radial.mode = opts.mode;
-        },
-        initOverlays: async function() {
-            await overlayStore.list();
-            for (const overlay of overlayStore.overlays) {
-                const url = stdurl(overlay.url);
-                url.searchParams.append('token', localStorage.token);
-
-                await this.addDefaultLayer({
-                    ...overlay,
-                    id: `${overlay.mode}-${overlay.mode_id}-${overlay.id}`,
-                    url: String(url),
-                    save: true,
-                    overlay: overlay.id,
-                }, true)
-            }
-
-            this.initialized = true;
         },
         initDraw: function() {
             this.draw = new terraDraw.TerraDraw({
