@@ -18,33 +18,6 @@ export const useOverlayStore = defineStore('overlays', {
         }
     },
     actions: {
-        saveOverlay: async function(container: ProfileOverlay_Create): Promise<number> {
-            const overlay = await std('/api/profile/overlay', {
-                method: 'POST',
-                body: container
-            });
-
-            await this.list()
-
-            return overlay.id;
-        },
-        updateOverlay: async function(overlay_id: number, container: ProfileOverlay_Update): Promise<number> {
-            const overlay = await std(`/api/profile/overlay/${overlay_id}`, {
-                method: 'PATCH',
-                body: container
-            });
-
-            await this.list()
-
-            return overlay.id;
-        },
-        deleteOverlay: async function(overlay_id: number): Promise<void> {
-            await std(`/api/profile/overlay?id=${overlay_id}`, {
-                method: 'DELETE'
-            });
-
-            await this.list()
-        },
         list: async function() {
             const url = stdurl('/api/profile/overlay');
             url.searchParams.append('sort', 'pos');
