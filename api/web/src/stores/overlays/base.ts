@@ -1,5 +1,5 @@
 import type { LayerSpecification } from 'maplibre-gl';
-import type { ProfileOverlay } from '../../types.ts';
+import type { ProfileOverlay, ProfileOverlay_Create } from '../../types.ts';
 import { std } from '../../std.js';
 
 /**
@@ -11,7 +11,7 @@ export default class Overlay {
     _layers: Array<LayerSpecification>;
     _clickable: Array<{ id: string; type: string }>;
 
-    id?: number;
+    id: number;
     name: string;
     username?: string;
     created: string;
@@ -25,6 +25,17 @@ export default class Overlay {
     url: string;
     styles: any;
     token: string | null;
+
+    static async create(body: ProfileOverlay_Create): Promise<Overlay> {
+        const ov = await std('/api/profile/overlay', { method: 'POST', body });
+        return new Overlay(ov);
+    }
+
+    static async load(id: number): Promise<Overlay> {
+        const overlay = await std(`/api/profile/overlay/${id}`);
+
+        return new Overlay(overlay as ProfileOverlay);
+    }
 
     constructor(overlay: ProfileOverlay) {
         this._destroyed = false;
@@ -64,10 +75,6 @@ export default class Overlay {
         let id = this.id;
 
         if (id) {
-            return await std('/api/profile/overlay', {
-                method: 'POST',
-                body: this
-            });
         } else {
             const overlay = await std(`/api/profile/overlay/${this.id}`, {
                 method: 'PATCH',
@@ -80,9 +87,4 @@ export default class Overlay {
         }
     }
 
-    static async load(id: number): Promise<Overlay> {
-        const overlay = await std(`/api/profile/overlay/${id}`);
-
-        return new Overlay(overlay as ProfileOverlay);
-    }
 }
