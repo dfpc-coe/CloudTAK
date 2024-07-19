@@ -295,6 +295,7 @@
         </div>
 
         <SideMenu
+            v-if='isLoaded'
             :compact='noMenuShown'
             @reset='deleteCOT()'
         />
