@@ -28,7 +28,6 @@ import type {
     MapGeoJSONFeature
 } from 'maplibre-gl';
 import { useCOTStore } from './cots.js'
-const cotStore = useCOTStore();
 
 export const useMapStore = defineStore('cloudtak', {
     state: (): {
@@ -125,6 +124,7 @@ export const useMapStore = defineStore('cloudtak', {
             if (!oStore) return false
 
             // @ts-expect-error TS currently blows up Map<string, Feature> into actual { type: 'Feature' ... } etc
+            const cotStore = useCOTStore();
             const fc = cotStore.collection(cotStore.subscriptions.get(guid))
 
             // @ts-expect-error Source.setData is not defined
@@ -296,6 +296,7 @@ export const useMapStore = defineStore('cloudtak', {
             // Data Syncs are specially loaded as they are dynamic
             for (const overlay of this.overlays) {
                 if (overlay.mode === 'mission') {
+                    const cotStore = useCOTStore();
                     this.map.getSource(String(overlay.id))
                         .setData(await cotStore.loadMission(overlay.mode_id));
                 }
