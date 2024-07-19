@@ -312,7 +312,7 @@ export const useMapStore = defineStore('cloudtak', {
             this.overlays.push(Overlay.internal(
                 this.map,
                 {
-                    id: -1,
+                    id: '-1',
                     name: 'CoT Icons',
                     type: 'geojson',
                 },{
@@ -334,14 +334,14 @@ export const useMapStore = defineStore('cloudtak', {
             this.overlays.push(Overlay.internal(
                 this.map,
                 {
-                    id: 0,
+                    id: '0',
                     name: 'Your Location',
                     type: 'vector',
                 },{
                     layers: [{
                         id: 'you',
                         type: 'circle',
-                        source: 0,
+                        source: '0',
                         paint: {
                             'circle-radius': 10,
                             'circle-color': '#0000f6',
