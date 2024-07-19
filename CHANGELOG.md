@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v2.73.1 - 2024-07-19
+
+- :rocket: `UI` round coordinates in Point Input
+- :rocket: `UI` Only show point input, close underlying menu
+
 ### v2.73.0 - 2024-07-19
 
 - :rocket: `UI` Implment user suggestions for "clickable" contacts vs a seperate zoomTo button
