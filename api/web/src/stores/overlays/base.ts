@@ -216,9 +216,6 @@ export default class Overlay {
         } else if (this.type === 'geojson') {
             if (!this._map.getSource(String(this.id))) {
                 let data: FeatureCollection = { type: 'FeatureCollection', features: [] };
-                if (this.mode === 'mission' && this.mode_id) {
-                    //data = await cotStore.loadMission(this.mode_id);
-                }
 
                 this._map.addSource(String(this.id), {
                     type: 'geojson',

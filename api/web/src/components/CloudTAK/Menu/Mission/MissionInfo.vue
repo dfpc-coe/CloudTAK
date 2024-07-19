@@ -114,6 +114,8 @@ import MenuTemplate from '../../util/MenuTemplate.vue';
 import Overlay from '/src/stores/overlays/base.ts';
 import { useMapStore } from '/src/stores/map.ts';
 const mapStore = useMapStore();
+import { useCoTStore } from '/src/stores/cots.ts';
+const cotStore = useCoTStore();
 
 export default {
     name: 'MissionInfo',
@@ -157,13 +159,18 @@ export default {
             const overlay = mapStore.getOverlayByMode('mission', this.mission.guid);
 
             if (subscribed === true && !overlay) {
-                mapStore.overlays.push(await Overlay.create(mapStore.map, {
+                const missionOverlay = await Overlay.create(mapStore.map, {
                     name: this.mission.name,
                     url: `/mission/${encodeURIComponent(this.mission.name)}`,
                     type: 'geojson',
                     mode: 'mission',
                     mode_id: this.mission.guid,
-                }))
+                })
+
+                mapStore.overlays.push(missionOverlay);
+
+                mapStore.getSource(String(missionOverlay.id))
+                    .setData(await cotStore.loadMission(this.mode_id));
             } else if (subscribed === false && overlay) {
                 await mapStore.removeOverlay(overlay);
             }
