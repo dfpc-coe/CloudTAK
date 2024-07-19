@@ -178,6 +178,7 @@ export default class Overlay {
     }
 
     async update(body: {
+        pos?: number;
         visible?: boolean;
         opacity?: number;
     }): Promise<void> {
@@ -197,6 +198,10 @@ export default class Overlay {
             }
         }
 
+        if (body.pos !== undefined) {
+            this.pos = body.pos;
+        }
+
         await this.save();
     }
 
@@ -210,7 +215,13 @@ export default class Overlay {
         } else {
             const overlay = await std(`/api/profile/overlay/${this.id}`, {
                 method: 'PATCH',
-                body: this
+                body: {
+                    pos: this.pos,
+                    name: this.name,
+                    opacity: this.opacity,
+                    visible: this.visible,
+                    styles: this.styles
+                }
             }) as ProfileOverlay;
 
             this.id = overlay.id;
