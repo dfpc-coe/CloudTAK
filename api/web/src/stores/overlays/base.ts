@@ -52,7 +52,7 @@ export default class Overlay {
             ...body,
             visible: true,
             opacity: 1,
-            type: 'vector',
+            type: 'geojson',
             created: new Date().toISOString(),
             updated: new Date().toISOString(),
             pos: 3,
