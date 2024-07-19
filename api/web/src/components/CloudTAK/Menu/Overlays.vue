@@ -231,16 +231,16 @@ export default {
     },
     methods: {
         saveOrder: async function(sortableEv) {
-            const layer_ids = sortable.toArray()
+            const overlay_ids = sortable.toArray()
 
-            const layer = mapStore.getLayer(sortableEv.item.getAttribute('id'))
+            const layer = mapStore.getOverlayById(sortableEv.item.getAttribute('id'))
 
-            if (sortableEv.newIndex === layer_ids.length - 1) {
+            if (sortableEv.newIndex === overlay_ids.length - 1) {
                 for (const l of layer.layers) {
                     mapStore.map.moveLayer(l.id)
                 }
             } else {
-                const post = mapStore.getLayer(layer_ids[sortableEv.newIndex + 1]);
+                const post = mapStore.getOverlayById(overlay_ids[sortableEv.newIndex + 1]);
                 const postID = post.layers[post.layers.length - 1].id;
 
                 for (const l of layer.layers) {
@@ -250,7 +250,7 @@ export default {
 
             for (const l of this.layers) {
                 if (!l.overlay) continue;
-                const pos = layer_ids.indexOf(l.id);
+                const pos = overlay_ids.indexOf(l.id);
 
                 await overlayStore.updateOverlay(l.overlay, { pos })
             }

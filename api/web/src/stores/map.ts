@@ -1,3 +1,12 @@
+/*
+* MapStore - Maintain the state of the MapLibreGL Instance
+*
+* Terminology:
+* - Overlay - The "container" that is saved in the DB that contains a reference to a single GIS source and potentially many rendered layers
+* - Layer - MapLibre - Ref: https://maplibre.org/maplibre-style-spec/layers/
+* - Source - MapLibre - Ref: https://maplibre.org/maplibre-style-spec/sources/
+*/
+
 import { defineStore } from 'pinia'
 import Overlay from './overlays/base.ts';
 import cotStyles from './overlays/styles.ts'
