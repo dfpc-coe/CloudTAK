@@ -122,7 +122,7 @@ export const useMapStore = defineStore('cloudtak', {
             if (!overlay) return false;
 
             if (!this.map) throw new Error('Cannot updateMissionData before map has loaded');
-            const oStore = this.map.getSource(overlay.id);
+            const oStore = this.map.getSource(String(overlay.id));
             if (!oStore) return false
 
             // @ts-expect-error TS currently blows up Map<string, Feature> into actual { type: 'Feature' ... } etc

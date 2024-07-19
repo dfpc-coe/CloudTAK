@@ -262,8 +262,8 @@ export default {
                 this.isEditing = overlay;
             }
         },
-        getSource: function(layer) {
-            return mapStore.map.getSource(layer.id)
+        getSource: function(overlay) {
+            return mapStore.map.getSource(String(overlay.id))
         },
         zoomTo: function(layer) {
             const source = this.getSource(layer);
