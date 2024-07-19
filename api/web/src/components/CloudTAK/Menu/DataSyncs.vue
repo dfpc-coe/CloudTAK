@@ -11,31 +11,25 @@
                 <div
                     v-for='a in assetList.assets'
                     :key='a.id'
-                    class='cursor-pointer col-12 py-2 px-3 hover-dark'
+                    class='col-12 py-2 px-3 hover-dark'
                 >
                     <div class='col-12 py-2 px-2 d-flex align-items-center'>
+                        <IconMapPlus
+                            v-if='a.visualized'
+                            v-tooltip='"Add to Map"'
+                            @click='createOverlay(a)'
+                            class='cursor-pointer'
+                            :size='32'
+                            :stroke='1'
+                        />
                         <IconEyeX
                             v-if='!a.visualized'
                             v-tooltip='"No Viz Layer"'
                             :size='32'
                             :stroke='1'
                         />
-                        <IconEye
-                            v-else-if='a.visible'
-                            :size='32'
-                            :stroke='1'
-                            class='cursor-pointer'
-                            @click='flipVisible(a)'
-                        />
-                        <IconEyeOff
-                            v-else
-                            :size='32'
-                            :stroke='1'
-                            class='cursor-pointer'
-                            @click='flipVisible(a)'
-                        />
                         <span
-                            class='mx-2 cursor-pointer'
+                            class='mx-2 cursor-default'
                             v-text='a.name'
                         />
                     </div>
@@ -84,6 +78,7 @@
 
 <script>
 import { std, stdurl } from '/src/std.ts';
+import Overlay from '/src/stores/overlays/base.ts';
 import { useMapStore } from '/src/stores/map.ts';
 const mapStore = useMapStore();
 import MenuTemplate from '../util/MenuTemplate.vue';
@@ -94,18 +89,16 @@ import {
 } from '@tak-ps/vue-tabler';
 import {
     IconFolder,
-    IconEye,
     IconEyeX,
-    IconEyeOff,
+    IconMapPlus,
 } from '@tabler/icons-vue'
 
 export default {
     name: 'CloudTAKDatas',
     components: {
         IconFolder,
-        IconEye,
         IconEyeX,
-        IconEyeOff,
+        IconMapPlus,
         TablerNone,
         TablerPager,
         TablerLoading,
@@ -154,60 +147,33 @@ export default {
         await this.fetchDataList();
     },
     methods: {
-        flipVisible: async function(a) {
-            const id = `data-${this.data.id}-${a.name.replace(/\..*$/, '')}`;
-            if (a.visible) {
-                mapStore.map.removeLayer(id);
-                mapStore.map.removeSource(id);
-                a.visible = false;
-            } else {
-                a.visible = true;
-                const url = stdurl(`/api/connection/${this.data.connection}/data/${this.data.id}/asset/${a.visualized}/tile`);
-                url.searchParams.append('token', localStorage.token);
-
-                await this.createOverlay(id, url, a)
-            }
-
-            this.$router.push('/menu/overlays');
-        },
-        createOverlay: async function(id, url) {
+        createOverlay: async function(asset) {
             this.loading = true;
+            const url = stdurl(`/api/connection/${this.data.connection}/data/${this.data.id}/asset/${asset.visualized}/tile`);
+
             const res = await std(url);
 
             if (new URL(res.tiles[0]).pathname.endsWith('.mvt')) {
-                await mapStore.addDefaultLayer({
-                    id,
-                    url: url,
-                    name: id,
-                    source: id,
+                await mapStore.overlays.push(await Overlay.create(mapStore.map, {
+                    url,
+                    name: asset.name,
+                    mode: 'profile',
+                    mode_id: asset.name,
                     type: 'vector',
-                    before: 'CoT Icons',
-                    clickable: [
-                        { id: `${id}-poly`, type: 'feat' },
-                        { id: `${id}-polyline`, type: 'feat' },
-                        { id: `${id}-line`, type: 'feat' },
-                        { id: id, type: 'feat' }
-                    ]
-                });
+                }));
             } else {
-                await mapStore.addDefaultLayer({
-                    id,
+                await mapStore.overlays.push(await Overlay.create(mapStore.map, {
                     url: url,
-                    name: id,
-                    source: id,
+                    name: asset.name,
+                    mode: 'profile',
+                    mode_id: asset.name,
                     type: 'raster',
-                    before: 'CoT Icons',
-                    clickable: [
-                        { id: `${id}-poly`, type: 'feat' },
-                        { id: `${id}-polyline`, type: 'feat' },
-                        { id: `${id}-line`, type: 'feat' },
-                        { id: id, type: 'feat' }
-                    ]
-                });
+                }));
             }
 
             this.loading = false;
             this.$emit('mode', 'overlays');
+            this.$router.push('/menu/overlays');
         },
         fetchDataList: async function() {
             this.loading = true;
