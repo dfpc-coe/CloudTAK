@@ -147,7 +147,7 @@
                                         :max='1'
                                         :step='0.1'
                                         @change='overlay.update({
-                                            opacity: $event
+                                            opacity: overlay.opacity
                                         })'
                                     />
                                 </div>
