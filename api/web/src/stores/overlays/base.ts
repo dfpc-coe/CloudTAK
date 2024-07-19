@@ -100,6 +100,13 @@ export default class Overlay {
         this.styles = overlay.styles;
         this.token = overlay.token;
 
+        this.init(opts);
+    }
+
+    init(opts: {
+        layers?: Array<LayerSpecification>;
+        clickable?: Array<{ id: string; type: string }>;
+    } = {}) {
         if (this.type ==='raster' && this.url) {
             const url = stdurl(this.url);
             url.searchParams.append('token', localStorage.token);
@@ -170,9 +177,9 @@ export default class Overlay {
             this._map.addLayer(l) // before);
 
             // TODO: Not sure why "visibility: overlay.visible"  above isn't respected
-            if (overlay.visible === false) {
+            if (this.visible === false) {
                 this._map.setLayoutProperty(l.id, 'visibility', 'none');
-            } else if (overlay.visible === true) {
+            } else if (this.visible === true) {
                 this._map.setLayoutProperty(l.id, 'visibility', 'visible');
             }
         }
@@ -197,6 +204,14 @@ export default class Overlay {
         this._clickable = opts.clickable;
     }
 
+    remove() {
+        for (const l of this._layers) {
+            this._map.removeLayer(l.id);
+        }
+
+        this._map.removeSource(this.id);
+    }
+
     async replace(body: {
         name?: string;
         url: string;
@@ -206,62 +221,19 @@ export default class Overlay {
         this.url = body.url;
         this.mode_id = body.mode_id;
 
-        for (const l of this._layers) {
-            this._map.removeLayer(l.id);
-        }
+        this.remove();
+        this.init({
+            layers: this._layers,
+            clickable: this._clickable
+        });
 
-        this._map.removeSource(this.id);
-
-        if (this.type ==='raster' && this.url) {
-            const url = stdurl(this.url);
-            url.searchParams.append('token', localStorage.token);
-
-            this._map.addSource(String(this.id), {
-                type: 'raster',
-                url: String(url)
-            });
-        } else if (this.type === 'vector' && this.url) {
-            const url = stdurl(this.url);
-            url.searchParams.append('token', localStorage.token);
-
-            this._map.addSource(String(this.id), {
-                type: 'vector',
-                url: String(url)
-            });
-        } else if (this.type === 'geojson') {
-            if (!this._map.getSource(String(this.id))) {
-                let data: FeatureCollection = { type: 'FeatureCollection', features: [] };
-
-                this._map.addSource(String(this.id), {
-                    type: 'geojson',
-                    cluster: false,
-                    data
-                })
-            }
-
-            await this.save();
-        }
-
-        for (const l of this._layers) {
-            this._map.addLayer(l) // before);
-
-            // TODO: Not sure why "visibility: overlay.visible"  above isn't respected
-            if (this.visible === false) {
-                this._map.setLayoutProperty(l.id, 'visibility', 'none');
-            } else if (this.visible === true) {
-                this._map.setLayoutProperty(l.id, 'visibility', 'visible');
-            }
-        }
+        await this.save();
     }
 
     async delete(): Promise<void> {
         this._destroyed = true;
 
-        for (const l of this._layers) {
-            this._map.removeLayer(l.id);
-        }
-
-        this._map.removeSource(this.id);
+        this.remove();
 
         if (this._internal) return;
 
@@ -304,22 +276,15 @@ export default class Overlay {
         if (this._destroyed) throw new Error('Cannot save a destroyed layer');
         if (this._internal) return;
 
-        let id = this.id;
-
-        if (id) {
-        } else {
-            const overlay = await std(`/api/profile/overlay/${this.id}`, {
-                method: 'PATCH',
-                body: {
-                    pos: this.pos,
-                    name: this.name,
-                    opacity: this.opacity,
-                    visible: this.visible,
-                    styles: this.styles
-                }
-            }) as ProfileOverlay;
-
-            this.id = overlay.id;
-        }
+        const overlay = await std(`/api/profile/overlay/${this.id}`, {
+            method: 'PATCH',
+            body: {
+                pos: this.pos,
+                name: this.name,
+                opacity: this.opacity,
+                visible: this.visible,
+                styles: this.styles
+            }
+        }) as ProfileOverlay;
     }
 }

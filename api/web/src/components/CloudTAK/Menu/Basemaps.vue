@@ -170,12 +170,12 @@ export default {
                 }
             } else {
                 mapStore.overlays.unshift(await Overlay.create({
-                    name: basemaps.items[0].name,
+                    name: basemap.name,
                     pos: -1,
                     type: 'raster',
-                    url: `/api/basemap/${basemaps.items[0].id}/tiles`,
+                    url: `/api/basemap/${basemap.id}/tiles`,
                     mode: 'basemap',
-                    mode_id: basemaps.items[0].id
+                    mode_id: basemap.id
                 }));
             }
         },
