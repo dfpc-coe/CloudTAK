@@ -106,7 +106,7 @@
                                             @click.stop.prevent='zoomTo(overlay)'
                                         />
                                         <TablerDelete
-                                            v-if='opened.includes(overlay.id) && (overlay.mode === "mission" || overlay.name.startsWith("data-") || overlay.name.startsWith("profile-"))'
+                                            v-if='opened.includes(overlay.id) && ["mission", "data", "profile"].includes(overlay.mode)'
                                             :key='overlay.id'
                                             v-tooltip='"Delete Overlay"'
                                             :size='20'
