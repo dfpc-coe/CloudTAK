@@ -64,9 +64,10 @@ export default class Overlay {
             created: new Date().toISOString(),
             updated: new Date().toISOString(),
             pos: 3,
-        }, opts);
-
-        overlay._internal = true;
+        }, {
+            ...opts,
+            internal: true
+        });
 
         return overlay;
     }
@@ -79,11 +80,12 @@ export default class Overlay {
     constructor(map: Map, overlay: ProfileOverlay, opts: {
         layers?: Array<LayerSpecification>;
         clickable?: Array<{ id: string; type: string }>;
+        internal: boolean;
     } = {}) {
         this._map = map;
 
         this._destroyed = false;
-        this._internal = false;
+        this._internal = opts.internal || false;
 
         this.id = overlay.id;
         this.name = overlay.name;
@@ -175,16 +177,15 @@ export default class Overlay {
 
         for (const l of opts.layers) {
             this._map.addLayer(l) // before);
-
-            // TODO: Not sure why "visibility: overlay.visible"  above isn't respected
-            if (this.visible === false) {
-                this._map.setLayoutProperty(l.id, 'visibility', 'none');
-            } else if (this.visible === true) {
-                this._map.setLayoutProperty(l.id, 'visibility', 'visible');
-            }
         }
 
         this._layers = opts.layers;
+
+        // The above doesn't set vis/opacity initially
+        this.update({
+            opacity: this.opacity,
+            visibility: this.visibility
+        })
 
         if (!opts.clickable) {
             opts.clickable = [];
