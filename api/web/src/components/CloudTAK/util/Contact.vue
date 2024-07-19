@@ -1,13 +1,13 @@
 <template>
     <div
         class='col-12'
-        @click='flyTo(contact)'
         :class='{
             "cursor-pointer": isZoomable(contact),
             "cursor-default": !isZoomable(contact),
             "hover-dark": hover,
             "py-2": !compact
         }'
+        @click='flyTo(contact)'
     >
         <div class='row col-12 align-items-center'>
             <div class='col-auto'>
@@ -59,7 +59,6 @@
 import {
     IconCheck,
     IconMessage,
-    IconZoomPan,
 } from '@tabler/icons-vue';
 import ContactPuck from './ContactPuck.vue';
 import { useCOTStore } from '/src/stores/cots.ts';
@@ -72,7 +71,6 @@ export default {
     components: {
         IconCheck,
         IconMessage,
-        IconZoomPan,
         ContactPuck
     },
     props: {
