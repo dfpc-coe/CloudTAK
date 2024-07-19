@@ -316,7 +316,7 @@ export const useMapStore = defineStore('cloudtak', {
                     name: 'CoT Icons',
                     type: 'geojson',
                 },{
-                    layers: cotStyles('cots', {
+                    layers: cotStyles('-1', {
                         group: true,
                         icons: true,
                         labels: true
