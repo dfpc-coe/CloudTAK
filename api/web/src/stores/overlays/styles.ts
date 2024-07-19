@@ -153,7 +153,7 @@ export default function styles(id: string, opts: {
         const group: CircleLayerSpecification = {
             id: 'cots-group',
             type: 'circle',
-            source: 'cots',
+            source: id,
             filter: groupFilter,
             paint: {
                 'circle-color': ['get', 'marker-color'],

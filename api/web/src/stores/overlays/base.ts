@@ -43,7 +43,10 @@ export default class Overlay {
             id: number;
             name: string;
         },
-        layers: Array<LayerSpecification>
+        opts: {
+            layers?: Array<LayerSpecification>;
+            clickable?: Array<{ id: string; type: string }>;
+        } = {}
     ): Overlay {
         const overlay = new Overlay(map, {
             ...body,
@@ -53,9 +56,7 @@ export default class Overlay {
             created: new Date().toISOString(),
             updated: new Date().toISOString(),
             pos: 3,
-        }, {
-            layers
-        });
+        }, opts);
 
         return overlay;
     }
@@ -97,7 +98,7 @@ export default class Overlay {
                 type: 'raster',
                 url: String(url)
             });
-        } else if (this.type ==='vector' && this.url) {
+        } else if (this.type === 'vector' && this.url) {
             const url = stdurl(this.url);
             url.searchParams.append('token', localStorage.token);
 
