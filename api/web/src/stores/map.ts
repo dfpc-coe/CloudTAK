@@ -197,10 +197,7 @@ export const useMapStore = defineStore('cloudtak', {
                     }
                 }
 
-                console.error(clickMap);
-
                 const features = this.map.queryRenderedFeatures(e.point).filter((feat) => {
-                    console.error(feat.layer.id);
                     return clickMap.has(feat.layer.id);
                 });
 
@@ -309,11 +306,11 @@ export const useMapStore = defineStore('cloudtak', {
                         labels: true
                     }),
                     clickable: [
-                        { id: 'cots', type: 'cot' },
-                        { id: 'cots-poly', type: 'cot' },
-                        { id: 'cots-group', type: 'cot' },
-                        { id: `cots-icon`, type: 'cot' },
-                        { id: 'cots-line', type: 'cot' }
+                        { id: '-1', type: 'cot' },
+                        { id: '-1-poly', type: 'cot' },
+                        { id: '-1-group', type: 'cot' },
+                        { id: `-1-icon`, type: 'cot' },
+                        { id: '-1-line', type: 'cot' }
                     ],
                 }
             ));
