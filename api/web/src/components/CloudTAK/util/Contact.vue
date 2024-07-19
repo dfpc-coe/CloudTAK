@@ -2,9 +2,12 @@
     <div
         class='col-12'
         :class='{
+            "cursor-pointer": isZoomable(contact),
+            "cursor-default": !isZoomable(contact),
             "hover-dark": hover,
             "py-2": !compact
         }'
+        @click='flyTo(contact)'
     >
         <div class='row col-12 align-items-center'>
             <div class='col-auto'>
@@ -47,14 +50,6 @@
                     class='cursor-pointer'
                     @click='$emit("chat", contact.uid)'
                 />
-                <IconZoomPan
-                    v-if='buttonZoom && isZoomable(contact)'
-                    v-tooltip='"Zoom To"'
-                    :size='compact ? 20 : 32'
-                    :stroke='1'
-                    class='cursor-pointer'
-                    @click='flyTo(contact)'
-                />
             </div>
         </div>
     </div>
@@ -64,7 +59,6 @@
 import {
     IconCheck,
     IconMessage,
-    IconZoomPan,
 } from '@tabler/icons-vue';
 import ContactPuck from './ContactPuck.vue';
 import { useCOTStore } from '/src/stores/cots.ts';
@@ -77,7 +71,6 @@ export default {
     components: {
         IconCheck,
         IconMessage,
-        IconZoomPan,
         ContactPuck
     },
     props: {
@@ -119,6 +112,8 @@ export default {
             return cot.properties.contact && cot.properties.contact.endpoint;
         },
         flyTo: function(contact) {
+            if (!this.buttonZoom || !this.isZoomable(contact)) return;
+
             const flyTo = {
                 speed: Infinity,
                 center: cotStore.cots.get(contact.uid).geometry.coordinates,
