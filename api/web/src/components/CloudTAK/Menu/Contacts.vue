@@ -26,12 +26,24 @@
 
             <TablerLoading v-if='loading' />
             <TablerNone
-                v-else-if='!visibleContacts.length'
+                v-else-if='!visibleActiveContacts.length && !visibleOfflineContacts'
                 :create='false'
             />
             <template v-else>
                 <div
-                    v-for='a of visibleContacts'
+                    v-for='a of visibleActiveContacts'
+                    :key='a.id'
+                    class='col-lg-12'
+                >
+                    <Contact
+                        :contact='a'
+                        @chat='$router.push(`/menu/chats/${$event}`)'
+                    />
+                </div>
+
+                <label class='subheader mx-2'>Recently Offline</label>
+                <div
+                    v-for='a of visibleOfflineContacts'
                     :key='a.id'
                     class='col-lg-12'
                 >
@@ -48,6 +60,8 @@
 <script>
 import { mapGetters } from 'pinia'
 import { useProfileStore } from '/src/stores/profile.ts';
+import { useCOTStore } from '/src/stores/cots.ts';
+const cotStore = useCOTStore();
 import { std, stdurl } from '/src/std.ts';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import {
@@ -84,9 +98,20 @@ export default {
     },
     computed: {
         ...mapGetters(useProfileStore, ['hasNoChannels']),
-        visibleContacts: function() {
+        visibleActiveContacts: function() {
             return this.contacts.filter((contact) => {
                 return contact.callsign;
+            }).filter((contact) => {
+                return cotStore.cots.has(contact.uid);
+            }).filter((contact) => {
+                return contact.callsign.toLowerCase().includes(this.paging.filter.toLowerCase());
+            })
+        },
+        visibleOfflineContacts: function() {
+            return this.contacts.filter((contact) => {
+                return contact.callsign;
+            }).filter((contact) => {
+                return !cotStore.cots.has(contact.uid);
             }).filter((contact) => {
                 return contact.callsign.toLowerCase().includes(this.paging.filter.toLowerCase());
             })
