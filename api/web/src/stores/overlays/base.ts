@@ -182,16 +182,18 @@ export default class Overlay {
         opacity?: number;
     }): Promise<void> {
         if (body.opacity !== undefined) {
+            this.opacity = body.opacity;
             for (const l of this._layers) {
                 if (this.type === 'raster') {
-                    this._map.setPaintProperty(this.id, 'raster-opacity', Number(this.opacity))
+                    this._map.setPaintProperty(l.id, 'raster-opacity', Number(this.opacity))
                 }
             }
         }
 
         if (body.visible !== undefined) {
+            this.visible = body.visible;
             for (const l of this._layers) {
-                this._map.setLayoutProperty(this.id, 'visibility', this.visible ? 'visible' : 'none');
+                this._map.setLayoutProperty(l.id, 'visibility', this.visible ? 'visible' : 'none');
             }
         }
 
