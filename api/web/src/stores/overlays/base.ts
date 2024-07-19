@@ -182,6 +182,66 @@ export default class Overlay {
         this._clickable = opts.clickable;
     }
 
+    async replace(body: {
+        name?: string;
+        url: string;
+        mode_id: string;
+    }): Promise<void> {
+        this.name = body.name || this.name;
+        this.url = body.url;
+        this.mode_id = body.mode_id;
+
+        for (const l of this._layers) {
+            this._map.removeLayer(l.id);
+        }
+
+        this._map.removeSource(this.id);
+
+        if (this.type ==='raster' && this.url) {
+            const url = stdurl(this.url);
+            url.searchParams.append('token', localStorage.token);
+
+            this._map.addSource(String(this.id), {
+                type: 'raster',
+                url: String(url)
+            });
+        } else if (this.type === 'vector' && this.url) {
+            const url = stdurl(this.url);
+            url.searchParams.append('token', localStorage.token);
+
+            this._map.addSource(String(this.id), {
+                type: 'vector',
+                url: String(url)
+            });
+        } else if (this.type === 'geojson') {
+            if (!this._map.getSource(String(this.id))) {
+                let data: FeatureCollection = { type: 'FeatureCollection', features: [] };
+                if (this.mode === 'mission' && this.mode_id) {
+                    //data = await cotStore.loadMission(this.mode_id);
+                }
+
+                this._map.addSource(String(this.id), {
+                    type: 'geojson',
+                    cluster: false,
+                    data
+                })
+            }
+
+            await this.save();
+        }
+
+        for (const l of opts.layers) {
+            this._map.addLayer(l) // before);
+
+            // TODO: Not sure why "visibility: overlay.visible"  above isn't respected
+            if (this.visible === false) {
+                this._map.setLayoutProperty(l.id, 'visibility', 'none');
+            } else if (this.visible === true) {
+                this._map.setLayoutProperty(l.id, 'visibility', 'visible');
+            }
+        }
+    }
+
     async delete(): Promise<void> {
         this._destroyed = true;
 
