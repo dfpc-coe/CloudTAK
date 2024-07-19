@@ -282,6 +282,8 @@ export default class Overlay {
                 pos: this.pos,
                 name: this.name,
                 opacity: this.opacity,
+                mode_id: this.mode_id,
+                url: this.url,
                 visible: this.visible,
                 styles: this.styles
             }
