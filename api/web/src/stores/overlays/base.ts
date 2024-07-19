@@ -47,6 +47,8 @@ export default class Overlay {
     ): Overlay {
         const overlay = new Overlay(map, {
             ...body,
+            visible: true,
+            opacity: 1,
             type: 'vector'
         });
 
