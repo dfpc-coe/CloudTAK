@@ -152,7 +152,7 @@
                                     />
                                 </div>
                                 <TreeCots
-                                    v-else-if='overlay.type === "geojson" && overlay.id === "cots" && opened.includes(overlay.id)'
+                                    v-else-if='overlay.type === "geojson" && overlay.id === "-1" && opened.includes(overlay.id)'
                                     :element='overlay'
                                 />
                             </template>
