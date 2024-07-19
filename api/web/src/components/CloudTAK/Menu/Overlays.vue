@@ -240,16 +240,10 @@ export default {
 
             const overlay = mapStore.getOverlayById(parseInt(sortableEv.item.getAttribute('id')))
 
-            if (sortableEv.newIndex === overlay_ids.length - 1) {
-                for (const l of overlay._layers) {
-                    mapStore.map.moveLayer(l.id)
-                }
-            } else {
-                const post = mapStore.getOverlayById(overlay_ids[sortableEv.newIndex + 1]);
+            const post = mapStore.getOverlayById(overlay_ids[sortableEv.newIndex + 1]);
 
-                for (const l of overlay._layers) {
-                    mapStore.map.moveLayer(l.id, post._layers[post._layers.length - 1].id)
-                }
+            for (const l of overlay._layers) {
+                mapStore.map.moveLayer(l.id, post._layers[0].id)
             }
 
             for (const overlay of this.overlays) {
