@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v2.73.0 - 2024-07-19
+
+- :rocket: `UI` Implment user suggestions for "clickable" contacts vs a seperate zoomTo button
+- :rocket: `UI` Divide contacts into active and recently offline 
+
 ### v2.72.0 - 2024-07-18
 
 - :rocket: `UI` Map incoming CoTs from Missions to their correct layer
