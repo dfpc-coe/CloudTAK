@@ -366,7 +366,7 @@
                     <div
                         style='width: calc(100% - 40px)'
                         class='py-2 d-flex align-items-center hover-dark cursor-pointer'
-                        @click='$router.go("/profile")'
+                        @click='$router.push("/profile")'
                     >
                         <div class='d-flex align-items-center'>
                             <IconUser
