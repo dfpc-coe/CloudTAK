@@ -191,8 +191,16 @@ export const useMapStore = defineStore('cloudtak', {
 
                 // Ignore Non-Clickable Layer
                 const clickMap: Map<string, { type: string, id: string }> = new Map();
-                for (const l of this.overlays) for (const c of l.clickable) clickMap.set(c.id, c);
+                for (const overlay of this.overlays) {
+                    for (const c of overlay._clickable) {
+                        clickMap.set(c.id, c);
+                    }
+                }
+
+                console.error(clickMap);
+
                 const features = this.map.queryRenderedFeatures(e.point).filter((feat) => {
+                    console.error(feat.layer.id);
                     return clickMap.has(feat.layer.id);
                 });
 
@@ -341,7 +349,12 @@ export const useMapStore = defineStore('cloudtak', {
 
             if (!opts.mode) {
                 const clickMap: Map<string, { type: string, id: string }> = new Map();
-                for (const l of this.overlays) for (const c of l.clickable) clickMap.set(c.id, c);
+                for (const overlay of this.overlays) {
+                    for (const c of overlay._clickable) {
+                        clickMap.set(c.id, c);
+                    }
+                }
+
                 if (!('layer' in feat)) return;
                 const click = clickMap.get(feat.layer.id);
                 if (!click) return;

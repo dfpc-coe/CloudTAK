@@ -131,18 +131,24 @@ export default class Overlay {
             }
         }
 
-        if (!opts.layers) opts.layers = [];
-
-        if (!opts.layers.length && this.type === 'raster') {
+        if (!opts.layers && this.type === 'raster') {
             opts.layers =  [{
                 'id': String(this.id),
                 'type': 'raster',
                 'source': String(this.id)
             }]
-        } else if (!opts.layers.length && this.type === 'vector') {
+        } else if (!opts.layers && this.type === 'vector') {
             opts.layers = cotStyles(String(this.id), {
                 sourceLayer: 'out'
             });
+
+            if (opts.clickable === undefined)  {
+                opts.clickable = opts.layers.map((l) => {
+                    return { id: l.id, type: 'feat' };
+                });
+            }
+        } else if (!opts.layers) {
+            opts.layers = [];
         }
 
         for (const l of opts.layers) {
@@ -158,7 +164,10 @@ export default class Overlay {
 
         this._layers = opts.layers;
 
-        if (!opts.clickable) opts.clickable = [];
+        if (!opts.clickable) {
+            opts.clickable = [];
+        }
+
         for (const click of opts.clickable) {
             this._map.on('mouseenter', click.id, () => {
                 if (this.draw && this.draw.getMode() !== 'static') return;
