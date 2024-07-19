@@ -1,7 +1,10 @@
 <template>
     <div
         class='col-12'
+        @click='flyTo(contact)'
         :class='{
+            "cursor-pointer": isZoomable(contact),
+            "cursor-default": !isZoomable(contact),
             "hover-dark": hover,
             "py-2": !compact
         }'
@@ -46,14 +49,6 @@
                     :stroke='1'
                     class='cursor-pointer'
                     @click='$emit("chat", contact.uid)'
-                />
-                <IconZoomPan
-                    v-if='buttonZoom && isZoomable(contact)'
-                    v-tooltip='"Zoom To"'
-                    :size='compact ? 20 : 32'
-                    :stroke='1'
-                    class='cursor-pointer'
-                    @click='flyTo(contact)'
                 />
             </div>
         </div>
@@ -119,6 +114,8 @@ export default {
             return cot.properties.contact && cot.properties.contact.endpoint;
         },
         flyTo: function(contact) {
+            if (!this.buttonZoom || !this.isZoomable(contact)) return;
+
             const flyTo = {
                 speed: Infinity,
                 center: cotStore.cots.get(contact.uid).geometry.coordinates,
