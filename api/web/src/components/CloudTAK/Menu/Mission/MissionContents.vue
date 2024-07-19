@@ -166,9 +166,9 @@ export default {
     },
     methods: {
         subscribe: async function(subscribed) {
-            const layer = mapStore.getLayerByMode('mission', this.mission.guid);
+            const overlay = mapStore.getOverlayByMode('mission', this.mission.guid);
 
-            if (subscribed === true && !layer) {
+            if (subscribed === true && !overlay) {
                 await mapStore.addDefaultLayer({
                     id: this.mission.guid,
                     url: `/mission/${encodeURIComponent(this.mission.name)}`,
@@ -185,11 +185,11 @@ export default {
                         { id: this.mission.guid, type: 'feat' }
                     ]
                 });
-            } else if (subscribed === false && layer) {
+            } else if (subscribed === false && overlay) {
                 await mapStore.removeLayer(this.mission.name);
             }
 
-            this.subscribed = !!mapStore.getLayerByMode('mission', this.mission.guid);
+            this.subscribed = !!mapStore.getOverlayByMode('mission', this.mission.guid);
         },
         downloadFile: function(file) {
             const url = stdurl(`/api/marti/api/files/${file.hash}`)

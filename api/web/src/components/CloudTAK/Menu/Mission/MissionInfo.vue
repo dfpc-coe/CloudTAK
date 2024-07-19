@@ -111,6 +111,7 @@ import {
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import MenuTemplate from '../../util/MenuTemplate.vue';
+import Overlay from '/src/stores/overlays/base.ts';
 import { useMapStore } from '/src/stores/map.ts';
 const mapStore = useMapStore();
 
@@ -138,8 +139,8 @@ export default {
     },
     computed: {
         subscribed: function() {
-            if (!mapStore.isLoaded || this.loading.subscribe) return;
-            return !!mapStore.getLayerByMode('mission', this.mission.guid);
+            if (this.loading.subscribe) return;
+            return !!mapStore.getOverlayByMode('mission', this.mission.guid);
         }
     },
     mounted: async function() {
@@ -153,27 +154,18 @@ export default {
         },
         subscribe: async function(subscribed) {
             this.loading.subscribe = true;
-            const layer = mapStore.getLayerByMode('mission', this.mission.guid);
+            const overlay = mapStore.getOverlayByMode('mission', this.mission.guid);
 
-            if (subscribed === true && !layer) {
-                await mapStore.addDefaultLayer({
-                    id: this.mission.guid,
-                    url: `/mission/${encodeURIComponent(this.mission.name)}`,
+            if (subscribed === true && !overlay) {
+                mapStore.overlays.push(await Overlay.create(mapStore.map, {
                     name: this.mission.name,
-                    source: this.mission.guid,
+                    url: `/mission/${encodeURIComponent(this.mission.name)}`,
                     type: 'geojson',
-                    before: 'CoT Icons',
                     mode: 'mission',
                     mode_id: this.mission.guid,
-                    clickable: [
-                        { id: `${this.mission.guid}-poly`, type: 'feat' },
-                        { id: `${this.mission.guid}-polyline`, type: 'feat' },
-                        { id: `${this.mission.guid}-line`, type: 'feat' },
-                        { id: this.mission.guid, type: 'feat' }
-                    ]
-                });
-            } else if (subscribed === false && layer) {
-                await mapStore.removeLayer(this.mission.name);
+                }))
+            } else if (subscribed === false && overlay) {
+                await mapStore.removeOverlay(overlay);
             }
 
             this.loading.subscribe = false;
