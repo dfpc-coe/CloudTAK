@@ -243,7 +243,11 @@ export default {
             const post = mapStore.getOverlayById(overlay_ids[sortableEv.newIndex + 1]);
 
             for (const l of overlay._layers) {
-                mapStore.map.moveLayer(l.id, post._layers[0].id)
+                if (post) {
+                    mapStore.map.moveLayer(l.id, post._layers[0].id)
+                } else {
+                    mapStore.map.moveLayer(l.id)
+                }
             }
 
             for (const overlay of this.overlays) {
