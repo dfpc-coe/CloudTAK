@@ -96,11 +96,9 @@ export const useMapStore = defineStore('cloudtak', {
             this.overlays.splice(pos, 1)
             await overlay.delete();
         },
-        getOverlayById(id: string): OverlayContainer | null {
-            for (let i = 0; i < this.overlays.length; i++) {
-                if (this.overlays[i].id === id) {
-                    return this.overlays[i];
-                }
+        getOverlayById(id: number): OverlayContainer | null {
+            for (const overlay of this.overlays) {
+                if (overlay.id === id) return overlay
             }
 
             return null;
@@ -293,7 +291,7 @@ export const useMapStore = defineStore('cloudtak', {
             this.overlays.push(Overlay.internal(
                 this.map,
                 {
-                    id: '-1',
+                    id: -1,
                     name: 'CoT Icons',
                     type: 'geojson',
                 },{
@@ -315,7 +313,7 @@ export const useMapStore = defineStore('cloudtak', {
             this.overlays.push(Overlay.internal(
                 this.map,
                 {
-                    id: '0',
+                    id: 0,
                     name: 'Your Location',
                     type: 'vector',
                 },{

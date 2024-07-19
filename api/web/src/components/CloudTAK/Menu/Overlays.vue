@@ -111,7 +111,7 @@
                                             v-tooltip='"Delete Overlay"'
                                             :size='20'
                                             displaytype='icon'
-                                            @delete='removeLayer(overlay)'
+                                            @delete='removeOverlay(overlay)'
                                         />
 
                                         <IconEye
@@ -152,7 +152,7 @@
                                     />
                                 </div>
                                 <TreeCots
-                                    v-else-if='overlay.type === "geojson" && overlay.id === "-1" && opened.includes(overlay.id)'
+                                    v-else-if='overlay.type === "geojson" && overlay.id === -1 && opened.includes(overlay.id)'
                                     :element='overlay'
                                 />
                             </template>
@@ -231,33 +231,36 @@ export default {
     },
     methods: {
         saveOrder: async function(sortableEv) {
-            const overlay_ids = sortable.toArray()
+            // TODO: Eventually it would be awesome to just move the Overlay in the overlays array
+            // And the MapStore would just dynamically re-order the layers so any part of the app could reorder
 
-            const layer = mapStore.getOverlayById(sortableEv.item.getAttribute('id'))
+            const overlay_ids = sortable.toArray().map((i) => {
+                return parseInt(i)
+            });
+
+            const overlay = mapStore.getOverlayById(parseInt(sortableEv.item.getAttribute('id')))
 
             if (sortableEv.newIndex === overlay_ids.length - 1) {
-                for (const l of layer.layers) {
+                for (const l of overlay._layers) {
                     mapStore.map.moveLayer(l.id)
                 }
             } else {
                 const post = mapStore.getOverlayById(overlay_ids[sortableEv.newIndex + 1]);
-                const postID = post.layers[post.layers.length - 1].id;
 
-                for (const l of layer.layers) {
-                    mapStore.map.moveLayer(l.id, postID)
+                for (const l of overlay._layers) {
+                    mapStore.map.moveLayer(l.id, post._layers[post._layers.length - 1].id)
                 }
             }
 
-            for (const l of this.layers) {
-                if (!l.overlay) continue;
-                const pos = overlay_ids.indexOf(l.id);
-
-                await overlayStore.updateOverlay(l.overlay, { pos })
+            for (const overlay of this.overlays) {
+                await overlay.update({
+                    pos: overlay_ids.indexOf(overlay.id)
+                });
             }
         },
-        removeLayer: async function(layer) {
+        removeOverlay: async function(overlay) {
             this.loading = true;
-            await mapStore.removeLayer(layer.name);
+            await mapStore.removeOverlay(overlay);
             this.loading = false;
         },
         editor: function(overlay) {
