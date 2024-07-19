@@ -1,28 +1,24 @@
 <template>
-    <div class='col-lg py-2 px-3'>
-        <label class='subheader pb-2'>Filter</label>
-        <div class='col-12 bg-gray-500 px-2 my-2 py-2'>
-            <span v-text='l.filter' />
-        </div>
+    <div class='col-lg px-3'>
+        <label class='subheader'>Filter</label>
+        <pre class='col-12 px-2 py-1' v-text='JSON.stringify(l.filter)'/>
     </div>
-    <div class='col-lg py-2 px-3'>
-        <label class='subheader pb-2'>Source Layer</label>
-        <div class='col-12 bg-gray-500 px-2 my-2 py-2'>
-            <span v-text='l["source-layer"]' />
-        </div>
+    <div class='col-lg px-3'>
+        <label class='subheader'>Source Layer</label>
+        <pre class='col-12 px-2 py-1' v-text='JSON.stringify(l["source-layer"])'/>
     </div>
-    <div class='col-lg py-2 px-3'>
+    <div class='col-lg px-3'>
         <label class='subheader'>Layout</label>
         <div
             v-if='Object.keys(l.layout).length === 0'
-            class='col-12 d-flex bg-gray-500 px-2 my-2 py-2'
+            class='col-12 d-flex px-2 py-1'
         >
             None
         </div>
         <div
             v-for='p of Object.keys(l.layout)'
             :key='p'
-            class='col-12 d-flex bg-gray-500 px-2 my-2 py-2'
+            class='col-12 d-flex px-2 py-1'
         >
             <span v-text='p' />
 
@@ -32,18 +28,18 @@
             />
         </div>
     </div>
-    <div class='col-lg py-2 px-3'>
+    <div class='col-lg px-3'>
         <label class='subheader'>Paint</label>
         <div
             v-if='Object.keys(l.paint).length === 0'
-            class='col-12 d-flex bg-gray-500 px-2 my-2 py-2'
+            class='col-12 d-flex px-2 py-1'
         >
             None
         </div>
         <div
             v-for='p of Object.keys(l.paint)'
             :key='p'
-            class='col-12 d-flex bg-gray-500 px-2 my-2 py-2'
+            class='col-12 d-flex px-2'
         >
             <template v-if='["fill-opacity", "line-opacity", "marker-opacity"].includes(p)'>
                 <template v-if='Array.isArray(l.paint[p]) && l.paint[p][0] === "number"'>
