@@ -10,35 +10,30 @@
             <div
                 v-for='a in assetList.assets'
                 :key='a.id'
-                class='cursor-pointer col-12 py-2 px-3 hover-dark'
+                class='col-12 py-2 px-3 hover-dark'
             >
                 <div class='col-12 py-2 px-2 d-flex align-items-center'>
+                    <IconMapPlus
+                        v-if='a.visualized'
+                        v-tooltip='"Add to Map"'
+                        @click='createOverlay(a)'
+                        class='cursor-pointer'
+                        :size='32'
+                        :stroke='1'
+                    />
                     <IconEyeX
-                        v-if='!a.visualized'
+                        v-else-if='!a.visualized'
                         v-tooltip='"No Viz Layer"'
                         :size='32'
                         :stroke='1'
                     />
-                    <IconEye
-                        v-else-if='a.visible'
-                        :size='32'
-                        :stroke='1'
-                        class='cursor-pointer'
-                        @click='flipVisible(a)'
-                    />
-                    <IconEyeOff
-                        v-else
-                        :size='32'
-                        :stroke='1'
-                        class='cursor-pointer'
-                        @click='flipVisible(a)'
-                    />
                     <span
-                        class='mx-2 cursor-pointer'
+                        class='mx-2 cursor-default'
                         v-text='a.name'
                     />
                     <div class='ms-auto btn-list'>
                         <TablerDelete
+                            v-tooltip='"Delete Permanently"'
                             displaytype='icon'
                             @delete='deleteProfileAsset(a)'
                         />
@@ -52,6 +47,7 @@
 <script>
 import { std, stdurl } from '/src/std.ts';
 import { useMapStore } from '/src/stores/map.ts';
+import Overlay from '/src/stores/overlays/base.ts';
 const mapStore = useMapStore();
 import MenuTemplate from '../util/MenuTemplate.vue';
 import {
@@ -60,17 +56,15 @@ import {
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import {
-    IconEye,
+    IconMapPlus,
     IconEyeX,
-    IconEyeOff,
 } from '@tabler/icons-vue'
 
 export default {
     name: 'CloudTAKDatas',
     components: {
-        IconEye,
         IconEyeX,
-        IconEyeOff,
+        IconMapPlus,
         TablerNone,
         TablerLoading,
         TablerDelete,
@@ -104,22 +98,6 @@ export default {
         await this.fetchUserAssetList();
     },
     methods: {
-        flipVisible: async function(a) {
-            const id = `profile-${a.name.replace(/\..*$/, '')}`;
-            if (a.visible) {
-                mapStore.map.removeLayer(id);
-                mapStore.map.removeSource(id);
-                a.visible = false;
-            } else {
-                a.visible = true;
-                const url = stdurl(`/api/profile/asset/${encodeURIComponent(a.visualized)}/tile`);
-                url.searchParams.append('token', localStorage.token);
-
-                await this.createOverlay(id, url, a);
-            }
-
-            this.$router.push('/menu/overlays');
-        },
         deleteProfileAsset: async function(a) {
             this.loading = true;
             const url = stdurl(`/api/profile/asset/${a.name}`);
@@ -128,44 +106,43 @@ export default {
             });
             this.fetchUserAssetList();
         },
-        createOverlay: async function(id, url) {
+        createOverlay: async function(asset) {
+            const id = `profile-${asset.name.replace(/\..*$/, '')}`;
+            const url = stdurl(`/api/profile/asset/${encodeURIComponent(asset.visualized)}/tile`);
+            url.searchParams.append('token', localStorage.token);
+
             this.loading = true;
             const res = await std(url);
 
             if (new URL(res.tiles[0]).pathname.endsWith('.mvt')) {
-                await mapStore.addDefaultLayer({
-                    id,
-                    url: url,
-                    name: id,
-                    source: id,
+                await mapStore.overlays.push(await Overlay.create(mapStore.map, {
+                    url,
+                    name: asset.name,
+                    mode: 'profile',
+                    mode_id: asset.name,
                     type: 'vector',
-                    before: 'CoT Icons',
+                },{
                     clickable: [
                         { id: `${id}-poly`, type: 'feat' },
                         { id: `${id}-polyline`, type: 'feat' },
                         { id: `${id}-line`, type: 'feat' },
-                        { id: id, type: 'feat' }
+                        { id, type: 'feat' }
                     ]
-                });
+                }));
             } else {
-                await mapStore.addDefaultLayer({
-                    id,
+                await mapStore.overlays.push(await Overlay.create(mapStore.map, {
                     url: url,
-                    name: id,
-                    source: id,
+                    name: asset.name,
+                    mode: 'profile',
+                    mode_id: asset.name,
                     type: 'raster',
-                    before: 'CoT Icons',
-                    clickable: [
-                        { id: `${id}-poly`, type: 'feat' },
-                        { id: `${id}-polyline`, type: 'feat' },
-                        { id: `${id}-line`, type: 'feat' },
-                        { id: id, type: 'feat' }
-                    ]
-                });
+                }));
             }
 
             this.loading = false;
             this.$emit('mode', 'overlays');
+
+            this.$router.push('/menu/overlays');
         },
         fetchUserAssetList: async function() {
             this.loading = true;
@@ -176,11 +153,6 @@ export default {
             const assetList = await std(url);
 
             const layers = mapStore.map.getLayersOrder();
-            for (const asset of assetList.assets) {
-                const id = `profile-${asset.name.replace(/\..*$/, '')}`;
-                if (layers.indexOf(id) !== -1) asset.visible = true;
-                else asset.visible = false;
-            }
 
             this.assetList = assetList;
             this.loading = false;

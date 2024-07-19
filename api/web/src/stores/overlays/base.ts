@@ -32,9 +32,16 @@ export default class Overlay {
     styles: any;
     token: string | null;
 
-    static async create(map: Map, body: ProfileOverlay_Create): Promise<Overlay> {
+    static async create(
+        map: Map,
+        body: ProfileOverlay_Create,
+        opts: {
+            layers?: Array<LayerSpecification>;
+            clickable?: Array<{ id: string; type: string }>;
+        } = {}
+    ): Promise<Overlay> {
         const ov = await std('/api/profile/overlay', { method: 'POST', body });
-        return new Overlay(map, ov);
+        return new Overlay(map, ov, opts);
     }
 
     static internal(
