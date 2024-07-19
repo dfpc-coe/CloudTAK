@@ -251,7 +251,7 @@ export default class Overlay {
         if (this._internal) return;
 
         if (this.id) {
-            const overlay = await std(`/api/profile/overlay/${this.id}`, {
+            const overlay = await std(`/api/profile/overlay?id=${this.id}`, {
                 method: 'DELETE'
             });
         }

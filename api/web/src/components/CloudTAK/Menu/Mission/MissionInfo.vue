@@ -114,8 +114,8 @@ import MenuTemplate from '../../util/MenuTemplate.vue';
 import Overlay from '/src/stores/overlays/base.ts';
 import { useMapStore } from '/src/stores/map.ts';
 const mapStore = useMapStore();
-import { useCoTStore } from '/src/stores/cots.ts';
-const cotStore = useCoTStore();
+import { useCOTStore } from '/src/stores/cots.ts';
+const cotStore = useCOTStore();
 
 export default {
     name: 'MissionInfo',
