@@ -162,10 +162,10 @@ export default {
                     if (overlay.mode === 'basemap') {
                         await overlay.replace({
                             name: basemap.name,
-                            url: basemap.url,
+                            url: `/api/basemap/${basemap.id}/tiles`,
                             mode_id: String(basemap.id)
                         });
-                        breal;
+                        break;
                     }
                 }
             } else {
