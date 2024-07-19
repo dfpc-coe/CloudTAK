@@ -183,6 +183,7 @@ export const useMapStore = defineStore('cloudtak', {
             this.map.on('rotate', () => {
                 this.bearing = this.map.getBearing()
             })
+
             this.map.on('click', (e: MapMouseEvent) => {
                 if (this.draw && this.draw.getMode() !== 'static') return;
 
