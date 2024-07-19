@@ -58,6 +58,8 @@ export default class Overlay {
             pos: 3,
         }, opts);
 
+        overlay._internal = true;
+
         return overlay;
     }
 
