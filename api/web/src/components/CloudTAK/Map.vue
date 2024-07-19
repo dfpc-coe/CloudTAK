@@ -295,7 +295,7 @@
         </div>
 
         <SideMenu
-            v-if='isLoaded'
+            v-if='isLoaded && !pointInput.shown'
             :compact='noMenuShown'
             @reset='deleteCOT()'
         />
@@ -306,7 +306,7 @@
             style='
                 top: 56px;
                 z-index: 1;
-                width: 300px;
+                width: 400px;
                 border-radius: 0px 6px 0px 0px;
             '
         >
@@ -505,7 +505,10 @@ export default {
         'pointInput.shown': function() {
             this.pointInput.name = '';
             const center = mapStore.map.getCenter()
-            this.pointInput.coordinates = [center.lng, center.lat]
+            this.pointInput.coordinates = [
+                Math.round(center.lng * 1000000) / 1000000,
+                Math.round(center.lat * 1000000) / 1000000
+            ]
         },
     },
     unmounted: function() {
