@@ -49,10 +49,13 @@ export default class Overlay {
             ...body,
             visible: true,
             opacity: 1,
-            type: 'vector'
+            type: 'vector',
+            created: new Date().toISOString(),
+            updated: new Date().toISOString(),
+            pos: 3,
+        }, {
+            layers
         });
-
-        overlay._layers = layers;
 
         return overlay;
     }

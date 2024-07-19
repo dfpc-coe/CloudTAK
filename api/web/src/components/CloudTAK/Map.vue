@@ -802,7 +802,7 @@ export default {
         setYou: function() {
             if (profileStore.profile.tak_loc) {
                 connectionStore.sendCOT(profileStore.CoT());
-                mapStore.map.getSource(0).setData({
+                mapStore.map.getSource('0').setData({
                     type: 'FeatureCollection',
                     features: [{
                         type: 'Feature',
