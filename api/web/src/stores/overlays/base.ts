@@ -161,6 +161,13 @@ export default class Overlay {
 
     async delete(): Promise<void> {
         this._destroyed = true;
+
+        for (const l of this._layers) {
+            this._map.removeLayer(l.id);
+        }
+
+        this._map.removeSource(this.id);
+
         if (this._internal) return;
 
         if (this.id) {

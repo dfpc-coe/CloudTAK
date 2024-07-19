@@ -78,7 +78,16 @@ export const useMapStore = defineStore('cloudtak', {
             }
             this.$reset();
         },
-        getLayer(id: string): OverlayContainer | null {
+        removeOverlay: async function(overlay: Overlay) {
+            if (!this.map) throw new Error('Cannot removeOverlay before map has loaded');
+
+            const pos = this.overlays.indexOf(overlay)
+            if (pos === -1) return;
+
+            this.overlays.splice(pos, 1)
+            await overlay.delete();
+        },
+        getOverlayById(id: string): OverlayContainer | null {
             for (let i = 0; i < this.overlays.length; i++) {
                 if (this.overlays[i].id === id) {
                     return this.overlays[i];
@@ -87,7 +96,7 @@ export const useMapStore = defineStore('cloudtak', {
 
             return null;
         },
-        getLayerByMode(mode: string, mode_id: string): OverlayContainer | null {
+        getOverlayByMode(mode: string, mode_id: string): OverlayContainer | null {
             for (let i = 0; i < this.overlays.length; i++) {
                 if (this.overlays[i].mode === mode && this.overlays[i].mode_id === mode_id) {
                     return this.overlays[i];
@@ -116,43 +125,6 @@ export const useMapStore = defineStore('cloudtak', {
             oStore.setData(fc);
 
             return true;
-        },
-        removeLayerBySource: async function(source: string) {
-            const pos = this.getLayerPos(source, 'source');
-            if (pos === false) return
-            const layer = this.overlays[pos];
-
-            await this.removeLayer(layer.name);
-        },
-        getLayerPos: function(name: string, key='name') {
-            if (!['name', 'source'].includes(key)) throw new Error(`Unsupported Lookup Key: ${key}`);
-
-            for (let i = 0; i < this.overlays.length; i++) {
-                if (key === 'name' && this.overlays[i].name === name) {
-                    return i;
-                } else if (key === 'source' && this.overlays[i].id === name) {
-                    return i;
-                }
-            }
-
-            return false
-        },
-        removeOverlay: async function(name: string) {
-            if (!this.map) throw new Error('Cannot removeOverlay before map has loaded');
-
-            const pos = this.getLayerPos(name);
-            if (pos === false) return;
-            const overlay = this.overlays[pos];
-
-            this.overlays.splice(pos, 1)
-
-            for (const l of overlay.layers) {
-                this.map.removeLayer(l.id);
-            }
-
-            this.map.removeSource(overlay.id);
-
-            await overlay.delete();
         },
         init: function(container: HTMLElement) {
             this.container = container;
