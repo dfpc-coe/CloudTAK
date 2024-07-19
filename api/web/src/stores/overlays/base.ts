@@ -139,12 +139,27 @@ export default class Overlay {
             }]
         } else if (!opts.layers && this.type === 'vector') {
             opts.layers = cotStyles(String(this.id), {
-                sourceLayer: 'out'
+                sourceLayer: 'out',
+                group: false,
+                icons: false,
+                labels: true
             });
 
             if (opts.clickable === undefined)  {
                 opts.clickable = opts.layers.map((l) => {
                     return { id: l.id, type: 'feat' };
+                });
+            }
+        } else if (!opts.layers && this.type === 'geojson') {
+            opts.layers = cotStyles(String(this.id), {
+                group: this.mode !== "mission",
+                icons: true,
+                labels: true
+            });
+
+            if (opts.clickable === undefined)  {
+                opts.clickable = opts.layers.map((l) => {
+                    return { id: l.id, type: this.id === -1 ? 'cot' : 'feat' };
                 });
             }
         } else if (!opts.layers) {
