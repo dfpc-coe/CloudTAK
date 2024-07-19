@@ -230,7 +230,7 @@ export default class Overlay {
             await this.save();
         }
 
-        for (const l of opts.layers) {
+        for (const l of this._layers) {
             this._map.addLayer(l) // before);
 
             // TODO: Not sure why "visibility: overlay.visible"  above isn't respected
