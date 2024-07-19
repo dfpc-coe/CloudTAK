@@ -9,7 +9,6 @@
 
 import { defineStore } from 'pinia'
 import Overlay from './overlays/base.ts';
-import cotStyles from './overlays/styles.ts'
 import { std, stdurl } from '../std.js';
 import * as pmtiles from 'pmtiles';
 import mapgl from 'maplibre-gl'
@@ -118,7 +117,7 @@ export const useMapStore = defineStore('cloudtak', {
          * @returns {boolean} True if successful, false if not
          */
         updateMissionData: function(guid: string): boolean {
-            const overlay = this.getLayerByMode('mission', guid)
+            const overlay = this.getOverlayByMode('mission', guid)
             if (!overlay) return false;
 
             if (!this.map) throw new Error('Cannot updateMissionData before map has loaded');
@@ -294,25 +293,20 @@ export const useMapStore = defineStore('cloudtak', {
                 ));
             }
 
+            // Data Syncs are specially loaded as they are dynamic
+            for (const overlay of this.overlays) {
+                if (overlay.mode === 'mission') {
+                    this.map.getSource(String(overlay.id))
+                        .setData(await cotStore.loadMission(overlay.mode_id));
+                }
+            }
+
             this.overlays.push(Overlay.internal(
                 this.map,
                 {
                     id: -1,
                     name: 'CoT Icons',
                     type: 'geojson',
-                },{
-                    layers: cotStyles('-1', {
-                        group: true,
-                        icons: true,
-                        labels: true
-                    }),
-                    clickable: [
-                        { id: '-1', type: 'cot' },
-                        { id: '-1-poly', type: 'cot' },
-                        { id: '-1-group', type: 'cot' },
-                        { id: `-1-icon`, type: 'cot' },
-                        { id: '-1-line', type: 'cot' }
-                    ],
                 }
             ));
 
