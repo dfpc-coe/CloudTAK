@@ -4,6 +4,7 @@ import type {
     ProfileOverlay,
     ProfileOverlay_Create
 } from '../../types.ts';
+import cotStyles from './styles.ts'
 import { std, stdurl } from '../../std.js';
 
 /**
@@ -103,7 +104,7 @@ export default class Overlay {
             const url = stdurl(this.url);
             url.searchParams.append('token', localStorage.token);
 
-            this._map.addSource(this.id, {
+            this._map.addSource(String(this.id), {
                 type: 'raster',
                 url: String(url)
             });
@@ -111,18 +112,18 @@ export default class Overlay {
             const url = stdurl(this.url);
             url.searchParams.append('token', localStorage.token);
 
-            this._map.addSource(this.id, {
+            this._map.addSource(String(this.id), {
                 type: 'vector',
                 url: String(url)
             });
         } else if (this.type === 'geojson') {
-            if (!this._map.getSource(this.id)) {
+            if (!this._map.getSource(String(this.id))) {
                 let data: FeatureCollection = { type: 'FeatureCollection', features: [] };
                 if (this.mode === 'mission' && this.mode_id) {
                     //data = await cotStore.loadMission(this.mode_id);
                 }
 
-                this._map.addSource(this.id, {
+                this._map.addSource(String(this.id), {
                     type: 'geojson',
                     cluster: false,
                     data
@@ -138,6 +139,10 @@ export default class Overlay {
                 'type': 'raster',
                 'source': String(this.id)
             }]
+        } else if (!opts.layers.length && this.type === 'vector') {
+            opts.layers = cotStyles(String(this.id), {
+                sourceLayer: 'out'
+            });
         }
 
         for (const l of opts.layers) {

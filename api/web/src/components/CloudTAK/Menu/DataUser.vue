@@ -48,6 +48,7 @@
 import { std, stdurl } from '/src/std.ts';
 import { useMapStore } from '/src/stores/map.ts';
 import Overlay from '/src/stores/overlays/base.ts';
+import cotStyles from '/src/stores/overlays/styles.ts'
 const mapStore = useMapStore();
 import MenuTemplate from '../util/MenuTemplate.vue';
 import {
@@ -109,7 +110,6 @@ export default {
         createOverlay: async function(asset) {
             const id = `profile-${asset.name.replace(/\..*$/, '')}`;
             const url = stdurl(`/api/profile/asset/${encodeURIComponent(asset.visualized)}/tile`);
-            url.searchParams.append('token', localStorage.token);
 
             this.loading = true;
             const res = await std(url);
@@ -121,13 +121,6 @@ export default {
                     mode: 'profile',
                     mode_id: asset.name,
                     type: 'vector',
-                },{
-                    clickable: [
-                        { id: `${id}-poly`, type: 'feat' },
-                        { id: `${id}-polyline`, type: 'feat' },
-                        { id: `${id}-line`, type: 'feat' },
-                        { id, type: 'feat' }
-                    ]
                 }));
             } else {
                 await mapStore.overlays.push(await Overlay.create(mapStore.map, {
