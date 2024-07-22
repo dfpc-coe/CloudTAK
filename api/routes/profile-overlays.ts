@@ -64,6 +64,14 @@ export default async function router(schema: Schema, config: Config) {
                     await config.models.ProfileOverlay.delete(item.id);
                     removed.push(...overlays.items.splice(i, 1));
                     overlays.total--;
+                } else if (item.mode === 'basemap') {
+                    try {
+                        await config.models.Basemap.from(item.mode_id);
+                    } catch (err) {
+                        await config.models.ProfileOverlay.delete(item.id);
+                        removed.push(...overlays.items.splice(i, 1));
+                        overlays.total--;
+                    }
                 } else if (item.mode === 'mission' && !(await api.Mission.access(
                         item.mode_id,
                         await config.conns.subscription(user.email, item.name)
@@ -117,6 +125,8 @@ export default async function router(schema: Schema, config: Config) {
             name: Type.Optional(Type.String()),
             opacity: Type.Optional(Type.Number()),
             visible: Type.Optional(Type.Boolean()),
+            url: Type.Optional(Type.String()),
+            mode_id: Type.Optional(Type.String()),
             styles: Type.Optional(Type.Any())
         }),
         res: ProfileOverlayResponse
