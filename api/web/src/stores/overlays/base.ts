@@ -4,6 +4,7 @@ import type {
     ProfileOverlay,
     ProfileOverlay_Create
 } from '../../types.ts';
+import type { FeatureCollection } from 'geojson';
 import cotStyles from './styles.ts'
 import { std, stdurl } from '../../std.js';
 
@@ -80,12 +81,14 @@ export default class Overlay {
     constructor(map: Map, overlay: ProfileOverlay, opts: {
         layers?: Array<LayerSpecification>;
         clickable?: Array<{ id: string; type: string }>;
-        internal: boolean;
+        internal?: boolean;
     } = {}) {
         this._map = map;
 
         this._destroyed = false;
         this._internal = opts.internal || false;
+        this._layers = [];
+        this._clickable = [];
 
         this.id = overlay.id;
         this.name = overlay.name;
@@ -128,9 +131,6 @@ export default class Overlay {
         } else if (this.type === 'geojson') {
             if (!this._map.getSource(String(this.id))) {
                 let data: FeatureCollection = { type: 'FeatureCollection', features: [] };
-                if (this.mode === 'mission' && this.mode_id) {
-                    //data = await cotStore.loadMission(this.mode_id);
-                }
 
                 this._map.addSource(String(this.id), {
                     type: 'geojson',
@@ -184,7 +184,7 @@ export default class Overlay {
         // The above doesn't set vis/opacity initially
         this.update({
             opacity: this.opacity,
-            visibility: this.visibility
+            visible: this.visible
         })
 
         if (!opts.clickable) {
@@ -193,11 +193,9 @@ export default class Overlay {
 
         for (const click of opts.clickable) {
             this._map.on('mouseenter', click.id, () => {
-                if (this.draw && this.draw.getMode() !== 'static') return;
                 this._map.getCanvas().style.cursor = 'pointer';
             })
             this._map.on('mouseleave', click.id, () => {
-                if (this.draw && this.draw.getMode() !== 'static') return;
                 this._map.getCanvas().style.cursor = '';
             })
         }

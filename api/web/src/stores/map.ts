@@ -51,7 +51,7 @@ export const useMapStore = defineStore('cloudtak', {
             x: number;
             y: number;
         },
-        overlays: Array<Overlays>
+        overlays: Array<Overlay>
     } => {
         const protocol = new pmtiles.Protocol();
         mapgl.addProtocol('pmtiles', protocol.tile);
@@ -94,14 +94,14 @@ export const useMapStore = defineStore('cloudtak', {
             this.overlays.splice(pos, 1)
             await overlay.delete();
         },
-        getOverlayById(id: number): OverlayContainer | null {
+        getOverlayById(id: number): Overlay | null {
             for (const overlay of this.overlays) {
                 if (overlay.id === id) return overlay
             }
 
             return null;
         },
-        getOverlayByMode(mode: string, mode_id: string): OverlayContainer | null {
+        getOverlayByMode(mode: string, mode_id: string): Overlay | null {
             for (let i = 0; i < this.overlays.length; i++) {
                 if (this.overlays[i].mode === mode && this.overlays[i].mode_id === mode_id) {
                     return this.overlays[i];
@@ -273,7 +273,7 @@ export const useMapStore = defineStore('cloudtak', {
                 const basemaps = await std(burl);
 
                 if (basemaps.items.length > 0) {
-                    const basemap = await Overlay.create({
+                    const basemap = await Overlay.create(this.map, {
                         name: basemaps.items[0].name,
                         pos: -1,
                         type: 'raster',
