@@ -9,7 +9,7 @@ import S3 from '../lib/aws/s3.js'
 import crypto from 'node:crypto';
 import { Param } from '@openaddresses/batch-generic';
 import { sql } from 'drizzle-orm';
-import Auth, { AuthResourceAccess } from '../lib/auth.js';
+import Auth, { AuthResourceAccess, AuthUser } from '../lib/auth.js';
 import { ImportResponse } from '../lib/types.js';
 import { Import } from '../lib/schema.js';
 import * as Default from '../lib/limits.js';
@@ -171,11 +171,16 @@ export default async function router(schema: Schema, config: Config) {
         res: ImportResponse
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req, {
+            const auth = await Auth.is_auth(config, req, {
                 resources: [{ access: AuthResourceAccess.IMPORT, id: req.params.import }]
             });
 
             const imported = await config.models.Import.from(req.params.import);
+
+            if (auth instanceof AuthUser) {
+                const user = auth as AuthUser;
+                if (imported.username !== user.email) throw new Err(400, null, 'You did not create this import');
+            }
 
             return res.json(imported);
         } catch (err) {
@@ -198,11 +203,18 @@ export default async function router(schema: Schema, config: Config) {
         res: ImportResponse
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req, {
+            const auth = await Auth.is_auth(config, req, {
                 resources: [{ access: AuthResourceAccess.IMPORT, id: req.params.import }]
             });
 
-            const imported = await config.models.Import.commit(req.params.import, {
+            let imported = await config.models.Import.from(req.params.import);
+
+            if (auth instanceof AuthUser) {
+                const user = auth as AuthUser;
+                if (imported.username !== user.email) throw new Err(400, null, 'You did not create this import');
+            }
+
+            imported = await config.models.Import.commit(req.params.import, {
                 ...req.body,
                 updated: sql`Now()`
             });
@@ -231,7 +243,7 @@ export default async function router(schema: Schema, config: Config) {
         })
     }, async (req, res) => {
         try {
-            await Auth.is_auth(config, req);
+            const user = await Auth.as_user(config, req);
 
             const list = await config.models.Import.list({
                 limit: req.query.limit,
@@ -241,6 +253,7 @@ export default async function router(schema: Schema, config: Config) {
                 where: sql`
                     (${Param(req.query.mode)}::TEXT IS NULL OR ${Param(req.query.mode)}::TEXT = mode)
                     AND (${Param(req.query.mode_id)}::TEXT IS NULL OR ${Param(req.query.mode_id)}::TEXT = mode_id)
+                    AND username = ${user.email}
                 `
             });
 
