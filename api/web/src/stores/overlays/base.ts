@@ -88,6 +88,7 @@ export default class Overlay {
         layers?: Array<LayerSpecification>;
         clickable?: Array<{ id: string; type: string }>;
         internal?: boolean;
+        before?: string;
     } = {}) {
         this._map = map;
 
@@ -117,6 +118,7 @@ export default class Overlay {
     init(opts: {
         layers?: Array<LayerSpecification>;
         clickable?: Array<{ id: string; type: string }>;
+        before?: string;
     } = {}) {
         if (this.type ==='raster' && this.url) {
             const url = stdurl(this.url);
@@ -182,7 +184,11 @@ export default class Overlay {
         }
 
         for (const l of opts.layers) {
-            this._map.addLayer(l) // before);
+            if (opts.before) {
+                this._map.addLayer(l, opts.before);
+            } else {
+                this._map.addLayer(l)
+            }
         }
 
         this._layers = opts.layers;
