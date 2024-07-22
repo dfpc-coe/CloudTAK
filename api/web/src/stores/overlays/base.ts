@@ -1,10 +1,9 @@
 import type {
-    Map,
-    LayerSpecification,
     ProfileOverlay,
     ProfileOverlay_Create
 } from '../../types.ts';
 import type { FeatureCollection } from 'geojson';
+import type { Map, LayerSpecification } from 'maplibre-gl'
 import cotStyles from './styles.ts'
 import { std, stdurl } from '../../std.js';
 
@@ -205,10 +204,10 @@ export default class Overlay {
 
     remove() {
         for (const l of this._layers) {
-            this._map.removeLayer(l.id);
+            this._map.removeLayer(String(l.id));
         }
 
-        this._map.removeSource(this.id);
+        this._map.removeSource(String(this.id));
     }
 
     async replace(body: {
