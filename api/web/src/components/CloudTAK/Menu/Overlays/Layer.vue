@@ -1,11 +1,17 @@
 <template>
     <div class='col-lg px-3'>
         <label class='subheader'>Filter</label>
-        <pre class='col-12 px-2 py-1' v-text='JSON.stringify(l.filter)'/>
+        <pre
+            class='col-12 px-2 py-1'
+            v-text='JSON.stringify(l.filter)'
+        />
     </div>
     <div class='col-lg px-3'>
         <label class='subheader'>Source Layer</label>
-        <pre class='col-12 px-2 py-1' v-text='JSON.stringify(l["source-layer"])'/>
+        <pre
+            class='col-12 px-2 py-1'
+            v-text='JSON.stringify(l["source-layer"])'
+        />
     </div>
     <div class='col-lg px-3'>
         <label class='subheader'>Layout</label>
