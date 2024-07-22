@@ -88,6 +88,7 @@ export const useMapStore = defineStore('cloudtak', {
         removeOverlay: async function(overlay: Overlay) {
             if (!this.map) throw new Error('Cannot removeOverlay before map has loaded');
 
+            // @ts-expect-error Doesn't like use of object to index array
             const pos = this.overlays.indexOf(overlay)
             if (pos === -1) return;
 
@@ -123,7 +124,6 @@ export const useMapStore = defineStore('cloudtak', {
             const oStore = this.map.getSource(String(overlay.id));
             if (!oStore) return false
 
-            // @ts-expect-error TS currently blows up Map<string, Feature> into actual { type: 'Feature' ... } etc
             const cotStore = useCOTStore();
             const fc = cotStore.collection(cotStore.subscriptions.get(guid))
 
@@ -179,11 +179,14 @@ export const useMapStore = defineStore('cloudtak', {
         },
         initOverlays: async function() {
             if (!this.map) throw new Error('Cannot initLayers before map has loaded');
-            this.map.on('rotate', () => {
-                this.bearing = this.map.getBearing()
+
+            const map: mapgl.Map = this.map;
+
+            map.on('rotate', () => {
+                this.bearing = map.getBearing()
             })
 
-            this.map.on('click', (e: MapMouseEvent) => {
+            map.on('click', (e: MapMouseEvent) => {
                 if (this.draw && this.draw.getMode() !== 'static') return;
 
                 if (this.radial.mode) this.radial.mode = undefined;
@@ -197,7 +200,7 @@ export const useMapStore = defineStore('cloudtak', {
                     }
                 }
 
-                const features = this.map.queryRenderedFeatures(e.point).filter((feat) => {
+                const features = map.queryRenderedFeatures(e.point).filter((feat) => {
                     return clickMap.has(feat.layer.id);
                 });
 
@@ -218,8 +221,8 @@ export const useMapStore = defineStore('cloudtak', {
                             center: [e.lngLat.lng, e.lngLat.lat]
                         };
 
-                        if (this.map.getZoom() < 3) flyTo.zoom = 4;
-                        this.map.flyTo(flyTo)
+                        if (map.getZoom() < 3) flyTo.zoom = 4;
+                        map.flyTo(flyTo)
 
                         this.select.x = this.container ? this.container.clientWidth / 2 : 0;
                         this.select.y = this.container ? this.container.clientHeight / 2 : 0;
@@ -233,7 +236,7 @@ export const useMapStore = defineStore('cloudtak', {
                 }
             });
 
-            this.map.on('contextmenu', (e) => {
+            map.on('contextmenu', (e) => {
                 if (this.edit) return;
 
                 this.radialClick({
@@ -262,7 +265,7 @@ export const useMapStore = defineStore('cloudtak', {
             url.searchParams.append('order', 'asc');
             const items = (await std(url)).items;
 
-            const hasBasemap = items.some((o) => {
+            const hasBasemap = items.some((o: Overlay) => {
                 return o.mode === 'basemap'
             });
 
@@ -273,7 +276,7 @@ export const useMapStore = defineStore('cloudtak', {
                 const basemaps = await std(burl);
 
                 if (basemaps.items.length > 0) {
-                    const basemap = await Overlay.create(this.map, {
+                    const basemap = await Overlay.create(map, {
                         name: basemaps.items[0].name,
                         pos: -1,
                         type: 'raster',
@@ -288,47 +291,43 @@ export const useMapStore = defineStore('cloudtak', {
 
             for (const item of items) {
                 this.overlays.push(new Overlay(
-                    this.map,
+                    map,
                     item as ProfileOverlay
                 ));
             }
 
             // Data Syncs are specially loaded as they are dynamic
             for (const overlay of this.overlays) {
-                if (overlay.mode === 'mission') {
+                if (overlay.mode === 'mission' && overlay.mode_id) {
                     const cotStore = useCOTStore();
-                    this.map.getSource(String(overlay.id))
-                        .setData(await cotStore.loadMission(overlay.mode_id));
+
+                    const source = map.getSource(String(overlay.id));
+                    if (!source) continue;
+                        source.setData(await cotStore.loadMission(overlay.mode_id));
                 }
             }
 
-            this.overlays.push(Overlay.internal(
-                this.map,
-                {
-                    id: -1,
-                    name: 'CoT Icons',
-                    type: 'geojson',
-                }
-            ));
+            this.overlays.push(Overlay.internal(map, {
+                id: -1,
+                name: 'CoT Icons',
+                type: 'geojson',
+            }));
 
-            this.overlays.push(Overlay.internal(
-                this.map,
-                {
-                    id: 0,
-                    name: 'Your Location',
-                    type: 'vector',
-                },{
-                    layers: [{
-                        id: 'you',
-                        type: 'circle',
-                        source: '0',
-                        paint: {
-                            'circle-radius': 10,
-                            'circle-color': '#0000f6',
-                        },
-                    }]
-                }
-            ));
+            this.overlays.push(Overlay.internal(map, {
+                id: 0,
+                name: 'Your Location',
+                type: 'vector',
+            },{
+                layers: [{
+                    id: 'you',
+                    type: 'circle',
+                    source: '0',
+                    paint: {
+                        'circle-radius': 10,
+                        'circle-color': '#0000f6',
+                    },
+                }]
+            }));
         },
         radialClick: async function(feat: MapGeoJSONFeature | Feature, opts: {
             lngLat: LngLat;

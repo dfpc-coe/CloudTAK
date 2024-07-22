@@ -3,7 +3,8 @@ import type {
     ProfileOverlay_Create
 } from '../../types.ts';
 import type { FeatureCollection } from 'geojson';
-import type { Map, LayerSpecification } from 'maplibre-gl'
+import mapgl from 'maplibre-gl'
+import type { LayerSpecification } from 'maplibre-gl'
 import cotStyles from './styles.ts'
 import { std, stdurl } from '../../std.js';
 
@@ -11,7 +12,7 @@ import { std, stdurl } from '../../std.js';
  * @class
  */
 export default class Overlay {
-    _map: Map;
+    _map: mapgl.Map;
     _destroyed: boolean;
     _internal: boolean;
 
@@ -34,7 +35,7 @@ export default class Overlay {
     token: string | null;
 
     static async create(
-        map: Map,
+        map: mapgl.Map,
         body: ProfileOverlay_Create,
         opts: {
             layers?: Array<LayerSpecification>;
@@ -46,7 +47,7 @@ export default class Overlay {
     }
 
     static internal(
-        map: Map,
+        map: mapgl.Map,
         body: {
             id: number;
             name: string;
@@ -72,12 +73,12 @@ export default class Overlay {
         return overlay;
     }
 
-    static async load(map: Map, id: number): Promise<Overlay> {
+    static async load(map: mapgl.Map, id: number): Promise<Overlay> {
         const overlay = await std(`/api/profile/overlay/${id}`);
         return new Overlay(map, overlay as ProfileOverlay);
     }
 
-    constructor(map: Map, overlay: ProfileOverlay, opts: {
+    constructor(map: mapgl.Map, overlay: ProfileOverlay, opts: {
         layers?: Array<LayerSpecification>;
         clickable?: Array<{ id: string; type: string }>;
         internal?: boolean;
