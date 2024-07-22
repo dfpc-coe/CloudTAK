@@ -11,6 +11,7 @@
         </template>
         <template #default>
             <TablerLoading v-if='loading.initial' />
+            <TablerAlert v-else-if='err' title='Import Error' :err='err'/>
             <div
                 v-else
                 class='mx-4 my-4'
@@ -92,6 +93,7 @@ import Status from '../../util/Status.vue';
 import timeDiff from '../../../timediff.js';
 import {
     TablerNone,
+    TablerAlert,
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import MenuTemplate from '../util/MenuTemplate.vue';
@@ -105,11 +107,13 @@ export default {
         Status,
         IconRefresh,
         TablerNone,
+        TablerAlert,
         TablerLoading,
         MenuTemplate,
     },
     data: function() {
         return {
+            err: false,
             loading: {
                 main: true,
                 initial: true,
@@ -138,12 +142,17 @@ export default {
         fetch: async function(init) {
             if (init) this.loading.initial = true;
 
-            const url = stdurl(`/api/import/${this.$route.params.import}`);
-            this.imported = await std(url);
-            if (this.imported.status === 'Fail' || this.imported.status === 'Success') {
-                if (this.interval) clearInterval(this.interval);
-                this.loading.run = false;
+            try {
+                const url = stdurl(`/api/import/${this.$route.params.import}`);
+                this.imported = await std(url);
+                if (this.imported.status === 'Fail' || this.imported.status === 'Success') {
+                    if (this.interval) clearInterval(this.interval);
+                    this.loading.run = false;
+                }
+            } catch (err) {
+                this.err = err;
             }
+
             this.loading.initial = false;
         },
     }
