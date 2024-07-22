@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v2.75.1 - 2024-07-22
+
+- :bug: `API` Limit imports listing
+
 ### v2.75.0 - 2024-07-22
 
 - :rocket: `UI` Fix drag-and-drop upload in CloudTAK Map view
