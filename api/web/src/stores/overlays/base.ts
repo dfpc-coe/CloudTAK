@@ -40,6 +40,7 @@ export default class Overlay {
         opts: {
             layers?: Array<LayerSpecification>;
             clickable?: Array<{ id: string; type: string }>;
+            before?: string;
         } = {}
     ): Promise<Overlay> {
         const ov = await std('/api/profile/overlay', { method: 'POST', body });
@@ -227,7 +228,9 @@ export default class Overlay {
         name?: string;
         url: string;
         mode_id: string;
-    }): Promise<void> {
+    }, opts: {
+        before?: string;
+    } = {}): Promise<void> {
         this.name = body.name || this.name;
         this.url = body.url;
         this.mode_id = body.mode_id;
@@ -235,7 +238,8 @@ export default class Overlay {
         this.remove();
         this.init({
             layers: this._layers,
-            clickable: this._clickable
+            clickable: this._clickable,
+            before: opts.before
         });
 
         await this.save();

@@ -159,17 +159,31 @@ export default {
             });
 
             if (hasBasemap) {
-                for (const overlay of mapStore.overlays) {
+                for (let i = 0; i < mapStore.overlays.length; i++) {
+                    const overlay = mapStore.overlays[i];
+
                     if (overlay.mode === 'basemap') {
-                        await overlay.replace({
-                            name: basemap.name,
-                            url: `/api/basemap/${basemap.id}/tiles`,
-                            mode_id: String(basemap.id)
-                        });
+                        if (mapStore.overlays[i + 1]) {
+                            await overlay.replace({
+                                name: basemap.name,
+                                url: `/api/basemap/${basemap.id}/tiles`,
+                                mode_id: String(basemap.id)
+                            }, {
+                                before: mapStore.overlays[i + 1]._layers[0].id
+                            });
+                        } else {
+                            await overlay.replace({
+                                name: basemap.name,
+                                url: `/api/basemap/${basemap.id}/tiles`,
+                                mode_id: String(basemap.id)
+                            });
+                        }
                         break;
                     }
                 }
             } else {
+                const before = String(mapStore.overlays[0]._layers[0].id);
+
                 mapStore.overlays.unshift(await Overlay.create(mapStore.map, {
                     name: basemap.name,
                     pos: -1,
@@ -177,7 +191,7 @@ export default {
                     url: `/api/basemap/${basemap.id}/tiles`,
                     mode: 'basemap',
                     mode_id: basemap.id
-                }));
+                }, { before }));
             }
         },
         fetchList: async function() {
