@@ -169,7 +169,7 @@ export default {
                     }
                 }
             } else {
-                mapStore.overlays.unshift(await Overlay.create({
+                mapStore.overlays.unshift(await Overlay.create(mapStore.map, {
                     name: basemap.name,
                     pos: -1,
                     type: 'raster',

@@ -47,20 +47,22 @@
                                     :stroke='1'
                                 />
 
-                                <IconChevronRight
-                                    v-if='!isDraggable && !opened.includes(overlay.id)'
-                                    :size='20'
-                                    :stroke='1'
-                                    class='cursor-pointer'
-                                    @click='opened.push(overlay.id)'
-                                />
-                                <IconChevronDown
-                                    v-else-if='!isDraggable'
-                                    :size='20'
-                                    :stroke='1'
-                                    class='cursor-pointer'
-                                    @click='opened.splice(opened.indexOf(overlay.id), 1)'
-                                />
+                                <template v-if='overlay.id !== 0'>
+                                    <IconChevronRight
+                                        v-if='!isDraggable && !opened.includes(overlay.id)'
+                                        :size='20'
+                                        :stroke='1'
+                                        class='cursor-pointer'
+                                        @click='opened.push(overlay.id)'
+                                    />
+                                    <IconChevronDown
+                                        v-else-if='!isDraggable'
+                                        :size='20'
+                                        :stroke='1'
+                                        class='cursor-pointer'
+                                        @click='opened.splice(opened.indexOf(overlay.id), 1)'
+                                    />
+                                </template>
 
                                 <span class='mx-2'>
                                     <IconMap
