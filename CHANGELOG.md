@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v2.74.0 - 2024-07-22
+
+- :rocket: `UI` Complete rewrite of Overlay management
+- :rocket: `UI` Support saving Basemaps to ProfileOverlay
+
 ### v2.73.1 - 2024-07-19
 
 - :rocket: `UI` round coordinates in Point Input
