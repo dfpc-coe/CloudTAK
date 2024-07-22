@@ -12,6 +12,12 @@
 
 ### Pending Release
 
+### v2.75.0 - 2024-07-22
+
+- :rocket: `UI` Fix drag-and-drop upload in CloudTAK Map view
+- :rocket: `UI` Add manual import button in Imports Menu
+- :rocket: `UI` Show Import not found inline in import menu
+
 ### v2.74.0 - 2024-07-22
 
 - :rocket: `UI` Complete rewrite of Overlay management
