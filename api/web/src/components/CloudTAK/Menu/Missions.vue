@@ -190,7 +190,7 @@ export default {
                 this.list = await std(url);
 
                 for (const item of this.list.data) {
-                    if (mapStore.getLayerByMode('mission', item.guid)) {
+                    if (mapStore.getOverlayByMode('mission', item.guid)) {
                         this.subscribed.add(item.guid);
                     }
                 }

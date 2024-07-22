@@ -338,6 +338,44 @@ export default async function router(schema: Schema, config: Config) {
         }
     });
 
+    await schema.get('/basemap/:basemapid/tiles', {
+        name: 'Get BaseMap TileJSON',
+        group: 'BaseMap',
+        description: 'Get a basemap tilejson',
+        params: Type.Object({
+            basemapid: Type.Integer({ minimum: 1 }),
+        }),
+        query: Type.Object({
+            token: Type.Optional(Type.String()),
+        })
+    }, async (req, res) => {
+        try {
+            const user = await Auth.as_user(config, req, { token: true });
+
+            const basemap = await config.cacher.get(Cacher.Miss(req.query, `basemap-${req.params.basemapid}`), async () => {
+                return await config.models.Basemap.from(Number(req.params.basemapid));
+            });
+
+            if (basemap.username && basemap.username !== user.email && user.access === AuthUserAccess.USER) {
+                throw new Err(400, null, 'You don\'t have permission to access this resource');
+            }
+
+            let url = config.API_URL + `/api/basemap/${basemap.id}/tiles/{z}/{x}/{y}`;
+            if (req.query.token) url = url + `?token=${req.query.token}`;
+
+            return res.json({
+                "tilejson":"2.0.0",
+                "name": basemap.name,
+                "minzoom": basemap.minzoom,
+                "maxzoom": basemap.maxzoom,
+                "format": basemap.format,
+                "tiles": [ String(url) ]
+            });
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
+
     await schema.get('/basemap/:basemapid/tiles/:z/:x/:y', {
         name: 'Get BaseMap Tile',
         group: 'BaseMap',

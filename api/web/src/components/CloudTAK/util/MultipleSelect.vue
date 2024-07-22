@@ -37,7 +37,7 @@
             />
             <div
                 class='subheader'
-                v-text='feat.properties.callsign'
+                v-text='feat.properties.callsign || "No Name"'
             />
         </div>
     </div>

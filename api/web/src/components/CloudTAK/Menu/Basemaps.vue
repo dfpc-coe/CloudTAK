@@ -94,6 +94,7 @@
 
 <script>
 import { std, stdurl } from '/src/std.ts';
+import Overlay from '/src/stores/overlays/base.ts';
 import BasemapEditModal from './Basemaps/EditModal.vue';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import {
@@ -152,24 +153,46 @@ export default {
         }
     },
     methods: {
-        setBasemap: function(basemap) {
-            mapStore.removeLayerBySource('basemap')
-
-            const url = String(stdurl(`/api/basemap/${basemap.id}/tiles/`)) + `{z}/{x}/{y}?token=${localStorage.token}`;
-            mapStore.map.addSource('basemap', { type: 'raster', tileSize: 256, tiles: [ url ] });
-            mapStore.addLayer({
-                name: basemap.name,
-                before: mapStore.layers[0].name,
-                type: 'raster',
-                source: 'basemap',
-                layers: [{
-                    id: 'basemap',
-                    type: 'raster',
-                    source: 'basemap',
-                    minzoom: basemap.minzoom,
-                    maxzoom: basemap.maxzoom
-                }]
+        setBasemap: async function(basemap) {
+            const hasBasemap = mapStore.overlays.some((overlay) => {
+                return overlay.mode === 'basemap';
             });
+
+            if (hasBasemap) {
+                for (let i = 0; i < mapStore.overlays.length; i++) {
+                    const overlay = mapStore.overlays[i];
+
+                    if (overlay.mode === 'basemap') {
+                        if (mapStore.overlays[i + 1]) {
+                            await overlay.replace({
+                                name: basemap.name,
+                                url: `/api/basemap/${basemap.id}/tiles`,
+                                mode_id: String(basemap.id)
+                            }, {
+                                before: mapStore.overlays[i + 1]._layers[0].id
+                            });
+                        } else {
+                            await overlay.replace({
+                                name: basemap.name,
+                                url: `/api/basemap/${basemap.id}/tiles`,
+                                mode_id: String(basemap.id)
+                            });
+                        }
+                        break;
+                    }
+                }
+            } else {
+                const before = String(mapStore.overlays[0]._layers[0].id);
+
+                mapStore.overlays.unshift(await Overlay.create(mapStore.map, {
+                    name: basemap.name,
+                    pos: -1,
+                    type: 'raster',
+                    url: `/api/basemap/${basemap.id}/tiles`,
+                    mode: 'basemap',
+                    mode_id: basemap.id
+                }, { before }));
+            }
         },
         fetchList: async function() {
             this.loading = true;
