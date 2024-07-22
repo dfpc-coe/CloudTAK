@@ -9,9 +9,9 @@
             </div>
             <div
                 ref='dragger'
-                @dragleave.prevent='dragLeave'
-                @dragenter.prevent='dragEnter'
-                @drop.prevent='dragDrop()'
+                @dragenter='dragEnter'
+                @dragleave='dragLeave'
+                @drop='dragDrop'
                 class='custom-drop row g-0 d-flex col-12 justify-content-center py-2'
             >
                 <div style='pointer-events: none;'>
@@ -113,16 +113,19 @@ export default {
             input.type = 'file';
         },
         dragEnter: function(event) {
+            event.preventDefault()
             this.$refs.dragger.classList.add('custom-drop-drag')
         },
         dragLeave: function(event) {
+            event.preventDefault()
             this.$refs.dragger.classList.remove('custom-drop-drag')
         },
         dragDrop: async function(event) {
-            console.error('HERE');
-
+            event.preventDefault();
             const dt = event.dataTransfer
             const file = dt.files[0];
+
+            console.error(file);
 
             await this.upload(file);
         },
