@@ -16,10 +16,10 @@
                     <IconMapPlus
                         v-if='a.visualized'
                         v-tooltip='"Add to Map"'
-                        @click='createOverlay(a)'
                         class='cursor-pointer'
                         :size='32'
                         :stroke='1'
+                        @click='createOverlay(a)'
                     />
                     <IconEyeX
                         v-else-if='!a.visualized'
@@ -48,7 +48,6 @@
 import { std, stdurl } from '/src/std.ts';
 import { useMapStore } from '/src/stores/map.ts';
 import Overlay from '/src/stores/overlays/base.ts';
-import cotStyles from '/src/stores/overlays/styles.ts'
 const mapStore = useMapStore();
 import MenuTemplate from '../util/MenuTemplate.vue';
 import {
@@ -108,7 +107,6 @@ export default {
             this.fetchUserAssetList();
         },
         createOverlay: async function(asset) {
-            const id = `profile-${asset.name.replace(/\..*$/, '')}`;
             const url = stdurl(`/api/profile/asset/${encodeURIComponent(asset.visualized)}/tile`);
 
             this.loading = true;
@@ -144,8 +142,6 @@ export default {
             url.searchParams.append('limit', this.paging.limit);
             url.searchParams.append('page', this.paging.page);
             const assetList = await std(url);
-
-            const layers = mapStore.map.getLayersOrder();
 
             this.assetList = assetList;
             this.loading = false;

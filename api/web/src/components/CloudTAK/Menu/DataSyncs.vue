@@ -17,10 +17,10 @@
                         <IconMapPlus
                             v-if='a.visualized'
                             v-tooltip='"Add to Map"'
-                            @click='createOverlay(a)'
                             class='cursor-pointer'
                             :size='32'
                             :stroke='1'
+                            @click='createOverlay(a)'
                         />
                         <IconEyeX
                             v-if='!a.visualized'

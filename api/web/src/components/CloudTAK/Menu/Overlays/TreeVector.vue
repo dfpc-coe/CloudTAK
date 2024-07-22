@@ -1,60 +1,59 @@
 <template>
-<div class='ms-3'>
-    <div
-        :key='l.id'
-        v-for='l of overlay._layers'
-    >
-        <template v-if='["fill", "line", "circle"].includes(l.type)'>
-            <div class='me-2'>
-                <div class='px-3 py-2 align-items-center hover-button'>
-                    <IconChevronRight
-                        v-if='!treeState[l.id]'
-                        :size='20'
-                        :stroke='1'
-                        class='cursor-pointer'
-                        @click='treeState[l.id] = true'
-                    />
-                    <IconChevronDown
-                        v-else-if='treeState[l.id]'
-                        :size='20'
-                        :stroke='1'
-                        class='cursor-pointer'
-                        @click='treeState[l.id] = false'
-                    />
-                    <IconPaint
-                        v-if='l.type === "fill"'
-                        :size='24'
-                        :stroke='1'
-                    />
-                    <IconLine
-                        v-else-if='l.type === "line"'
-                        :size='24'
-                        :stroke='1'
-                    />
-                    <IconCircle
-                        v-else-if='l.type === "circle"'
-                        :size='24'
-                        :stroke='1'
-                    />
+    <div class='ms-3'>
+        <div
+            v-for='l of overlay._layers'
+            :key='l.id'
+        >
+            <template v-if='["fill", "line", "circle"].includes(l.type)'>
+                <div class='me-2'>
+                    <div class='px-3 py-2 align-items-center hover-button'>
+                        <IconChevronRight
+                            v-if='!treeState[l.id]'
+                            :size='20'
+                            :stroke='1'
+                            class='cursor-pointer'
+                            @click='treeState[l.id] = true'
+                        />
+                        <IconChevronDown
+                            v-else-if='treeState[l.id]'
+                            :size='20'
+                            :stroke='1'
+                            class='cursor-pointer'
+                            @click='treeState[l.id] = false'
+                        />
+                        <IconPaint
+                            v-if='l.type === "fill"'
+                            :size='24'
+                            :stroke='1'
+                        />
+                        <IconLine
+                            v-else-if='l.type === "line"'
+                            :size='24'
+                            :stroke='1'
+                        />
+                        <IconCircle
+                            v-else-if='l.type === "circle"'
+                            :size='24'
+                            :stroke='1'
+                        />
 
-                    <span
-                        class='user-select-none mx-2'
-                        v-text='l.id || l.name'
+                        <span
+                            class='user-select-none mx-2'
+                            v-text='l.id || l.name'
+                        />
+                    </div>
+
+                    <OverlayLayer
+                        v-if='treeState[l.id]'
+                        :layer='l'
                     />
                 </div>
-
-                <OverlayLayer
-                    v-if='treeState[l.id]'
-                    :layer='l'
-                />
-            </div>
-        </template>
+            </template>
+        </div>
     </div>
-</div>
 </template>
 
 <script>
-import MenuTemplate from '../../util/MenuTemplate.vue';
 import OverlayLayer from './Layer.vue';
 import {
     IconChevronDown,
@@ -63,11 +62,17 @@ import {
     IconLine,
     IconCircle,
 } from '@tabler/icons-vue';
-import { useMapStore } from '/src/stores/map.ts';
-import { mapState } from 'pinia'
 
 export default {
     name: 'OverlayLayers',
+    components: {
+        OverlayLayer,
+        IconChevronDown,
+        IconChevronRight,
+        IconPaint,
+        IconLine,
+        IconCircle,
+    },
     props: {
         overlay: {
             type: Object,
@@ -84,15 +89,6 @@ export default {
         for (const layer of this.overlay._layers) {
             this.treeState[layer.id] = false;
         }
-    },
-    components: {
-        OverlayLayer,
-        IconChevronDown,
-        IconChevronRight,
-        IconPaint,
-        IconLine,
-        IconCircle,
-        MenuTemplate,
     }
 }
 </script>
