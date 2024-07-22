@@ -157,7 +157,7 @@ export default {
                 await mapStore.overlays.push(await Overlay.create(mapStore.map, {
                     url,
                     name: asset.name,
-                    mode: 'profile',
+                    mode: 'data',
                     mode_id: asset.name,
                     type: 'vector',
                 }));
@@ -165,7 +165,7 @@ export default {
                 await mapStore.overlays.push(await Overlay.create(mapStore.map, {
                     url: url,
                     name: asset.name,
-                    mode: 'profile',
+                    mode: 'data',
                     mode_id: asset.name,
                     type: 'raster',
                 }));
