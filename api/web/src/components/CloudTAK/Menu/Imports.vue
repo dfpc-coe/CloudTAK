@@ -1,6 +1,14 @@
 <template>
     <MenuTemplate name='Data Imports'>
         <template #buttons>
+            <IconPlus
+                v-if='!loading && !upload'
+                v-tooltip='"New Import"'
+                :size='32'
+                :stroke='1'
+                class='cursor-pointer'
+                @click='upload = true'
+            />
             <IconRefresh
                 v-if='!loading'
                 v-tooltip='"Refresh"'
@@ -11,6 +19,16 @@
             />
         </template>
         <template #default>
+            <div v-if='upload' class='py-2 px-4'>
+                <Upload
+                    :url='uploadURL()'
+                    :headers='uploadHeaders()'
+                    method='PUT'
+                    @cancel='upload = false'
+                    @done='uploadComplete($event)'
+                />
+            </div>
+
             <TablerLoading v-if='loading' />
             <TablerNone
                 v-else-if='!list.items.length'
@@ -68,24 +86,29 @@ import {
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import {
+    IconPlus,
     IconRefresh,
 } from '@tabler/icons-vue';
 import MenuTemplate from '../util/MenuTemplate.vue';
 import Status from '../../util/Status.vue';
 import timeDiff from '../../../timediff.js';
+import Upload from '../../util/Upload.vue';
 
 export default {
     name: 'CloudTAKImports',
     components: {
         Status,
+        Upload,
         TablerNone,
         TablerPager,
         TablerLoading,
+        IconPlus,
         IconRefresh,
         MenuTemplate,
     },
     data: function() {
         return {
+            upload: false,
             err: false,
             loading: true,
             paging: {
@@ -109,6 +132,19 @@ export default {
     methods: {
         timeDiff(update) {
             return timeDiff(update)
+        },
+        uploadHeaders: function() {
+            return {
+                Authorization: `Bearer ${localStorage.token}`
+            };
+        },
+        uploadComplete: function(event) {
+            this.upload = false;
+            const imp = JSON.parse(event);
+            this.$router.push(`/menu/imports/${imp.imports[0].uid}`)
+        },
+        uploadURL: function() {
+            return stdurl(`/api/import`);
         },
         fetchList: async function() {
             this.loading = true;
