@@ -158,7 +158,7 @@ export default {
                     url,
                     name: asset.name,
                     mode: 'data',
-                    mode_id: asset.name,
+                    mode_id: this.data.id,
                     type: 'vector',
                 }));
             } else {
@@ -166,7 +166,7 @@ export default {
                     url: url,
                     name: asset.name,
                     mode: 'data',
-                    mode_id: asset.name,
+                    mode_id: this.data.id,
                     type: 'raster',
                 }));
             }
