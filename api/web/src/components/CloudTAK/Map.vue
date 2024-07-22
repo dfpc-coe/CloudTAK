@@ -367,6 +367,7 @@
                         :dragging='upload.dragging'
                         :cancel-button='false'
                         @close='upload.shown = false'
+                        @done='fileUpload($event)'
                     />
                 </div>
             </TablerModal>
@@ -643,6 +644,11 @@ export default {
                 })
                 this.setYou();
             });
+        },
+        fileUpload: function(event) {
+            this.upload.shown = false;
+            const imp = JSON.parse(event);
+            this.$router.push(`/menu/imports/${imp.id}`)
         },
         fetchSearch: async function(query, magicKey) {
             if (!magicKey) {
