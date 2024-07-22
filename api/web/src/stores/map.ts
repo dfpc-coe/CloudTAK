@@ -97,15 +97,15 @@ export const useMapStore = defineStore('cloudtak', {
         },
         getOverlayById(id: number): Overlay | null {
             for (const overlay of this.overlays) {
-                if (overlay.id === id) return overlay
+                if (overlay.id === id) return overlay as Overlay
             }
 
             return null;
         },
         getOverlayByMode(mode: string, mode_id: string): Overlay | null {
-            for (let i = 0; i < this.overlays.length; i++) {
-                if (this.overlays[i].mode === mode && this.overlays[i].mode_id === mode_id) {
-                    return this.overlays[i];
+            for (const overlay of this.overlays) {
+                if (overlay.mode === mode && overlay.mode_id === mode_id) {
+                    return overlay as Overlay;
                 }
             }
 
@@ -125,7 +125,11 @@ export const useMapStore = defineStore('cloudtak', {
             if (!oStore) return false
 
             const cotStore = useCOTStore();
-            const fc = cotStore.collection(cotStore.subscriptions.get(guid))
+    
+            const sub = cotStore.subscriptions.get(guid);
+            if (!sub) throw new Error('Attempting to update mission which is not subscribed to');
+
+            const fc = cotStore.collection(sub);
 
             // @ts-expect-error Source.setData is not defined
             oStore.setData(fc);
@@ -180,7 +184,7 @@ export const useMapStore = defineStore('cloudtak', {
         initOverlays: async function() {
             if (!this.map) throw new Error('Cannot initLayers before map has loaded');
 
-            const map: mapgl.Map = this.map;
+            const map: mapgl.Map = this.map as mapgl.Map;
 
             map.on('rotate', () => {
                 this.bearing = map.getBearing()
@@ -303,7 +307,8 @@ export const useMapStore = defineStore('cloudtak', {
 
                     const source = map.getSource(String(overlay.id));
                     if (!source) continue;
-                        source.setData(await cotStore.loadMission(overlay.mode_id));
+                    // @ts-expect-error Source.setData is not defined
+                    source.setData(await cotStore.loadMission(overlay.mode_id));
                 }
             }
 

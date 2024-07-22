@@ -50,6 +50,7 @@ export default class Overlay {
         map: mapgl.Map,
         body: {
             id: number;
+            type: string;
             name: string;
         },
         opts: {
@@ -61,7 +62,6 @@ export default class Overlay {
             ...body,
             visible: true,
             opacity: 1,
-            type: 'geojson',
             created: new Date().toISOString(),
             updated: new Date().toISOString(),
             pos: 3,
