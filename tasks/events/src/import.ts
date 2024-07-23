@@ -3,6 +3,7 @@ import fsp from 'node:fs/promises';
 import fs from 'node:fs';
 import path from 'node:path';
 import S3 from "@aws-sdk/client-s3";
+import type { Import } from './api.js';
 import StreamZip, { StreamZipAsync } from 'node-stream-zip'
 import { pipeline } from 'node:stream/promises';
 import jwt from 'jsonwebtoken';
@@ -77,13 +78,17 @@ export default async function(md: Event) {
                     }
                 }
 
-                for (const index of indexes) {
-                    await processIndex(md, String(await zip.entryData(index)), zip);
+                if (indexes.length) {
+                    for (const index of indexes) {
+                        await processIndex(md, String(await zip.entryData(index)), zip);
+                    }
+                } else {
+                    await submitBatch(md, imported)
                 }
             } else if (md.Ext === '.xml') {
                 await processIndex(md, String(await fsp.readFile(md.Local)));
             } else {
-                throw new Error('Unable to parse Index');
+                await submitBatch(md, imported)
             }
         }
 
@@ -99,6 +104,20 @@ export default async function(md: Event) {
             error: err instanceof Error ? err.message : String(err)
         });
     }
+}
+
+async function submitBatch(event: Event, imported: Import) {
+    console.log('ok - Treating as profile asset');
+
+    const s3 = new S3.S3Client({ region: process.env.AWS_DEFAULT_REGION || 'us-east-1' });
+
+    await s3.send(new S3.CopyObjectCommand({
+        CopySource: `${md.Bucket}/${md.Key}`,
+        Bucket: md.Bucket,
+        Key: `profile/${imported.username}/${imported.name}`
+    }))
+
+    await API.createTransform(md, imported);
 }
 
 async function processIndex(event: Event, xmlstr: string, zip?: StreamZipAsync) {
