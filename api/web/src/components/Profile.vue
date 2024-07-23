@@ -94,7 +94,6 @@ import {
     IconRobot,
     IconTransform,
     IconFiles,
-    IconAffiliate
 } from '@tabler/icons-vue';
 
 export default {
@@ -104,7 +103,6 @@ export default {
         IconRobot,
         PageFooter,
         IconTransform,
-        IconAffiliate,
         IconFiles,
         TablerBreadCrumb
     }

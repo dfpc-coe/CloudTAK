@@ -11,7 +11,11 @@
         </template>
         <template #default>
             <TablerLoading v-if='loading.initial' />
-            <TablerAlert v-else-if='err' title='Import Error' :err='err'/>
+            <TablerAlert
+                v-else-if='err'
+                title='Import Error'
+                :err='err'
+            />
             <div
                 v-else
                 class='mx-4 my-4'
