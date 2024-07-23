@@ -152,6 +152,11 @@
             </div>
         </div>
 
+        <CoordInput 
+            v-if='pointInput'
+            @close='pointInput = false'
+        />
+
         <div
             v-if='search.shown'
             class='position-absolute top-0 text-white bg-dark'
@@ -252,7 +257,7 @@
                 <template #dropdown>
                     <div
                         class='col-12 py-1 px-2 hover-button cursor-pointer'
-                        @click='pointInput.shown = true'
+                        @click='pointInput = true'
                     >
                         <IconCursorText
                             :size='25'
@@ -300,41 +305,10 @@
         </div>
 
         <SideMenu
-            v-if='isLoaded && !pointInput.shown'
+            v-if='isLoaded && !pointInput'
             :compact='noMenuShown'
             @reset='deleteCOT()'
         />
-
-        <div
-            v-if='pointInput.shown'
-            class='position-absolute end-0 text-white bg-dark'
-            style='
-                top: 56px;
-                z-index: 1;
-                width: 400px;
-                border-radius: 0px 6px 0px 0px;
-            '
-        >
-            <div class='mx-2 my-2'>
-                <TablerInput
-                    v-model='pointInput.name'
-                    label='Name'
-                    @submit='submitPoint'
-                />
-                <Coordinate
-                    v-model='pointInput.coordinates'
-                    :edit='true'
-                    :modes='["dd"]'
-                    @submit='submitPoint'
-                />
-                <button
-                    class='btn btn-primary w-100 mt-3'
-                    @click='submitPoint'
-                >
-                    Save
-                </button>
-            </div>
-        </div>
 
         <div
             ref='map'
@@ -382,6 +356,7 @@
 
 <script>
 import WarnChannels from './util/WarnChannels.vue';
+import CoordInput from './CoordInput.vue';
 import { std, stdurl } from '/src/std.ts';
 import CloudTAKFeatView from './FeatView.vue';
 import {
@@ -413,7 +388,6 @@ import {
     TablerInput,
     TablerNone,
 } from '@tak-ps/vue-tabler';
-import Coordinate from './util/Coordinate.vue';
 import Loading from '../Loading.vue';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import RadialMenu from './RadialMenu/RadialMenu.vue';
@@ -447,7 +421,7 @@ export default {
             }
         },
         noMenuShown: function() {
-            return !this.feat && !this.pointInput.shown && !this.$route.name.startsWith('home-menu')
+            return !this.feat && !this.pointInput && !this.$route.name.startsWith('home-menu')
         }
     },
     watch: {
@@ -468,14 +442,6 @@ export default {
         },
         'search.filter': async function() {
             await this.fetchSearch();
-        },
-        'pointInput.shown': function() {
-            this.pointInput.name = '';
-            const center = mapStore.map.getCenter()
-            this.pointInput.coordinates = [
-                Math.round(center.lng * 1000000) / 1000000,
-                Math.round(center.lat * 1000000) / 1000000
-            ]
         },
     },
     unmounted: function() {
@@ -532,11 +498,7 @@ export default {
                 filter: '',
                 results: []
             },
-            pointInput: {
-                shown: false,
-                name: '',
-                coordinate: []
-            },
+            pointInput: false,
             feat: null,         // Show the Feat Viewer sidebar
             locked: [],         // Lock the map view to a given CoT - The last element is the currently locked value
                                 //   this is an array so that things like the radial menu can temporarily lock state but remember the previous lock value when they are closed
@@ -567,24 +529,7 @@ export default {
         closeAllMenu: function() {
             this.feat = false;
             this.$router.push("/");
-            this.pointInput.shown = false;
-        },
-        submitPoint: async function() {
-            this.pointInput.shown = false;
-            await cotStore.add({
-                type: 'Feature',
-                properties: {
-                    type: 'u-d-p',
-                    how: 'h-g-i-g-o',
-                    color: '#00FF00',
-                    archived: true,
-                    callsign: this.pointInput.name || 'New Feature'
-                },
-                geometry: {
-                    type: 'Point',
-                    coordinates: this.pointInput.coordinates
-                }
-            });
+            this.pointInput = false;
         },
         closeRadial: function() {
             mapStore.radial.mode = null;
@@ -864,12 +809,12 @@ export default {
         }
     },
     components: {
+        CoordInput,
         WarnChannels,
         SideMenu,
         Loading,
         SelectFeats,
         MultipleSelect,
-        Coordinate,
         UploadImport,
         RadialMenu,
         TablerNone,
