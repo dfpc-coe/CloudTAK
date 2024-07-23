@@ -63,10 +63,10 @@
                                     @click='setStatus(ch, true)'
                                 />
                                 <span
-                                    class='mx-2 cursor-pointer'
-                                    v-text='ch.name'
                                     v-tooltip='"Show Details"'
+                                    class='mx-2 cursor-pointer'
                                     @click='shown[ch.name] = !shown[ch.name]'
+                                    v-text='ch.name'
                                 />
 
                                 <div class='ms-auto'>
@@ -91,11 +91,11 @@
                                 </div>
                             </div>
                             <div
+                                v-if='shown[ch.name]'
                                 class='col-12 pb-2 user-select-none'
                                 style='margin-left: 40px;'
-                                v-if='shown[ch.name]'
                             >
-                                <span v-text='ch.description || "No Description"'/>
+                                <span v-text='ch.description || "No Description"' />
                             </div>
                         </div>
                     </div>

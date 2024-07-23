@@ -46,7 +46,6 @@ import {
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import {
-    IconDatabase,
     IconUser,
 } from '@tabler/icons-vue'
 
@@ -54,7 +53,6 @@ export default {
     name: 'CloudTAKDatas',
     components: {
         IconUser,
-        IconDatabase,
         TablerNone,
         TablerLoading,
         MenuTemplate

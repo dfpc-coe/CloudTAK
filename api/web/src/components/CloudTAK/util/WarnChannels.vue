@@ -47,13 +47,13 @@ import {
 
 export default {
     name: 'WarnChannels',
-    emits: [
-        'close'
-    ],
     components: {
         TablerModal,
         IconInfoSquare,
     },
+    emits: [
+        'close'
+    ],
     methods: {
         selectChannels: function() {
             this.$emit('close');
