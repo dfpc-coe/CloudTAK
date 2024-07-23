@@ -63,8 +63,10 @@
                                     @click='setStatus(ch, true)'
                                 />
                                 <span
-                                    class='mx-2'
+                                    class='mx-2 cursor-pointer'
                                     v-text='ch.name'
+                                    v-tooltip='"Show Details"'
+                                    @click='shown[ch.name] = !shown[ch.name]'
                                 />
 
                                 <div class='ms-auto'>
@@ -87,6 +89,13 @@
                                         :stroke='1' 
                                     />
                                 </div>
+                            </div>
+                            <div
+                                class='col-12 pb-2 user-select-none'
+                                style='margin-left: 40px;'
+                                v-if='shown[ch.name]'
+                            >
+                                <span v-text='ch.description'/>
                             </div>
                         </div>
                     </div>
@@ -126,6 +135,7 @@ export default {
         return {
             err: false,
             loading: true,
+            shown: {},
             paging: {
                 filter: ''
             },
