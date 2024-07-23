@@ -226,7 +226,7 @@ export default class API {
         const res = await fetch(new URL(`/api/profile/asset/${imported.name}`, process.env.TAK_ETL_API), {
             method: 'POST',
             headers: {
-                'Authorization': `Bearer ${event.Token}`
+                'Authorization': `Bearer ${event.UserToken}`
             },
         });
 
