@@ -1,30 +1,31 @@
 <template>
-    <div class='col-lg px-3'>
+<div class='ps-3'>
+    <div class='col-lg'>
         <label class='subheader'>Filter</label>
         <pre
             class='col-12 px-2 py-1'
             v-text='JSON.stringify(l.filter)'
         />
     </div>
-    <div class='col-lg px-3'>
+    <div class='col-12'>
         <label class='subheader'>Source Layer</label>
         <pre
-            class='col-12 px-2 py-1'
+            class='col-12 py-1'
             v-text='JSON.stringify(l["source-layer"])'
         />
     </div>
-    <div class='col-lg px-3'>
+    <div class='col-12'>
         <label class='subheader'>Layout</label>
         <div
             v-if='Object.keys(l.layout).length === 0'
-            class='col-12 d-flex px-2 py-1'
+            class='col-12 d-flex py-1'
         >
             None
         </div>
         <div
             v-for='p of Object.keys(l.layout)'
             :key='p'
-            class='col-12 d-flex px-2 py-1'
+            class='col-12 d-flex py-1'
         >
             <span v-text='p' />
 
@@ -34,7 +35,7 @@
             />
         </div>
     </div>
-    <div class='col-lg px-3'>
+    <div class='col-lg'>
         <label class='subheader'>Paint</label>
         <div
             v-if='Object.keys(l.paint).length === 0'
@@ -45,12 +46,13 @@
         <div
             v-for='p of Object.keys(l.paint)'
             :key='p'
-            class='col-12 d-flex px-2'
+            class='col-12 d-flex'
         >
             <template v-if='["fill-opacity", "line-opacity", "marker-opacity"].includes(p)'>
                 <template v-if='Array.isArray(l.paint[p]) && l.paint[p][0] === "number"'>
                     <TablerRange
                         v-model='l.paint[p][l.paint[p].length -1]'
+                        class='w-100'
                         label='Opacity'
                         :min='0'
                         :max='1'
@@ -65,6 +67,7 @@
                 <template v-else-if='!isNaN(Number(l.paint[p]))'>
                     <TablerRange
                         v-model='l.paint[p]'
+                        class='w-100'
                         label='Opacity'
                         :min='0'
                         :max='1'
@@ -77,6 +80,7 @@
                     </TablerRange>
                 </template>
                 <template v-else>
+                    <span v-text='p'/>
                     <pre v-text='l.paint[p]' />
                 </template>
             </template>
@@ -98,6 +102,7 @@
                 <template v-else-if='!isNaN(Number(l.paint[p]))'>
                     <TablerRange
                         v-model='l.paint[p]'
+                        class='w-100'
                         label='Width'
                         :min='1'
                         :max='10'
@@ -110,6 +115,7 @@
                     </TablerRange>
                 </template>
                 <template v-else>
+                    <span v-text='p'/>
                     <pre v-text='l.paint[p]' />
                 </template>
             </template>
@@ -141,6 +147,7 @@
                     </TablerInput>
                 </template>
                 <template v-else>
+                    <span v-text='p'/>
                     <pre v-text='l.paint[p]' />
                 </template>
             </template>
@@ -153,6 +160,7 @@
             </template>
         </div>
     </div>
+</div>
 </template>
 
 <script>
