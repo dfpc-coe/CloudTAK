@@ -71,7 +71,7 @@ export default function styles(id: string, opts: {
         },
         'paint': {
             'line-color': ["string", ["get", "stroke"], "#00FF00"],
-            'line-width': ["*", 2, ["number", ["get", "stroke-width"], 3]],
+            'line-width': ["number", ["get", "stroke-width"], 3],
             'line-opacity': ["number", ["get", "stroke-opacity"], 1],
         }
     };
