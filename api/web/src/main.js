@@ -280,12 +280,8 @@ const router = new VueRouter.createRouter({
                 path: '',
                 name: 'profile-default',
                 redirect: () => {
-                    return { name: 'profile-groups' };
+                    return { name: 'profile-files' };
                 }
-            },{
-                path: 'groups',
-                name: 'profile-groups',
-                component: () => import('./components/Profile/ProfileGroups.vue')
             },{
                 path: 'jobs',
                 name: 'profile-jobs',

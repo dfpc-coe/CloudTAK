@@ -26,17 +26,6 @@
                                             <span
                                                 class='list-group-item list-group-item-action d-flex align-items-center'
                                                 :class='{
-                                                    "active": $route.name === "profile-groups",
-                                                    "cursor-pointer": $route.name !== "profile-groups"
-                                                }'
-                                                @click='$router.push(`/profile/groups`)'
-                                            ><IconAffiliate
-                                                :size='32'
-                                                :stroke='1'
-                                            /><span class='mx-3'>Channels</span></span>
-                                            <span
-                                                class='list-group-item list-group-item-action d-flex align-items-center'
-                                                :class='{
                                                     "active": $route.name === "profile-tokens",
                                                     "cursor-pointer": $route.name !== "profile-tokens"
                                                 }'
