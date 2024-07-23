@@ -64,19 +64,6 @@ export default {
                             Resource: [
                                 cf.getAtt('StackHookQueue', 'Arn')
                             ]
-                        },{
-                            Effect: 'Allow',
-                            Action: [
-                                'batch:SubmitJob',
-                                'batch:ListJobs',
-                                'batch:DescribeJobs',
-                                'logs:GetLogEvents',
-                                'batch:CancelJob',
-                                'batch:DescribeJobs'
-                            ],
-                            Resource: [
-                                '*'
-                            ]
                         }]
                     }
                 }],
