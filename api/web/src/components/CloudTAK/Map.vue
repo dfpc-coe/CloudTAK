@@ -27,6 +27,11 @@
             />
         </div>
 
+        <WarnChannels
+            v-if='warnChannels'
+            @close='warnChannels = false'
+        />
+
         <div
             v-if='profile'
             class='position-absolute bottom-0 begin-0 text-white'
@@ -147,6 +152,11 @@
             </div>
         </div>
 
+        <CoordInput 
+            v-if='pointInput'
+            @close='pointInput = false'
+        />
+
         <div
             v-if='search.shown'
             class='position-absolute top-0 text-white bg-dark'
@@ -247,7 +257,7 @@
                 <template #dropdown>
                     <div
                         class='col-12 py-1 px-2 hover-button cursor-pointer'
-                        @click='pointInput.shown = true'
+                        @click='pointInput = true'
                     >
                         <IconCursorText
                             :size='25'
@@ -295,41 +305,10 @@
         </div>
 
         <SideMenu
-            v-if='isLoaded && !pointInput.shown'
+            v-if='isLoaded && !pointInput'
             :compact='noMenuShown'
             @reset='deleteCOT()'
         />
-
-        <div
-            v-if='pointInput.shown'
-            class='position-absolute end-0 text-white bg-dark'
-            style='
-                top: 56px;
-                z-index: 1;
-                width: 400px;
-                border-radius: 0px 6px 0px 0px;
-            '
-        >
-            <div class='mx-2 my-2'>
-                <TablerInput
-                    v-model='pointInput.name'
-                    label='Name'
-                    @submit='submitPoint'
-                />
-                <Coordinate
-                    v-model='pointInput.coordinates'
-                    :edit='true'
-                    :modes='["dd"]'
-                    @submit='submitPoint'
-                />
-                <button
-                    class='btn btn-primary w-100 mt-3'
-                    @click='submitPoint'
-                >
-                    Save
-                </button>
-            </div>
-        </div>
 
         <div
             ref='map'
@@ -372,54 +351,16 @@
                 </div>
             </TablerModal>
         </template>
-
-        <template v-if='warnChannels'>
-            <TablerModal>
-                <div class='modal-status bg-red' />
-                <button
-                    type='button'
-                    class='btn-close'
-                    aria-label='Close'
-                    @click='warnChannels = false'
-                />
-                <div class='modal-header text-white'>
-                    <div class='d-flex align-items-center'>
-                        <IconInfoSquare
-                            :size='28'
-                            :stroke='1'
-                        />
-                        <span class='mx-2'>No Channels Selected</span>
-                    </div>
-                </div>
-                <div class='modal-body text-white'>
-                    <p>Channels are the basis of who and what you are able to see in TAK</p>
-
-                    <p>At this time you do not have any active channels and as such you will not see any Users, Data Packages, or Data Syncs associated with channels.</p>
-
-                    <p>It is recommended to turn on relevant channels now</p>
-
-                    <div class='d-flex align-items-center'>
-                        <div class='ms-auto btn-list'>
-                            <button
-                                class='btn btn-primary'
-                                @click='selectChannels'
-                            >
-                                Select Channels
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </TablerModal>
-        </template>
     </div>
 </template>
 
 <script>
+import WarnChannels from './util/WarnChannels.vue';
+import CoordInput from './CoordInput.vue';
 import { std, stdurl } from '/src/std.ts';
 import CloudTAKFeatView from './FeatView.vue';
 import {
     IconSearch,
-    IconInfoSquare,
     IconMessage,
     IconLocationOff,
     IconLocation,
@@ -447,7 +388,6 @@ import {
     TablerInput,
     TablerNone,
 } from '@tak-ps/vue-tabler';
-import Coordinate from './util/Coordinate.vue';
 import Loading from '../Loading.vue';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import RadialMenu from './RadialMenu/RadialMenu.vue';
@@ -481,7 +421,7 @@ export default {
             }
         },
         noMenuShown: function() {
-            return !this.feat && !this.pointInput.shown && !this.$route.name.startsWith('home-menu')
+            return !this.feat && !this.pointInput && !this.$route.name.startsWith('home-menu')
         }
     },
     watch: {
@@ -502,14 +442,6 @@ export default {
         },
         'search.filter': async function() {
             await this.fetchSearch();
-        },
-        'pointInput.shown': function() {
-            this.pointInput.name = '';
-            const center = mapStore.map.getCenter()
-            this.pointInput.coordinates = [
-                Math.round(center.lng * 1000000) / 1000000,
-                Math.round(center.lat * 1000000) / 1000000
-            ]
         },
     },
     unmounted: function() {
@@ -566,11 +498,7 @@ export default {
                 filter: '',
                 results: []
             },
-            pointInput: {
-                shown: false,
-                name: '',
-                coordinate: []
-            },
+            pointInput: false,
             feat: null,         // Show the Feat Viewer sidebar
             locked: [],         // Lock the map view to a given CoT - The last element is the currently locked value
                                 //   this is an array so that things like the radial menu can temporarily lock state but remember the previous lock value when they are closed
@@ -601,28 +529,7 @@ export default {
         closeAllMenu: function() {
             this.feat = false;
             this.$router.push("/");
-            this.pointInput.shown = false;
-        },
-        selectChannels: function() {
-            this.warnChannels = false;
-            this.$router.push('/menu/channels');
-        },
-        submitPoint: async function() {
-            this.pointInput.shown = false;
-            await cotStore.add({
-                type: 'Feature',
-                properties: {
-                    type: 'u-d-p',
-                    how: 'h-g-i-g-o',
-                    color: '#00FF00',
-                    archived: true,
-                    callsign: this.pointInput.name || 'New Feature'
-                },
-                geometry: {
-                    type: 'Point',
-                    coordinates: this.pointInput.coordinates
-                }
-            });
+            this.pointInput = false;
         },
         closeRadial: function() {
             mapStore.radial.mode = null;
@@ -902,11 +809,12 @@ export default {
         }
     },
     components: {
+        CoordInput,
+        WarnChannels,
         SideMenu,
         Loading,
         SelectFeats,
         MultipleSelect,
-        Coordinate,
         UploadImport,
         RadialMenu,
         TablerNone,
@@ -917,7 +825,6 @@ export default {
         IconMessage,
         IconLocationOff,
         IconLocation,
-        IconInfoSquare,
         IconMinus,
         IconBell,
         IconPlus,

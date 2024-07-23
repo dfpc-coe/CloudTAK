@@ -121,7 +121,7 @@ async function genericEvent(md: Event) {
                 console.log(`ok - Data ${md.Key} does not match mission sync globs`);
             }
         } else {
-                console.log(`ok - Data ${md.Key} has no mission assigned or is a geojsonld or pmtiles file`);
+            console.log(`ok - Data ${md.Key} has no mission assigned or is a geojsonld or pmtiles file`);
         }
 
         if (data.auto_transform) {

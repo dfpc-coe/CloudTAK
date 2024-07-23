@@ -9,10 +9,10 @@
             </div>
             <div
                 ref='dragger'
+                class='custom-drop row g-0 d-flex col-12 justify-content-center py-2'
                 @dragenter='dragEnter'
                 @dragleave='dragLeave'
                 @drop='dragDrop'
-                class='custom-drop row g-0 d-flex col-12 justify-content-center py-2'
             >
                 <div style='pointer-events: none;'>
                     <div class='col-12 my-3 d-flex justify-content-center'>

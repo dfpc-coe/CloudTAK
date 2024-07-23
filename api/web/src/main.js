@@ -86,10 +86,6 @@ const router = new VueRouter.createRouter({
                     name: 'home-menu-datas',
                     component: () => import('./components/CloudTAK/Menu/Datas.vue')
                 },{
-                    path: 'datas/sync',
-                    name: 'home-menu-datas-sync',
-                    component: () => import('./components/CloudTAK/Menu/DataSyncs.vue')
-                },{
                     path: 'datas/user',
                     name: 'home-menu-datas-user',
                     component: () => import('./components/CloudTAK/Menu/DataUser.vue')
@@ -280,12 +276,8 @@ const router = new VueRouter.createRouter({
                 path: '',
                 name: 'profile-default',
                 redirect: () => {
-                    return { name: 'profile-groups' };
+                    return { name: 'profile-files' };
                 }
-            },{
-                path: 'groups',
-                name: 'profile-groups',
-                component: () => import('./components/Profile/ProfileGroups.vue')
             },{
                 path: 'jobs',
                 name: 'profile-jobs',

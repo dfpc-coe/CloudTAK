@@ -44,6 +44,11 @@
         "query": true,
         "res": true
     },
+    "GET /basemap/:basemapid/tiles": {
+        "body": false,
+        "query": true,
+        "res": false
+    },
     "GET /basemap/:basemapid/tiles/:z/:x/:y": {
         "body": false,
         "query": true,
@@ -379,36 +384,6 @@
         "query": true,
         "res": true
     },
-    "POST /import": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "PUT /import/:import": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "PUT /import": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "GET /import/:import": {
-        "body": false,
-        "query": false,
-        "res": true
-    },
-    "PATCH /import/:import": {
-        "body": true,
-        "query": false,
-        "res": true
-    },
-    "GET /import": {
-        "body": false,
-        "query": true,
-        "res": true
-    },
     "GET /iconset": {
         "body": false,
         "query": true,
@@ -473,6 +448,41 @@
         "body": false,
         "query": true,
         "res": false
+    },
+    "POST /import": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "PUT /import/:import": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "PUT /import": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /import/:import": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "PATCH /import/:import": {
+        "body": true,
+        "query": false,
+        "res": true
+    },
+    "DELETE /import/:import": {
+        "body": false,
+        "query": false,
+        "res": true
+    },
+    "GET /import": {
+        "body": false,
+        "query": true,
+        "res": true
     },
     "GET /layer": {
         "body": false,
