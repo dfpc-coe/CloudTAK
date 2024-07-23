@@ -4,6 +4,16 @@ import { Readable } from 'node:stream';
 import path from 'node:path';
 import { Event } from './index.js'
 
+export type Import = {
+    id: string;
+    mode: string;
+    name: string;
+    username: string;
+    config: {
+        id: string;
+    }
+};
+
 export default class API {
     static async fetchLayer(event: {
         layer: number;
@@ -212,15 +222,26 @@ export default class API {
         return json as any;
     }
 
-    static async fetchImport(event: Event): Promise<{
-        id: string;
-        mode: string;
-        name: string;
-        username: string;
-        config: {
-            id: string;
+    static async createTransform(event: Event, imported: Import): Promise<Import> {
+        const res = await fetch(new URL(`/api/profile/asset/${imported.name}`, process.env.TAK_ETL_API), {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${event.UserToken}`
+            },
+        });
+
+        const json = await res.json();
+
+        if (!res.ok) {
+            console.error(JSON.stringify(json))
+            const err = json as { message: string };
+            throw new Error(err.message);
         }
-    }> {
+
+        return json as any;
+    }
+
+    static async fetchImport(event: Event): Promise<Import> {
         const res = await fetch(new URL(`/api/import/${event.ID}`, process.env.TAK_ETL_API), {
             method: 'GET',
             headers: {

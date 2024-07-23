@@ -5,7 +5,7 @@
     "private": true,
     "scripts": {
         "tsc": "tsc --noEmit --watch",
-        "lint": "eslint src/",
+        "lint": "eslint src",
         "build": "tsup --target es2022 --format esm src/index.ts"
     },
     "dependencies": {

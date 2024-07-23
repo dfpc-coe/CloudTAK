@@ -63,7 +63,9 @@
                                     @click='setStatus(ch, true)'
                                 />
                                 <span
-                                    class='mx-2'
+                                    v-tooltip='"Show Details"'
+                                    class='mx-2 cursor-pointer'
+                                    @click='shown[ch.name] = !shown[ch.name]'
                                     v-text='ch.name'
                                 />
 
@@ -87,6 +89,13 @@
                                         :stroke='1' 
                                     />
                                 </div>
+                            </div>
+                            <div
+                                v-if='shown[ch.name]'
+                                class='col-12 pb-2 user-select-none'
+                                style='margin-left: 40px;'
+                            >
+                                <span v-text='ch.description || "No Description"' />
                             </div>
                         </div>
                     </div>
@@ -126,6 +135,7 @@ export default {
         return {
             err: false,
             loading: true,
+            shown: {},
             paging: {
                 filter: ''
             },
