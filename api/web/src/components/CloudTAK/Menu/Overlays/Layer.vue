@@ -88,6 +88,7 @@
                 <template v-if='Array.isArray(l.paint[p]) && l.paint[p][0] === "number"'>
                     <TablerRange
                         v-model='l.paint[p][l.paint[p].length -1]'
+                        class='w-100'
                         label='Width'
                         :min='1'
                         :max='10'
@@ -196,7 +197,7 @@ export default {
             handler: function() {
                 for (const paint of ['fill-opacity', 'fill-color', 'line-opacity', 'line-color', 'line-width']) {
                     if (this.l.paint[paint]) {
-                        mapStore.map.setPaintProperty(this.l.id, paint, this.l.paint[paint]);
+                        mapStore.map.setPaintProperty(String(this.l.id), paint, this.l.paint[paint]);
                     }
                 }
             }
