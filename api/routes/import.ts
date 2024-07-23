@@ -10,7 +10,7 @@ import crypto from 'node:crypto';
 import { Param } from '@openaddresses/batch-generic';
 import { sql } from 'drizzle-orm';
 import Auth, { AuthResourceAccess, AuthUser } from '../lib/auth.js';
-import { ImportResponse } from '../lib/types.js';
+import { ImportResponse, StandardResponse } from '../lib/types.js';
 import { Import } from '../lib/schema.js';
 import * as Default from '../lib/limits.js';
 
@@ -80,6 +80,7 @@ export default async function router(schema: Schema, config: Config) {
                     await config.models.Import.commit(imported.id, {
                         status: 'Pending'
                     });
+
                     await S3.put(`import/${imported.id}${res.ext}`, file)
 
                     return res;
@@ -220,6 +221,41 @@ export default async function router(schema: Schema, config: Config) {
             });
 
             return res.json(imported);
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
+
+    await schema.delete('/import/:import', {
+        name: 'Delete Import',
+        group: 'Import',
+        description: 'Delete Import',
+        params: Type.Object({
+            import: Type.String()
+        }),
+        res: StandardResponse
+    }, async (req, res) => {
+        try {
+            const auth = await Auth.is_auth(config, req, {
+                resources: [{ access: AuthResourceAccess.IMPORT, id: req.params.import }]
+            });
+
+            const imported = await config.models.Import.from(req.params.import);
+
+            if (auth instanceof AuthUser) {
+                const user = auth as AuthUser;
+                if (imported.username !== user.email) throw new Err(400, null, 'You did not create this import');
+            }
+
+            const ext = path.parse(imported.name).ext
+            await S3.delete(`import/${imported.id}${ext}`, file)
+
+            await config.models.Import.delete(req.params.import);
+
+            return res.json({
+                status: 200,
+                message: 'Import Deleted'
+            });
         } catch (err) {
             return Err.respond(err, res);
         }
