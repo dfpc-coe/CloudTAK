@@ -95,7 +95,7 @@
                                 style='margin-left: 40px;'
                                 v-if='shown[ch.name]'
                             >
-                                <span v-text='ch.description'/>
+                                <span v-text='ch.description || "No Description"'/>
                             </div>
                         </div>
                     </div>
