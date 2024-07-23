@@ -12,6 +12,12 @@
 
 ### Pending Release
 
+### v2.76.0 - 2024-07-23
+
+- :bug: `UI` Fix bug in initial load of MissionData
+- :rocket: `API` Wire up import manager => Asset Transform (this still needs UX work but it does work)
+- :tada: Add initial Import Delete API
+
 ### v2.75.1 - 2024-07-22
 
 - :bug: `API` Limit imports listing
@@ -35,7 +41,7 @@
 ### v2.73.0 - 2024-07-19
 
 - :rocket: `UI` Implment user suggestions for "clickable" contacts vs a seperate zoomTo button
-- :rocket: `UI` Divide contacts into active and recently offline 
+- :rocket: `UI` Divide contacts into active and recently offline
 
 ### v2.72.0 - 2024-07-18
 
