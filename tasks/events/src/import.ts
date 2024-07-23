@@ -112,12 +112,12 @@ async function submitBatch(event: Event, imported: Import) {
     const s3 = new S3.S3Client({ region: process.env.AWS_DEFAULT_REGION || 'us-east-1' });
 
     await s3.send(new S3.CopyObjectCommand({
-        CopySource: `${md.Bucket}/${md.Key}`,
-        Bucket: md.Bucket,
+        CopySource: `${event.Bucket}/${event.Key}`,
+        Bucket: event.Bucket,
         Key: `profile/${imported.username}/${imported.name}`
     }))
 
-    await API.createTransform(md, imported);
+    await API.createTransform(event, imported);
 }
 
 async function processIndex(event: Event, xmlstr: string, zip?: StreamZipAsync) {
