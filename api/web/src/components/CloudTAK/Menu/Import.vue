@@ -1,6 +1,11 @@
 <template>
     <MenuTemplate name='Import'>
         <template #buttons>
+            <TablerDelete
+                v-if='imported.status === "Fail" || imported.status === "Success"'
+                displaytype='icon'
+                @delete='deleteImport'
+            />
             <IconRefresh
                 v-tooltip='"Refresh"'
                 :size='32'
@@ -98,6 +103,7 @@ import timeDiff from '../../../timediff.js';
 import {
     TablerNone,
     TablerAlert,
+    TablerDelete,
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import MenuTemplate from '../util/MenuTemplate.vue';
@@ -111,6 +117,7 @@ export default {
         Status,
         IconRefresh,
         TablerNone,
+        TablerDelete,
         TablerAlert,
         TablerLoading,
         MenuTemplate,
@@ -142,6 +149,23 @@ export default {
     methods: {
         timeDiff(update) {
             return timeDiff(update);
+        },
+        deleteImport: async function() {
+            this.loading.initial = true;
+
+            try {
+                const url = stdurl(`/api/import/${this.$route.params.import}`);
+
+                this.imported = await std(url, {
+                    method: 'DELETE'
+                });
+
+                this.$router.push('/menu/imports');
+            } catch (err) {
+                this.err = err;
+            }
+
+            this.loading.initial = false;
         },
         fetch: async function(init) {
             if (init) this.loading.initial = true;
