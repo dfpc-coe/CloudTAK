@@ -1,7 +1,10 @@
 <template>
     <TablerLoading v-if='loadingPaths[element.id] === true' />
     <template v-else>
-        <div class='ms-3'>
+        <div
+            v-if='groups().length'
+            class='ms-3'
+        >
             <div class='align-items-center px-3 py-2 me-2 hover-button'>
                 <IconChevronRight
                     v-if='!treeState.teams._'
@@ -74,7 +77,79 @@
             </template>
         </div>
 
-        <div class='ms-3'>
+        <div
+            v-if='markers().length'
+            class='ms-3'
+        >
+            <div class='align-items-center px-3 py-2 me-2 hover-button'>
+                <IconChevronRight
+                    v-if='!treeState.markers._'
+                    :size='20'
+                    :stroke='1'
+                    class='cursor-pointer'
+                    @click='treeState.markers._ = true'
+                />
+                <IconChevronDown
+                    v-else-if='treeState.markers._'
+                    :size='20'
+                    :stroke='1'
+                    class='cursor-pointer'
+                    @click='treeState.markers._ = false'
+                />
+                <IconMapPin
+                    :size='20'
+                    :stroke='2'
+                    class='mx-2'
+                /> Markers
+            </div>
+
+            <template v-if='treeState.markers._'>
+                <div
+                    v-for='marker in markers()'
+                    class='ms-3'
+                >
+                    <div class='d-flex align-items-center px-3 py-2 me-2 hover-button'>
+                        <IconChevronRight
+                            v-if='!treeState.markers[marker]'
+                            :size='20'
+                            :stroke='1'
+                            class='cursor-pointer'
+                            @click='treeState.markers[marker] = true'
+                        />
+                        <IconChevronDown
+                            v-else-if='treeState.markers[marker]'
+                            :size='20'
+                            :stroke='1'
+                            class='cursor-pointer'
+                            @click='treeState.markers[marker] = false'
+                        />
+                        <IconFolder
+                            class='mx-2'
+                            :size='20'
+                            :stroke='2'
+                        /> <span v-text='marker' />
+                    </div>
+
+                    <template v-if='treeState.markers[marker]'>
+                        <div
+                            class='ms-3 d-flex align-items-center hover-button px-3 py-2 me-2'
+                        >
+                            <Feature
+                                v-for='cot of markerFeatures(marker)'
+                                :key='cot.id'
+                                class='ms-3'
+                                :feature='cot'
+                            />
+                        </div>
+                    </template>
+                </div>
+            </template>
+        </div>
+
+        <div
+            v-if='paths.length'
+            class='ms-3'
+        >
             <div class='align-items-center px-3 py-2 me-2 hover-button'>
                 <IconChevronRight
                     v-if='!treeState.paths._'
@@ -102,25 +177,35 @@
                     v-for='path in paths'
                     class='d-flex align-items-center hover-button px-3 py-2'
                 >
-                    <IconFolder
-                        :size='20'
-                        :stroke='2'
-                        class='ms-3'
-                    />
-                    <span
-                        class='mx-2'
-                        v-text='path.path'
-                    />
-                    <div
-                        v-if='element.id === "cots"'
-                        class='ms-auto'
-                    >
-                        <TablerDelete
-                            :size='20'
-                            displaytype='icon'
-                            @click='deletePath(element, path.path)'
+                    <template v-if='path.path === "/"'>
+                        <Feature
+                            v-for='cot of pathFeatures(path.path)'
+                            :key='cot.id'
+                            class='ms-3'
+                            :feature='cot'
                         />
-                    </div>
+                    </template>
+                    <template v-else>
+                        <IconFolder
+                            :size='20'
+                            :stroke='2'
+                            class='ms-3'
+                        />
+                        <span
+                            class='mx-2'
+                            v-text='path.path'
+                        />
+                        <div
+                            v-if='element.id === "cots"'
+                            class='ms-auto'
+                        >
+                            <TablerDelete
+                                :size='20'
+                                displaytype='icon'
+                                @click='deletePath(element, path.path)'
+                            />
+                        </div>
+                    </template>
                 </div>
             </template>
         </div>
@@ -133,8 +218,10 @@ import {
     TablerLoading,
 } from '@tak-ps/vue-tabler';
 import Contact from '../../util/Contact.vue';
+import Feature from '../../util/Feature.vue';
 import ContactPuck from '../../util/ContactPuck.vue';
 import {
+    IconMapPin,
     IconChevronRight,
     IconChevronDown,
     IconFolder,
@@ -146,9 +233,11 @@ export default {
     name: 'TreeCots',
     components: {
         ContactPuck,
+        Feature,
         Contact,
         TablerLoading,
         TablerDelete,
+        IconMapPin,
         IconChevronRight,
         IconChevronDown,
         IconFolder,
@@ -161,6 +250,9 @@ export default {
             loading: false,
             treeState: {
                 teams: {
+                    _: false
+                },
+                markers: {
                     _: false
                 },
                 paths: {
@@ -176,6 +268,12 @@ export default {
         },
     },
     methods: {
+        pathFeatures: function(path) {
+            return cotStore.pathFeatures(cotStore.cots, path);
+        },
+        markerFeatures: function(marker) {
+            return cotStore.markerFeatures(cotStore.cots, marker);
+        },
         contacts: function(group) {
             const contacts = cotStore.contacts(cotStore.cots, group);
             return contacts;
@@ -193,6 +291,17 @@ export default {
             }
 
             this.loadingPaths[layer.id] = false;
+        },
+        markers: function() {
+            const markers = cotStore.markers();
+
+            for (const marker of markers) {
+                if (this.treeState.markers[marker] === undefined) {
+                    this.treeState.markers[marker] = false;
+                }
+            }
+
+            return markers;
         },
         groups: function() {
             const groups = cotStore.groups();

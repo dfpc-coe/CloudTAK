@@ -103,12 +103,6 @@ export default {
         }
     },
     watch: {
-        modelValue: function() {
-            const coords = this.modelValue.join()
-            if (coords !== this.coordinateEntry) {
-                this.coordinateEntry = coords;
-            }
-        },
         coordinateEntry: function() {
             this.$emit('update:modelValue', this.coordinateEntry
                 .split(',')
