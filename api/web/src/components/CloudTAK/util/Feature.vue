@@ -1,7 +1,7 @@
 <template>
     <Contact
         v-if='feature.properties.group'
-        :buttonChat='false'
+        :button-chat='false'
         :contact='{
             "uid": feature.id,
             "callsign": feature.properties.callsign,
