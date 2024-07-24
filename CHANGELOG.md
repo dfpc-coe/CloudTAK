@@ -12,6 +12,12 @@
 
 ### Pending Release
 
+### v2.77.0 - 2024-07-24
+
+- :rocket: `UI` Slightly more comprehensive version of CoT Trees in overlay viewer
+- :bug: `UI` Fix recursive bug in Coordinate Entry
+- :bug: `API` Make CreatorUID optional in Data Package API as it was 400ing for certain users
+
 ### v2.76.0 - 2024-07-23
 
 - :bug: `UI` Fix bug in initial load of MissionData
