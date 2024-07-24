@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v2.77.1 - 2024-07-24
+
+- :rocket: `UI` Add ability to delete Import
+
 ### v2.77.0 - 2024-07-24
 
 - :rocket: `UI` Slightly more comprehensive version of CoT Trees in overlay viewer
