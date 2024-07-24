@@ -152,7 +152,7 @@
             </div>
         </div>
 
-        <CoordInput 
+        <CoordInput
             v-if='pointInput'
             @close='pointInput = false'
         />
