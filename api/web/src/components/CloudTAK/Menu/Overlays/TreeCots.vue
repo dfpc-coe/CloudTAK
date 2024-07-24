@@ -127,18 +127,17 @@
                             class='mx-2'
                             :size='20'
                             :stroke='2'
-                        /> <span v-text='marker'/>
+                        /> <span v-text='marker' />
                     </div>
 
                     <template v-if='treeState.markers[marker]'>
                         <div
-                            v-for='contact in contacts(group)'
                             class='ms-3 d-flex align-items-center hover-button px-3 py-2 me-2'
                         >
                             <Feature
-                                class='ms-3'
                                 v-for='cot of markerFeatures(marker)'
                                 :key='cot.id'
+                                class='ms-3'
                                 :feature='cot'
                             />
                         </div>
@@ -180,9 +179,9 @@
                 >
                     <template v-if='path.path === "/"'>
                         <Feature
-                            class='ms-3'
                             v-for='cot of pathFeatures(path.path)'
                             :key='cot.id'
+                            class='ms-3'
                             :feature='cot'
                         />
                     </template>
