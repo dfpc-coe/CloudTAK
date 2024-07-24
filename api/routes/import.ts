@@ -248,7 +248,7 @@ export default async function router(schema: Schema, config: Config) {
             }
 
             const ext = path.parse(imported.name).ext
-            await S3.delete(`import/${imported.id}${ext}`, file)
+            await S3.del(`import/${imported.id}${ext}`)
 
             await config.models.Import.delete(req.params.import);
 
