@@ -189,6 +189,18 @@ export const useCOTStore = defineStore('cots', {
             });
         },
 
+        pathFeatures(store: Map<string, Feature>, path: string): Array<Feature> {
+            const feats = new Set();
+
+            for (const [key, value] of store) {
+                if (value.path === path) {
+                    feats.add(value);
+                }
+            }
+
+            return Array.from(feats);
+        },
+
         groups(store?: Map<string, Feature>): Array<string> {
             if (!store) store = this.cots;
 
