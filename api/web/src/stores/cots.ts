@@ -189,6 +189,34 @@ export const useCOTStore = defineStore('cots', {
             });
         },
 
+        markers(store?: Map<string, Feature>): Array<string> {
+            if (!store) store = this.cots;
+
+            const markers: Set<string> = new Set();
+            for (const [key, value] of store) {
+                if (value.properties.group) continue;
+                if (value.properties.archived) continue;
+                markers.add(value.properties.type);
+            }
+
+            return Array.from(markers);
+        },
+
+        markerFeatures(store: Map<string, Feature>, marker: string): Array<Feature> {
+            const feats: Set<Feature> = new Set();
+
+            for (const [key, value] of store) {
+                if (value.properties.group) continue;
+                if (value.properties.archived) continue;
+
+                if (value.properties.type === marker) {
+                    feats.add(value);
+                }
+            }
+
+            return Array.from(feats);
+        },
+
         pathFeatures(store: Map<string, Feature>, path: string): Array<Feature> {
             const feats: Set<Feature> = new Set();
 

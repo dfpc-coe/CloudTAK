@@ -77,7 +77,10 @@
             </template>
         </div>
 
-        <div class='ms-3'>
+        <div
+            v-if='markers().length'
+            class='ms-3'
+        >
             <div class='align-items-center px-3 py-2 me-2 hover-button'>
                 <IconChevronRight
                     v-if='!treeState.markers._'
@@ -100,49 +103,43 @@
                 /> Markers
             </div>
 
-            <template v-if='treeState.teams._'>
+            <template v-if='treeState.markers._'>
                 <div
-                    v-for='group in groups()'
+                    v-for='marker in markers()'
                     class='ms-3'
                 >
                     <div class='d-flex align-items-center px-3 py-2 me-2 hover-button'>
                         <IconChevronRight
-                            v-if='!treeState.teams[group]'
+                            v-if='!treeState.markers[marker]'
                             :size='20'
                             :stroke='1'
                             class='cursor-pointer'
-                            @click='treeState.teams[group] = true'
+                            @click='treeState.markers[marker] = true'
                         />
                         <IconChevronDown
-                            v-else-if='treeState.teams[group]'
+                            v-else-if='treeState.markers[marker]'
                             :size='20'
                             :stroke='1'
                             class='cursor-pointer'
-                            @click='treeState.teams[group] = false'
+                            @click='treeState.markers[marker] = false'
                         />
-                        <ContactPuck
+                        <IconFolder
                             class='mx-2'
-                            :compact='true'
-                            :contact='{ "team": group }'
-                        /><span v-text='`${group} Team`' />
+                            :size='20'
+                            :stroke='2'
+                        /> <span v-text='marker'/>
                     </div>
 
-                    <template v-if='treeState.teams[group]'>
+                    <template v-if='treeState.markers[marker]'>
                         <div
                             v-for='contact in contacts(group)'
                             class='ms-3 d-flex align-items-center hover-button px-3 py-2 me-2'
                         >
-                            <Contact
-                                :compact='true'
-                                :hover='false'
-                                :button-zoom='true'
-                                :button-chat='false'
-                                :contact='{
-                                    "uid": contact.id,
-                                    "callsign": contact.properties.callsign,
-                                    "team": contact.properties.group.name,
-                                    "notes": ""
-                                }'
+                            <Feature
+                                class='ms-3'
+                                v-for='cot of markerFeatures(marker)'
+                                :key='cot.id'
+                                :feature='cot'
                             />
                         </div>
                     </template>
@@ -182,9 +179,12 @@
                     class='d-flex align-items-center hover-button px-3 py-2'
                 >
                     <template v-if='path.path === "/"'>
-                        <div v-for='cot of pathFeatures(path.path)'>
-                            <span v-text='cot.properties.callsign' />
-                        </div>
+                        <Feature
+                            class='ms-3'
+                            v-for='cot of pathFeatures(path.path)'
+                            :key='cot.id'
+                            :feature='cot'
+                        />
                     </template>
                     <template v-else>
                         <IconFolder
@@ -219,6 +219,7 @@ import {
     TablerLoading,
 } from '@tak-ps/vue-tabler';
 import Contact from '../../util/Contact.vue';
+import Feature from '../../util/Feature.vue';
 import ContactPuck from '../../util/ContactPuck.vue';
 import {
     IconMapPin,
@@ -233,6 +234,7 @@ export default {
     name: 'TreeCots',
     components: {
         ContactPuck,
+        Feature,
         Contact,
         TablerLoading,
         TablerDelete,
@@ -270,6 +272,9 @@ export default {
         pathFeatures: function(path) {
             return cotStore.pathFeatures(cotStore.cots, path);
         },
+        markerFeatures: function(marker) {
+            return cotStore.markerFeatures(cotStore.cots, marker);
+        },
         contacts: function(group) {
             const contacts = cotStore.contacts(cotStore.cots, group);
             return contacts;
@@ -287,6 +292,17 @@ export default {
             }
 
             this.loadingPaths[layer.id] = false;
+        },
+        markers: function() {
+            const markers = cotStore.markers();
+
+            for (const marker of markers) {
+                if (this.treeState.markers[marker] === undefined) {
+                    this.treeState.markers[marker] = false;
+                }
+            }
+
+            return markers;
         },
         groups: function() {
             const groups = cotStore.groups();
