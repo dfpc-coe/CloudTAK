@@ -156,7 +156,7 @@ export default {
             try {
                 const url = stdurl(`/api/import/${this.$route.params.import}`);
 
-                this.imported = await std(url, {
+                await std(url, {
                     method: 'DELETE'
                 });
 
