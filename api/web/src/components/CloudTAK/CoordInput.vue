@@ -50,18 +50,15 @@ export default {
         'close'
     ],
     data: function() {
+        const center = mapStore.map.getCenter()
+
         return {
             name: '',
-            coordinates: []
+            coordinates: [
+                Math.round(center.lng * 1000000) / 1000000,
+                Math.round(center.lat * 1000000) / 1000000
+            ]
         };
-    },
-    mounted: function() {
-        this.name = '';
-        const center = mapStore.map.getCenter()
-        this.coordinates = [
-            Math.round(center.lng * 1000000) / 1000000,
-            Math.round(center.lat * 1000000) / 1000000
-        ]
     },
     methods: {
         submitPoint: async function() {
