@@ -46,8 +46,13 @@
                 <ChannelInfo label='Data Packages' />
                 <NoChannelsInfo v-if='hasNoChannels' />
 
+                <TablerAlert
+                    v-if='err'
+                    title='Packages Error'
+                    :err='err'
+                />
                 <TablerNone
-                    v-if='!list.items.length'
+                    v-else-if='!list.items.length'
                     label='Packages'
                     :create='false'
                 />
@@ -147,10 +152,15 @@ export default {
             return timeDiff(update)
         },
         fetchList: async function() {
-            this.upload = false;
-            this.loading = true;
-            const url = stdurl('/api/marti/package');
-            this.list = await std(url);
+            try {
+                this.upload = false;
+                this.loading = true;
+                const url = stdurl('/api/marti/package');
+                this.list = await std(url);
+            } catch (err) {
+                this.err = err;
+            }
+
             this.loading = false;
         },
     }
