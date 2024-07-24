@@ -1,7 +1,10 @@
 <template>
     <TablerLoading v-if='loadingPaths[element.id] === true' />
     <template v-else>
-        <div v-if='groups().length' class='ms-3'>
+        <div
+            v-if='groups().length'
+            class='ms-3'
+        >
             <div class='align-items-center px-3 py-2 me-2 hover-button'>
                 <IconChevronRight
                     v-if='!treeState.teams._'
@@ -147,7 +150,10 @@
             </template>
         </div>
 
-        <div v-if='paths.length' class='ms-3'>
+        <div
+            v-if='paths.length'
+            class='ms-3'
+        >
             <div class='align-items-center px-3 py-2 me-2 hover-button'>
                 <IconChevronRight
                     v-if='!treeState.paths._'
@@ -177,7 +183,7 @@
                 >
                     <template v-if='path.path === "/"'>
                         <div v-for='cot of pathFeatures(path.path)'>
-                            <span v-text='cot.properties.callsign'/>
+                            <span v-text='cot.properties.callsign' />
                         </div>
                     </template>
                     <template v-else>
