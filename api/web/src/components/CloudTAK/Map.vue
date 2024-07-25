@@ -9,7 +9,7 @@
             style='width: 100%;'
         />
 
-        <Loading v-if='loading.main || !isLoaded'/>
+        <Loading v-if='loading.main || !isLoaded' />
 
         <template v-if='isLoaded && !loading.main'>
             <div
