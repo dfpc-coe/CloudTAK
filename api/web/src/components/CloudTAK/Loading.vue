@@ -1,20 +1,20 @@
 <template>
-<TablerModal>
-    <div
-        class='modal-body bg-white rounded'
-    >
+    <TablerModal>
         <div
-            class='text-center'
-            style='margin-bottom: 24px;'
+            class='modal-body bg-white rounded'
         >
-            <img
-                src='/logo.png'
-                height='150'
+            <div
+                class='text-center'
+                style='margin-bottom: 24px;'
             >
+                <img
+                    src='/logo.png'
+                    height='150'
+                >
+            </div>
+            <TablerLoading desc='Loading Map State' />
         </div>
-        <TablerLoading desc='Loading Map State' />
-    </div>
-</TablerModal>
+    </TablerModal>
 </template>
 
 <script>
