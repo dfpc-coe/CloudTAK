@@ -383,7 +383,7 @@ export const useMapStore = defineStore('cloudtak', {
                     map: this.map
                 }),
                 idStrategy: {
-                    isValidId: (id: terraDraw.FeatureId): boolean => {
+                    isValidId: (id: string | number): boolean => {
                         return typeof id === "string"
                     },
                     getId: (function () {
