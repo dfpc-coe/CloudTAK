@@ -1,355 +1,357 @@
 <template>
-    <Loading v-if='loading.main' />
     <div
-        v-else
         data-bs-theme='dark'
         class='d-flex position-relative'
         style='height: calc(100vh) !important;'
     >
         <div
-            v-if='mode === "Default"'
-            class='position-absolute top-0 end-0 text-white py-2'
-            style='z-index: 1; width: 60px; background-color: rgba(0, 0, 0, 0.5);'
-        >
-            <IconMenu2
-                v-if='noMenuShown'
-                :size='40'
-                :stroke='1'
-                class='mx-2 cursor-pointer hover-button'
-                @click='$router.push("/menu")'
-            />
-            <IconX
-                v-else
-                :size='40'
-                :stroke='1'
-                class='mx-2 cursor-pointer bg-dark'
-                @click='closeAllMenu'
-            />
-        </div>
-
-        <WarnChannels
-            v-if='warnChannels'
-            @close='warnChannels = false'
-        />
-
-        <div
-            v-if='profile'
-            class='position-absolute bottom-0 begin-0 text-white'
-            style='
-                z-index: 1;
-                width: 200px;
-                height: 40px;
-                border-radius: 0px 6px 0px 0px;
-                background-color: rgba(0, 0, 0, 0.5);
-            '
-        >
-            <div class='d-flex align-items-center h-100'>
-                <div
-                    v-tooltip='"Set Location"'
-                    class='hover-button h-100 px-2 d-flex align-items-center cursor-pointer'
-                    style='width: 40px;'
-                >
-                    <IconLocationOff
-                        v-if='!profile.tak_loc'
-                        :size='20'
-                        :stroke='1'
-                        @click='setLocation'
-                    />
-                    <IconLocation
-                        v-else
-                        :size='20'
-                        :stroke='1'
-                        @click='setLocation'
-                    />
-                </div>
-                <div
-                    v-tooltip='"Zoom To Location"'
-                    style='line-height: 40px; width: calc(100% - 40px);'
-                    class='h-100 cursor-pointer text-center px-2 text-truncate subheader text-white hover-button'
-                    @click='toLocation'
-                    v-text='profile.tak_callsign'
-                />
-            </div>
-        </div>
-        <div
-            v-if='selected.size'
-            class='position-absolute begin-0 text-white bg-dark'
-            style='
-                z-index: 1;
-                bottom: 40px;
-                width: 200px;
-            '
-        >
-            <SelectFeats :selected='selected' />
-        </div>
-
-        <div
-            v-if='mode === "Default"'
-            class='position-absolute top-0 beginning-0 text-white py-2 px-2'
-            style='
-                z-index: 1;
-                width: 60px;
-                background-color: rgba(0, 0, 0, 0.5);
-                border-radius: 0px 0px 6px 0px;
-            '
-        >
-            <IconSearch
-                v-tooltip='"Search"'
-                :size='40'
-                :stroke='1'
-                class='cursor-pointer hover-button mb-3'
-                @click='search.shown = !search.shown'
-            />
-
-            <div
-                style='margin-bottom: 10px;'
-                class='cursor-pointer hover-button'
-                @click='setBearing(0)'
-            >
-                <IconCircleArrowUp
-                    v-tooltip='"Snap to North"'
-                    :transform='`rotate(${360 - bearing})`'
-                    :size='40'
-                    :stroke='1'
-                />
-                <div
-                    v-if='bearing !== 0'
-                    class='text-center'
-                    v-text='humanBearing'
-                />
-            </div>
-            <IconFocus2
-                v-if='!radial.cot && !locked.length'
-                v-tooltip='"Get Location"'
-                :size='40'
-                :stroke='1'
-                class='cursor-pointer hover-button'
-                @click='getLocation'
-            />
-            <IconLockAccess
-                v-else-if='!radial.cot'
-                :size='40'
-                :stroke='1'
-                class='cursor-pointer hover-button'
-                @click='locked.splice(0, locked.length)'
-            />
-
-            <div class='mt-3'>
-                <IconPlus
-                    v-tooltip='"Zoom In"'
-                    :size='40'
-                    :stroke='1'
-                    class='cursor-pointer hover-button'
-                    @click='setZoom(getZoom() + 1);'
-                />
-                <IconMinus
-                    v-tooltip='"Zoom Out"'
-                    :size='40'
-                    :stroke='1'
-                    class='cursor-pointer hover-button'
-                    @click='setZoom(getZoom() - 1);'
-                />
-            </div>
-        </div>
-
-        <CoordInput
-            v-if='pointInput'
-            @close='pointInput = false'
-        />
-
-        <div
-            v-if='search.shown'
-            class='position-absolute top-0 text-white bg-dark'
-            style='
-                z-index: 1;
-                left: 60px;
-                width: 200px;
-            '
-        >
-            <TablerInput
-                v-model='search.filter'
-                class='mt-0'
-                placeholder='Place Search'
-                icon='search'
-            />
-
-            <div
-                v-for='item of search.results'
-                :key='item.magicKey'
-                class='col-12 px-2 py-2 hover-button cursor-pointer'
-                @click='fetchSearch(item.text, item.magicKey)'
-                v-text='item.text'
-            />
-        </div>
-
-        <div
-            v-if='isLoaded && mode === "Default"'
-            class='d-flex position-absolute top-0 text-white py-2'
-            style='
-                z-index: 2;
-                width: 120px;
-                right: 60px;
-                background-color: rgba(0, 0, 0, 0.5);
-                border-radius: 0px 0px 0px 6px;
-            '
-        >
-            <TablerDropdown>
-                <template #default>
-                    <div class='mx-2 cursor-pointer'>
-                        <IconBell
-                            :size='40'
-                            :stroke='1'
-                            class='hover-button'
-                        />
-                        <span
-                            v-if='notifications.length'
-                            class='badge bg-red mb-2'
-                        />
-                        <span
-                            v-else
-                            style='width: 10px;'
-                        />
-                    </div>
-                </template>
-                <template #dropdown>
-                    <TablerNone
-                        v-if='!notifications.length'
-                        label='New Notifications'
-                        :create='false'
-                    />
-                    <template v-else>
-                        <div class='col-12 d-flex py-2 px-2'>
-                            <div
-                                class='ms-auto cursor-pointer'
-                                @click='clearNotifications'
-                            >
-                                Clear All
-                            </div>
-                        </div>
-                        <div
-                            v-for='n of notifications'
-                            class='col-12 px-2 py-2'
-                        >
-                            <div
-                                v-if='n.type === "Chat"'
-                                class='col-12 cursor-pointer hover-dark'
-                                @click='$router.push(n.url)'
-                            >
-                                <IconMessage
-                                    :size='32'
-                                    :stroke='1'
-                                />
-                                <span v-text='n.name' />
-                            </div>
-                        </div>
-                    </template>
-                </template>
-            </TablerDropdown>
-            <TablerDropdown>
-                <template #default>
-                    <IconPencil
-                        :size='40'
-                        :stroke='1'
-                        class='mx-2 cursor-pointer hover-button'
-                        @click='closeAllMenu'
-                    />
-                </template>
-                <template #dropdown>
-                    <div
-                        class='col-12 py-1 px-2 hover-button cursor-pointer'
-                        @click='pointInput = true'
-                    >
-                        <IconCursorText
-                            :size='25'
-                            :stroke='1'
-                        /> Coordinate Input
-                    </div>
-                    <div
-                        class='col-12 py-1 px-2 hover-button cursor-pointer'
-                        @click='startDraw("point")'
-                    >
-                        <IconPoint
-                            :size='25'
-                            :stroke='1'
-                        /> Draw Point
-                    </div>
-                    <div
-                        class='col-12 py-1 px-2 hover-button cursor-pointer'
-                        @click='startDraw("linestring")'
-                    >
-                        <IconLine
-                            :size='25'
-                            :stroke='1'
-                        /> Draw Line
-                    </div>
-                    <div
-                        class='col-12 py-1 px-2 hover-button cursor-pointer'
-                        @click='startDraw("polygon")'
-                    >
-                        <IconPolygon
-                            :size='25'
-                            :stroke='1'
-                        /> Draw Polygon
-                    </div>
-                    <div
-                        class='col-12 py-1 px-2 hover-button cursor-pointer'
-                        @click='startDraw("rectangle")'
-                    >
-                        <IconVector
-                            :size='25'
-                            :stroke='1'
-                        /> Draw Rectangle
-                    </div>
-                </template>
-            </TablerDropdown>
-        </div>
-
-        <SideMenu
-            v-if='isLoaded && !pointInput'
-            :compact='noMenuShown'
-            @reset='deleteCOT()'
-        />
-
-        <div
             ref='map'
             style='width: 100%;'
         />
 
-        <MultipleSelect
-            v-if='select.feats.length'
-        />
+        <Loading v-if='loading.main || !isLoaded'/>
 
-        <RadialMenu
-            v-else-if='radial.mode'
-            ref='radial'
-            @close='closeRadial'
-            @click='handleRadial($event)'
-        />
-
-        <CloudTAKFeatView
-            v-if='feat && mode === "Default"'
-            :key='feat.id'
-            :feat='feat'
-        />
-
-        <template v-if='upload.shown'>
-            <TablerModal>
-                <div class='modal-status bg-red' />
-                <button
-                    type='button'
-                    class='btn-close'
-                    aria-label='Close'
-                    @click='upload.shown = false'
+        <template v-if='isLoaded && !loading.main'>
+            <div
+                v-if='mode === "Default"'
+                class='position-absolute top-0 end-0 text-white py-2'
+                style='z-index: 1; width: 60px; background-color: rgba(0, 0, 0, 0.5);'
+            >
+                <IconMenu2
+                    v-if='noMenuShown'
+                    :size='40'
+                    :stroke='1'
+                    class='mx-2 cursor-pointer hover-button'
+                    @click='$router.push("/menu")'
                 />
-                <div class='modal-body text-white'>
-                    <UploadImport
-                        :dragging='upload.dragging'
-                        :cancel-button='false'
-                        @close='upload.shown = false'
-                        @done='fileUpload($event)'
+                <IconX
+                    v-else
+                    :size='40'
+                    :stroke='1'
+                    class='mx-2 cursor-pointer bg-dark'
+                    @click='closeAllMenu'
+                />
+            </div>
+
+            <WarnChannels
+                v-if='warnChannels'
+                @close='warnChannels = false'
+            />
+
+            <div
+                v-if='profile'
+                class='position-absolute bottom-0 begin-0 text-white'
+                style='
+                    z-index: 1;
+                    width: 200px;
+                    height: 40px;
+                    border-radius: 0px 6px 0px 0px;
+                    background-color: rgba(0, 0, 0, 0.5);
+                '
+            >
+                <div class='d-flex align-items-center h-100'>
+                    <div
+                        v-tooltip='"Set Location"'
+                        class='hover-button h-100 px-2 d-flex align-items-center cursor-pointer'
+                        style='width: 40px;'
+                    >
+                        <IconLocationOff
+                            v-if='!profile.tak_loc'
+                            :size='20'
+                            :stroke='1'
+                            @click='setLocation'
+                        />
+                        <IconLocation
+                            v-else
+                            :size='20'
+                            :stroke='1'
+                            @click='setLocation'
+                        />
+                    </div>
+                    <div
+                        v-tooltip='"Zoom To Location"'
+                        style='line-height: 40px; width: calc(100% - 40px);'
+                        class='h-100 cursor-pointer text-center px-2 text-truncate subheader text-white hover-button'
+                        @click='toLocation'
+                        v-text='profile.tak_callsign'
                     />
                 </div>
-            </TablerModal>
+            </div>
+            <div
+                v-if='selected.size'
+                class='position-absolute begin-0 text-white bg-dark'
+                style='
+                    z-index: 1;
+                    bottom: 40px;
+                    width: 200px;
+                '
+            >
+                <SelectFeats :selected='selected' />
+            </div>
+
+            <div
+                v-if='mode === "Default"'
+                class='position-absolute top-0 beginning-0 text-white py-2 px-2'
+                style='
+                    z-index: 1;
+                    width: 60px;
+                    background-color: rgba(0, 0, 0, 0.5);
+                    border-radius: 0px 0px 6px 0px;
+                '
+            >
+                <IconSearch
+                    v-tooltip='"Search"'
+                    :size='40'
+                    :stroke='1'
+                    class='cursor-pointer hover-button mb-3'
+                    @click='search.shown = !search.shown'
+                />
+
+                <div
+                    style='margin-bottom: 10px;'
+                    class='cursor-pointer hover-button'
+                    @click='setBearing(0)'
+                >
+                    <IconCircleArrowUp
+                        v-tooltip='"Snap to North"'
+                        :transform='`rotate(${360 - bearing})`'
+                        :size='40'
+                        :stroke='1'
+                    />
+                    <div
+                        v-if='bearing !== 0'
+                        class='text-center'
+                        v-text='humanBearing'
+                    />
+                </div>
+                <IconFocus2
+                    v-if='!radial.cot && !locked.length'
+                    v-tooltip='"Get Location"'
+                    :size='40'
+                    :stroke='1'
+                    class='cursor-pointer hover-button'
+                    @click='getLocation'
+                />
+                <IconLockAccess
+                    v-else-if='!radial.cot'
+                    :size='40'
+                    :stroke='1'
+                    class='cursor-pointer hover-button'
+                    @click='locked.splice(0, locked.length)'
+                />
+
+                <div class='mt-3'>
+                    <IconPlus
+                        v-tooltip='"Zoom In"'
+                        :size='40'
+                        :stroke='1'
+                        class='cursor-pointer hover-button'
+                        @click='setZoom(getZoom() + 1);'
+                    />
+                    <IconMinus
+                        v-tooltip='"Zoom Out"'
+                        :size='40'
+                        :stroke='1'
+                        class='cursor-pointer hover-button'
+                        @click='setZoom(getZoom() - 1);'
+                    />
+                </div>
+            </div>
+
+            <CoordInput
+                v-if='pointInput'
+                @close='pointInput = false'
+            />
+
+            <div
+                v-if='search.shown'
+                class='position-absolute top-0 text-white bg-dark'
+                style='
+                    z-index: 1;
+                    left: 60px;
+                    width: 200px;
+                '
+            >
+                <TablerInput
+                    v-model='search.filter'
+                    class='mt-0'
+                    placeholder='Place Search'
+                    icon='search'
+                />
+
+                <div
+                    v-for='item of search.results'
+                    :key='item.magicKey'
+                    class='col-12 px-2 py-2 hover-button cursor-pointer'
+                    @click='fetchSearch(item.text, item.magicKey)'
+                    v-text='item.text'
+                />
+            </div>
+
+            <div
+                v-if='isLoaded && mode === "Default"'
+                class='d-flex position-absolute top-0 text-white py-2'
+                style='
+                    z-index: 2;
+                    width: 120px;
+                    right: 60px;
+                    background-color: rgba(0, 0, 0, 0.5);
+                    border-radius: 0px 0px 0px 6px;
+                '
+            >
+                <TablerDropdown>
+                    <template #default>
+                        <div class='mx-2 cursor-pointer'>
+                            <IconBell
+                                :size='40'
+                                :stroke='1'
+                                class='hover-button'
+                            />
+                            <span
+                                v-if='notifications.length'
+                                class='badge bg-red mb-2'
+                            />
+                            <span
+                                v-else
+                                style='width: 10px;'
+                            />
+                        </div>
+                    </template>
+                    <template #dropdown>
+                        <TablerNone
+                            v-if='!notifications.length'
+                            label='New Notifications'
+                            :create='false'
+                        />
+                        <template v-else>
+                            <div class='col-12 d-flex py-2 px-2'>
+                                <div
+                                    class='ms-auto cursor-pointer'
+                                    @click='clearNotifications'
+                                >
+                                    Clear All
+                                </div>
+                            </div>
+                            <div
+                                v-for='n of notifications'
+                                class='col-12 px-2 py-2'
+                            >
+                                <div
+                                    v-if='n.type === "Chat"'
+                                    class='col-12 cursor-pointer hover-dark'
+                                    @click='$router.push(n.url)'
+                                >
+                                    <IconMessage
+                                        :size='32'
+                                        :stroke='1'
+                                    />
+                                    <span v-text='n.name' />
+                                </div>
+                            </div>
+                        </template>
+                    </template>
+                </TablerDropdown>
+                <TablerDropdown>
+                    <template #default>
+                        <IconPencil
+                            :size='40'
+                            :stroke='1'
+                            class='mx-2 cursor-pointer hover-button'
+                            @click='closeAllMenu'
+                        />
+                    </template>
+                    <template #dropdown>
+                        <div
+                            class='col-12 py-1 px-2 hover-button cursor-pointer'
+                            @click='pointInput = true'
+                        >
+                            <IconCursorText
+                                :size='25'
+                                :stroke='1'
+                            /> Coordinate Input
+                        </div>
+                        <div
+                            class='col-12 py-1 px-2 hover-button cursor-pointer'
+                            @click='startDraw("point")'
+                        >
+                            <IconPoint
+                                :size='25'
+                                :stroke='1'
+                            /> Draw Point
+                        </div>
+                        <div
+                            class='col-12 py-1 px-2 hover-button cursor-pointer'
+                            @click='startDraw("linestring")'
+                        >
+                            <IconLine
+                                :size='25'
+                                :stroke='1'
+                            /> Draw Line
+                        </div>
+                        <div
+                            class='col-12 py-1 px-2 hover-button cursor-pointer'
+                            @click='startDraw("polygon")'
+                        >
+                            <IconPolygon
+                                :size='25'
+                                :stroke='1'
+                            /> Draw Polygon
+                        </div>
+                        <div
+                            class='col-12 py-1 px-2 hover-button cursor-pointer'
+                            @click='startDraw("rectangle")'
+                        >
+                            <IconVector
+                                :size='25'
+                                :stroke='1'
+                            /> Draw Rectangle
+                        </div>
+                    </template>
+                </TablerDropdown>
+            </div>
+
+            <SideMenu
+                v-if='isLoaded && !pointInput'
+                :compact='noMenuShown'
+                @reset='deleteCOT()'
+            />
+
+            <MultipleSelect
+                v-if='select.feats.length'
+            />
+
+            <RadialMenu
+                v-else-if='radial.mode'
+                ref='radial'
+                @close='closeRadial'
+                @click='handleRadial($event)'
+            />
+
+            <CloudTAKFeatView
+                v-if='feat && mode === "Default"'
+                :key='feat.id'
+                :feat='feat'
+            />
+
+            <template v-if='upload.shown'>
+                <TablerModal>
+                    <div class='modal-status bg-red' />
+                    <button
+                        type='button'
+                        class='btn-close'
+                        aria-label='Close'
+                        @click='upload.shown = false'
+                    />
+                    <div class='modal-body text-white'>
+                        <UploadImport
+                            :dragging='upload.dragging'
+                            :cancel-button='false'
+                            @close='upload.shown = false'
+                            @done='fileUpload($event)'
+                        />
+                    </div>
+                </TablerModal>
+            </template>
         </template>
     </div>
 </template>
@@ -388,7 +390,7 @@ import {
     TablerInput,
     TablerNone,
 } from '@tak-ps/vue-tabler';
-import Loading from '../Loading.vue';
+import Loading from './Loading.vue';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import RadialMenu from './RadialMenu/RadialMenu.vue';
 import { mapState, mapActions } from 'pinia'
@@ -455,10 +457,15 @@ export default {
             this.$emit('err', new Error(evt.message));
         });
 
-        await profileStore.loadChannels();
+        await this.mountMap();
+
+        await Promise.all([
+            profileStore.loadChannels(),
+            cotStore.loadArchive()
+        ]);
+
         this.warnChannels = profileStore.hasNoChannels;
 
-        await cotStore.loadArchive();
         this.loading.main = false;
 
         window.addEventListener('dragover', (e) => {
@@ -484,10 +491,6 @@ export default {
         });
 
         connectionStore.connectSocket(this.user.email);
-
-        this.$nextTick(async () => {
-            return await this.mountMap();
-        });
     },
     data: function() {
         return {
