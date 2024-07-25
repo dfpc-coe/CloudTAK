@@ -382,6 +382,16 @@ export const useMapStore = defineStore('cloudtak', {
                 adapter: new terraDraw.TerraDrawMapLibreGLAdapter({
                     map: this.map
                 }),
+                idStrategy: {
+                    isValidId: (id: string | number): boolean => {
+                        return typeof id === "string"
+                    },
+                    getId: (function () {
+                        return function () {
+                            return crypto.randomUUID()
+                        };
+                    })()
+                },
                 modes: [
                     new terraDraw.TerraDrawPointMode(),
                     new terraDraw.TerraDrawLineStringMode(),

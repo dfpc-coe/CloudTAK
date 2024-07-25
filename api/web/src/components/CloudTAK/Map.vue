@@ -651,6 +651,11 @@ export default {
                 feat.properties.mode = 'linestring';
             } else if (feat.geometry.type === 'Point') {
                 feat.properties.mode = 'point';
+
+                // TODO: Eventually retain if unchanged or just drop, not sure what's best
+                if (feat.geometry.coordinates.length > 2) {
+                    feat.geometry.coordinates.splice(2);
+                }
             }
 
             cotStore.hidden.add(feat.id);
