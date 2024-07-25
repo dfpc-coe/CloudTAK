@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v2.77.2 - 2024-07-25
+
+- :rocket: `UI` Fix ID Strategy bug with TerraDraw
+
 ### v2.77.1 - 2024-07-24
 
 - :rocket: `UI` Add ability to delete Import
