@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v2.78.0 - 2024-07-25
+
+- :rocket: `UI` Parallel init & hide map interactions until map is loaded
+
 ### v2.77.2 - 2024-07-25
 
 - :rocket: `UI` Fix ID Strategy bug with TerraDraw
