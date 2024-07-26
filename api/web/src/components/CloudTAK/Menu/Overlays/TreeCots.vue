@@ -1,5 +1,13 @@
 <template>
-    <TablerLoading v-if='loadingPaths[element.id] === true' />
+    <DeleteModal
+        v-if='deleteMarkerModal.shown'
+        :size='20'
+        displaytype='icon'
+        @close='deleteMarkerModal.shown = false'
+        @click='deleteMarkers(deleteMarkerModal.marker)'
+    />
+
+    <TablerLoading v-if='loading' />
     <template v-else>
         <div
             v-if='groups().length'
@@ -81,7 +89,7 @@
             v-if='markers().length'
             class='ms-3'
         >
-            <div class='align-items-center px-3 py-2 me-2 hover-button'>
+            <div class='d-flex align-items-center px-3 py-2 me-2 hover-button'>
                 <IconChevronRight
                     v-if='!treeState.markers._'
                     :size='20'
@@ -101,6 +109,17 @@
                     :stroke='2'
                     class='mx-2'
                 /> Markers
+
+                <div
+                    class='ms-auto btn-list hover-button-hidden'
+                >
+                    <IconTrash
+                        :size='20'
+                        :stroke='1'
+                        class='cursor-pointer'
+                        @click='deleteMarkers()'
+                    />
+                </div>
             </div>
 
             <template v-if='treeState.markers._'>
@@ -128,18 +147,26 @@
                             :size='20'
                             :stroke='2'
                         /> <span v-text='marker' />
+
+                        <div class='ms-auto btn-list hover-button-hidden'>
+                            <IconTrash
+                                :size='20'
+                                :stroke='1'
+                                class='cursor-pointer'
+                                @click='deleteMarkers(marker)'
+                            />
+                        </div>
                     </div>
 
                     <template v-if='treeState.markers[marker]'>
-                        <div
-                            class='ms-3 d-flex align-items-center hover-button px-3 py-2 me-2'
-                        >
-                            <Feature
-                                v-for='cot of markerFeatures(marker)'
-                                :key='cot.id'
-                                class='ms-3'
-                                :feature='cot'
-                            />
+                        <div class='ms-3'>
+                            <div class='ms-3'>
+                                <Feature
+                                    v-for='cot of markerFeatures(marker)'
+                                    :key='cot.id'
+                                    :feature='cot'
+                                />
+                            </div>
                         </div>
                     </template>
                 </div>
@@ -150,7 +177,7 @@
             v-if='paths.length'
             class='ms-3'
         >
-            <div class='align-items-center px-3 py-2 me-2 hover-button'>
+            <div class='d-flex align-items-center px-3 py-2 me-2 hover-button'>
                 <IconChevronRight
                     v-if='!treeState.paths._'
                     :size='20'
@@ -170,20 +197,27 @@
                     :size='20'
                     :stroke='2'
                 /> Your Features
+
+                <div class='ms-auto btn-list hover-button-hidden'>
+                    <TablerDelete
+                        :size='20'
+                        class='cursor-pointer'
+                        displaytype='icon'
+                        @delete='deleteFeatures("/")'
+                    />
+                </div>
             </div>
 
             <template v-if='treeState.paths._'>
-                <div
-                    v-for='path in paths'
-                    class='d-flex align-items-center hover-button px-3 py-2'
-                >
+                <div v-for='path in paths'>
                     <template v-if='path.path === "/"'>
-                        <Feature
-                            v-for='cot of pathFeatures(path.path)'
-                            :key='cot.id'
-                            class='ms-3'
-                            :feature='cot'
-                        />
+                        <div class='ms-3'>
+                            <Feature
+                                v-for='cot of pathFeatures(path.path)'
+                                :key='cot.id'
+                                :feature='cot'
+                            />
+                        </div>
                     </template>
                     <template v-else>
                         <IconFolder
@@ -220,8 +254,10 @@ import {
 import Contact from '../../util/Contact.vue';
 import Feature from '../../util/Feature.vue';
 import ContactPuck from '../../util/ContactPuck.vue';
+import DeleteModal from './DeleteModal.vue';
 import {
     IconMapPin,
+    IconTrash,
     IconChevronRight,
     IconChevronDown,
     IconFolder,
@@ -237,6 +273,8 @@ export default {
         Contact,
         TablerLoading,
         TablerDelete,
+        DeleteModal,
+        IconTrash,
         IconMapPin,
         IconChevronRight,
         IconChevronDown,
@@ -248,6 +286,10 @@ export default {
     data: function() {
         return {
             loading: false,
+            deleteMarkerModal: {
+                shown: false,
+                marker: null
+            },
             treeState: {
                 teams: {
                     _: false
@@ -259,7 +301,6 @@ export default {
                     _: false
                 }
             },
-            loadingPaths: {}
         }
     },
     computed: {
@@ -271,6 +312,40 @@ export default {
         pathFeatures: function(path) {
             return cotStore.pathFeatures(cotStore.cots, path);
         },
+        deleteMarkers: async function(marker) {
+            if (!this.deleteMarkerModal.shown) {
+                this.deleteMarkerModal.shown = true;
+                this.deleteMarkerModal.marker = marker;
+                return;
+            } else {
+                this.deleteMarkerModal.shown = false;
+            }
+
+            this.loading = true;
+
+            if (marker) {
+                this.treeState.markers[marker] = false;
+            }
+
+            for (const feat of cotStore.markerFeatures(cotStore.cots, marker)) {
+                await cotStore.delete(feat.id);
+            }
+
+            this.loading = false;
+        },
+        deleteFeatures: async function(path) {
+            this.loading = true;
+
+            if (path) {
+                this.treeState.paths[path] = false;
+            }
+
+            for (const feat of cotStore.pathFeatures(cotStore.cots, path)) {
+                await cotStore.delete(feat.id);
+            }
+
+            this.loading = false;
+        },
         markerFeatures: function(marker) {
             return cotStore.markerFeatures(cotStore.cots, marker);
         },
@@ -281,16 +356,16 @@ export default {
         deletePath: async function(layer, path) {
             if (layer.id !== 'cots') return;
 
-            this.loadingPaths[layer.id] = true;
+            this.loading = true;
 
             try {
                 await cotStore.deletePath(path);
             } catch (err) {
-                this.loadingPaths[layer.id] = false;
+                this.loading = false;
                 throw err;
             }
 
-            this.loadingPaths[layer.id] = false;
+            this.loading = false;
         },
         markers: function() {
             const markers = cotStore.markers();
