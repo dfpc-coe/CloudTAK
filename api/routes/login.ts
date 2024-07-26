@@ -23,7 +23,7 @@ export default async function router(schema: Schema, config: Config) {
         })
     }, async (req, res) => {
         try {
-            const email = await provider.login(req.body.username, req.body.password);
+            const email = await provider.login(req.body.username.toLowerCase(), req.body.password);
 
             if (config.server.provider_url) {
                 try {

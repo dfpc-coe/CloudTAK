@@ -12,7 +12,11 @@
 
 ### Pending Release
 
-### v2.80.0 - 2024-07-25
+### v2.80.1 - 2024-07-26
+
+- :bug: `API` Ensure emails are always lowercased
+
+### v2.80.0 - 2024-07-26
 
 - :rocket: `UI` Allow deleting CoTs or Groups of CoTs from TreeCoT Overlay view
 
