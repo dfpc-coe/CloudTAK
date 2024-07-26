@@ -1,10 +1,10 @@
 <template>
     <DeleteModal
         :size='20'
-        v-if='deleteModal.shown'
+        v-if='deleteMarkerModal.shown'
         displaytype='icon'
-        @close='deleteModal.shown = false'
-        @click='deleteMarkers(deleteModal.marker)'
+        @close='deleteMarkerModal.shown = false'
+        @click='deleteMarkers(deleteMarkerModal.marker)'
     />
 
     <TablerLoading v-if='loading' />
@@ -177,7 +177,7 @@
             v-if='paths.length'
             class='ms-3'
         >
-            <div class='align-items-center px-3 py-2 me-2 hover-button'>
+            <div class='d-flex align-items-center px-3 py-2 me-2 hover-button'>
                 <IconChevronRight
                     v-if='!treeState.paths._'
                     :size='20'
@@ -197,20 +197,27 @@
                     :size='20'
                     :stroke='2'
                 /> Your Features
+
+                <div class='ms-auto btn-list hover-button-hidden'>
+                    <TablerDelete
+                        :size='20'
+                        class='cursor-pointer'
+                        displaytype='icon'
+                        @delete='deleteFeatures("/")'
+                    />
+                </div>
             </div>
 
             <template v-if='treeState.paths._'>
-                <div
-                    v-for='path in paths'
-                    class='d-flex align-items-center hover-button px-3 py-2'
-                >
+                <div v-for='path in paths'>
                     <template v-if='path.path === "/"'>
-                        <Feature
-                            v-for='cot of pathFeatures(path.path)'
-                            :key='cot.id'
-                            class='ms-3'
-                            :feature='cot'
-                        />
+                        <div class='ms-3'>
+                            <Feature
+                                v-for='cot of pathFeatures(path.path)'
+                                :key='cot.id'
+                                :feature='cot'
+                            />
+                        </div>
                     </template>
                     <template v-else>
                         <IconFolder
@@ -279,7 +286,7 @@ export default {
     data: function() {
         return {
             loading: false,
-            deleteModal: {
+            deleteMarkerModal: {
                 shown: false,
                 marker: null
             },
@@ -306,12 +313,12 @@ export default {
             return cotStore.pathFeatures(cotStore.cots, path);
         },
         deleteMarkers: async function(marker) {
-            if (!this.deleteModal.shown) {
-                this.deleteModal.shown = true;
-                this.deleteModal.marker = marker;
+            if (!this.deleteMarkerModal.shown) {
+                this.deleteMarkerModal.shown = true;
+                this.deleteMarkerModal.marker = marker;
                 return;
             } else {
-                this.deleteModal.shown = false;
+                this.deleteMarkerModal.shown = false;
             }
 
             this.loading = true;
@@ -321,6 +328,19 @@ export default {
             }
 
             for (const feat of cotStore.markerFeatures(cotStore.cots, marker)) {
+                await cotStore.delete(feat.id);
+            }
+
+            this.loading = false;
+        },
+        deleteFeatures: async function(path) {
+            this.loading = true;
+
+            if (path) {
+                this.treeState.paths[path] = false;
+            }
+
+            for (const feat of cotStore.pathFeatures(cotStore.cots, path)) {
                 await cotStore.delete(feat.id);
             }
 
