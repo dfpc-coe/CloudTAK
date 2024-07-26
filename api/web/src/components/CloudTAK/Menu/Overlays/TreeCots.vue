@@ -81,7 +81,7 @@
             v-if='markers().length'
             class='ms-3'
         >
-            <div class='align-items-center px-3 py-2 me-2 hover-button'>
+            <div class='d-flex align-items-center px-3 py-2 me-2 hover-button'>
                 <IconChevronRight
                     v-if='!treeState.markers._'
                     :size='20'
@@ -101,6 +101,16 @@
                     :stroke='2'
                     class='mx-2'
                 /> Markers
+
+                <div
+                    class='ms-auto btn-list hover-button-hidden'
+                >
+                    <TablerDelete
+                        :size='20'
+                        displaytype='icon'
+                        @click='deleteMarkers()'
+                    />
+                </div>
             </div>
 
             <template v-if='treeState.markers._'>
@@ -128,18 +138,25 @@
                             :size='20'
                             :stroke='2'
                         /> <span v-text='marker' />
+
+                        <div class='ms-auto btn-list hover-button-hidden'>
+                            <TablerDelete
+                                :size='20'
+                                displaytype='icon'
+                                @click='deleteMarkers(marker)'
+                            />
+                        </div>
                     </div>
 
                     <template v-if='treeState.markers[marker]'>
-                        <div
-                            class='ms-3 d-flex align-items-center hover-button px-3 py-2 me-2'
-                        >
-                            <Feature
-                                v-for='cot of markerFeatures(marker)'
-                                :key='cot.id'
-                                class='ms-3'
-                                :feature='cot'
-                            />
+                        <div class='ms-3'>
+                            <div class='ms-3'>
+                                <Feature
+                                    v-for='cot of markerFeatures(marker)'
+                                    :key='cot.id'
+                                    :feature='cot'
+                                />
+                            </div>
                         </div>
                     </template>
                 </div>
@@ -270,6 +287,9 @@ export default {
     methods: {
         pathFeatures: function(path) {
             return cotStore.pathFeatures(cotStore.cots, path);
+        },
+        markerDelete: function(marker) {
+            // TODO
         },
         markerFeatures: function(marker) {
             return cotStore.markerFeatures(cotStore.cots, marker);

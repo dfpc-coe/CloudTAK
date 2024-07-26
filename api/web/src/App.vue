@@ -245,18 +245,26 @@ export default {
 </script>
 
 <style>
+.hover-button-hidden {
+    visibility: hidden;
+}
+
+.hover-button:hover .hover-button-hidden {
+    visibility: visible;
+}
+
 .hover-light:hover {
     background: #f5f5f5;
 }
 
 .border-light {
     border-radius: 6px;
-    background-color: rgba(0, 0, 0, 0.3);
+    background-color: rgba(0, 0, 0, 0.2);
 }
 
 .hover-button:hover {
     border-radius: 6px;
-    background-color: rgba(0, 0, 0, 0.3);
+    background-color: rgba(0, 0, 0, 0.2);
 }
 
 .hover-dark:hover {
