@@ -48,7 +48,7 @@
                     :size='compact ? 20 : 32'
                     :stroke='1'
                     class='cursor-pointer'
-                    @click='$emit("chat", contact.uid)'
+                    @click='$emit("chat", contact)'
                 />
             </div>
         </div>
