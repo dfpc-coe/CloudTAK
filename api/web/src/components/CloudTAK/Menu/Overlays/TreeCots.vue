@@ -1,4 +1,12 @@
 <template>
+    <DeleteModal
+        :size='20'
+        v-if='deleteModal.shown'
+        displaytype='icon'
+        @close='deleteModal.shown = false'
+        @click='deleteMarkers(deleteModal.marker)'
+    />
+
     <TablerLoading v-if='loadingPaths[element.id] === true' />
     <template v-else>
         <div
@@ -105,9 +113,10 @@
                 <div
                     class='ms-auto btn-list hover-button-hidden'
                 >
-                    <TablerDelete
+                    <IconTrash
                         :size='20'
-                        displaytype='icon'
+                        :stroke='1'
+                        class='cursor-pointer'
                         @click='deleteMarkers()'
                     />
                 </div>
@@ -140,9 +149,10 @@
                         /> <span v-text='marker' />
 
                         <div class='ms-auto btn-list hover-button-hidden'>
-                            <TablerDelete
+                            <IconTrash
                                 :size='20'
-                                displaytype='icon'
+                                :stroke='1'
+                                class='cursor-pointer'
                                 @click='deleteMarkers(marker)'
                             />
                         </div>
@@ -237,8 +247,10 @@ import {
 import Contact from '../../util/Contact.vue';
 import Feature from '../../util/Feature.vue';
 import ContactPuck from '../../util/ContactPuck.vue';
+import DeleteModal from './DeleteModal.vue';
 import {
     IconMapPin,
+    IconTrash,
     IconChevronRight,
     IconChevronDown,
     IconFolder,
@@ -254,6 +266,8 @@ export default {
         Contact,
         TablerLoading,
         TablerDelete,
+        DeleteModal,
+        IconTrash,
         IconMapPin,
         IconChevronRight,
         IconChevronDown,
@@ -265,6 +279,10 @@ export default {
     data: function() {
         return {
             loading: false,
+            deleteModal: {
+                shown: false,
+                marker: null
+            },
             treeState: {
                 teams: {
                     _: false
@@ -288,8 +306,18 @@ export default {
         pathFeatures: function(path) {
             return cotStore.pathFeatures(cotStore.cots, path);
         },
-        markerDelete: function(marker) {
-            // TODO
+        deleteMarkers: async function(marker) {
+            if (!this.deleteModal.shown) {
+                this.deleteModal.shown = true;
+                this.deleteModal.marker = marker;
+                return;
+            } else {
+                this.deleteModal.shown = false;
+            }
+
+            for (const feat of cotStore.markerFeatures(cotStore.cots, marker)) {
+                await cotStore.delete(feat.id);
+            }
         },
         markerFeatures: function(marker) {
             return cotStore.markerFeatures(cotStore.cots, marker);
