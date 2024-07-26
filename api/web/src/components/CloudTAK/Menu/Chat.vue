@@ -10,7 +10,7 @@
                 />
                 <div
                     class='modal-title'
-                    v-text='$route.params.chatroom'
+                    v-text='name'
                 />
                 <div class='btn-list'>
                     <IconRefresh
@@ -44,7 +44,7 @@
                 </div>
 
                 <div class='border-top border-blue position-absolute start-0 bottom-0 end-0'>
-                    <div class='row mx-2'>
+                    <div class='row mx-2 mt-2'>
                         <div class='col-12'>
                             <TablerInput
                                 v-model='message'
@@ -93,6 +93,7 @@ export default {
         return {
             id: `ANDROID-CloudTAK-${profileStore.profile.username}`,
             loading: false,
+            name: this.$route.params.chatroom === 'new' ? this.$route.query.callsign : this.$route.params.chatroom,
             chats: {
                 total: 0,
                 items: []
@@ -113,11 +114,19 @@ export default {
             this.chats.items.push(chat)
             this.message = ''
 
-            const single = this.chats.items.filter((chat) => {
-                return chat.sender_uid !== this.id
-            })[0];
+            let single;
+            if (this.$route.query.uid && this.$route.query.callsign) {
+                single = {
+                    sender_uid: this.$route.query.uid,
+                    sender_callsign: this.$route.query.callsign
+                }
+            } else {
+                single = this.chats.items.filter((chat) => {
+                    return chat.sender_uid !== this.id
+                })[0];
+            }
 
-            if (!single) throw new Error('Contact is not defined');
+            if (!single) throw new Error('Error sending Chat - Contact is not defined');
 
             connectionStore.sendCOT({
                 chatroom: single.sender_callsign,
@@ -134,7 +143,13 @@ export default {
         },
         fetchChats: async function() {
             this.loading = true;
-            this.chats = await std(`/api/profile/chat/${encodeURIComponent(this.$route.params.chatroom)}`);
+
+            if (this.$route.params.chatroom === 'new') {
+                const chats = await std(`/api/profile/chat/${encodeURIComponent(this.$route.query.uid)}`);
+            } else {
+                this.chats = await std(`/api/profile/chat/${encodeURIComponent(this.$route.params.chatroom)}`);
+            }
+
             this.loading = false;
         }
     }

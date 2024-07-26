@@ -37,7 +37,7 @@
                 >
                     <Contact
                         :contact='a'
-                        @chat='$router.push(`/menu/chats/${$event}`)'
+                        @chat='$router.push(`/menu/chats/new?callsign=${$event.callsign}&uid=${$event.uid}`)'
                     />
                 </div>
 
@@ -47,10 +47,7 @@
                     :key='a.id'
                     class='col-lg-12'
                 >
-                    <Contact
-                        :contact='a'
-                        @chat='$router.push(`/menu/chats/${$event}`)'
-                    />
+                    <Contact :contact='a' :buttonChat='false'/>
                 </div>
             </template>
         </template>
