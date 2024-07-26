@@ -7,7 +7,7 @@
         @click='deleteMarkers(deleteModal.marker)'
     />
 
-    <TablerLoading v-if='loadingPaths[element.id] === true' />
+    <TablerLoading v-if='loading' />
     <template v-else>
         <div
             v-if='groups().length'
@@ -294,7 +294,6 @@ export default {
                     _: false
                 }
             },
-            loadingPaths: {}
         }
     },
     computed: {
@@ -315,9 +314,17 @@ export default {
                 this.deleteModal.shown = false;
             }
 
+            this.loading = true;
+
+            if (marker) {
+                this.treeState.markers[marker] = false;
+            }
+
             for (const feat of cotStore.markerFeatures(cotStore.cots, marker)) {
                 await cotStore.delete(feat.id);
             }
+
+            this.loading = false;
         },
         markerFeatures: function(marker) {
             return cotStore.markerFeatures(cotStore.cots, marker);
@@ -329,16 +336,16 @@ export default {
         deletePath: async function(layer, path) {
             if (layer.id !== 'cots') return;
 
-            this.loadingPaths[layer.id] = true;
+            this.loading = true;
 
             try {
                 await cotStore.deletePath(path);
             } catch (err) {
-                this.loadingPaths[layer.id] = false;
+                this.loading = false;
                 throw err;
             }
 
-            this.loadingPaths[layer.id] = false;
+            this.loading = false;
         },
         markers: function() {
             const markers = cotStore.markers();
