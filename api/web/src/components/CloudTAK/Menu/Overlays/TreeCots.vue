@@ -1,7 +1,7 @@
 <template>
     <DeleteModal
-        :size='20'
         v-if='deleteMarkerModal.shown'
+        :size='20'
         displaytype='icon'
         @close='deleteMarkerModal.shown = false'
         @click='deleteMarkers(deleteMarkerModal.marker)'

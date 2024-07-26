@@ -1,19 +1,33 @@
 <template>
-<TablerModal>
-    <button type="button" class="btn-close" @click='modal = false' aria-label="Close"></button>
-    <div class="modal-status bg-red"></div>
-    <div class="modal-header text-center py-4">
-        Deletion Confirmation
-    </div>
-    <div class="modal-body text-center py-4">
-        Are you sure you wish to perform this deletion?
-    </div>
-    <div class="modal-footer">
-        <div @click='$emit("delete")' class="btn btn-danger">
-            <IconTrash :size='32' :stroke='1'/><span class='mx-2' v-text='label'/>
+    <TablerModal>
+        <button
+            type='button'
+            class='btn-close'
+            aria-label='Close'
+            @click='modal = false'
+        />
+        <div class='modal-status bg-red' />
+        <div class='modal-header text-center py-4'>
+            Deletion Confirmation
         </div>
-    </div>
-</TablerModal>
+        <div class='modal-body text-center py-4'>
+            Are you sure you wish to perform this deletion?
+        </div>
+        <div class='modal-footer'>
+            <div
+                class='btn btn-danger'
+                @click='$emit("delete")'
+            >
+                <IconTrash
+                    :size='32'
+                    :stroke='1'
+                /><span
+                    class='mx-2'
+                    v-text='label'
+                />
+            </div>
+        </div>
+    </TablerModal>
 </template>
 
 <script>
@@ -26,6 +40,10 @@ import {
 
 export default {
     name: 'OverlayDelete',
+    components: {
+        IconTrash,
+        TablerModal
+    },
     props: {
         label: {
             type: String,
@@ -50,10 +68,6 @@ export default {
             this.loading = true;
             this.$emit('delete')
         }
-    },
-    components: {
-        IconTrash,
-        TablerModal
     }
 }
 </script>
