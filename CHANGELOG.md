@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v2.80.0 - 2024-07-25
+
+- :rocket: `UI` Allow deleting CoTs or Groups of CoTs from TreeCoT Overlay view
+
 ### v2.79.0 - 2024-07-25
 
 - :rocket: `UI` Parallel init & hide map interactions until map is loaded

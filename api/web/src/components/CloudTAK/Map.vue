@@ -697,9 +697,10 @@ export default {
                 cotStore.pending.clear();
 
                 for (const id of cotStore.pendingDelete) {
-                    await cotStore.delete(id)
                     diff.remove.push(id);
+                    cotStore.cots.delete(id);
                 }
+
                 cotStore.pendingDelete.clear();
 
                 if (diff.add.length || diff.remove.length || diff.update.length) {

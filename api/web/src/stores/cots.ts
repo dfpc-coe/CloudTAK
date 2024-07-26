@@ -80,7 +80,6 @@ export const useCOTStore = defineStore('cots', {
                     }
                 }
 
-                console.error('UPDATING', updateGuid);
                 if (updateGuid) {
                     const mapStore = useMapStore();
                     mapStore.updateMissionData(updateGuid);

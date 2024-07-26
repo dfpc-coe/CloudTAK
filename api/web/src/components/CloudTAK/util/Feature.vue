@@ -11,34 +11,42 @@
     />
     <div
         v-else
-        class='col-12'
+        class='d-flex align-items-center px-3 py-2 me-2'
         :class='{
             "cursor-pointer": isZoomable,
             "cursor-default": !isZoomable,
-            "hover-dark": hover,
+            "hover-button": hover,
             "py-2": !compact
         }'
         @click='flyTo'
     >
-        <div class='row col-12 align-items-center'>
-            <div class='col-auto'>
-                <IconMapPin
-                    :size='20'
-                    :stroke='1'
-                />
-            </div>
-            <div class='col-8'>
-                <div
-                    class='text-truncate'
-                    v-text='feature.properties.callsign'
-                />
-            </div>
+        <IconMapPin
+            :size='20'
+            :stroke='1'
+            class='me-2'
+        />
+        <div
+            class='text-truncate'
+            v-text='feature.properties.callsign'
+        />
+
+        <div
+            class='ms-auto btn-list hover-button-hidden'
+        >
+            <TablerDelete
+                :size='20'
+                displaytype='icon'
+                @click='deleteCOT'
+            />
         </div>
     </div>
 </template>
 
 <script>
 import Contact from './Contact.vue';
+import {
+    TablerDelete
+} from '@tak-ps/vue-tabler';
 import {
     IconMapPin
 } from '@tabler/icons-vue';
@@ -51,6 +59,7 @@ export default {
     name: 'TAKFeature',
     components: {
         Contact,
+        TablerDelete,
         IconMapPin
     },
     props: {
@@ -73,6 +82,9 @@ export default {
         },
     },
     methods: {
+        deleteCOT: async function() {
+            await cotStore.delete(this.feature.id);
+        },
         flyTo: function() {
             if (!this.isZoomable) return;
 
