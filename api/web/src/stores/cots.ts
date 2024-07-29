@@ -398,7 +398,7 @@ export const useCOTStore = defineStore('cots', {
                     }
 
                     const mapStore = useMapStore();
-                    if (!mapStore.map.hasImage(feat.properties.icon)) {
+                    if (mapStore.map && !mapStore.map.hasImage(feat.properties.icon)) {
                         console.warn(`No Icon for: ${feat.id}::${feat.properties.icon} fallback to ${feat.properties.type}`);
                         feat.properties.icon = `${feat.properties.type}`;
                     }
