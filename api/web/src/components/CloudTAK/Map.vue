@@ -189,20 +189,98 @@
             </div>
 
             <div
-                v-if='false'
-                class='position-absolute top-0 text-white bg-dark'
+                v-if='drawMode === "point"'
+                class='position-absolute top-0 text-white bg-dark px-2 py-2'
                 style='
                     z-index: 1;
-                    left: calc(50% - 100px);
-                    width: 200px;
+                    left: calc(50% - 120px);
+                    width: 380px;
                 '
             >
-                <IconPoint
-                    :size='40'
-                    :stroke='1'
-                />
+                <div
+                    class='btn-group'
+                    role='group'
+                >
+                    <input
+                        id='point-default'
+                        type='radio'
+                        class='btn-check'
+                        name='point-type'
+                        autocomplete='off'
+                        :checked='drawModePoint === "u-d-p"'
+                        @click='drawModePoint = "u-d-p"'
+                    >
+                    <label
+                        for='point-default'
+                        type='button'
+                        class='btn'
+                        v-tooltip='"Custom Point"'
+                    ><IconPoint :size='40' :stroke='1'/></label>
 
-                <img :url='`/api/iconset/default/icon/a-f-g/raw`'/>
+                    <input
+                        id='point-unknown'
+                        type='radio'
+                        class='btn-check'
+                        name='point-type'
+                        autocomplete='off'
+                        :checked='drawModePoint === "a-u-G"'
+                        @click='drawModePoint = "a-u-G"'
+                    >
+                    <label
+                        for='point-unknown'
+                        type='button'
+                        class='btn'
+                        v-tooltip='"Unknown Point"'
+                    ><img width='40' height='40' src='/icons/a-u-G.png'/></label>
+
+                    <input
+                        id='point-friendly'
+                        type='radio'
+                        class='btn-check'
+                        name='point-type'
+                        autocomplete='off'
+                        :checked='drawModePoint === "a-f-G"'
+                        @click='drawModePoint = "a-f-G"'
+                    >
+                    <label
+                        for='point-friendly'
+                        type='button'
+                        class='btn'
+                        v-tooltip='"Friendly Point"'
+                    ><img width='40' height='40' src='/icons/a-f-G.png'/></label>
+
+                    <input
+                        id='point-hostile'
+                        type='radio'
+                        class='btn-check'
+                        name='point-type'
+                        autocomplete='off'
+                        :checked='drawModePoint === "a-h-G"'
+                        @click='drawModePoint = "a-h-G"'
+                    >
+                    <label
+                        for='point-hostile'
+                        type='button'
+                        class='btn'
+                        v-tooltip='"Hostile Point"'
+                    ><img width='40' height='40' src='/icons/a-h-G.png'/></label>
+
+                    <input
+                        id='point-neutral'
+                        type='radio'
+                        class='btn-check'
+                        name='point-type'
+                        autocomplete='off'
+                        :checked='drawModePoint === "a-n-G"'
+                        @click='drawModePoint = "a-n-G"'
+                    >
+                    <label
+                        for='point-neutral'
+                        type='button'
+                        class='btn'
+                        v-tooltip='"Neutral Point"'
+                    ><img width='40' height='40' src='/icons/a-n-G.png'/></label>
+                </div>
             </div>
 
             <div
@@ -518,6 +596,8 @@ export default {
                 filter: '',
                 results: []
             },
+            drawMode: 'static', // Set the terra-draw mode to avoid getMode() calls
+            drawModePoint: 'u-d-p',
             pointInput: false,
             feat: null,         // Show the Feat Viewer sidebar
             locked: [],         // Lock the map view to a given CoT - The last element is the currently locked value
@@ -627,6 +707,7 @@ export default {
         startDraw: function(type) {
             mapStore.draw.start();
             mapStore.draw.setMode(type);
+            this.drawMode = type;
         },
         handleRadial: async function(event) {
             if (event === 'cot:view') {
@@ -663,6 +744,7 @@ export default {
             mapStore.edit = cot;
             mapStore.draw.start();
             mapStore.draw.setMode('select');
+            this.drawMode = 'select';
             const feat = cotStore.get(cot.id, { clone: true });
 
             if (feat.geometry.type === 'Polygon') {
@@ -779,6 +861,7 @@ export default {
                     mapStore.edit = null
 
                     mapStore.draw.setMode('static');
+                    this.drawMode = 'static';
                     mapStore.draw.stop();
 
                     cotStore.cots.delete(feat.id);
@@ -809,13 +892,14 @@ export default {
                     } else if (mapStore.draw.getMode() === 'linestring') {
                         feat.properties.type = 'u-d-f';
                     } else if (mapStore.draw.getMode() === 'point') {
-                        feat.properties.type = 'u-d-p';
+                        feat.properties.type = this.drawModePoint || 'u-d-p';
                         feat.properties["marker-opacity"] = 1;
                         feat.properties["marker-color"] = '#00FF00';
                     }
 
                     mapStore.draw._store.delete([id]);
                     mapStore.draw.setMode('static');
+                    this.drawMode = 'static';
                     mapStore.draw.stop();
                     await cotStore.add(feat);
                     await this.updateCOT();

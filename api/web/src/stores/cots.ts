@@ -396,6 +396,12 @@ export const useCOTStore = defineStore('cots', {
                     if (feat.properties.icon.endsWith('.png')) {
                         feat.properties.icon = feat.properties.icon.replace(/.png$/, '');
                     }
+
+                    const mapStore = useMapStore();
+                    if (mapStore.map && !mapStore.map.hasImage(feat.properties.icon)) {
+                        console.warn(`No Icon for: ${feat.id}::${feat.properties.icon} fallback to ${feat.properties.type}`);
+                        feat.properties.icon = `${feat.properties.type}`;
+                    }
                 } else {
                     // TODO Only add icon if one actually exists in the spritejson
                     if (!['u-d-p'].includes(feat.properties.type)) {
