@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v2.80.2 - 2024-07-29
+
+- :bug: `UI` Ensure basemap creation on initial account creation doesn't error
+
 ### v2.80.1 - 2024-07-26
 
 - :bug: `API` Ensure emails are always lowercased
