@@ -187,18 +187,29 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
             this.cots(connConfig, [cot], ephemeral);
         }).on('secureConnect', async () => {
             for (const sub of await connConfig.subscriptions()) {
-                try {
+                let retry = true;
+                do {
+                    try {
+                        await api.Mission.subscribe(sub.name, {
+                            uid: connConfig.uid()
+                        },{
+                            token: sub.token
+                        });
 
-                    await api.Mission.subscribe(sub.name, {
-                        uid: connConfig.uid()
-                    },{
-                        token: sub.token
-                    });
+                        console.log(`Connection: ${connConfig.id} - Sync: ${sub.name}: Subscribed!`);
+                        retry = false;
+                    } catch (err) {
+                        console.warn(`Connection: ${connConfig.id} (${connConfig.uid()}) - Sync: ${sub.name}: ${err.message}`);
 
-                    console.log(`Connection: ${connConfig.id} - Sync: ${sub.name}: Subscribed!`);
-                } catch (err) {
-                    console.warn(`Connection: ${connConfig.id} (${connConfig.uid()}) - Sync: ${sub.name}: ${err.message}`);
-                }
+                        if (err.message.includes('ECONNREFUSED')) {
+                            await sleep(1000);
+                        } else {
+                            // We don't retry for unknown issues as it could be the Sync has been remotely deleted and will
+                            // retry forwever
+                            retry = false;
+                        }
+                    }
+                } while (retry)
             }
         }).on('end', async () => {
             console.error(`not ok - ${connConfig.id} - ${connConfig.name} @ end`);
@@ -223,19 +234,11 @@ export default class ConnectionPool extends Map<number | string, ConnectionClien
     }
 
     async retry(connClient: ConnectionClient) {
-        if (connClient.initial) {
-            if (connClient.retry >= 5) return; // These are considered stalled connections
-            connClient.retry++
-            console.log(`not ok - ${connClient.config.uid()} - ${connClient.config.name} - retrying in ${connClient.retry * 1000}ms`)
-            await sleep(connClient.retry * 1000);
-            await connClient.tak.reconnect();
-        } else {
-            // For now allow infinite retry if a client has connected once
-            const retryms = Math.min(connClient.retry * 1000, 15000);
-            console.log(`not ok - ${connClient.config.uid()} - ${connClient.config.name} - retrying in ${retryms}ms`)
-            await sleep(retryms);
-            await connClient.tak.reconnect();
-        }
+        const retryms = Math.min(connClient.retry * 1000, 15000);
+        if (connClient.retry <= 15) connClient.retry++
+        console.log(`not ok - ${connClient.config.uid()} - ${connClient.config.name} - retrying in ${retryms}ms`)
+        await sleep(retryms);
+        await connClient.tak.reconnect();
     }
 
     delete(id: number | string): boolean {
