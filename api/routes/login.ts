@@ -63,7 +63,7 @@ export default async function router(schema: Schema, config: Config) {
                 token: jwt.sign({ access, email }, config.SigningSecret, { expiresIn: '16h' })
             })
         } catch (err) {
-            Err.respond(err, res);
+            return Err.respond(err, res);
         }
     });
 
@@ -87,7 +87,7 @@ export default async function router(schema: Schema, config: Config) {
                 access: user.access
             });
         } catch (err) {
-            Err.respond(err, res);
+            return Err.respond(err, res);
         }
     });
 }
