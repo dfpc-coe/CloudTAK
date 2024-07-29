@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v2.81.0 - 2024-07-29
+
+- :rocket: `UI` Point Type Selection
+
 ### v2.80.3 - 2024-07-29
 
 - :bug: `API` More persistant retry on connection fail
