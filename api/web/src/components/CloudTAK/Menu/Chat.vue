@@ -145,7 +145,7 @@ export default {
             this.loading = true;
 
             if (this.$route.params.chatroom === 'new') {
-                const chats = await std(`/api/profile/chat/${encodeURIComponent(this.$route.query.uid)}`);
+                await std(`/api/profile/chat/${encodeURIComponent(this.$route.query.uid)}`);
             } else {
                 this.chats = await std(`/api/profile/chat/${encodeURIComponent(this.$route.params.chatroom)}`);
             }
