@@ -289,7 +289,7 @@ export const useMapStore = defineStore('cloudtak', {
                         mode_id: basemaps.items[0].id
                     });
 
-                    items.unshift(basemap);
+                    this.overlays.push(basemap);
                 }
             }
 

@@ -189,7 +189,7 @@
             </div>
 
             <div
-                v-if='true'
+                v-if='false'
                 class='position-absolute top-0 text-white bg-dark'
                 style='
                     z-index: 1;
