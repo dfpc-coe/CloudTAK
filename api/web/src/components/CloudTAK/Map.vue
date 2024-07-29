@@ -189,6 +189,23 @@
             </div>
 
             <div
+                v-if='true'
+                class='position-absolute top-0 text-white bg-dark'
+                style='
+                    z-index: 1;
+                    left: calc(50% - 100px);
+                    width: 200px;
+                '
+            >
+                <IconPoint
+                    :size='40'
+                    :stroke='1'
+                />
+
+                <img :url='`/api/iconset/default/icon/a-f-g/raw`'/>
+            </div>
+
+            <div
                 v-if='isLoaded && mode === "Default"'
                 class='d-flex position-absolute top-0 text-white py-2'
                 style='
