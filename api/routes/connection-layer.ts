@@ -150,6 +150,10 @@ export default async function router(schema: Schema, config: Config) {
             memory: Type.Optional(Type.Integer()),
             timeout: Type.Optional(Type.Integer()),
             config: Type.Optional(Layer_Config),
+            alarm_period: Type.Optional(Type.Integer()),
+            alarm_evals: Type.Optional(Type.Integer()),
+            alarm_points: Type.Optional(Type.Integer()),
+            alarm_threshold: Type.Optional(Type.Integer()),
         }),
         res: LayerResponse
     }, async (req, res) => {
@@ -242,7 +246,11 @@ export default async function router(schema: Schema, config: Config) {
             data: Type.Optional(Type.Union([Type.Null(), Type.Integer()])),
             environment: Type.Optional(Type.Any()),
             config: Type.Optional(Layer_Config),
-            schema: Type.Optional(Type.Any())
+            schema: Type.Optional(Type.Any()),
+            alarm_period: Type.Optional(Type.Integer()),
+            alarm_evals: Type.Optional(Type.Integer()),
+            alarm_points: Type.Optional(Type.Integer()),
+            alarm_threshold: Type.Optional(Type.Integer()),
         }),
         res: LayerResponse
     }, async (req, res) => {

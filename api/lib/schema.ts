@@ -236,7 +236,11 @@ export const LayerTemplate = pgTable('layers_template', {
     cron: text('cron').notNull(),
     config: json('config').notNull().default({}),
     memory: integer('memory').notNull().default(128),
-    timeout: integer('timeout').notNull().default(128)
+    timeout: integer('timeout').notNull().default(128),
+    alarm_period: integer('alarm_period').notNull().default(30),
+    alarm_evals: integer('alarm_evals').notNull().default(5),
+    alarm_points: integer('alarm_points').notNull().default(4),
+    alarm_threshold: integer('alarm_threshold').notNull().default(0),
 });
 
 
