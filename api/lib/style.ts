@@ -195,7 +195,7 @@ export default class Style {
     /**
      * Compile and run a template or use a cached template for performance
      */
-    async compile(template, props) {
+    compile(template, props) {
         let t = this.templates.get(template);
 
         if (!t) {
