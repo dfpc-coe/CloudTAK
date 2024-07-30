@@ -85,7 +85,7 @@ export default class {
         opts?: Static<typeof MissionOptions>
     ): Promise<TAKList<Static<typeof MissionLayer>>> {
         const url = new URL(`/Marti/api/missions/${this.#encodeName(name)}/layers`, this.api.url);
-
+    
         const res = await this.api.fetch(url, {
             method: 'GET',
             headers: this.#headers(opts),
