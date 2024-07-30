@@ -18,6 +18,15 @@ export default {
                 LoadBalancerAttributes: [{
                     Key: 'idle_timeout.timeout_seconds',
                     Value: 4000
+                },{
+                    Key: 'connection_logs.s3.enabled',
+                    Value: true
+                },{
+                    Key: 'connection_logs.s3.bucket',
+                    Value: cf.importValue(cf.join(['coe-elb-logs-', cf.ref('Environment'), '-bucket']))
+                },{
+                    Key: 'connection_logs.s3.prefix',
+                    Value: cf.stackName
                 }],
                 Subnets:  [
                     cf.importValue(cf.join(['coe-vpc-', cf.ref('Environment'), '-subnet-public-a'])),
