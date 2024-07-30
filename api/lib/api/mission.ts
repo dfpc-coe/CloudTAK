@@ -1,5 +1,5 @@
+import xmljs from 'xml-js';
 import TAKAPI from '../tak-api.js';
-import TAK from '@tak-ps/node-tak';
 import { CoT } from '@tak-ps/node-tak';
 import { Type, Static } from '@sinclair/typebox';
 import Err from '@openaddresses/batch-error';
@@ -229,15 +229,13 @@ export default class {
     ): Promise<Static<typeof Feature.Feature>[]> {
         const feats: Static<typeof Feature.Feature>[] = [];
 
-        let partial = {
-            event: '',
-            remainder: await this.latestCots(name, opts),
-        };
+        const res: any = xmljs.xml2js(await this.latestCots(name, opts), { compact: true });
 
-        do {
-            partial = TAK.findCoT(partial.remainder)
-            if (partial && partial.event) feats.push((new CoT(partial.event)).to_geojson());
-        } while (partial && partial.remainder);
+        if (!res.events.event.length) return [];
+       
+        for (const event of Array.isArray(res.events.event) ? res.events.event : [res.events.event] ) {
+            feats.push((new CoT({ event })).to_geojson());
+        } 
 
         return feats;
     }

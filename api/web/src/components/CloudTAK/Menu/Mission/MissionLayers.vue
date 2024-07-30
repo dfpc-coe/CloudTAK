@@ -57,6 +57,21 @@
                     :key='layer.uid'
                 >
                     <div class='col-12 hover-dark d-flex align-items-center px-2 py-2'>
+                        <IconChevronRight
+                            v-if='layer.type === "UID" && !layer._open'
+                            :size='32'
+                            :stroke='1'
+                            class='cursor-pointer'
+                            @click='layer._open = true'
+                        />
+                        <IconChevronDown
+                            v-else-if='layer.type === "UID" && layer._open'
+                            :size='32'
+                            :stroke='1'
+                            class='cursor-pointer'
+                            @click='layer._open = false'
+                        />
+
                         <IconFiles
                             v-if='layer.type === "CONTENTS"'
                             :size='32'
@@ -111,20 +126,6 @@
                                 @delete='deleteLayer(layer)'
                             />
 
-                            <IconChevronRight
-                                v-if='layer.type === "UID" && !layer._open'
-                                :size='32'
-                                :stroke='1'
-                                class='cursor-pointer'
-                                @click='layer._open = true'
-                            />
-                            <IconChevronDown
-                                v-else-if='layer.type === "UID" && layer._open'
-                                :size='32'
-                                :stroke='1'
-                                class='cursor-pointer'
-                                @click='layer._open = false'
-                            />
                         </div>
                     </div>
 
@@ -228,9 +229,10 @@ export default {
         refresh: async function() {
             this.createLayer = false;
             this.loading.layers = true;
-
-            await this.fetchFeats();
-            await this.fetchLayers();
+            await Promise.all([
+                this.fetchFeats(),
+                this.fetchLayers()
+            ])
 
             this.loading.layers = false;
         },
