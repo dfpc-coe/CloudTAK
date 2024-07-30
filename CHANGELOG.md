@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v2.83.1 - 2024-07-30
+
+- :rocket: `API` Add Access Logs
+
 ### v2.83.0 - 2024-07-30
 
 - :rocket: `API` Add Alarm columns to Layer/LayerTemplate for future use in AWS CF gen for ETLs
