@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v2.83.0 - 2024-07-30
+
+- :rocket: `API` Add Alarm columns to Layer/LayerTemplate for future use in AWS CF gen for ETLs
+- :rocket: `API` Send ELB logs to elb-logs bucket
+
 ### v2.82.0 - 2024-07-29
 
 - :rocket: `API` Remove use of `check-geojson` in favour of `InputFeature` schema definition from node-cot
