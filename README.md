@@ -42,10 +42,11 @@ The following are dependencies which need to be created:
 
 | Name                  | Notes |
 | --------------------- | ----- |
-| `coe-vpc-<name>`      | VPC & networking to place tasks in - [repo](ttps://github.com/dfpc-coe/vpc) |
-| `coe-ecs-<name>`      | ECS Cluster for API Service - [repo](ttps://github.com/dfpc-coe/ecs) |
-| `coe-ecr-etl`         | ECR Repository for storing API Images - [repo](ttps://github.com/dfpc-coe/ecr)     |
-| `coe-ecr-etl-tasks`   | ECR Repository for storing Task Images - [repo](ttps://github.com/dfpc-coe/ecr)  |
+| `coe-vpc-<name>`      | VPC & networking to place tasks in - [repo](https://github.com/dfpc-coe/vpc) |
+| `coe-ecs-<name>`      | ECS Cluster for API Service - [repo](https://github.com/dfpc-coe/ecs) |
+| `coe-ecr-etl`         | ECR Repository for storing API Images - [repo](https://github.com/dfpc-coe/ecr)     |
+| `coe-ecr-etl-tasks`   | ECR Repository for storing Task Images - [repo](https://github.com/dfpc-coe/ecr)  |
+| `coe-elb-access`      | Centralized ELB Logs - [repo](https://github.com/dfpc-coe/elb-logs) |
 
 
 ### Optional Dependencies that can be deployed at any time
