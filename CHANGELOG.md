@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v2.84.0 - 2024-07-30
+
+- :rocket: `API` Switch to static XML parsing for Mission Sync Contents for :racehorse:
+
 ### v2.83.1 - 2024-07-30
 
 - :rocket: `API` Add Access Logs
