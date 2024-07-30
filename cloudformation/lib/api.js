@@ -23,7 +23,7 @@ export default {
                     Value: true
                 },{
                     Key: 'connection_logs.s3.bucket',
-                    Value: cf.importValue(cf.join(['coe-elb-logs-', cf.ref('Environment'), '-bucket'])),
+                    Value: cf.importValue(cf.join(['coe-elb-logs-', cf.ref('Environment'), '-bucket']))
                 },{
                     Key: 'connection_logs.s3.prefix',
                     Value: cf.stackName
