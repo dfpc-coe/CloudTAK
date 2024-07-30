@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v2.82.0 - 2024-07-29
+
+- :rocket: `API` Remove use of `check-geojson` in favour of `InputFeature` schema definition from node-cot
+- :rocket: `API` Introduction of a cache system for reusing compiled handlebar templates within a single feature collection payload
+
 ### v2.81.0 - 2024-07-29
 
 - :rocket: `UI` Point Type Selection
