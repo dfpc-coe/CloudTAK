@@ -27,6 +27,15 @@ export default {
                 },{
                     Key: 'connection_logs.s3.prefix',
                     Value: cf.stackName
+                },{
+                    Key: 'access_logs.s3.enabled',
+                    Value: true
+                },{
+                    Key: 'access_logs.s3.bucket',
+                    Value: cf.importValue(cf.join(['coe-elb-logs-', cf.ref('Environment'), '-bucket']))
+                },{
+                    Key: 'access_logs.s3.prefix',
+                    Value: cf.stackName
                 }],
                 Subnets:  [
                     cf.importValue(cf.join(['coe-vpc-', cf.ref('Environment'), '-subnet-public-a'])),
