@@ -1,6 +1,6 @@
 import { Type, Static } from '@sinclair/typebox'
 import jsonata from 'jsonata';
-import { Feature } from 'geojson';
+import { Feature } from '@tak-ps/node-cot';
 import handlebars from 'handlebars';
 import Err from '@openaddresses/batch-error';
 
@@ -212,7 +212,7 @@ export default class Style {
      * @param feature       GeoJSON Feature
      * @returns             GeoJSON Feature
      */
-    async feat(feature: Feature): Promise<Feature> {
+    async feat(feature: Static<typeof Feature.InputFeature>): Promise<Static<typeof Feature.InputFeature>> {
         try {
             if (!feature.properties) feature.properties = {};
 
@@ -262,7 +262,7 @@ export default class Style {
         }
     }
 
-    #links(links: Array<Static<typeof StyleLink>>, feature: Feature) {
+    #links(links: Array<Static<typeof StyleLink>>, feature: Static<typeof Feature.InputFeature>) {
         if (!feature.properties) feature.properties = {};
         if (!feature.properties.links) feature.properties.links = [];
         for (const link of links) {
@@ -276,7 +276,7 @@ export default class Style {
         }
     }
 
-    #by_geom(style: Static<typeof StyleSingle>, feature: Feature) {
+    #by_geom(style: Static<typeof StyleSingle>, feature: Static<typeof Feature.InputFeature>) {
         if (!feature.properties) feature.properties = {};
 
         if (feature.geometry.type === 'Point' && style.point) {
