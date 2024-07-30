@@ -1,6 +1,5 @@
 import { Static, Type } from '@sinclair/typebox'
 import Schema from '@openaddresses/batch-schema';
-import { check } from '@placemarkio/check-geojson';
 import Err from '@openaddresses/batch-error';
 import { CoT } from '@tak-ps/node-tak';
 import { Item as QueueItem } from '../lib/queue.js'
@@ -27,7 +26,11 @@ export default async function router(schema: Schema, config: Config) {
         query: Type.Object({
             logging: Type.Optional(Type.Boolean({ "description": "If logging is enabled for the layer, allow callers to skip logging for a particular CoT payload" }))
         }),
-        body: Type.Any(),
+        body: Type.Object({
+            type: Type.Literal('FeatureCollection'),
+            uids: Type.Optional(Type.Array(Type.String())),
+            features: Type.Array(Feature.InputFeature)
+        }),
         res: StandardResponse
     }, async (req, res) => {
         try {
@@ -42,12 +45,6 @@ export default async function router(schema: Schema, config: Config) {
             });
 
             const style = new Style(layer);
-
-            try {
-                req.body = check(JSON.stringify(req.body));
-            } catch (err) {
-                throw new Err(400, null, err instanceof Error ? err.message : String(err));
-            }
 
             for (let i = 0; i < req.body.features.length; i++) {
                 req.body.features[i] = await style.feat(req.body.features[i])
