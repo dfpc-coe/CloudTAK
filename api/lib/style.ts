@@ -91,9 +91,11 @@ export interface StyleInterface {
  */
 export default class Style {
     style: StyleInterface;
+    templates: Map<string, HandlebarsTemplateDelegate<any>>;
 
     constructor(style: StyleInterface) {
         this.style = style;
+        this.templates = new Map();
         if (!this.style.styles.queries) this.style.styles.queries = [];
     }
 
@@ -191,6 +193,20 @@ export default class Style {
     }
 
     /**
+     * Compile and run a template or use a cached template for performance
+     */
+    compile(template, props) {
+        let t = this.templates.get(template);
+
+        if (!t) {
+            t = handlebars.compile(template)
+            this.templates.set(template, t);
+        }
+
+        return t(props);
+    }
+
+    /**
      * Apply styling to a GeoJSON Feature in-place
      *
      * @param feature       GeoJSON Feature
@@ -208,8 +224,8 @@ export default class Style {
             if (!feature.properties.metadata) feature.properties.metadata = {};
 
             // Properties that support Templating
-            if (this.style.styles.callsign) feature.properties.callsign = handlebars.compile(this.style.styles.callsign)(feature.properties.metadata);
-            if (this.style.styles.remarks) feature.properties.remarks = handlebars.compile(this.style.styles.remarks)(feature.properties.metadata);
+            if (this.style.styles.callsign) feature.properties.callsign = this.compile(this.style.styles.callsign, feature.properties.metadata);
+            if (this.style.styles.remarks) feature.properties.remarks = this.compile(this.style.styles.remarks, feature.properties.metadata);
 
 
             if (this.style.styles.links) {
@@ -224,8 +240,8 @@ export default class Style {
                     const expression = jsonata(q.query);
 
                     if (await expression.evaluate(feature) === true) {
-                        if (q.styles.callsign) feature.properties.callsign = handlebars.compile(q.styles.callsign)(feature.properties.metadata);
-                        if (q.styles.remarks) feature.properties.remarks = handlebars.compile(q.styles.remarks)(feature.properties.metadata);
+                        if (q.styles.callsign) feature.properties.callsign = this.compile(q.styles.callsign, feature.properties.metadata);
+                        if (q.styles.remarks) feature.properties.remarks = this.compile(q.styles.remarks, feature.properties.metadata);
 
                         if (q.links) this.#links(q.links, feature);
 
@@ -254,8 +270,8 @@ export default class Style {
                 uid: feature.id,
                 relation: 'r-u',
                 mime: 'text/html',
-                url: handlebars.compile(link.url)(feature.properties.metadata),
-                remarks: handlebars.compile(link.remarks)(feature.properties.metadata),
+                url: this.compile(link.url, feature.properties.metadata),
+                remarks: this.compile(link.remarks, feature.properties.metadata),
             })
         }
     }
@@ -264,25 +280,25 @@ export default class Style {
         if (!feature.properties) feature.properties = {};
 
         if (feature.geometry.type === 'Point' && style.point) {
-            if (style.point.type) feature.properties.type = handlebars.compile(style.point.type)(feature.properties.metadata);
-            if (style.point.remarks) feature.properties.remarks = handlebars.compile(style.point.remarks)(feature.properties.metadata);
-            if (style.point.callsign) feature.properties.callsign = handlebars.compile(style.point.callsign)(feature.properties.metadata);
+            if (style.point.type) feature.properties.type = this.compile(style.point.type, feature.properties.metadata);
+            if (style.point.remarks) feature.properties.remarks = this.compile(style.point.remarks, feature.properties.metadata);
+            if (style.point.callsign) feature.properties.callsign = this.compile(style.point.callsign, feature.properties.metadata);
             if (style.point.links) this.#links(style.point.links, feature);
 
             Object.keys(style.point)
                 .filter((k) => { return !['links', 'remarks', 'callsign'].includes(k) })
                 .forEach((k) => { feature.properties[k] = style.point[k] });
         } else if (feature.geometry.type === 'LineString' && style.line) {
-            if (style.line.remarks) feature.properties.remarks = handlebars.compile(style.line.remarks)(feature.properties.metadata);
-            if (style.line.callsign) feature.properties.callsign = handlebars.compile(style.line.callsign)(feature.properties.metadata);
+            if (style.line.remarks) feature.properties.remarks = this.compile(style.line.remarks, feature.properties.metadata);
+            if (style.line.callsign) feature.properties.callsign = this.compile(style.line.callsign, feature.properties.metadata);
             if (style.line.links) this.#links(style.line.links, feature);
 
             Object.keys(style.line)
                 .filter((k) => { return !['links', 'remarks', 'callsign'].includes(k) })
                 .forEach((k) => { feature.properties[k] = style.line[k] });
         } else if (feature.geometry.type === 'Polygon' && style.polygon) {
-            if (style.polygon.remarks) feature.properties.remarks = handlebars.compile(style.polygon.remarks)(feature.properties.metadata);
-            if (style.polygon.callsign) feature.properties.callsign = handlebars.compile(style.polygon.callsign)(feature.properties.metadata);
+            if (style.polygon.remarks) feature.properties.remarks = this.compile(style.polygon.remarks, feature.properties.metadata);
+            if (style.polygon.callsign) feature.properties.callsign = this.compile(style.polygon.callsign, feature.properties.metadata);
             if (style.polygon.links) this.#links(style.polygon.links, feature);
 
             Object.keys(style.polygon)
