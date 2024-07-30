@@ -1,6 +1,5 @@
 import xmljs from 'xml-js';
 import TAKAPI from '../tak-api.js';
-import TAK from '@tak-ps/node-tak';
 import { CoT } from '@tak-ps/node-tak';
 import { Type, Static } from '@sinclair/typebox';
 import Err from '@openaddresses/batch-error';
@@ -230,7 +229,7 @@ export default class {
     ): Promise<Static<typeof Feature.Feature>[]> {
         const feats: Static<typeof Feature.Feature>[] = [];
 
-        const res = xmljs.xml2js(await this.latestCots(name, opts), { compact: true });
+        const res: any = xmljs.xml2js(await this.latestCots(name, opts), { compact: true });
 
         if (!res.events.event.length) return [];
        
