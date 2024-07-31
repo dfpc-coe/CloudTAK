@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v2.85.2 - 2024-07-31
+
+- :bug: `API` New deployments had `opacity` as an integer => change to float
+
 ### v2.85.1 - 2024-07-31
 
 - :bug: `API` Return empty features array on empty DataSync
