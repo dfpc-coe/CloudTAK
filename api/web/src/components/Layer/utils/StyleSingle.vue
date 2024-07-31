@@ -1,10 +1,23 @@
 <template>
     <div class='row g-2'>
         <div class='col-md-12 hover-light rounded px-2 py-2'>
+            <div class='col-12 d-flex align-items-center'>
+                <label><IconLicense
+                    :size='20'
+                    :stroke='1'
+                /> Global ID</label>
+                <div class='ms-auto'>
+                    <TablerToggle
+                        v-model='enabled.id'
+                        :disabled='disabled'
+                        label='Enabled'
+                    />
+                </div>
+            </div>
+
             <StyleTemplate
-                v-model='filters.callsign'
-                label='Global Callsign'
-                description='Global Callsign will apply to all CoT markers unless they are overriden by a callsign field on a given query'
+                v-if='enabled.id'
+                v-model='filters.id'
                 :rows='1'
                 :disabled='disabled'
                 :schema='schema'
@@ -12,17 +25,69 @@
         </div>
 
         <div class='col-md-12 hover-light rounded px-2 py-2'>
+            <div class='col-12 d-flex align-items-center'>
+                <label><IconBlockquote
+                    :size='20'
+                    :stroke='1'
+                /> Global Callsign</label>
+                <div class='ms-auto'>
+                    <TablerToggle
+                        v-model='enabled.callsign'
+                        :disabled='disabled'
+                        label='Enabled'
+                    />
+                </div>
+            </div>
+
             <StyleTemplate
-                v-model='filters.remarks'
-                label='Global Remarks'
-                description='Global Remarks will apply to all CoT markers unless they are overriden by a remarks field on a given query'
+                v-if='enabled.callsign'
+                v-model='filters.callsign'
+                :rows='1'
                 :disabled='disabled'
                 :schema='schema'
             />
         </div>
 
         <div class='col-md-12 hover-light rounded px-2 py-2'>
+            <div class='col-12 d-flex align-items-center'>
+                <label><IconBlockquote
+                    :size='20'
+                    :stroke='1'
+                /> Global Remarks</label>
+                <div class='ms-auto'>
+                    <TablerToggle
+                        v-model='enabled.remarks'
+                        :disabled='disabled'
+                        label='Enabled'
+                    />
+                </div>
+            </div>
+
+            <StyleTemplate
+                v-if='enabled.remarks'
+                v-model='filters.remarks'
+                :disabled='disabled'
+                :schema='schema'
+            />
+        </div>
+
+        <div class='col-md-12 hover-light rounded px-2 py-2'>
+            <div class='col-12 d-flex align-items-center'>
+                <label><IconLink
+                    :size='20'
+                    :stroke='1'
+                /> Global Links</label>
+                <div class='ms-auto'>
+                    <TablerToggle
+                        v-model='enabled.links'
+                        :disabled='disabled'
+                        label='Enabled'
+                    />
+                </div>
+            </div>
+
             <StyleLinks
+                v-if='enabled.links'
                 v-model='filters.links'
                 :disabled='disabled'
                 :schema='schema'
@@ -85,6 +150,30 @@
                     </label>
                 </div>
             </div>
+        </div>
+
+        <div class='col-md-12 hover-light rounded px-2 py-2'>
+            <div class='col-12 d-flex align-items-center'>
+                <label><IconLicense
+                    :size='20'
+                    :stroke='1'
+                /> ID Override</label>
+                <div class='ms-auto'>
+                    <TablerToggle
+                        v-model='filters[mode].enabled.id'
+                        :disabled='disabled'
+                        label='Enabled'
+                    />
+                </div>
+            </div>
+
+            <StyleTemplate
+                v-if='filters[mode].enabled.id'
+                v-model='filters[mode].properties.id'
+                placeholder='ID Override'
+                :disabled='disabled'
+                :schema='schema'
+            />
         </div>
 
         <div class='col-md-12 hover-light rounded px-2 py-2'>
@@ -429,6 +518,7 @@ import {
     IconBorderStyle2,
     IconBlockquote,
     IconRuler2,
+    IconLicense,
 } from '@tabler/icons-vue'
 import IconSelect from '../../util/IconSelect.vue';
 import StyleLinks from './StyleLinks.vue';
@@ -454,6 +544,7 @@ export default {
         IconBorderStyle2,
         IconCategory,
         IconSelect,
+        IconLicense,
         TablerToggle,
         TablerRange,
         TablerEnum,
@@ -484,12 +575,20 @@ export default {
     data: function() {
         return {
             mode: 'point',
+            enabled: {
+                id: false,
+                remarks: false,
+                callsign: false,
+                links: false,
+            },
             filters: {
+                id: '',
                 callsign: '',
                 remarks: '',
                 links: [],
                 point: {
                     enabled: {
+                        id: false,
                         icon: false,
                         links: false,
                         'marker-color': false,
@@ -498,6 +597,7 @@ export default {
                         callsign: false
                     },
                     properties: {
+                        id: '',
                         icon: '',
                         'marker-color': '#d63939',
                         'marker-opacity': 1,
@@ -508,6 +608,7 @@ export default {
                 },
                 line: {
                     enabled: {
+                        id: false,
                         stroke: false,
                         'stroke-style': false,
                         'stroke-opacity': false,
@@ -517,6 +618,7 @@ export default {
                         callsign: false
                     },
                     properties: {
+                        id: '',
                         stroke: '#d63939',
                         'stroke-style': 'solid',
                         'stroke-opacity': 1,
@@ -528,6 +630,7 @@ export default {
                 },
                 polygon: {
                     enabled: {
+                        id: false,
                         stroke: false,
                         'stroke-style': false,
                         'stroke-opacity': false,
@@ -539,6 +642,7 @@ export default {
                         callsign: false,
                     },
                     properties: {
+                        id: '',
                         stroke: '#d63939',
                         'stroke-style': 'solid',
                         'stroke-opacity': 1,
@@ -554,6 +658,12 @@ export default {
         };
     },
     watch: {
+        enabled: {
+            deep: true,
+            handler: function() {
+                this.format();
+            }
+        },
         filters: {
             deep: true,
             handler: function() {
@@ -562,9 +672,10 @@ export default {
         }
     },
     mounted: function() {
-        for (const prop of ['remarks', 'callsign', 'links']) {
+        for (const prop of ['id', 'remarks', 'callsign', 'links']) {
             if (!this.modelValue[prop]) continue;
             this.filters[prop] = this.modelValue[prop];
+            this.enabled[prop] = true;
         }
 
         for (const key of ['point', 'line', 'polygon']) {
@@ -587,7 +698,8 @@ export default {
 
             const res = {};
 
-            for (const prop of ['remarks', 'callsign', 'links']) {
+            for (const prop of ['id', 'remarks', 'callsign', 'links']) {
+                if (!this.enabled[prop]) continue;
                 res[prop] = styles[prop];
             }
 
@@ -597,7 +709,7 @@ export default {
                     if (!styles[geom].enabled[key]) continue;
 
                     if (['fill-opacity', 'stroke-width', 'stroke-opacity'].includes(key)) {
-                        if (res[geom][key] !== undefined) res[geom][key] = parseInt(res[geom][key])
+                        if (styles[geom].properties[key] !== undefined) res[geom][key] = Number(styles[geom].properties[key])
                     } else if (['remarks', 'callsign'].includes(key)) {
                         if (styles[geom].properties[key]) res[geom][key] = styles[geom].properties[key];
                     } else {
