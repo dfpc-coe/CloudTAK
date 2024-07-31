@@ -254,6 +254,7 @@ import {
 import Contact from '../../util/Contact.vue';
 import Feature from '../../util/Feature.vue';
 import ContactPuck from '../../util/ContactPuck.vue';
+import { std, stdurl } from  '/src/std.ts'
 import DeleteModal from './DeleteModal.vue';
 import {
     IconMapPin,
@@ -342,6 +343,14 @@ export default {
 
             for (const feat of cotStore.pathFeatures(cotStore.cots, path)) {
                 await cotStore.delete(feat.id);
+            }
+
+            if (path) {
+                const url = stdurl('/api/profile/feature');
+                url.searchParams.append('path', path);
+                await std(url, {
+                    method: 'DELETE'
+                });
             }
 
             this.loading = false;
