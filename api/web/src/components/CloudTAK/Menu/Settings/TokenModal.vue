@@ -29,8 +29,8 @@
             >
                 <TablerInput
                     v-model='editToken.name'
-                    @keyup.enter='saveToken'
                     label='Token Name'
+                    @keyup.enter='saveToken'
                 />
             </div>
             <div

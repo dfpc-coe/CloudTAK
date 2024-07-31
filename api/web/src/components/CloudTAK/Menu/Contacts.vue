@@ -47,7 +47,10 @@
                     :key='a.id'
                     class='col-lg-12'
                 >
-                    <Contact :contact='a' :buttonChat='false'/>
+                    <Contact
+                        :contact='a'
+                        :button-chat='false'
+                    />
                 </div>
             </template>
         </template>
