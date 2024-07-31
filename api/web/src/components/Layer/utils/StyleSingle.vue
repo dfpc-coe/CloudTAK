@@ -666,9 +666,10 @@ export default {
         }
     },
     mounted: function() {
-        for (const prop of ['remarks', 'callsign', 'links']) {
+        for (const prop of ['id', 'remarks', 'callsign', 'links']) {
             if (!this.modelValue[prop]) continue;
             this.filters[prop] = this.modelValue[prop];
+            this.enabled[prop] = true;
         }
 
         for (const key of ['point', 'line', 'polygon']) {
