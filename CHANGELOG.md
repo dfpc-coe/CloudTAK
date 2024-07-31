@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v2.85.0 - 2024-07-31
+
+- :rocket: `UI` Move API Tokens under CloudTAK Settings
+
 ### v2.84.0 - 2024-07-30
 
 - :rocket: `API` Switch to static XML parsing for Mission Sync Contents for :racehorse:
