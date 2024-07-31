@@ -26,17 +26,6 @@
                                             <span
                                                 class='list-group-item list-group-item-action d-flex align-items-center'
                                                 :class='{
-                                                    "active": $route.name === "profile-tokens",
-                                                    "cursor-pointer": $route.name !== "profile-tokens"
-                                                }'
-                                                @click='$router.push(`/profile/tokens`)'
-                                            ><IconRobot
-                                                :size='32'
-                                                :stroke='1'
-                                            /><span class='mx-3'>API Tokens</span></span>
-                                            <span
-                                                class='list-group-item list-group-item-action d-flex align-items-center'
-                                                :class='{
                                                     "active": $route.name === "profile-files",
                                                     "cursor-pointer": $route.name !== "profile-files"
                                                 }'
