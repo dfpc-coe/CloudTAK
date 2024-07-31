@@ -5,12 +5,13 @@ import handlebars from 'handlebars';
 import Err from '@openaddresses/batch-error';
 
 interface ValidateStyle {
+    id?: string;
     callsign?: string;
     remarks?: string;
     links?: Array<Static<typeof StyleLink>>;
-    point?:     { callsign?: string; type?: string; remarks?: string; links?: Array<Static<typeof StyleLink>> };
-    line?:      { callsign?: string; remarks?: string; links?: Array<Static<typeof StyleLink>> };
-    polygon?:   { callsign?: string; remarks?: string; links?: Array<Static<typeof StyleLink>> };
+    point?:     { callsign?: string; id?: string; type?: string; remarks?: string; links?: Array<Static<typeof StyleLink>> };
+    line?:      { callsign?: string; id?: string; remarks?: string; links?: Array<Static<typeof StyleLink>> };
+    polygon?:   { callsign?: string; id?: string; remarks?: string; links?: Array<Static<typeof StyleLink>> };
 }
 
 export const StyleLink = Type.Object({
@@ -21,6 +22,7 @@ export const StyleLink = Type.Object({
 export const StylePoint = Type.Object({
     'marker-color': Type.Optional(Type.String()),
     'marker-opacity': Type.Optional(Type.String()),
+    id: Type.Optional(Type.String()),
     type: Type.Optional(Type.String()),
     remarks: Type.Optional(Type.String()),
     callsign: Type.Optional(Type.String()),
@@ -33,6 +35,7 @@ export const StyleLine = Type.Object({
     'stroke-style': Type.Optional(Type.String()),
     'stroke-opacity': Type.Optional(Type.String()),
     'stroke-width': Type.Optional(Type.String()),
+    id: Type.Optional(Type.String()),
     remarks: Type.Optional(Type.String()),
     callsign: Type.Optional(Type.String()),
     links: Type.Optional(Type.Array(StyleLink)),
@@ -45,12 +48,14 @@ export const StylePolygon = Type.Object({
     'stroke-width': Type.Optional(Type.String()),
     fill: Type.Optional(Type.String()),
     'fill-opacity': Type.Optional(Type.String()),
+    id: Type.Optional(Type.String()),
     remarks: Type.Optional(Type.String()),
     callsign: Type.Optional(Type.String()),
     links: Type.Optional(Type.Array(StyleLink)),
 });
 
 export const StyleSingle = Type.Object({
+    id: Type.Optional(Type.String()),
     remarks: Type.Optional(Type.String()),
     callsign: Type.Optional(Type.String()),
     links: Type.Optional(Type.Array(StyleLink)),
@@ -61,6 +66,7 @@ export const StyleSingle = Type.Object({
 
 export const StyleSingleContainer = Type.Object({
     query: Type.String(),
+    id: Type.Optional(Type.String()),
     remarks: Type.Optional(Type.String()),
     callsign: Type.Optional(Type.String()),
     links: Type.Optional(Type.Array(StyleLink)),
@@ -71,6 +77,7 @@ export const StyleContainer = Type.Object({
     line: Type.Optional(StyleLine),
     point: Type.Optional(StylePoint),
     polygon: Type.Optional(StylePolygon),
+    id: Type.Optional(Type.String()),
     remarks: Type.Optional(Type.String()),
     callsign: Type.Optional(Type.String()),
     links: Type.Optional(Type.Array(StyleLink)),
@@ -124,6 +131,14 @@ export default class Style {
     }
 
     static #validateTemplate(style: ValidateStyle) {
+        if (style.id) {
+            try {
+                handlebars.compile(style.id)({});
+            } catch (err) {
+                throw new Err(400, err, `Invalid ID Template: ${style.id}`)
+            }
+        }
+
         if (style.callsign) {
             try {
                 handlebars.compile(style.callsign)({});
@@ -148,6 +163,14 @@ export default class Style {
         for (const type of ['point', 'polygon', 'line']) {
             if (type in style) {
                 if (style[type].links) this.#validateLinks(style[type].links);
+
+                if (style.id) {
+                    try {
+                        handlebars.compile(style[type].id)({});
+                    } catch (err) {
+                        throw new Err(400, err, `Invalid (${type}) Type Template: ${style[type].id}`)
+                    }
+                }
 
                 if (style[type].type) {
                     try {
@@ -224,6 +247,7 @@ export default class Style {
             if (!feature.properties.metadata) feature.properties.metadata = {};
 
             // Properties that support Templating
+            if (this.style.styles.id) feature.id = this.compile(this.style.styles.id, feature.properties.metadata);
             if (this.style.styles.callsign) feature.properties.callsign = this.compile(this.style.styles.callsign, feature.properties.metadata);
             if (this.style.styles.remarks) feature.properties.remarks = this.compile(this.style.styles.remarks, feature.properties.metadata);
 
@@ -240,6 +264,7 @@ export default class Style {
                     const expression = jsonata(q.query);
 
                     if (await expression.evaluate(feature) === true) {
+                        if (q.styles.id) feature.id = this.compile(q.styles.id, feature.properties.metadata);
                         if (q.styles.callsign) feature.properties.callsign = this.compile(q.styles.callsign, feature.properties.metadata);
                         if (q.styles.remarks) feature.properties.remarks = this.compile(q.styles.remarks, feature.properties.metadata);
 
@@ -280,6 +305,7 @@ export default class Style {
         if (!feature.properties) feature.properties = {};
 
         if (feature.geometry.type === 'Point' && style.point) {
+            if (style.point.id) feature.id = this.compile(style.point.id, feature.properties.metadata);
             if (style.point.type) feature.properties.type = this.compile(style.point.type, feature.properties.metadata);
             if (style.point.remarks) feature.properties.remarks = this.compile(style.point.remarks, feature.properties.metadata);
             if (style.point.callsign) feature.properties.callsign = this.compile(style.point.callsign, feature.properties.metadata);
@@ -289,6 +315,7 @@ export default class Style {
                 .filter((k) => { return !['links', 'remarks', 'callsign'].includes(k) })
                 .forEach((k) => { feature.properties[k] = style.point[k] });
         } else if (feature.geometry.type === 'LineString' && style.line) {
+            if (style.line.id) feature.id = this.compile(style.line.id, feature.properties.metadata);
             if (style.line.remarks) feature.properties.remarks = this.compile(style.line.remarks, feature.properties.metadata);
             if (style.line.callsign) feature.properties.callsign = this.compile(style.line.callsign, feature.properties.metadata);
             if (style.line.links) this.#links(style.line.links, feature);
@@ -297,6 +324,7 @@ export default class Style {
                 .filter((k) => { return !['links', 'remarks', 'callsign'].includes(k) })
                 .forEach((k) => { feature.properties[k] = style.line[k] });
         } else if (feature.geometry.type === 'Polygon' && style.polygon) {
+            if (style.polygon.id) feature.id = this.compile(style.polygon.id, feature.properties.metadata);
             if (style.polygon.remarks) feature.properties.remarks = this.compile(style.polygon.remarks, feature.properties.metadata);
             if (style.polygon.callsign) feature.properties.callsign = this.compile(style.polygon.callsign, feature.properties.metadata);
             if (style.polygon.links) this.#links(style.polygon.links, feature);
