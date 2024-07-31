@@ -12,6 +12,16 @@
 
 ### Pending Release
 
+### v2.87.1 - 2024-07-31
+
+- :bug: `API` Fix Global ID validation bug
+
+### v2.87.0 - 2024-07-31
+
+- :rocket: `API/UI` Allow ID overrides in Style Editor
+- :data: `UI` Add enabled toggles for Global Overrides
+- :bug: `UI` Fix opacity slider which wouldn't save
+
 ### v2.86.0 - 2024-07-31
 
 - :bug: `API/UI` Allow specifying Alarm Options
