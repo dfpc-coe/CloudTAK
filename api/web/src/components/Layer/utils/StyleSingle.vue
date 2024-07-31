@@ -604,7 +604,6 @@ export default {
                         res[geom][key] = styles[geom].properties[key];
                     }
                 }
-
             }
 
             this.$emit('update:modelValue', res);

@@ -231,6 +231,7 @@ export default class {
 
         const res: any = xmljs.xml2js(await this.latestCots(name, opts), { compact: true });
 
+        if (!Object.keys(res.events).length) return [];
         if (!res.events.event.length) return [];
        
         for (const event of Array.isArray(res.events.event) ? res.events.event : [res.events.event] ) {
