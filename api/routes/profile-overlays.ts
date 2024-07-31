@@ -171,6 +171,7 @@ export default async function router(schema: Schema, config: Config) {
 
             const overlay = await config.models.ProfileOverlay.generate({
                 ...req.body,
+                opacity: String(req.body.opacity || 1),
                 username: user.email
             });
 
