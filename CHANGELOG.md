@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v2.85.3 - 2024-07-31
+
+- :bug: `UI` Make Delete ProfileFeature call after removing from map
+
 ### v2.85.2 - 2024-07-31
 
 - :bug: `API` New deployments had `opacity` as an integer => change to float
