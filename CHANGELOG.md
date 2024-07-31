@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v2.85.1 - 2024-07-31
+
+- :bug: `API` Return empty features array on empty DataSync
+
 ### v2.85.0 - 2024-07-31
 
 - :rocket: `UI` Move API Tokens under CloudTAK Settings
