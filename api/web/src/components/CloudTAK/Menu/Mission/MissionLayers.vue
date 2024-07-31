@@ -228,10 +228,8 @@ export default {
         refresh: async function() {
             this.createLayer = false;
             this.loading.layers = true;
-            await Promise.all([
-                this.fetchFeats(),
-                this.fetchLayers()
-            ])
+            await this.fetchFeats(),
+            await this.fetchLayers()
 
             this.loading.layers = false;
         },

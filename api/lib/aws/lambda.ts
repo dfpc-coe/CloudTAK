@@ -70,10 +70,10 @@ export default class Lambda {
                             Name: 'FunctionName',
                             Value: StackName
                         }],
-                        Period: 30,
-                        EvaluationPeriods: 5,
-                        DatapointsToAlarm: 4,
-                        Threshold: 0,
+                        Period: layer.alarm_period,
+                        EvaluationPeriods: layer.alarm_evals,
+                        DatapointsToAlarm: layer.alarm_points,
+                        Threshold: layer.alarm_threshold,
                         ComparisonOperator: 'GreaterThanThreshold',
                         TreatMissingData: 'missing'
                     }

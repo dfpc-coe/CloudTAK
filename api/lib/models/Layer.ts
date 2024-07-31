@@ -15,7 +15,6 @@ export const Layer_Config = Type.Object({
 export const AugmentedLayer = Type.Object({
     id: Type.Integer(),
     status: Type.Optional(Type.String()),
-    priority: Type.Enum(Layer_Priority),
     created: Type.String(),
     updated: Type.String(),
     name: Type.String(),
@@ -33,7 +32,12 @@ export const AugmentedLayer = Type.Object({
     memory: Type.Integer(),
     timeout: Type.Integer(),
     data: Type.Optional(Type.Integer()),
-    schema: Type.Any()
+    schema: Type.Any(),
+    priority: Type.Enum(Layer_Priority),
+    alarm_period: Type.Integer(),
+    alarm_evals: Type.Integer(),
+    alarm_points: Type.Integer(),
+    alarm_threshold: Type.Integer()
 });
 
 export default class LayerModel extends Modeler<typeof Layer> {
@@ -69,7 +73,11 @@ export default class LayerModel extends Modeler<typeof Layer> {
                 memory: Layer.memory,
                 timeout: Layer.timeout,
                 data: Layer.data,
-                schema: Layer.schema
+                schema: Layer.schema,
+                alarm_period: Layer.alarm_period,
+                alarm_evals: Layer.alarm_evals,
+                alarm_points: Layer.alarm_points,
+                alarm_threshold: Layer.alarm_threshold,
             })
             .from(Layer)
             .leftJoin(Connection, eq(Connection.id, Layer.connection))

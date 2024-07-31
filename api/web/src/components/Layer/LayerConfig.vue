@@ -28,7 +28,7 @@
             class='card-body'
         >
             <div class='row g-4'>
-                <div class='col-md-4'>
+                <div class='col-md-6'>
                     <div class='d-flex'>
                         <label class='form-label'>Cron Expression</label>
                         <div
@@ -100,7 +100,7 @@
                         v-text='cronstr(config.cron)'
                     />
                 </div>
-                <div class='col-md-4'>
+                <div class='col-md-6'>
                     <div class='d-flex'>
                         <label class='form-label'>Schedule Task</label>
                         <div class='ms-auto'>
@@ -164,15 +164,6 @@
                     />
                 </div>
                 <div class='col-md-4'>
-                    <TablerEnum
-                        v-model='config.priority'
-                        label='Alarm Urgency'
-                        :disabled='disabled'
-                        class='w-100'
-                        :options='["off", "high", "low"]'
-                    />
-                </div>
-                <div class='col-md-4'>
                     <TablerInput
                         v-model='config.stale'
                         label='Stale Value (seconds)'
@@ -223,24 +214,93 @@
                             />
                         </div>
                     </div>
-                    <div
-                        v-if='!disabled'
-                        class='col-12 pt-3 d-flex'
-                    >
-                        <button
-                            class='btn'
-                            @click='reload'
-                        >
-                            Cancel
-                        </button>
-                        <div class='ms-auto'>
-                            <button
-                                class='btn btn-primary'
-                                @click='saveLayer'
-                            >
-                                Save
-                            </button>
+                </div>
+
+                <div class='col-md-12'>
+                    <TablerEnum
+                        v-model='config.priority'
+                        label='Alarm Urgency'
+                        :disabled='disabled'
+                        class='w-100'
+                        :options='["off", "high", "low"]'
+                    />
+                </div>
+
+                <label
+                    v-if='config.priority !== "off"'
+                    class='subheader mt-3 cursor-pointer'
+                    @click='advanced = !advanced'
+                >
+                    <IconSquareChevronRight
+                        v-if='!advanced'
+                        :size='32'
+                        :stroke='1'
+                    />
+                    <IconChevronDown
+                        v-else
+                        :size='32'
+                        :stroke='1'
+                    />
+                    Advanced Alarm Options
+                </label>
+
+                <div
+                    v-if='advanced && config.priority !== "off"'
+                    class='border rounded col-12 mt-0'
+                >
+                    <div class='row py-2'>
+                        <div class='col-md-3'>
+                            <TablerInput
+                                v-model='config.alarm_period'
+                                label='Alarm Period (s)'
+                                :disabled='disabled'
+                                class='w-100'
+                            />
                         </div>
+                        <div class='col-md-3'>
+                            <TablerInput
+                                v-model='config.alarm_evals'
+                                label='Alarm Evals'
+                                :disabled='disabled'
+                                class='w-100'
+                            />
+                        </div>
+                        <div class='col-md-3'>
+                            <TablerInput
+                                v-model='config.alarm_points'
+                                label='Alarm Points to Alarm'
+                                :disabled='disabled'
+                                class='w-100'
+                            />
+                        </div>
+                        <div class='col-md-3'>
+                            <TablerInput
+                                v-model='config.alarm_threshold'
+                                label='Alarm Threshold'
+                                :disabled='disabled'
+                                class='w-100'
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                <div
+                    v-if='!disabled'
+                    class='col-12 pt-3 d-flex'
+                >
+                    <button
+                        class='btn'
+                        @click='reload'
+                    >
+                        Cancel
+                    </button>
+                    <div class='ms-auto'>
+                        <button
+                            class='btn btn-primary'
+                            @click='saveLayer'
+                        >
+                            Save
+                        </button>
                     </div>
                 </div>
             </div>
@@ -266,6 +326,8 @@ import {
     TablerLoading
 } from '@tak-ps/vue-tabler';
 import {
+    IconSquareChevronRight,
+    IconChevronDown,
     IconRefresh,
     IconSettings,
     IconDatabase,
@@ -275,6 +337,8 @@ export default {
     name: 'LayerConfig',
     components: {
         TablerLoading,
+        IconSquareChevronRight,
+        IconChevronDown,
         IconRefresh,
         IconSettings,
         DataSelect,
@@ -304,6 +368,7 @@ export default {
             disabled: true,
             taskmodal: false,
             newTaskVersion: false,
+            advanced: false,
             loading: {
                 init: true,
                 version: false,
@@ -318,6 +383,10 @@ export default {
                 memory: 512,
                 cron: '0/15 * * * ? *',
                 stale: 60 * 1000,
+                alarm_period: '30',
+                alarm_evals: '5',
+                alarm_points: '4',
+                alarm_threshold: '0'
             }
         };
     },
@@ -358,6 +427,10 @@ export default {
             this.config.cron = this.layer.cron;
             this.config.stale = this.layer.stale;
             this.config.priority = this.layer.priority;
+            this.config.alarm_period = this.layer.alarm_period;
+            this.config.alarm_evals = this.layer.alarm_evals;
+            this.config.alarm_points = this.layer.alarm_points;
+            this.config.alarm_threshold = this.layer.alarm_threshold;
 
             this.disabled = true;
         },
