@@ -24,8 +24,8 @@
             <div
                 v-for='t in tokens.items'
                 :key='t.id'
-                @click='token = t'
                 class='cursor-pointer col-12 py-2 px-3 d-flex align-items-center hover-dark'
+                @click='token = t'
             >
                 <IconRobot
                     :size='32'
@@ -57,23 +57,15 @@ import {
     IconRefresh,
     IconRobot,
 } from '@tabler/icons-vue';
-import {
-    TablerEpoch,
-    TablerLoading,
-    TablerNone,
-} from '@tak-ps/vue-tabler';
 
 export default {
     name: 'ProfileTokens',
     components: {
         MenuTemplate,
         TokenModal,
-        TablerNone,
         IconPlus,
         IconRobot,
         IconRefresh,
-        TablerEpoch,
-        TablerLoading,
     },
     data: function() {
         return {

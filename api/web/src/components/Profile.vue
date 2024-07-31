@@ -80,7 +80,6 @@ import {
 } from '@tak-ps/vue-tabler';
 import {
     IconVideo,
-    IconRobot,
     IconTransform,
     IconFiles,
 } from '@tabler/icons-vue';
@@ -89,7 +88,6 @@ export default {
     name: 'UserProfile',
     components: {
         IconVideo,
-        IconRobot,
         PageFooter,
         IconTransform,
         IconFiles,

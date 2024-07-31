@@ -211,11 +211,14 @@
                         @click='drawModePoint = "u-d-p"'
                     >
                     <label
+                        v-tooltip='"Custom Point"'
                         for='point-default'
                         type='button'
                         class='btn'
-                        v-tooltip='"Custom Point"'
-                    ><IconPoint :size='40' :stroke='1'/></label>
+                    ><IconPoint
+                        :size='40'
+                        :stroke='1'
+                    /></label>
 
                     <input
                         id='point-unknown'
@@ -227,11 +230,15 @@
                         @click='drawModePoint = "a-u-G"'
                     >
                     <label
+                        v-tooltip='"Unknown Point"'
                         for='point-unknown'
                         type='button'
                         class='btn'
-                        v-tooltip='"Unknown Point"'
-                    ><img width='40' height='40' src='/icons/a-u-G.png'/></label>
+                    ><img
+                        width='40'
+                        height='40'
+                        src='/icons/a-u-G.png'
+                    ></label>
 
                     <input
                         id='point-friendly'
@@ -243,11 +250,15 @@
                         @click='drawModePoint = "a-f-G"'
                     >
                     <label
+                        v-tooltip='"Friendly Point"'
                         for='point-friendly'
                         type='button'
                         class='btn'
-                        v-tooltip='"Friendly Point"'
-                    ><img width='40' height='40' src='/icons/a-f-G.png'/></label>
+                    ><img
+                        width='40'
+                        height='40'
+                        src='/icons/a-f-G.png'
+                    ></label>
 
                     <input
                         id='point-hostile'
@@ -259,11 +270,15 @@
                         @click='drawModePoint = "a-h-G"'
                     >
                     <label
+                        v-tooltip='"Hostile Point"'
                         for='point-hostile'
                         type='button'
                         class='btn'
-                        v-tooltip='"Hostile Point"'
-                    ><img width='40' height='40' src='/icons/a-h-G.png'/></label>
+                    ><img
+                        width='40'
+                        height='40'
+                        src='/icons/a-h-G.png'
+                    ></label>
 
                     <input
                         id='point-neutral'
@@ -275,11 +290,15 @@
                         @click='drawModePoint = "a-n-G"'
                     >
                     <label
+                        v-tooltip='"Neutral Point"'
                         for='point-neutral'
                         type='button'
                         class='btn'
-                        v-tooltip='"Neutral Point"'
-                    ><img width='40' height='40' src='/icons/a-n-G.png'/></label>
+                    ><img
+                        width='40'
+                        height='40'
+                        src='/icons/a-n-G.png'
+                    ></label>
                 </div>
             </div>
 
