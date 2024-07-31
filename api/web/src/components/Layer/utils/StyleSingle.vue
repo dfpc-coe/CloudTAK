@@ -658,6 +658,12 @@ export default {
         };
     },
     watch: {
+        enabled: {
+            deep: true,
+            handler: function() {
+                this.format();
+            }
+        },
         filters: {
             deep: true,
             handler: function() {
@@ -711,8 +717,6 @@ export default {
                     }
                 }
             }
-
-            console.error(res.polygon);
 
             this.$emit('update:modelValue', res);
         }
