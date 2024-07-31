@@ -151,7 +151,7 @@
                 </div>
             </div>
         </div>
-        
+
         <div class='col-md-12 hover-light rounded px-2 py-2'>
             <div class='col-12 d-flex align-items-center'>
                 <label><IconLicense
@@ -702,7 +702,7 @@ export default {
                     if (!styles[geom].enabled[key]) continue;
 
                     if (['fill-opacity', 'stroke-width', 'stroke-opacity'].includes(key)) {
-                        if (res[geom][key] !== undefined) res[geom][key] = parseInt(res[geom][key])
+                        if (styles[geom].properties[key] !== undefined) res[geom][key] = Number(styles[geom].properties[key])
                     } else if (['remarks', 'callsign'].includes(key)) {
                         if (styles[geom].properties[key]) res[geom][key] = styles[geom].properties[key];
                     } else {
@@ -710,6 +710,8 @@ export default {
                     }
                 }
             }
+
+            console.error(res.polygon);
 
             this.$emit('update:modelValue', res);
         }
