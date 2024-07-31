@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v2.87.1 - 2024-07-31
+
+- :bug: `API` Fix Global ID validation bug
+
 ### v2.87.0 - 2024-07-31
 
 - :rocket: `API/UI` Allow ID overrides in Style Editor
