@@ -151,6 +151,30 @@
                 </div>
             </div>
         </div>
+        
+        <div class='col-md-12 hover-light rounded px-2 py-2'>
+            <div class='col-12 d-flex align-items-center'>
+                <label><IconLicense
+                    :size='20'
+                    :stroke='1'
+                /> ID Override</label>
+                <div class='ms-auto'>
+                    <TablerToggle
+                        v-model='filters[mode].enabled.id'
+                        :disabled='disabled'
+                        label='Enabled'
+                    />
+                </div>
+            </div>
+
+            <StyleTemplate
+                v-if='filters[mode].enabled.id'
+                v-model='filters[mode].properties.id'
+                placeholder='ID Override'
+                :disabled='disabled'
+                :schema='schema'
+            />
+        </div>
 
         <div class='col-md-12 hover-light rounded px-2 py-2'>
             <div class='col-12 d-flex align-items-center'>
@@ -667,7 +691,8 @@ export default {
 
             const res = {};
 
-            for (const prop of ['remarks', 'callsign', 'links']) {
+            for (const prop of ['id', 'remarks', 'callsign', 'links']) {
+                if (!this.enabled[prop]) continue;
                 res[prop] = styles[prop];
             }
 
