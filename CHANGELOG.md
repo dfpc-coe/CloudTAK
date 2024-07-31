@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v2.86.0 - 2024-07-31
+
+- :bug: `API/UI` Allow specifying Alarm Options
+
 ### v2.85.3 - 2024-07-31
 
 - :bug: `UI` Make Delete ProfileFeature call after removing from map
