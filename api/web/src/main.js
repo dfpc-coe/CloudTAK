@@ -30,6 +30,10 @@ const router = new VueRouter.createRouter({
                     name: 'home-menu-settings',
                     component: () => import('./components/CloudTAK/Menu/Settings.vue')
                 },{
+                    path: 'settings/tokens',
+                    name: 'home-menu-settings-tokens',
+                    component: () => import('./components/CloudTAK/Menu/SettingsTokens.vue')
+                },{
                     path: 'settings/callsign',
                     name: 'home-menu-settings-callsign',
                     component: () => import('./components/CloudTAK/Menu/SettingsCallsign.vue')
@@ -290,10 +294,6 @@ const router = new VueRouter.createRouter({
                 path: 'files',
                 name: 'profile-files',
                 component: () => import('./components/Profile/ProfileFiles.vue')
-            },{
-                path: 'tokens',
-                name: 'profile-tokens',
-                component: () => import('./components/Profile/ProfileTokens.vue')
             },{
                 path: 'videos',
                 name: 'profile-videos',
