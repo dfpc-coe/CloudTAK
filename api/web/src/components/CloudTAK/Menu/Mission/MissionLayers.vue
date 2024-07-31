@@ -125,7 +125,6 @@
                                 :stroke='1'
                                 @delete='deleteLayer(layer)'
                             />
-
                         </div>
                     </div>
 
