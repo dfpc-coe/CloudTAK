@@ -164,11 +164,11 @@ export default class Style {
             if (type in style) {
                 if (style[type].links) this.#validateLinks(style[type].links);
 
-                if (style.id) {
+                if (style[type].id) {
                     try {
                         handlebars.compile(style[type].id)({});
                     } catch (err) {
-                        throw new Err(400, err, `Invalid (${type}) Type Template: ${style[type].id}`)
+                        throw new Err(400, err, `Invalid (${type}) ID Template: ${style[type].id}`)
                     }
                 }
 
