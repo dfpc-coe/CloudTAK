@@ -4,7 +4,7 @@ import Err from '@openaddresses/batch-error';
 import moment from 'moment';
 import fetch from './fetch.js';
 import { CookieJar } from 'tough-cookie';
-import { Profile } from './schema.js';
+import type { Profile } from './schema.js';
 import { CookieAgent } from 'http-cookie-agent/undici';
 import { X509Certificate } from 'crypto';
 import TAKAPI, { APIAuthPassword, APIAuthCertificate } from '../lib/tak-api.js';

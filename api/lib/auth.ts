@@ -3,7 +3,7 @@ import Err from '@openaddresses/batch-error';
 import jwt from 'jsonwebtoken';
 import Config from './config.js';
 import { InferSelectModel } from 'drizzle-orm';
-import { Profile, Connection } from './schema.js';
+import type { Profile, Connection } from './schema.js';
 
 export enum ResourceCreationScope {
     SERVER = 'server',

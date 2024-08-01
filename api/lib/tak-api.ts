@@ -55,6 +55,7 @@ export default class TAKAPI {
     stdurl(url: string | URL) {
         try {
             url = new URL(url);
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (err) {
             url = new URL(url, this.url);
         }
@@ -100,6 +101,7 @@ export default class TAKAPI {
                 try {
                     bdy = await res.text();
                 } catch (err) {
+                    console.error(err);
                     bdy = null;
                 }
 

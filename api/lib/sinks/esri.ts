@@ -1,5 +1,5 @@
 import SinkInterface from '../sink.js';
-import { ConnectionSink } from '../schema.js';
+import type { ConnectionSink } from '../schema.js';
 import { type InferSelectModel } from 'drizzle-orm';
 import { EsriBase } from '../esri.js';
 import Cacher from '../cacher.js';

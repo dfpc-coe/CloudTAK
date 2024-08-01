@@ -1,4 +1,4 @@
-import { ConnectionSink } from './schema.js';
+import type { ConnectionSink } from './schema.js';
 import { InferSelectModel } from 'drizzle-orm';
 import Config from './config.js';
 

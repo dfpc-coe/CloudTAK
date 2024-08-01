@@ -68,6 +68,7 @@ export default async function router(schema: Schema, config: Config) {
                     try {
                         await config.models.Basemap.from(item.mode_id);
                     } catch (err) {
+                        console.error('Could not find basemap', err);
                         await config.models.ProfileOverlay.delete(item.id);
                         removed.push(...overlays.items.splice(i, 1));
                         overlays.total--;

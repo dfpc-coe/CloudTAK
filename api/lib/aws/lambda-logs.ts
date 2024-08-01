@@ -1,6 +1,6 @@
 import CloudWatchLogs from '@aws-sdk/client-cloudwatch-logs';
 import { InferSelectModel } from 'drizzle-orm'
-import { Layer } from '../schema.js';
+import type { Layer } from '../schema.js';
 import Err from '@openaddresses/batch-error';
 import Config from '../config.js';
 import process from 'node:process';

@@ -3,7 +3,7 @@ import Config from '../config.js';
 import jwt from 'jsonwebtoken';
 import Err from '@openaddresses/batch-error';
 import process from 'node:process';
-import { Data } from '../schema.js';
+import type { Data } from '../schema.js';
 import { type InferSelectModel } from 'drizzle-orm';
 
 export interface BatchJob {

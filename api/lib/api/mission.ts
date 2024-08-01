@@ -6,7 +6,7 @@ import Err from '@openaddresses/batch-error';
 import { Readable } from 'node:stream'
 import { TAKItem, TAKList } from './types.js';
 import { MissionLog } from './mission-log.js';
-import { Feature } from '@tak-ps/node-cot';
+import type { Feature } from '@tak-ps/node-cot';
 
 export const Mission = Type.Object({
     name: Type.String(),
@@ -556,6 +556,7 @@ export default class {
                 return true;
             }
         } catch (err) {
+            console.error(err);
             return false;
         }
     }

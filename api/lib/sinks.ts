@@ -1,7 +1,7 @@
 import Config from './config.js';
 import { CoT } from '@tak-ps/node-tak';
 import ESRISink from './sinks/esri.js';
-import SinkInterface from './sink.js';
+import type SinkInterface from './sink.js';
 import HookQueue from './aws/hooks.js';
 import Cacher from './cacher.js';
 import { ConnectionSink } from './schema.js';

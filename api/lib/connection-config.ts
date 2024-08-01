@@ -1,4 +1,4 @@
-import { Connection } from './schema.js';
+import type { Connection } from './schema.js';
 import { X509Certificate } from 'crypto';
 import { InferSelectModel, sql } from 'drizzle-orm';
 import Config from './config.js';

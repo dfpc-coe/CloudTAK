@@ -33,6 +33,7 @@ export default class CloudFormation {
                 logGroupName: `/aws/lambda/${config.StackName}-layer-${layerid}`
             }));
         } catch (err) {
+            console.error(err);
             // Resource not found
         }
 

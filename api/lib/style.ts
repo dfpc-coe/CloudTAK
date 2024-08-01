@@ -1,6 +1,6 @@
 import { Type, Static } from '@sinclair/typebox'
 import jsonata from 'jsonata';
-import { Feature } from '@tak-ps/node-cot';
+import type { Feature } from '@tak-ps/node-cot';
 import handlebars from 'handlebars';
 import Err from '@openaddresses/batch-error';
 
@@ -272,6 +272,8 @@ export default class Style {
 
                         this.#by_geom(q.styles, feature);
                     }
+    
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 } catch (err) {
                     // Ignore queries that result in invalid output - this is explicitly allowed
                 }

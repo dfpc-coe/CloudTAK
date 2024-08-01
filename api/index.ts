@@ -41,7 +41,7 @@ try {
 
     process.env = Object.assign(JSON.parse(String(fs.readFileSync(dotfile))), process.env);
 } catch (err) {
-    console.log('ok - no .env file loaded');
+    console.log('ok - no .env file loaded', err);
 }
 
 const pkg = JSON.parse(String(fs.readFileSync(new URL('./package.json', import.meta.url))));
