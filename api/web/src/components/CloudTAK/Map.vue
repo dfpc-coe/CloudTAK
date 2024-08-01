@@ -560,10 +560,6 @@ export default {
             await this.fetchSearch();
         },
     },
-    unmounted: function() {
-        cotStore.$reset();
-        mapStore.destroy();
-    },
     mounted: async function() {
         // ensure uncaught errors in the stack are captured into vue context
         window.addEventListener('error', (evt) => {
@@ -641,7 +637,11 @@ export default {
 
         if (mapStore.map) {
             mapStore.map.remove();
+            delete mapStore.map;
         }
+
+        cotStore.$reset();
+        mapStore.destroy();
     },
     methods: {
         ...mapActions(useProfileStore, ['clearNotifications']),
