@@ -39,7 +39,10 @@
                         </div>
                         <div class='col-auto'>
                             <div class='col-12'>
-                                <span class='mx-2' v-text='asset.name'/>
+                                <span
+                                    class='mx-2'
+                                    v-text='asset.name'
+                                />
                             </div>
                             <div class='col-12 subheader'>
                                 <span class='mx-2'>
@@ -99,7 +102,6 @@ import {
     TablerEpoch
 } from '@tak-ps/vue-tabler';
 import {
-    IconPlus,
     IconMap,
     IconMapOff,
     IconTransform,
@@ -107,15 +109,11 @@ import {
     IconRefresh,
 } from '@tabler/icons-vue';
 import MenuTemplate from '../util/MenuTemplate.vue';
-import Status from '../../util/Status.vue';
 import timeDiff from '../../../timediff.js';
-import Upload from '../../util/Upload.vue';
 
 export default {
     name: 'CloudTAKImports',
     components: {
-        Status,
-        Upload,
         TablerNone,
         TablerPager,
         TablerLoading,
@@ -124,7 +122,6 @@ export default {
         TablerDelete,
         IconMap,
         IconMapOff,
-        IconPlus,
         IconTransform,
         IconDownload,
         IconRefresh,

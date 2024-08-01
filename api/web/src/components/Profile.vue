@@ -26,17 +26,6 @@
                                             <span
                                                 class='list-group-item list-group-item-action d-flex align-items-center'
                                                 :class='{
-                                                    "active": $route.name === "profile-files",
-                                                    "cursor-pointer": $route.name !== "profile-files"
-                                                }'
-                                                @click='$router.push(`/profile/files`)'
-                                            ><IconFiles
-                                                :size='32'
-                                                :stroke='1'
-                                            /><span class='mx-3'>Files</span></span>
-                                            <span
-                                                class='list-group-item list-group-item-action d-flex align-items-center'
-                                                :class='{
                                                     "active": $route.name === "profile-videos",
                                                     "cursor-pointer": $route.name !== "profile-videos"
                                                 }'
@@ -81,7 +70,6 @@ import {
 import {
     IconVideo,
     IconTransform,
-    IconFiles,
 } from '@tabler/icons-vue';
 
 export default {
@@ -90,7 +78,6 @@ export default {
         IconVideo,
         PageFooter,
         IconTransform,
-        IconFiles,
         TablerBreadCrumb
     }
 }
