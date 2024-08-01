@@ -46,6 +46,10 @@ const router = new VueRouter.createRouter({
                     name: 'home-menu-imports',
                     component: () => import('./components/CloudTAK/Menu/Imports.vue')
                 },{
+                    path: 'files',
+                    name: 'home-menu-files',
+                    component: () => import('./components/CloudTAK/Menu/Files.vue')
+                },{
                     path: 'packages',
                     name: 'home-menu-packages',
                     component: () => import('./components/CloudTAK/Menu/Packages.vue')

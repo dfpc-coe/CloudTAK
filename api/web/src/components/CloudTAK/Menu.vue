@@ -249,6 +249,29 @@
                             "py-2 px-3 hover-dark": !compact,
                             "py-1 px-2 hover-button": compact
                         }'
+                        @click='push("/menu/files")'
+                    >
+                        <IconFiles
+                            v-tooltip='{
+                                content: "Your Files",
+                                placement: "left",
+                            }'
+                            :class='{ "mx-2": compact }'
+                            :size='32'
+                            :stroke='1'
+                        />
+                        <span
+                            v-if='!compact'
+                            class='mx-2'
+                            style='font-size: 18px;'
+                        >Uploaded Files</span>
+                    </div>
+                    <div
+                        class='cursor-pointer col-12 d-flex align-items-center'
+                        :class='{
+                            "py-2 px-3 hover-dark": !compact,
+                            "py-1 px-2 hover-button": compact
+                        }'
                         @click='push("/menu/imports")'
                     >
                         <IconFileImport
@@ -409,6 +432,7 @@
 import {
     IconMap,
     IconUser,
+    IconFiles,
     IconUsers,
     IconVideo,
     IconPhoto,
@@ -446,6 +470,7 @@ export default {
         IconAmbulance,
         IconSettings,
         IconFileImport,
+        IconFiles,
         IconLogout,
         IconVideo,
         IconUser,
