@@ -1,6 +1,6 @@
 import Err from '@openaddresses/batch-error';
 import { Static } from '@sinclair/typebox';
-import { ESRILayerList } from './esri/types.js';
+import type { ESRILayerList } from './esri/types.js';
 import { DefaultLayer } from './esri/layer.js'
 
 export enum EsriType {
@@ -177,8 +177,7 @@ export class EsriBase {
             throw new Err(400, err instanceof Error ? err : new Error(String(err)), err instanceof Error ? err.message : String(err));
         }
 
-        base as URL;
-        return base;
+        return base as URL;
     }
 
     standardHeaders(): Headers {

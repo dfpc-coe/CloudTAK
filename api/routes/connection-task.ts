@@ -218,7 +218,7 @@ export default async function router(schema: Schema, config: Config) {
             try {
                 await Logs.delete(config, layer);
             } catch (err) {
-                console.log('no existing log groups');
+                console.log('no existing log groups', err);
             }
 
             const lambda = await Lambda.generate(config, layer);

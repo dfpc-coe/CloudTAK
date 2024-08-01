@@ -4,7 +4,7 @@ import { Layer } from './schema.js';
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import { type InferSelectModel } from 'drizzle-orm';
 import Modeler from '@openaddresses/batch-generic';
-import * as pgtypes from './schema.js'
+import type * as pgtypes from './schema.js'
 
 /**
  * Maintain a pool of Events - this pool handles second level
@@ -92,6 +92,7 @@ export default class EventsPool {
             const name = `layer-${layerid}`;
             await this.bree.remove(name);
         } catch (err) {
+            console.error(err);
             // This usually only happens when a job is added that doesn't exist yet
         }
     }

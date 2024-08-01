@@ -1,5 +1,5 @@
 import { Static } from '@sinclair/typebox';
-import { ESRILayer, ESRIField } from './types.js';
+import type { ESRILayer, ESRIField } from './types.js';
 
 export default class Layer {
     layers: Array<Static<typeof ESRILayer>>;

@@ -12,7 +12,7 @@ import assetList from '../lib/asset.js';
 import Config from '../lib/config.js';
 import DataMission from '../lib/data-mission.js';
 import { InferSelectModel } from 'drizzle-orm';
-import { Data } from '../lib/schema.js';
+import type { Data } from '../lib/schema.js';
 import { StandardResponse, AssetResponse, GenericMartiResponse } from '../lib/types.js';
 import TAKAPI, {
     APIAuthCertificate,

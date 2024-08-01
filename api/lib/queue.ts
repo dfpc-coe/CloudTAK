@@ -34,7 +34,7 @@ export default class DDBQueue extends EventEmitter {
 
             await this.db.puts(tiles);
         } catch (err) {
-            this.emit('error');
+            this.emit('error', err);
         }
 
         this.processing = false;

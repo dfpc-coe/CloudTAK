@@ -1,6 +1,6 @@
 import { sql } from 'drizzle-orm';
 import { Static } from '@sinclair/typebox'
-import { StyleContainer } from './style.js';
+import type { StyleContainer } from './style.js';
 import { geometry, GeometryType } from '@openaddresses/batch-generic';
 import { ConnectionAuth } from './connection-config.js';
 import { TAKGroup, TAKRole } from  './api/types.js';

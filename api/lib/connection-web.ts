@@ -1,5 +1,6 @@
 import { Static } from '@sinclair/typebox'
-import CoT, { DirectChat, Feature }  from '@tak-ps/node-cot';
+import CoT, { DirectChat }  from '@tak-ps/node-cot';
+import type { Feature }  from '@tak-ps/node-cot';
 import { WebSocket } from 'ws';
 import { ConnectionClient } from './connection-pool.js';
 

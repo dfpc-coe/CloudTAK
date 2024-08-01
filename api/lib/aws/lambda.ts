@@ -1,6 +1,6 @@
 import cf from '@openaddresses/cloudfriend';
 import { InferSelectModel } from 'drizzle-orm';
-import { Layer } from '../schema.js';
+import type { Layer } from '../schema.js';
 import AWSLambda from '@aws-sdk/client-lambda';
 import Config from '../config.js';
 import jwt from 'jsonwebtoken';

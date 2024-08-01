@@ -64,10 +64,9 @@ export default class File {
         if (body instanceof Buffer) {
             body = Readable.from(body as Buffer);
         }
-        body as Readable;
 
         const form = new FormData()
-        form.append('assetfile', body);
+        form.append('assetfile', body as Readable);
 
         const res = await this.api.fetch(url, {
             method: 'POST',
@@ -98,7 +97,6 @@ export default class File {
         if (body instanceof Buffer) {
             body = Readable.from(body as Buffer);
         }
-        body as Readable;
 
         const res = await this.api.fetch(url, {
             method: 'POST',
@@ -106,7 +104,7 @@ export default class File {
                 'Content-Type': opts.contentType ? opts.contentType : mime.getType(opts.name),
                 'Content-Length': opts.contentLength
             },
-            body
+            body: body as Readable
         });
 
         return JSON.parse(res);

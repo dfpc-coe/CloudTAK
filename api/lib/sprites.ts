@@ -1,7 +1,7 @@
 import spritesmith from 'spritesmith';
 import Vinyl from 'vinyl';
 import { promisify } from 'node:util'
-import { Icon } from './schema.js';
+import type { Icon } from './schema.js';
 import { type InferSelectModel } from 'drizzle-orm';
 
 const SpriteSmith = promisify(spritesmith.run);

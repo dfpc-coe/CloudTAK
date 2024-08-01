@@ -1,7 +1,7 @@
 import Config from '../config.js';
 import S3 from '../aws/s3.js'
 import { Static } from '@sinclair/typebox';
-import { ImportResponse } from '../types.js';
+import type { ImportResponse } from '../types.js';
 import crypto from 'node:crypto';
 import TAKAPI, {
     APIAuthCertificate,

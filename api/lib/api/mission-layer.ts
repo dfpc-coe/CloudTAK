@@ -1,9 +1,9 @@
 import TAKAPI from '../tak-api.js';
 import { TAKList } from './types.js';
 import { Type, Static } from '@sinclair/typebox';
-import { MissionOptions } from './mission.js';
+import type { MissionOptions } from './mission.js';
 import Err from '@openaddresses/batch-error';
-import { Feature } from '@tak-ps/node-cot';
+import type { Feature } from '@tak-ps/node-cot';
 
 export enum MissionLayerType {
     GROUP = 'GROUP',
