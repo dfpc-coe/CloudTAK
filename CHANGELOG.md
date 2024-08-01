@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v2.87.2 - 2024-08-01
+
+- :bug: `UI` Fix Unmount behavior on CloudTAK Map Page
+
 ### v2.87.1 - 2024-07-31
 
 - :bug: `API` Fix Global ID validation bug
