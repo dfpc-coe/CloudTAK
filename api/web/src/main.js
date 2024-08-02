@@ -295,10 +295,6 @@ const router = new VueRouter.createRouter({
                 name: 'profile-job',
                 component: () => import('./components/Profile/ProfileJob.vue')
             },{
-                path: 'files',
-                name: 'profile-files',
-                component: () => import('./components/Profile/ProfileFiles.vue')
-            },{
                 path: 'videos',
                 name: 'profile-videos',
                 component: () => import('./components/Profile/ProfileVideos.vue')
