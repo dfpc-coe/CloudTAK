@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v2.88.0 - 2024-08-04
+
+- :rocket: `UI` Add `Elevation` component where relevant in CoTView
+
 ### v2.87.2 - 2024-08-01
 
 - :bug: `UI` Fix Unmount behavior on CloudTAK Map Page
