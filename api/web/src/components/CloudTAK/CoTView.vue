@@ -19,23 +19,23 @@
                     >
                         <IconBattery1
                             v-if='parseInt(feat.properties.status.battery) <= 25'
-                            :size='32' 
-                            :stroke='1' 
+                            :size='32'
+                            :stroke='1'
                         />
                         <IconBattery2
                             v-else-if='parseInt(feat.properties.status.battery) <= 50'
-                            :size='32' 
-                            :stroke='1' 
+                            :size='32'
+                            :stroke='1'
                         />
                         <IconBattery3
                             v-else-if='parseInt(feat.properties.status.battery) <= 75'
-                            :size='32' 
-                            :stroke='1' 
+                            :size='32'
+                            :stroke='1'
                         />
                         <IconBattery4
                             v-else-if='parseInt(feat.properties.status.battery) <= 100'
-                            :size='32' 
-                            :stroke='1' 
+                            :size='32'
+                            :stroke='1'
                         />
                     </span>
                     <div class='col-12'>
@@ -64,8 +64,8 @@
                     <div class='btn-list'>
                         <IconShare2
                             v-tooltip='"Share"'
-                            :size='32' 
-                            :stroke='1' 
+                            :size='32'
+                            :stroke='1'
                             class='cursor-pointer'
                             @click='mode === "share" ? mode = "default" : mode = "share"'
                         />
@@ -77,24 +77,24 @@
                         />
                         <IconZoomPan
                             v-tooltip='"Zoom To"'
-                            :size='32' 
-                            :stroke='1' 
+                            :size='32'
+                            :stroke='1'
                             class='cursor-pointer'
                             @click='zoomTo'
                         />
                         <IconCode
                             v-if='mode === "default"'
                             v-tooltip='"Raw View"'
-                            :size='32' 
-                            :stroke='1' 
+                            :size='32'
+                            :stroke='1'
                             class='cursor-pointer'
                             @click='mode = "raw"'
                         />
                         <IconX
                             v-if='mode === "raw"'
                             v-tooltip='"Default View"'
-                            :size='32' 
-                            :stroke='1' 
+                            :size='32'
+                            :stroke='1'
                             class='cursor-pointer'
                             @click='mode = "default"'
                         />
@@ -106,6 +106,13 @@
         <template v-if='mode === "default"'>
             <Coordinate
                 v-model='center'
+                class='py-2'
+            />
+
+            <Elevation
+                v-if='center.length > 2'
+                :unit='profile.display_elevation'
+                :elevation='feat.properties.center[2]'
                 class='py-2'
             />
 
@@ -284,6 +291,7 @@ import Share from './util/Share.vue';
 import CoTStyle from './util/CoTStyle.vue';
 import Coordinate from './util/Coordinate.vue';
 import Speed from './util/Speed.vue';
+import Elevation from './util/Elevation.vue';
 import phone from 'phone';
 import {
     IconX,
@@ -378,6 +386,7 @@ export default {
         IconShare2,
         CoTStyle,
         IconZoomPan,
+        Elevation,
         Speed,
         Share,
         Coordinate,
