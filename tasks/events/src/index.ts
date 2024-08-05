@@ -144,7 +144,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
         Object.assign(process.env, JSON.parse(String(fs.readFileSync(dotfile))));
         console.log('ok - .env file loaded');
     } catch (err) {
-        console.log('ok - no .env file loaded');
+        console.log(`ok - no .env file loaded (${err})`);
     }
 
 

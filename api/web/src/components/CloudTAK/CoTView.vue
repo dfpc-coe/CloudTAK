@@ -123,6 +123,13 @@
                 class='py-2'
             />
 
+            <Attachments
+                v-if='feat.properties.attachments && feat.properties.attachments.length'
+                :attachments='feat.properties.attachments'
+                class='py-2'
+            />
+
+
             <div
                 v-if='feat.properties.contact && feat.properties.contact.phone'
                 class='col-12 px-2 pb-2'
@@ -292,6 +299,7 @@ import CoTStyle from './util/CoTStyle.vue';
 import Coordinate from './util/Coordinate.vue';
 import Speed from './util/Speed.vue';
 import Elevation from './util/Elevation.vue';
+import Attachments from './util/Attachments.vue';
 import phone from 'phone';
 import {
     IconX,
@@ -387,6 +395,7 @@ export default {
         CoTStyle,
         IconZoomPan,
         Elevation,
+        Attachments,
         Speed,
         Share,
         Coordinate,

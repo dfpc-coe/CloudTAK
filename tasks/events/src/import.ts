@@ -25,6 +25,7 @@ export default async function(md: Event) {
         md.UserToken = jwt.sign({ access: 'user', email: imported.username }, String(process.env.SigningSecret));
 
         const s3 = new S3.S3Client({ region: process.env.AWS_DEFAULT_REGION || 'us-east-1' });
+
         await pipeline(
             // @ts-expect-error 'StreamingBlobPayloadOutputTypes | undefined' is not assignable to parameter of type 'ReadableStream'
             (await s3.send(new S3.GetObjectCommand({
@@ -49,13 +50,35 @@ export default async function(md: Event) {
             const pkg = await DataPackage.parse(md.Local);
 
             // TODO Support Geospatial Files
-            const feats = await pkg.cots();
-            for (const feat of feats) {
+            const cots = await pkg.cots();
+            for (const cot of cots) {
+                const feat = cot.to_geojson();
+
+                if (feat.properties.attachments) {
+                    const attachments = await pkg.attachments();
+                    for (const uid of attachments.keys()) {
+                        const contents = attachments.get(uid);
+                        if (!contents || !contents.length) continue;
+
+                        for (const content of contents) {
+                            const hash = await pkg.hash(content._attributes.zipEntry)
+                            const name = path.parse(content._attributes.zipEntry).base;
+
+                            console.log(`ok - uploading: s3://${md.Bucket}/attachment/${hash}/${name}`);
+                            await s3.send(new S3.PutObjectCommand({
+                                Bucket: md.Bucket,
+                                Key: `attachment/${hash}/${name}`,
+                                Body: await pkg.getFile(content._attributes.zipEntry)
+                            }))
+                        }
+                    }
+                }
+
                 await API.putFeature({
                     token: md.UserToken,
                     broadcast: true,
                     body: {
-                        ...feat.to_geojson(),
+                        ...feat,
                         path: `/${pkg.settings.name.replace(/\//g, '')}/`,
                     }
                 });
