@@ -69,7 +69,11 @@ export const useConnectionStore = defineStore('connection', {
                     const task = body.data as Feature;
 
                     if (task.properties.type === 't-x-m-c') {
+                        // Mission Change Tasking
                         cotStore.subChange(task);
+                    } else if (task.properties.type === 't-x-d-d') {
+                        // CoT Delete Tasking
+                        console.error('DELETE', task.properties);
                     } else {
                         console.warn('Unknown Task', JSON.stringify(task));
                     }

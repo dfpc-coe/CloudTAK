@@ -23,6 +23,18 @@ export default class File {
         this.api = api;
     }
 
+    async meta(hash: string): Promise<string> {
+        const url = new URL(`/Marti/sync/${encodeURIComponent(hash)}/metadata`, this.api.url);
+
+        const res = await this.api.fetch(url, {
+            method: 'GET'
+        }, true);
+
+        const body = await res.text();
+
+        return body;
+    }
+
     async download(hash: string): Promise<Readable> {
         const url = new URL(`/Marti/sync/content`, this.api.url);
         url.searchParams.append('hash', hash);
