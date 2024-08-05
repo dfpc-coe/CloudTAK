@@ -10,6 +10,16 @@
                         <IconPhoto v-if='[".png", ".jpg"].includes(file.ext)' :size='24' :stroke='1'/>
                         <IconFile v-else :size='24' :stroke='1'/>
                         <span class='mx-2' v-text='file.name'/>
+
+                        <div class='ms-auto'>
+                            <IconDownload
+                                v-tooltip='"Download Asset"'
+                                :size='24'
+                                :stroke='1'
+                                class='cursor-pointer'
+                                @click='downloadAsset(file)'
+                            />
+                        </div>
                     </div>
                 </template>
             </template>
@@ -21,7 +31,8 @@
 import { std, stdurl } from '/src/std.ts';
 import {
     IconFile,
-    IconPhoto
+    IconPhoto,
+    IconDownload
 } from '@tabler/icons-vue';
 
 import {
@@ -39,6 +50,7 @@ export default {
     components: {
         IconPhoto,
         IconFile,
+        IconDownload,
         TablerLoading
     },
     mounted: async function() {
@@ -52,6 +64,11 @@ export default {
         }
     },
     methods: {
+        downloadAsset: async function(file) {
+            const url = stdurl(`/api/attachment/${file.hash}`);
+            url.searchParams.append('token', localStorage.token);
+            window.open(url, "_blank")
+        },
         fetchMetadata: async function() {
             const url = stdurl(`/api/attachment`);
             for (const a of this.attachments) {
