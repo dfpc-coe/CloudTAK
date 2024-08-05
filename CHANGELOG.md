@@ -12,6 +12,11 @@
 
 ### Pending Release
 
+### v2.89.0 - 2024-08-05
+
+- :rocket: `UI` Add attachments section
+- :tada: `API` Process attachments that come in via DataPackages
+
 ### v2.88.0 - 2024-08-04
 
 - :rocket: `UI` Add `Elevation` component where relevant in CoTView
