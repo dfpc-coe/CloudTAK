@@ -55,13 +55,22 @@ export default async function(md: Event) {
                 const feat = cot.to_geojson();
 
                 if (feat.properties.attachments) {
-                    for (const a of feat.properties.attachments) {
-                        await s3.send(new S3.CopyObjectCommand({
-                            CopySource: `${event.Bucket}/${event.Key}`,
-                            Bucket: event.Bucket,
-                            Key: `profile/${imported.username}/${imported.name}`
-                        }))
+                    const attachments = await pkg.attachments();
+                    for (const uid of attachments.keys()) {
+                        const contents = attachments.get(uid);
+                        if (!contents || !contents.length) continue;
 
+                        for (const content of contents) {
+                            const hash = await pkg.hash(content._attributes.zipEntry)
+                            const name = path.parse(content._attributes.zipEntry).base;
+
+                            console.log(`ok - uploading: s3://${md.Bucket}/attachment/${hash}/${name}`);
+                            await s3.send(new S3.PutObjectCommand({
+                                Bucket: md.Bucket,
+                                Key: `attachment/${hash}/${name}`,
+                                Body: await pkg.getFile(content._attributes.zipEntry)
+                            }))
+                        }
                     }
                 }
 
