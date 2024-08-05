@@ -1,12 +1,9 @@
 import path from 'path';
 import { Type } from '@sinclair/typebox'
-import { StandardResponse, ProfileAssetResponse } from '../lib/types.js';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
 import S3 from '../lib/aws/s3.js';
-import jwt from 'jsonwebtoken';
-import assetList from '../lib/asset.js';
 import Config from '../lib/config.js';
 
 export default async function router(schema: Schema, config: Config) {
