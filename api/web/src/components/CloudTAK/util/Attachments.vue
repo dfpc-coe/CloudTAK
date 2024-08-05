@@ -5,9 +5,11 @@
         <div class='mx-2'>
             <TablerLoading v-if='loading' :inline='true'/>
             <template v-else>
-                <template v-for='a of attachments'>
-                    <div class='col-12'>
-                        <span v-text='a'/>
+                <template v-for='file of files'>
+                    <div class='col-12 hover-button px-2 py-2 d-flex align-items-center'>
+                        <IconPhoto v-if='[".png", ".jpg"].includes(file.ext)' :size='24' :stroke='1'/>
+                        <IconFile v-else :size='24' :stroke='1'/>
+                        <span class='mx-2' v-text='file.name'/>
                     </div>
                 </template>
             </template>
@@ -16,7 +18,12 @@
 </template>
 
 <script>
-import { std } from '/src/std.ts';
+import { std, stdurl } from '/src/std.ts';
+import {
+    IconFile,
+    IconPhoto
+} from '@tabler/icons-vue';
+
 import {
     TablerLoading
 } from '@tak-ps/vue-tabler'
@@ -30,15 +37,13 @@ export default {
         },
     },
     components: {
+        IconPhoto,
+        IconFile,
         TablerLoading
     },
     mounted: async function() {
-        const load = [];
-        for (const a of this.attachments) {
-            load.push(this.fetchMetadata(a));
-        }
-
-        await Promise.all(load);
+        this.files = this.fetchMetadata();
+        this.loading = false;
     },
     data: function() {
         return {
@@ -47,8 +52,12 @@ export default {
         }
     },
     methods: {
-        fetchMetadata: async function(hash) {
-            return await std(`/api/marti/api/files/${hash}/metadata`)
+        fetchMetadata: async function() {
+            const url = stdurl(`/api/attachment`);
+            for (const a of this.attachments) {
+                url.searchParams.append('hash', a);
+            }
+            this.files = (await std(url)).items;
         }
     }
 }
