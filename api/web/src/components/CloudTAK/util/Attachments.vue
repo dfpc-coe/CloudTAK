@@ -54,7 +54,7 @@ export default {
         TablerLoading
     },
     mounted: async function() {
-        this.files = this.fetchMetadata();
+        await this.fetchMetadata();
         this.loading = false;
     },
     data: function() {
