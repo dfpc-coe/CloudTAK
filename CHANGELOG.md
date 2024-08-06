@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v2.90.0 - 2024-08-06
+
+- :tada: `UI` Add initial PWA basics
+
 ### v2.89.0 - 2024-08-05
 
 - :rocket: `UI` Add attachments section
