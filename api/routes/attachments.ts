@@ -56,7 +56,7 @@ export default async function router(schema: Schema, config: Config) {
         }
     });
 
-    await schema.post('/attachment', {
+    await schema.put('/attachment', {
         name: 'Upload Attachment',
         group: 'Attachments',
         description: 'Upload an attachment that is assigned to a given CoT',
@@ -82,6 +82,7 @@ export default async function router(schema: Schema, config: Config) {
             const uploads: Promise<{
                 hash: string;
             }>[] = [];
+
             bb.on('file', async (fieldname, file, blob) => {
                 uploads.push(attachmentControl.upload(blob.filename, file));
             }).on('finish', async () => {
