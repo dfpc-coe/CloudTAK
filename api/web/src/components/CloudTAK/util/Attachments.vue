@@ -3,7 +3,16 @@
         <label class='subheader mx-2'>Attachments</label>
 
         <div class='mx-2'>
-            <TablerLoading v-if='loading' :inline='true'/>
+            <TablerLoading
+                v-if='loading'
+                :inline='true'
+                class='my-2'
+            />
+            <TablerNone
+                v-else-if='!files.length'
+                :compact='true'
+                :create='false'
+            />
             <template v-else>
                 <template v-for='file of files'>
                     <div class='col-12 hover-button px-2 py-2 d-flex align-items-center'>
@@ -36,7 +45,8 @@ import {
 } from '@tabler/icons-vue';
 
 import {
-    TablerLoading
+    TablerLoading,
+    TablerNone
 } from '@tak-ps/vue-tabler'
 
 export default {
@@ -51,10 +61,14 @@ export default {
         IconPhoto,
         IconFile,
         IconDownload,
-        TablerLoading
+        TablerLoading,
+        TablerNone
     },
     mounted: async function() {
-        await this.fetchMetadata();
+        if (this.attachments.length) {
+            await this.fetchMetadata();
+        }
+
         this.loading = false;
     },
     data: function() {
