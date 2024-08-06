@@ -45,7 +45,7 @@ export default async function router(schema: Schema, config: Config) {
                 bb.on('file', async (fieldname, file, meta) => {
                     try {
                         pkg.settings.name = meta.filename;
-                        pkg.addFile(file, {
+                        await pkg.addFile(file, {
                             name: meta.filename,
                         });
                     } catch (err) {
@@ -124,7 +124,10 @@ export default async function router(schema: Schema, config: Config) {
                 await pkg.addCoT(CoT.from_geojson(feat))
             }
 
-            for (const [hash, uid] of Object.entries(attachmentMap)) {
+            for (const hash of attachmentMap.keys()) {
+                const uid = attachmentMap.get(hash);
+                if (!uid) continue;
+
                 const attachment = await S3.list(`attachment/${hash}/`);
                 if (attachment.length < 1) continue;
                 await pkg.addFile(await S3.get(attachment[0].Key), {
