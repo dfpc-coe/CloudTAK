@@ -4,9 +4,11 @@
 
         <div class='ms-auto me-2'>
             <IconFileUpload
+                v-if='!upload'
                 :size='24'
                 :stroke='1'
                 class='cursor-pointer'
+                @click='upload = true'
             />
         </div>
     </div>
@@ -17,6 +19,19 @@
                 :inline='true'
                 class='my-2'
             />
+            <div
+                v-else-if='upload'
+                class='py-2 px-4'
+            >
+                <Upload
+                    :url='uploadURL()'
+                    :headers='uploadHeaders()'
+                    method='PUT'
+                    @cancel='upload = false'
+                    @done='uploadComplete($event)'
+                />
+            </div>
+
             <TablerNone
                 v-else-if='!files.length'
                 :compact='true'
@@ -47,6 +62,7 @@
 
 <script>
 import { std, stdurl } from '/src/std.ts';
+import Upload from '../../util/Upload.vue';
 import {
     IconFile,
     IconFileUpload,
@@ -68,6 +84,7 @@ export default {
         },
     },
     components: {
+        Upload,
         IconPhoto,
         IconFile,
         IconDownload,
@@ -84,11 +101,25 @@ export default {
     },
     data: function() {
         return {
+            upload: false,
             loading: true,
             files: []
         }
     },
     methods: {
+        uploadHeaders: function() {
+            return {
+                Authorization: `Bearer ${localStorage.token}`
+            };
+        },
+        uploadComplete: function(event) {
+            this.upload = false;
+
+            console.error(event);
+        },
+        uploadURL: function() {
+            return stdurl(`/api/attachment`);
+        },
         downloadAsset: async function(file) {
             const url = stdurl(`/api/attachment/${file.hash}`);
             url.searchParams.append('token', localStorage.token);

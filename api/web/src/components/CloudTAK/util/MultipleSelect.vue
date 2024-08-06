@@ -15,10 +15,7 @@
             v-for='feat in select.feats'
             :key='feat.properties.id'
             class='rounded col-12 d-flex align-items-center cursor-pointer hover-light'
-            @click='radialClick(feat, {
-                point: select.e.point,
-                lngLat: select.e.lngLat
-            })'
+            @click='$router.push(`/cot/${feat.id}`)'
         >
             <span class='ms-2'>
                 <IconPoint
@@ -39,7 +36,7 @@
             </span>
             <span
                 class='subheader me-2'
-                v-text='feat.properties.callsign || "No Name"'
+                v-text='feat.properties.callsign.trim() || "Unnamed Feature"'
             />
         </div>
     </div>
