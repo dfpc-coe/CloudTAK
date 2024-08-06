@@ -5,6 +5,7 @@
         <div class='ms-auto me-2'>
             <IconFileUpload
                 v-if='!upload'
+                v-tooltip='"Add Attachment"'
                 :size='24'
                 :stroke='1'
                 class='cursor-pointer'
