@@ -183,7 +183,14 @@ export default {
 
             const feats = this.currentFeats();
 
-            if (feats.length === 1) {
+            // CoTs with Attachments must always be send via a DataPackage
+            if (
+                feats.length === 1
+                && (
+                    !feats[0].properties.attachments
+                    || feats[0].properties.attachments.length === 0
+                )
+            ) {
                 for (const contact of this.selected) {
                     const feat = JSON.parse(JSON.stringify(feats[0]));
                     feat.properties.dest = [{ uid: contact.uid }];

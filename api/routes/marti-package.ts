@@ -1,8 +1,10 @@
+import path from 'node:path';
 import crypto from 'node:crypto';
 import busboy from 'busboy';
 import fs from 'node:fs';
 import fsp from 'node:fs/promises';
 import { Type } from '@sinclair/typebox'
+import S3 from '../lib/aws/s3.js';
 import CoT, { FileShare, DataPackage } from '@tak-ps/node-cot';
 import { StandardResponse } from '../lib/types.js';
 import Schema from '@openaddresses/batch-schema';
@@ -109,8 +111,27 @@ export default async function router(schema: Schema, config: Config) {
             const pkg = new DataPackage(id, id);
 
             pkg.setEphemeral();
+
+            // Hash => CoT UID
+            const attachmentMap: Map<string, string> = new Map();
             for (const feat of req.body.features) {
+                if (feat.properties.attachments && feat.properties.attachments.length) {
+                    for (const hash of feat.properties.attachments) {
+                        attachmentMap.set(hash, feat.id);
+                    }
+                }
+
                 await pkg.addCoT(CoT.from_geojson(feat))
+            }
+
+            for (const [hash, uid] of Object.entries(attachmentMap)) {
+                const attachment = await S3.list(`attachment/${hash}/`);
+                if (attachment.length < 1) continue;
+                await pkg.addFile(S3.get(attachment[0].Key), {
+                    name: path.parse(attachment[0].Key).base
+                });
+
+                // TODO: Link Attachment to COT
             }
 
             const out = await pkg.finalize()
