@@ -94,11 +94,15 @@ export default {
         TablerNone
     },
     mounted: async function() {
-        if (this.attachments.length) {
-            await this.fetchMetadata();
+        await this.refresh();
+    },
+    watch: {
+        attachments: {
+            deep: true,
+            handler: async function() {
+                await this.refresh();
+            }
         }
-
-        this.loading = false;
     },
     data: function() {
         return {
@@ -108,6 +112,14 @@ export default {
         }
     },
     methods: {
+        refresh: async function() {
+            this.loading = true;
+            if (this.attachments.length) {
+                await this.fetchMetadata();
+            }
+
+            this.loading = false;
+        },
         uploadHeaders: function() {
             return {
                 Authorization: `Bearer ${localStorage.token}`
@@ -116,7 +128,7 @@ export default {
         uploadComplete: function(event) {
             this.upload = false;
 
-            console.error(event);
+            this.$emit("attachment", JSON.parse(event).hash);
         },
         uploadURL: function() {
             return stdurl(`/api/attachment`);

@@ -15,7 +15,7 @@
             v-for='feat in select.feats'
             :key='feat.properties.id'
             class='rounded col-12 d-flex align-items-center cursor-pointer hover-light'
-            @click='$router.push(`/cot/${feat.id}`)'
+            @click='$emit("cot", feat.id)'
         >
             <span class='ms-2'>
                 <IconPoint
