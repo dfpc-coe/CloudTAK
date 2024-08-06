@@ -103,7 +103,11 @@
             </div>
         </div>
 
-        <template v-if='mode === "default"'>
+        <div
+            v-if='mode === "default"'
+            class='col-12 overflow-auto'
+            style='height: calc(100vh - 160px)'
+        >
             <Coordinate
                 v-model='center'
                 class='py-2'
@@ -124,11 +128,10 @@
             />
 
             <Attachments
-                v-if='feat.properties.attachments && feat.properties.attachments.length'
-                :attachments='feat.properties.attachments'
+                :attachments='feat.properties.attachments || []'
+                @attachment='addAttachment($event)'
                 class='py-2'
             />
-
 
             <div
                 v-if='feat.properties.contact && feat.properties.contact.phone'
@@ -267,7 +270,7 @@
                     </table>
                 </div>
             </div>
-        </template>
+        </div>
         <template v-else-if='mode === "share"'>
             <div class='overflow-auto'>
                 <Share
@@ -361,6 +364,13 @@ export default {
         }
     },
     methods: {
+        addAttachment: function(hash) {
+            if (!this.feat.properties.attachments) {
+                this.feat.properties.attachments = [];
+            }
+
+            this.feat.properties.attachments.push(hash)
+        },
         phone: function(number) {
             const p = phone(number);
 
