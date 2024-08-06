@@ -127,11 +127,10 @@ export default async function router(schema: Schema, config: Config) {
             for (const [hash, uid] of Object.entries(attachmentMap)) {
                 const attachment = await S3.list(`attachment/${hash}/`);
                 if (attachment.length < 1) continue;
-                await pkg.addFile(S3.get(attachment[0].Key), {
-                    name: path.parse(attachment[0].Key).base
+                await pkg.addFile(await S3.get(attachment[0].Key), {
+                    name: path.parse(attachment[0].Key).base,
+                    attachment: uid
                 });
-
-                // TODO: Link Attachment to COT
             }
 
             const out = await pkg.finalize()
