@@ -129,6 +129,7 @@
 
             <Attachments
                 :attachments='feat.properties.attachments || []'
+                @attachment='feat.properties.attachments.push($event)'
                 class='py-2'
             />
 
