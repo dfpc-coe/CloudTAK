@@ -129,7 +129,7 @@
 
             <Attachments
                 :attachments='feat.properties.attachments || []'
-                @attachment='feat.properties.attachments.push($event)'
+                @attachment='addAttachment($event)'
                 class='py-2'
             />
 
@@ -364,6 +364,13 @@ export default {
         }
     },
     methods: {
+        addAttachment: function(hash) {
+            if (!this.feat.properties.attachments) {
+                this.feat.properties.attachments = [];
+            }
+
+            this.feat.properties.attachments.push(hash)
+        },
         phone: function(number) {
             const p = phone(number);
 
