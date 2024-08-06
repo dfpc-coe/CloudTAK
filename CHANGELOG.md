@@ -12,6 +12,12 @@
 
 ### Pending Release
 
+### v2.92.0 - 2024-08-06
+
+- :bug: `UI` Re-introduce CoT reset on channel change which was dropped when the menu router was introduced
+- :rocket: `UI` Remove a CoT from the cot store on delete intead of retaining unrendered features
+- :tada: Automatically attach attachments in DataPackage when a CoT is shared
+
 ### v2.91.0 - 2024-08-06
 
 - :tada: `API/UI` Add ability to attach Attachments to a CoT
