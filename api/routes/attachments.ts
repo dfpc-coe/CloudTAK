@@ -96,6 +96,8 @@ export default async function router(schema: Schema, config: Config) {
                     Err.respond(err, res);
                 }
             });
+
+            return req.pipe(bb);
         } catch (err) {
             return Err.respond(err, res);
         }
