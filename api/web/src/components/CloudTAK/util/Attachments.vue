@@ -43,7 +43,12 @@
                     <div class='col-12 hover-button px-2 py-2 d-flex align-items-center'>
                         <IconPhoto v-if='[".png", ".jpg"].includes(file.ext)' :size='24' :stroke='1'/>
                         <IconFile v-else :size='24' :stroke='1'/>
-                        <span class='mx-2' v-text='file.name'/>
+
+                        <span
+                            class='mx-2 text-truncate'
+                            style='max-width: 300px;'
+                            v-text='file.name'
+                        />
 
                         <div class='ms-auto'>
                             <IconDownload
