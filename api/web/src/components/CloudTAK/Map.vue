@@ -427,7 +427,6 @@
             <SideMenu
                 v-if='isLoaded && !pointInput'
                 :compact='noMenuShown'
-                @reset='deleteCOT()'
             />
 
             <MultipleSelect
@@ -790,11 +789,7 @@ export default {
             mapStore.draw.selectFeature(feat.id);
         },
         deleteCOT: async function(cot) {
-            if (cot) {
-                await cotStore.delete(cot.properties.id)
-            } else {
-                cotStore.clear();
-            }
+            await cotStore.delete(cot.properties.id)
             await this.updateCOT();
         },
         updateCOT: async function() {
