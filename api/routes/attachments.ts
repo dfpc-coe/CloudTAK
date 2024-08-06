@@ -1,5 +1,11 @@
+import os from 'node:os';
+import { randomUUID } from 'node:crypto';
+import { pipeline } from 'node:stream/promises';
+import fs from 'node:fs';
 import path from 'path';
+import busboy from 'busboy';
 import { Type } from '@sinclair/typebox'
+import { DataPackage } from '@tak-ps/node-cot';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
@@ -46,6 +52,63 @@ export default async function router(schema: Schema, config: Config) {
             return res.json({
                 total: items.length,
                 items
+            });
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
+
+    await schema.post('/attachment', {
+        name: 'Upload Attachment',
+        group: 'Attachments',
+        description: 'Upload an attachment that is assigned to a given CoT',
+        res: Type.Object({
+            hash: Type.String()
+        })
+    }, async (req, res) => {
+        try {
+            await Auth.is_auth(config, req);
+
+            if (
+                !req.headers['content-type']
+                || !req.headers['content-type'].startsWith('multipart/form-data')
+            ) {
+                throw new Err(400, null, 'Unsupported Content-Type');
+            }
+
+            const bb = busboy({
+                headers: req.headers,
+                limits: { files: 1 }
+            });
+
+            const uploads: Promise<{
+                hash: string;
+            }>[] = [];
+            bb.on('file', async (fieldname, file, blob) => {
+                uploads.push((async function() {
+                    const tmp = os.tmpdir() + '/' + randomUUID();
+                    fs.mkdirSync(tmp)
+                    await pipeline(
+                        file,
+                        fs.createWriteStream(tmp + '/' + blob.filename)
+                    );
+
+                    const hash = await DataPackage.hash(tmp + '/' + blob.filename);
+
+                    await S3.put(`attachment/${hash}`, blob.filename);
+
+                    return { hash };
+                })())
+            }).on('finish', async () => {
+                try {
+                    const files = await Promise.all(uploads);
+
+                    return res.json({
+                        ...files[0]
+                    })
+                } catch (err) {
+                    Err.respond(err, res);
+                }
             });
         } catch (err) {
             return Err.respond(err, res);
