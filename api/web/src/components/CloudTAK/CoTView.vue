@@ -124,11 +124,9 @@
             />
 
             <Attachments
-                v-if='feat.properties.attachments && feat.properties.attachments.length'
-                :attachments='feat.properties.attachments'
+                :attachments='feat.properties.attachments || []'
                 class='py-2'
             />
-
 
             <div
                 v-if='feat.properties.contact && feat.properties.contact.phone'
