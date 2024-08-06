@@ -89,6 +89,9 @@ export default {
             required: true
         },
     },
+    emits: [
+        'attachment'
+    ],
     components: {
         Upload,
         IconPhoto,

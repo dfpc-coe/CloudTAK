@@ -20,7 +20,6 @@ type NestedArray = {
 
 export const useCOTStore = defineStore('cots', {
     state: (): {
-        archive: Map<string, Feature>;
         cots: Map<string, Feature>;
         hidden: Set<string>;
 
@@ -33,7 +32,6 @@ export const useCOTStore = defineStore('cots', {
         return {
             cots: new Map(),                // Store all on-screen CoT messages
             hidden: new Set(),              // Store CoTs that should be hidden
-            archive: new Map(),             // Store all archived CoT messages
             pending: new Map(),             // Store yet to be rendered on-screen CoT Messages
             pendingDelete: new Set(),       // Store yet to be deleted on-screen CoT Messages
             subscriptions: new Map(),       // Store All Mission CoT messages by GUID
@@ -88,7 +86,7 @@ export const useCOTStore = defineStore('cots', {
         },
 
         /**
-         * Load Archived CoTs from localStorage
+         * Load Archived CoTs
          */
         loadArchive: async function(): Promise<void> {
             const archive = await std('/api/profile/feature');
@@ -308,24 +306,31 @@ export const useCOTStore = defineStore('cots', {
          */
         delete: async function(id: string, skipNetwork = false) {
             this.pendingDelete.add(id);
-            if (this.archive.has(id)) {
-                this.archive.delete(id);
 
-                if (!skipNetwork) {
-                    await std(`/api/profile/feature/${id}`, {
-                        method: 'DELETE'
-                    });
-                }
+            const cot = this.cots.get(id);
+            if (!cot) return;
+
+            this.cots.delete(id);
+
+            if (!skipNetwork && cot.properties.archived) {
+                await std(`/api/profile/feature/${id}`, {
+                    method: 'DELETE'
+                });
             }
         },
 
         /**
          * Empty the store
          */
-        clear: function(): void {
-            this.cots.clear();
-            this.archive.clear();
-            localStorage.removeItem('archive');
+        clear: function(opts = {
+            ignoreArchived: false,
+            skipNetwork: false
+        }): void {
+            for (const feat of this.cots.values()) {
+                if (opts.ignoreArchived && feat.properties.archived) continue;
+
+                this.delete(feat.id, opts.skipNetwork);
+            }
         },
 
         /**
@@ -471,7 +476,6 @@ export const useCOTStore = defineStore('cots', {
                 this.pending.set(String(feat.id), feat);
 
                 if (feat.properties && feat.properties.archived) {
-                    this.archive.set(String(feat.id), feat);
                     await std('/api/profile/feature', { method: 'PUT', body: feat })
                 }
             }
