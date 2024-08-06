@@ -1,7 +1,16 @@
 <template>
-    <div class='col-12'>
+    <div class='col-12 d-flex align-items-center'>
         <label class='subheader mx-2'>Attachments</label>
 
+        <div class='ms-auto me-2'>
+            <IconFileUpload
+                :size='24'
+                :stroke='1'
+                class='cursor-pointer'
+            />
+        </div>
+    </div>
+    <div class='col-12'>
         <div class='mx-2'>
             <TablerLoading
                 v-if='loading'
@@ -40,6 +49,7 @@
 import { std, stdurl } from '/src/std.ts';
 import {
     IconFile,
+    IconFileUpload,
     IconPhoto,
     IconDownload
 } from '@tabler/icons-vue';
@@ -61,6 +71,7 @@ export default {
         IconPhoto,
         IconFile,
         IconDownload,
+        IconFileUpload,
         TablerLoading,
         TablerNone
     },
