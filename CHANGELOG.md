@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v2.91.0 - 2024-08-06
+
+- :tada: `API/UI` Add ability to attach Attachments to a CoT
+
 ### v2.90.0 - 2024-08-06
 
 - :tada: `UI` Add initial PWA basics
