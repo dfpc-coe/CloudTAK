@@ -103,7 +103,11 @@
             </div>
         </div>
 
-        <template v-if='mode === "default"'>
+        <div
+            v-if='mode === "default"'
+            class='col-12 overflow-auto'
+            style='height: calc(100vh - 160px)'
+        >
             <Coordinate
                 v-model='center'
                 class='py-2'
@@ -265,7 +269,7 @@
                     </table>
                 </div>
             </div>
-        </template>
+        </div>
         <template v-else-if='mode === "share"'>
             <div class='overflow-auto'>
                 <Share
