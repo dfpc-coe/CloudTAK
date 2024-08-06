@@ -1,5 +1,7 @@
 import path from 'path';
+import busboy from 'busboy';
 import { Type } from '@sinclair/typebox'
+import AttachmentControl from '../lib/control/attachment.js';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
@@ -7,6 +9,8 @@ import S3 from '../lib/aws/s3.js';
 import Config from '../lib/config.js';
 
 export default async function router(schema: Schema, config: Config) {
+    const attachmentControl = new AttachmentControl(config);
+
     await schema.get('/attachment', {
         name: 'List Attachments',
         group: 'Attachments',
@@ -47,6 +51,53 @@ export default async function router(schema: Schema, config: Config) {
                 total: items.length,
                 items
             });
+        } catch (err) {
+            return Err.respond(err, res);
+        }
+    });
+
+    await schema.put('/attachment', {
+        name: 'Upload Attachment',
+        group: 'Attachments',
+        description: 'Upload an attachment that is assigned to a given CoT',
+        res: Type.Object({
+            hash: Type.String()
+        })
+    }, async (req, res) => {
+        try {
+            await Auth.is_auth(config, req);
+
+            if (
+                !req.headers['content-type']
+                || !req.headers['content-type'].startsWith('multipart/form-data')
+            ) {
+                throw new Err(400, null, 'Unsupported Content-Type');
+            }
+
+            const bb = busboy({
+                headers: req.headers,
+                limits: { files: 1 }
+            });
+
+            const uploads: Promise<{
+                hash: string;
+            }>[] = [];
+
+            bb.on('file', async (fieldname, file, blob) => {
+                uploads.push(attachmentControl.upload(blob.filename, file));
+            }).on('finish', async () => {
+                try {
+                    const files = await Promise.all(uploads);
+
+                    return res.json({
+                        ...files[0]
+                    })
+                } catch (err) {
+                    Err.respond(err, res);
+                }
+            });
+
+            return req.pipe(bb);
         } catch (err) {
             return Err.respond(err, res);
         }

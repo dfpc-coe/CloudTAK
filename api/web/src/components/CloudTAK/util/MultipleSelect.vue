@@ -14,30 +14,29 @@
         <div
             v-for='feat in select.feats'
             :key='feat.properties.id'
-            class='col-12 d-flex align-items-center cursor-pointer hover-light'
-            @click='radialClick(feat, {
-                point: select.e.point,
-                lngLat: select.e.lngLat
-            })'
+            class='rounded col-12 d-flex align-items-center cursor-pointer hover-light'
+            @click='$emit("cot", feat.id)'
         >
-            <IconPoint
-                v-if='feat.geometry.type.includes("Point")'
-                :size='20'
-                :stroke='1'
-            />
-            <IconLine
-                v-else-if='feat.geometry.type.includes("Line")'
-                :size='20'
-                :stroke='1'
-            />
-            <IconPolygon
-                v-else-if='feat.geometry.type.includes("Polygon")'
-                :size='20'
-                :stroke='1'
-            />
-            <div
-                class='subheader'
-                v-text='feat.properties.callsign || "No Name"'
+            <span class='ms-2'>
+                <IconPoint
+                    v-if='feat.geometry.type.includes("Point")'
+                    :size='20'
+                    :stroke='1'
+                />
+                <IconLine
+                    v-else-if='feat.geometry.type.includes("Line")'
+                    :size='20'
+                    :stroke='1'
+                />
+                <IconPolygon
+                    v-else-if='feat.geometry.type.includes("Polygon")'
+                    :size='20'
+                    :stroke='1'
+                />
+            </span>
+            <span
+                class='subheader me-2'
+                v-text='feat.properties.callsign.trim() || "Unnamed Feature"'
             />
         </div>
     </div>
