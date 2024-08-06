@@ -1,11 +1,7 @@
-import os from 'node:os';
-import { randomUUID } from 'node:crypto';
-import { pipeline } from 'node:stream/promises';
-import fs from 'node:fs';
 import path from 'path';
 import busboy from 'busboy';
 import { Type } from '@sinclair/typebox'
-import { DataPackage } from '@tak-ps/node-cot';
+import AttachmentControl from '../lib/control/attachment.js';
 import Schema from '@openaddresses/batch-schema';
 import Err from '@openaddresses/batch-error';
 import Auth from '../lib/auth.js';
@@ -13,6 +9,8 @@ import S3 from '../lib/aws/s3.js';
 import Config from '../lib/config.js';
 
 export default async function router(schema: Schema, config: Config) {
+    const attachmentControl = new AttachmentControl(config);
+
     await schema.get('/attachment', {
         name: 'List Attachments',
         group: 'Attachments',
@@ -85,20 +83,7 @@ export default async function router(schema: Schema, config: Config) {
                 hash: string;
             }>[] = [];
             bb.on('file', async (fieldname, file, blob) => {
-                uploads.push((async function() {
-                    const tmp = os.tmpdir() + '/' + randomUUID();
-                    fs.mkdirSync(tmp)
-                    await pipeline(
-                        file,
-                        fs.createWriteStream(tmp + '/' + blob.filename)
-                    );
-
-                    const hash = await DataPackage.hash(tmp + '/' + blob.filename);
-
-                    await S3.put(`attachment/${hash}`, blob.filename);
-
-                    return { hash };
-                })())
+                uploads.push(attachmentControl.upload(blob.filename, file));
             }).on('finish', async () => {
                 try {
                     const files = await Promise.all(uploads);
