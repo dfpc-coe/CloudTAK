@@ -38,7 +38,6 @@
         </div>
         <div
             v-if='progress && progress < 101'
-            class='row'
         >
             <TablerLoading :desc='`Uploading ${name}`' />
             <TablerProgress :percent='progress / 100' />
